@@ -1,8 +1,8 @@
 datasources:
   default:
-    url: "jdbc:postgresql://localhost:5432/seedbank"
-    username: koreth
-    password: ''
+    url: "${DATABASE_URL:`jdbc:postgresql://localhost:5432/seedbank`}"
+    username: "${USER:postgres}"
+    password: "${DATABASE_PASSWORD:}"
 
 endpoints:
   flyway:
