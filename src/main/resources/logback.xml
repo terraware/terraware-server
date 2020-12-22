@@ -1,0 +1,63 @@
+<!-- Logging configuration. -->
+<configuration>
+  <if condition='property("MICRONAUT_ENVIRONMENTS").contains("balena")'>
+    <then>
+      <!-- When running on site, log to syslog so logs can be centralized. -->
+      <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>localhost</syslogHost>
+        <facility>LOCAL1</facility>
+        <suffixPattern>[%thread] %logger{36} %msg</suffixPattern>
+      </appender>
+
+      <root level="INFO">
+        <appender-ref ref="SYSLOG"/>
+      </root>
+    </then>
+    <else>
+      <if condition='property("MICRONAUT_ENVIRONMENTS").contains("cloud")'>
+        <then>
+          <!-- On cloud servers, log to a rotating logfile. -->
+          <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>/var/log/seedbank/server</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+              <!-- Daily rotation -->
+              <fileNamePattern>/var/log/seedbank/server.%d{yyyy-MM-dd}</fileNamePattern>
+              <!-- Keep up to 30 days history, up to 1GB maximum -->
+              <maxHistory>30</maxHistory>
+              <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+              <pattern>
+                %d{yyyy-MM-DD HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+              </pattern>
+            </encoder>
+          </appender>
+
+          <root level="INFO">
+            <appender-ref ref="FILE"/>
+          </root>
+        </then>
+        <else>
+          <!-- In unspecified environments such as dev, just output to the console. -->
+          <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <!-- For console logging, enable ANSI color codes to highlight different log fields. -->
+            <withJansi>true</withJansi>
+            <encoder>
+              <pattern>
+                %cyan(%d{HH:mm:ss.SSS}) %blue([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n
+              </pattern>
+            </encoder>
+          </appender>
+
+          <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+          </root>
+
+          <logger name="HTTP_ACCESS_LOGGER" additivity="false" level="info">
+            <appender-ref ref="STDOUT"/>
+          </logger>
+        </else>
+      </if>
+    </else>
+  </if>
+</configuration>

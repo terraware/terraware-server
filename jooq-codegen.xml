@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.14.0.xsd">
+  <jdbc>
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql://localhost:15432/seedbank-build</url>
+    <user>seedbank</user>
+    <password>seedbank</password>
+  </jdbc>
+
+  <generator>
+    <name>org.jooq.codegen.KotlinGenerator</name>
+
+    <database>
+      <name>org.jooq.meta.postgres.PostgresDatabase</name>
+      <includes>.*</includes>
+      <excludes>
+        flyway_.*
+      </excludes>
+      <inputSchema>public</inputSchema>
+    </database>
+
+    <generate>
+      <daos>true</daos>
+      <javaTimeTypes>true</javaTimeTypes>
+      <pojos>true</pojos>
+      <pojosAsKotlinDataClasses>true</pojosAsKotlinDataClasses>
+      <records>true</records>
+    </generate>
+
+    <target>
+      <directory>$projectDir/src/generated/jooq</directory>
+      <packageName>com.terraformation.seedbank.db</packageName>
+    </target>
+  </generator>
+</configuration>

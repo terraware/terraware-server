@@ -1,0 +1,53 @@
+datasources:
+  default:
+    url: "jdbc:postgresql://localhost:5432/seedbank"
+    username: koreth
+    password: ''
+
+endpoints:
+  flyway:
+    enabled: true
+    sensitive: false
+  health:
+    jdbc:
+      enabled: true
+    details-visible: anonymous
+  refresh:
+    enabled: true
+    sensitive: true
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+
+jooq:
+  datasources:
+    default:
+      sql-dialect: postgres
+      jackson-converter-enabled: true
+
+micronaut:
+  router:
+    static-resources:
+      swagger:
+        paths: "classpath:META-INF/swagger"
+        mapping: "/swagger/**"
+        enabled: true
+  security:
+    basic-auth:
+      enabled: true
+    token:
+      jwt:
+        bearer:
+          enabled: false
+    intercept-url-map:
+      - pattern: "/swagger/**"
+        http-method: GET
+        access:
+          - isAnonymous()
+  server:
+    netty:
+      access-logger:
+        enabled: true
+        log-format: '%h - %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"'
