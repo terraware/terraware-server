@@ -6,6 +6,7 @@ import java.util.Base64
 import java.util.Optional
 import javax.inject.Singleton
 
+/** Converts base64-encoded binary configuration values to byte arrays. */
 @Singleton
 class Base64ToByteArrayConverter : TypeConverter<String, ByteArray> {
   private val decoder = Base64.getDecoder()!!

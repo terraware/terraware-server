@@ -19,14 +19,20 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Singleton
 
+/** Generates authentication tokens that may be used to authenticate to Mosquitto. */
 @Controller("/api/v1/token")
 @Singleton
 class TokenController(private val config: TerrawareServerConfig) {
   private val log = perClassLogger()
 
+  /**
+   * Returns a JSON Web Token that may be supplied as the password when authenticating with the MQTT
+   * broker. The token is valid for 2 minutes, but may be used to establish a persistent connection
+   * to the broker.
+   */
   @Post
   @Secured(SecurityRule.IS_AUTHENTICATED)
-  fun getToken(authentication: Authentication): TokenResponse {
+  fun generateToken(authentication: Authentication): TokenResponse {
     val secret = config.jwtSecret
     if (secret == null) {
       log.error("No JWT secret is configured")
