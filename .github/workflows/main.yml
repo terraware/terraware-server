@@ -1,0 +1,55 @@
+name: seedbank-server
+
+on:
+  push:
+    branches:
+      - main
+      - wip-*
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: ["11", "15"]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Java ${{ matrix.java-version }}
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.java-version }}
+
+    - name: Cache dependencies
+      id: cache-gradle
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle
+          ~/.m2
+        key: 2-${{ matrix.java-version }}-${{ hashFiles('*.gradle.kts') }}
+
+    # The build/test process is broken out into individual steps here so it's easier to watch
+    # the progress of the build in the GitHub UI and so it's clearer what failed if the build
+    # has problems; locally, "./gradlew check" will do all this in a single command.
+
+    - name: Download dependencies
+      run: ./gradlew downloadDependencies
+
+    - name: Check code style
+      run: ./gradlew spotlessCheck
+
+    - name: Generate jOOQ classes
+      run: ./gradlew generateJooqMetamodel
+
+    - name: Compile main
+      run: ./gradlew classes
+
+    - name: Compile tests
+      run: ./gradlew testClasses
+
+    - name: Run tests
+      run: ./gradlew test

@@ -1,4 +1,5 @@
 import java.nio.file.Files
+import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val jacksonVersion = "2.11.3"
@@ -14,6 +15,7 @@ plugins {
   kotlin("plugin.allopen") version kotlinVersion
 
   id("ch.ayedo.jooqmodelator") version "3.8.0"
+  id("com.diffplug.spotless") version "5.8.2"
   id("io.micronaut.application") version "1.2.0"
 }
 
@@ -48,8 +50,6 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.2")
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
 
-  runtimeOnly("ch.qos.logback:logback-classic")
-
   testAnnotationProcessor("io.micronaut:micronaut-inject-java")
 
   testImplementation("io.micronaut.test:micronaut-test-junit5")
@@ -57,6 +57,21 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api")
 
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+}
+
+tasks.register("downloadDependencies") {
+  fun ConfigurationContainer.resolveAll() = this
+    .filter {
+      it.isCanBeResolved &&
+          (it !is DeprecatableConfiguration || it.resolutionAlternatives == null) &&
+          !it.name.contains("Metadata")
+    }
+    .forEach { it.resolve() }
+
+  doLast {
+    configurations.resolveAll()
+    buildscript.configurations.resolveAll()
+  }
 }
 
 tasks.test {
@@ -114,4 +129,11 @@ tasks.withType<KotlinCompile> {
 
 application {
   mainClass.set("com.terraformation.seedbank.Application")
+}
+
+spotless {
+  kotlin {
+    ktfmt("0.18")
+    targetExclude("src/generated/**")
+  }
 }

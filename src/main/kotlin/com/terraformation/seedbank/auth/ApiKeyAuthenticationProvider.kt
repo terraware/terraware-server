@@ -25,13 +25,13 @@ class ApiKeyAuthenticationProvider(private val keyDao: KeyDao) : AuthenticationP
     return publishSingleValue {
       val hashedApiKey = hashApiKey(authenticationRequest.secret.toString())
       val orgId =
-        keyDao.fetchOneByHash(hashedApiKey)?.organizationId
-          ?: throw AuthenticationException(AuthenticationFailed())
+          keyDao.fetchOneByHash(hashedApiKey)?.organizationId
+              ?: throw AuthenticationException(AuthenticationFailed())
 
       UserDetails(
-        authenticationRequest.identity.toString(),
-        listOf(Role.API_CLIENT.name, Role.AUTHENTICATED.name),
-        mapOf(ORGANIZATION_ID_ATTR to orgId))
+          authenticationRequest.identity.toString(),
+          listOf(Role.API_CLIENT.name, Role.AUTHENTICATED.name),
+          mapOf(ORGANIZATION_ID_ATTR to orgId))
     }
   }
 

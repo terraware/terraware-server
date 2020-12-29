@@ -13,9 +13,7 @@ import org.jooq.DSLContext
 class OrganizationController(private val dslContext: DSLContext) {
   private val log = perClassLogger()
 
-  /**
-   * Lists all the organizations. The client must be a super admin.
-   */
+  /** Lists all the organizations. The client must be a super admin. */
   @Get
   @Secured("SUPER_ADMIN")
   fun listAll(): ListOrganizationsResponse {
@@ -27,9 +25,6 @@ class OrganizationController(private val dslContext: DSLContext) {
   }
 }
 
-data class ListOrganizationsElement(
-  val id: Int,
-  val name: String
-)
+data class ListOrganizationsElement(val id: Int, val name: String)
 
 data class ListOrganizationsResponse(val organizations: List<ListOrganizationsElement>)

@@ -11,9 +11,7 @@ class Base64ToByteArrayConverter : TypeConverter<String, ByteArray> {
   private val decoder = Base64.getDecoder()!!
 
   override fun convert(
-    obj: String,
-    targetType: Class<ByteArray>,
-    context: ConversionContext
+      obj: String, targetType: Class<ByteArray>, context: ConversionContext
   ): Optional<ByteArray> {
     return Optional.of(decoder.decode(obj))
   }

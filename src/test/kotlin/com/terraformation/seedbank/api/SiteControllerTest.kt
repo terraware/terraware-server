@@ -58,7 +58,6 @@ class SiteControllerTest {
     }
   }
 
-
   @Nested
   @DisplayName("GET /api/v1/site/{siteId}")
   inner class GetSite {
@@ -68,15 +67,15 @@ class SiteControllerTest {
     private val latitudeString = "91.351"
     private val longitude = BigDecimal(longitudeString)
     private val latitude = BigDecimal(latitudeString)
-    private val site = Site(
-      id = siteId,
-      organizationId = organizationId,
-      name = "site",
-      latitude = latitude,
-      longitude = longitude,
-      language = language,
-      timezone = timezone
-    )
+    private val site =
+        Site(
+            id = siteId,
+            organizationId = organizationId,
+            name = "site",
+            latitude = latitude,
+            longitude = longitude,
+            language = language,
+            timezone = timezone)
 
     @Test
     fun `rejects requests from regular clients without organizations`() {

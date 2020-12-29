@@ -5,7 +5,4 @@ import javax.inject.Singleton
 
 @Controller("/api/v1/sequence")
 @Singleton
-class SequenceController {
-
-
-}
+class SequenceController {}
