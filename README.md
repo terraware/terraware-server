@@ -57,29 +57,6 @@ The code should build (if you've previously built it from the command line, it w
 
 Once you've launched the application once, it will appear in the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window. You can select it there and click the Run (triangle) or Debug (beetle) button to the right of the drop-down menu. You can also launch it with keyboard shortcuts but that's beyond the scope of this quick intro.
 
-## Coding conventions
-
-The code should be written in idiomatic Kotlin and should generally follow the guidelines in the official Kotlin [Coding Conventions](https://kotlinlang.org/docs/reference/coding-conventions.html) document.
-
-It runs on the JVM, and thus makes extensive use of Java libraries. There are no plans to support multiplatform builds. If you find a Java library that does just what you need, use it rather than reinventing the wheel!
-
-Currently, the build targets the Java 11 environment, but this will change in the future; avoid using any libraries that are marked deprecated in Java 15 or later.
-
-### Formatting
-
-All Kotlin code must be formatted with [ktfmt](https://github.com/facebookincubator/ktfmt). You can run ktfmt in a couple different ways:
-
-* Install the [ktfmt IntelliJ plugin](https://plugins.jetbrains.com/plugin/14912-ktfmt) (recommended). This will cause IntelliJ's "Reformat Code" action to use ktfmt.
-* Invoke it from the command line. The project's Gradle configuration has a task for that purpose. On Mac/Linux, run `./gradlew spotlessApply` and on Windows, run `gradlew.bat spotlessApply`.
-
-There isn't currently a way to make IntelliJ's real-time formatting adhere strictly to ktfmt's formatting rules, but the supplied `.editorconfig` file is an approximation. IntelliJ should detect it and use it automatically.
-
-### Payload classes
-
-Use data classes to represent API request and response payloads whenever possible, rather than using generic `Map` objects. This will allow the build process to generate more useful API documentation.
-
-Generally, these payload classes should live in the same file as the controller classes that implement the API endpoints. If a particular payload class is used by 3 or more controllers, though, it should be moved to a separate file (which may contain multiple such payload classes if they are related to each other).
-
 ## Notable things
 
 The code itself is, at this point, still pretty small, but there are a few things it demonstrates.
