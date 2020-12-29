@@ -11,7 +11,7 @@ endpoints:
   health:
     jdbc:
       enabled: true
-    details-visible: anonymous
+    details-visible: "anonymous"
   refresh:
     enabled: true
     sensitive: true
@@ -24,7 +24,7 @@ flyway:
 jooq:
   datasources:
     default:
-      sql-dialect: postgres
+      sql-dialect: "postgres"
       jackson-converter-enabled: true
 
 micronaut:
@@ -38,16 +38,27 @@ micronaut:
     basic-auth:
       enabled: true
     token:
+      enabled: true
       jwt:
         bearer:
           enabled: false
+        signatures:
+          secret:
+            generator:
+              base64: true
+              secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
+              jws-algorithm: "HS256"
     intercept-url-map:
       - pattern: "/swagger/**"
-        http-method: GET
+        http-method: "GET"
         access:
-          - isAnonymous()
+          - "isAnonymous()"
   server:
     netty:
       access-logger:
         enabled: true
         log-format: '%h - %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"'
+
+terraware:
+  server:
+    jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"

@@ -9,7 +9,10 @@ import io.micronaut.http.exceptions.HttpStatusException
 class NoOrganizationException :
     HttpStatusException(HttpStatus.FORBIDDEN, "Client is not associated with an organization")
 
+class NotAuthenticatedException :
+    HttpStatusException(HttpStatus.UNAUTHORIZED, "Client is not authenticated.")
+
 class NotFoundException : HttpStatusException(HttpStatus.NOT_FOUND, "Resource not found")
 
 class WrongOrganizationException :
-  HttpStatusException(HttpStatus.FORBIDDEN, "Resource is owned by a different organization")
+    HttpStatusException(HttpStatus.FORBIDDEN, "Resource is owned by a different organization")

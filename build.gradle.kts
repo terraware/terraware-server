@@ -39,6 +39,7 @@ dependencies {
   implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
   implementation("io.micronaut.security:micronaut-security")
   implementation("io.micronaut.security:micronaut-security-annotations")
+  implementation("io.micronaut.security:micronaut-security-jwt")
   implementation("io.micronaut.sql:micronaut-jdbc-hikari")
   implementation("io.micronaut.sql:micronaut-jooq")
   implementation("io.swagger.core.v3:swagger-annotations")
