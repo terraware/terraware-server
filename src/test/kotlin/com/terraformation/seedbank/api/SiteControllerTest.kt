@@ -20,16 +20,15 @@ class SiteControllerTest {
   private val siteDao = mockk<SiteDao>()
   private val siteController = SiteController(siteDao)
 
-  private val organizationId = Int(1)
+  private val organizationId = 1
   private val siteId = 123
 
   private val authentication =
-    DefaultAuthentication("test", mapOf(ORGANIZATION_ID_ATTR to organizationId))
+      DefaultAuthentication("test", mapOf(ORGANIZATION_ID_ATTR to organizationId))
   private val superAdminAuthentication =
-    DefaultAuthentication(
-      "superadmin",
-      mapOf(TokenConfiguration.DEFAULT_ROLES_NAME to listOf(Role.SUPER_ADMIN.name))
-    )
+      DefaultAuthentication(
+          "superadmin",
+          mapOf(TokenConfiguration.DEFAULT_ROLES_NAME to listOf(Role.SUPER_ADMIN.name)))
 
   @Nested
   @DisplayName("GET /api/v1/site")
@@ -53,9 +52,8 @@ class SiteControllerTest {
           listOf(Site(id = 1, name = "First Site"), Site(id = 2, name = "Second Site"))
 
       val expected =
-        ListSitesResponse(
-          listOf(ListSitesElement(1, "First Site"), ListSitesElement(2, "Second Site"))
-        )
+          ListSitesResponse(
+              listOf(ListSitesElement(1, "First Site"), ListSitesElement(2, "Second Site")))
       assertEquals(expected, siteController.listSites(authentication))
     }
   }
@@ -70,15 +68,14 @@ class SiteControllerTest {
     private val longitude = BigDecimal(longitudeString)
     private val latitude = BigDecimal(latitudeString)
     private val site =
-      Site(
-        id = siteId,
-        organizationId = organizationId,
-        name = "site",
-        latitude = latitude,
-        longitude = longitude,
-        language = language,
-        timezone = timezone
-      )
+        Site(
+            id = siteId,
+            organizationId = organizationId,
+            name = "site",
+            latitude = latitude,
+            longitude = longitude,
+            language = language,
+            timezone = timezone)
 
     @Test
     fun `rejects requests from regular clients without organizations`() {
@@ -102,7 +99,7 @@ class SiteControllerTest {
     @Test
     fun `rejects requests for sites owned by another organization`() {
       every { siteDao.fetchOneById(siteId) } returns
-          Site(id = siteId, organizationId = Int(0), name = "site")
+          Site(id = siteId, organizationId = 0, name = "site")
       assertThrows(WrongOrganizationException::class.java) {
         siteController.getSite(authentication, siteId)
       }
@@ -113,14 +110,13 @@ class SiteControllerTest {
       every { siteDao.fetchOneById(siteId) } returns site
 
       val expected =
-        GetSiteResponse(
-          id = siteId,
-          name = "site",
-          latitude = latitudeString,
-          longitude = longitudeString,
-          language = language,
-          timezone = timezone
-        )
+          GetSiteResponse(
+              id = siteId,
+              name = "site",
+              latitude = latitudeString,
+              longitude = longitudeString,
+              language = language,
+              timezone = timezone)
       assertEquals(expected, siteController.getSite(authentication, siteId))
     }
   }
