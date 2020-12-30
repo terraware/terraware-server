@@ -14,6 +14,13 @@ class Base64ToByteArrayConverter : TypeConverter<String, ByteArray> {
   override fun convert(
       obj: String, targetType: Class<ByteArray>, context: ConversionContext
   ): Optional<ByteArray> {
-    return Optional.of(decoder.decode(obj))
+    return try {
+      Optional.of(decoder.decode(obj))
+    } catch (e: Exception) {
+      context.reject(obj, e)
+      // https://github.com/micronaut-projects/micronaut-core/issues/4762
+      // Optional.empty()
+      throw e
+    }
   }
 }

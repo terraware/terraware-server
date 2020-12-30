@@ -60,5 +60,4 @@ micronaut:
         log-format: '%h - %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"'
 
 terraware:
-  server:
-    jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
+  jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"

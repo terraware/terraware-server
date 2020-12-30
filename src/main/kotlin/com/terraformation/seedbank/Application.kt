@@ -18,6 +18,10 @@ object Application {
     // By default, jOOQ logs a noisy banner message at startup; disable that to keep the logs clean.
     System.setProperty("org.jooq.no-logo", "true")
 
-    Micronaut.build(*args).mainClass(Application.javaClass).defaultEnvironments("dev").start()
+    Micronaut.build(*args)
+        .defaultEnvironments("dev")
+        .eagerInitConfiguration(true)
+        .mainClass(Application.javaClass)
+        .start()
   }
 }
