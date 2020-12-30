@@ -1,0 +1,16 @@
+# Configuration overrides for the "dev" environment. This mostly sets default values for config
+# options that we want to make sure are set explicitly in production environments.
+
+micronaut:
+  security:
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
+
+terraware:
+  jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
+  organization-id: 1
+  seedbank-id: 1

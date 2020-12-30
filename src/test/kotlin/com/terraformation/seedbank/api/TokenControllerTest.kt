@@ -23,20 +23,24 @@ internal class TokenControllerTest {
 
   private val secret = Random.nextBytes(32)
 
-  private val organizationId = 1
+  private val organizationId = Int(1)
   private val superAdmin =
-      DefaultAuthentication(
-          "admin",
-          mapOf(
-              TokenConfiguration.DEFAULT_ROLES_NAME to
-                  listOf(Role.AUTHENTICATED.name, Role.SUPER_ADMIN.name)))
+    DefaultAuthentication(
+      "admin",
+      mapOf(
+        TokenConfiguration.DEFAULT_ROLES_NAME to
+            listOf(Role.AUTHENTICATED.name, Role.SUPER_ADMIN.name)
+      )
+    )
   private val apiClient =
-      DefaultAuthentication(
-          "apiClient",
-          mapOf(
-              TokenConfiguration.DEFAULT_ROLES_NAME to
-                  listOf(Role.API_CLIENT.name, Role.AUTHENTICATED.name),
-              ORGANIZATION_ID_ATTR to organizationId))
+    DefaultAuthentication(
+      "apiClient",
+      mapOf(
+        TokenConfiguration.DEFAULT_ROLES_NAME to
+            listOf(Role.API_CLIENT.name, Role.AUTHENTICATED.name),
+        ORGANIZATION_ID_ATTR to organizationId
+      )
+    )
 
   @BeforeEach
   fun setUp() {
@@ -64,28 +68,32 @@ internal class TokenControllerTest {
   fun `token allows all topics for super admin`() {
     val token = generateToken(superAdmin)
     assertEquals(
-        listOf("#"),
-        token.jwtClaimsSet.claims[JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM],
-        "Publishable topics")
+      listOf("#"),
+      token.jwtClaimsSet.claims[JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM],
+      "Publishable topics"
+    )
     assertEquals(
-        listOf("#"),
-        token.jwtClaimsSet.claims[JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM],
-        "Subscribable topics")
+      listOf("#"),
+      token.jwtClaimsSet.claims[JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM],
+      "Subscribable topics"
+    )
   }
 
   @Test
   fun `token only allows per-org topics for API client`() {
     val token = generateToken(apiClient)
     assertEquals(
-        listOf("$organizationId/#"),
-        token.jwtClaimsSet.claims[JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM],
-        "Publishable topics")
+      listOf("$organizationId/#"),
+      token.jwtClaimsSet.claims[JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM],
+      "Publishable topics"
+    )
     assertEquals(
-        listOf("$organizationId/#"),
-        token.jwtClaimsSet.claims[JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM],
-        "Subscribable topics")
+      listOf("$organizationId/#"),
+      token.jwtClaimsSet.claims[JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM],
+      "Subscribable topics"
+    )
   }
 
   private fun generateToken(authentication: Authentication) =
-      SignedJWT.parse(controller.generateToken(authentication).token)
+    SignedJWT.parse(controller.generateToken(authentication).token)
 }
