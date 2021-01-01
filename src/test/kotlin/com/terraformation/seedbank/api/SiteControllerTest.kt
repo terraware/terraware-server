@@ -20,8 +20,8 @@ class SiteControllerTest {
   private val siteDao = mockk<SiteDao>()
   private val siteController = SiteController(siteDao)
 
-  private val organizationId = 1
-  private val siteId = 123
+  private val organizationId = 1L
+  private val siteId = 123L
 
   private val authentication =
       DefaultAuthentication("test", mapOf(ORGANIZATION_ID_ATTR to organizationId))
@@ -62,7 +62,7 @@ class SiteControllerTest {
   @DisplayName("GET /api/v1/site/{siteId}")
   inner class GetSite {
     private val timezone = "US/Pacific"
-    private val language = "en-US"
+    private val locale = "en-US"
     private val longitudeString = "123.456"
     private val latitudeString = "91.351"
     private val longitude = BigDecimal(longitudeString)
@@ -74,7 +74,7 @@ class SiteControllerTest {
             name = "site",
             latitude = latitude,
             longitude = longitude,
-            language = language,
+            locale = locale,
             timezone = timezone)
 
     @Test
@@ -115,7 +115,7 @@ class SiteControllerTest {
               name = "site",
               latitude = latitudeString,
               longitude = longitudeString,
-              language = language,
+              locale = locale,
               timezone = timezone)
       assertEquals(expected, siteController.getSite(authentication, siteId))
     }

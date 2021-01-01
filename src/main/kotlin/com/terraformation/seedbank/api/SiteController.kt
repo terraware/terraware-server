@@ -45,7 +45,7 @@ class SiteController(private val siteDao: SiteDao) {
           responseCode = "400",
           description = "Client is not associated with an organization and is not a site admin"),
       ApiResponse(responseCode = "404", description = "No site with the requested ID exists."))
-  fun getSite(auth: Authentication, siteId: Int): GetSiteResponse {
+  fun getSite(auth: Authentication, siteId: Long): GetSiteResponse {
     val organizationId = auth.organizationId
     if (organizationId == null && !auth.isSuperAdmin) {
       throw NoOrganizationException()
@@ -60,7 +60,7 @@ class SiteController(private val siteDao: SiteDao) {
   }
 }
 
-data class ListSitesElement(val id: Int, val name: String) {
+data class ListSitesElement(val id: Long, val name: String) {
   constructor(site: Site) : this(site.id!!, site.name!!)
 }
 
@@ -68,11 +68,11 @@ data class ListSitesResponse(val sites: List<ListSitesElement>)
 
 @Schema(requiredProperties = ["id"])
 data class GetSiteResponse(
-    val id: Int,
+    val id: Long,
     val name: String,
     val latitude: String,
     val longitude: String,
-    val language: String?,
+    val locale: String?,
     val timezone: String?
 ) {
   constructor(record: Site) : this(
@@ -80,6 +80,6 @@ data class GetSiteResponse(
       record.name!!,
       record.latitude!!.toPlainString(),
       record.longitude!!.toPlainString(),
-      record.language,
+      record.locale,
       record.timezone)
 }

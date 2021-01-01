@@ -1,8 +1,6 @@
 package com.terraformation.seedbank.services
 
-import com.terraformation.seedbank.db.tables.daos.KeyDao
-import com.terraformation.seedbank.db.tables.daos.SequenceDao
-import com.terraformation.seedbank.db.tables.daos.SiteDao
+import com.terraformation.seedbank.db.tables.daos.*
 import io.micronaut.context.annotation.Bean
 import io.micronaut.context.annotation.Factory
 import javax.inject.Inject
@@ -19,7 +17,7 @@ class JooqBeans {
     configuration = dslContext.configuration()
   }
 
-  @Bean fun keyDao() = KeyDao(configuration)
-  @Bean fun sequenceDao() = SequenceDao(configuration)
+  @Bean fun apiKeyDao() = ApiKeyDao(configuration)
+  @Bean fun timeseriesDao() = TimeseriesDao(configuration)
   @Bean fun siteDao() = SiteDao(configuration)
 }

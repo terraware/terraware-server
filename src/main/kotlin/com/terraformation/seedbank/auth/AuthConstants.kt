@@ -18,7 +18,7 @@ const val ORGANIZATION_ID_ATTR = "organizationId"
 // Extension functions to extract data from authentication key/value map.
 
 var Authentication.organizationId
-  get() = attributes[ORGANIZATION_ID_ATTR] as? Int
+  get() = attributes[ORGANIZATION_ID_ATTR] as? Long
   set(value) {
     attributes[ORGANIZATION_ID_ATTR] = value
   }

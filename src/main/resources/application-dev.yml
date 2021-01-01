@@ -1,6 +1,16 @@
 # Configuration overrides for the "dev" environment. This mostly sets default values for config
 # options that we want to make sure are set explicitly in production environments.
 
+flyway:
+  datasources:
+    default:
+      enabled: true
+      locations:
+        # Allow dev-specific migrations, e.g., to insert dummy test data
+        - "classpath:db/migration/dev"
+        - "classpath:db/migration/postgres"
+        - "classpath:db/migration/common"
+
 micronaut:
   security:
     token:

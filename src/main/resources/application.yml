@@ -20,6 +20,9 @@ flyway:
   datasources:
     default:
       enabled: true
+      locations:
+        - "classpath:src/db/migration/postgres"
+        - "classpath:src/db/migration/common"
 
 jooq:
   datasources:

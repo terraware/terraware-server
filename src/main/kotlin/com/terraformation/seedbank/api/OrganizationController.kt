@@ -24,6 +24,6 @@ class OrganizationController(private val organizationFetcher: OrganizationFetche
   }
 }
 
-data class ListOrganizationsElement(val id: Int, val name: String)
+data class ListOrganizationsElement(val id: Long, val name: String)
 
 data class ListOrganizationsResponse(val organizations: List<ListOrganizationsElement>)

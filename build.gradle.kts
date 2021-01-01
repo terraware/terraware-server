@@ -108,7 +108,9 @@ jooqModelator {
   jooqConfigPath = preprocessJooqConfig.get().outputs.files.asPath
   jooqOutputPath = "$projectDir/src/generated/jooq"
   migrationEngine = "FLYWAY"
-  migrationsPaths = listOf("src/main/resources/db/migration")
+  migrationsPaths = listOf(
+      "src/main/resources/db/migration/postgres",
+      "src/main/resources/db/migration/common")
   dockerTag = "postgres:12"
   dockerEnv = listOf(
     "POSTGRES_DB=seedbank-build",

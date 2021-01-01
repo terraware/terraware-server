@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.auth
 
-import com.terraformation.seedbank.db.tables.daos.KeyDao
+import com.terraformation.seedbank.db.tables.daos.ApiKeyDao
 import com.terraformation.seedbank.services.publishSingleValue
 import io.micronaut.http.HttpRequest
 import io.micronaut.security.authentication.AuthenticationException
@@ -15,7 +15,7 @@ import javax.xml.bind.DatatypeConverter
 import org.reactivestreams.Publisher
 
 @Singleton
-class ApiKeyAuthenticationProvider(private val keyDao: KeyDao) : AuthenticationProvider {
+class ApiKeyAuthenticationProvider(private val apiKeyDao: ApiKeyDao) : AuthenticationProvider {
   /** Hash function to use on API keys. */
   private val apiKeyDigest = MessageDigest.getInstance("SHA1")!!
 
@@ -25,7 +25,7 @@ class ApiKeyAuthenticationProvider(private val keyDao: KeyDao) : AuthenticationP
     return publishSingleValue {
       val hashedApiKey = hashApiKey(authenticationRequest.secret.toString())
       val orgId =
-          keyDao.fetchOneByHash(hashedApiKey)?.organizationId
+          apiKeyDao.fetchOneByHash(hashedApiKey)?.organizationId
               ?: throw AuthenticationException(AuthenticationFailed())
 
       UserDetails(

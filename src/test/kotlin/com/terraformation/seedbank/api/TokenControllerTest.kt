@@ -23,7 +23,7 @@ internal class TokenControllerTest {
 
   private val secret = Random.nextBytes(32)
 
-  private val organizationId = 1
+  private val organizationId = 1L
   private val superAdmin =
       DefaultAuthentication(
           "admin",
