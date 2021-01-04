@@ -18,7 +18,8 @@ import javax.inject.Singleton
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Singleton
 class DeviceController(
-    private val deviceFetcher: DeviceFetcher, private val timeseriesDao: TimeseriesDao
+    private val deviceFetcher: DeviceFetcher,
+    private val timeseriesDao: TimeseriesDao
 ) {
   @Get("/{deviceId}")
   fun getDeviceInfo(auth: Authentication, deviceId: Long): String {

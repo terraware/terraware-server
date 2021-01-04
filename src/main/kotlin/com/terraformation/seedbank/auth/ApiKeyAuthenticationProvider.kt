@@ -20,7 +20,8 @@ class ApiKeyAuthenticationProvider(private val apiKeyDao: ApiKeyDao) : Authentic
   private val apiKeyDigest = MessageDigest.getInstance("SHA1")!!
 
   override fun authenticate(
-      httpRequest: HttpRequest<*>?, authenticationRequest: AuthenticationRequest<*, *>
+      httpRequest: HttpRequest<*>?,
+      authenticationRequest: AuthenticationRequest<*, *>
   ): Publisher<AuthenticationResponse> {
     return publishSingleValue {
       val hashedApiKey = hashApiKey(authenticationRequest.secret.toString())

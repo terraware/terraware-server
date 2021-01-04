@@ -135,7 +135,7 @@ application {
 
 spotless {
   kotlin {
-    ktfmt("0.18")
+    ktfmt("0.19")
     targetExclude("src/generated/**")
   }
 }

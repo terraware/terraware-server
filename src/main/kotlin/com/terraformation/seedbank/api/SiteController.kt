@@ -75,7 +75,9 @@ data class GetSiteResponse(
     val locale: String?,
     val timezone: String?
 ) {
-  constructor(record: Site) : this(
+  constructor(
+      record: Site
+  ) : this(
       record.id!!,
       record.name!!,
       record.latitude!!.toPlainString(),
