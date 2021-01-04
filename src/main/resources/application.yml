@@ -49,7 +49,7 @@ micronaut:
           secret:
             generator:
               base64: true
-              secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
+              secret: "${TERRAWARE_JWT_SECRET}"
               jws-algorithm: "HS256"
     intercept-url-map:
       - pattern: "/swagger/**"
@@ -61,6 +61,3 @@ micronaut:
       access-logger:
         enabled: true
         log-format: '%h - %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"'
-
-terraware:
-  jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
