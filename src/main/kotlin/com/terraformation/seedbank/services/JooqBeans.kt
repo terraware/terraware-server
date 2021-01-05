@@ -18,6 +18,6 @@ class JooqBeans {
   }
 
   @Bean fun apiKeyDao() = ApiKeyDao(configuration)
-  @Bean fun timeseriesDao() = TimeseriesDao(configuration)
   @Bean fun siteDao() = SiteDao(configuration)
+  @Bean fun timeseriesDao() = TimeseriesDao(configuration)
 }
