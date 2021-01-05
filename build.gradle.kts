@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val jacksonVersion = "2.11.3"
 val jooqVersion = "3.14.4"
-val micronautVersion = "2.2.0"
+val micronautVersion = "2.2.2"
 val postgresJdbcVersion = "42.2.18"
 
 plugins {
