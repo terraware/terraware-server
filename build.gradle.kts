@@ -37,6 +37,7 @@ dependencies {
   jooqModelatorRuntime("org.postgresql:postgresql:$postgresJdbcVersion")
 
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
   implementation("io.micronaut.flyway:micronaut-flyway")
   implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
   implementation("io.micronaut.security:micronaut-security")
