@@ -144,3 +144,12 @@ spotless {
 allOpen {
   annotation("io.micronaut.http.annotation.Controller")
 }
+
+tasks.register("copySwagger") {
+  dependsOn(tasks["kaptKotlin"])
+  doLast {
+    Files.copy(
+        File("$buildDir/tmp/kapt3/classes/main/META-INF/swagger/terraware-seed-bank-0.1-SNAPSHOT.yml").toPath(),
+        File("$projectDir/api-spec.yml").toPath())
+  }
+}
