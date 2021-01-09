@@ -1,0 +1,136 @@
+openapi: 3.0.1
+info:
+  title: Terraware Seed Bank
+  description: Local server API for seed banks
+  license:
+    name: MIT
+  version: 0.1-SNAPSHOT
+paths:
+  /api/v1/seedbank/summary/accessions:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Returns a summary of active accessions broken down by state.
+      description: Returns a summary of active accessions broken down by state.
+      operationId: getAccessions
+      parameters: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessionSummaryResponse'
+  /api/v1/seedbank/summary/species:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Returns a summary of species including a list of the species with the
+        most accessions.
+      description: Returns a summary of species including a list of the species with
+        the most accessions.
+      operationId: getSpecies
+      parameters:
+      - name: maxCount
+        in: query
+        required: false
+        schema:
+          maximum: 100
+          minimum: 0
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeciesSummaryResponse'
+  /api/v1/seedbank/summary/updates:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Returns a summary of the number of accessions in each of several states.
+      description: Returns a summary of the number of accessions in each of several
+        states.
+      operationId: getStateUpdates
+      parameters: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StateUpdateSummaryResponse'
+components:
+  schemas:
+    AccessionSummaryResponse:
+      type: object
+      properties:
+        drying:
+          type: integer
+          format: int32
+        lastWeekTotal:
+          type: integer
+          description: "Number of active accessions as of last week.\n\n TODO: Get\
+            \ clarification on how this should be computed"
+          format: int32
+        processing:
+          type: integer
+          format: int32
+        storage:
+          type: integer
+          format: int32
+        testing:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          description: Total number of active accessions.
+          format: int32
+      description: Summary of active accessions including the number currently in
+        each state.
+    SpeciesSummaryResponse:
+      required:
+      - accessionsPerSpecies
+      type: object
+      properties:
+        accessionsPerSpecies:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Number of accessions for each of the most numerous species.
+        lastWeekTotal:
+          type: integer
+          description: "How many species were in the seed bank last week.\n\n TODO:\
+            \ Get clarification on how this should be computed"
+          format: int32
+        total:
+          type: integer
+          description: Total number of distinct seed species in the seed bank.
+          format: int32
+      description: Summary of the number of species whose seeds are currently present
+        in the seed bank.
+    StateUpdateSummaryResponse:
+      type: object
+      properties:
+        dried:
+          type: integer
+          description: |-
+            Number of accessions that have been dried and are ready to be stored. This does not include
+             accessions that have been dried but are not yet ready to be stored.
+          format: int32
+        droppedOff:
+          type: integer
+          description: Number of accessions currently waiting to be labeled and processed.
+          format: int32
+        processed:
+          type: integer
+          description: |-
+            Number of accessions that have been processed and are ready to be dried. This does not
+             include accessions that have been processed but are not yet ready to be dried.
+          format: int32
+        withdrawn:
+          type: integer
+          description: "Number of accessions that have been completely withdrawn recently.\n\
+            \n TODO: Get clarification on what the time cutoff should be"
+          format: int32
