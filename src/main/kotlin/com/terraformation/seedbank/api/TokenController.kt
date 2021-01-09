@@ -15,12 +15,14 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
+import io.swagger.v3.oas.annotations.Hidden
 import java.util.Date
 import java.util.UUID
 import javax.inject.Singleton
 
 /** Generates authentication tokens that may be used to authenticate to Mosquitto. */
 @Controller("/api/v1/token")
+@Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @Singleton
 class TokenController(private val config: TerrawareServerConfig) {
   private val log = perClassLogger()

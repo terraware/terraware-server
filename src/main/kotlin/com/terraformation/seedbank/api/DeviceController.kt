@@ -11,12 +11,16 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.tags.Tag
 import javax.inject.Singleton
 
 @Controller("/api/v1/device")
+@Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Singleton
+@Tag(name = "AdminApp")
 class DeviceController(
     private val deviceFetcher: DeviceFetcher,
     private val timeseriesDao: TimeseriesDao

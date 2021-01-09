@@ -9,12 +9,14 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import javax.inject.Singleton
 
 @Controller("/api/v1/site")
+@Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Singleton
 class SiteController(private val siteDao: SiteDao) {

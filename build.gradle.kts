@@ -140,3 +140,7 @@ spotless {
     targetExclude("src/generated/**")
   }
 }
+
+allOpen {
+  annotation("io.micronaut.http.annotation.Controller")
+}
