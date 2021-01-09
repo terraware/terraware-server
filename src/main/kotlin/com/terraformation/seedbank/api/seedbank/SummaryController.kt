@@ -11,15 +11,15 @@ import javax.inject.Singleton
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 
-@Controller("/api/v1/summary")
+@Controller("/api/v1/seedbank/summary")
 @Produces(MediaType.APPLICATION_JSON)
 @Singleton
 @Tag(name = "SeedBankApp")
 class SummaryController {
   /** Returns a summary of active accessions broken down by state. */
   @Get("/accessions")
-  fun getAccessions(): AccessionSummary {
-    return AccessionSummary(500, 550, 100, 100, 300, 280)
+  fun getAccessions(): AccessionSummaryResponse {
+    return AccessionSummaryResponse(500, 550, 100, 100, 300, 280)
   }
 
   /** Returns a summary of species including a list of the species with the most accessions. */
@@ -27,19 +27,19 @@ class SummaryController {
   fun getSpecies(
       /** The maximum number of per-species counts to include. */
       @QueryValue(defaultValue = "10") @Min(0) @Max(100L) maxCount: Optional<Int>
-  ): SpeciesSummary {
-    return SpeciesSummary(180, 150, mapOf("Species A" to 50))
+  ): SpeciesSummaryResponse {
+    return SpeciesSummaryResponse(180, 150, mapOf("Species A" to 50))
   }
 
   /** Returns a summary of the number of accessions in each of several states. */
   @Get("/updates")
-  fun getStateUpdates(): StateUpdateSummary {
-    return StateUpdateSummary(100, 70, 50, 10)
+  fun getStateUpdates(): StateUpdateSummaryResponse {
+    return StateUpdateSummaryResponse(100, 70, 50, 10)
   }
 }
 
 /** Summary of active accessions including the number currently in each state. */
-data class AccessionSummary(
+data class AccessionSummaryResponse(
     /** Total number of active accessions. */
     val total: Int,
     /**
@@ -55,7 +55,7 @@ data class AccessionSummary(
 )
 
 /** Summary of the number of species whose seeds are currently present in the seed bank. */
-data class SpeciesSummary(
+data class SpeciesSummaryResponse(
     /** Total number of distinct seed species in the seed bank. */
     val total: Int,
     /**
@@ -68,7 +68,7 @@ data class SpeciesSummary(
     val accessionsPerSpecies: Map<String, Int>
 )
 
-data class StateUpdateSummary(
+data class StateUpdateSummaryResponse(
     /** Number of accessions currently waiting to be labeled and processed. */
     val droppedOff: Int,
     /**
