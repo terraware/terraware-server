@@ -83,7 +83,7 @@ internal class JobSchedulerTest {
     every { executor.schedule(capture(taskSlot), any(), any()) } returns future
 
     val runner =
-        MockRunner(String::class.java) { job ->
+        MockRunner(String::class.java) {
           verify(exactly = 1) { jobRepository.markAsStarted(jobId, Instant.EPOCH) }
           verify(exactly = 0) { jobRepository.delete(any()) }
         }

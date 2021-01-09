@@ -357,9 +357,3 @@ CREATE TABLE collection_photo (
     longitude NUMERIC(10, 7) NOT NULL,
     gps_accuracy FLOAT -- TODO: What type should this be? What unit is it in?
 );
-
-
-
-
-
-

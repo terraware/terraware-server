@@ -53,10 +53,12 @@ class JobRepository(private val dslContext: DSLContext) {
 
   fun recordFailure(jobId: Long, message: String, details: String? = null): Boolean {
     with(SCHEDULED_JOB) {
-      val rowsUpdated = dslContext.update(SCHEDULED_JOB)
-          .set(FAILURE_MESSAGE, message)
-          .set(FAILURE_DETAILS, details)
-          .execute()
+      val rowsUpdated =
+          dslContext
+              .update(SCHEDULED_JOB)
+              .set(FAILURE_MESSAGE, message)
+              .set(FAILURE_DETAILS, details)
+              .execute()
       return rowsUpdated == 1
     }
   }
@@ -76,7 +78,8 @@ class JobRepository(private val dslContext: DSLContext) {
 
   fun fetchNew(knownIds: Collection<Long>): Collection<ScheduledJob> {
     with(SCHEDULED_JOB) {
-      return dslContext.selectFrom(SCHEDULED_JOB)
+      return dslContext
+          .selectFrom(SCHEDULED_JOB)
           .where(STARTED_TIME.isNull)
           .and(ID.notIn(knownIds))
           .fetchInto(ScheduledJob::class.java)

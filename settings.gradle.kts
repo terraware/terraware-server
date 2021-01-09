@@ -9,4 +9,3 @@ pluginManagement {
 }
 
 rootProject.name = "seedbank-server"
-
