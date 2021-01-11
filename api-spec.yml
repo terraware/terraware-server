@@ -32,6 +32,7 @@ paths:
       parameters:
       - name: maxCount
         in: query
+        description: The maximum number of per-species counts to include
         required: false
         schema:
           maximum: 100

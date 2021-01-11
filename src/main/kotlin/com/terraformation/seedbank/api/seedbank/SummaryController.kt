@@ -5,6 +5,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Produces
 import io.micronaut.http.annotation.QueryValue
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.util.*
 import javax.inject.Singleton
@@ -25,8 +26,11 @@ class SummaryController {
   /** Returns a summary of species including a list of the species with the most accessions. */
   @Get("/species{?maxCount}")
   fun getSpecies(
-      /** The maximum number of per-species counts to include. */
-      @QueryValue(defaultValue = "10") @Min(0) @Max(100L) maxCount: Optional<Int>
+      @Parameter(description = "The maximum number of per-species counts to include")
+      @QueryValue(defaultValue = "10")
+      @Min(0)
+      @Max(100L)
+      maxCount: Optional<Int>
   ): SpeciesSummaryResponse {
     return SpeciesSummaryResponse(180, 150, mapOf("Species A" to 50))
   }
