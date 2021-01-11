@@ -1,4 +1,5 @@
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -150,6 +151,7 @@ tasks.register("copySwagger") {
   doLast {
     Files.copy(
         File("$buildDir/tmp/kapt3/classes/main/META-INF/swagger/terraware-seed-bank-0.1-SNAPSHOT.yml").toPath(),
-        File("$projectDir/api-spec.yml").toPath())
+        File("$projectDir/api-spec.yml").toPath(),
+        StandardCopyOption.REPLACE_EXISTING)
   }
 }
