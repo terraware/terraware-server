@@ -117,7 +117,28 @@ internal class JobSchedulerTest {
     verify(exactly = 0) { jobRepository.delete(any()) }
     verify {
       jobRepository.recordFailure(
-          jobId, errorMessage, match { stacktrace -> JobScheduler::class.java.name in stacktrace })
+          jobId, errorMessage, match { stacktrace -> JobScheduler::class.java.name in stacktrace },
+      )
+    }
+  }
+
+  /**
+   * Tests with a real executor rather than a stubbed-out one, to ensure that we're interacting with
+   * the executor correctly.
+   */
+  @Test
+  fun `executes job when run with real executor`() {
+    val executor = ScheduledThreadPoolExecutor(1)
+
+    try {
+      val latch = CountDownLatch(1)
+      val runner = MockRunner(String::class.java) { latch.countDown() }
+      val scheduler = JobScheduler(jsonSerializer, jobRepository, listOf(runner), executor)
+
+      scheduler.schedule("testing", Instant.now())
+      assertTrue(latch.await(10, TimeUnit.SECONDS), "Job was called")
+    } finally {
+      executor.shutdownNow()
     }
   }
 
