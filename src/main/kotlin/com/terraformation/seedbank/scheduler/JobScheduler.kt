@@ -1,16 +1,18 @@
 package com.terraformation.seedbank.scheduler
 
 import com.terraformation.seedbank.services.perClassLogger
-import io.micronaut.context.annotation.Context
-import io.micronaut.core.serialize.exceptions.SerializationException
 import java.time.Clock
 import java.time.Instant
-import java.util.concurrent.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import javax.inject.Singleton
 import kotlin.math.max
 
-@Context
 @Singleton
 class JobScheduler(
     private val jsonSerializer: JobSerializer<String>,

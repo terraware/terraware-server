@@ -1,12 +1,21 @@
 package com.terraformation.seedbank.scheduler
 
-import io.micronaut.core.serialize.exceptions.SerializationException
-import io.mockk.*
+import io.mockk.Called
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.concurrent.*
-import org.junit.jupiter.api.Assertions.*
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -117,7 +126,9 @@ internal class JobSchedulerTest {
     verify(exactly = 0) { jobRepository.delete(any()) }
     verify {
       jobRepository.recordFailure(
-          jobId, errorMessage, match { stacktrace -> JobScheduler::class.java.name in stacktrace },
+          jobId,
+          errorMessage,
+          match { stacktrace -> JobScheduler::class.java.name in stacktrace },
       )
     }
   }

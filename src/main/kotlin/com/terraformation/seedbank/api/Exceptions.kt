@@ -1,18 +1,25 @@
 package com.terraformation.seedbank.api
 
-import io.micronaut.http.HttpStatus
-import io.micronaut.http.exceptions.HttpStatusException
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
 
 // Controller methods can throw these exceptions to return HTTP error statuses with a consistent
 // set of error messages.
 
-class NoOrganizationException :
-    HttpStatusException(HttpStatus.FORBIDDEN, "Client is not associated with an organization")
+@ResponseStatus(
+    value = HttpStatus.FORBIDDEN,
+    reason = "Client is not associated with an organization",
+)
+class NoOrganizationException : RuntimeException()
 
-class NotAuthenticatedException :
-    HttpStatusException(HttpStatus.UNAUTHORIZED, "Client is not authenticated.")
+@ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Client is not authenticated")
+class NotAuthenticatedException : RuntimeException()
 
-class NotFoundException : HttpStatusException(HttpStatus.NOT_FOUND, "Resource not found")
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
+class NotFoundException : RuntimeException()
 
-class WrongOrganizationException :
-    HttpStatusException(HttpStatus.FORBIDDEN, "Resource is owned by a different organization")
+@ResponseStatus(
+    value = HttpStatus.FORBIDDEN,
+    reason = "Resource is owned by a different organization",
+)
+class WrongOrganizationException : RuntimeException()

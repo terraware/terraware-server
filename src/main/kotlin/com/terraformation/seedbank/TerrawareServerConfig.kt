@@ -1,7 +1,7 @@
 package com.terraformation.seedbank
 
-import io.micronaut.context.annotation.ConfigurationProperties
 import javax.validation.constraints.Size
+import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties("terraware")
 class TerrawareServerConfig {

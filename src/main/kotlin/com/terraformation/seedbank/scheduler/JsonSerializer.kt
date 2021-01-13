@@ -62,8 +62,14 @@ class JsonSerializer(
     val clazz = value.javaClass
 
     return SerializedJob(
-        clazz.name, clazz.jsonVersionFromAnnotation, objectMapper.writeValueAsString(value))
+        clazz.name,
+        clazz.jsonVersionFromAnnotation,
+        objectMapper.writeValueAsString(value),
+    )
   }
 }
 
 data class SerializedJob<S>(val className: String, val version: Int, val serialized: S)
+
+class SerializationException(message: String, cause: Exception? = null) :
+    RuntimeException(message, cause)

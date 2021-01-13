@@ -6,24 +6,22 @@ import com.nimbusds.jose.crypto.MACSigner
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import com.terraformation.seedbank.TerrawareServerConfig
+import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.auth.JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM
 import com.terraformation.seedbank.auth.JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM
-import com.terraformation.seedbank.auth.organizationId
 import com.terraformation.seedbank.services.perClassLogger
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Post
-import io.micronaut.security.annotation.Secured
-import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.rules.SecurityRule
 import io.swagger.v3.oas.annotations.Hidden
 import java.util.Date
 import java.util.UUID
-import javax.inject.Singleton
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 /** Generates authentication tokens that may be used to authenticate to Mosquitto. */
-@Controller("/api/v1/token")
+@RestController
+@RequestMapping("/api/v1/token")
 @Hidden // Hide from Swagger docs while iterating on the seed bank app's API
-@Singleton
 class TokenController(private val config: TerrawareServerConfig) {
   private val log = perClassLogger()
 
@@ -32,9 +30,9 @@ class TokenController(private val config: TerrawareServerConfig) {
    * broker. The token is valid for 2 minutes, but may be used to establish a persistent connection
    * to the broker.
    */
-  @Post
-  @Secured(SecurityRule.IS_AUTHENTICATED)
-  fun generateToken(authentication: Authentication): TokenResponse {
+  @PostMapping
+  @PreAuthorize("isAuthenticated()")
+  fun generateToken(identity: ClientIdentity): TokenResponse {
     val secret = config.jwtSecret
     if (secret == null) {
       log.error("No JWT secret is configured")
@@ -42,7 +40,7 @@ class TokenController(private val config: TerrawareServerConfig) {
     }
 
     val date = Date()
-    val organizationId = authentication.organizationId
+    val organizationId = identity.organizationId
     val subject = if (organizationId != null) "$organizationId" else "admin"
     val topicPattern = if (organizationId != null) "$organizationId/#" else "#"
 

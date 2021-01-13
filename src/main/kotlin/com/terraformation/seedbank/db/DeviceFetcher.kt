@@ -3,10 +3,10 @@ package com.terraformation.seedbank.db
 import com.terraformation.seedbank.db.tables.references.DEVICE
 import com.terraformation.seedbank.db.tables.references.SITE
 import com.terraformation.seedbank.db.tables.references.SITE_MODULE
-import javax.inject.Singleton
+import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
-@Singleton
+@ManagedBean
 class DeviceFetcher(private val dslContext: DSLContext) {
   fun getOrganizationId(deviceId: Long): Long? {
     return dslContext
