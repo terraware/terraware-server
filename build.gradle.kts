@@ -12,6 +12,7 @@ plugins {
   val kotlinVersion = "1.4.255-SNAPSHOT"
 
   kotlin("jvm") version kotlinVersion
+  kotlin("kapt") version kotlinVersion
   kotlin("plugin.allopen") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion
 
@@ -38,6 +39,8 @@ repositories {
 
 dependencies {
   jooqModelatorRuntime("org.postgresql:postgresql:$postgresJdbcVersion")
+
+  kapt("org.springframework.boot:spring-boot-configuration-processor")
 
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-jooq")

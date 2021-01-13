@@ -10,3 +10,6 @@ spring:
     # Improve start time during development by lazily initializing services, since developers
     # will typically only be working on a specific part of the code at any given time.
     lazy-initialization: false
+
+terraware:
+  jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
