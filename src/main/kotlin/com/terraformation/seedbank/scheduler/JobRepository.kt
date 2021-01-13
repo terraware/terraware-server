@@ -58,6 +58,7 @@ class JobRepository(private val dslContext: DSLContext) {
               .update(SCHEDULED_JOB)
               .set(FAILURE_MESSAGE, message)
               .set(FAILURE_DETAILS, details)
+              .where(ID.eq(jobId))
               .execute()
       return rowsUpdated == 1
     }
