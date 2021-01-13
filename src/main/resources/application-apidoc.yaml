@@ -1,0 +1,12 @@
+# Application profile for build-time API documentation (openapi.yaml) generation. Since dumping
+# out the API docs only requires scanning the annotations and method declarations of various
+# application classes, not actually running any application code, the idea here is to strip out
+# all the initialization and minimize runtime dependencies so the build step is fast and reliable.
+spring:
+  flyway:
+    # Don't do database migrations since we don't want to talk to a database at all.
+    enabled: false
+  main:
+    # Don't instantiate any beans that aren't actually used in the course of processing the request
+    # to dump out the API docs.
+    lazy-initialization: true

@@ -1,9 +1,13 @@
 package com.terraformation.seedbank
 
-import io.micronaut.runtime.Micronaut
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.info.License
+import io.swagger.v3.oas.annotations.security.SecurityScheme
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @OpenAPIDefinition(
     info =
@@ -11,17 +15,22 @@ import io.swagger.v3.oas.annotations.info.License
             title = "Terraware Seed Bank",
             version = "0.1-SNAPSHOT",
             description = "Local server API for seed banks",
-            license = License(name = "MIT")))
-object Application {
-  @JvmStatic
-  fun main(args: Array<String>) {
-    // By default, jOOQ logs a noisy banner message at startup; disable that to keep the logs clean.
-    System.setProperty("org.jooq.no-logo", "true")
+            license = License(name = "MIT"),
+        ),
+)
+@SecurityScheme(
+    name = "ApiKey",
+    type = SecuritySchemeType.HTTP,
+    scheme = "basic",
+    description =
+        "Key-based authentication for non-browser-based clients. Username is currently ignored; password should be the API key.",
+)
+@EnableConfigurationProperties(TerrawareServerConfig::class)
+@SpringBootApplication
+class Application
 
-    Micronaut.build(*args)
-        .defaultEnvironments("dev")
-        .eagerInitConfiguration(true)
-        .mainClass(Application.javaClass)
-        .start()
-  }
+fun main(args: Array<String>) {
+  // By default, jOOQ logs a noisy banner message at startup; disable that to keep the logs clean.
+  System.setProperty("org.jooq.no-logo", "true")
+  SpringApplication.run(Application::class.java, *args)
 }

@@ -1,12 +1,21 @@
 package com.terraformation.seedbank.scheduler
 
-import io.micronaut.core.serialize.exceptions.SerializationException
-import io.mockk.*
+import io.mockk.Called
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.concurrent.*
-import org.junit.jupiter.api.Assertions.*
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -117,7 +126,30 @@ internal class JobSchedulerTest {
     verify(exactly = 0) { jobRepository.delete(any()) }
     verify {
       jobRepository.recordFailure(
-          jobId, errorMessage, match { stacktrace -> JobScheduler::class.java.name in stacktrace })
+          jobId,
+          errorMessage,
+          match { stacktrace -> JobScheduler::class.java.name in stacktrace },
+      )
+    }
+  }
+
+  /**
+   * Tests with a real executor rather than a stubbed-out one, to ensure that we're interacting with
+   * the executor correctly.
+   */
+  @Test
+  fun `executes job when run with real executor`() {
+    val executor = ScheduledThreadPoolExecutor(1)
+
+    try {
+      val latch = CountDownLatch(1)
+      val runner = MockRunner(String::class.java) { latch.countDown() }
+      val scheduler = JobScheduler(jsonSerializer, jobRepository, listOf(runner), executor)
+
+      scheduler.schedule("testing", Instant.now())
+      assertTrue(latch.await(10, TimeUnit.SECONDS), "Job was called")
+    } finally {
+      executor.shutdownNow()
     }
   }
 

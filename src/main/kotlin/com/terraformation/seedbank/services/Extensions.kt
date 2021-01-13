@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.services
 
+import java.util.EnumSet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -29,3 +30,6 @@ inline fun <reified T : Any> T.perClassLogger(): Logger {
       }
   return LoggerFactory.getLogger(loggingClass)
 }
+
+/** Returns an empty EnumSet without having to pass in a `Class` explicitly. */
+inline fun <reified T : Enum<T>> emptyEnumSet(): EnumSet<T> = EnumSet.noneOf(T::class.java)

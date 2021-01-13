@@ -1,23 +1,28 @@
 import java.nio.file.Files
-import java.nio.file.StandardCopyOption
+import java.util.Properties
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val jacksonVersion = "2.11.3"
 val jooqVersion = "3.14.4"
-val micronautVersion = "2.2.2"
 val postgresJdbcVersion = "42.2.18"
+val springDocVersion = "1.5.2"
 
 plugins {
   val kotlinVersion = "1.4.255-SNAPSHOT"
 
   kotlin("jvm") version kotlinVersion
-  kotlin("kapt") version kotlinVersion
   kotlin("plugin.allopen") version kotlinVersion
+  kotlin("plugin.spring") version kotlinVersion
 
   id("ch.ayedo.jooqmodelator") version "3.8.0"
   id("com.diffplug.spotless") version "5.8.2"
-  id("io.micronaut.application") version "1.2.0"
+  id("org.springframework.boot") version "2.4.1"
+  id("io.spring.dependency-management") version "1.0.10.RELEASE"
+
+  // Add the build target to generate Swagger docs
+  id("com.github.johnrengelman.processes") version "0.5.0"
+  id("org.springdoc.openapi-gradle-plugin") version "1.3.0"
 }
 
 group = "com.terraformation"
@@ -32,29 +37,30 @@ repositories {
 }
 
 dependencies {
-  annotationProcessor("io.micronaut.security:micronaut-security-annotations")
-  kapt("io.micronaut.openapi:micronaut-openapi")
-
   jooqModelatorRuntime("org.postgresql:postgresql:$postgresJdbcVersion")
+
+  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-jooq")
+  implementation("org.springframework.boot:spring-boot-starter-security")
+  implementation("org.springframework.boot:spring-boot-starter-validation")
 
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-  implementation("io.micronaut.flyway:micronaut-flyway")
-  implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
-  implementation("io.micronaut.security:micronaut-security")
-  implementation("io.micronaut.security:micronaut-security-annotations")
-  implementation("io.micronaut.security:micronaut-security-jwt")
-  implementation("io.micronaut.sql:micronaut-jdbc-hikari")
-  implementation("io.micronaut.sql:micronaut-jooq")
-  implementation("io.swagger.core.v3:swagger-annotations")
+  implementation("com.nimbusds:nimbus-jose-jwt:9.4.1")
+  implementation("io.swagger.core.v3:swagger-annotations:2.1.6")
+  implementation("javax.inject:javax.inject:1")
   implementation("org.codehaus.janino:janino:3.1.2")
+  implementation("org.flywaydb:flyway-core:7.5.0")
   implementation(kotlin("reflect"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.2")
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
 
-  testAnnotationProcessor("io.micronaut:micronaut-inject-java")
+  implementation("org.springdoc:springdoc-openapi-kotlin:$springDocVersion")
+  implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")
+  implementation("org.springdoc:springdoc-openapi-ui:$springDocVersion")
 
-  testImplementation("io.micronaut.test:micronaut-test-junit5")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.security:spring-security-test")
   testImplementation("io.mockk:mockk:1.10.3-jdk8")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
 
@@ -78,11 +84,6 @@ tasks.register("downloadDependencies") {
 
 tasks.test {
   useJUnitPlatform()
-}
-
-micronaut {
-  version(micronautVersion)
-  runtime("netty")
 }
 
 val preprocessJooqConfig by tasks.registering {
@@ -131,10 +132,6 @@ tasks.withType<KotlinCompile> {
   kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
 }
 
-application {
-  mainClass.set("com.terraformation.seedbank.Application")
-}
-
 spotless {
   kotlin {
     ktfmt("0.19")
@@ -142,16 +139,18 @@ spotless {
   }
 }
 
-allOpen {
-  annotation("io.micronaut.http.annotation.Controller")
-}
+openApi {
+  val properties = Properties()
 
-tasks.register("copySwagger") {
-  dependsOn(tasks["kaptKotlin"])
-  doLast {
-    Files.copy(
-        File("$buildDir/tmp/kapt3/classes/main/META-INF/swagger/terraware-seed-bank-0.1-SNAPSHOT.yml").toPath(),
-        File("$projectDir/api-spec.yml").toPath(),
-        StandardCopyOption.REPLACE_EXISTING)
-  }
+  // Run the server on a port that's unlikely to already be in use.
+  val listenPort = 32109
+  properties["server.port"] = "$listenPort"
+  apiDocsUrl.set("http://localhost:$listenPort/v3/api-docs.yaml")
+
+  // Use application-apidoc.yaml for application configuration.
+  properties["spring.profiles.active"] = "apidoc"
+
+  outputDir.set(projectDir)
+  outputFileName.set("api-spec.yml")
+  forkProperties.set(properties)
 }

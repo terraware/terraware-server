@@ -1,0 +1,12 @@
+spring:
+  flyway:
+    locations:
+      # Allow dev-specific migrations, e.g., to insert dummy test data
+      - "classpath:db/migration/dev"
+      - "classpath:db/migration/postgres"
+      - "classpath:db/migration/common"
+
+  main:
+    # Improve start time during development by lazily initializing services, since developers
+    # will typically only be working on a specific part of the code at any given time.
+    lazy-initialization: false

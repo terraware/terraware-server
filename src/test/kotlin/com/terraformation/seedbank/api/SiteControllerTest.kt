@@ -1,14 +1,16 @@
 package com.terraformation.seedbank.api
 
-import com.terraformation.seedbank.auth.ORGANIZATION_ID_ATTR
+import com.terraformation.seedbank.auth.AnonymousClient
+import com.terraformation.seedbank.auth.ControllerClientIdentity
+import com.terraformation.seedbank.auth.LoggedInUserIdentity
 import com.terraformation.seedbank.auth.Role
 import com.terraformation.seedbank.db.tables.daos.SiteDao
 import com.terraformation.seedbank.db.tables.pojos.Site
-import io.micronaut.security.authentication.DefaultAuthentication
-import io.micronaut.security.token.config.TokenConfiguration
+import com.terraformation.seedbank.services.emptyEnumSet
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
+import java.util.EnumSet
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -23,12 +25,9 @@ class SiteControllerTest {
   private val organizationId = 1L
   private val siteId = 123L
 
-  private val authentication =
-      DefaultAuthentication("test", mapOf(ORGANIZATION_ID_ATTR to organizationId))
+  private val authentication = ControllerClientIdentity(organizationId)
   private val superAdminAuthentication =
-      DefaultAuthentication(
-          "superadmin",
-          mapOf(TokenConfiguration.DEFAULT_ROLES_NAME to listOf(Role.SUPER_ADMIN.name)))
+      LoggedInUserIdentity("superadmin", null, EnumSet.of(Role.SUPER_ADMIN))
 
   @Nested
   @DisplayName("GET /api/v1/site")
@@ -36,7 +35,7 @@ class SiteControllerTest {
     @Test
     fun `rejects requests from clients without organizations`() {
       assertThrows(NoOrganizationException::class.java) {
-        siteController.listSites(DefaultAuthentication("test", mapOf()))
+        siteController.listSites(LoggedInUserIdentity("test", null, emptyEnumSet()))
       }
     }
 
@@ -80,7 +79,7 @@ class SiteControllerTest {
     @Test
     fun `rejects requests from regular clients without organizations`() {
       assertThrows(NoOrganizationException::class.java) {
-        siteController.getSite(DefaultAuthentication("test", mapOf()), 1)
+        siteController.getSite(AnonymousClient, 1)
       }
     }
 

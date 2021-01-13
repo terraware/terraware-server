@@ -25,7 +25,7 @@ The server will listen on port 8080. As a demo, it will create an API client wit
 
 Fetch the API schema. (This doesn't require authentication.)
 
-    curl http://localhost:8080/swagger/terraware-seed-bank-0.1-SNAPSHOT.yml
+    curl http://localhost:8080/v3/api-docs.yaml
 
 Fetch the details of a sample site.
 

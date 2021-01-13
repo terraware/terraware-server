@@ -3,17 +3,20 @@ package com.terraformation.seedbank.api
 import com.nimbusds.jose.crypto.MACVerifier
 import com.nimbusds.jwt.SignedJWT
 import com.terraformation.seedbank.TerrawareServerConfig
+import com.terraformation.seedbank.auth.ClientIdentity
+import com.terraformation.seedbank.auth.ControllerClientIdentity
 import com.terraformation.seedbank.auth.JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM
 import com.terraformation.seedbank.auth.JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM
-import com.terraformation.seedbank.auth.ORGANIZATION_ID_ATTR
+import com.terraformation.seedbank.auth.LoggedInUserIdentity
 import com.terraformation.seedbank.auth.Role
-import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.authentication.DefaultAuthentication
-import io.micronaut.security.token.config.TokenConfiguration
 import io.mockk.every
 import io.mockk.mockk
+import java.util.EnumSet
 import kotlin.random.Random
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -25,18 +28,8 @@ internal class TokenControllerTest {
 
   private val organizationId = 1L
   private val superAdmin =
-      DefaultAuthentication(
-          "admin",
-          mapOf(
-              TokenConfiguration.DEFAULT_ROLES_NAME to
-                  listOf(Role.AUTHENTICATED.name, Role.SUPER_ADMIN.name)))
-  private val apiClient =
-      DefaultAuthentication(
-          "apiClient",
-          mapOf(
-              TokenConfiguration.DEFAULT_ROLES_NAME to
-                  listOf(Role.API_CLIENT.name, Role.AUTHENTICATED.name),
-              ORGANIZATION_ID_ATTR to organizationId))
+      LoggedInUserIdentity("admin", null, EnumSet.of(Role.AUTHENTICATED, Role.SUPER_ADMIN))
+  private val apiClient = ControllerClientIdentity(organizationId)
 
   @BeforeEach
   fun setUp() {
@@ -79,13 +72,15 @@ internal class TokenControllerTest {
     assertEquals(
         listOf("$organizationId/#"),
         token.jwtClaimsSet.claims[JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM],
-        "Publishable topics")
+        "Publishable topics",
+    )
     assertEquals(
         listOf("$organizationId/#"),
         token.jwtClaimsSet.claims[JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM],
-        "Subscribable topics")
+        "Subscribable topics",
+    )
   }
 
-  private fun generateToken(authentication: Authentication) =
-      SignedJWT.parse(controller.generateToken(authentication).token)
+  private fun generateToken(identity: ClientIdentity) =
+      SignedJWT.parse(controller.generateToken(identity).token)
 }

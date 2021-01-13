@@ -1,39 +1,35 @@
 package com.terraformation.seedbank.auth
 
 import com.terraformation.seedbank.db.tables.daos.ApiKeyDao
-import com.terraformation.seedbank.services.publishSingleValue
-import io.micronaut.http.HttpRequest
-import io.micronaut.security.authentication.AuthenticationException
-import io.micronaut.security.authentication.AuthenticationFailed
-import io.micronaut.security.authentication.AuthenticationProvider
-import io.micronaut.security.authentication.AuthenticationRequest
-import io.micronaut.security.authentication.AuthenticationResponse
-import io.micronaut.security.authentication.UserDetails
 import java.security.MessageDigest
-import javax.inject.Singleton
+import javax.annotation.ManagedBean
 import javax.xml.bind.DatatypeConverter
-import org.reactivestreams.Publisher
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 
-@Singleton
+@ManagedBean
 class ApiKeyAuthenticationProvider(private val apiKeyDao: ApiKeyDao) : AuthenticationProvider {
   /** Hash function to use on API keys. */
   private val apiKeyDigest = MessageDigest.getInstance("SHA1")!!
 
-  override fun authenticate(
-      httpRequest: HttpRequest<*>?,
-      authenticationRequest: AuthenticationRequest<*, *>
-  ): Publisher<AuthenticationResponse> {
-    return publishSingleValue {
-      val hashedApiKey = hashApiKey(authenticationRequest.secret.toString())
-      val orgId =
-          apiKeyDao.fetchOneByHash(hashedApiKey)?.organizationId
-              ?: throw AuthenticationException(AuthenticationFailed())
+  override fun supports(authentication: Class<*>): Boolean {
+    return authentication == UsernamePasswordAuthenticationToken::class.java
+  }
 
-      UserDetails(
-          authenticationRequest.identity.toString(),
-          listOf(Role.API_CLIENT.name, Role.AUTHENTICATED.name),
-          mapOf(ORGANIZATION_ID_ATTR to orgId))
+  override fun authenticate(authentication: Authentication): Authentication? {
+    if (authentication is UsernamePasswordAuthenticationToken) {
+      val hashedApiKey = hashApiKey(authentication.credentials.toString())
+      val orgId = apiKeyDao.fetchOneByHash(hashedApiKey)?.organizationId ?: return null
+      val controller = ControllerClientIdentity(orgId)
+
+      return UsernamePasswordAuthenticationToken(
+          controller,
+          authentication.credentials,
+          controller.authorities,
+      )
     }
+    return null
   }
 
   private fun hashApiKey(key: String): String {

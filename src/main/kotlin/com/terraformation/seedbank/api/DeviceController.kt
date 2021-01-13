@@ -1,37 +1,40 @@
 package com.terraformation.seedbank.api
 
+import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.auth.Role
-import com.terraformation.seedbank.auth.organizationId
-import com.terraformation.seedbank.auth.roles
 import com.terraformation.seedbank.db.DeviceFetcher
 import com.terraformation.seedbank.db.tables.daos.TimeseriesDao
 import com.terraformation.seedbank.db.tables.pojos.Timeseries
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.security.annotation.Secured
-import io.micronaut.security.authentication.Authentication
-import io.micronaut.security.rules.SecurityRule
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
-import javax.inject.Singleton
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
-@Controller("/api/v1/device")
+@RestController
+@RequestMapping("/api/v1/device")
 @Hidden // Hide from Swagger docs while iterating on the seed bank app's API
-@Secured(SecurityRule.IS_AUTHENTICATED)
-@Singleton
 @Tag(name = "AdminApp")
 class DeviceController(
     private val deviceFetcher: DeviceFetcher,
     private val timeseriesDao: TimeseriesDao
 ) {
-  @Get("/{deviceId}")
-  fun getDeviceInfo(auth: Authentication, deviceId: Long): String {
+  @GetMapping("/{deviceId}")
+  fun getDeviceInfo(
+      @AuthenticationPrincipal auth: ClientIdentity,
+      @PathVariable deviceId: Long
+  ): String {
     return "TODO $deviceId ${auth.organizationId}"
   }
 
-  @Get("/{deviceId}/sequences")
-  fun listSequences(auth: Authentication, deviceId: Long): ListSequencesResponse {
+  @GetMapping("/{deviceId}/sequences")
+  fun listSequences(
+      @AuthenticationPrincipal auth: ClientIdentity,
+      @PathVariable deviceId: Long
+  ): ListSequencesResponse {
     val organizationId = auth.organizationId
     val deviceOrganizationId =
         deviceFetcher.getOrganizationId(deviceId) ?: throw NotFoundException()
