@@ -8,3 +8,8 @@ spring:
     locations:
       - "classpath:db/migration/postgres"
       - "classpath:db/migration/common"
+
+springdoc:
+  packages-to-scan:
+    - "com.terraformation.seedbank.api"
+  default-produces-media-type: "application/json"

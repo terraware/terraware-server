@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.api.seedbank
 
-import com.terraformation.seedbank.api.annotation.SeedBankApp
+import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/seedbank/summary")
-@SeedBankApp
+@SeedBankAppEndpoint
 class SummaryController {
   @GetMapping("/accessions")
   @Operation(
