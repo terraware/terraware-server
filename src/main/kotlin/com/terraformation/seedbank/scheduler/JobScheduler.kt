@@ -10,8 +10,9 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import javax.annotation.ManagedBean
-import javax.annotation.PostConstruct
 import kotlin.math.max
+import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.event.EventListener
 
 @ManagedBean
 class JobScheduler(
@@ -89,7 +90,6 @@ class JobScheduler(
     return futureCancelled && rowDeleted
   }
 
-  @PostConstruct
   fun refresh() {
     val newJobs = jobRepository.fetchNew(futuresByJobId.keys)
     newJobs.forEach { jobData ->
@@ -102,6 +102,12 @@ class JobScheduler(
         log.error("Unable to load job ${jobData.id}", e)
       }
     }
+  }
+
+  @EventListener
+  fun onApplicationStart(event: ApplicationStartedEvent) {
+    log.debug("Loading scheduled events")
+    refresh()
   }
 
   inner class ScheduledJobTask(val id: Long, val job: Any, val runner: JobRunner) : Runnable {
