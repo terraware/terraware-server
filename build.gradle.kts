@@ -68,6 +68,8 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api")
 
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+
+  developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
 tasks.register("downloadDependencies") {
