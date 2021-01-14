@@ -1,0 +1,21 @@
+# Simple service definitions for running the server in a local dev environment. This should
+# not be used in production!
+
+version: "2"
+
+services:
+  postgres:
+    image: "postgres:12"
+    environment:
+      POSTGRES_DB: "seedbank"
+      POSTGRES_PASSWORD: "seedbank"
+
+  seedbank-server:
+    image: "terraware/seedbank-server"
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "jdbc:postgresql://postgres:5432/seedbank"
+      DATABASE_PASSWORD: "seedbank"
+    depends_on:
+      - "postgres"
