@@ -1,13 +1,13 @@
 package com.terraformation.seedbank.scheduler
 
-import javax.inject.Singleton
+import javax.annotation.ManagedBean
 
 interface JobRunner {
   fun canRunJob(jobClass: Class<*>): Boolean
   fun runJob(job: Any)
 }
 
-@Singleton
+@ManagedBean
 class RunnableJobRunner : JobRunner {
   override fun canRunJob(jobClass: Class<*>) = Runnable::class.java.isAssignableFrom(jobClass)
 

@@ -9,21 +9,21 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import javax.annotation.ManagedBean
 import javax.annotation.PostConstruct
-import javax.inject.Singleton
 import kotlin.math.max
 
-@Singleton
+@ManagedBean
 class JobScheduler(
     private val jsonSerializer: JobSerializer<String>,
     private val jobRepository: JobRepository,
     private val jobRunners: List<JobRunner>,
-    private val executor: ScheduledExecutorService = ScheduledThreadPoolExecutor(2)
+    private val executor: ScheduledExecutorService = ScheduledThreadPoolExecutor(2),
+    private val clock: Clock = Clock.systemUTC()
 ) {
   private val runnersByClass = ConcurrentHashMap<Class<*>, JobRunner>()
   private val futuresByJobId = ConcurrentHashMap<Long, ScheduledFuture<*>>()
 
-  var clock = Clock.systemUTC()!!
   private val log = perClassLogger()
 
   private fun getRunner(jobClass: Class<*>): JobRunner {

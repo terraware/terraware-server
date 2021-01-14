@@ -7,10 +7,15 @@ import org.jooq.DSLContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-/** Makes generated jOOQ classes available for dependency injection. */
+/**
+ * Registers instances of non-application-code classes as Spring beans so they can be cleanly
+ * replaced in tests.
+ */
 @Configuration
-class JooqBeans(dslContext: DSLContext) {
+class ExternalBeans(dslContext: DSLContext) {
   private val configuration = dslContext.configuration()
+
+  // jOOQ DAO classes. Only instantiate the ones we actually use.
 
   @Bean fun apiKeyDao() = ApiKeyDao(configuration)
   @Bean fun siteDao() = SiteDao(configuration)

@@ -5,15 +5,16 @@ import com.terraformation.seedbank.db.tables.references.SCHEDULED_JOB
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import javax.inject.Singleton
+import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.exception.DataAccessException
 
-@Singleton
-class JobRepository(private val dslContext: DSLContext) {
-  var clock = Clock.systemUTC()!!
-
+@ManagedBean
+class JobRepository(
+    private val dslContext: DSLContext,
+    private val clock: Clock = Clock.systemUTC()
+) {
   fun insert(job: ScheduledJob): Long {
     with(SCHEDULED_JOB) {
       return dslContext

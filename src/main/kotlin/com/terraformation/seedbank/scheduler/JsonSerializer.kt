@@ -2,7 +2,7 @@ package com.terraformation.seedbank.scheduler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import javax.inject.Singleton
+import javax.annotation.ManagedBean
 
 interface JobSerializer<S> {
   fun deserialize(className: String, version: Int, serialized: S): Any
@@ -13,7 +13,7 @@ interface JobSerializer<S> {
   }
 }
 
-@Singleton
+@ManagedBean
 class JsonSerializer(
     private val objectMapper: ObjectMapper,
     jsonUpgraders: List<JsonUpgrader>,

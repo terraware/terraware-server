@@ -41,9 +41,7 @@ internal class JobSchedulerTest {
   }
 
   private fun makeScheduler(vararg runners: JobRunner): JobScheduler {
-    val scheduler = JobScheduler(jsonSerializer, jobRepository, runners.asList(), executor)
-    scheduler.clock = clock
-    return scheduler
+    return JobScheduler(jsonSerializer, jobRepository, runners.asList(), executor, clock)
   }
 
   @Test
