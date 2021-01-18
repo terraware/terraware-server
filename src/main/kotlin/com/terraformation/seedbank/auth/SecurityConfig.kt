@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.config.web.servlet.invoke
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
@@ -17,8 +18,12 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
       csrf { disable() }
       authorizeRequests { authorize("/api/v1/seedbank/**", anonymous) }
       authorizeRequests { authorize("/api/v1/device/**", fullyAuthenticated) }
+      authorizeRequests { authorize("/api/v1/mqtt/**", fullyAuthenticated) }
+      authorizeRequests { authorize("/api/v1/resources/**", fullyAuthenticated) }
+      authorizeRequests { authorize("/api/v1/resources", fullyAuthenticated) }
       authorizeRequests { authorize("/api/v1/site/**", fullyAuthenticated) }
       httpBasic {}
+      sessionManagement { sessionCreationPolicy = SessionCreationPolicy.STATELESS }
     }
   }
 

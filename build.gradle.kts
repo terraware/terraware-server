@@ -53,6 +53,7 @@ dependencies {
   implementation("io.swagger.core.v3:swagger-annotations:2.1.6")
   implementation("javax.inject:javax.inject:1")
   implementation("org.codehaus.janino:janino:3.1.2")
+  implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0")
   implementation("org.flywaydb:flyway-core:7.5.0")
   implementation(kotlin("reflect"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.2")

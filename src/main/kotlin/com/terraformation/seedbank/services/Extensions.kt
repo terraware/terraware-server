@@ -3,6 +3,7 @@ package com.terraformation.seedbank.services
 import java.util.EnumSet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
 // context of a specific bit of application code should live alongside that code, but functions that
@@ -33,3 +34,13 @@ inline fun <reified T : Any> T.perClassLogger(): Logger {
 
 /** Returns an empty EnumSet without having to pass in a `Class` explicitly. */
 inline fun <reified T : Enum<T>> emptyEnumSet(): EnumSet<T> = EnumSet.noneOf(T::class.java)
+
+fun Logger.log(level: Level, text: String) {
+  when (level) {
+    Level.TRACE -> this.trace(text)
+    Level.DEBUG -> this.debug(text)
+    Level.INFO -> this.info(text)
+    Level.WARN -> this.warn(text)
+    Level.ERROR -> this.error(text)
+  }
+}

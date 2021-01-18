@@ -6,5 +6,12 @@ spring:
       - "classpath:db/migration/postgres"
       - "classpath:db/migration/common"
 
+logging:
+  level:
+    com.terraformation: DEBUG
+
 terraware:
   jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
+  mqtt:
+    enabled: false
+    address: "ws://localhost:1883/"

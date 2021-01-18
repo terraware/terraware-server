@@ -1,6 +1,7 @@
 package com.terraformation.seedbank.services
 
 import com.terraformation.seedbank.db.tables.daos.ApiKeyDao
+import com.terraformation.seedbank.db.tables.daos.OrganizationDao
 import com.terraformation.seedbank.db.tables.daos.SiteDao
 import com.terraformation.seedbank.db.tables.daos.TimeseriesDao
 import org.jooq.DSLContext
@@ -18,6 +19,7 @@ class ExternalBeans(dslContext: DSLContext) {
   // jOOQ DAO classes. Only instantiate the ones we actually use.
 
   @Bean fun apiKeyDao() = ApiKeyDao(configuration)
+  @Bean fun organizationDao() = OrganizationDao(configuration)
   @Bean fun siteDao() = SiteDao(configuration)
   @Bean fun timeseriesDao() = TimeseriesDao(configuration)
 }

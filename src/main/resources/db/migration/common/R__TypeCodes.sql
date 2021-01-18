@@ -19,3 +19,7 @@ INSERT INTO timeseries_type (id, name)
 VALUES (1, 'Numeric'),
        (2, 'Text')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO device_type (id, name)
+VALUES (1, 'Generic Sensor')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
