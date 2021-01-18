@@ -1,18 +1,33 @@
 package com.terraformation.seedbank.auth
 
+import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.web.servlet.invoke
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @EnableWebSecurity
 class SecurityConfig : WebSecurityConfigurerAdapter() {
   override fun configure(http: HttpSecurity) {
     http {
+      cors {}
+      csrf { disable() }
       authorizeRequests { authorize("/api/v1/seedbank/**", anonymous) }
       authorizeRequests { authorize("/api/v1/device/**", fullyAuthenticated) }
       authorizeRequests { authorize("/api/v1/site/**", fullyAuthenticated) }
       httpBasic {}
     }
+  }
+
+  @Bean
+  fun corsConfigurationSource(): CorsConfigurationSource {
+    val configuration = CorsConfiguration().applyPermitDefaultValues()
+    val source = UrlBasedCorsConfigurationSource()
+    configuration.allowedMethods = listOf("*")
+    source.registerCorsConfiguration("/**", configuration)
+    return source
   }
 }
