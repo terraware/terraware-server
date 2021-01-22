@@ -13,3 +13,6 @@ springdoc:
   packages-to-scan:
     - "com.terraformation.seedbank.api"
   default-produces-media-type: "application/json"
+  swagger-ui:
+    # Disable the demo API (pet store)
+    disable-swagger-default-url: true

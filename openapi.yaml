@@ -1,0 +1,80 @@
+openapi: 3.0.1
+info:
+  title: Terraware Seed Bank
+  description: Local server API for seed banks
+  license:
+    name: MIT
+  version: 0.1-SNAPSHOT
+servers:
+- url: http://localhost:32109
+  description: Generated server url
+paths:
+  /api/v1/seedbank/summary:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Get summary statistics about the seed bank
+      operationId: getSummary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponse'
+components:
+  schemas:
+    SummaryResponse:
+      required:
+      - activeAccessions
+      - families
+      - overdueDriedAccessions
+      - overduePendingAccessions
+      - overdueProcessedAccessions
+      - recentlyWithdrawnAccessions
+      - species
+      type: object
+      properties:
+        activeAccessions:
+          $ref: '#/components/schemas/SummaryStatistic'
+        species:
+          $ref: '#/components/schemas/SummaryStatistic'
+        families:
+          $ref: '#/components/schemas/SummaryStatistic'
+        overduePendingAccessions:
+          type: integer
+          description: Number of accessions in Pending state overdue for processing
+          format: int32
+        overdueProcessedAccessions:
+          type: integer
+          description: Number of accessions in Processed state overdue for drying
+          format: int32
+        overdueDriedAccessions:
+          type: integer
+          description: Number of accessions in Dried state overdue for storage
+          format: int32
+        recentlyWithdrawnAccessions:
+          type: integer
+          description: Number of accessions withdrawn so far this week
+          format: int32
+      description: Summary of important statistics about the seed bank for the Summary
+        page.
+    SummaryStatistic:
+      required:
+      - current
+      - lastWeek
+      type: object
+      properties:
+        current:
+          type: integer
+          format: int32
+        lastWeek:
+          type: integer
+          format: int32
+      description: The current value and value as of last week for a summary statistic
+  securitySchemes:
+    ApiKey:
+      type: http
+      description: Key-based authentication for non-browser-based clients. Username
+        is currently ignored; password should be the API key.
+      scheme: basic

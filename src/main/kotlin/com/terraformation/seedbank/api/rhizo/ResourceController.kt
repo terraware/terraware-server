@@ -15,7 +15,6 @@ import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
@@ -74,9 +73,12 @@ class ResourceController(
     }
   }
 
-  @GetMapping("/api/v1/resources/{*path}", produces = [MediaType.TEXT_PLAIN_VALUE])
+  // Ideally we'd use "/api/v1/resources/{*path}" but that breaks Swagger doc generation; see
+  // https://github.com/springdoc/springdoc-openapi/issues/1034
+  @GetMapping("/api/v1/resources/**", produces = [MediaType.TEXT_PLAIN_VALUE])
   @ResponseBody
-  fun getResource(request: HttpServletRequest, @PathVariable path: String): String {
+  fun getResource(request: HttpServletRequest): String {
+    val path = request.requestURI.substringAfter("/api/v1/resources")
     val sequenceName = path.substringAfterLast('/')
     val deviceTopic = path.substringBeforeLast('/').substring(1)
     if (timeSeriesFetcher.getIdByMqttTopic(deviceTopic, sequenceName) != null) {
@@ -91,6 +93,7 @@ object ResourceType {
   const val SEQUENCE = 21
 }
 
+@Suppress("unused")
 enum class ResourceDataType(val code: Int) {
   NUMERIC(1),
   TEXT(2),
