@@ -16,3 +16,4 @@ springdoc:
   swagger-ui:
     # Disable the demo API (pet store)
     disable-swagger-default-url: true
+    operations-sorter: alpha

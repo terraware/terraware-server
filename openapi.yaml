@@ -22,6 +22,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
+  /api/v1/seedbank/notification:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Get a list of recent notifications
+      operationId: listAll
+      parameters:
+      - name: since
+        in: query
+        description: Don't return notifications older than this; default is 1 month
+          ago
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: limit
+        in: query
+        description: Return at most this many notifications; default is no limit
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Notifications in reverse time order (newest first)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
 components:
   schemas:
     SummaryResponse:
@@ -72,6 +101,45 @@ components:
           type: integer
           format: int32
       description: The current value and value as of last week for a summary statistic
+    NotificationListResponse:
+      required:
+      - notifications
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationPayload'
+    NotificationPayload:
+      required:
+      - id
+      - read
+      - text
+      - timestamp
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this notification. Clients should treat
+            it as opaque.
+          example: "12345"
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum:
+          - Alert
+          - State
+          - Date
+        read:
+          type: boolean
+          description: "If true, this notification has been marked as read."
+        text:
+          type: string
+          description: Plain-text body of notification.
+          example: Accession XYZ is ready to be dried.
   securitySchemes:
     ApiKey:
       type: http
