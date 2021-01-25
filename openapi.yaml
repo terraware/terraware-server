@@ -9,6 +9,51 @@ servers:
 - url: http://localhost:32109
   description: Generated server url
 paths:
+  /api/v1/seedbank/notification/{id}/markRead:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Mark a specific notification as read.
+      operationId: markRead
+      parameters:
+      - name: id
+        in: path
+        description: ID of notification to mark as read
+        required: true
+        schema:
+          type: string
+      responses:
+        "404":
+          description: The requested notification ID was not valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+        "200":
+          description: Notification has been marked as read.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/seedbank/notification/all/markRead:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Mark all unread notifications as read.
+      operationId: markAllRead
+      responses:
+        "200":
+          description: All notifications have been marked as read.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/summary:
     get:
       tags:
@@ -46,13 +91,43 @@ paths:
           format: int32
       responses:
         "200":
-          description: Notifications in reverse time order (newest first)
+          description: Notifications in reverse time order (newest first).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotificationListResponse'
 components:
   schemas:
+    ErrorDetails:
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          type: string
+    SimpleErrorResponsePayload:
+      required:
+      - error
+      - status
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetails'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    SuccessOrError:
+      type: string
+      description: Indicates of success or failure of the requested operation.
+      enum:
+      - ok
+      - error
+    SimpleSuccessResponsePayload:
+      required:
+      - status
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     SummaryResponse:
       required:
       - activeAccessions
@@ -104,12 +179,15 @@ components:
     NotificationListResponse:
       required:
       - notifications
+      - status
       type: object
       properties:
         notifications:
           type: array
           items:
             $ref: '#/components/schemas/NotificationPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     NotificationPayload:
       required:
       - id
