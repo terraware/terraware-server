@@ -6,10 +6,13 @@ import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
 import com.terraformation.seedbank.api.seedbank.UpdateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
+import com.terraformation.seedbank.search.SearchField
+import com.terraformation.seedbank.search.SearchFields
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
+import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
 import kotlin.reflect.KClass
@@ -19,26 +22,46 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 import org.jooq.DSLContext
+import org.springdoc.core.SpringDocUtils
 import org.springdoc.core.customizers.OpenApiCustomiser
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * Customizes generation of Swagger API documentation.
  *
+ * - SearchField is represented as an enum based on the list of field names in [SearchFields].
  * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
  * so that the JSON/YAML documentation can be usefully diffed between code versions.
  */
 @ManagedBean
-class SwaggerConfig : OpenApiCustomiser {
+class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser {
   @Autowired(required = false) var dslContext: DSLContext? = null
 
   private val log = perClassLogger()
 
+  init {
+    val config = SpringDocUtils.getConfig()
+
+    val schema = StringSchema()
+    schema.`$ref` = "#/components/schemas/SearchField"
+
+    config.replaceWithSchema(SearchField::class.java, schema)
+  }
+
   override fun customise(openApi: OpenAPI) {
+    renderSearchFieldAsEnum(openApi)
     sortEndpoints(openApi)
     sortResponseCodes(openApi)
     sortSchemas(openApi)
     removeInheritedPropertiesFromPayloads(openApi)
+  }
+
+  private fun renderSearchFieldAsEnum(openApi: OpenAPI) {
+    val schema = StringSchema()
+    schema.enum = searchFields.fieldNames.sorted()
+    schema.name = "SearchField"
+
+    openApi.components.addSchemas(schema.name, schema)
   }
 
   private fun sortEndpoints(openApi: OpenAPI) {

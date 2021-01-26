@@ -36,7 +36,8 @@ ON CONFLICT (id) DO UPDATE SET type_id        = excluded.type_id,
                                decimal_places = excluded.decimal_places;
 
 INSERT INTO species (id, name, created_time, modified_time)
-VALUES (10000, 'Kousa Dogwood', NOW(), NOW())
+VALUES (10000, 'Kousa Dogwood', NOW(), NOW()),
+       (10001, 'Other Dogwood', NOW(), NOW())
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO species_family (id, name, created_time)
@@ -51,11 +52,13 @@ ON CONFLICT (id) DO UPDATE SET name         = excluded.name,
                                condition_id = excluded.condition_id;
 
 INSERT INTO accession (id, number, state_id, site_module_id, created_time, species_id,
-                       species_family_id)
-VALUES (1000, 'XYZ', 30, 100, '2021-01-03T15:31:20Z', 10000, 20000),
-       (1001, 'ABCDEFG', 20, 100, '2021-01-10T13:08:11Z', 10000, 20000)
-ON CONFLICT (id) DO UPDATE SET number   = excluded.number,
-                               state_id = excluded.state_id;
+                       species_family_id, collection_trees)
+VALUES (1000, 'XYZ', 30, 100, '2021-01-03T15:31:20Z', 10000, 20000, 1),
+       (1001, 'ABCDEFG', 20, 100, '2021-01-10T13:08:11Z', 10001, 20000, 2)
+ON CONFLICT (id) DO UPDATE SET number           = excluded.number,
+                               state_id         = excluded.state_id,
+                               species_id       = excluded.species_id,
+                               collection_trees = excluded.collection_trees;
 
 INSERT INTO notification (id, site_id, type_id, accession_id, created_time, read, message,
                           accession_state_id)

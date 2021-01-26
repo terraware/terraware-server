@@ -168,6 +168,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/seedbank/search:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Searches for accessions based on filter criteria.
+      operationId: search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponsePayload'
   /api/v1/seedbank/summary:
     get:
       tags:
@@ -181,10 +200,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
+  /api/v1/seedbank/values:
+    post:
+      tags:
+      - SeedBankApp
+      operationId: listFieldValues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListFieldValuesRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFieldValuesResponsePayload'
   /api/v1/seedbank/values/storageLocation:
     get:
       tags:
-      - values-controller
+      - SeedBankApp
       operationId: getStorageLocations
       responses:
         "200":
@@ -434,6 +471,18 @@ components:
       properties:
         message:
           type: string
+    FieldValuesPayload:
+      required:
+      - partial
+      - values
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            type: string
+        partial:
+          type: boolean
     Geolocation:
       required:
       - latitude
@@ -518,6 +567,31 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ListFieldValuesRequestPayload:
+      required:
+      - fields
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchField'
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchFilter'
+    ListFieldValuesResponsePayload:
+      required:
+      - results
+      - status
+      type: object
+      properties:
+        results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FieldValuesPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     NotificationListResponse:
       required:
       - notifications
@@ -574,6 +648,117 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+    SearchField:
+      type: string
+      enum:
+      - accessionNumber
+      - collectedDate
+      - collectionNotes
+      - cutTestSeedsCompromised
+      - cutTestSeedsEmpty
+      - cutTestSeedsFilled
+      - dryingEndDate
+      - dryingMoveDate
+      - dryingStartDate
+      - endangered
+      - estimatedSeeds
+      - estimatedSeedsIncoming
+      - family
+      - geolocation
+      - germinationPercentGerminated
+      - germinationSeedType
+      - germinationSeedsGerminated
+      - germinationSeedsSown
+      - germinationStartDate
+      - germinationSubstrate
+      - germinationTestNotes
+      - germinationTestType
+      - germinationTreatment
+      - landowner
+      - latestGerminationTestDate
+      - latestViabilityPercent
+      - primaryCollector
+      - processingMethod
+      - processingNotes
+      - processingStartDate
+      - rare
+      - receivedDate
+      - seedsCounted
+      - siteLocation
+      - species
+      - state
+      - status
+      - storageCondition
+      - storageLocation
+      - storageNotes
+      - storagePackets
+      - storageStartDate
+      - targetStorageCondition
+      - totalViabilityPercent
+      - treesCollectedFrom
+      - withdrawalDate
+      - withdrawalDestination
+      - withdrawalGrams
+      - withdrawalNotes
+      - withdrawalPurpose
+      - withdrawalSeeds
+      - withdrawalSeedsRemaining
+    SearchFilter:
+      required:
+      - field
+      - type
+      - values
+      type: object
+      properties:
+        field:
+          $ref: '#/components/schemas/SearchField'
+        values:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          enum:
+          - Exact
+          - Fuzzy
+          - Range
+    SearchRequestPayload:
+      required:
+      - count
+      - fields
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchField'
+        sortFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchField'
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchFilter'
+        cursor:
+          type: string
+        count:
+          type: integer
+          format: int32
+          default: 10
+    SearchResponsePayload:
+      required:
+      - results
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+        cursor:
+          type: string
     SimpleErrorResponsePayload:
       required:
       - error
