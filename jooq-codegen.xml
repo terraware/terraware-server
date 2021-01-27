@@ -6,16 +6,21 @@
     <user>seedbank</user>
     <password>seedbank</password>
   </jdbc>
-
   <generator>
-    <name>org.jooq.codegen.KotlinGenerator</name>
+    <name>com.terraformation.seedbank.jooq.EnumGenerator</name>
 
     <database>
       <name>org.jooq.meta.postgres.PostgresDatabase</name>
       <includes>.*</includes>
       <excludes>
         flyway_.*
+        | accession_state$
+        | germination_test_type$
+        | notification_type$
+        | processing_method$
+        | timeseries_type$
       </excludes>
+
       <inputSchema>public</inputSchema>
 
       <forcedTypes>
@@ -23,6 +28,44 @@
         <forcedType>
           <name>INSTANT</name>
           <includeTypes>(?i:TIMESTAMP\ WITH\ TIME\ ZONE)</includeTypes>
+        </forcedType>
+
+        <!-- Use enum classes rather than numeric IDs for foreign keys to reference tables.
+             This list must match the table list in EnumGenerator.kt in the buildSrc directory. -->
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.AccessionState</userType>
+          <converter>com.terraformation.seedbank.db.AccessionStateConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <!-- Regex matches both accession.state_id and notification.accession_state_id -->
+          <includeExpression>(?i:accession.state_id)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.GerminationTestType</userType>
+          <converter>com.terraformation.seedbank.db.GerminationTestTypeConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:germination_test\.test_type)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.NotificationType</userType>
+          <converter>com.terraformation.seedbank.db.NotificationTypeConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:notification\.type_id)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.ProcessingMethod</userType>
+          <converter>com.terraformation.seedbank.db.ProcessingMethodConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:accession.processing_method_id)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.TimeseriesType</userType>
+          <converter>com.terraformation.seedbank.db.TimeseriesTypeConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:timeseries\.type_id)</includeExpression>
         </forcedType>
       </forcedTypes>
     </database>

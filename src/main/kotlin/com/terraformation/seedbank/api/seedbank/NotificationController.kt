@@ -7,7 +7,9 @@ import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.NotificationFetcher
+import com.terraformation.seedbank.db.NotificationType
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
@@ -78,12 +80,6 @@ class NotificationDevController(private val notificationFetcher: NotificationFet
   }
 }
 
-enum class NotificationType {
-  Alert,
-  State,
-  Date
-}
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class NotificationPayload(
     @Schema(
@@ -100,7 +96,7 @@ data class NotificationPayload(
     @Schema(description = "For accession notifications, which accession caused the notification.")
     val accessionNumber: String? = null,
     @Schema(description = "For state notifications, which state is being summarized.")
-    val state: String? = null
+    val state: AccessionState? = null
 )
 
 data class NotificationListResponse(val notifications: List<NotificationPayload>) :

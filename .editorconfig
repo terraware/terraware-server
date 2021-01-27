@@ -423,6 +423,9 @@ ij_python_use_continuation_indent_for_arguments = false
 ij_python_use_continuation_indent_for_collection_and_comprehensions = false
 ij_python_wrap_long_lines = false
 
+[*.xml]
+indent_size = 2
+
 [{*.yaml,*.yml}]
 indent_size = 2
 ij_yaml_keep_indents_on_empty_lines = false

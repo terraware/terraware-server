@@ -5,6 +5,7 @@ import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.db.DeviceFetcher
 import com.terraformation.seedbank.db.TimeSeriesFetcher
 import com.terraformation.seedbank.db.TimeSeriesWriter
+import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -47,10 +48,7 @@ class ResourceController(
       @RequestParam units: String?,
       @RequestParam max_history: Int?
   ): String {
-    val dataType = ResourceDataType.forCode(data_type)
-    if (dataType == null || dataType == ResourceDataType.IMAGE) {
-      throw UnsupportedDataTypeException()
-    }
+    val dataType = TimeseriesType.forId(type) ?: throw UnsupportedDataTypeException()
 
     if (type != ResourceType.SEQUENCE) {
       log.error("Unable to create sequence of type $type")
@@ -64,7 +62,7 @@ class ResourceController(
     }
 
     return try {
-      timeSeriesWriter.create(deviceId, name, data_type, units, decimal_places)
+      timeSeriesWriter.create(deviceId, name, dataType, units, decimal_places)
       log.info("Created timeseries $name for device $path")
       "Timeseries created"
     } catch (e: DuplicateKeyException) {

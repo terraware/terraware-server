@@ -118,6 +118,7 @@ jooqModelator {
   jooqOutputPath = "$projectDir/src/generated/jooq"
   migrationEngine = "FLYWAY"
   migrationsPaths = listOf(
+      "src/main/resources/db/migration/dev",
       "src/main/resources/db/migration/postgres",
       "src/main/resources/db/migration/common")
   dockerTag = "postgres:12"

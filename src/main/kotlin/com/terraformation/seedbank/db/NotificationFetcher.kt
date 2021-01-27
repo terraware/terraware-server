@@ -1,7 +1,6 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.api.seedbank.NotificationPayload
-import com.terraformation.seedbank.api.seedbank.NotificationType
 import com.terraformation.seedbank.db.tables.references.NOTIFICATION
 import com.terraformation.seedbank.services.perClassLogger
 import java.time.Instant
@@ -18,11 +17,11 @@ class NotificationFetcher(private val dslContext: DSLContext) {
         .select(
             NOTIFICATION.ID,
             NOTIFICATION.CREATED_TIME,
-            NOTIFICATION.notificationType().NAME,
+            NOTIFICATION.TYPE_ID,
             NOTIFICATION.READ,
             NOTIFICATION.MESSAGE,
             NOTIFICATION.accession().NUMBER,
-            NOTIFICATION.accessionState().NAME)
+            NOTIFICATION.ACCESSION_STATE_ID)
         .from(NOTIFICATION)
         .apply { if (since != null) where(NOTIFICATION.CREATED_TIME.ge(since)) }
         .orderBy(NOTIFICATION.CREATED_TIME.desc(), NOTIFICATION.ID.desc())
@@ -31,11 +30,11 @@ class NotificationFetcher(private val dslContext: DSLContext) {
           NotificationPayload(
               id = record[NOTIFICATION.ID].toString(),
               timestamp = record[NOTIFICATION.CREATED_TIME]!!,
-              type = NotificationType.valueOf(record[NOTIFICATION.notificationType().NAME]!!),
+              type = record[NOTIFICATION.TYPE_ID]!!,
               read = record[NOTIFICATION.READ]!!,
               text = record[NOTIFICATION.MESSAGE]!!,
               accessionNumber = record[NOTIFICATION.accession().NUMBER],
-              state = record[NOTIFICATION.accessionState().NAME])
+              state = record[NOTIFICATION.ACCESSION_STATE_ID])
         }
   }
 

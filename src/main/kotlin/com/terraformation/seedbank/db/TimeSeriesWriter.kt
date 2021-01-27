@@ -24,7 +24,7 @@ class TimeSeriesWriter(
   fun create(
       deviceId: Long,
       name: String,
-      typeId: Int,
+      type: TimeseriesType,
       units: String? = null,
       decimalPlaces: Int? = null
   ) {
@@ -35,7 +35,7 @@ class TimeSeriesWriter(
           .set(DEVICE_ID, deviceId)
           .set(UNITS, units)
           .set(DECIMAL_PLACES, decimalPlaces)
-          .set(TYPE_ID, typeId)
+          .set(TYPE_ID, type)
           .execute()
     }
   }
