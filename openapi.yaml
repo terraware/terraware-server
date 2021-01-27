@@ -45,18 +45,18 @@ paths:
       summary: Mark all unread notifications as read.
       operationId: markAllRead
       responses:
-        "404":
-          description: The requested resource was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
         "200":
           description: All notifications have been marked as read.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/notification/{id}/markRead:
     post:
       tags:

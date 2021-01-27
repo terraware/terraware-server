@@ -2,6 +2,7 @@ package com.terraformation.seedbank.api
 
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
+import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
 import org.springdoc.core.customizers.OpenApiCustomiser
 
@@ -15,6 +16,7 @@ import org.springdoc.core.customizers.OpenApiCustomiser
 class SwaggerConfig : OpenApiCustomiser {
   override fun customise(openApi: OpenAPI) {
     sortEndpoints(openApi)
+    sortResponseCodes(openApi)
     sortSchemas(openApi)
   }
 
@@ -26,5 +28,15 @@ class SwaggerConfig : OpenApiCustomiser {
 
   private fun sortSchemas(openApi: OpenAPI) {
     openApi.components.schemas = openApi.components.schemas.toSortedMap()
+  }
+
+  private fun sortResponseCodes(openApi: OpenAPI) {
+    openApi.paths.values.forEach { pathItem ->
+      pathItem.readOperations().forEach { operation ->
+        val responses = ApiResponses()
+        responses.putAll(operation.responses.toSortedMap())
+        operation.responses = responses
+      }
+    }
   }
 }
