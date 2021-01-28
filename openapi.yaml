@@ -30,7 +30,7 @@ paths:
         required: false
         schema:
           type: integer
-          format: int32
+          format: int64
       responses:
         "200":
           description: Notifications in reverse time order (newest first).
@@ -42,7 +42,7 @@ paths:
     post:
       tags:
       - SeedBankApp
-      summary: Mark all unread notifications as read.
+      summary: Mark all notifications as read.
       operationId: markAllRead
       responses:
         "200":
@@ -51,12 +51,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-        "404":
-          description: The requested resource was not found.
+  /api/v1/seedbank/notification/all/markUnread:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Mark all notifications as unread.
+      description: For development and testing of notifications. Not available in
+        production.
+      operationId: markAllUnread
+      responses:
+        "200":
+          description: All notifications have been marked as unread.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
   /api/v1/seedbank/notification/{id}/markRead:
     post:
       tags:
@@ -147,6 +156,12 @@ components:
           type: string
           description: Plain-text body of notification.
           example: Accession XYZ is ready to be dried.
+        accessionNumber:
+          type: string
+          description: "For accession notifications, which accession caused the notification."
+        state:
+          type: string
+          description: "For state notifications, which state is being summarized."
     SimpleErrorResponsePayload:
       required:
       - error

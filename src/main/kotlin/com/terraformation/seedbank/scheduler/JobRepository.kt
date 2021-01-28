@@ -4,7 +4,6 @@ import com.terraformation.seedbank.db.tables.pojos.ScheduledJob
 import com.terraformation.seedbank.db.tables.references.SCHEDULED_JOB
 import java.time.Clock
 import java.time.Instant
-import java.time.ZoneOffset
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.JSONB
@@ -34,7 +33,7 @@ class JobRepository(
     with(SCHEDULED_JOB) {
       return dslContext
           .insertInto(SCHEDULED_JOB)
-          .set(SCHEDULED_TIME, time.atOffset(ZoneOffset.UTC))
+          .set(SCHEDULED_TIME, time)
           .set(PAYLOAD_CLASS, job.className)
           .set(PAYLOAD_VERSION, job.version)
           .set(PAYLOAD_DATA, JSONB.jsonb(job.serialized))
@@ -70,7 +69,7 @@ class JobRepository(
       val rowsUpdated =
           dslContext
               .update(SCHEDULED_JOB)
-              .set(STARTED_TIME, time.atOffset(ZoneOffset.UTC))
+              .set(STARTED_TIME, time)
               .where(ID.eq(jobId))
               .and(STARTED_TIME.isNull)
               .execute()

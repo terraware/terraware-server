@@ -17,6 +17,14 @@
         flyway_.*
       </excludes>
       <inputSchema>public</inputSchema>
+
+      <forcedTypes>
+        <!-- Use java.time.Instant for timestamps -->
+        <forcedType>
+          <name>INSTANT</name>
+          <types>(?i:TIMESTAMP\ WITH\ TIME\ ZONE)</types>
+        </forcedType>
+      </forcedTypes>
     </database>
 
     <generate>

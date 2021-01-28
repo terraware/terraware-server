@@ -97,7 +97,7 @@ class JobScheduler(
         val deserializedJob =
             jsonSerializer.deserialize(
                 jobData.payloadClass!!, jobData.payloadVersion!!, jobData.payloadData!!.data())
-        registerWithExecutor(jobData.id!!, deserializedJob, jobData.scheduledTime!!.toInstant())
+        registerWithExecutor(jobData.id!!, deserializedJob, jobData.scheduledTime!!)
       } catch (e: Exception) {
         log.error("Unable to load job ${jobData.id}", e)
       }

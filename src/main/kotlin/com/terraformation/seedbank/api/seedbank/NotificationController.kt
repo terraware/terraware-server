@@ -1,27 +1,25 @@
 package com.terraformation.seedbank.api.seedbank
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.SimpleSuccessResponsePayload
 import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.db.NotificationFetcher
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.context.annotation.Profile
+import org.springframework.web.bind.annotation.*
 
 @RequestMapping("/api/v1/seedbank/notification")
 @RestController
 @SeedBankAppEndpoint
-class NotificationController {
+class NotificationController(private val notificationFetcher: NotificationFetcher) {
   @ApiResponse(
       responseCode = "200", description = "Notifications in reverse time order (newest first).")
   @GetMapping
@@ -32,24 +30,9 @@ class NotificationController {
       since: Instant? = null,
       @Parameter(description = "Return at most this many notifications; default is no limit")
       @RequestParam
-      limit: Int? = null
+      limit: Long? = null
   ): NotificationListResponse {
-    return NotificationListResponse(
-        listOf(
-            NotificationPayload(
-                "xxxxx", Instant.now(), NotificationType.Alert, false, "An example alert"),
-            NotificationPayload(
-                "yyyyy",
-                Instant.now().minusSeconds(3600),
-                NotificationType.State,
-                false,
-                "An example state notification"),
-            NotificationPayload(
-                "zzzzz",
-                Instant.now().minusSeconds(7200),
-                NotificationType.Date,
-                true,
-                "An example date notification that is already read")))
+    return NotificationListResponse(notificationFetcher.fetchSince(since, limit))
   }
 
   @ApiResponse404(description = "The requested notification ID was not valid.")
@@ -60,18 +43,37 @@ class NotificationController {
   fun markRead(
       @Parameter(description = "ID of notification to mark as read") @PathVariable id: String
   ): SimpleSuccessResponsePayload {
-    if (id == "0") {
-      throw RuntimeException("Notification $id not found")
+    val notificationId = id.toLongOrNull()
+    if (notificationId != null && notificationFetcher.markRead(notificationId)) {
+      return SimpleSuccessResponsePayload()
+    } else {
+      throw NotFoundException("Notification not found.")
     }
-    return SimpleSuccessResponsePayload()
   }
 
-  @ApiResponse404
   @ApiResponseSimpleSuccess(description = "All notifications have been marked as read.")
-  @Operation(summary = "Mark all unread notifications as read.")
+  @Operation(summary = "Mark all notifications as read.")
   @PostMapping("/all/markRead")
   @ResponseBody
   fun markAllRead(): SimpleSuccessResponsePayload {
+    notificationFetcher.markAllRead()
+    return SimpleSuccessResponsePayload()
+  }
+}
+
+@Profile("default", "apidoc")
+@RequestMapping("/api/v1/seedbank/notification")
+@RestController
+@SeedBankAppEndpoint
+class NotificationDevController(private val notificationFetcher: NotificationFetcher) {
+  @ApiResponseSimpleSuccess(description = "All notifications have been marked as unread.")
+  @Operation(
+      summary = "Mark all notifications as unread.",
+      description = "For development and testing of notifications. Not available in production.")
+  @PostMapping("/all/markUnread")
+  @ResponseBody
+  fun markAllUnread(): SimpleSuccessResponsePayload {
+    notificationFetcher.markAllUnread()
     return SimpleSuccessResponsePayload()
   }
 }
@@ -82,6 +84,7 @@ enum class NotificationType {
   Date
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class NotificationPayload(
     @Schema(
         description = "Unique identifier for this notification. Clients should treat it as opaque.",
@@ -93,7 +96,11 @@ data class NotificationPayload(
     @Schema(
         description = "Plain-text body of notification.",
         example = "Accession XYZ is ready to be dried.")
-    val text: String
+    val text: String,
+    @Schema(description = "For accession notifications, which accession caused the notification.")
+    val accessionNumber: String? = null,
+    @Schema(description = "For state notifications, which state is being summarized.")
+    val state: String? = null
 )
 
 data class NotificationListResponse(val notifications: List<NotificationPayload>) :

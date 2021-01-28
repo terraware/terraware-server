@@ -4,7 +4,6 @@ import com.terraformation.seedbank.db.tables.references.TIMESERIES
 import com.terraformation.seedbank.db.tables.references.TIMESERIES_VALUE
 import com.terraformation.seedbank.mqtt.IncomingTimeseriesUpdateMessage
 import com.terraformation.seedbank.services.perClassLogger
-import java.time.ZoneOffset
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
@@ -49,8 +48,6 @@ class TimeSeriesWriter(
       return
     }
 
-    val timestamp = message.timestamp.atOffset(ZoneOffset.UTC)!!
-
     val timeseriesIds = timeSeriesFetcher.getTimeseriesIdsByName(deviceId, message.values.keys)
     val valuesByTimeseriesId =
         message.values.filter { it.key in timeseriesIds }.mapKeys { timeseriesIds[it.key] }
@@ -60,7 +57,7 @@ class TimeSeriesWriter(
         dslContext
             .insertInto(TIMESERIES_VALUE)
             .set(TIMESERIES_ID, timeseriesId)
-            .set(CREATED_TIME, timestamp)
+            .set(CREATED_TIME, message.timestamp)
             .set(VALUE, value)
             .execute()
       }

@@ -34,3 +34,28 @@ ON CONFLICT (id) DO UPDATE SET type_id        = excluded.type_id,
                                name           = excluded.name,
                                units          = excluded.units,
                                decimal_places = excluded.decimal_places;
+
+INSERT INTO accession (id, number, state_id, site_module_id, created_time)
+VALUES (1000, 'XYZ', 30, 100, '2021-01-03T15:31:20Z'),
+       (1001, 'ABCDEFG', 20, 100, '2021-01-10T13:08:11Z')
+ON CONFLICT (id) DO UPDATE SET number   = excluded.number,
+                               state_id = excluded.state_id;
+
+INSERT INTO notification (id, site_id, type_id, accession_id, created_time, read, message,
+                          accession_state_id)
+VALUES (100000, 10, 1, NULL, '2021-01-01T11:22:33Z', FALSE, 'This is an example alert', NULL),
+       (100001, 10, 2, 1000, '2021-01-15T08:01:00Z', FALSE, 'Accession XYZ has exploded!', NULL),
+       (100002, 10, 3, NULL, '2021-01-25T08:05:00Z', FALSE, 'Accessions are pending!', 10),
+       (100003, 10, 3, NULL, '2021-01-25T08:05:01Z', FALSE, 'Accessions are processing!', 20),
+       (100004, 10, 3, NULL, '2021-01-25T08:05:02Z', FALSE, 'Accessions are processed!', 30),
+       (100005, 10, 3, NULL, '2021-01-25T08:05:03Z', FALSE, 'Accessions are drying!', 40),
+       (100006, 10, 3, NULL, '2021-01-25T08:05:04Z', FALSE, 'Accessions are dried!', 50),
+       (100007, 10, 3, NULL, '2021-01-25T08:05:05Z', FALSE, 'Accessions are in storage!', 60),
+       (100008, 10, 3, NULL, '2021-01-25T08:05:06Z', FALSE, 'Accessions are withdrawn!', 70),
+       (100009, 10, 3, 1001, '2021-01-27T08:00:00Z', FALSE, 'Accession ABCDEFG needs help!', NULL)
+ON CONFLICT (id) DO UPDATE SET type_id            = excluded.type_id,
+                               accession_id       = excluded.accession_id,
+                               created_time       = excluded.created_time,
+                               read               = excluded.read,
+                               message            = excluded.message,
+                               accession_state_id = excluded.accession_state_id;
