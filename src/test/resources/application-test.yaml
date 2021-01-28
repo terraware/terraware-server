@@ -1,0 +1,9 @@
+spring:
+  flyway:
+    locations:
+      - "classpath:db/migration/dev"
+      - "classpath:db/migration/postgres"
+      - "classpath:db/migration/common"
+
+terraware:
+  site-module-id: 100

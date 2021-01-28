@@ -35,9 +35,18 @@ ON CONFLICT (id) DO UPDATE SET type_id        = excluded.type_id,
                                units          = excluded.units,
                                decimal_places = excluded.decimal_places;
 
-INSERT INTO accession (id, number, state_id, site_module_id, created_time)
-VALUES (1000, 'XYZ', 30, 100, '2021-01-03T15:31:20Z'),
-       (1001, 'ABCDEFG', 20, 100, '2021-01-10T13:08:11Z')
+INSERT INTO species (id, name, created_time, modified_time)
+VALUES (10000, 'Kousa Dogwood', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO species_family (id, name, created_time)
+VALUES (20000, 'Dogwood', NOW())
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accession (id, number, state_id, site_module_id, created_time, species_id,
+                       species_family_id)
+VALUES (1000, 'XYZ', 30, 100, '2021-01-03T15:31:20Z', 10000, 20000),
+       (1001, 'ABCDEFG', 20, 100, '2021-01-10T13:08:11Z', 10000, 20000)
 ON CONFLICT (id) DO UPDATE SET number   = excluded.number,
                                state_id = excluded.state_id;
 

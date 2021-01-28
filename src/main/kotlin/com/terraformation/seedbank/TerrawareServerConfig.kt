@@ -1,6 +1,7 @@
 package com.terraformation.seedbank
 
 import java.net.URI
+import javax.validation.constraints.Min
 import javax.validation.constraints.Size
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.validation.annotation.Validated
@@ -35,4 +36,6 @@ class TerrawareServerConfig {
        */
       var topicPrefix: String? = null
   )
+
+  @Min(1) var siteModuleId: Long = 0
 }

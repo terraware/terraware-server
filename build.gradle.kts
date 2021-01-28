@@ -1,5 +1,6 @@
 import java.nio.file.Files
 import java.util.Properties
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -63,10 +64,13 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")
   implementation("org.springdoc:springdoc-openapi-ui:$springDocVersion")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.springframework.security:spring-security-test")
   testImplementation("io.mockk:mockk:1.10.3-jdk8")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.security:spring-security-test")
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.15.1"))
+  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:postgresql")
 
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 
@@ -90,6 +94,7 @@ tasks.register("downloadDependencies") {
 
 tasks.test {
   useJUnitPlatform()
+  testLogging { exceptionFormat = TestExceptionFormat.FULL }
 }
 
 val preprocessJooqConfig by tasks.registering {

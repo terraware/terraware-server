@@ -15,3 +15,5 @@ spring:
     # Don't instantiate any beans that aren't actually used in the course of processing the request
     # to dump out the API docs.
     lazy-initialization: true
+terraware:
+  site-module-id: 1

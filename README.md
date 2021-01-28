@@ -6,9 +6,9 @@ This is a partial implementation of a possible REST API for the seed bank data m
 
 ### Prerequisites
 
-* Docker (used by the build process)
+* Docker (used by the build process and by automated tests)
 * Java version 11 or higher ([AdoptOpenJDK](https://adoptopenjdk.net/) is a convenient place to get it)
-* PostgreSQL
+* PostgreSQL (version 12 or higher recommended)
 
 ### Initial setup
 
@@ -35,9 +35,11 @@ You can browse the API interactively at [http://localhost:8080/swagger-ui.html](
 
 ### Running the tests
 
-Mac/Linux: `./gradlew test`
+Mac/Linux: `./gradlew check`
 
-Windows: `gradlew.bat test`
+Windows: `gradlew.bat check`
+
+The `check` target will run the linter as well as the actual tests; to run just the tests themselves, use `test` instead.
 
 ## Editing the code
 

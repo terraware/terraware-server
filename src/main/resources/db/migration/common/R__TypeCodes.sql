@@ -12,9 +12,24 @@ INSERT INTO device_type (id, name)
 VALUES (1, 'Generic Sensor')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO germination_substrate (id, name)
+VALUES (1, 'Nursery Media'),
+       (2, 'Agar Petri Dish'),
+       (3, 'Paper Petri Dish'),
+       (4, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO germination_test_type (id, name)
 VALUES (1, 'Lab'),
        (2, 'Nursery')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO germination_treatment (id, name)
+VALUES (1, 'Soak'),
+       (2, 'Scarify'),
+       (3, 'GA3'),
+       (4, 'Stratification'),
+       (5, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO notification_type (id, name)
@@ -42,4 +57,13 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO timeseries_type (id, name)
 VALUES (1, 'Numeric'),
        (2, 'Text')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO withdrawal_purpose (id, name)
+VALUES (1, 'Propagation'),
+       (2, 'Outreach or Education'),
+       (3, 'Research'),
+       (4, 'Broadcast'),
+       (5, 'Share with Another Site'),
+       (6, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;

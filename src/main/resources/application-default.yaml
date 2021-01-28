@@ -16,6 +16,7 @@ logging:
     com.terraformation: DEBUG
 
 terraware:
+  site-module-id: 100
   jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
   mqtt:
     enabled: false

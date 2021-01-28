@@ -9,6 +9,81 @@ servers:
 - url: http://localhost:32109
   description: Generated server url
 paths:
+  /api/v1/seedbank/accession:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Create a new accession.
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccessionRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: "The accession was created successfully. Response includes\
+            \ fields populated by the server, including the accession number."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAccessionResponsePayload'
+  /api/v1/seedbank/accession/{accessionNumber}:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Retrieve an existing accession.
+      operationId: read
+      parameters:
+      - name: accessionNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAccessionResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - SeedBankApp
+      summary: Update an existing accession.
+      operationId: update
+      parameters:
+      - name: accessionNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessionPayload'
+        required: true
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The specified accession doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/notification:
     get:
       tags:
@@ -107,6 +182,224 @@ paths:
                 $ref: '#/components/schemas/SummaryResponse'
 components:
   schemas:
+    AccessionPayload:
+      required:
+      - accessionNumber
+      - state
+      - status
+      type: object
+      properties:
+        accessionNumber:
+          type: string
+        state:
+          type: string
+          enum:
+          - Pending
+          - Processing
+          - Processed
+          - Drying
+          - Dried
+          - In Storage
+          - Withdrawn
+        status:
+          type: string
+        species:
+          type: string
+        family:
+          type: string
+        numberOfTrees:
+          type: integer
+          format: int32
+        founderId:
+          type: string
+        endangered:
+          type: boolean
+        rare:
+          type: boolean
+        fieldNotes:
+          type: string
+        collectedDate:
+          type: string
+          format: date
+        receivedDate:
+          type: string
+          format: date
+        primaryCollector:
+          type: string
+        secondaryCollectors:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        siteLocation:
+          type: string
+        landowner:
+          type: string
+        environmentalNotes:
+          type: string
+        processingStartDate:
+          type: string
+          format: date
+        processingMethod:
+          type: string
+          enum:
+          - Count
+          - Weight
+        seedsCounted:
+          type: integer
+          format: int32
+        subsetWeightGrams:
+          type: number
+        totalWeightGrams:
+          type: number
+        subsetCount:
+          type: integer
+          format: int32
+        estimatedSeedCount:
+          type: integer
+          format: int32
+        targetStorageCondition:
+          type: string
+        dryingStartDate:
+          type: string
+          format: date
+        dryingEndDate:
+          type: string
+          format: date
+        dryingMoveDate:
+          type: string
+          format: date
+        processingNotes:
+          type: string
+        processingStaffResponsible:
+          type: string
+        bagNumbers:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        photoFilenames:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        geolocations:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Geolocation'
+    CreateAccessionRequestPayload:
+      type: object
+      properties:
+        species:
+          type: string
+        family:
+          type: string
+        numberOfTrees:
+          type: integer
+          format: int32
+        founderId:
+          type: string
+        endangered:
+          type: boolean
+        rare:
+          type: boolean
+        fieldNotes:
+          type: string
+        collectedDate:
+          type: string
+          format: date
+        receivedDate:
+          type: string
+          format: date
+        primaryCollector:
+          type: string
+        secondaryCollectors:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        siteLocation:
+          type: string
+        landowner:
+          type: string
+        environmentalNotes:
+          type: string
+        bagNumbers:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        geolocations:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Geolocation'
+        accessionNumber:
+          type: string
+        processingStartDate:
+          type: string
+          format: date
+        processingMethod:
+          type: string
+          enum:
+          - Count
+          - Weight
+        seedsCounted:
+          type: integer
+          format: int32
+        subsetWeightGrams:
+          type: number
+        totalWeightGrams:
+          type: number
+        subsetCount:
+          type: integer
+          format: int32
+        estimatedSeedCount:
+          type: integer
+          format: int32
+        targetStorageCondition:
+          type: string
+        dryingStartDate:
+          type: string
+          format: date
+        dryingEndDate:
+          type: string
+          format: date
+        dryingMoveDate:
+          type: string
+          format: date
+        processingNotes:
+          type: string
+        processingStaffResponsible:
+          type: string
+        photoFilenames:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        state:
+          type: string
+          enum:
+          - Pending
+          - Processing
+          - Processed
+          - Drying
+          - Dried
+          - In Storage
+          - Withdrawn
+    CreateAccessionResponsePayload:
+      required:
+      - accession
+      - status
+      type: object
+      properties:
+        accession:
+          $ref: '#/components/schemas/AccessionPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ErrorDetails:
       required:
       - message
@@ -114,6 +407,28 @@ components:
       properties:
         message:
           type: string
+    Geolocation:
+      required:
+      - latitude
+      - longitude
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        accuracy:
+          type: number
+    GetAccessionResponsePayload:
+      required:
+      - accession
+      - status
+      type: object
+      properties:
+        accession:
+          $ref: '#/components/schemas/AccessionPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     NotificationListResponse:
       required:
       - notifications
@@ -162,6 +477,14 @@ components:
         state:
           type: string
           description: "For state notifications, which state is being summarized."
+          enum:
+          - Pending
+          - Processing
+          - Processed
+          - Drying
+          - Dried
+          - In Storage
+          - Withdrawn
     SimpleErrorResponsePayload:
       required:
       - error
