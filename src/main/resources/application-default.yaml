@@ -5,6 +5,7 @@ spring:
       - "classpath:db/migration/dev"
       - "classpath:db/migration/postgres"
       - "classpath:db/migration/common"
+    ignore-missing-migrations: true
 
 logging:
   level:
