@@ -22,7 +22,7 @@
         <!-- Use java.time.Instant for timestamps -->
         <forcedType>
           <name>INSTANT</name>
-          <types>(?i:TIMESTAMP\ WITH\ TIME\ ZONE)</types>
+          <includeTypes>(?i:TIMESTAMP\ WITH\ TIME\ ZONE)</includeTypes>
         </forcedType>
       </forcedTypes>
     </database>
