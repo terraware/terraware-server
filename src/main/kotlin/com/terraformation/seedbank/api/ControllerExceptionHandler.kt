@@ -19,37 +19,52 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   private val log = perClassLogger()
 
   @ExceptionHandler(ClientFacingException::class)
-  fun handleClientFacingException(ex: ClientFacingException) =
-      ResponseEntity(SimpleErrorResponsePayload(ErrorDetails(message = ex.message)), ex.status)
+  fun handleClientFacingException(
+      ex: ClientFacingException,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(ex.message, ex.status, request)
+  }
 
   @ExceptionHandler(ResponseStatusException::class)
   fun handleGenericSpringResponseStatusException(
       ex: ResponseStatusException,
       request: WebRequest
-  ): ResponseEntity<SimpleErrorResponsePayload> {
+  ): ResponseEntity<*> {
     val description = request.getDescription(false)
     controllerLogger(ex)
         .warn("Generic response exception thrown on $description use ClientFacingException", ex)
-    return ResponseEntity(
-        SimpleErrorResponsePayload(ErrorDetails(message = ex.message ?: ex.status.reasonPhrase)),
-        ex.status)
+    return simpleErrorResponse(ex.message ?: ex.status.reasonPhrase, ex.status, request)
   }
 
   @ExceptionHandler(Exception::class)
-  fun handleUnknownException(
-      ex: Exception,
-      request: WebRequest
-  ): ResponseEntity<SimpleErrorResponsePayload> {
+  fun handleUnknownException(ex: Exception, request: WebRequest): ResponseEntity<*> {
     val description = request.getDescription(false)
     controllerLogger(ex).error("Controller threw exception on $description", ex)
 
-    return ResponseEntity(
-        SimpleErrorResponsePayload(ErrorDetails(message = "An internal error has occurred.")),
-        HttpStatus.INTERNAL_SERVER_ERROR)
+    return simpleErrorResponse(
+        "An internal error has occurred.", HttpStatus.INTERNAL_SERVER_ERROR, request)
   }
 
   private fun controllerLogger(ex: Exception): Logger {
     val classToUseForLogMessage = ex.stackTrace.getOrNull(0)?.className ?: javaClass.name
     return LoggerFactory.getLogger(classToUseForLogMessage)
+  }
+
+  /**
+   * Returns an error in the server's documented JSON error format unless the request only accepts
+   * text/plain responses, in which case it just returns the error message. This is needed to work
+   * with rhizo-client which only accepts text/plain responses.
+   */
+  private fun simpleErrorResponse(
+      message: String,
+      status: HttpStatus,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return if (request.getHeader("Accept") == "text/plain") {
+      ResponseEntity(message, status)
+    } else {
+      ResponseEntity(SimpleErrorResponsePayload(ErrorDetails(message = message)), status)
+    }
   }
 }

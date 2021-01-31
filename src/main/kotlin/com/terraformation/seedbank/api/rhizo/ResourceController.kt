@@ -9,6 +9,8 @@ import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.tags.Tag
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import javax.servlet.http.HttpServletRequest
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
@@ -76,7 +78,9 @@ class ResourceController(
   @GetMapping("/api/v1/resources/**", produces = [MediaType.TEXT_PLAIN_VALUE])
   @ResponseBody
   fun getResource(request: HttpServletRequest): String {
-    val path = request.requestURI.substringAfter("/api/v1/resources")
+    val path =
+        URLDecoder.decode(
+            request.requestURI.substringAfter("/api/v1/resources"), StandardCharsets.UTF_8)
     val sequenceName = path.substringAfterLast('/')
     val deviceTopic = path.substringBeforeLast('/').substring(1)
     if (timeSeriesFetcher.getIdByMqttTopic(deviceTopic, sequenceName) != null) {
