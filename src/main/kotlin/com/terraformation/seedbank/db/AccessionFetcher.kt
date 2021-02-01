@@ -28,12 +28,18 @@ import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
+import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
 class AccessionFetcher(
     private val dslContext: DSLContext,
     private val config: TerrawareServerConfig
 ) {
+  companion object {
+    /** Number of times to try generating a unique accession number before giving up. */
+    private const val ACCESSION_NUMBER_RETRIES = 10
+  }
+
   var clock = Clock.systemUTC()!!
   var accessionNumberGenerator = AccessionNumberGenerator()
 
@@ -140,42 +146,55 @@ class AccessionFetcher(
   }
 
   fun create(accession: AccessionFields): ConcreteAccession {
-    // TODO: Catch collisions
-    val accessionNumber = accessionNumberGenerator.generateAccessionNumber()
+    var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
-    dslContext.transaction { _ ->
-      val accessionId =
-          with(ACCESSION) {
-            dslContext
-                .insertInto(ACCESSION)
-                .set(NUMBER, accessionNumber)
-                .set(SITE_MODULE_ID, config.siteModuleId)
-                .set(CREATED_TIME, clock.instant())
-                .set(STATE_ID, AccessionState.Pending)
-                .set(SPECIES_ID, getSpeciesId(accession.species))
-                .set(SPECIES_FAMILY_ID, getSpeciesFamilyId(accession.family))
-                .set(COLLECTION_TREES, accession.numberOfTrees)
-                .set(FOUNDER_TREE, accession.founderId)
-                .set(SPECIES_ENDANGERED, accession.endangered)
-                .set(SPECIES_RARE, accession.rare)
-                .set(FIELD_NOTES, accession.fieldNotes)
-                .set(COLLECTED_DATE, accession.collectedDate)
-                .set(RECEIVED_DATE, accession.receivedDate)
-                .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
-                .set(COLLECTION_SITE_NAME, accession.siteLocation)
-                .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
-                .set(COLLECTION_SITE_NOTES, accession.environmentalNotes)
-                .returning(ID)
-                .fetchOne()
-                ?.get(ID)!!
-          }
+    while (attemptsRemaining-- > 0) {
+      val accessionNumber = accessionNumberGenerator.generateAccessionNumber()
 
-      insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
-      updateBags(accessionId, emptySet(), accession.bagNumbers)
-      updateGeolocations(accessionId, emptySet(), accession.geolocations)
+      try {
+        dslContext.transaction { _ ->
+          val accessionId =
+              with(ACCESSION) {
+                dslContext
+                    .insertInto(ACCESSION)
+                    .set(NUMBER, accessionNumber)
+                    .set(SITE_MODULE_ID, config.siteModuleId)
+                    .set(CREATED_TIME, clock.instant())
+                    .set(STATE_ID, AccessionState.Pending)
+                    .set(SPECIES_ID, getSpeciesId(accession.species))
+                    .set(SPECIES_FAMILY_ID, getSpeciesFamilyId(accession.family))
+                    .set(COLLECTION_TREES, accession.numberOfTrees)
+                    .set(FOUNDER_TREE, accession.founderId)
+                    .set(SPECIES_ENDANGERED, accession.endangered)
+                    .set(SPECIES_RARE, accession.rare)
+                    .set(FIELD_NOTES, accession.fieldNotes)
+                    .set(COLLECTED_DATE, accession.collectedDate)
+                    .set(RECEIVED_DATE, accession.receivedDate)
+                    .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
+                    .set(COLLECTION_SITE_NAME, accession.siteLocation)
+                    .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
+                    .set(COLLECTION_SITE_NOTES, accession.environmentalNotes)
+                    .returning(ID)
+                    .fetchOne()
+                    ?.get(ID)!!
+              }
+
+          insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
+          updateBags(accessionId, emptySet(), accession.bagNumbers)
+          updateGeolocations(accessionId, emptySet(), accession.geolocations)
+        }
+
+        return fetchByNumber(accessionNumber)!!
+      } catch (ex: DuplicateKeyException) {
+        log.info("Accession number $accessionNumber already existed; trying again")
+        if (attemptsRemaining <= 0) {
+          log.error("Unable to generate unique accession number")
+          throw ex
+        }
+      }
     }
 
-    return fetchByNumber(accessionNumber)!!
+    throw RuntimeException("BUG! Inserting accession failed but error was not caught.")
   }
 
   fun update(accessionNumber: String, accession: AccessionFields): Boolean {

@@ -19,11 +19,13 @@ import java.time.Instant
 import java.time.ZoneOffset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.dao.DuplicateKeyException
 
 internal class AccessionFetcherTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
@@ -75,6 +77,29 @@ internal class AccessionFetcherTest : DatabaseTest() {
             number = accessionNumbers[0],
             stateId = AccessionState.Pending),
         accessionDao.fetchOneById(1))
+  }
+
+  @Test
+  fun `create deals with collisions in accession numbers`() {
+    val collidingAccessionNumbers = listOf("one", "one", "two")
+    every { accessionNumberGenerator.generateAccessionNumber() } returnsMany
+        collidingAccessionNumbers
+
+    fetcher.create(CreateAccessionRequestPayload())
+    fetcher.create(CreateAccessionRequestPayload())
+
+    assertNotNull(accessionDao.fetchOneByNumber("two"))
+  }
+
+  @Test
+  fun `create gives up if it can't generate an unused accession number`() {
+    every { accessionNumberGenerator.generateAccessionNumber() } returns ("duplicate")
+
+    fetcher.create(CreateAccessionRequestPayload())
+
+    assertThrows(DuplicateKeyException::class.java) {
+      fetcher.create(CreateAccessionRequestPayload())
+    }
   }
 
   @Test
