@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @SecurityRequirement(name = "ApiKey")
 class SiteController(private val siteDao: SiteDao) {
   @GetMapping
+  @Hidden
   @Operation(summary = "List all of an organization's sites")
   @ApiResponses(
       ApiResponse(

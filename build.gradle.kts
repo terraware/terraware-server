@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val jacksonVersion = "2.11.3"
 val jooqVersion = "3.14.4"
 val postgresJdbcVersion = "42.2.18"
-val springDocVersion = "1.5.2"
+val springDocVersion = "1.5.3"
 
 plugins {
   val kotlinVersion = "1.4.255-SNAPSHOT"

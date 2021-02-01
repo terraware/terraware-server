@@ -17,6 +17,7 @@ class OrganizationController(private val organizationFetcher: OrganizationFetche
   private val log = perClassLogger()
 
   @GetMapping
+  @Hidden
   @PreAuthorize("hasRole('SUPER_ADMIN')")
   @Operation(
       summary = "List all organizations",

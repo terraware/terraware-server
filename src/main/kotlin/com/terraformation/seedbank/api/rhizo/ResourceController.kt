@@ -9,15 +9,13 @@ import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.tags.Tag
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-import javax.servlet.http.HttpServletRequest
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
@@ -50,7 +48,7 @@ class ResourceController(
       @RequestParam units: String?,
       @RequestParam max_history: Int?
   ): String {
-    val dataType = TimeseriesType.forId(type) ?: throw UnsupportedDataTypeException()
+    val dataType = TimeseriesType.forId(data_type) ?: throw UnsupportedDataTypeException()
 
     if (type != ResourceType.SEQUENCE) {
       log.error("Unable to create sequence of type $type")
@@ -73,16 +71,12 @@ class ResourceController(
     }
   }
 
-  // Ideally we'd use "/api/v1/resources/{*path}" but that breaks Swagger doc generation; see
-  // https://github.com/springdoc/springdoc-openapi/issues/1034
-  @GetMapping("/api/v1/resources/**", produces = [MediaType.TEXT_PLAIN_VALUE])
+  @GetMapping("/api/v1/resources/{*path}", produces = [MediaType.TEXT_PLAIN_VALUE])
   @ResponseBody
-  fun getResource(request: HttpServletRequest): String {
-    val path =
-        URLDecoder.decode(
-            request.requestURI.substringAfter("/api/v1/resources"), StandardCharsets.UTF_8)
-    val sequenceName = path.substringAfterLast('/')
+  fun getResource(@PathVariable path: String): String {
+    // Split the path into an MQTT topic and sequence name, /X/Y/Z -> (X/Y, Z)
     val deviceTopic = path.substringBeforeLast('/').substring(1)
+    val sequenceName = path.substringAfterLast('/')
     if (timeSeriesFetcher.getIdByMqttTopic(deviceTopic, sequenceName) != null) {
       return "Found"
     } else {
