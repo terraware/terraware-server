@@ -45,10 +45,14 @@ class AccessionController(private val accessionFetcher: AccessionFetcher) {
   @Operation(summary = "Update an existing accession.")
   @PutMapping("/{accessionNumber}")
   fun update(
-      @RequestBody payload: AccessionPayload,
+      @RequestBody payload: UpdateAccessionRequestPayload,
       @PathVariable accessionNumber: String
   ): SimpleSuccessResponsePayload {
-    return SimpleSuccessResponsePayload()
+    if (!accessionFetcher.update(accessionNumber, payload)) {
+      throw NotFoundException()
+    } else {
+      return SimpleSuccessResponsePayload()
+    }
   }
 
   @ApiResponse(responseCode = "200")
@@ -79,6 +83,40 @@ data class CreateAccessionRequestPayload(
     override val landowner: String? = null,
     override val environmentalNotes: String? = null,
     override val bagNumbers: Set<String>? = null,
+    override val geolocations: Set<Geolocation>? = null,
+) : AccessionFields
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class UpdateAccessionRequestPayload(
+    override val species: String? = null,
+    override val family: String? = null,
+    override val numberOfTrees: Int? = null,
+    override val founderId: String? = null,
+    override val endangered: Boolean? = null,
+    override val rare: Boolean? = null,
+    override val fieldNotes: String? = null,
+    override val collectedDate: LocalDate? = null,
+    override val receivedDate: LocalDate? = null,
+    override val primaryCollector: String? = null,
+    override val secondaryCollectors: Set<String>? = null,
+    override val siteLocation: String? = null,
+    override val landowner: String? = null,
+    override val environmentalNotes: String? = null,
+    override val processingStartDate: LocalDate? = null,
+    override val processingMethod: ProcessingMethod? = null,
+    override val seedsCounted: Int? = null,
+    override val subsetWeightGrams: BigDecimal? = null,
+    override val totalWeightGrams: BigDecimal? = null,
+    override val subsetCount: Int? = null,
+    override val estimatedSeedCount: Int? = null,
+    override val targetStorageCondition: String? = null,
+    override val dryingStartDate: LocalDate? = null,
+    override val dryingEndDate: LocalDate? = null,
+    override val dryingMoveDate: LocalDate? = null,
+    override val processingNotes: String? = null,
+    override val processingStaffResponsible: String? = null,
+    override val bagNumbers: Set<String>? = null,
+    override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
 ) : AccessionFields
 

@@ -215,7 +215,7 @@ class AccessionFetcher(
                 .set(COLLECTION_SITE_NAME, accession.siteLocation)
                 .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
                 .set(COLLECTION_SITE_NOTES, accession.environmentalNotes)
-                .where(NUMBER.eq(accession.accessionNumber))
+                .where(NUMBER.eq(accessionNumber))
                 .execute()
           }
 
