@@ -48,3 +48,6 @@ fun Logger.log(level: Level, text: String) {
 /** Transforms a Collection to a Set if it has non-null values, or to null if not. */
 fun <T : Collection<V?>, V> T.toSetOrNull(): Set<V>? =
     if (isEmpty()) null else filterNotNull().toSet()
+
+/** Transforms a Collection to a List if it has non-null values, or to null if not. */
+fun <T : Collection<V?>, V> T.toListOrNull(): List<V>? = if (isEmpty()) null else filterNotNull()

@@ -2,6 +2,7 @@ package com.terraformation.seedbank.model
 
 import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.db.AccessionState
+import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.StorageCondition
 import java.math.BigDecimal
@@ -13,7 +14,12 @@ interface AccessionFields {
   val state: AccessionState?
     get() = null
   val status: String?
-    get() = null
+    get() =
+        when (state) {
+          AccessionState.Withdrawn -> "Inactive"
+          null -> null
+          else -> "Active"
+        }
   val species: String?
     get() = null
   val family: String?
@@ -74,7 +80,9 @@ interface AccessionFields {
     get() = null
   val geolocations: Set<Geolocation>?
     get() = null
-  val germinationTests: Set<GerminationTestFields>?
+  val germinationTestTypes: Set<GerminationTestType>?
+    get() = null
+  val germinationTests: List<GerminationTestFields>?
     get() = null
 }
 
@@ -82,13 +90,13 @@ interface ConcreteAccession : AccessionFields {
   override val accessionNumber: String
   override val state: AccessionState
   override val status: String
+    get() = super.status!!
 }
 
 data class AccessionModel(
     val id: Long,
     override val accessionNumber: String,
     override val state: AccessionState,
-    override val status: String,
     override val species: String? = null,
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
@@ -119,5 +127,6 @@ data class AccessionModel(
     override val bagNumbers: Set<String>? = null,
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
-    override val germinationTests: Set<GerminationTestModel>? = null
+    override val germinationTestTypes: Set<GerminationTestType>? = null,
+    override val germinationTests: List<GerminationTestModel>? = null,
 ) : ConcreteAccession

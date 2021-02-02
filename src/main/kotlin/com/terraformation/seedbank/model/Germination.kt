@@ -19,6 +19,8 @@ data class GerminationModel(
 ) : GerminationFields
 
 interface GerminationTestFields {
+  val id: Long?
+    get() = null
   val testType: GerminationTestType
   val startDate: LocalDate?
     get() = null
@@ -37,7 +39,7 @@ interface GerminationTestFields {
 }
 
 data class GerminationTestModel(
-    val id: Long,
+    override val id: Long,
     val accessionId: Long,
     override val testType: GerminationTestType,
     override val startDate: LocalDate? = null,

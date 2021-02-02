@@ -2,6 +2,8 @@ package com.terraformation.seedbank.api.seedbank
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.SimpleSuccessResponsePayload
 import com.terraformation.seedbank.api.SuccessResponsePayload
@@ -21,7 +23,6 @@ import com.terraformation.seedbank.model.ConcreteAccession
 import com.terraformation.seedbank.model.GerminationFields
 import com.terraformation.seedbank.model.GerminationTestFields
 import com.terraformation.seedbank.services.perClassLogger
-import com.terraformation.seedbank.services.toSetOrNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -97,7 +98,8 @@ data class CreateAccessionRequestPayload(
     override val environmentalNotes: String? = null,
     override val bagNumbers: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
-    override val germinationTests: Set<GerminationTestPayload>? = null,
+    override val germinationTestTypes: Set<GerminationTestType>? = null,
+    override val germinationTests: List<GerminationTestPayload>? = null,
 ) : AccessionFields
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -132,7 +134,8 @@ data class UpdateAccessionRequestPayload(
     override val bagNumbers: Set<String>? = null,
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
-    @Valid override val germinationTests: Set<GerminationTestPayload>?
+    override val germinationTestTypes: Set<GerminationTestType>? = null,
+    @Valid override val germinationTests: List<GerminationTestPayload>?,
 ) : AccessionFields
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -170,7 +173,8 @@ data class AccessionPayload(
     override val bagNumbers: Set<String>? = null,
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
-    override val germinationTests: Set<GerminationTestPayload>? = null,
+    override val germinationTestTypes: Set<GerminationTestType>? = null,
+    override val germinationTests: List<GerminationTestPayload>? = null,
 ) : ConcreteAccession {
   constructor(
       model: ConcreteAccession
@@ -208,7 +212,8 @@ data class AccessionPayload(
       model.bagNumbers,
       model.photoFilenames,
       model.geolocations,
-      model.germinationTests?.map { GerminationTestPayload(it) }?.toSetOrNull(),
+      model.germinationTestTypes,
+      model.germinationTests?.map { GerminationTestPayload(it) },
   )
 }
 
@@ -241,6 +246,12 @@ class Geolocation(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class GerminationTestPayload(
     @Schema(
+        description =
+            "Server-assigned unique ID of this germination test. Null when creating a new test.",
+        type = "string")
+    @JsonSerialize(using = ToStringSerializer::class)
+    override val id: Long? = null,
+    @Schema(
         description = "Which type of test is described. At most one of each test type is allowed.")
     override val testType: GerminationTestType,
     override val startDate: LocalDate? = null,
@@ -254,6 +265,7 @@ data class GerminationTestPayload(
   constructor(
       model: GerminationTestFields
   ) : this(
+      model.id,
       model.testType,
       model.startDate,
       model.seedType,

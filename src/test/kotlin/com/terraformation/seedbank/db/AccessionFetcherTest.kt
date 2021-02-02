@@ -14,6 +14,7 @@ import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.db.tables.pojos.Bag
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
+import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import io.mockk.every
 import io.mockk.mockk
@@ -221,7 +222,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     fetcher.create(
         CreateAccessionRequestPayload(
             germinationTests =
-                setOf(
+                listOf(
                     GerminationTestPayload(
                         testType = GerminationTestType.Lab,
                         substrate = GerminationSubstrate.AgarPetriDish),
@@ -247,6 +248,20 @@ internal class AccessionFetcherTest : DatabaseTest() {
   }
 
   @Test
+  fun `germination test types are inserted at creation time`() {
+    fetcher.create(
+        CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
+    val types =
+        dslContext
+            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .from(ACCESSION_GERMINATION_TEST_TYPE)
+            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(1))
+            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+
+    assertEquals(listOf(GerminationTestType.Lab), types)
+  }
+
+  @Test
   fun `germination tests are inserted by update`() {
     val initial = fetcher.create(CreateAccessionRequestPayload())
     val startDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
@@ -254,7 +269,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
         AccessionPayload(initial)
             .copy(
                 germinationTests =
-                    setOf(
+                    listOf(
                         GerminationTestPayload(
                             testType = GerminationTestType.Lab, startDate = startDate)))
     fetcher.update(initial.accessionNumber, withTest)
@@ -271,18 +286,57 @@ internal class AccessionFetcherTest : DatabaseTest() {
   }
 
   @Test
+  fun `germination test types are inserted by update`() {
+    val initial =
+        fetcher.create(
+            CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
+    val desired =
+        AccessionPayload(initial)
+            .copy(
+                germinationTestTypes = setOf(GerminationTestType.Lab, GerminationTestType.Nursery))
+    fetcher.update(initial.accessionNumber, desired)
+
+    val types =
+        dslContext
+            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .from(ACCESSION_GERMINATION_TEST_TYPE)
+            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(1))
+            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+    assertEquals(setOf(GerminationTestType.Lab, GerminationTestType.Nursery), types.toSet())
+  }
+
+  @Test
+  fun `germination test types are deleted by update`() {
+    val initial =
+        fetcher.create(
+            CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
+    val desired =
+        AccessionPayload(initial).copy(germinationTestTypes = setOf(GerminationTestType.Nursery))
+    fetcher.update(initial.accessionNumber, desired)
+
+    val types =
+        dslContext
+            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .from(ACCESSION_GERMINATION_TEST_TYPE)
+            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(1))
+            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+    assertEquals(listOf(GerminationTestType.Nursery), types)
+  }
+
+  @Test
   fun `existing germination tests are updated`() {
     val initial =
         fetcher.create(
             CreateAccessionRequestPayload(
                 germinationTests =
-                    setOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
+                    listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
     val desired =
         AccessionPayload(initial)
             .copy(
                 germinationTests =
-                    setOf(
+                    listOf(
                         GerminationTestPayload(
+                            id = initial.germinationTests?.get(0)?.id,
                             testType = GerminationTestType.Lab,
                             seedType = GerminationSeedType.Fresh,
                             treatment = GerminationTreatment.Scarify,
@@ -307,12 +361,43 @@ internal class AccessionFetcherTest : DatabaseTest() {
   }
 
   @Test
+  fun `cannot update germination test from a different accession`() {
+    val other =
+        fetcher.create(
+            CreateAccessionRequestPayload(
+                germinationTests =
+                    listOf(GerminationTestPayload(testType = GerminationTestType.Nursery))))
+    val initial =
+        fetcher.create(
+            CreateAccessionRequestPayload(
+                germinationTests =
+                    listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
+    val desired =
+        AccessionPayload(initial)
+            .copy(
+                germinationTests =
+                    listOf(
+                        GerminationTestPayload(
+                            id = other.germinationTests?.get(0)?.id,
+                            testType = GerminationTestType.Lab,
+                            seedType = GerminationSeedType.Fresh,
+                            treatment = GerminationTreatment.Scarify,
+                            substrate = GerminationSubstrate.PaperPetriDish,
+                            notes = "notes",
+                            seedsSown = 5)))
+
+    assertThrows(IllegalArgumentException::class.java) {
+      fetcher.update(initial.accessionNumber, desired)
+    }
+  }
+
+  @Test
   fun `germinations are inserted by create`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     fetcher.create(
         CreateAccessionRequestPayload(
             germinationTests =
-                setOf(
+                listOf(
                     GerminationTestPayload(
                         testType = GerminationTestType.Lab,
                         germinations =
@@ -340,13 +425,14 @@ internal class AccessionFetcherTest : DatabaseTest() {
         fetcher.create(
             CreateAccessionRequestPayload(
                 germinationTests =
-                    setOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
+                    listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
     val desired =
         AccessionPayload(initial)
             .copy(
                 germinationTests =
-                    setOf(
+                    listOf(
                         GerminationTestPayload(
+                            id = initial.germinationTests?.get(0)?.id,
                             testType = GerminationTestType.Lab,
                             germinations =
                                 listOf(
@@ -368,7 +454,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
         fetcher.create(
             CreateAccessionRequestPayload(
                 germinationTests =
-                    setOf(
+                    listOf(
                         GerminationTestPayload(
                             testType = GerminationTestType.Lab,
                             germinations =
@@ -382,8 +468,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
         AccessionPayload(initial)
             .copy(
                 germinationTests =
-                    setOf(
+                    listOf(
                         GerminationTestPayload(
+                            id = initial.germinationTests?.get(0)?.id,
                             testType = GerminationTestType.Lab,
                             germinations =
                                 listOf(
@@ -396,42 +483,6 @@ internal class AccessionFetcherTest : DatabaseTest() {
     assertTrue(
         "First germination preserved",
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 123 })
-  }
-
-  @Test
-  fun `multiple germination tests of the same type are rejected by create`() {
-    assertThrows(IllegalArgumentException::class.java) {
-      fetcher.create(
-          CreateAccessionRequestPayload(
-              germinationTests =
-                  setOf(
-                      GerminationTestPayload(testType = GerminationTestType.Lab, notes = "first"),
-                      GerminationTestPayload(
-                          testType = GerminationTestType.Lab, notes = "second"))))
-    }
-  }
-
-  @Test
-  fun `multiple germination tests of the same type are rejected by update`() {
-    assertThrows(IllegalArgumentException::class.java) {
-      val initial =
-          fetcher.create(
-              CreateAccessionRequestPayload(
-                  germinationTests =
-                      setOf(
-                          GerminationTestPayload(
-                              testType = GerminationTestType.Lab, notes = "first"))))
-      val desired =
-          AccessionPayload(initial)
-              .copy(
-                  germinationTests =
-                      setOf(
-                          GerminationTestPayload(
-                              testType = GerminationTestType.Lab, notes = "first"),
-                          GerminationTestPayload(
-                              testType = GerminationTestType.Lab, notes = "second")))
-      fetcher.update(initial.accessionNumber, desired)
-    }
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {

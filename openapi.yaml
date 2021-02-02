@@ -291,8 +291,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Geolocation'
-        germinationTests:
+        germinationTestTypes:
           uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - Lab
+            - Nursery
+        germinationTests:
           type: array
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
@@ -343,13 +350,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Geolocation'
-        germinationTests:
+        germinationTestTypes:
           uniqueItems: true
           type: array
           items:
+            type: string
+            enum:
+            - Lab
+            - Nursery
+        germinationTests:
+          type: array
+          items:
             $ref: '#/components/schemas/GerminationTestPayload'
-        status:
-          type: string
         processingStartDate:
           type: string
           format: date
@@ -406,6 +418,8 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+        status:
+          type: string
     CreateAccessionResponsePayload:
       required:
       - accession
@@ -452,6 +466,10 @@ components:
       - testType
       type: object
       properties:
+        id:
+          type: string
+          description: Server-assigned unique ID of this germination test. Null when
+            creating a new test.
         testType:
           type: string
           description: Which type of test is described. At most one of each test type
@@ -719,13 +737,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Geolocation'
-        germinationTests:
+        germinationTestTypes:
           uniqueItems: true
           type: array
           items:
+            type: string
+            enum:
+            - Lab
+            - Nursery
+        germinationTests:
+          type: array
+          items:
             $ref: '#/components/schemas/GerminationTestPayload'
-        status:
-          type: string
         accessionNumber:
           type: string
         state:
@@ -738,6 +761,8 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+        status:
+          type: string
   securitySchemes:
     ApiKey:
       type: http

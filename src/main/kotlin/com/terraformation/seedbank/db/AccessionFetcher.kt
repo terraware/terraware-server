@@ -3,6 +3,7 @@ package com.terraformation.seedbank.db
 import com.terraformation.seedbank.TerrawareServerConfig
 import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.BAG
 import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
@@ -19,6 +20,7 @@ import com.terraformation.seedbank.model.GerminationModel
 import com.terraformation.seedbank.model.GerminationTestFields
 import com.terraformation.seedbank.model.GerminationTestModel
 import com.terraformation.seedbank.services.perClassLogger
+import com.terraformation.seedbank.services.toListOrNull
 import com.terraformation.seedbank.services.toSetOrNull
 import java.math.BigDecimal
 import java.time.Clock
@@ -129,6 +131,14 @@ class AccessionFetcher(
             }
             .groupBy { it.testId }
 
+    val germinationTestTypes =
+        dslContext
+            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .from(ACCESSION_GERMINATION_TEST_TYPE)
+            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(accessionId))
+            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .toSetOrNull()
+
     val germinationTests =
         dslContext
             .select(
@@ -137,6 +147,7 @@ class AccessionFetcher(
                 GERMINATION_TEST.SEED_TYPE_ID,
                 GERMINATION_TEST.SUBSTRATE_ID)
             .from(GERMINATION_TEST)
+            .where(GERMINATION_TEST.ACCESSION_ID.eq(accessionId))
             .orderBy(GERMINATION_TEST.ID)
             .fetch { record ->
               val testId = record[GERMINATION_TEST.ID]!!
@@ -152,17 +163,12 @@ class AccessionFetcher(
                   record[GERMINATION_TEST.NOTES],
                   germinationsByTestId[testId])
             }
-            .toSetOrNull()
-
-    // TODO: Move this logic
-    val status =
-        if (parentRow[ACCESSION.STATE_ID] == AccessionState.Withdrawn) "Inactive" else "Active"
+            .toListOrNull()
 
     return AccessionModel(
         id = accessionId,
         accessionNumber = accessionNumber,
         state = parentRow[ACCESSION.STATE_ID]!!,
-        status = status,
         species = parentRow[ACCESSION.species().NAME],
         family = parentRow[ACCESSION.speciesFamily().NAME],
         numberOfTrees = parentRow[ACCESSION.COLLECTION_TREES],
@@ -193,6 +199,7 @@ class AccessionFetcher(
         bagNumbers = bagNumbers,
         geolocations = geolocations,
         photoFilenames = null, // TODO (need this in the data model),
+        germinationTestTypes = germinationTestTypes,
         germinationTests = germinationTests,
     )
   }
@@ -234,7 +241,8 @@ class AccessionFetcher(
           insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
           updateBags(accessionId, emptySet(), accession.bagNumbers)
           updateGeolocations(accessionId, emptySet(), accession.geolocations)
-          updateGerminationTests(accessionId, emptySet(), accession.germinationTests)
+          updateGerminationTestTypes(accessionId, emptySet(), accession.germinationTestTypes)
+          updateGerminationTests(accessionId, emptyList(), accession.germinationTests)
         }
 
         return fetchByNumber(accessionNumber)!!
@@ -307,6 +315,8 @@ class AccessionFetcher(
 
       updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
       updateGeolocations(accessionId, existing.geolocations, accession.geolocations)
+      updateGerminationTestTypes(
+          accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
       updateGerminationTests(accessionId, existing.germinationTests, accession.germinationTests)
     }
 
@@ -397,25 +407,45 @@ class AccessionFetcher(
     }
   }
 
-  private fun updateGerminationTests(
+  private fun updateGerminationTestTypes(
       accessionId: Long,
-      existingTests: Set<GerminationTestModel>?,
-      desiredTests: Set<GerminationTestFields>?
+      existingTypes: Set<GerminationTestType>?,
+      desiredTypes: Set<GerminationTestType>?
   ) {
-    // Tests are identified by accession ID and test type, so just look at the types to determine
-    // whether tests need to be added or removed. Only one test of each type is allowed.
-    if (desiredTests?.groupBy { it.testType }?.values?.any { it.size > 1 } == true) {
-      throw IllegalArgumentException("Cannot have multiple germination tests of the same type")
-    }
-
-    val existing = (existingTests ?: emptySet()).associateBy { it.testType }
-    val desired = (desiredTests ?: emptySet()).associateBy { it.testType }
-    val added = desired.minus(existing.keys)
-    val deleted = existing.minus(desired.keys)
-    val retained = existing.minus(added.keys).minus(deleted.keys)
+    val existing = existingTypes ?: emptySet()
+    val desired = desiredTypes ?: emptySet()
+    val added = desired.minus(existing)
+    val deleted = existing.minus(desired)
 
     if (deleted.isNotEmpty()) {
-      val deletedTestIds = deleted.values.map { it.id }
+      dslContext
+          .deleteFrom(ACCESSION_GERMINATION_TEST_TYPE)
+          .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(accessionId))
+          .and(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID.`in`(deleted))
+          .execute()
+    }
+
+    added.forEach { type ->
+      dslContext
+          .insertInto(ACCESSION_GERMINATION_TEST_TYPE)
+          .set(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID, accessionId)
+          .set(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID, type)
+          .execute()
+    }
+  }
+
+  private fun updateGerminationTests(
+      accessionId: Long,
+      existingTests: List<GerminationTestModel>?,
+      desiredTests: List<GerminationTestFields>?
+  ) {
+    val existing = existingTests ?: emptyList()
+    val existingById = existing.associateBy { it.id }
+    val existingIds = existingById.keys
+    val desired = desiredTests ?: emptyList()
+    val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id })
+
+    if (deletedTestIds.isNotEmpty()) {
       dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.`in`(deletedTestIds)).execute()
       dslContext
           .deleteFrom(GERMINATION_TEST)
@@ -423,10 +453,13 @@ class AccessionFetcher(
           .execute()
     }
 
-    added.values.forEach { insertGerminationTest(accessionId, it) }
+    desired.filter { it.id == null }.forEach { insertGerminationTest(accessionId, it) }
 
-    retained.values.forEach { existingTest ->
-      val desiredTest = desired[existingTest.testType]!!
+    desired.filter { it.id != null }.forEach { desiredTest ->
+      val existingTest =
+          existingById[desiredTest.id]
+              ?: throw IllegalArgumentException(
+                  "Germination test IDs must refer to existing tests; leave ID off to insert a new test.")
       if (!desiredTest.fieldsEqual(existingTest)) {
         dslContext
             .update(GERMINATION_TEST)

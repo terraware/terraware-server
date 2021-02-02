@@ -64,7 +64,10 @@
           <userType>com.terraformation.seedbank.db.GerminationTestType</userType>
           <converter>com.terraformation.seedbank.db.GerminationTestTypeConverter</converter>
           <includeTypes>INTEGER</includeTypes>
-          <includeExpression>(?i:germination_test\.test_type)</includeExpression>
+          <includeExpression>(?i:
+            germination_test\.test_type
+            | accession_germination_test_type\.germination_test_type_id)
+          </includeExpression>
         </forcedType>
 
         <forcedType>
@@ -92,7 +95,9 @@
           <userType>com.terraformation.seedbank.db.StorageCondition</userType>
           <converter>com.terraformation.seedbank.db.StorageConditionConverter</converter>
           <includeTypes>INTEGER</includeTypes>
-          <includeExpression>(?i:(accession\.target_storage_condition|storage_location\.condition_id))</includeExpression>
+          <includeExpression>
+            (?i:(accession\.target_storage_condition|storage_location\.condition_id))
+          </includeExpression>
         </forcedType>
 
         <forcedType>
