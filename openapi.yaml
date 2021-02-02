@@ -69,7 +69,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccessionPayload'
+              $ref: '#/components/schemas/UpdateAccessionRequestPayload'
         required: true
       responses:
         "200":
@@ -260,6 +260,9 @@ components:
           format: int32
         targetStorageCondition:
           type: string
+          enum:
+          - Refrigerator
+          - Freezer
         dryingStartDate:
           type: string
           format: date
@@ -335,8 +338,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Geolocation'
-        accessionNumber:
-          type: string
         processingStartDate:
           type: string
           format: date
@@ -360,6 +361,9 @@ components:
           format: int32
         targetStorageCondition:
           type: string
+          enum:
+          - Refrigerator
+          - Freezer
         dryingStartDate:
           type: string
           format: date
@@ -378,6 +382,8 @@ components:
           type: array
           items:
             type: string
+        accessionNumber:
+          type: string
         status:
           type: string
         state:
@@ -556,6 +562,111 @@ components:
           type: integer
           format: int32
       description: The current value and value as of last week for a summary statistic
+    UpdateAccessionRequestPayload:
+      type: object
+      properties:
+        species:
+          type: string
+        family:
+          type: string
+        numberOfTrees:
+          type: integer
+          format: int32
+        founderId:
+          type: string
+        endangered:
+          type: boolean
+        rare:
+          type: boolean
+        fieldNotes:
+          type: string
+        collectedDate:
+          type: string
+          format: date
+        receivedDate:
+          type: string
+          format: date
+        primaryCollector:
+          type: string
+        secondaryCollectors:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        siteLocation:
+          type: string
+        landowner:
+          type: string
+        environmentalNotes:
+          type: string
+        processingStartDate:
+          type: string
+          format: date
+        processingMethod:
+          type: string
+          enum:
+          - Count
+          - Weight
+        seedsCounted:
+          type: integer
+          format: int32
+        subsetWeightGrams:
+          type: number
+        totalWeightGrams:
+          type: number
+        subsetCount:
+          type: integer
+          format: int32
+        estimatedSeedCount:
+          type: integer
+          format: int32
+        targetStorageCondition:
+          type: string
+          enum:
+          - Refrigerator
+          - Freezer
+        dryingStartDate:
+          type: string
+          format: date
+        dryingEndDate:
+          type: string
+          format: date
+        dryingMoveDate:
+          type: string
+          format: date
+        processingNotes:
+          type: string
+        processingStaffResponsible:
+          type: string
+        bagNumbers:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        photoFilenames:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        geolocations:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Geolocation'
+        accessionNumber:
+          type: string
+        status:
+          type: string
+        state:
+          type: string
+          enum:
+          - Pending
+          - Processing
+          - Processed
+          - Drying
+          - Dried
+          - In Storage
+          - Withdrawn
   securitySchemes:
     ApiKey:
       type: http

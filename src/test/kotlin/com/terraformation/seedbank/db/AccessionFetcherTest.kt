@@ -10,7 +10,6 @@ import com.terraformation.seedbank.db.tables.daos.CollectionEventDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.db.tables.pojos.Bag
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
-import com.terraformation.seedbank.db.tables.references.BAG
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -206,29 +205,6 @@ internal class AccessionFetcherTest : DatabaseTest() {
         updatedGeos.filter { it.latitude == BigDecimal(1) })
   }
 
-  @Test
-  fun `valid storage condition is accepted`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
-
-    fetcher.update(
-        initial.accessionNumber,
-        AccessionPayload(initial).copy(targetStorageCondition = "Refrigerator"))
-
-    val row = accessionDao.fetchOneById(1)!!
-    assertEquals("Storage condition ID", 1, row.targetStorageCondition)
-  }
-
-  @Test
-  fun `undefined storage condition is rejected`() {
-    assertThrows(IllegalArgumentException::class.java) {
-      val initial = fetcher.create(CreateAccessionRequestPayload())
-
-      fetcher.update(
-          initial.accessionNumber,
-          AccessionPayload(initial).copy(targetStorageCondition = "Amazon warehouse"))
-    }
-  }
-
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {
     with(ACCESSION_SECONDARY_COLLECTOR) {
       return dslContext
@@ -236,18 +212,6 @@ internal class AccessionFetcherTest : DatabaseTest() {
           .from(ACCESSION_SECONDARY_COLLECTOR)
           .where(ACCESSION_ID.eq(accessionId))
           .fetch(COLLECTOR_ID)
-          .filterNotNull()
-          .toSet()
-    }
-  }
-
-  private fun getBagIds(accessionId: Long?): Set<Long> {
-    with(BAG) {
-      return dslContext
-          .select(ID)
-          .from(BAG)
-          .where(ACCESSION_ID.eq(accessionId))
-          .fetch(ID)
           .filterNotNull()
           .toSet()
     }

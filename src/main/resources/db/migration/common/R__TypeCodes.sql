@@ -12,6 +12,11 @@ INSERT INTO device_type (id, name)
 VALUES (1, 'Generic Sensor')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO germination_seed_type (id, name)
+VALUES (1, 'Fresh'),
+       (2, 'Stored')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO germination_substrate (id, name)
 VALUES (1, 'Nursery Media'),
        (2, 'Agar Petri Dish'),

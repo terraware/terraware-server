@@ -12,13 +12,19 @@
     <database>
       <name>org.jooq.meta.postgres.PostgresDatabase</name>
       <includes>.*</includes>
+      <!-- The excludes list should contain all the tables in EnumGenerator.kt. -->
       <excludes>
         flyway_.*
         | accession_state$
+        | germination_seed_type$
+        | germination_substrate$
         | germination_test_type$
+        | germination_treatment$
         | notification_type$
         | processing_method$
+        | storage_condition$
         | timeseries_type$
+        | withdrawal_purpose$
       </excludes>
 
       <inputSchema>public</inputSchema>
@@ -41,10 +47,31 @@
         </forcedType>
 
         <forcedType>
+          <userType>com.terraformation.seedbank.db.GerminationSeedType</userType>
+          <converter>com.terraformation.seedbank.db.GerminationSeedTypeConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:germination_test\.seed_type_id)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.GerminationSubstrate</userType>
+          <converter>com.terraformation.seedbank.db.GerminationSubstrateConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:germination_test\.substrate_id)</includeExpression>
+        </forcedType>
+
+        <forcedType>
           <userType>com.terraformation.seedbank.db.GerminationTestType</userType>
           <converter>com.terraformation.seedbank.db.GerminationTestTypeConverter</converter>
           <includeTypes>INTEGER</includeTypes>
           <includeExpression>(?i:germination_test\.test_type)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.GerminationTreatment</userType>
+          <converter>com.terraformation.seedbank.db.GerminationTreatmentConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:germination_test\.treatment_id)</includeExpression>
         </forcedType>
 
         <forcedType>
@@ -62,10 +89,24 @@
         </forcedType>
 
         <forcedType>
+          <userType>com.terraformation.seedbank.db.StorageCondition</userType>
+          <converter>com.terraformation.seedbank.db.StorageConditionConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:(accession\.target_storage_condition|storage_location\.condition_id))</includeExpression>
+        </forcedType>
+
+        <forcedType>
           <userType>com.terraformation.seedbank.db.TimeseriesType</userType>
           <converter>com.terraformation.seedbank.db.TimeseriesTypeConverter</converter>
           <includeTypes>INTEGER</includeTypes>
           <includeExpression>(?i:timeseries\.type_id)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.WithdrawalPurpose</userType>
+          <converter>com.terraformation.seedbank.db.WithdrawalPurposeConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:withdrawal\.purpose_id)</includeExpression>
         </forcedType>
       </forcedTypes>
     </database>

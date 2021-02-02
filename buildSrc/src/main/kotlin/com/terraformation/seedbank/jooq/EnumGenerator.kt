@@ -13,10 +13,15 @@ class EnumGenerator : KotlinGenerator() {
   private val enumTables =
       setOf(
           "accession_state",
+          "germination_seed_type",
+          "germination_substrate",
           "germination_test_type",
+          "germination_treatment",
           "notification_type",
           "processing_method",
-          "timeseries_type")
+          "storage_condition",
+          "timeseries_type",
+          "withdrawal_purpose")
 
   private val log = LoggerFactory.getLogger(javaClass)
 

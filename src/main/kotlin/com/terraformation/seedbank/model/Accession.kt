@@ -3,6 +3,7 @@ package com.terraformation.seedbank.model
 import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.StorageCondition
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -55,7 +56,7 @@ interface AccessionFields {
     get() = null
   val estimatedSeedCount: Int?
     get() = null
-  val targetStorageCondition: String?
+  val targetStorageCondition: StorageCondition?
     get() = null
   val dryingStartDate: LocalDate?
     get() = null
@@ -107,7 +108,7 @@ data class AccessionModel(
     override val totalWeightGrams: BigDecimal? = null,
     override val subsetCount: Int? = null,
     override val estimatedSeedCount: Int? = null,
-    override val targetStorageCondition: String? = null,
+    override val targetStorageCondition: StorageCondition? = null,
     override val dryingStartDate: LocalDate? = null,
     override val dryingEndDate: LocalDate? = null,
     override val dryingMoveDate: LocalDate? = null,

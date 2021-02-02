@@ -10,6 +10,7 @@ import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.db.AccessionFetcher
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.ConcreteAccession
 import io.swagger.v3.oas.annotations.Operation
@@ -109,7 +110,7 @@ data class UpdateAccessionRequestPayload(
     override val totalWeightGrams: BigDecimal? = null,
     override val subsetCount: Int? = null,
     override val estimatedSeedCount: Int? = null,
-    override val targetStorageCondition: String? = null,
+    override val targetStorageCondition: StorageCondition? = null,
     override val dryingStartDate: LocalDate? = null,
     override val dryingEndDate: LocalDate? = null,
     override val dryingMoveDate: LocalDate? = null,
@@ -146,7 +147,7 @@ data class AccessionPayload(
     override val totalWeightGrams: BigDecimal? = null,
     override val subsetCount: Int? = null,
     override val estimatedSeedCount: Int? = null,
-    override val targetStorageCondition: String? = null,
+    override val targetStorageCondition: StorageCondition? = null,
     override val dryingStartDate: LocalDate? = null,
     override val dryingEndDate: LocalDate? = null,
     override val dryingMoveDate: LocalDate? = null,

@@ -9,7 +9,6 @@ import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
 import com.terraformation.seedbank.db.tables.references.SPECIES
 import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
-import com.terraformation.seedbank.db.tables.references.STORAGE_CONDITION
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.ConcreteAccession
@@ -57,8 +56,8 @@ class AccessionFetcher(
                 ACCESSION.speciesFamily().NAME,
                 ACCESSION.STATE_ID,
                 ACCESSION.storageLocation().NAME,
-                ACCESSION.storageLocation().storageCondition().NAME,
-                ACCESSION.storageCondition().NAME,
+                ACCESSION.storageLocation().CONDITION_ID,
+                ACCESSION.TARGET_STORAGE_CONDITION,
                 ACCESSION.PROCESSING_METHOD_ID,
                 ACCESSION.PROCESSING_STAFF_RESPONSIBLE,
             )
@@ -133,7 +132,7 @@ class AccessionFetcher(
         totalWeightGrams = parentRow[ACCESSION.TOTAL_WEIGHT],
         subsetCount = parentRow[ACCESSION.SUBSET_COUNT],
         estimatedSeedCount = parentRow[ACCESSION.EST_SEED_COUNT],
-        targetStorageCondition = parentRow[ACCESSION.storageCondition().NAME],
+        targetStorageCondition = parentRow[ACCESSION.TARGET_STORAGE_CONDITION],
         dryingStartDate = parentRow[ACCESSION.DRYING_START_DATE],
         dryingEndDate = parentRow[ACCESSION.DRYING_END_DATE],
         dryingMoveDate = parentRow[ACCESSION.DRYING_MOVE_DATE],
@@ -223,9 +222,7 @@ class AccessionFetcher(
                 .set(TOTAL_WEIGHT, accession.totalWeightGrams)
                 .set(SUBSET_COUNT, accession.subsetCount)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
-                .set(
-                    TARGET_STORAGE_CONDITION,
-                    getStorageConditionId(accession.targetStorageCondition))
+                .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(DRYING_END_DATE, accession.dryingEndDate)
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
@@ -343,19 +340,6 @@ class AccessionFetcher(
             .execute()
       }
     }
-  }
-
-  private fun getStorageConditionId(name: String?): Int? {
-    if (name == null) {
-      return null
-    }
-
-    return dslContext
-        .select(STORAGE_CONDITION.ID)
-        .from(STORAGE_CONDITION)
-        .where(STORAGE_CONDITION.NAME.eq(name))
-        .fetchOne(STORAGE_CONDITION.ID)
-        ?: throw IllegalArgumentException("Unknown storage condition $name")
   }
 
   private fun getSpeciesId(speciesName: String?): Long? {
