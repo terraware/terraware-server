@@ -74,6 +74,8 @@ interface AccessionFields {
     get() = null
   val geolocations: Set<Geolocation>?
     get() = null
+  val germinationTests: Set<GerminationTestFields>?
+    get() = null
 }
 
 interface ConcreteAccession : AccessionFields {
@@ -117,4 +119,5 @@ data class AccessionModel(
     override val bagNumbers: Set<String>? = null,
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
+    override val germinationTests: Set<GerminationTestModel>? = null
 ) : ConcreteAccession

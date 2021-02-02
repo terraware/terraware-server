@@ -291,6 +291,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Geolocation'
+        germinationTests:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/GerminationTestPayload'
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -338,6 +343,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Geolocation'
+        germinationTests:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/GerminationTestPayload'
+        status:
+          type: string
         processingStartDate:
           type: string
           format: date
@@ -384,8 +396,6 @@ components:
             type: string
         accessionNumber:
           type: string
-        status:
-          type: string
         state:
           type: string
           enum:
@@ -425,6 +435,62 @@ components:
           type: number
         accuracy:
           type: number
+    GerminationPayload:
+      required:
+      - recordingDate
+      - seedsGerminated
+      type: object
+      properties:
+        recordingDate:
+          type: string
+          format: date
+        seedsGerminated:
+          type: integer
+          format: int32
+    GerminationTestPayload:
+      required:
+      - testType
+      type: object
+      properties:
+        testType:
+          type: string
+          description: Which type of test is described. At most one of each test type
+            is allowed.
+          enum:
+          - Lab
+          - Nursery
+        startDate:
+          type: string
+          format: date
+        seedType:
+          type: string
+          enum:
+          - Fresh
+          - Stored
+        substrate:
+          type: string
+          enum:
+          - Nursery Media
+          - Agar Petri Dish
+          - Paper Petri Dish
+          - Other
+        treatment:
+          type: string
+          enum:
+          - Soak
+          - Scarify
+          - GA3
+          - Stratification
+          - Other
+        notes:
+          type: string
+        seedsSown:
+          type: integer
+          format: int32
+        germinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/GerminationPayload'
     GetAccessionResponsePayload:
       required:
       - accession
@@ -653,9 +719,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Geolocation'
-        accessionNumber:
-          type: string
+        germinationTests:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/GerminationTestPayload'
         status:
+          type: string
+        accessionNumber:
           type: string
         state:
           type: string

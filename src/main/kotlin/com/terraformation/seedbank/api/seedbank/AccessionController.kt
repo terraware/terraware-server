@@ -1,6 +1,7 @@
 package com.terraformation.seedbank.api.seedbank
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.SimpleSuccessResponsePayload
 import com.terraformation.seedbank.api.SuccessResponsePayload
@@ -9,14 +10,24 @@ import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.db.AccessionFetcher
 import com.terraformation.seedbank.db.AccessionState
+import com.terraformation.seedbank.db.GerminationSeedType
+import com.terraformation.seedbank.db.GerminationSubstrate
+import com.terraformation.seedbank.db.GerminationTestType
+import com.terraformation.seedbank.db.GerminationTreatment
 import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.ConcreteAccession
+import com.terraformation.seedbank.model.GerminationFields
+import com.terraformation.seedbank.model.GerminationTestFields
+import com.terraformation.seedbank.services.perClassLogger
+import com.terraformation.seedbank.services.toSetOrNull
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
 import java.time.LocalDate
+import javax.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -49,6 +60,7 @@ class AccessionController(private val accessionFetcher: AccessionFetcher) {
       @RequestBody payload: UpdateAccessionRequestPayload,
       @PathVariable accessionNumber: String
   ): SimpleSuccessResponsePayload {
+    perClassLogger().info("Payload $payload")
     if (!accessionFetcher.update(accessionNumber, payload)) {
       throw NotFoundException()
     } else {
@@ -85,6 +97,7 @@ data class CreateAccessionRequestPayload(
     override val environmentalNotes: String? = null,
     override val bagNumbers: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
+    override val germinationTests: Set<GerminationTestPayload>? = null,
 ) : AccessionFields
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -119,6 +132,7 @@ data class UpdateAccessionRequestPayload(
     override val bagNumbers: Set<String>? = null,
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
+    @Valid override val germinationTests: Set<GerminationTestPayload>?
 ) : AccessionFields
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -156,6 +170,7 @@ data class AccessionPayload(
     override val bagNumbers: Set<String>? = null,
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
+    override val germinationTests: Set<GerminationTestPayload>? = null,
 ) : ConcreteAccession {
   constructor(
       model: ConcreteAccession
@@ -192,7 +207,9 @@ data class AccessionPayload(
       model.processingStaffResponsible,
       model.bagNumbers,
       model.photoFilenames,
-      model.geolocations)
+      model.geolocations,
+      model.germinationTests?.map { GerminationTestPayload(it) }?.toSetOrNull(),
+  )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -219,6 +236,39 @@ class Geolocation(
   override fun toString() =
       "Geolocation(latitude=${latitude.toPlainString()}, longitude=${longitude.toPlainString()}, " +
           "accuracy=${accuracy?.toPlainString()})"
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class GerminationTestPayload(
+    @Schema(
+        description = "Which type of test is described. At most one of each test type is allowed.")
+    override val testType: GerminationTestType,
+    override val startDate: LocalDate? = null,
+    override val seedType: GerminationSeedType? = null,
+    override val substrate: GerminationSubstrate? = null,
+    override val treatment: GerminationTreatment? = null,
+    override val notes: String? = null,
+    override val seedsSown: Int? = null,
+    @Valid override val germinations: List<GerminationPayload>? = null
+) : GerminationTestFields {
+  constructor(
+      model: GerminationTestFields
+  ) : this(
+      model.testType,
+      model.startDate,
+      model.seedType,
+      model.substrate,
+      model.treatment,
+      model.notes,
+      model.seedsSown,
+      model.germinations?.map { GerminationPayload(it) })
+}
+
+data class GerminationPayload(
+    override val recordingDate: LocalDate,
+    @JsonProperty(required = true) override val seedsGerminated: Int
+) : GerminationFields {
+  constructor(model: GerminationFields) : this(model.recordingDate, model.seedsGerminated)
 }
 
 data class CreateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload

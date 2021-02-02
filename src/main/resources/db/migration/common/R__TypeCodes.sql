@@ -48,6 +48,11 @@ VALUES (1, 'Count'),
        (2, 'Weight')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO germination_seed_type (id, name)
+VALUES (1, 'Fresh'),
+       (2, 'Stored')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO site_module_type (id, name)
 VALUES (1, 'Seed Bank'),
        (2, 'Desalination'),

@@ -4,7 +4,9 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
+import org.jooq.DSLContext
 import org.springdoc.core.customizers.OpenApiCustomiser
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * Customizes generation of Swagger API documentation.
@@ -14,6 +16,8 @@ import org.springdoc.core.customizers.OpenApiCustomiser
  */
 @ManagedBean
 class SwaggerConfig : OpenApiCustomiser {
+  @Autowired(required = false) var dslContext: DSLContext? = null
+
   override fun customise(openApi: OpenAPI) {
     sortEndpoints(openApi)
     sortResponseCodes(openApi)
