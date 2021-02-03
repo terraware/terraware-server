@@ -180,6 +180,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
+  /api/v1/seedbank/values/storageLocation:
+    get:
+      tags:
+      - values-controller
+      operationId: getStorageLocations
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageLocationsResponsePayload'
 components:
   schemas:
     AccessionPayload:
@@ -442,8 +454,6 @@ components:
           enum:
           - Refrigerator
           - Freezer
-        status:
-          type: string
         state:
           type: string
           enum:
@@ -454,6 +464,8 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+        status:
+          type: string
     CreateAccessionResponsePayload:
       required:
       - accession
@@ -624,6 +636,31 @@ components:
       - status
       type: object
       properties:
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    StorageLocationDetails:
+      required:
+      - storageCondition
+      - storageLocation
+      type: object
+      properties:
+        storageLocation:
+          type: string
+        storageCondition:
+          type: string
+          enum:
+          - Refrigerator
+          - Freezer
+    StorageLocationsResponsePayload:
+      required:
+      - locations
+      - status
+      type: object
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageLocationDetails'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     SuccessOrError:
@@ -802,8 +839,6 @@ components:
           enum:
           - Refrigerator
           - Freezer
-        status:
-          type: string
         state:
           type: string
           enum:
@@ -814,6 +849,8 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+        status:
+          type: string
   securitySchemes:
     ApiKey:
       type: http
