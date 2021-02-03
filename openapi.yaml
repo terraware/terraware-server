@@ -391,81 +391,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
-        processingStartDate:
-          type: string
-          format: date
-        processingMethod:
-          type: string
-          enum:
-          - Count
-          - Weight
-        seedsCounted:
-          type: integer
-          format: int32
-        subsetWeightGrams:
-          type: number
-        totalWeightGrams:
-          type: number
-        subsetCount:
-          type: integer
-          format: int32
-        estimatedSeedCount:
-          type: integer
-          format: int32
-        targetStorageCondition:
-          type: string
-          enum:
-          - Refrigerator
-          - Freezer
-        dryingStartDate:
-          type: string
-          format: date
-        dryingEndDate:
-          type: string
-          format: date
-        dryingMoveDate:
-          type: string
-          format: date
-        processingNotes:
-          type: string
-        processingStaffResponsible:
-          type: string
-        storageStartDate:
-          type: string
-          format: date
-        storagePackets:
-          type: integer
-          format: int32
-        storageLocation:
-          type: string
-        storageNotes:
-          type: string
-        storageStaffResponsible:
-          type: string
-        photoFilenames:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        accessionNumber:
-          type: string
-        storageCondition:
-          type: string
-          enum:
-          - Refrigerator
-          - Freezer
-        state:
-          type: string
-          enum:
-          - Pending
-          - Processing
-          - Processed
-          - Drying
-          - Dried
-          - In Storage
-          - Withdrawn
-        status:
-          type: string
     CreateAccessionResponsePayload:
       required:
       - accession
@@ -832,25 +757,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
-        accessionNumber:
-          type: string
-        storageCondition:
-          type: string
-          enum:
-          - Refrigerator
-          - Freezer
-        state:
-          type: string
-          enum:
-          - Pending
-          - Processing
-          - Processed
-          - Drying
-          - Dried
-          - In Storage
-          - Withdrawn
-        status:
-          type: string
   securitySchemes:
     ApiKey:
       type: http

@@ -102,7 +102,6 @@ data class CreateAccessionRequestPayload(
     override val germinationTests: List<GerminationTestPayload>? = null,
 ) : AccessionFields
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class UpdateAccessionRequestPayload(
     override val species: String? = null,
     override val family: String? = null,
