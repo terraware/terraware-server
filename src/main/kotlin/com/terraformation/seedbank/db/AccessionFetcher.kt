@@ -12,6 +12,7 @@ import com.terraformation.seedbank.db.tables.references.GERMINATION
 import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
 import com.terraformation.seedbank.db.tables.references.SPECIES
 import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
+import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.ConcreteAccession
@@ -71,6 +72,7 @@ class AccessionFetcher(
             )
             .from(ACCESSION)
             .where(ACCESSION.NUMBER.eq(accessionNumber))
+            .and(ACCESSION.SITE_MODULE_ID.eq(config.siteModuleId))
             .fetchOne()
             ?: return null
 
@@ -165,43 +167,51 @@ class AccessionFetcher(
             }
             .toListOrNull()
 
-    return AccessionModel(
-        id = accessionId,
-        accessionNumber = accessionNumber,
-        state = parentRow[ACCESSION.STATE_ID]!!,
-        species = parentRow[ACCESSION.species().NAME],
-        family = parentRow[ACCESSION.speciesFamily().NAME],
-        numberOfTrees = parentRow[ACCESSION.COLLECTION_TREES],
-        founderId = parentRow[ACCESSION.FOUNDER_TREE],
-        endangered = parentRow[ACCESSION.SPECIES_ENDANGERED],
-        rare = parentRow[ACCESSION.SPECIES_RARE],
-        fieldNotes = parentRow[ACCESSION.FIELD_NOTES],
-        collectedDate = parentRow[ACCESSION.COLLECTED_DATE],
-        receivedDate = parentRow[ACCESSION.RECEIVED_DATE],
-        primaryCollector = parentRow[ACCESSION.collector().NAME],
-        secondaryCollectors = secondaryCollectorNames,
-        siteLocation = parentRow[ACCESSION.COLLECTION_SITE_NAME],
-        landowner = parentRow[ACCESSION.COLLECTION_SITE_LANDOWNER],
-        environmentalNotes = parentRow[ACCESSION.COLLECTION_SITE_NOTES],
-        processingStartDate = parentRow[ACCESSION.PROCESSING_START_DATE],
-        processingMethod = parentRow[ACCESSION.PROCESSING_METHOD_ID],
-        seedsCounted = parentRow[ACCESSION.SEEDS_COUNTED],
-        subsetWeightGrams = parentRow[ACCESSION.SUBSET_WEIGHT],
-        totalWeightGrams = parentRow[ACCESSION.TOTAL_WEIGHT],
-        subsetCount = parentRow[ACCESSION.SUBSET_COUNT],
-        estimatedSeedCount = parentRow[ACCESSION.EST_SEED_COUNT],
-        targetStorageCondition = parentRow[ACCESSION.TARGET_STORAGE_CONDITION],
-        dryingStartDate = parentRow[ACCESSION.DRYING_START_DATE],
-        dryingEndDate = parentRow[ACCESSION.DRYING_END_DATE],
-        dryingMoveDate = parentRow[ACCESSION.DRYING_MOVE_DATE],
-        processingNotes = parentRow[ACCESSION.PROCESSING_NOTES],
-        processingStaffResponsible = parentRow[ACCESSION.PROCESSING_STAFF_RESPONSIBLE],
-        bagNumbers = bagNumbers,
-        geolocations = geolocations,
-        photoFilenames = null, // TODO (need this in the data model),
-        germinationTestTypes = germinationTestTypes,
-        germinationTests = germinationTests,
-    )
+    return with(ACCESSION) {
+      AccessionModel(
+          id = accessionId,
+          accessionNumber = accessionNumber,
+          state = parentRow[STATE_ID]!!,
+          species = parentRow[species().NAME],
+          family = parentRow[speciesFamily().NAME],
+          numberOfTrees = parentRow[COLLECTION_TREES],
+          founderId = parentRow[FOUNDER_TREE],
+          endangered = parentRow[SPECIES_ENDANGERED],
+          rare = parentRow[SPECIES_RARE],
+          fieldNotes = parentRow[FIELD_NOTES],
+          collectedDate = parentRow[COLLECTED_DATE],
+          receivedDate = parentRow[RECEIVED_DATE],
+          primaryCollector = parentRow[collector().NAME],
+          secondaryCollectors = secondaryCollectorNames,
+          siteLocation = parentRow[COLLECTION_SITE_NAME],
+          landowner = parentRow[COLLECTION_SITE_LANDOWNER],
+          environmentalNotes = parentRow[COLLECTION_SITE_NOTES],
+          processingStartDate = parentRow[PROCESSING_START_DATE],
+          processingMethod = parentRow[PROCESSING_METHOD_ID],
+          seedsCounted = parentRow[SEEDS_COUNTED],
+          subsetWeightGrams = parentRow[SUBSET_WEIGHT],
+          totalWeightGrams = parentRow[TOTAL_WEIGHT],
+          subsetCount = parentRow[SUBSET_COUNT],
+          estimatedSeedCount = parentRow[EST_SEED_COUNT],
+          targetStorageCondition = parentRow[TARGET_STORAGE_CONDITION],
+          dryingStartDate = parentRow[DRYING_START_DATE],
+          dryingEndDate = parentRow[DRYING_END_DATE],
+          dryingMoveDate = parentRow[DRYING_MOVE_DATE],
+          processingNotes = parentRow[PROCESSING_NOTES],
+          processingStaffResponsible = parentRow[PROCESSING_STAFF_RESPONSIBLE],
+          bagNumbers = bagNumbers,
+          storageStartDate = parentRow[STORAGE_START_DATE],
+          storagePackets = parentRow[STORAGE_PACKETS],
+          storageLocation = parentRow[storageLocation().NAME],
+          storageCondition = parentRow[storageLocation().CONDITION_ID],
+          storageNotes = parentRow[STORAGE_NOTES],
+          storageStaffResponsible = parentRow[STORAGE_STAFF_RESPONSIBLE],
+          geolocations = geolocations,
+          photoFilenames = null, // TODO (need this in the data model),
+          germinationTestTypes = germinationTestTypes,
+          germinationTests = germinationTests,
+      )
+    }
   }
 
   fun create(accession: AccessionFields): ConcreteAccession {
@@ -233,6 +243,11 @@ class AccessionFetcher(
                     .set(COLLECTION_SITE_NAME, accession.siteLocation)
                     .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
                     .set(COLLECTION_SITE_NOTES, accession.environmentalNotes)
+                    .set(STORAGE_START_DATE, accession.storageStartDate)
+                    .set(STORAGE_PACKETS, accession.storagePackets)
+                    .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
+                    .set(STORAGE_NOTES, accession.storageNotes)
+                    .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
                     .returning(ID)
                     .fetchOne()
                     ?.get(ID)!!
@@ -293,7 +308,13 @@ class AccessionFetcher(
                 .set(COLLECTION_SITE_NAME, accession.siteLocation)
                 .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
                 .set(COLLECTION_SITE_NOTES, accession.environmentalNotes)
+                .set(STORAGE_START_DATE, accession.storageStartDate)
+                .set(STORAGE_PACKETS, accession.storagePackets)
+                .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
+                .set(STORAGE_NOTES, accession.storageNotes)
+                .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
                 .where(NUMBER.eq(accessionNumber))
+                .and(SITE_MODULE_ID.eq(config.siteModuleId))
                 .execute()
           }
 
@@ -521,15 +542,18 @@ class AccessionFetcher(
   }
 
   private fun getCollectorId(name: String?): Long? {
-    return getOrInsertId(name, COLLECTOR.ID, COLLECTOR.NAME) {
-      it.set(COLLECTOR.SITE_MODULE_ID, config.siteModuleId)
-    }
+    return getOrInsertId(name, COLLECTOR.ID, COLLECTOR.NAME, COLLECTOR.SITE_MODULE_ID)
+  }
+
+  private fun getStorageLocationId(name: String?): Long? {
+    return getId(name, STORAGE_LOCATION.ID, STORAGE_LOCATION.NAME, STORAGE_LOCATION.SITE_MODULE_ID)
   }
 
   private fun getOrInsertId(
       name: String?,
       idField: TableField<*, Long?>,
       nameField: TableField<*, String?>,
+      siteModuleIdField: TableField<*, Long?>? = null,
       extraSetters: (InsertSetMoreStep<out Record>) -> Unit = {}
   ): Long? {
     if (name == null) {
@@ -537,7 +561,12 @@ class AccessionFetcher(
     }
 
     val existingId =
-        dslContext.select(idField).from(idField.table).where(nameField.eq(name)).fetchOne(idField)
+        dslContext
+            .select(idField)
+            .from(idField.table)
+            .where(nameField.eq(name))
+            .apply { if (siteModuleIdField != null) and(siteModuleIdField.eq(config.siteModuleId)) }
+            .fetchOne(idField)
     if (existingId != null) {
       return existingId
     }
@@ -547,11 +576,32 @@ class AccessionFetcher(
     return dslContext
         .insertInto(table)
         .set(nameField, name)
+        .apply { if (siteModuleIdField != null) set(siteModuleIdField, config.siteModuleId) }
         .apply { extraSetters(this) }
         .returning(idField)
         .fetchOne()
         ?.get(idField)
         ?: throw DataAccessException("Unable to insert new ${table.name.toLowerCase()} $name")
+  }
+
+  private fun getId(
+      name: String?,
+      idField: TableField<*, Long?>,
+      nameField: TableField<*, String?>,
+      siteModuleIdField: TableField<*, Long?>? = null
+  ): Long? {
+    if (name == null) {
+      return null
+    }
+
+    return dslContext
+        .select(idField)
+        .from(idField.table)
+        .where(nameField.eq(name))
+        .apply { if (siteModuleIdField != null) and(siteModuleIdField.eq(config.siteModuleId)) }
+        .fetchOne(idField)
+        ?: throw IllegalArgumentException(
+            "Unable to find ${idField.table?.name?.toLowerCase()} $name")
   }
 
   private fun GerminationTestFields.fieldsEqual(other: GerminationTestFields): Boolean {

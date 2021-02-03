@@ -76,6 +76,18 @@ interface AccessionFields {
     get() = null
   val bagNumbers: Set<String>?
     get() = null
+  val storageStartDate: LocalDate?
+    get() = null
+  val storagePackets: Int?
+    get() = null
+  val storageLocation: String?
+    get() = null
+  val storageCondition: StorageCondition?
+    get() = null
+  val storageNotes: String?
+    get() = null
+  val storageStaffResponsible: String?
+    get() = null
   val photoFilenames: Set<String>?
     get() = null
   val geolocations: Set<Geolocation>?
@@ -126,6 +138,12 @@ data class AccessionModel(
     override val processingStaffResponsible: String? = null,
     override val bagNumbers: Set<String>? = null,
     override val photoFilenames: Set<String>? = null,
+    override val storageStartDate: LocalDate? = null,
+    override val storagePackets: Int? = null,
+    override val storageLocation: String? = null,
+    override val storageCondition: StorageCondition? = null,
+    override val storageNotes: String? = null,
+    override val storageStaffResponsible: String? = null,
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestModel>? = null,

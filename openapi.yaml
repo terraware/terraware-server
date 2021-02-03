@@ -281,6 +281,23 @@ components:
           type: array
           items:
             type: string
+        storageStartDate:
+          type: string
+          format: date
+        storagePackets:
+          type: integer
+          format: int32
+        storageLocation:
+          type: string
+        storageCondition:
+          type: string
+          enum:
+          - Refrigerator
+          - Freezer
+        storageNotes:
+          type: string
+        storageStaffResponsible:
+          type: string
         photoFilenames:
           uniqueItems: true
           type: array
@@ -401,12 +418,31 @@ components:
           type: string
         processingStaffResponsible:
           type: string
+        storageStartDate:
+          type: string
+          format: date
+        storagePackets:
+          type: integer
+          format: int32
+        storageLocation:
+          type: string
+        storageNotes:
+          type: string
+        storageStaffResponsible:
+          type: string
         photoFilenames:
           uniqueItems: true
           type: array
           items:
             type: string
         accessionNumber:
+          type: string
+        storageCondition:
+          type: string
+          enum:
+          - Refrigerator
+          - Freezer
+        status:
           type: string
         state:
           type: string
@@ -418,8 +454,6 @@ components:
           - Dried
           - In Storage
           - Withdrawn
-        status:
-          type: string
     CreateAccessionResponsePayload:
       required:
       - accession
@@ -727,6 +761,18 @@ components:
           type: array
           items:
             type: string
+        storageStartDate:
+          type: string
+          format: date
+        storagePackets:
+          type: integer
+          format: int32
+        storageLocation:
+          type: string
+        storageNotes:
+          type: string
+        storageStaffResponsible:
+          type: string
         photoFilenames:
           uniqueItems: true
           type: array
@@ -751,6 +797,13 @@ components:
             $ref: '#/components/schemas/GerminationTestPayload'
         accessionNumber:
           type: string
+        storageCondition:
+          type: string
+          enum:
+          - Refrigerator
+          - Freezer
+        status:
+          type: string
         state:
           type: string
           enum:
@@ -761,8 +814,6 @@ components:
           - Dried
           - In Storage
           - Withdrawn
-        status:
-          type: string
   securitySchemes:
     ApiKey:
       type: http

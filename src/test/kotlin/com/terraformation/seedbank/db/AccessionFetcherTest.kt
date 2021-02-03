@@ -11,9 +11,11 @@ import com.terraformation.seedbank.db.tables.daos.BagDao
 import com.terraformation.seedbank.db.tables.daos.CollectionEventDao
 import com.terraformation.seedbank.db.tables.daos.GerminationDao
 import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
+import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.db.tables.pojos.Bag
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
+import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import io.mockk.every
@@ -56,6 +58,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   private lateinit var collectionEventDao: CollectionEventDao
   private lateinit var germinationDao: GerminationDao
   private lateinit var germinationTestDao: GerminationTestDao
+  private lateinit var storageLocationDao: StorageLocationDao
 
   private val accessionNumbers = listOf("one", "two", "three", "four")
 
@@ -67,6 +70,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     collectionEventDao = CollectionEventDao(jooqConfig)
     germinationDao = GerminationDao(jooqConfig)
     germinationTestDao = GerminationTestDao(jooqConfig)
+    storageLocationDao = StorageLocationDao(jooqConfig)
 
     fetcher = AccessionFetcher(dslContext, config)
 
@@ -483,6 +487,40 @@ internal class AccessionFetcherTest : DatabaseTest() {
     assertTrue(
         "First germination preserved",
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 123 })
+  }
+
+  @Test
+  fun `valid storage locations are accepted and cause storage condition to be populated`() {
+    val locationId = 12345678L
+    val locationName = "Test Location"
+    storageLocationDao.insert(
+        StorageLocation(
+            id = locationId,
+            siteModuleId = config.siteModuleId,
+            name = locationName,
+            conditionId = StorageCondition.Freezer))
+
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    fetcher.update(
+        initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = locationName))
+
+    assertEquals(
+        "Existing storage location ID was used",
+        locationId,
+        accessionDao.fetchOneById(1)?.storageLocationId)
+
+    val updated = fetcher.fetchByNumber(initial.accessionNumber)!!
+    assertEquals("Location name", locationName, updated.storageLocation)
+    assertEquals("Storage condition", StorageCondition.Freezer, updated.storageCondition)
+  }
+
+  @Test
+  fun `unknown storage locations are rejected`() {
+    assertThrows(IllegalArgumentException::class.java) {
+      val initial = fetcher.create(CreateAccessionRequestPayload())
+      fetcher.update(
+          initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = "bogus"))
+    }
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {

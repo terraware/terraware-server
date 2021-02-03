@@ -43,6 +43,13 @@ INSERT INTO species_family (id, name, created_time)
 VALUES (20000, 'Dogwood', NOW())
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO storage_location (id, site_module_id, name, condition_id)
+VALUES (1000, 100, 'Refrigerator 1', 1),
+       (1001, 100, 'Freezer 1', 2),
+       (1002, 100, 'Freezer 2', 2)
+ON CONFLICT (id) DO UPDATE SET name         = excluded.name,
+                               condition_id = excluded.condition_id;
+
 INSERT INTO accession (id, number, state_id, site_module_id, created_time, species_id,
                        species_family_id)
 VALUES (1000, 'XYZ', 30, 100, '2021-01-03T15:31:20Z', 10000, 20000),
