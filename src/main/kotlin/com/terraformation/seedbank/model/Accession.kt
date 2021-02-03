@@ -8,18 +8,32 @@ import com.terraformation.seedbank.db.StorageCondition
 import java.math.BigDecimal
 import java.time.LocalDate
 
+enum class AccessionStatus {
+  Inactive,
+  Active
+}
+
+fun AccessionState.toStatus() =
+    when (this) {
+      AccessionState.Withdrawn -> AccessionStatus.Inactive
+
+      // Don't use "else" here -- we want it to be a compile error if we add a state and forget
+      // to specify which status it maps to.
+      AccessionState.Pending,
+      AccessionState.Processing,
+      AccessionState.Processed,
+      AccessionState.Drying,
+      AccessionState.Dried,
+      AccessionState.InStorage -> AccessionStatus.Active
+    }
+
 interface AccessionFields {
   val accessionNumber: String?
     get() = null
   val state: AccessionState?
     get() = null
-  val status: String?
-    get() =
-        when (state) {
-          AccessionState.Withdrawn -> "Inactive"
-          null -> null
-          else -> "Active"
-        }
+  val status: AccessionStatus?
+    get() = state?.toStatus()
   val species: String?
     get() = null
   val family: String?
@@ -101,8 +115,8 @@ interface AccessionFields {
 interface ConcreteAccession : AccessionFields {
   override val accessionNumber: String
   override val state: AccessionState
-  override val status: String
-    get() = super.status!!
+  override val status: AccessionStatus
+    get() = state.toStatus()
 }
 
 data class AccessionModel(

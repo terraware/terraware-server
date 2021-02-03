@@ -215,6 +215,9 @@ components:
           - Withdrawn
         status:
           type: string
+          enum:
+          - Inactive
+          - Active
         species:
           type: string
         family:
