@@ -37,7 +37,9 @@ jobs:
     # has problems; locally, "./gradlew check" will do all this in a single command.
 
     - name: Download dependencies
-      run: ./gradlew downloadDependencies
+      run: |
+        docker pull postgres:12
+        ./gradlew downloadDependencies
 
     - name: Check code style
       run: ./gradlew spotlessCheck
