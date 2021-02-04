@@ -1,7 +1,7 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.TerrawareServerConfig
 import com.terraformation.seedbank.api.seedbank.Geolocation
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR

@@ -1,0 +1,83 @@
+{
+  "devices": [
+    {
+      "id": 1000,
+      "siteModuleId": 100,
+      "deviceTypeId": 1,
+      "name": "generator-relay"
+    },
+    {
+      "id": 1001,
+      "siteModuleId": 100,
+      "deviceTypeId": 1,
+      "name": "BMU-L"
+    },
+    {
+      "id": 1002,
+      "siteModuleId": 100,
+      "deviceTypeId": 1,
+      "name": "BMU-R"
+    },
+    {
+      "id": 1003,
+      "siteModuleId": 101,
+      "deviceTypeId": 1,
+      "name": "RO"
+    }
+  ],
+  "organizations": [
+    {
+      "id": 1,
+      "name": "dev"
+    }
+  ],
+  "sites": [
+    {
+      "id": 10,
+      "organizationId": 1,
+      "name": "sim",
+      "latitude": 0,
+      "longitude": 0
+    }
+  ],
+  "siteModules": [
+    {
+      "id": 100,
+      "siteId": 10,
+      "typeId": 2,
+      "name": "ohana"
+    },
+    {
+      "id": 101,
+      "siteId": 10,
+      "typeId": 3,
+      "name": "garage"
+    }
+  ],
+  "storageLocations": [
+    {
+      "id": 1000,
+      "siteModuleId": 100,
+      "name": "Refrigerator 1",
+      "conditionId": "Refrigerator"
+    },
+    {
+      "id": 1001,
+      "siteModuleId": 100,
+      "name": "Refrigerator 2",
+      "conditionId": "Refrigerator"
+    },
+    {
+      "id": 1002,
+      "siteModuleId": 100,
+      "name": "Freezer 1",
+      "conditionId": "Freezer"
+    },
+    {
+      "id": 1003,
+      "siteModuleId": 100,
+      "name": "Freezer 1",
+      "conditionId": "Freezer"
+    }
+  ]
+}

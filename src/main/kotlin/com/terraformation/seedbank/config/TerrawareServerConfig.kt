@@ -1,9 +1,11 @@
-package com.terraformation.seedbank
+package com.terraformation.seedbank.config
 
 import java.net.URI
 import javax.validation.constraints.Min
+import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.core.io.Resource
 import org.springframework.validation.annotation.Validated
 
 @ConfigurationProperties("terraware")
@@ -15,6 +17,9 @@ class TerrawareServerConfig {
    */
   @Size(min = 32, message = "Secret must be at least 32 bytes (256 bits)")
   var jwtSecret: ByteArray? = null
+
+  /** URL of site-specific configuration file. */
+  @NotNull lateinit var siteConfigUrl: Resource
 
   /** Configures the server's communication with an MQTT broker. */
   var mqtt: MqttConfig = MqttConfig()

@@ -1,5 +1,15 @@
 package com.terraformation.seedbank.db
 
+import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.db.tables.references.API_KEY
+import com.terraformation.seedbank.db.tables.references.DEVICE
+import com.terraformation.seedbank.db.tables.references.NOTIFICATION
+import com.terraformation.seedbank.db.tables.references.ORGANIZATION
+import com.terraformation.seedbank.db.tables.references.SITE
+import com.terraformation.seedbank.db.tables.references.SITE_MODULE
+import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
+import com.terraformation.seedbank.db.tables.references.TIMESERIES
+import com.terraformation.seedbank.db.tables.references.TIMESERIES_VALUE
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -56,6 +66,28 @@ abstract class DatabaseTest {
     sequencesToReset.forEach { sequenceName ->
       dslContext.alterSequence(sequenceName).restart().execute()
     }
+  }
+
+  /**
+   * Cleans out all the demo data that's inserted by default in dev configurations. Use this if you
+   * want to run against a completely pristine database (e.g., if you're asserting the exact
+   * contents of tables). Reference tables (`device_type`, `storage_condition`, etc.) remain
+   * populated.
+   */
+  protected fun deleteDemoData() {
+    listOf(
+        API_KEY,
+        NOTIFICATION,
+        ACCESSION,
+        TIMESERIES_VALUE,
+        TIMESERIES,
+        STORAGE_LOCATION,
+        DEVICE,
+        SITE_MODULE,
+        SITE,
+        ORGANIZATION,
+    )
+        .forEach { dslContext.deleteFrom(it).execute() }
   }
 
   class DockerPostgresDataSourceInitializer :

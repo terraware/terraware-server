@@ -5,9 +5,9 @@ import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.MACSigner
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import com.terraformation.seedbank.TerrawareServerConfig
 import com.terraformation.seedbank.auth.JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM
 import com.terraformation.seedbank.auth.JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import java.util.Date
 import java.util.UUID
 import javax.annotation.ManagedBean

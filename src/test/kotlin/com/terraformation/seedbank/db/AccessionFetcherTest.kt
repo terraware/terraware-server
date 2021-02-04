@@ -1,11 +1,11 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.TerrawareServerConfig
 import com.terraformation.seedbank.api.seedbank.AccessionPayload
 import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.daos.BagDao
 import com.terraformation.seedbank.db.tables.daos.CollectionEventDao

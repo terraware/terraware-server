@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jose.crypto.MACVerifier
 import com.nimbusds.jwt.SignedJWT
-import com.terraformation.seedbank.TerrawareServerConfig
 import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.auth.ControllerClientIdentity
@@ -13,6 +12,7 @@ import com.terraformation.seedbank.auth.JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM
 import com.terraformation.seedbank.auth.JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM
 import com.terraformation.seedbank.auth.LoggedInUserIdentity
 import com.terraformation.seedbank.auth.Role
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.daos.OrganizationDao
 import com.terraformation.seedbank.db.tables.pojos.Organization
 import com.terraformation.seedbank.mqtt.JwtGenerator

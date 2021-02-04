@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.mqtt
 
-import com.terraformation.seedbank.TerrawareServerConfig
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.services.perClassLogger
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions

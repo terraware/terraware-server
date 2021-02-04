@@ -21,3 +21,4 @@ terraware:
   mqtt:
     enabled: false
     address: "ws://localhost:1883/"
+  site-config-url: "classpath:config/dev.json"
