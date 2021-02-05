@@ -18,6 +18,7 @@ import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
+import com.terraformation.seedbank.model.AccessionNumberGenerator
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -72,10 +73,16 @@ internal class AccessionFetcherTest : DatabaseTest() {
     germinationTestDao = GerminationTestDao(jooqConfig)
     storageLocationDao = StorageLocationDao(jooqConfig)
 
-    fetcher = AccessionFetcher(dslContext, config)
+    fetcher =
+        AccessionFetcher(
+            dslContext,
+            config,
+            BagFetcher(dslContext),
+            CollectionEventFetcher(dslContext, clock),
+            GerminationFetcher(dslContext),
+            clock)
 
     fetcher.accessionNumberGenerator = accessionNumberGenerator
-    fetcher.clock = clock
 
     every { accessionNumberGenerator.generateAccessionNumber() } returnsMany accessionNumbers
   }

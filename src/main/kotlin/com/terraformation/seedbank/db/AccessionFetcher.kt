@@ -1,54 +1,41 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.references.ACCESSION
-import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
-import com.terraformation.seedbank.db.tables.references.BAG
-import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
-import com.terraformation.seedbank.db.tables.references.GERMINATION
-import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
 import com.terraformation.seedbank.db.tables.references.SPECIES
 import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
 import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
+import com.terraformation.seedbank.model.AccessionNumberGenerator
 import com.terraformation.seedbank.model.ConcreteAccession
-import com.terraformation.seedbank.model.GerminationFields
-import com.terraformation.seedbank.model.GerminationModel
-import com.terraformation.seedbank.model.GerminationTestFields
-import com.terraformation.seedbank.model.GerminationTestModel
 import com.terraformation.seedbank.services.perClassLogger
-import com.terraformation.seedbank.services.toListOrNull
 import com.terraformation.seedbank.services.toSetOrNull
-import java.math.BigDecimal
 import java.time.Clock
 import javax.annotation.ManagedBean
-import kotlin.math.log2
-import kotlin.math.roundToInt
-import kotlin.math.truncate
-import kotlin.random.Random
 import org.jooq.DSLContext
 import org.jooq.InsertSetMoreStep
 import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.exception.DataAccessException
-import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
 class AccessionFetcher(
     private val dslContext: DSLContext,
-    private val config: TerrawareServerConfig
+    private val config: TerrawareServerConfig,
+    private val bagFetcher: BagFetcher,
+    private val collectionEventFetcher: CollectionEventFetcher,
+    private val germinationFetcher: GerminationFetcher,
+    private val clock: Clock,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
     private const val ACCESSION_NUMBER_RETRIES = 10
   }
 
-  var clock = Clock.systemUTC()!!
   var accessionNumberGenerator = AccessionNumberGenerator()
 
   private val log = perClassLogger()
@@ -79,93 +66,11 @@ class AccessionFetcher(
     // Now populate all the items that there can be many of per accession.
     val accessionId = parentRow[ACCESSION.ID]!!
 
-    val secondaryCollectorNames =
-        dslContext
-            .select(COLLECTOR.NAME)
-            .from(COLLECTOR)
-            .join(ACCESSION_SECONDARY_COLLECTOR)
-            .on(COLLECTOR.ID.eq(ACCESSION_SECONDARY_COLLECTOR.COLLECTOR_ID))
-            .where(ACCESSION_SECONDARY_COLLECTOR.ACCESSION_ID.eq(accessionId))
-            .orderBy(COLLECTOR.NAME)
-            .fetch(COLLECTOR.NAME)
-            .toSetOrNull()
-
-    val bagNumbers =
-        dslContext
-            .select(BAG.LABEL)
-            .from(BAG)
-            .where(BAG.ACCESSION_ID.eq(accessionId))
-            .orderBy(BAG.LABEL)
-            .fetch(BAG.LABEL)
-            .toSetOrNull()
-
-    val geolocations =
-        dslContext
-            .selectFrom(COLLECTION_EVENT)
-            .where(COLLECTION_EVENT.ACCESSION_ID.eq(accessionId))
-            .orderBy(COLLECTION_EVENT.LATITUDE, COLLECTION_EVENT.LONGITUDE)
-            .fetch { record ->
-              Geolocation(
-                  record[COLLECTION_EVENT.LATITUDE]!!,
-                  record[COLLECTION_EVENT.LONGITUDE]!!,
-                  record[COLLECTION_EVENT.GPS_ACCURACY]?.let { BigDecimal(it) })
-            }
-            .toSetOrNull()
-
-    val germinationsByTestId =
-        dslContext
-            .select(
-                GERMINATION.ID,
-                GERMINATION.TEST_ID,
-                GERMINATION.RECORDING_DATE,
-                GERMINATION.SEEDS_GERMINATED)
-            .from(GERMINATION)
-            .join(GERMINATION_TEST)
-            .on(GERMINATION.TEST_ID.eq(GERMINATION_TEST.ID))
-            .where(GERMINATION_TEST.ACCESSION_ID.eq(accessionId))
-            .orderBy(GERMINATION.RECORDING_DATE.desc(), GERMINATION.ID.desc())
-            .fetch { record ->
-              GerminationModel(
-                  record[GERMINATION.ID]!!,
-                  record[GERMINATION.TEST_ID]!!,
-                  record[GERMINATION.RECORDING_DATE]!!,
-                  record[GERMINATION.SEEDS_GERMINATED]!!)
-            }
-            .groupBy { it.testId }
-
-    val germinationTestTypes =
-        dslContext
-            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
-            .from(ACCESSION_GERMINATION_TEST_TYPE)
-            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(accessionId))
-            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
-            .toSetOrNull()
-
-    val germinationTests =
-        dslContext
-            .select(
-                GERMINATION_TEST.asterisk(),
-                GERMINATION_TEST.TREATMENT_ID,
-                GERMINATION_TEST.SEED_TYPE_ID,
-                GERMINATION_TEST.SUBSTRATE_ID)
-            .from(GERMINATION_TEST)
-            .where(GERMINATION_TEST.ACCESSION_ID.eq(accessionId))
-            .orderBy(GERMINATION_TEST.ID)
-            .fetch { record ->
-              val testId = record[GERMINATION_TEST.ID]!!
-              GerminationTestModel(
-                  testId,
-                  record[GERMINATION_TEST.ACCESSION_ID]!!,
-                  record[GERMINATION_TEST.TEST_TYPE]!!,
-                  record[GERMINATION_TEST.START_DATE],
-                  record[GERMINATION_TEST.SEED_TYPE_ID],
-                  record[GERMINATION_TEST.SUBSTRATE_ID],
-                  record[GERMINATION_TEST.TREATMENT_ID],
-                  record[GERMINATION_TEST.SEEDS_SOWN],
-                  record[GERMINATION_TEST.NOTES],
-                  germinationsByTestId[testId])
-            }
-            .toListOrNull()
+    val secondaryCollectorNames = fetchSecondaryCollectorNames(accessionId)
+    val bagNumbers = bagFetcher.fetchBagNumbers(accessionId)
+    val geolocations = collectionEventFetcher.fetchGeolocations(accessionId)
+    val germinationTestTypes = germinationFetcher.fetchGerminationTestTypes(accessionId)
+    val germinationTests = germinationFetcher.fetchGerminationTests(accessionId)
 
     return with(ACCESSION) {
       AccessionModel(
@@ -254,10 +159,12 @@ class AccessionFetcher(
               }
 
           insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
-          updateBags(accessionId, emptySet(), accession.bagNumbers)
-          updateGeolocations(accessionId, emptySet(), accession.geolocations)
-          updateGerminationTestTypes(accessionId, emptySet(), accession.germinationTestTypes)
-          updateGerminationTests(accessionId, emptyList(), accession.germinationTests)
+          bagFetcher.updateBags(accessionId, emptySet(), accession.bagNumbers)
+          collectionEventFetcher.updateGeolocations(accessionId, emptySet(), accession.geolocations)
+          germinationFetcher.updateGerminationTestTypes(
+              accessionId, emptySet(), accession.germinationTestTypes)
+          germinationFetcher.updateGerminationTests(
+              accessionId, emptyList(), accession.germinationTests)
         }
 
         return fetchByNumber(accessionNumber)!!
@@ -334,80 +241,28 @@ class AccessionFetcher(
         insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
       }
 
-      updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
-      updateGeolocations(accessionId, existing.geolocations, accession.geolocations)
-      updateGerminationTestTypes(
+      bagFetcher.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
+      collectionEventFetcher.updateGeolocations(
+          accessionId, existing.geolocations, accession.geolocations)
+      germinationFetcher.updateGerminationTestTypes(
           accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
-      updateGerminationTests(accessionId, existing.germinationTests, accession.germinationTests)
+      germinationFetcher.updateGerminationTests(
+          accessionId, existing.germinationTests, accession.germinationTests)
     }
 
     return true
   }
 
-  private fun updateBags(
-      accessionId: Long,
-      existingBagNumbers: Set<String>?,
-      desiredBagNumbers: Set<String>?
-  ) {
-    if (existingBagNumbers != desiredBagNumbers) {
-      val existing = existingBagNumbers ?: emptySet()
-      val desired = desiredBagNumbers ?: emptySet()
-      val deletedBagNumbers = existing.minus(desired)
-      val addedBagNumbers = desired.minus(existing)
-
-      if (deletedBagNumbers.isNotEmpty()) {
-        dslContext
-            .deleteFrom(BAG)
-            .where(BAG.ACCESSION_ID.eq(accessionId))
-            .and(BAG.LABEL.`in`(deletedBagNumbers))
-            .execute()
-      }
-
-      addedBagNumbers.forEach { bagNumber ->
-        dslContext
-            .insertInto(BAG, BAG.ACCESSION_ID, BAG.LABEL)
-            .values(accessionId, bagNumber)
-            .execute()
-      }
-    }
-  }
-
-  private fun updateGeolocations(
-      accessionId: Long,
-      existingGeolocations: Set<Geolocation>?,
-      desiredGeolocations: Set<Geolocation>?
-  ) {
-    if (existingGeolocations != desiredGeolocations) {
-      val existing = existingGeolocations ?: emptySet()
-      val desired = desiredGeolocations ?: emptySet()
-      val deleted = existing.minus(desired)
-      val added = desired.minus(existing)
-
-      with(COLLECTION_EVENT) {
-        if (deleted.isNotEmpty()) {
-          dslContext
-              .deleteFrom(COLLECTION_EVENT)
-              .where(ACCESSION_ID.eq(accessionId))
-              .and(
-                  DSL.row(LATITUDE, LONGITUDE)
-                      .`in`(deleted.map { DSL.row(it.latitude, it.longitude) }))
-              .execute()
-        }
-
-        added.forEach { geolocation ->
-          dslContext
-              .insertInto(
-                  COLLECTION_EVENT, ACCESSION_ID, CREATED_TIME, LATITUDE, LONGITUDE, GPS_ACCURACY)
-              .values(
-                  accessionId,
-                  clock.instant(),
-                  geolocation.latitude,
-                  geolocation.longitude,
-                  geolocation.accuracy?.toDouble())
-              .execute()
-        }
-      }
-    }
+  private fun fetchSecondaryCollectorNames(accessionId: Long): Set<String>? {
+    return dslContext
+        .select(COLLECTOR.NAME)
+        .from(COLLECTOR)
+        .join(ACCESSION_SECONDARY_COLLECTOR)
+        .on(COLLECTOR.ID.eq(ACCESSION_SECONDARY_COLLECTOR.COLLECTOR_ID))
+        .where(ACCESSION_SECONDARY_COLLECTOR.ACCESSION_ID.eq(accessionId))
+        .orderBy(COLLECTOR.NAME)
+        .fetch(COLLECTOR.NAME)
+        .toSetOrNull()
   }
 
   private fun insertSecondaryCollectors(
@@ -426,106 +281,6 @@ class AccessionFetcher(
             .execute()
       }
     }
-  }
-
-  private fun updateGerminationTestTypes(
-      accessionId: Long,
-      existingTypes: Set<GerminationTestType>?,
-      desiredTypes: Set<GerminationTestType>?
-  ) {
-    val existing = existingTypes ?: emptySet()
-    val desired = desiredTypes ?: emptySet()
-    val added = desired.minus(existing)
-    val deleted = existing.minus(desired)
-
-    if (deleted.isNotEmpty()) {
-      dslContext
-          .deleteFrom(ACCESSION_GERMINATION_TEST_TYPE)
-          .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(accessionId))
-          .and(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID.`in`(deleted))
-          .execute()
-    }
-
-    added.forEach { type ->
-      dslContext
-          .insertInto(ACCESSION_GERMINATION_TEST_TYPE)
-          .set(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID, accessionId)
-          .set(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID, type)
-          .execute()
-    }
-  }
-
-  private fun updateGerminationTests(
-      accessionId: Long,
-      existingTests: List<GerminationTestModel>?,
-      desiredTests: List<GerminationTestFields>?
-  ) {
-    val existing = existingTests ?: emptyList()
-    val existingById = existing.associateBy { it.id }
-    val existingIds = existingById.keys
-    val desired = desiredTests ?: emptyList()
-    val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id })
-
-    if (deletedTestIds.isNotEmpty()) {
-      dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.`in`(deletedTestIds)).execute()
-      dslContext
-          .deleteFrom(GERMINATION_TEST)
-          .where(GERMINATION_TEST.ID.`in`(deletedTestIds))
-          .execute()
-    }
-
-    desired.filter { it.id == null }.forEach { insertGerminationTest(accessionId, it) }
-
-    desired.filter { it.id != null }.forEach { desiredTest ->
-      val existingTest =
-          existingById[desiredTest.id]
-              ?: throw IllegalArgumentException(
-                  "Germination test IDs must refer to existing tests; leave ID off to insert a new test.")
-      if (!desiredTest.fieldsEqual(existingTest)) {
-        dslContext
-            .update(GERMINATION_TEST)
-            .set(GERMINATION_TEST.NOTES, desiredTest.notes)
-            .set(GERMINATION_TEST.SEED_TYPE_ID, desiredTest.seedType)
-            .set(GERMINATION_TEST.SEEDS_SOWN, desiredTest.seedsSown)
-            .set(GERMINATION_TEST.SUBSTRATE_ID, desiredTest.substrate)
-            .set(GERMINATION_TEST.START_DATE, desiredTest.startDate)
-            .set(GERMINATION_TEST.TREATMENT_ID, desiredTest.treatment)
-            .where(GERMINATION_TEST.ID.eq(existingTest.id))
-            .execute()
-      }
-
-      // TODO: Smarter diff of germinations
-      dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.eq(existingTest.id)).execute()
-      desiredTest.germinations?.forEach { insertGermination(existingTest.id, it) }
-    }
-  }
-
-  private fun insertGerminationTest(accessionId: Long, germinationTest: GerminationTestFields) {
-    val testId =
-        dslContext
-            .insertInto(GERMINATION_TEST)
-            .set(GERMINATION_TEST.ACCESSION_ID, accessionId)
-            .set(GERMINATION_TEST.NOTES, germinationTest.notes)
-            .set(GERMINATION_TEST.SEED_TYPE_ID, germinationTest.seedType)
-            .set(GERMINATION_TEST.SEEDS_SOWN, germinationTest.seedsSown)
-            .set(GERMINATION_TEST.START_DATE, germinationTest.startDate)
-            .set(GERMINATION_TEST.SUBSTRATE_ID, germinationTest.substrate)
-            .set(GERMINATION_TEST.TEST_TYPE, germinationTest.testType)
-            .set(GERMINATION_TEST.TREATMENT_ID, germinationTest.treatment)
-            .returning(GERMINATION_TEST.ID)
-            .fetchOne()
-            ?.get(GERMINATION_TEST.ID)!!
-
-    germinationTest.germinations?.forEach { insertGermination(testId, it) }
-  }
-
-  private fun insertGermination(testId: Long, germination: GerminationFields) {
-    dslContext
-        .insertInto(GERMINATION)
-        .set(GERMINATION.RECORDING_DATE, germination.recordingDate)
-        .set(GERMINATION.SEEDS_GERMINATED, germination.seedsGerminated)
-        .set(GERMINATION.TEST_ID, testId)
-        .execute()
   }
 
   private fun getSpeciesId(speciesName: String?): Long? {
@@ -602,29 +357,5 @@ class AccessionFetcher(
         .fetchOne(idField)
         ?: throw IllegalArgumentException(
             "Unable to find ${idField.table?.name?.toLowerCase()} $name")
-  }
-
-  private fun GerminationTestFields.fieldsEqual(other: GerminationTestFields): Boolean {
-    return testType == other.testType &&
-        treatment == other.treatment &&
-        substrate == other.substrate &&
-        startDate == other.startDate &&
-        seedsSown == other.seedsSown &&
-        seedType == other.seedType &&
-        notes == other.notes
-  }
-}
-
-class AccessionNumberGenerator {
-  fun generateAccessionNumber(desiredBitsOfEntropy: Int = 40): String {
-    // Use characters that are unlikely to be visually confused even when they are printed on
-    // labels sitting inside plastic bags.
-    val alphabet = "3479ACDEFHJKLMNPRTWY"
-    val bitsPerCharacter = log2(alphabet.length.toFloat())
-    val requiredLength = truncate(desiredBitsOfEntropy / bitsPerCharacter + 1).roundToInt()
-
-    return 0.rangeTo(requiredLength)
-        .map { alphabet[Random.nextInt(alphabet.length)] }
-        .joinToString("")
   }
 }
