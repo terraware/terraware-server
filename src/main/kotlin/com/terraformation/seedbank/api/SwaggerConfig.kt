@@ -5,6 +5,7 @@ import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
 import com.terraformation.seedbank.api.seedbank.UpdateAccessionRequestPayload
+import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -72,6 +74,7 @@ class SwaggerConfig : OpenApiCustomiser {
             GerminationPayload::class,
             GerminationTestPayload::class,
             UpdateAccessionRequestPayload::class,
+            WithdrawalPayload::class,
         )
 
     payloadClasses.forEach { payloadClass ->
@@ -89,6 +92,11 @@ class SwaggerConfig : OpenApiCustomiser {
       } else {
         throw RuntimeException(
             "Schema $schemaName not found for class ${payloadClass.qualifiedName}")
+      }
+
+      // Sometimes interfaces seem to get included too, so explicitly check for them.
+      payloadClass.allSuperclasses.forEach { superclass ->
+        openApi.components.schemas.remove(superclass.swaggerSchemaName)
       }
     }
   }

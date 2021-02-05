@@ -73,11 +73,12 @@ paths:
         required: true
       responses:
         "200":
-          description: The requested operation succeeded.
+          description: The accession was updated successfully. Response includes fields
+            populated or modified by the server as a result of the update.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+                $ref: '#/components/schemas/UpdateAccessionResponsePayload'
         "404":
           description: The specified accession doesn't exist.
           content:
@@ -335,6 +336,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
+        withdrawals:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalPayload'
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -760,6 +765,60 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
+        withdrawals:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalPayload'
+    UpdateAccessionResponsePayload:
+      required:
+      - accession
+      - status
+      type: object
+      properties:
+        accession:
+          $ref: '#/components/schemas/AccessionPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    WithdrawalPayload:
+      required:
+      - date
+      - purpose
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "Server-assigned unique ID of this withdrawal, its ID. Omit\
+            \ when creating a new withdrawal."
+          format: int64
+        date:
+          type: string
+          format: date
+        purpose:
+          type: string
+          enum:
+          - Propagation
+          - Outreach or Education
+          - Research
+          - Broadcast
+          - Share with Another Site
+          - Other
+        seedsWithdrawn:
+          type: integer
+          description: "Number of seeds withdrawn. If gramsWithdrawn is specified,\
+            \ this is a server-calculated estimate based on seed weight and is ignored\
+            \ (and may be omitted) when creating a new withdrawal."
+          format: int32
+        gramsWithdrawn:
+          type: number
+          description: "If the withdrawal was measured by weight, its weight in grams.\
+            \ Null if the withdrawal has an exact seed count. If this is non-null,\
+            \ seedsWithdrawn is a server-calculated estimate. Weight-based withdrawals\
+            \ are only allowed for accessions whose seed counts were estimated by\
+            \ weight."
+        destination:
+          type: string
+        staffResponsible:
+          type: string
   securitySchemes:
     ApiKey:
       type: http

@@ -80,6 +80,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
             BagFetcher(dslContext),
             CollectionEventFetcher(dslContext, clock),
             GerminationFetcher(dslContext),
+            WithdrawalFetcher(dslContext, clock),
             clock)
 
     fetcher.accessionNumberGenerator = accessionNumberGenerator

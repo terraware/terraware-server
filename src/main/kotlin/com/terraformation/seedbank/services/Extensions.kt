@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.services
 
+import java.math.BigDecimal
 import java.util.EnumSet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -51,3 +52,7 @@ fun <T : Collection<V?>, V> T.toSetOrNull(): Set<V>? =
 
 /** Transforms a Collection to a List if it has non-null values, or to null if not. */
 fun <T : Collection<V?>, V> T.toListOrNull(): List<V>? = if (isEmpty()) null else filterNotNull()
+
+/** Tests two nullable BigDecimal values for equality ignoring their scale. */
+fun BigDecimal?.equalsIgnoreScale(other: BigDecimal?) =
+    this == null && other == null || this != null && other != null && compareTo(other) == 0

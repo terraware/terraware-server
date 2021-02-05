@@ -110,6 +110,8 @@ interface AccessionFields {
     get() = null
   val germinationTests: List<GerminationTestFields>?
     get() = null
+  val withdrawals: List<WithdrawalFields>?
+    get() = null
 }
 
 interface ConcreteAccession : AccessionFields {
@@ -161,4 +163,5 @@ data class AccessionModel(
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestModel>? = null,
+    override val withdrawals: List<WithdrawalModel>? = null,
 ) : ConcreteAccession

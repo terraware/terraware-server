@@ -29,6 +29,7 @@ class AccessionFetcher(
     private val bagFetcher: BagFetcher,
     private val collectionEventFetcher: CollectionEventFetcher,
     private val germinationFetcher: GerminationFetcher,
+    private val withdrawalFetcher: WithdrawalFetcher,
     private val clock: Clock,
 ) {
   companion object {
@@ -71,6 +72,7 @@ class AccessionFetcher(
     val geolocations = collectionEventFetcher.fetchGeolocations(accessionId)
     val germinationTestTypes = germinationFetcher.fetchGerminationTestTypes(accessionId)
     val germinationTests = germinationFetcher.fetchGerminationTests(accessionId)
+    val withdrawals = withdrawalFetcher.fetchWithdrawals(accessionId)
 
     return with(ACCESSION) {
       AccessionModel(
@@ -115,6 +117,7 @@ class AccessionFetcher(
           photoFilenames = null, // TODO (need this in the data model),
           germinationTestTypes = germinationTestTypes,
           germinationTests = germinationTests,
+          withdrawals = withdrawals,
       )
     }
   }
@@ -165,6 +168,8 @@ class AccessionFetcher(
               accessionId, emptySet(), accession.germinationTestTypes)
           germinationFetcher.updateGerminationTests(
               accessionId, emptyList(), accession.germinationTests)
+          withdrawalFetcher.updateWithdrawals(
+              accessionId, accession, emptyList(), accession.withdrawals)
         }
 
         return fetchByNumber(accessionNumber)!!
@@ -248,6 +253,8 @@ class AccessionFetcher(
           accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
       germinationFetcher.updateGerminationTests(
           accessionId, existing.germinationTests, accession.germinationTests)
+      withdrawalFetcher.updateWithdrawals(
+          accessionId, accession, existing.withdrawals, accession.withdrawals)
     }
 
     return true

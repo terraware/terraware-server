@@ -26,6 +26,15 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     return simpleErrorResponse(ex.message, ex.status, request)
   }
 
+  @ExceptionHandler(IllegalArgumentException::class)
+  fun handleIllegalArgumentException(
+      ex: IllegalArgumentException,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(
+        ex.message ?: "An internal error has occurred.", HttpStatus.BAD_REQUEST, request)
+  }
+
   @ExceptionHandler(ResponseStatusException::class)
   fun handleGenericSpringResponseStatusException(
       ex: ResponseStatusException,

@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.terraformation.seedbank.api.NotFoundException
-import com.terraformation.seedbank.api.SimpleSuccessResponsePayload
 import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.ApiResponse404
-import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.db.AccessionFetcher
 import com.terraformation.seedbank.db.AccessionState
@@ -18,11 +16,14 @@ import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.GerminationTreatment
 import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.StorageCondition
+import com.terraformation.seedbank.db.WithdrawalPurpose
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionStatus
 import com.terraformation.seedbank.model.ConcreteAccession
 import com.terraformation.seedbank.model.GerminationFields
 import com.terraformation.seedbank.model.GerminationTestFields
+import com.terraformation.seedbank.model.WithdrawalFields
+import com.terraformation.seedbank.services.equalsIgnoreScale
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -54,19 +55,24 @@ class AccessionController(private val accessionFetcher: AccessionFetcher) {
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload))
   }
 
+  @ApiResponse(
+      responseCode = "200",
+      description =
+          "The accession was updated successfully. Response includes fields populated or " +
+              "modified by the server as a result of the update.")
   @ApiResponse404(description = "The specified accession doesn't exist.")
-  @ApiResponseSimpleSuccess
   @Operation(summary = "Update an existing accession.")
   @PutMapping("/{accessionNumber}")
   fun update(
       @RequestBody payload: UpdateAccessionRequestPayload,
       @PathVariable accessionNumber: String
-  ): SimpleSuccessResponsePayload {
+  ): UpdateAccessionResponsePayload {
     perClassLogger().info("Payload $payload")
     if (!accessionFetcher.update(accessionNumber, payload)) {
       throw NotFoundException()
     } else {
-      return SimpleSuccessResponsePayload()
+      val updatedModel = accessionFetcher.fetchByNumber(accessionNumber)!!
+      return UpdateAccessionResponsePayload(AccessionPayload(updatedModel))
     }
   }
 
@@ -140,7 +146,8 @@ data class UpdateAccessionRequestPayload(
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
-    @Valid override val germinationTests: List<GerminationTestPayload>?,
+    @Valid override val germinationTests: List<GerminationTestPayload>? = null,
+    @Valid override val withdrawals: List<WithdrawalPayload>? = null,
 ) : AccessionFields
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -186,6 +193,7 @@ data class AccessionPayload(
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestPayload>? = null,
+    override val withdrawals: List<WithdrawalPayload>? = null,
 ) : ConcreteAccession {
   constructor(
       model: ConcreteAccession
@@ -231,6 +239,7 @@ data class AccessionPayload(
       model.geolocations,
       model.germinationTestTypes,
       model.germinationTests?.map { GerminationTestPayload(it) },
+      model.withdrawals?.map { WithdrawalPayload(it) },
   )
 }
 
@@ -243,10 +252,9 @@ class Geolocation(
   /** Tests property values for numeric equality, disregarding differences in decimal scale. */
   override fun equals(other: Any?): Boolean {
     return other is Geolocation &&
-        other.latitude.compareTo(latitude) == 0 &&
-        other.longitude.compareTo(longitude) == 0 &&
-        (other.accuracy == null && accuracy == null ||
-            other.accuracy != null && accuracy != null && other.accuracy.compareTo(accuracy) == 0)
+        latitude.equalsIgnoreScale(other.latitude) &&
+        longitude.equalsIgnoreScale(other.longitude) &&
+        accuracy.equalsIgnoreScale(other.accuracy)
   }
 
   override fun hashCode(): Int {
@@ -300,6 +308,45 @@ data class GerminationPayload(
   constructor(model: GerminationFields) : this(model.recordingDate, model.seedsGerminated)
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class WithdrawalPayload(
+    @Schema(
+        description =
+            "Server-assigned unique ID of this withdrawal, its ID. Omit when creating a new " +
+                "withdrawal.")
+    override val id: Long? = null,
+    override val date: LocalDate,
+    override val purpose: WithdrawalPurpose,
+    @Schema(
+        description =
+            "Number of seeds withdrawn. If gramsWithdrawn is specified, this is a " +
+                "server-calculated estimate based on seed weight and is ignored (and may be " +
+                "omitted) when creating a new withdrawal.")
+    override val seedsWithdrawn: Int? = null,
+    @Schema(
+        description =
+            "If the withdrawal was measured by weight, its weight in grams. Null if the " +
+                "withdrawal has an exact seed count. If this is non-null, seedsWithdrawn is a " +
+                "server-calculated estimate. Weight-based withdrawals are only allowed for " +
+                "accessions whose seed counts were estimated by weight.")
+    override val gramsWithdrawn: BigDecimal? = null,
+    override val destination: String? = null,
+    override val staffResponsible: String? = null,
+) : WithdrawalFields {
+  constructor(
+      model: WithdrawalFields
+  ) : this(
+      model.id,
+      model.date,
+      model.purpose,
+      model.seedsWithdrawn,
+      model.gramsWithdrawn,
+      model.destination,
+      model.staffResponsible)
+}
+
 data class CreateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
+
+data class UpdateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
 
 data class GetAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
