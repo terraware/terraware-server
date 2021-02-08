@@ -34,8 +34,21 @@ interface GerminationTestFields {
     get() = null
   val notes: String?
     get() = null
+  val staffResponsible: String?
+    get() = null
   val germinations: Collection<GerminationFields>?
     get() = null
+
+  fun fieldsEqual(other: GerminationTestFields): Boolean {
+    return notes == other.notes &&
+        seedsSown == other.seedsSown &&
+        seedType == other.seedType &&
+        staffResponsible == other.staffResponsible &&
+        startDate == other.startDate &&
+        substrate == other.substrate &&
+        testType == other.testType &&
+        treatment == other.treatment
+  }
 }
 
 data class GerminationTestModel(
@@ -48,5 +61,6 @@ data class GerminationTestModel(
     override val treatment: GerminationTreatment? = null,
     override val seedsSown: Int? = null,
     override val notes: String? = null,
+    override val staffResponsible: String? = null,
     override val germinations: Collection<GerminationModel>? = null
 ) : GerminationTestFields

@@ -69,6 +69,7 @@ class GerminationFetcher(private val dslContext: DSLContext) {
               record[GERMINATION_TEST.TREATMENT_ID],
               record[GERMINATION_TEST.SEEDS_SOWN],
               record[GERMINATION_TEST.NOTES],
+              record[GERMINATION_TEST.STAFF_RESPONSIBLE],
               germinationsByTestId[testId],
           )
         }
@@ -83,6 +84,7 @@ class GerminationFetcher(private val dslContext: DSLContext) {
             .set(GERMINATION_TEST.NOTES, germinationTest.notes)
             .set(GERMINATION_TEST.SEED_TYPE_ID, germinationTest.seedType)
             .set(GERMINATION_TEST.SEEDS_SOWN, germinationTest.seedsSown)
+            .set(GERMINATION_TEST.STAFF_RESPONSIBLE, germinationTest.staffResponsible)
             .set(GERMINATION_TEST.START_DATE, germinationTest.startDate)
             .set(GERMINATION_TEST.SUBSTRATE_ID, germinationTest.substrate)
             .set(GERMINATION_TEST.TEST_TYPE, germinationTest.testType)
@@ -163,6 +165,7 @@ class GerminationFetcher(private val dslContext: DSLContext) {
             .set(GERMINATION_TEST.SEED_TYPE_ID, desiredTest.seedType)
             .set(GERMINATION_TEST.SEEDS_SOWN, desiredTest.seedsSown)
             .set(GERMINATION_TEST.SUBSTRATE_ID, desiredTest.substrate)
+            .set(GERMINATION_TEST.STAFF_RESPONSIBLE, desiredTest.staffResponsible)
             .set(GERMINATION_TEST.START_DATE, desiredTest.startDate)
             .set(GERMINATION_TEST.TREATMENT_ID, desiredTest.treatment)
             .where(GERMINATION_TEST.ID.eq(existingTest.id))
@@ -173,15 +176,5 @@ class GerminationFetcher(private val dslContext: DSLContext) {
       dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.eq(existingTest.id)).execute()
       desiredTest.germinations?.forEach { insertGermination(existingTest.id, it) }
     }
-  }
-
-  private fun GerminationTestFields.fieldsEqual(other: GerminationTestFields): Boolean {
-    return testType == other.testType &&
-        treatment == other.treatment &&
-        substrate == other.substrate &&
-        startDate == other.startDate &&
-        seedsSown == other.seedsSown &&
-        seedType == other.seedType &&
-        notes == other.notes
   }
 }

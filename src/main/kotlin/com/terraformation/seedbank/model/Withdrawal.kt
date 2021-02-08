@@ -16,6 +16,8 @@ interface WithdrawalFields {
     get() = null
   val destination: String?
     get() = null
+  val notes: String?
+    get() = null
   val staffResponsible: String?
     get() = null
 
@@ -30,6 +32,7 @@ interface WithdrawalFields {
         seedsWithdrawn == other.seedsWithdrawn &&
         gramsWithdrawn.equalsIgnoreScale(other.gramsWithdrawn) &&
         destination == other.destination &&
+        notes == other.notes &&
         staffResponsible == other.staffResponsible
   }
 }
@@ -47,5 +50,6 @@ data class WithdrawalModel(
     override val seedsWithdrawn: Int,
     override val gramsWithdrawn: BigDecimal? = null,
     override val destination: String? = null,
+    override val notes: String? = null,
     override val staffResponsible: String? = null,
 ) : ConcreteWithdrawal

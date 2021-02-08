@@ -481,6 +481,8 @@ components:
           - Other
         notes:
           type: string
+        staffResponsible:
+          type: string
         seedsSown:
           type: integer
           format: int32
@@ -816,6 +818,8 @@ components:
             \ are only allowed for accessions whose seed counts were estimated by\
             \ weight."
         destination:
+          type: string
+        notes:
           type: string
         staffResponsible:
           type: string

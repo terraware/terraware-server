@@ -31,6 +31,7 @@ class WithdrawalFetcher(private val dslContext: DSLContext, private val clock: C
               record.seedsWithdrawn!!,
               record.gramsWithdrawn,
               record.destination,
+              record.notes,
               record.staffResponsible,
           )
         }
@@ -62,6 +63,7 @@ class WithdrawalFetcher(private val dslContext: DSLContext, private val clock: C
                 .set(DATE, withdrawal.date)
                 .set(DESTINATION, withdrawal.destination)
                 .set(GRAMS_WITHDRAWN, withdrawal.gramsWithdrawn)
+                .set(NOTES, withdrawal.notes)
                 .set(PURPOSE_ID, withdrawal.purpose)
                 .set(SEEDS_WITHDRAWN, seedsWithdrawn)
                 .set(STAFF_RESPONSIBLE, withdrawal.staffResponsible)
@@ -103,6 +105,7 @@ class WithdrawalFetcher(private val dslContext: DSLContext, private val clock: C
               .set(DATE, desired.date)
               .set(DESTINATION, desired.destination)
               .set(GRAMS_WITHDRAWN, desired.gramsWithdrawn)
+              .set(NOTES, desired.notes)
               .set(PURPOSE_ID, desired.purpose)
               .set(SEEDS_WITHDRAWN, seedsWithdrawn)
               .set(STAFF_RESPONSIBLE, desired.staffResponsible)

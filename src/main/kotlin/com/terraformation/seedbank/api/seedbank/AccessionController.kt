@@ -284,6 +284,7 @@ data class GerminationTestPayload(
     override val substrate: GerminationSubstrate? = null,
     override val treatment: GerminationTreatment? = null,
     override val notes: String? = null,
+    override val staffResponsible: String? = null,
     override val seedsSown: Int? = null,
     @Valid override val germinations: List<GerminationPayload>? = null
 ) : GerminationTestFields {
@@ -297,6 +298,7 @@ data class GerminationTestPayload(
       model.substrate,
       model.treatment,
       model.notes,
+      model.staffResponsible,
       model.seedsSown,
       model.germinations?.map { GerminationPayload(it) })
 }
@@ -331,6 +333,7 @@ data class WithdrawalPayload(
                 "accessions whose seed counts were estimated by weight.")
     override val gramsWithdrawn: BigDecimal? = null,
     override val destination: String? = null,
+    override val notes: String? = null,
     override val staffResponsible: String? = null,
 ) : WithdrawalFields {
   constructor(
@@ -342,6 +345,7 @@ data class WithdrawalPayload(
       model.seedsWithdrawn,
       model.gramsWithdrawn,
       model.destination,
+      model.notes,
       model.staffResponsible)
 }
 

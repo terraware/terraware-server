@@ -59,6 +59,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 date = LocalDate.of(2021, 1, 1),
                 seedsWithdrawn = 1,
                 gramsWithdrawn = BigDecimal.TEN,
+                notes = "notes 1",
                 purposeId = WithdrawalPurpose.Broadcast,
                 staffResponsible = "staff 1",
                 destination = "dest 1",
@@ -70,6 +71,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 date = LocalDate.of(2021, 1, 2),
                 seedsWithdrawn = 2,
                 gramsWithdrawn = BigDecimal.ONE,
+                notes = "notes 2",
                 purposeId = WithdrawalPurpose.Other,
                 staffResponsible = "staff 2",
                 destination = "dest 2",
@@ -84,6 +86,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 id = 1,
                 accessionId = accessionId,
                 date = pojos[0].date!!,
+                notes = pojos[0].notes,
                 purpose = pojos[0].purposeId!!,
                 seedsWithdrawn = pojos[0].seedsWithdrawn!!,
                 gramsWithdrawn = pojos[0].gramsWithdrawn,
@@ -94,6 +97,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 id = 2,
                 accessionId = accessionId,
                 date = pojos[1].date!!,
+                notes = pojos[1].notes,
                 purpose = pojos[1].purposeId!!,
                 seedsWithdrawn = pojos[1].seedsWithdrawn!!,
                 gramsWithdrawn = pojos[1].gramsWithdrawn,
@@ -115,6 +119,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
         WithdrawalPayload(
             date = LocalDate.now(),
             destination = "dest 1",
+            notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
             seedsWithdrawn = 1,
             staffResponsible = "staff 1",
@@ -127,6 +132,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 accessionId = accessionId,
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
+                notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
                 seedsWithdrawn = newWithdrawal.seedsWithdrawn!!,
                 staffResponsible = newWithdrawal.staffResponsible,
@@ -146,11 +152,14 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
         WithdrawalPayload(
             date = LocalDate.now(),
             destination = "dest 1",
+            notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
             seedsWithdrawn = 1,
             staffResponsible = "staff 1",
         )
-    val desired = initial.copy(id = 1L, seedsWithdrawn = 2, destination = "updated dest")
+    val desired =
+        initial.copy(
+            id = 1L, seedsWithdrawn = 2, destination = "updated dest", notes = "updated notes")
 
     val expected =
         setOf(
@@ -159,6 +168,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 accessionId = accessionId,
                 date = desired.date,
                 destination = desired.destination,
+                notes = desired.notes,
                 purpose = desired.purpose,
                 seedsWithdrawn = desired.seedsWithdrawn!!,
                 staffResponsible = desired.staffResponsible,
