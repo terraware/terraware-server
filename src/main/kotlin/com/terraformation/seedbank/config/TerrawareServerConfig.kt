@@ -80,6 +80,13 @@ class TerrawareServerConfig {
        * and the topic names it generates. Default is to directly use the generated topics with no
        * prefix.
        */
-      var topicPrefix: String? = null
+      var topicPrefix: String? = null,
+
+      /** How often to retry connecting to the MQTT broker if the connection fails. */
+      var connectRetryIntervalMillis: Long = 30000,
   )
+
+  companion object {
+    const val MQTT_ENABLED_PROPERTY = "terraware.mqtt.enabled"
+  }
 }

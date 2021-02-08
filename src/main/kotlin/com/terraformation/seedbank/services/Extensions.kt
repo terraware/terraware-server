@@ -31,7 +31,11 @@ inline fun <reified T : Any> T.perClassLogger(): Logger {
       } else {
         javaClass
       }
-  return LoggerFactory.getLogger(loggingClass)
+
+  // Remove CGLIB suffixes from classes Spring decides to rewrite
+  val className = loggingClass.canonicalName.substringBefore("\$\$")
+
+  return LoggerFactory.getLogger(className)
 }
 
 /** Returns an empty EnumSet without having to pass in a `Class` explicitly. */

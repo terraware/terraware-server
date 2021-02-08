@@ -3,6 +3,7 @@ package com.terraformation.seedbank.mqtt
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.services.perClassLogger
 import java.time.Clock
 import java.time.Instant
@@ -10,11 +11,13 @@ import java.time.format.DateTimeParseException
 import javax.annotation.ManagedBean
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.slf4j.event.Level
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 /**
  * Parses raw MQTT messages. Messages are formatted per the MQTT API definition in the rhizo-client
  * library.
  */
+@ConditionalOnProperty(TerrawareServerConfig.MQTT_ENABLED_PROPERTY)
 @ManagedBean
 class MessageParser(private val objectMapper: ObjectMapper) {
   var clock = Clock.systemUTC()!!

@@ -1,11 +1,14 @@
 package com.terraformation.seedbank.mqtt
 
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.services.log
 import com.terraformation.seedbank.services.perClassLogger
 import javax.annotation.ManagedBean
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 
+@ConditionalOnProperty(TerrawareServerConfig.MQTT_ENABLED_PROPERTY)
 @ManagedBean
 class MqttLoggingListener {
   private val log = perClassLogger()

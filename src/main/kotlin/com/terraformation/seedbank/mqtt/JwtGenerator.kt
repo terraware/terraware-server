@@ -24,7 +24,7 @@ class JwtGenerator(private val config: TerrawareServerConfig) {
             .claim(JWT_MQTT_SUBSCRIBABLE_TOPICS_CLAIM, arrayOf(topicPattern))
             .claim(JWT_MQTT_PUBLISHABLE_TOPICS_CLAIM, arrayOf(topicPattern))
             .expirationTime(Date(date.time + 120000))
-            .issuer("terraware-server")
+            .issuer("seedbank-server")
             .issueTime(date)
             .notBeforeTime(date)
             .subject(subject)
