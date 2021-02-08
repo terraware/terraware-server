@@ -29,6 +29,7 @@ import java.time.ZoneOffset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -295,6 +296,11 @@ internal class AccessionFetcherTest : DatabaseTest() {
                 testType = GerminationTestType.Lab,
                 startDate = startDate)),
         updatedTests)
+
+    val updatedAccession = accessionDao.fetchOneById(1)
+    assertNull("totalViabilityPercent", updatedAccession?.totalViabilityPercent)
+    assertNull("latestViabilityPercent", updatedAccession?.latestViabilityPercent)
+    assertNull("latestGerminationRecordingDate", updatedAccession?.latestGerminationRecordingDate)
   }
 
   @Test
@@ -446,17 +452,26 @@ internal class AccessionFetcherTest : DatabaseTest() {
                         GerminationTestPayload(
                             id = initial.germinationTests?.get(0)?.id,
                             testType = GerminationTestType.Lab,
+                            seedsSown = 100,
                             germinations =
                                 listOf(
                                     GerminationPayload(
-                                        recordingDate = localDate, seedsGerminated = 123)))))
+                                        recordingDate = localDate, seedsGerminated = 75)))))
     fetcher.update(initial.accessionNumber, desired)
     val germinations = germinationDao.fetchByTestId(1)
 
     assertEquals("Number of germinations after update", 1, germinations.size)
     assertTrue(
         "First germination preserved",
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 123 })
+        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 })
+
+    val updatedAccession = accessionDao.fetchOneById(1)
+    assertEquals("totalViabilityPercent", 75, updatedAccession?.totalViabilityPercent)
+    assertEquals("latestViabilityPercent", 75, updatedAccession?.latestViabilityPercent)
+    assertEquals(
+        "latestGerminationRecordingDate",
+        localDate,
+        updatedAccession?.latestGerminationRecordingDate)
   }
 
   @Test
@@ -472,7 +487,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                             germinations =
                                 listOf(
                                     GerminationPayload(
-                                        recordingDate = localDate, seedsGerminated = 123),
+                                        recordingDate = localDate, seedsGerminated = 75),
                                     GerminationPayload(
                                         recordingDate = localDate.plusDays(1),
                                         seedsGerminated = 456))))))
@@ -484,17 +499,26 @@ internal class AccessionFetcherTest : DatabaseTest() {
                         GerminationTestPayload(
                             id = initial.germinationTests?.get(0)?.id,
                             testType = GerminationTestType.Lab,
+                            seedsSown = 100,
                             germinations =
                                 listOf(
                                     GerminationPayload(
-                                        recordingDate = localDate, seedsGerminated = 123)))))
+                                        recordingDate = localDate, seedsGerminated = 75)))))
     fetcher.update(initial.accessionNumber, desired)
     val germinations = germinationDao.fetchByTestId(1)
 
     assertEquals("Number of germinations after update", 1, germinations.size)
     assertTrue(
         "First germination preserved",
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 123 })
+        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 })
+
+    val updatedAccession = accessionDao.fetchOneById(1)
+    assertEquals("totalViabilityPercent", 75, updatedAccession?.totalViabilityPercent)
+    assertEquals("latestViabilityPercent", 75, updatedAccession?.latestViabilityPercent)
+    assertEquals(
+        "latestGerminationRecordingDate",
+        localDate,
+        updatedAccession?.latestGerminationRecordingDate)
   }
 
   @Test

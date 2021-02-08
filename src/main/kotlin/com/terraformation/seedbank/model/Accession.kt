@@ -112,6 +112,67 @@ interface AccessionFields {
     get() = null
   val withdrawals: List<WithdrawalFields>?
     get() = null
+  val latestGerminationTestDate: LocalDate?
+    get() = null
+  val latestViabilityPercent: Int?
+    get() = null
+  val totalViabilityPercent: Int?
+    get() = null
+  val cutTestSeedsFilled: Int?
+    get() = null
+  val cutTestSeedsEmpty: Int?
+    get() = null
+  val cutTestSeedsCompromised: Int?
+    get() = null
+
+  private fun getLatestGerminationTestWithResults(): GerminationTestFields? {
+    return germinationTests
+        ?.filter { it.calculateLatestRecordingDate() != null && it.seedsSown != null }
+        ?.maxByOrNull { it.calculateLatestRecordingDate()!! }
+  }
+
+  private fun getCutTestTotal(): Int? =
+      if (cutTestSeedsCompromised != null &&
+          cutTestSeedsEmpty != null &&
+          cutTestSeedsFilled != null) {
+        (cutTestSeedsCompromised ?: 0) + (cutTestSeedsEmpty ?: 0) + (cutTestSeedsFilled ?: 0)
+      } else {
+        null
+      }
+
+  fun calculateLatestGerminationRecordingDate(): LocalDate? {
+    return getLatestGerminationTestWithResults()?.calculateLatestRecordingDate()
+  }
+
+  fun calculateLatestViabilityPercent(): Int? {
+    val latestTest = getLatestGerminationTestWithResults()
+    val germinated = latestTest?.calculateTotalSeedsGerminated()
+    val sown = latestTest?.seedsSown ?: 0
+    return if (sown > 0 && germinated != null) {
+      germinated * 100 / sown
+    } else {
+      null
+    }
+  }
+
+  fun calculateTotalViabilityPercent(): Int? {
+    val tests = germinationTests ?: emptyList()
+
+    val totalGerminationTested = tests.mapNotNull { it.seedsSown }.sum()
+    val totalGerminated =
+        tests.sumOf { test -> test.germinations?.sumOf { it.seedsGerminated } ?: 0 }
+
+    val cutTestTotal = getCutTestTotal()
+    val cutTestFilled = if (cutTestTotal != null) cutTestSeedsFilled!! else 0
+    val totalTested = totalGerminationTested + (getCutTestTotal() ?: 0)
+    val totalViable = totalGerminated + cutTestFilled
+
+    return if (totalTested > 0) {
+      totalViable * 100 / totalTested
+    } else {
+      null
+    }
+  }
 }
 
 interface ConcreteAccession : AccessionFields {
@@ -164,4 +225,10 @@ data class AccessionModel(
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestModel>? = null,
     override val withdrawals: List<WithdrawalModel>? = null,
+    override val latestGerminationTestDate: LocalDate? = null,
+    override val latestViabilityPercent: Int? = null,
+    override val totalViabilityPercent: Int? = null,
+    override val cutTestSeedsFilled: Int? = null,
+    override val cutTestSeedsEmpty: Int? = null,
+    override val cutTestSeedsCompromised: Int? = null,
 ) : ConcreteAccession

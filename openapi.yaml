@@ -340,6 +340,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WithdrawalPayload'
+        cutTestSeedsFilled:
+          type: integer
+          format: int32
+        cutTestSeedsEmpty:
+          type: integer
+          format: int32
+        cutTestSeedsCompromised:
+          type: integer
+          format: int32
+        latestGerminationTestDate:
+          type: string
+          format: date
+        latestViabilityPercent:
+          type: integer
+          format: int32
+        totalViabilityPercent:
+          type: integer
+          format: int32
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -763,6 +781,15 @@ components:
             enum:
             - Lab
             - Nursery
+        cutTestSeedsCompromised:
+          type: integer
+          format: int32
+        cutTestSeedsEmpty:
+          type: integer
+          format: int32
+        cutTestSeedsFilled:
+          type: integer
+          format: int32
         germinationTests:
           type: array
           items:

@@ -49,6 +49,14 @@ interface GerminationTestFields {
         testType == other.testType &&
         treatment == other.treatment
   }
+
+  fun calculateLatestRecordingDate(): LocalDate? {
+    return germinations?.maxOfOrNull { it.recordingDate }
+  }
+
+  fun calculateTotalSeedsGerminated(): Int? {
+    return germinations?.sumOf { it.seedsGerminated }
+  }
 }
 
 data class GerminationTestModel(
@@ -63,4 +71,4 @@ data class GerminationTestModel(
     override val notes: String? = null,
     override val staffResponsible: String? = null,
     override val germinations: Collection<GerminationModel>? = null
-) : GerminationTestFields
+) : GerminationTestFields {}

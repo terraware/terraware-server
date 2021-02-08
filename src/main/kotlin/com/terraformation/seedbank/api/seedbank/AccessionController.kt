@@ -146,6 +146,9 @@ data class UpdateAccessionRequestPayload(
     override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
+    override val cutTestSeedsCompromised: Int? = null,
+    override val cutTestSeedsEmpty: Int? = null,
+    override val cutTestSeedsFilled: Int? = null,
     @Valid override val germinationTests: List<GerminationTestPayload>? = null,
     @Valid override val withdrawals: List<WithdrawalPayload>? = null,
 ) : AccessionFields
@@ -194,6 +197,12 @@ data class AccessionPayload(
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestPayload>? = null,
     override val withdrawals: List<WithdrawalPayload>? = null,
+    override val cutTestSeedsFilled: Int? = null,
+    override val cutTestSeedsEmpty: Int? = null,
+    override val cutTestSeedsCompromised: Int? = null,
+    override val latestGerminationTestDate: LocalDate? = null,
+    override val latestViabilityPercent: Int? = null,
+    override val totalViabilityPercent: Int? = null,
 ) : ConcreteAccession {
   constructor(
       model: ConcreteAccession
@@ -240,6 +249,12 @@ data class AccessionPayload(
       model.germinationTestTypes,
       model.germinationTests?.map { GerminationTestPayload(it) },
       model.withdrawals?.map { WithdrawalPayload(it) },
+      model.cutTestSeedsFilled,
+      model.cutTestSeedsEmpty,
+      model.cutTestSeedsCompromised,
+      model.latestGerminationTestDate,
+      model.latestViabilityPercent,
+      model.totalViabilityPercent,
   )
 }
 

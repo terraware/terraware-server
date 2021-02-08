@@ -118,6 +118,12 @@ class AccessionFetcher(
           germinationTestTypes = germinationTestTypes,
           germinationTests = germinationTests,
           withdrawals = withdrawals,
+          cutTestSeedsFilled = parentRow[CUT_TEST_SEEDS_FILLED],
+          cutTestSeedsEmpty = parentRow[CUT_TEST_SEEDS_EMPTY],
+          cutTestSeedsCompromised = parentRow[CUT_TEST_SEEDS_COMPROMISED],
+          latestGerminationTestDate = parentRow[LATEST_GERMINATION_RECORDING_DATE],
+          latestViabilityPercent = parentRow[LATEST_VIABILITY_PERCENT],
+          totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
       )
     }
   }
@@ -156,6 +162,14 @@ class AccessionFetcher(
                     .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
                     .set(STORAGE_NOTES, accession.storageNotes)
                     .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
+                    .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
+                    .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
+                    .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
+                    .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                    .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                    .set(
+                        LATEST_GERMINATION_RECORDING_DATE,
+                        accession.calculateLatestGerminationRecordingDate())
                     .returning(ID)
                     .fetchOne()
                     ?.get(ID)!!
@@ -190,6 +204,28 @@ class AccessionFetcher(
     val accessionId = existing.id
 
     dslContext.transaction { _ ->
+
+      // TODO: Photo filenames (if it makes sense to make these updatable)
+
+      if (existing.secondaryCollectors != accession.secondaryCollectors) {
+        // TODO: More selective update
+        dslContext
+            .deleteFrom(ACCESSION_SECONDARY_COLLECTOR)
+            .where(ACCESSION_SECONDARY_COLLECTOR.ACCESSION_ID.eq(accessionId))
+            .execute()
+        insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
+      }
+
+      bagFetcher.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
+      collectionEventFetcher.updateGeolocations(
+          accessionId, existing.geolocations, accession.geolocations)
+      germinationFetcher.updateGerminationTestTypes(
+          accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
+      germinationFetcher.updateGerminationTests(
+          accessionId, existing.germinationTests, accession.germinationTests)
+      withdrawalFetcher.updateWithdrawals(
+          accessionId, accession, existing.withdrawals, accession.withdrawals)
+
       val rowsUpdated =
           with(ACCESSION) {
             dslContext
@@ -212,6 +248,9 @@ class AccessionFetcher(
                 .set(SUBSET_COUNT, accession.subsetCount)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
                 .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
+                .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
+                .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
+                .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(DRYING_END_DATE, accession.dryingEndDate)
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
@@ -225,6 +264,11 @@ class AccessionFetcher(
                 .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
                 .set(STORAGE_NOTES, accession.storageNotes)
                 .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
+                .set(
+                    LATEST_GERMINATION_RECORDING_DATE,
+                    accession.calculateLatestGerminationRecordingDate())
+                .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
                 .where(NUMBER.eq(accessionNumber))
                 .and(SITE_MODULE_ID.eq(config.siteModuleId))
                 .execute()
@@ -234,27 +278,6 @@ class AccessionFetcher(
         log.error("Accession $accessionNumber exists in database but update failed")
         throw DataAccessException("Unable to update accession $accessionNumber")
       }
-
-      // TODO: Photo filenames (if it makes sense to make these updatable)
-
-      if (existing.secondaryCollectors != accession.secondaryCollectors) {
-        // TODO: More selective update
-        dslContext
-            .deleteFrom(ACCESSION_SECONDARY_COLLECTOR)
-            .where(ACCESSION_SECONDARY_COLLECTOR.ACCESSION_ID.eq(accessionId))
-            .execute()
-        insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
-      }
-
-      bagFetcher.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
-      collectionEventFetcher.updateGeolocations(
-          accessionId, existing.geolocations, accession.geolocations)
-      germinationFetcher.updateGerminationTestTypes(
-          accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
-      germinationFetcher.updateGerminationTests(
-          accessionId, existing.germinationTests, accession.germinationTests)
-      withdrawalFetcher.updateWithdrawals(
-          accessionId, accession, existing.withdrawals, accession.withdrawals)
     }
 
     return true
