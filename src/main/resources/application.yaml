@@ -9,6 +9,11 @@ spring:
       - "classpath:db/migration/postgres"
       - "classpath:db/migration/common"
 
+  servlet:
+    multipart:
+      max-request-size: 20MB
+      max-file-size: 20MB
+
 springdoc:
   packages-to-scan:
     - "com.terraformation.seedbank.api"

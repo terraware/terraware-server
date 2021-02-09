@@ -85,6 +85,106 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/seedbank/accession/{accessionNumber}/photo:
+    get:
+      tags:
+      - SeedBankApp
+      summary: List all the available photos for an accession.
+      operationId: listPhotos
+      parameters:
+      - name: accessionNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The accession's photos are listed in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPhotosResponsePayload'
+        "404":
+          description: The accession does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/seedbank/accession/{accessionNumber}/photo/{photoFilename}:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Retrieve a specific photo from an accession.
+      operationId: getPhoto
+      parameters:
+      - name: accessionNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: photoFilename
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The photo was successfully retrieved.
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: "The accession does not exist, or does not have a photo with\
+            \ the requested filename."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    post:
+      tags:
+      - SeedBankApp
+      summary: Upload a new photo for an accession.
+      operationId: uploadPhoto
+      parameters:
+      - name: accessionNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: photoFilename
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                metadata:
+                  $ref: '#/components/schemas/PhotoMetadata'
+            encoding:
+              file:
+                contentType: image/jpeg
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The specified accession does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/notification:
     get:
       tags:
@@ -592,6 +692,41 @@ components:
             $ref: '#/components/schemas/FieldValuesPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ListPhotosResponseElement:
+      required:
+      - capturedTime
+      - filename
+      - size
+      type: object
+      properties:
+        filename:
+          type: string
+        size:
+          type: integer
+          format: int32
+        capturedTime:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+        longitude:
+          type: number
+        gpsAccuracy:
+          type: integer
+          description: GPS accuracy in meters.
+          format: int32
+    ListPhotosResponsePayload:
+      required:
+      - photos
+      - status
+      type: object
+      properties:
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListPhotosResponseElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     NotificationListResponse:
       required:
       - notifications
@@ -648,6 +783,22 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+    PhotoMetadata:
+      required:
+      - capturedTime
+      type: object
+      properties:
+        capturedTime:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+        longitude:
+          type: number
+        gpsAccuracy:
+          type: integer
+          description: GPS accuracy in meters.
+          format: int32
     SearchField:
       type: string
       enum:
