@@ -5,7 +5,7 @@ DEFAULT: image
 prepare:
 	cd .. && ./gradlew assemble
 	mkdir -p ../build/docker
-	cp Dockerfile ../build/docker
+	cp Dockerfile entrypoint.sh ../build/docker
 	cd ../build/docker && jar -xf ../libs/*.jar
 
 image: prepare
