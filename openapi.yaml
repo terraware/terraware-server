@@ -732,10 +732,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchField'
-        sortFields:
+        sortOrder:
           type: array
           items:
-            $ref: '#/components/schemas/SearchField'
+            $ref: '#/components/schemas/SearchSortOrderElement'
         filters:
           type: array
           items:
@@ -759,6 +759,19 @@ components:
               type: string
         cursor:
           type: string
+    SearchSortOrderElement:
+      required:
+      - field
+      type: object
+      properties:
+        field:
+          $ref: '#/components/schemas/SearchField'
+        direction:
+          type: string
+          enum:
+          - Ascending
+          - Descending
+          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error

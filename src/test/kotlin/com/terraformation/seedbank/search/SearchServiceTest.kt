@@ -1,7 +1,9 @@
 package com.terraformation.seedbank.search
 
+import com.terraformation.seedbank.api.seedbank.SearchDirection
 import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
 import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
+import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.model.AccessionStatus
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,8 +12,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SearchServiceTest : DatabaseTest() {
-  private val searchFields = SearchFields()
   private lateinit var searchService: SearchService
+
+  private val searchFields = SearchFields()
+  private val speciesField = searchFields["species"]!!
+  private val accessionNumberField = searchFields["accessionNumber"]!!
+  private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
+  private val statusField = searchFields["status"]!!
 
   @BeforeEach
   fun init() {
@@ -20,9 +27,9 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `finds example rows`() {
-    val fieldNames = listOf("species", "accessionNumber", "treesCollectedFrom", "status")
-    val fields = fieldNames.map { searchFields[it]!! }
-    val criteria = SearchRequestPayload(fields = fields, sortFields = fields)
+    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, statusField)
+    val sortFields = fields.map { SearchSortOrderElement(it) }
+    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
 
     val result = searchService.search(criteria)
 
@@ -48,10 +55,39 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
+  fun `honors sort order`() {
+    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, statusField)
+    val sortFields = fields.map { SearchSortOrderElement(it, SearchDirection.Descending) }
+    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
+
+    val result = searchService.search(criteria)
+
+    val expected =
+        SearchResponsePayload(
+            listOf(
+                mapOf(
+                    "species" to "Other Dogwood",
+                    "accessionNumber" to "ABCDEFG",
+                    "treesCollectedFrom" to "2",
+                    "status" to "Active",
+                ),
+                mapOf(
+                    "species" to "Kousa Dogwood",
+                    "accessionNumber" to "XYZ",
+                    "treesCollectedFrom" to "1",
+                    "status" to "Active",
+                ),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
   fun `can use cursor to get next page of results`() {
-    val fieldNames = listOf("species", "accessionNumber", "treesCollectedFrom", "status")
-    val fields = fieldNames.map { searchFields[it]!! }
-    val criteria = SearchRequestPayload(fields = fields, sortFields = fields, count = 1)
+    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, statusField)
+    val sortFields = fields.map { SearchSortOrderElement(it) }
+    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields, count = 1)
 
     val expectedFirstPageResults =
         listOf(
@@ -86,7 +122,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `fetchFieldValues with no criteria for simple column value`() {
-    val values = searchService.fetchFieldValues(searchFields["species"]!!, emptyList())
+    val values = searchService.fetchFieldValues(speciesField, emptyList())
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
@@ -94,10 +130,8 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchFieldValues with fuzzy search of text column value`() {
     val values =
         searchService.fetchFieldValues(
-            searchFields["species"]!!,
-            listOf(
-                SearchFilter(
-                    searchFields["accessionNumber"]!!, listOf("Y"), SearchFilterType.Fuzzy)))
+            speciesField,
+            listOf(SearchFilter(accessionNumberField, listOf("Y"), SearchFilterType.Fuzzy)))
     assertEquals(listOf("Kousa Dogwood"), values)
   }
 
@@ -105,15 +139,14 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchFieldValues with exact search of integer column value`() {
     val values =
         searchService.fetchFieldValues(
-            searchFields["treesCollectedFrom"]!!,
-            listOf(SearchFilter(searchFields["treesCollectedFrom"]!!, listOf("1"))))
+            treesCollectedFromField, listOf(SearchFilter(treesCollectedFromField, listOf("1"))))
 
     assertEquals(listOf(1), values)
   }
 
   @Test
   fun `fetchFieldValues with no criteria for computed column value`() {
-    val values = searchService.fetchFieldValues(searchFields["status"]!!, emptyList())
+    val values = searchService.fetchFieldValues(statusField, emptyList())
     assertEquals(listOf(AccessionStatus.Active), values)
   }
 }

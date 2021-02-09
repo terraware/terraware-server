@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.search
 
+import com.terraformation.seedbank.api.seedbank.SearchDirection
 import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
 import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
 import com.terraformation.seedbank.db.tables.references.ACCESSION
@@ -19,7 +20,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val directlyReferencedTables =
         (criteria.fields.map { it.table }.toSet() +
             (criteria.filters?.map { it.field.table }?.toSet() ?: emptySet()) +
-            (criteria.sortFields?.map { it.table }?.toSet() ?: emptySet()))
+            (criteria.sortOrder?.map { it.field.table }?.toSet() ?: emptySet()))
     val dependencyTables =
         directlyReferencedTables.flatMap { it.dependsOn() }.toSet() - directlyReferencedTables
 
@@ -31,9 +32,15 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val databaseFields = fields.flatMap { it.selectFields }.toSet()
 
     val conditions = criteria.filters?.flatMap { it.toFieldConditions() } ?: emptyList()
+
+    val sortOrderElements = criteria.sortOrder ?: emptyList()
     val orderBy =
-        (criteria.sortFields?.flatMap { it.orderByFields }
-            ?: emptyList()) + listOf(ACCESSION.NUMBER)
+        sortOrderElements.flatMap { sortOrderElement ->
+          when (sortOrderElement.direction) {
+            SearchDirection.Ascending, null -> sortOrderElement.field.orderByFields
+            SearchDirection.Descending -> sortOrderElement.field.orderByFields.map { it.desc() }
+          }
+        } + listOf(ACCESSION.NUMBER)
 
     var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSION)
 

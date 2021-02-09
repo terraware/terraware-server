@@ -24,9 +24,19 @@ class SearchController(private val searchService: SearchService) {
   }
 }
 
+enum class SearchDirection {
+  Ascending,
+  Descending
+}
+
+data class SearchSortOrderElement(
+    val field: SearchField<*>,
+    @Schema(defaultValue = "Ascending") val direction: SearchDirection? = SearchDirection.Ascending
+)
+
 data class SearchRequestPayload(
     @NotEmpty val fields: List<SearchField<*>>,
-    val sortFields: List<SearchField<*>>? = null,
+    val sortOrder: List<SearchSortOrderElement>? = null,
     val filters: List<SearchFilter>? = null,
     val cursor: String? = null,
     @Schema(defaultValue = "10") val count: Int = 10
