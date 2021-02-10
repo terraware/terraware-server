@@ -1,3 +1,12 @@
+terraware:
+  site-module-id: 100
+  jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
+  mqtt:
+    enabled: false
+    address: "ws://localhost:1883/"
+  site-config-url: "classpath:config/dev.json"
+  photo-dir: "/tmp/seedbank-server-photos"
+
 spring:
   flyway:
     locations:
@@ -14,11 +23,3 @@ spring:
 logging:
   level:
     com.terraformation: DEBUG
-
-terraware:
-  site-module-id: 100
-  jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
-  mqtt:
-    enabled: false
-    address: "ws://localhost:1883/"
-  site-config-url: "classpath:config/dev.json"

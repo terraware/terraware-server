@@ -41,6 +41,18 @@ class AccessionFetcher(
 
   private val log = perClassLogger()
 
+  /**
+   * Looks up the ID of an accession with the given accession number. Returns null if the accession
+   * number does not exist.
+   */
+  fun getIdByNumber(accessionNumber: String): Long? {
+    return dslContext
+        .select(ACCESSION.ID)
+        .from(ACCESSION)
+        .where(ACCESSION.NUMBER.eq(accessionNumber))
+        .fetchOne(ACCESSION.ID)
+  }
+
   fun fetchByNumber(accessionNumber: String): AccessionModel? {
     // First, fetch all the values that are either directly on the accession table or are in other
     // tables such that there is at most one value for a given accession (N:1 relation).

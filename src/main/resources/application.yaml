@@ -14,6 +14,9 @@ spring:
       max-request-size: 20MB
       max-file-size: 20MB
 
+# Configuration for the Swagger API explorer. These settings are used when the server is running
+# and serving real requests; there are also settings in application-apidoc.yaml that are used when
+# generating the API documentation from the command line.
 springdoc:
   packages-to-scan:
     - "com.terraformation.seedbank.api"

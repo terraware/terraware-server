@@ -168,7 +168,7 @@ paths:
                   type: string
                   format: binary
                 metadata:
-                  $ref: '#/components/schemas/PhotoMetadata'
+                  $ref: '#/components/schemas/UploadPhotoMetadataPayload'
             encoding:
               file:
                 contentType: image/jpeg
@@ -181,6 +181,12 @@ paths:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
         "404":
           description: The specified accession does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+        "409":
+          description: The requested photo already exists on the accession.
           content:
             application/json:
               schema:
@@ -783,22 +789,6 @@ components:
           - Dried
           - In Storage
           - Withdrawn
-    PhotoMetadata:
-      required:
-      - capturedTime
-      type: object
-      properties:
-        capturedTime:
-          type: string
-          format: date-time
-        latitude:
-          type: number
-        longitude:
-          type: number
-        gpsAccuracy:
-          type: integer
-          description: GPS accuracy in meters.
-          format: int32
     SearchField:
       type: string
       enum:
@@ -919,10 +909,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
+          default: Ascending
           enum:
           - Ascending
           - Descending
-          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error
@@ -1157,6 +1147,22 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    UploadPhotoMetadataPayload:
+      required:
+      - capturedTime
+      type: object
+      properties:
+        capturedTime:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+        longitude:
+          type: number
+        gpsAccuracy:
+          type: integer
+          description: GPS accuracy in meters.
+          format: int32
     WithdrawalPayload:
       required:
       - date

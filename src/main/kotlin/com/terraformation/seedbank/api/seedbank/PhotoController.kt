@@ -1,7 +1,10 @@
 package com.terraformation.seedbank.api.seedbank
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.seedbank.api.DuplicateNameException
+import com.terraformation.seedbank.api.InternalErrorException
 import com.terraformation.seedbank.api.NotFoundException
+import com.terraformation.seedbank.api.SimpleErrorResponsePayload
 import com.terraformation.seedbank.api.SimpleSuccessResponsePayload
 import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.UnsupportedPhotoFormatException
@@ -9,6 +12,8 @@ import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.db.AccessionFetcher
+import com.terraformation.seedbank.photo.PhotoRepository
+import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
@@ -16,9 +21,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
+import java.nio.file.FileAlreadyExistsException
+import java.nio.file.NoSuchFileException
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -31,13 +41,22 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/seedbank/accession/{accessionNumber}/photo")
 @RestController
 @SeedBankAppEndpoint
-class PhotoController(private val accessionFetcher: AccessionFetcher) {
-  // TODO: Store photos in the database!
-  private val tempMetadata = ConcurrentHashMap<String, ConcurrentHashMap<String, PhotoMetadata>>()
-  private val tempImages = ConcurrentHashMap<String, ConcurrentHashMap<String, ByteArray>>()
+class PhotoController(
+    private val accessionFetcher: AccessionFetcher,
+    private val photoRepository: PhotoRepository
+) {
+  private val log = perClassLogger()
 
   @ApiResponseSimpleSuccess
   @ApiResponse404("The specified accession does not exist.")
+  @ApiResponse(
+      responseCode = "409",
+      description = "The requested photo already exists on the accession.",
+      content =
+          [
+              Content(
+                  schema = Schema(implementation = SimpleErrorResponsePayload::class),
+                  mediaType = MediaType.APPLICATION_JSON_VALUE)])
   @Operation(summary = "Upload a new photo for an accession.")
   @PostMapping("/{photoFilename}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBody(
@@ -47,19 +66,31 @@ class PhotoController(private val accessionFetcher: AccessionFetcher) {
       @PathVariable accessionNumber: String,
       @PathVariable photoFilename: String,
       @RequestPart("file") file: MultipartFile,
-      @RequestPart("metadata") metadata: PhotoMetadata
+      @RequestPart("metadata") metadata: UploadPhotoMetadataPayload
   ): SimpleSuccessResponsePayload {
-    if (accessionFetcher.fetchByNumber(accessionNumber) == null) {
-      throw NotFoundException("Accession $accessionNumber does not exist.")
-    }
+    val accessionId =
+        accessionFetcher.getIdByNumber(accessionNumber)
+            ?: throw NotFoundException("Accession $accessionNumber does not exist.")
 
     val contentType = file.contentType?.substringBefore(';')
     if (contentType != MediaType.IMAGE_JPEG_VALUE) {
       throw UnsupportedPhotoFormatException()
     }
 
-    tempMetadata.computeIfAbsent(accessionNumber) { ConcurrentHashMap() }[photoFilename] = metadata
-    tempImages.computeIfAbsent(accessionNumber) { ConcurrentHashMap() }[photoFilename] = file.bytes
+    val duplicateNameException =
+        DuplicateNameException(
+            "Photo $photoFilename already exists for accession $accessionNumber.")
+
+    try {
+      photoRepository.storePhoto(
+          accessionId, accessionNumber, photoFilename, contentType, file.inputStream, metadata)
+    } catch (e: FileAlreadyExistsException) {
+      log.info("Rejecting duplicate photo $photoFilename for accession $accessionNumber")
+      throw duplicateNameException
+    } catch (e: Exception) {
+      log.error("Unable to store photo $photoFilename for accession $accessionNumber", e)
+      throw InternalErrorException("Unable to store the photo.")
+    }
 
     return SimpleSuccessResponsePayload()
   }
@@ -80,17 +111,23 @@ class PhotoController(private val accessionFetcher: AccessionFetcher) {
   fun getPhoto(
       @PathVariable accessionNumber: String,
       @PathVariable photoFilename: String
-  ): ByteArray {
+  ): ResponseEntity<InputStreamResource> {
     if (accessionFetcher.fetchByNumber(accessionNumber) == null) {
       throw NotFoundException("Accession $accessionNumber does not exist.")
     }
 
-    val photosForAccession = tempImages[accessionNumber]
-    val imageData =
-        photosForAccession?.get(photoFilename)
-            ?: throw NotFoundException("The accession does not have a photo named $photoFilename")
+    try {
+      val size = photoRepository.getPhotoFileSize(accessionNumber, photoFilename)
+      val headers = HttpHeaders()
+      headers.contentLength = size
 
-    return imageData
+      val inputStream = photoRepository.readPhoto(accessionNumber, photoFilename)
+
+      val resource = InputStreamResource(inputStream)
+      return ResponseEntity(resource, headers, HttpStatus.OK)
+    } catch (e: NoSuchFileException) {
+      throw NotFoundException("The accession does not have a photo named $photoFilename")
+    }
   }
 
   @ApiResponse(
@@ -99,20 +136,15 @@ class PhotoController(private val accessionFetcher: AccessionFetcher) {
   @GetMapping
   @Operation(summary = "List all the available photos for an accession.")
   fun listPhotos(@PathVariable accessionNumber: String): ListPhotosResponsePayload {
-    if (accessionFetcher.fetchByNumber(accessionNumber) == null) {
-      throw NotFoundException("Accession $accessionNumber does not exist.")
-    }
+    val accessionId =
+        accessionFetcher.getIdByNumber(accessionNumber)
+            ?: throw NotFoundException("Accession $accessionNumber does not exist.")
 
-    val photos = tempMetadata[accessionNumber] ?: emptyMap()
-
-    return ListPhotosResponsePayload(
-        photos.map {
-          ListPhotosResponseElement(it.key, tempImages[accessionNumber]!![it.key]!!.size, it.value)
-        })
+    return ListPhotosResponsePayload(photoRepository.listPhotos(accessionId))
   }
 }
 
-data class PhotoMetadata(
+data class UploadPhotoMetadataPayload(
     val capturedTime: Instant,
     val latitude: BigDecimal?,
     val longitude: BigDecimal?,
@@ -127,19 +159,7 @@ data class ListPhotosResponseElement(
     val latitude: BigDecimal?,
     val longitude: BigDecimal?,
     @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
-) {
-  constructor(
-      filename: String,
-      size: Int,
-      metadata: PhotoMetadata
-  ) : this(
-      filename,
-      size,
-      metadata.capturedTime,
-      metadata.latitude,
-      metadata.longitude,
-      metadata.gpsAccuracy)
-}
+)
 
 data class ListPhotosResponsePayload(val photos: List<ListPhotosResponseElement>) :
     SuccessResponsePayload

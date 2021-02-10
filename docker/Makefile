@@ -12,4 +12,4 @@ image: prepare
 	docker build -f Dockerfile -t $(IMAGE_NAME) ../build/docker
 
 run: image
-	docker-compose -f docker-compose-dev.yml up
+	docker-compose -f docker-compose.yml up

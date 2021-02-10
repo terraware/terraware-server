@@ -1,16 +1,16 @@
 # Configuration overrides for instances of the server running on site as part of a Balena
 # multi-service deployment.
 
-
-logging:
-  level:
-    com.terraformation: DEBUG
-
 terraware:
   jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
   mqtt:
     enabled: true
     address: "ws://mosquitto:1883/"
+  photo-dir: "/data/photos"
+
+logging:
+  level:
+    com.terraformation: DEBUG
 
 server:
   tomcat:

@@ -3,6 +3,9 @@
 
 version: "2"
 
+volumes:
+  photo-data:
+
 services:
   postgres:
     image: "postgres:12"
@@ -17,5 +20,8 @@ services:
     environment:
       DATABASE_URL: "jdbc:postgresql://postgres:5432/seedbank"
       DATABASE_PASSWORD: "seedbank"
+      TERRAWARE_PHOTO_DIR: "/data/photos"
+    volumes:
+      - "photo-data:/data/photos"
     depends_on:
       - "postgres"

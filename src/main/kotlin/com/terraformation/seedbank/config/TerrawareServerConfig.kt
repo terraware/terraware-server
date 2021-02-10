@@ -1,6 +1,7 @@
 package com.terraformation.seedbank.config
 
 import java.net.URI
+import java.nio.file.Path
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -20,6 +21,22 @@ class TerrawareServerConfig {
 
   /** URL of site-specific configuration file. */
   @NotNull lateinit var siteConfigUrl: Resource
+
+  @Min(1) var siteModuleId: Long = 0
+
+  /**
+   * Directory to use for photo storage. The server will attempt to create this directory if it
+   * doesn't exist.
+   */
+  @NotNull lateinit var photoDir: Path
+
+  /**
+   * Number of levels of parent directories to create for photos. Photos are stored in a tree of
+   * single-character subdirectories from the beginning of the accession number. For example, if
+   * this is 3, and `photoDir` is `/x/y`, photos for accession `ABCDEFG` will be stored in
+   * `/x/y/A/B/C/ABCDEFG`.
+   */
+  @Min(0) var photoIntermediateDepth: Int = 3
 
   /** Configures the server's communication with an MQTT broker. */
   var mqtt: MqttConfig = MqttConfig()
@@ -41,6 +58,4 @@ class TerrawareServerConfig {
        */
       var topicPrefix: String? = null
   )
-
-  @Min(1) var siteModuleId: Long = 0
 }

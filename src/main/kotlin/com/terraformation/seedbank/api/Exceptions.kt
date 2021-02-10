@@ -11,6 +11,12 @@ abstract class ClientFacingException(val status: HttpStatus, message: String) :
     get() = super.message!!
 }
 
+class DuplicateNameException(message: String = "A resource with that name already exists") :
+    ClientFacingException(HttpStatus.CONFLICT, message)
+
+class InternalErrorException(message: String = "An internal error has occurred") :
+    ClientFacingException(HttpStatus.INTERNAL_SERVER_ERROR, message)
+
 class NoOrganizationException(message: String = "Client is not associated with an organization") :
     ClientFacingException(HttpStatus.FORBIDDEN, message)
 
