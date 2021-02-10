@@ -457,11 +457,6 @@ components:
           type: string
         storageStaffResponsible:
           type: string
-        photoFilenames:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
         geolocations:
           uniqueItems: true
           type: array
@@ -501,6 +496,8 @@ components:
         totalViabilityPercent:
           type: integer
           format: int32
+        deviceInfo:
+          $ref: '#/components/schemas/DeviceInfoPayload'
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -560,6 +557,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
+        deviceInfo:
+          $ref: '#/components/schemas/DeviceInfoPayload'
     CreateAccessionResponsePayload:
       required:
       - accession
@@ -570,6 +569,43 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    DeviceInfoPayload:
+      type: object
+      properties:
+        appBuild:
+          type: string
+          description: "Build number of application that is submitting the accession,\
+            \ e.g., from React Native getBuildId()"
+        appName:
+          type: string
+          description: Name of application
+          example: Seed Collector
+        brand:
+          type: string
+          description: "Brand of device, e.g., from React Native getBrand()."
+          example: Samsung
+        model:
+          type: string
+          description: "Model of device hardware, e.g., from React Native getDeviceId()."
+        name:
+          type: string
+          description: "Name the user has assigned to the device, e.g., from React\
+            \ Native getDeviceName()."
+          example: Carlos's iPhone
+        osType:
+          type: string
+          description: "Type of operating system, e.g., from React Native getSystemName()."
+          example: Android
+        osVersion:
+          type: string
+          description: "Version of operating system, e.g., from React Native getSystemVersion()."
+          example: 7.1.1
+        uniqueId:
+          type: string
+          description: "Unique identifier of the hardware device, e.g., from React\
+            \ Native getUniqueId()."
+      description: Details about the device and the application that created the accession.
+        All these values are optional and most of them are platform-dependent.
     ErrorDetails:
       required:
       - message
@@ -909,10 +945,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
-          default: Ascending
           enum:
           - Ascending
           - Descending
+          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error
@@ -1102,11 +1138,6 @@ components:
           type: string
         storageStaffResponsible:
           type: string
-        photoFilenames:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
         geolocations:
           uniqueItems: true
           type: array

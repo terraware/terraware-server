@@ -102,8 +102,6 @@ interface AccessionFields {
     get() = null
   val storageStaffResponsible: String?
     get() = null
-  val photoFilenames: Set<String>?
-    get() = null
   val geolocations: Set<Geolocation>?
     get() = null
   val germinationTestTypes: Set<GerminationTestType>?
@@ -123,6 +121,8 @@ interface AccessionFields {
   val cutTestSeedsEmpty: Int?
     get() = null
   val cutTestSeedsCompromised: Int?
+    get() = null
+  val deviceInfo: AppDeviceFields?
     get() = null
 
   private fun getLatestGerminationTestWithResults(): GerminationTestFields? {
@@ -214,7 +214,6 @@ data class AccessionModel(
     override val processingNotes: String? = null,
     override val processingStaffResponsible: String? = null,
     override val bagNumbers: Set<String>? = null,
-    override val photoFilenames: Set<String>? = null,
     override val storageStartDate: LocalDate? = null,
     override val storagePackets: Int? = null,
     override val storageLocation: String? = null,
@@ -231,4 +230,5 @@ data class AccessionModel(
     override val cutTestSeedsFilled: Int? = null,
     override val cutTestSeedsEmpty: Int? = null,
     override val cutTestSeedsCompromised: Int? = null,
+    override val deviceInfo: AppDeviceModel? = null,
 ) : ConcreteAccession

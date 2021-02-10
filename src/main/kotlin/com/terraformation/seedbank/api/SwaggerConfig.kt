@@ -2,6 +2,7 @@ package com.terraformation.seedbank.api
 
 import com.terraformation.seedbank.api.seedbank.AccessionPayload
 import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
+import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
 import com.terraformation.seedbank.api.seedbank.UpdateAccessionRequestPayload
@@ -94,6 +95,7 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
         listOf(
             AccessionPayload::class,
             CreateAccessionRequestPayload::class,
+            DeviceInfoPayload::class,
             GerminationPayload::class,
             GerminationTestPayload::class,
             UpdateAccessionRequestPayload::class,
@@ -129,12 +131,12 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
    * property name but an alternate name can be specified in the [Schema] annotation.
    */
   private val KProperty<*>.swaggerSchemaName
-    get() = findAnnotation<Schema>()?.name ?: name
+    get() = findAnnotation<Schema>()?.name.orEmpty().ifEmpty { name }
 
   /**
    * The name of this class as it appears in the Swagger schema. By default this is the unqualified
    * class name but an alternate name can be specified in the [Schema] annotation.
    */
   private val KClass<*>.swaggerSchemaName
-    get() = findAnnotation<Schema>()?.name ?: simpleName
+    get() = findAnnotation<Schema>()?.name.orEmpty().ifEmpty { simpleName }
 }

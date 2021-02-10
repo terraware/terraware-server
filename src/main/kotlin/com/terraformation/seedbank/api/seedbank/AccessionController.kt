@@ -19,6 +19,7 @@ import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.WithdrawalPurpose
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionStatus
+import com.terraformation.seedbank.model.AppDeviceFields
 import com.terraformation.seedbank.model.ConcreteAccession
 import com.terraformation.seedbank.model.GerminationFields
 import com.terraformation.seedbank.model.GerminationTestFields
@@ -107,6 +108,7 @@ data class CreateAccessionRequestPayload(
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestPayload>? = null,
+    override val deviceInfo: DeviceInfoPayload? = null,
 ) : AccessionFields
 
 data class UpdateAccessionRequestPayload(
@@ -143,7 +145,6 @@ data class UpdateAccessionRequestPayload(
     override val storageLocation: String? = null,
     override val storageNotes: String? = null,
     override val storageStaffResponsible: String? = null,
-    override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val cutTestSeedsCompromised: Int? = null,
@@ -192,7 +193,6 @@ data class AccessionPayload(
     override val storageCondition: StorageCondition? = null,
     override val storageNotes: String? = null,
     override val storageStaffResponsible: String? = null,
-    override val photoFilenames: Set<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestPayload>? = null,
@@ -203,6 +203,7 @@ data class AccessionPayload(
     override val latestGerminationTestDate: LocalDate? = null,
     override val latestViabilityPercent: Int? = null,
     override val totalViabilityPercent: Int? = null,
+    override val deviceInfo: DeviceInfoPayload? = null,
 ) : ConcreteAccession {
   constructor(
       model: ConcreteAccession
@@ -244,7 +245,6 @@ data class AccessionPayload(
       model.storageCondition,
       model.storageNotes,
       model.storageStaffResponsible,
-      model.photoFilenames,
       model.geolocations,
       model.germinationTestTypes,
       model.germinationTests?.map { GerminationTestPayload(it) },
@@ -255,6 +255,7 @@ data class AccessionPayload(
       model.latestGerminationTestDate,
       model.latestViabilityPercent,
       model.totalViabilityPercent,
+      model.deviceInfo?.let { DeviceInfoPayload(it) },
   )
 }
 
@@ -362,6 +363,53 @@ data class WithdrawalPayload(
       model.destination,
       model.notes,
       model.staffResponsible)
+}
+
+@Schema(
+    description =
+        "Details about the device and the application that created the accession. All these " +
+            "values are optional and most of them are platform-dependent.")
+data class DeviceInfoPayload(
+    @Schema(
+        description =
+            "Build number of application that is submitting the accession, e.g., from React Native getBuildId()")
+    override val appBuild: String? = null,
+    @Schema(description = "Name of application", example = "Seed Collector")
+    override val appName: String? = null,
+    @Schema(
+        description = "Brand of device, e.g., from React Native getBrand().", example = "Samsung")
+    override val brand: String? = null,
+    @Schema(description = "Model of device hardware, e.g., from React Native getDeviceId().")
+    override val model: String? = null,
+    @Schema(
+        description =
+            "Name the user has assigned to the device, e.g., from React Native getDeviceName().",
+        example = "Carlos's iPhone")
+    override val name: String? = null,
+    @Schema(
+        description = "Type of operating system, e.g., from React Native getSystemName().",
+        example = "Android")
+    override val osType: String? = null,
+    @Schema(
+        description = "Version of operating system, e.g., from React Native getSystemVersion().",
+        example = "7.1.1")
+    override val osVersion: String? = null,
+    @Schema(
+        description =
+            "Unique identifier of the hardware device, e.g., from React Native getUniqueId().")
+    override val uniqueId: String? = null,
+) : AppDeviceFields {
+  constructor(
+      model: AppDeviceFields
+  ) : this(
+      model.appBuild,
+      model.appName,
+      model.brand,
+      model.model,
+      model.name,
+      model.osType,
+      model.osVersion,
+      model.uniqueId)
 }
 
 data class CreateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload

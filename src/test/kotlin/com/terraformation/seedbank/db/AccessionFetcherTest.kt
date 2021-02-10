@@ -2,11 +2,13 @@ package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.api.seedbank.AccessionPayload
 import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
+import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
 import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
+import com.terraformation.seedbank.db.tables.daos.AppDeviceDao
 import com.terraformation.seedbank.db.tables.daos.BagDao
 import com.terraformation.seedbank.db.tables.daos.CollectionEventDao
 import com.terraformation.seedbank.db.tables.daos.GerminationDao
@@ -44,6 +46,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     get() =
         listOf(
             "accession_id_seq",
+            "app_device_id_seq",
             "bag_id_seq",
             "collection_event_id_seq",
             "germination_test_id_seq",
@@ -56,6 +59,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   private lateinit var fetcher: AccessionFetcher
   private lateinit var accessionDao: AccessionDao
+  private lateinit var appDeviceDao: AppDeviceDao
   private lateinit var bagDao: BagDao
   private lateinit var collectionEventDao: CollectionEventDao
   private lateinit var germinationDao: GerminationDao
@@ -68,6 +72,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   fun init() {
     val jooqConfig = dslContext.configuration()
     accessionDao = AccessionDao(jooqConfig)
+    appDeviceDao = AppDeviceDao(jooqConfig)
     bagDao = BagDao(jooqConfig)
     collectionEventDao = CollectionEventDao(jooqConfig)
     germinationDao = GerminationDao(jooqConfig)
@@ -78,6 +83,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
         AccessionFetcher(
             dslContext,
             config,
+            AppDeviceFetcher(dslContext, clock),
             BagFetcher(dslContext),
             CollectionEventFetcher(dslContext, clock),
             GerminationFetcher(dslContext),
@@ -189,6 +195,28 @@ internal class AccessionFetcherTest : DatabaseTest() {
         "Existing bag is not replaced",
         initialBags.filter { it.label == "bag 2" },
         updatedBags.filter { it.label == "bag 2" })
+  }
+
+  @Test
+  fun `device info is inserted at creation`() {
+    val payload = CreateAccessionRequestPayload(deviceInfo = DeviceInfoPayload(model = "model"))
+    fetcher.create(payload)
+
+    val appDevice = appDeviceDao.fetchOneById(1)
+    assertNotNull("Device row should have been inserted", appDevice)
+    assertNull("App name should be null", appDevice?.appName)
+    assertEquals(appDevice?.model, "model")
+  }
+
+  @Test
+  fun `device info is retrieved`() {
+    val payload = CreateAccessionRequestPayload(deviceInfo = DeviceInfoPayload(model = "model"))
+    val initial = fetcher.create(payload)
+
+    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+
+    assertNotNull(fetched?.deviceInfo)
+    assertEquals("model", fetched?.deviceInfo?.model)
   }
 
   @Test

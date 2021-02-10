@@ -26,6 +26,7 @@ import org.springframework.dao.DuplicateKeyException
 class AccessionFetcher(
     private val dslContext: DSLContext,
     private val config: TerrawareServerConfig,
+    private val appDeviceFetcher: AppDeviceFetcher,
     private val bagFetcher: BagFetcher,
     private val collectionEventFetcher: CollectionEventFetcher,
     private val germinationFetcher: GerminationFetcher,
@@ -81,6 +82,7 @@ class AccessionFetcher(
 
     val secondaryCollectorNames = fetchSecondaryCollectorNames(accessionId)
     val bagNumbers = bagFetcher.fetchBagNumbers(accessionId)
+    val deviceInfo = appDeviceFetcher.fetchById(parentRow[ACCESSION.APP_DEVICE_ID])
     val geolocations = collectionEventFetcher.fetchGeolocations(accessionId)
     val germinationTestTypes = germinationFetcher.fetchGerminationTestTypes(accessionId)
     val germinationTests = germinationFetcher.fetchGerminationTests(accessionId)
@@ -126,7 +128,6 @@ class AccessionFetcher(
           storageNotes = parentRow[STORAGE_NOTES],
           storageStaffResponsible = parentRow[STORAGE_STAFF_RESPONSIBLE],
           geolocations = geolocations,
-          photoFilenames = null, // TODO (need this in the data model),
           germinationTestTypes = germinationTestTypes,
           germinationTests = germinationTests,
           withdrawals = withdrawals,
@@ -136,6 +137,7 @@ class AccessionFetcher(
           latestGerminationTestDate = parentRow[LATEST_GERMINATION_RECORDING_DATE],
           latestViabilityPercent = parentRow[LATEST_VIABILITY_PERCENT],
           totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
+          deviceInfo = deviceInfo,
       )
     }
   }
@@ -148,6 +150,9 @@ class AccessionFetcher(
 
       try {
         dslContext.transaction { _ ->
+          val appDeviceId =
+              accession.deviceInfo?.nullIfEmpty()?.let { appDeviceFetcher.getOrInsertDevice(it) }
+
           val accessionId =
               with(ACCESSION) {
                 dslContext
@@ -182,6 +187,7 @@ class AccessionFetcher(
                     .set(
                         LATEST_GERMINATION_RECORDING_DATE,
                         accession.calculateLatestGerminationRecordingDate())
+                    .set(APP_DEVICE_ID, appDeviceId)
                     .returning(ID)
                     .fetchOne()
                     ?.get(ID)!!
@@ -216,9 +222,6 @@ class AccessionFetcher(
     val accessionId = existing.id
 
     dslContext.transaction { _ ->
-
-      // TODO: Photo filenames (if it makes sense to make these updatable)
-
       if (existing.secondaryCollectors != accession.secondaryCollectors) {
         // TODO: More selective update
         dslContext

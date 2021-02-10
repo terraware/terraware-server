@@ -2,6 +2,7 @@ package com.terraformation.seedbank.services
 
 import java.math.BigDecimal
 import java.util.EnumSet
+import org.jooq.Field
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
@@ -56,3 +57,9 @@ fun <T : Collection<V?>, V> T.toListOrNull(): List<V>? = if (isEmpty()) null els
 /** Tests two nullable BigDecimal values for equality ignoring their scale. */
 fun BigDecimal?.equalsIgnoreScale(other: BigDecimal?) =
     this == null && other == null || this != null && other != null && compareTo(other) == 0
+
+/**
+ * Generates an equality condition for a jOOQ field if the value is non-null, or an IS NULL if the
+ * value is null.
+ */
+fun <T> Field<T>.eqOrIsNull(value: T) = if (value != null) eq(value) else isNull
