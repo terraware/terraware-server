@@ -133,6 +133,23 @@ internal class AccessionModelTest {
   }
 
   @Test
+  fun `total viability percentage not set if no test results`() {
+    val model =
+        accession(
+            germinationTests =
+                listOf(
+                    GerminationTestPayload(
+                        testType = GerminationTestType.Lab,
+                        startDate = january(1),
+                        seedsSown = 10,
+                    ),
+                ),
+        )
+
+    assertNull(model.calculateTotalViabilityPercent())
+  }
+
+  @Test
   fun `total viability percentage ignores cut test results if values are missing`() {
     val missingEmpty =
         accession(

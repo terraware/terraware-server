@@ -132,13 +132,19 @@ interface AccessionFields {
   }
 
   private fun getCutTestTotal(): Int? =
-      if (cutTestSeedsCompromised != null &&
-          cutTestSeedsEmpty != null &&
-          cutTestSeedsFilled != null) {
+      if (hasCutTestResults()) {
         (cutTestSeedsCompromised ?: 0) + (cutTestSeedsEmpty ?: 0) + (cutTestSeedsFilled ?: 0)
       } else {
         null
       }
+
+  private fun hasGerminationTestResults(): Boolean =
+      germinationTests.orEmpty().any { !it.germinations.isNullOrEmpty() }
+
+  private fun hasCutTestResults(): Boolean =
+      cutTestSeedsCompromised != null && cutTestSeedsEmpty != null && cutTestSeedsFilled != null
+
+  private fun hasTestResults(): Boolean = hasCutTestResults() || hasGerminationTestResults()
 
   fun calculateLatestGerminationRecordingDate(): LocalDate? {
     return getLatestGerminationTestWithResults()?.calculateLatestRecordingDate()
@@ -156,14 +162,17 @@ interface AccessionFields {
   }
 
   fun calculateTotalViabilityPercent(): Int? {
+    if (!hasTestResults()) {
+      return null
+    }
+
     val tests = germinationTests ?: emptyList()
 
     val totalGerminationTested = tests.mapNotNull { it.seedsSown }.sum()
     val totalGerminated =
         tests.sumOf { test -> test.germinations?.sumOf { it.seedsGerminated } ?: 0 }
 
-    val cutTestTotal = getCutTestTotal()
-    val cutTestFilled = if (cutTestTotal != null) cutTestSeedsFilled!! else 0
+    val cutTestFilled = if (hasCutTestResults()) cutTestSeedsFilled!! else 0
     val totalTested = totalGerminationTested + (getCutTestTotal() ?: 0)
     val totalViable = totalGerminated + cutTestFilled
 
