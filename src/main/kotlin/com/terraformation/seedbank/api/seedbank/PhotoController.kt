@@ -1,6 +1,7 @@
 package com.terraformation.seedbank.api.seedbank
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.terraformation.seedbank.api.DuplicateNameException
 import com.terraformation.seedbank.api.InternalErrorException
 import com.terraformation.seedbank.api.NotFoundException
@@ -144,6 +145,7 @@ class PhotoController(
   }
 }
 
+@JsonDeserialize
 data class UploadPhotoMetadataPayload(
     val capturedTime: Instant,
     val latitude: BigDecimal?,
