@@ -18,8 +18,8 @@ import com.terraformation.seedbank.db.tables.references.SPECIES
 import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
 import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
 import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
-import com.terraformation.seedbank.model.AccessionStatus
-import com.terraformation.seedbank.model.toStatus
+import com.terraformation.seedbank.model.AccessionActive
+import com.terraformation.seedbank.model.toActiveEnum
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.EnumSet
@@ -70,37 +70,38 @@ abstract class SingleColumnSearchField<T : Any> : SearchField<T> {
   }
 }
 
-class StatusField(override val fieldName: String) : SearchField<AccessionStatus> {
+class ActiveField(override val fieldName: String) : SearchField<AccessionActive> {
   override val table
     get() = SearchTables.Accession
   override val selectFields
     get() = listOf(ACCESSION.STATE_ID)
 
   override fun getConditions(filter: SearchFilter): List<Condition> {
-    val statuses = filter.values.map { AccessionStatus.valueOf(it) }.toSet()
+    val values = filter.values.map { AccessionActive.valueOf(it) }.toSet()
 
-    // Asking for all statuses or none at all? Filter is a no-op.
-    return if (statuses.isEmpty() || statuses.size == AccessionStatus.values().size) {
+    // Asking for all possible values or none at all? Filter is a no-op.
+    return if (values.isEmpty() || values.size == AccessionActive.values().size) {
       emptyList()
     } else {
-      // Filter for all the states that map to the requested status.
-      listOf(ACCESSION.STATE_ID.`in`(AccessionState.values().filter { it.toStatus() in statuses }))
+      // Filter for all the states that map to a requested active value.
+      val states = AccessionState.values().filter { it.toActiveEnum() in values }
+      listOf(ACCESSION.STATE_ID.`in`(states))
     }
   }
 
-  override fun computeValue(record: Record): AccessionStatus? {
-    return record[ACCESSION.STATE_ID]?.toStatus()
+  override fun computeValue(record: Record): AccessionActive? {
+    return record[ACCESSION.STATE_ID]?.toActiveEnum()
   }
 
   override val orderByFields: List<Field<*>>
     get() =
         listOf(
             DSL.case_(ACCESSION.STATE_ID)
-                .mapValues(AccessionState.values().associateWith { "${it?.toStatus()}" }))
+                .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" }))
 
   override fun toString() = fieldName
   override fun hashCode() = fieldName.hashCode()
-  override fun equals(other: Any?) = other is StatusField && other.fieldName == fieldName
+  override fun equals(other: Any?) = other is ActiveField && other.fieldName == fieldName
 }
 
 open class TextField(
@@ -277,6 +278,7 @@ class SearchFields {
   private fun createFieldList(): List<SearchField<*>> {
     return listOf(
         TextField("accessionNumber", ACCESSION.NUMBER),
+        ActiveField("active"),
         DateField("collectedDate", ACCESSION.COLLECTED_DATE),
         TextField("collectionNotes", ACCESSION.COLLECTION_SITE_NOTES),
         IntegerField("cutTestSeedsCompromised", ACCESSION.CUT_TEST_SEEDS_COMPROMISED),
@@ -331,7 +333,6 @@ class SearchFields {
         TextField("siteLocation", ACCESSION.COLLECTION_SITE_NAME),
         TextField("species", SPECIES.NAME, SearchTables.Species),
         EnumField("state", ACCESSION.STATE_ID) { AccessionState.forDisplayName(it) },
-        StatusField("status"),
         EnumField("storageCondition", ACCESSION.TARGET_STORAGE_CONDITION) {
           StorageCondition.forDisplayName(it)
         },

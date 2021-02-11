@@ -341,8 +341,8 @@ components:
     AccessionPayload:
       required:
       - accessionNumber
+      - active
       - state
-      - status
       type: object
       properties:
         accessionNumber:
@@ -357,7 +357,7 @@ components:
           - Dried
           - In Storage
           - Withdrawn
-        status:
+        active:
           type: string
           enum:
           - Inactive
@@ -829,6 +829,7 @@ components:
       type: string
       enum:
       - accessionNumber
+      - active
       - collectedDate
       - collectionNotes
       - cutTestSeedsCompromised
@@ -864,7 +865,6 @@ components:
       - siteLocation
       - species
       - state
-      - status
       - storageCondition
       - storageLocation
       - storageNotes

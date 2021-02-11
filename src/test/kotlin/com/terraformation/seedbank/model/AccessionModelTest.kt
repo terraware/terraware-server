@@ -20,7 +20,7 @@ internal class AccessionModelTest {
     return AccessionPayload(
         accessionNumber = "dummy",
         state = AccessionState.Processing,
-        status = AccessionStatus.Active,
+        active = AccessionActive.Active,
         cutTestSeedsEmpty = cutTestSeedsEmpty,
         cutTestSeedsFilled = cutTestSeedsFilled,
         cutTestSeedsCompromised = cutTestSeedsCompromised,

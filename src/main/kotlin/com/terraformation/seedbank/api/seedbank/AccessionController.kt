@@ -17,8 +17,8 @@ import com.terraformation.seedbank.db.GerminationTreatment
 import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.WithdrawalPurpose
+import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
-import com.terraformation.seedbank.model.AccessionStatus
 import com.terraformation.seedbank.model.AppDeviceFields
 import com.terraformation.seedbank.model.ConcreteAccession
 import com.terraformation.seedbank.model.GerminationFields
@@ -158,7 +158,7 @@ data class UpdateAccessionRequestPayload(
 data class AccessionPayload(
     override val accessionNumber: String,
     override val state: AccessionState,
-    override val status: AccessionStatus,
+    override val active: AccessionActive,
     override val species: String? = null,
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
@@ -210,7 +210,7 @@ data class AccessionPayload(
   ) : this(
       model.accessionNumber,
       model.state,
-      model.status,
+      model.active,
       model.species,
       model.family,
       model.numberOfTrees,

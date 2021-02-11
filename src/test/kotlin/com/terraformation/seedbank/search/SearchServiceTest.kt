@@ -5,7 +5,7 @@ import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
 import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
 import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.db.DatabaseTest
-import com.terraformation.seedbank.model.AccessionStatus
+import com.terraformation.seedbank.model.AccessionActive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -18,7 +18,7 @@ class SearchServiceTest : DatabaseTest() {
   private val speciesField = searchFields["species"]!!
   private val accessionNumberField = searchFields["accessionNumber"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
-  private val statusField = searchFields["status"]!!
+  private val activeField = searchFields["active"]!!
 
   @BeforeEach
   fun init() {
@@ -27,7 +27,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `finds example rows`() {
-    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, statusField)
+    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortFields = fields.map { SearchSortOrderElement(it) }
     val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
 
@@ -40,13 +40,13 @@ class SearchServiceTest : DatabaseTest() {
                     "species" to "Kousa Dogwood",
                     "accessionNumber" to "XYZ",
                     "treesCollectedFrom" to "1",
-                    "status" to "Active",
+                    "active" to "Active",
                 ),
                 mapOf(
                     "species" to "Other Dogwood",
                     "accessionNumber" to "ABCDEFG",
                     "treesCollectedFrom" to "2",
-                    "status" to "Active",
+                    "active" to "Active",
                 ),
             ),
             cursor = null)
@@ -56,7 +56,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `honors sort order`() {
-    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, statusField)
+    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortFields = fields.map { SearchSortOrderElement(it, SearchDirection.Descending) }
     val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
 
@@ -69,13 +69,13 @@ class SearchServiceTest : DatabaseTest() {
                     "species" to "Other Dogwood",
                     "accessionNumber" to "ABCDEFG",
                     "treesCollectedFrom" to "2",
-                    "status" to "Active",
+                    "active" to "Active",
                 ),
                 mapOf(
                     "species" to "Kousa Dogwood",
                     "accessionNumber" to "XYZ",
                     "treesCollectedFrom" to "1",
-                    "status" to "Active",
+                    "active" to "Active",
                 ),
             ),
             cursor = null)
@@ -85,7 +85,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can use cursor to get next page of results`() {
-    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, statusField)
+    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortFields = fields.map { SearchSortOrderElement(it) }
     val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields, count = 1)
 
@@ -95,7 +95,7 @@ class SearchServiceTest : DatabaseTest() {
                 "species" to "Kousa Dogwood",
                 "accessionNumber" to "XYZ",
                 "treesCollectedFrom" to "1",
-                "status" to "Active",
+                "active" to "Active",
             ),
         )
 
@@ -111,7 +111,7 @@ class SearchServiceTest : DatabaseTest() {
                     "species" to "Other Dogwood",
                     "accessionNumber" to "ABCDEFG",
                     "treesCollectedFrom" to "2",
-                    "status" to "Active",
+                    "active" to "Active",
                 ),
             ),
             cursor = null)
@@ -146,7 +146,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `fetchFieldValues with no criteria for computed column value`() {
-    val values = searchService.fetchFieldValues(statusField, emptyList())
-    assertEquals(listOf(AccessionStatus.Active), values)
+    val values = searchService.fetchFieldValues(activeField, emptyList())
+    assertEquals(listOf(AccessionActive.Active), values)
   }
 }

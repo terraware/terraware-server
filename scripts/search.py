@@ -17,6 +17,7 @@ def time_search(criteria):
 criteria = {
     "fields": [
         "accessionNumber",
+        "active",
         "collectedDate",
         "endangered",
         "estimatedSeedsIncoming",
@@ -29,7 +30,6 @@ criteria = {
         "siteLocation",
         "species",
         "state",
-        "status",
         "storageCondition",
         "totalViabilityPercent",
         "treesCollectedFrom",
