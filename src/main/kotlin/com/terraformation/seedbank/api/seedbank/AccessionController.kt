@@ -365,6 +365,7 @@ data class WithdrawalPayload(
       model.staffResponsible)
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(
     description =
         "Details about the device and the application that created the accession. All these " +
