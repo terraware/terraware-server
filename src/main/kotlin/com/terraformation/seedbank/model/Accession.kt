@@ -102,6 +102,8 @@ interface AccessionFields {
     get() = null
   val storageStaffResponsible: String?
     get() = null
+  val photoFilenames: List<String>?
+    get() = null
   val geolocations: Set<Geolocation>?
     get() = null
   val germinationTestTypes: Set<GerminationTestType>?
@@ -229,6 +231,7 @@ data class AccessionModel(
     override val storageCondition: StorageCondition? = null,
     override val storageNotes: String? = null,
     override val storageStaffResponsible: String? = null,
+    override val photoFilenames: List<String>? = null,
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestModel>? = null,

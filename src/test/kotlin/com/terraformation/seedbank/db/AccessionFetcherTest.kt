@@ -8,6 +8,7 @@ import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.daos.AppDeviceDao
 import com.terraformation.seedbank.db.tables.daos.BagDao
 import com.terraformation.seedbank.db.tables.daos.CollectionEventDao
@@ -15,12 +16,14 @@ import com.terraformation.seedbank.db.tables.daos.GerminationDao
 import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
+import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
 import com.terraformation.seedbank.db.tables.pojos.Bag
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.model.AccessionNumberGenerator
+import com.terraformation.seedbank.photo.PhotoRepository
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -38,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.http.MediaType
 
 internal class AccessionFetcherTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
@@ -59,6 +63,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   private lateinit var fetcher: AccessionFetcher
   private lateinit var accessionDao: AccessionDao
+  private lateinit var accessionPhotoDao: AccessionPhotoDao
   private lateinit var appDeviceDao: AppDeviceDao
   private lateinit var bagDao: BagDao
   private lateinit var collectionEventDao: CollectionEventDao
@@ -72,6 +77,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   fun init() {
     val jooqConfig = dslContext.configuration()
     accessionDao = AccessionDao(jooqConfig)
+    accessionPhotoDao = AccessionPhotoDao(jooqConfig)
     appDeviceDao = AppDeviceDao(jooqConfig)
     bagDao = BagDao(jooqConfig)
     collectionEventDao = CollectionEventDao(jooqConfig)
@@ -87,6 +93,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
             BagFetcher(dslContext),
             CollectionEventFetcher(dslContext, clock),
             GerminationFetcher(dslContext),
+            PhotoRepository(config, accessionPhotoDao, clock),
             WithdrawalFetcher(dslContext, clock),
             clock)
 
@@ -581,6 +588,23 @@ internal class AccessionFetcherTest : DatabaseTest() {
       fetcher.update(
           initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = "bogus"))
     }
+  }
+
+  @Test
+  fun `photo filenames are returned`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    accessionPhotoDao.insert(
+        AccessionPhoto(
+            accessionId = 1,
+            filename = "photo.jpg",
+            uploadedTime = Instant.now(),
+            capturedTime = Instant.now(),
+            contentType = MediaType.IMAGE_JPEG_VALUE,
+            size = 123))
+
+    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(listOf("photo.jpg"), fetched?.photoFilenames)
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {

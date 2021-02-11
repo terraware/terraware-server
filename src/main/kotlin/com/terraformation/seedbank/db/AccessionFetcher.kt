@@ -11,7 +11,9 @@ import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionNumberGenerator
 import com.terraformation.seedbank.model.ConcreteAccession
+import com.terraformation.seedbank.photo.PhotoRepository
 import com.terraformation.seedbank.services.perClassLogger
+import com.terraformation.seedbank.services.toListOrNull
 import com.terraformation.seedbank.services.toSetOrNull
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -30,6 +32,7 @@ class AccessionFetcher(
     private val bagFetcher: BagFetcher,
     private val collectionEventFetcher: CollectionEventFetcher,
     private val germinationFetcher: GerminationFetcher,
+    private val photoRepository: PhotoRepository,
     private val withdrawalFetcher: WithdrawalFetcher,
     private val clock: Clock,
 ) {
@@ -86,6 +89,7 @@ class AccessionFetcher(
     val geolocations = collectionEventFetcher.fetchGeolocations(accessionId)
     val germinationTestTypes = germinationFetcher.fetchGerminationTestTypes(accessionId)
     val germinationTests = germinationFetcher.fetchGerminationTests(accessionId)
+    val photoFilenames = photoRepository.listPhotos(accessionId).map { it.filename }.toListOrNull()
     val withdrawals = withdrawalFetcher.fetchWithdrawals(accessionId)
 
     return with(ACCESSION) {
@@ -127,6 +131,7 @@ class AccessionFetcher(
           storageCondition = parentRow[storageLocation().CONDITION_ID],
           storageNotes = parentRow[STORAGE_NOTES],
           storageStaffResponsible = parentRow[STORAGE_STAFF_RESPONSIBLE],
+          photoFilenames = photoFilenames,
           geolocations = geolocations,
           germinationTestTypes = germinationTestTypes,
           germinationTests = germinationTests,
