@@ -872,6 +872,7 @@ components:
       - rare
       - receivedDate
       - seedsCounted
+      - seedsRemaining
       - siteLocation
       - species
       - state
@@ -889,7 +890,6 @@ components:
       - withdrawalNotes
       - withdrawalPurpose
       - withdrawalSeeds
-      - withdrawalSeedsRemaining
     SearchFilter:
       required:
       - field

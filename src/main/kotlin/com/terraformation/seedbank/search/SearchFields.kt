@@ -113,6 +113,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         BooleanField("rare", ACCESSION.SPECIES_RARE),
         DateField("receivedDate", ACCESSION.RECEIVED_DATE),
         IntegerField("seedsCounted", ACCESSION.SEEDS_COUNTED),
+        IntegerField("seedsRemaining", ACCESSION.SEEDS_REMAINING),
         TextField("siteLocation", ACCESSION.COLLECTION_SITE_NAME),
         TextField("species", SPECIES.NAME, SearchTables.Species),
         EnumField("state", ACCESSION.STATE_ID) { AccessionState.forDisplayName(it) },
@@ -139,7 +140,6 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
         // Need to think more about these
         PlaceholderField("germinationPercentGerminated"),
-        PlaceholderField("withdrawalSeedsRemaining"),
     )
   }
 
