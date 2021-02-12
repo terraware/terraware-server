@@ -457,6 +457,10 @@ components:
           type: string
         storageStaffResponsible:
           type: string
+        photoFilenames:
+          type: array
+          items:
+            type: string
         geolocations:
           uniqueItems: true
           type: array
@@ -498,6 +502,12 @@ components:
           format: int32
         deviceInfo:
           $ref: '#/components/schemas/DeviceInfoPayload'
+        seedsRemaining:
+          type: integer
+          description: Number of seeds remaining for withdrawal and testing. Calculated
+            by the server when the accession's seed count (actual or estimated) is
+            known.
+          format: int32
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -1098,9 +1108,6 @@ components:
         totalWeightGrams:
           type: number
         subsetCount:
-          type: integer
-          format: int32
-        estimatedSeedCount:
           type: integer
           format: int32
         targetStorageCondition:

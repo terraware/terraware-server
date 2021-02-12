@@ -10,7 +10,6 @@ import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionNumberGenerator
-import com.terraformation.seedbank.model.ConcreteAccession
 import com.terraformation.seedbank.photo.PhotoRepository
 import com.terraformation.seedbank.services.perClassLogger
 import com.terraformation.seedbank.services.toListOrNull
@@ -143,11 +142,12 @@ class AccessionFetcher(
           latestViabilityPercent = parentRow[LATEST_VIABILITY_PERCENT],
           totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
           deviceInfo = deviceInfo,
+          seedsRemaining = parentRow[SEEDS_REMAINING],
       )
     }
   }
 
-  fun create(accession: AccessionFields): ConcreteAccession {
+  fun create(accession: AccessionFields): AccessionModel {
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
@@ -266,7 +266,7 @@ class AccessionFetcher(
                 .set(SUBSET_WEIGHT, accession.subsetWeightGrams)
                 .set(TOTAL_WEIGHT, accession.totalWeightGrams)
                 .set(SUBSET_COUNT, accession.subsetCount)
-                .set(EST_SEED_COUNT, accession.estimatedSeedCount)
+                .set(EST_SEED_COUNT, accession.calculateEstimatedSeedCount())
                 .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
                 .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                 .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
@@ -289,6 +289,7 @@ class AccessionFetcher(
                     accession.calculateLatestGerminationRecordingDate())
                 .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
                 .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                .set(SEEDS_REMAINING, accession.calculateSeedsRemaining())
                 .where(NUMBER.eq(accessionNumber))
                 .and(SITE_MODULE_ID.eq(config.siteModuleId))
                 .execute()

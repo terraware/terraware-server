@@ -71,4 +71,4 @@ data class GerminationTestModel(
     override val notes: String? = null,
     override val staffResponsible: String? = null,
     override val germinations: Collection<GerminationModel>? = null
-) : GerminationTestFields {}
+) : GerminationTestFields

@@ -607,6 +607,36 @@ internal class AccessionFetcherTest : DatabaseTest() {
     assertEquals(listOf("photo.jpg"), fetched?.photoFilenames)
   }
 
+  @Test
+  fun `update recalculates estimated seed count`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    fetcher.update(
+        initial.accessionNumber,
+        initial.copy(
+            subsetCount = 1,
+            subsetWeightGrams = BigDecimal.ONE,
+            totalWeightGrams = BigDecimal.TEN,
+        ))
+    val fetched = fetcher.fetchByNumber(initial.accessionNumber)!!
+
+    assertEquals("Estimated seed count is added", 10, fetched.estimatedSeedCount)
+
+    fetcher.update(initial.accessionNumber, fetched.copy(totalWeightGrams = null))
+
+    val fetchedAfterClear = fetcher.fetchByNumber(initial.accessionNumber)!!
+
+    assertNull("Estimated seed count is removed", fetchedAfterClear.estimatedSeedCount)
+  }
+
+  @Test
+  fun `update recalculates seeds remaining`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(10, fetched?.seedsRemaining)
+  }
+
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {
     with(ACCESSION_SECONDARY_COLLECTOR) {
       return dslContext

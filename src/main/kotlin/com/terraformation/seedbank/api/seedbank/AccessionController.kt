@@ -132,7 +132,6 @@ data class UpdateAccessionRequestPayload(
     override val subsetWeightGrams: BigDecimal? = null,
     override val totalWeightGrams: BigDecimal? = null,
     override val subsetCount: Int? = null,
-    override val estimatedSeedCount: Int? = null,
     override val targetStorageCondition: StorageCondition? = null,
     override val dryingStartDate: LocalDate? = null,
     override val dryingEndDate: LocalDate? = null,
@@ -205,6 +204,11 @@ data class AccessionPayload(
     override val latestViabilityPercent: Int? = null,
     override val totalViabilityPercent: Int? = null,
     override val deviceInfo: DeviceInfoPayload? = null,
+    @Schema(
+        description =
+            "Number of seeds remaining for withdrawal and testing. Calculated by the server when " +
+                "the accession's seed count (actual or estimated) is known.")
+    override val seedsRemaining: Int? = null,
 ) : ConcreteAccession {
   constructor(
       model: ConcreteAccession
@@ -258,6 +262,7 @@ data class AccessionPayload(
       model.latestViabilityPercent,
       model.totalViabilityPercent,
       model.deviceInfo?.let { DeviceInfoPayload(it) },
+      model.seedsRemaining,
   )
 }
 

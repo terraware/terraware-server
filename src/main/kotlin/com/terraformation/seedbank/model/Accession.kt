@@ -126,6 +126,8 @@ interface AccessionFields {
     get() = null
   val deviceInfo: AppDeviceFields?
     get() = null
+  val seedsRemaining: Int?
+    get() = null
 
   private fun getLatestGerminationTestWithResults(): GerminationTestFields? {
     return germinationTests
@@ -180,6 +182,26 @@ interface AccessionFields {
 
     return if (totalTested > 0) {
       totalViable * 100 / totalTested
+    } else {
+      null
+    }
+  }
+
+  fun calculateSeedsRemaining(): Int? {
+    val initialCount = seedsCounted ?: calculateEstimatedSeedCount() ?: return null
+    val cutTested = getCutTestTotal() ?: 0
+    val sown = germinationTests?.mapNotNull { it.seedsSown }?.sum() ?: 0
+    val withdrawn = withdrawals?.mapNotNull { it.seedsWithdrawn }?.sum() ?: 0
+
+    return initialCount - sown - cutTested - withdrawn
+  }
+
+  fun calculateEstimatedSeedCount(): Int? {
+    return if (seedsCounted == null &&
+        subsetCount != null &&
+        subsetWeightGrams != null &&
+        totalWeightGrams != null) {
+      (BigDecimal(subsetCount!!) * totalWeightGrams!! / subsetWeightGrams!!).toInt()
     } else {
       null
     }
@@ -243,4 +265,5 @@ data class AccessionModel(
     override val cutTestSeedsEmpty: Int? = null,
     override val cutTestSeedsCompromised: Int? = null,
     override val deviceInfo: AppDeviceModel? = null,
+    override val seedsRemaining: Int? = null,
 ) : ConcreteAccession
