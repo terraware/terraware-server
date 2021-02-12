@@ -3,6 +3,7 @@ package com.terraformation.seedbank.model
 import com.terraformation.seedbank.db.WithdrawalPurpose
 import com.terraformation.seedbank.services.equalsIgnoreScale
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 
 interface WithdrawalFields {
@@ -20,6 +21,50 @@ interface WithdrawalFields {
     get() = null
   val staffResponsible: String?
     get() = null
+
+  /**
+   * Computes a withdrawal's seed count. A withdrawal can be sized in number of seeds or number of
+   * grams. Weight-based sizing is only available if the accession has seed weight information,
+   * specifically a subset count and subset weight.
+   */
+  fun computeSeedsWithdrawn(accession: AccessionFields, isExistingWithdrawal: Boolean): Int {
+    val desiredGrams = gramsWithdrawn
+    val desiredSeeds = seedsWithdrawn
+
+    if (desiredGrams == null && desiredSeeds == null) {
+      throw IllegalArgumentException("Withdrawal must have either a seed count or a weight.")
+    }
+
+    if (desiredGrams != null && desiredSeeds != null && !isExistingWithdrawal) {
+      throw IllegalArgumentException("New withdrawals can have a seed count or a weight, not both.")
+    }
+
+    return if (desiredGrams != null) {
+      val subsetWeightGrams = accession.subsetWeightGrams
+      val subsetCount = accession.subsetCount
+
+      if (desiredGrams <= BigDecimal.ZERO) {
+        throw IllegalArgumentException("Withdrawal weight must be greater than zero.")
+      }
+
+      if (subsetWeightGrams != null && subsetCount != null) {
+        BigDecimal(subsetCount)
+            .multiply(desiredGrams)
+            .divide(subsetWeightGrams, 5, RoundingMode.CEILING)
+            .setScale(0, RoundingMode.CEILING)
+            .toInt()
+      } else if (desiredSeeds != null && isExistingWithdrawal) {
+        // If the user removed the weight from an existing accession after there were already
+        // weight-based withdrawals, retain the previously-computed withdrawal count.
+        desiredSeeds
+      } else {
+        throw IllegalArgumentException(
+            "Withdrawal can only be measured by weight if accession was measured by weight.")
+      }
+    } else {
+      desiredSeeds!!
+    }
+  }
 
   /**
    * Compares two withdrawals for equality disregarding scale differences in gramsWithdrawn and also

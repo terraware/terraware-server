@@ -629,7 +629,16 @@ internal class AccessionFetcherTest : DatabaseTest() {
   }
 
   @Test
-  fun `update recalculates seeds remaining`() {
+  fun `update recalculates seeds remaining when seed count is filled in`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(10, fetched?.seedsRemaining)
+  }
+
+  @Test
+  fun `update recalculates seeds remaining on withdrawal`() {
     val initial = fetcher.create(CreateAccessionRequestPayload())
     fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
     val fetched = fetcher.fetchByNumber(initial.accessionNumber)

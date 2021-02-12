@@ -338,4 +338,20 @@ internal class AccessionModelTest {
 
     assertEquals(94, accession.calculateSeedsRemaining())
   }
+
+  @Test
+  fun `withdrawn seeds counted by weight are subtracted from seeds remaining`() {
+    val accession =
+        accession(
+            subsetCount = 10,
+            subsetWeightGrams = BigDecimal.ONE,
+            totalWeightGrams = BigDecimal.TEN,
+            withdrawals =
+                listOf(
+                    withdrawal(gramsWithdrawn = BigDecimal(2.5)),
+                    withdrawal(gramsWithdrawn = BigDecimal(5)),
+                ))
+
+    assertEquals(25, accession.calculateSeedsRemaining())
+  }
 }

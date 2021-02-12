@@ -191,7 +191,7 @@ interface AccessionFields {
     val initialCount = seedsCounted ?: calculateEstimatedSeedCount() ?: return null
     val cutTested = getCutTestTotal() ?: 0
     val sown = germinationTests?.mapNotNull { it.seedsSown }?.sum() ?: 0
-    val withdrawn = withdrawals?.mapNotNull { it.seedsWithdrawn }?.sum() ?: 0
+    val withdrawn = withdrawals?.sumOf { it.computeSeedsWithdrawn(this, true) } ?: 0
 
     return initialCount - sown - cutTested - withdrawn
   }

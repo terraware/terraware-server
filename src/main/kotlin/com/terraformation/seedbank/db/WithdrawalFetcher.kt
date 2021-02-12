@@ -6,8 +6,6 @@ import com.terraformation.seedbank.model.WithdrawalFields
 import com.terraformation.seedbank.model.WithdrawalModel
 import com.terraformation.seedbank.services.perClassLogger
 import com.terraformation.seedbank.services.toListOrNull
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -53,7 +51,7 @@ class WithdrawalFetcher(private val dslContext: DSLContext, private val clock: C
 
     with(WITHDRAWAL) {
       newWithdrawals.forEach { withdrawal ->
-        val seedsWithdrawn = computeSeedsWithdrawn(withdrawal, accession, false)
+        val seedsWithdrawn = withdrawal.computeSeedsWithdrawn(accession, false)
 
         val newId =
             dslContext
@@ -93,7 +91,7 @@ class WithdrawalFetcher(private val dslContext: DSLContext, private val clock: C
         if (!existing.fieldsEqual(desired)) {
           log.debug("Updating withdrawal $withdrawalId for accession $accessionId")
 
-          val seedsWithdrawn = computeSeedsWithdrawn(desired, accession, true)
+          val seedsWithdrawn = desired.computeSeedsWithdrawn(accession, true)
           if (seedsWithdrawn != existing.seedsWithdrawn) {
             log.info(
                 "Recomputed seeds withdrawn for withdrawal $withdrawalId from accession " +
@@ -115,54 +113,6 @@ class WithdrawalFetcher(private val dslContext: DSLContext, private val clock: C
               .execute()
         }
       }
-    }
-  }
-
-  /**
-   * Computes a withdrawal's seed count. A withdrawal can be sized in number of seeds or number of
-   * grams. Weight-based sizing is only available if the accession has seed weight information,
-   * specifically a subset count and subset weight.
-   */
-  fun computeSeedsWithdrawn(
-      withdrawal: WithdrawalFields,
-      accession: AccessionFields,
-      isExistingWithdrawal: Boolean
-  ): Int {
-    val desiredGrams = withdrawal.gramsWithdrawn
-    val desiredSeeds = withdrawal.seedsWithdrawn
-
-    if (desiredGrams == null && desiredSeeds == null) {
-      throw IllegalArgumentException("Withdrawal must have either a seed count or a weight.")
-    }
-
-    if (desiredGrams != null && desiredSeeds != null && !isExistingWithdrawal) {
-      throw IllegalArgumentException("New withdrawals can have a seed count or a weight, not both.")
-    }
-
-    return if (desiredGrams != null) {
-      val subsetWeightGrams = accession.subsetWeightGrams
-      val subsetCount = accession.subsetCount
-
-      if (desiredGrams <= BigDecimal.ZERO) {
-        throw IllegalArgumentException("Withdrawal weight must be greater than zero.")
-      }
-
-      if (subsetWeightGrams != null && subsetCount != null) {
-        BigDecimal(subsetCount)
-            .multiply(desiredGrams)
-            .divide(subsetWeightGrams, 5, RoundingMode.CEILING)
-            .setScale(0, RoundingMode.CEILING)
-            .toInt()
-      } else if (desiredSeeds != null && isExistingWithdrawal) {
-        // If the user removed the weight from an existing accession after there were already
-        // weight-based withdrawals, retain the previously-computed withdrawal count.
-        desiredSeeds
-      } else {
-        throw IllegalArgumentException(
-            "Withdrawal can only be measured by weight if accession was measured by weight.")
-      }
-    } else {
-      desiredSeeds!!
     }
   }
 }
