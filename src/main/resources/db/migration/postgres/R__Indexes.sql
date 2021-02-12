@@ -13,3 +13,9 @@ CREATE INDEX IF NOT EXISTS withdrawal__accession_id_ix ON withdrawal (accession_
 -- where testing indicated that the database would actually use the indexes.
 CREATE INDEX IF NOT EXISTS accession__received_date_ix ON accession (received_date);
 CREATE INDEX IF NOT EXISTS withdrawal__date_ix ON withdrawal (date);
+
+-- Enable trigram support for fuzzy text search, and index all the text fields that are likely to
+-- be frequently fuzzy-searched.
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX IF NOT EXISTS accession__number_trgm ON accession USING gin (number gin_trgm_ops);

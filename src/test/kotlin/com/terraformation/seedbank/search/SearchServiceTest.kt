@@ -5,6 +5,7 @@ import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
 import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
 import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.db.DatabaseTest
+import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
 import com.terraformation.seedbank.model.AccessionActive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.Test
 class SearchServiceTest : DatabaseTest() {
   private lateinit var searchService: SearchService
 
-  private val searchFields = SearchFields()
+  private val searchFields = SearchFields(PostgresFuzzySearchOperators())
   private val speciesField = searchFields["species"]!!
   private val accessionNumberField = searchFields["accessionNumber"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
@@ -127,12 +128,30 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
-  fun `fetchFieldValues with fuzzy search of text column value`() {
+  fun `fetchFieldValues with fuzzy search of accession number`() {
     val values =
         searchService.fetchFieldValues(
             speciesField,
-            listOf(SearchFilter(accessionNumberField, listOf("Y"), SearchFilterType.Fuzzy)))
+            listOf(SearchFilter(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy)))
     assertEquals(listOf("Kousa Dogwood"), values)
+  }
+
+  @Test
+  fun `fetchFieldValues with prefix search of accession number`() {
+    val values =
+        searchService.fetchFieldValues(
+            speciesField,
+            listOf(SearchFilter(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy)))
+    assertEquals(listOf("Other Dogwood"), values)
+  }
+
+  @Test
+  fun `fetchFieldValues with fuzzy search of text field in secondary table`() {
+    val values =
+        searchService.fetchFieldValues(
+            speciesField,
+            listOf(SearchFilter(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy)))
+    assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
   @Test

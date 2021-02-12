@@ -56,9 +56,15 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val fullQuery =
         query.where(conditions).orderBy(orderBy).limit(criteria.count + 1).offset(offset)
 
-    log.info("SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
+    log.debug("search criteria: $criteria")
+    log.debug("search SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
+    val startTime = System.currentTimeMillis()
 
     val records = fullQuery.fetch()
+
+    val endTime = System.currentTimeMillis()
+    log.debug("search query returned ${records.size} rows in ${endTime - startTime} ms")
+
     val results =
         records.map { record ->
           fields
@@ -107,8 +113,17 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
             .orderBy(field.orderByFields.mapIndexed { index, _ -> DSL.field("field$index") })
             .limit(limit + 1)
 
-    log.info("SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
+    log.debug("fetchFieldValues ${field.fieldName} filters $filters")
+    log.debug("fetchFieldValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
+    val startTime = System.currentTimeMillis()
 
-    return fullQuery.fetch { field.computeValue(it) }.distinct()
+    val results = fullQuery.fetch { field.computeValue(it) }
+
+    val endTime = System.currentTimeMillis()
+    log.debug("fetchFieldValues query returned ${results.size} rows in ${endTime - startTime} ms")
+
+    // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
+    // way of filtering out.
+    return results.distinct()
   }
 }

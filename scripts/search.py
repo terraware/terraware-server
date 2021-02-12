@@ -6,8 +6,7 @@ import time
 
 
 def time_search(criteria):
-    # server = 'http://localhost:8080'
-    server = "http://192.168.1.73:8080"
+    server = "http://localhost:8080"
     start_time = time.time()
     r = requests.post(f"{server}/api/v1/seedbank/search", json=criteria)
     end_time = time.time()
@@ -37,7 +36,7 @@ criteria = {
         "withdrawalSeedsRemaining",
     ],
     "sortOrder": [{"field": "receivedDate", "direction": "Descending"}],
-    "filters": [],
+    "filters": [{"field": "accessionNumber", "type": "Fuzzy", "values": ["A"]}],
 }
 
 total_time = 0

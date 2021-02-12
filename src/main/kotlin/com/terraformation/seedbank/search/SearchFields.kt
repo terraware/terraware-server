@@ -2,12 +2,14 @@ package com.terraformation.seedbank.search
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.seedbank.db.AccessionState
+import com.terraformation.seedbank.db.FuzzySearchOperators
 import com.terraformation.seedbank.db.GerminationSeedType
 import com.terraformation.seedbank.db.GerminationSubstrate
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.GerminationTreatment
 import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.StorageCondition
+import com.terraformation.seedbank.db.UsesFuzzySearchOperators
 import com.terraformation.seedbank.db.WithdrawalPurpose
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
@@ -44,228 +46,9 @@ interface SearchField<T> {
   fun computeValue(record: Record): T?
 }
 
-abstract class SingleColumnSearchField<T : Any> : SearchField<T> {
-  abstract val databaseField: Field<T?>
-
-  abstract fun getCondition(filter: SearchFilter): Condition?
-
-  override val selectFields: List<Field<*>>
-    get() = listOf(databaseField)
-
-  override fun getConditions(filter: SearchFilter) = listOfNotNull(getCondition(filter))
-
-  override fun computeValue(record: Record) = record.get(databaseField)
-
-  override fun toString() = fieldName
-
-  override fun hashCode() = fieldName.hashCode()
-
-  override fun equals(other: Any?): Boolean {
-    return other != null &&
-        other is SingleColumnSearchField<*> &&
-        other.javaClass == javaClass &&
-        other.fieldName == fieldName &&
-        other.databaseField == databaseField &&
-        other.table == table
-  }
-}
-
-class ActiveField(override val fieldName: String) : SearchField<AccessionActive> {
-  override val table
-    get() = SearchTables.Accession
-  override val selectFields
-    get() = listOf(ACCESSION.STATE_ID)
-
-  override fun getConditions(filter: SearchFilter): List<Condition> {
-    val values = filter.values.map { AccessionActive.valueOf(it) }.toSet()
-
-    // Asking for all possible values or none at all? Filter is a no-op.
-    return if (values.isEmpty() || values.size == AccessionActive.values().size) {
-      emptyList()
-    } else {
-      // Filter for all the states that map to a requested active value.
-      val states = AccessionState.values().filter { it.toActiveEnum() in values }
-      listOf(ACCESSION.STATE_ID.`in`(states))
-    }
-  }
-
-  override fun computeValue(record: Record): AccessionActive? {
-    return record[ACCESSION.STATE_ID]?.toActiveEnum()
-  }
-
-  override val orderByFields: List<Field<*>>
-    get() =
-        listOf(
-            DSL.case_(ACCESSION.STATE_ID)
-                .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" }))
-
-  override fun toString() = fieldName
-  override fun hashCode() = fieldName.hashCode()
-  override fun equals(other: Any?) = other is ActiveField && other.fieldName == fieldName
-}
-
-open class TextField(
-    override val fieldName: String,
-    override val databaseField: Field<String?>,
-    override val table: SearchTable = SearchTables.Accession
-) : SingleColumnSearchField<String>() {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
-
-  override fun getCondition(filter: SearchFilter): Condition {
-    return when (filter.type) {
-      SearchFilterType.Exact -> databaseField.`in`(filter.values)
-      SearchFilterType.Fuzzy -> DSL.or(filter.values.map { databaseField.like("%$it%") })
-      SearchFilterType.Range ->
-          throw IllegalArgumentException("Range search not supported for text fields")
-    }
-  }
-}
-
-open class IntegerField(
-    override val fieldName: String,
-    override val databaseField: TableField<*, Int?>,
-    override val table: SearchTable = SearchTables.Accession
-) : SingleColumnSearchField<Int>() {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
-
-  override fun getCondition(filter: SearchFilter): Condition {
-    return when (filter.type) {
-      SearchFilterType.Exact -> databaseField.`in`(filter.values.map { it.toInt() })
-      SearchFilterType.Fuzzy ->
-          throw RuntimeException("Fuzzy search not supported for numeric fields")
-      SearchFilterType.Range ->
-          if (filter.values.size == 2) {
-            databaseField.between(filter.values[0].toInt(), filter.values[0].toInt())
-          } else {
-            throw IllegalArgumentException("Range search must have two values")
-          }
-    }
-  }
-}
-
-open class BigDecimalField(
-    override val fieldName: String,
-    override val databaseField: TableField<*, BigDecimal?>,
-    override val table: SearchTable = SearchTables.Accession
-) : SingleColumnSearchField<BigDecimal>() {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
-
-  override fun getCondition(filter: SearchFilter): Condition {
-    return when (filter.type) {
-      SearchFilterType.Exact -> databaseField.`in`(filter.values.map { BigDecimal(it) })
-      SearchFilterType.Fuzzy ->
-          throw RuntimeException("Fuzzy search not supported for numeric fields")
-      SearchFilterType.Range ->
-          if (filter.values.size == 2) {
-            databaseField.between(BigDecimal(filter.values[0]), BigDecimal(filter.values[1]))
-          } else {
-            throw IllegalArgumentException("Range search must have two values")
-          }
-    }
-  }
-}
-
-open class BooleanField(
-    override val fieldName: String,
-    override val databaseField: TableField<*, Boolean?>,
-    override val table: SearchTable = SearchTables.Accession
-) : SingleColumnSearchField<Boolean>() {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact)
-
-  override fun getCondition(filter: SearchFilter): Condition? {
-    val hasTrue = "true" in filter.values
-    val hasFalse = "false" in filter.values
-    return if (hasTrue && !hasFalse) {
-      databaseField.isTrue
-    } else if (hasFalse && !hasTrue) {
-      databaseField.isFalse
-    } else {
-      null
-    }
-  }
-}
-
-open class DateField(
-    override val fieldName: String,
-    override val databaseField: TableField<*, LocalDate?>,
-    override val table: SearchTable = SearchTables.Accession
-) : SingleColumnSearchField<LocalDate>() {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
-
-  override fun getCondition(filter: SearchFilter): Condition? {
-    TODO("Not yet implemented")
-  }
-}
-
-open class PlaceholderField(override val fieldName: String) :
-    TextField(fieldName, ACCESSION.NUMBER) {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = emptySet()
-
-  override fun getCondition(filter: SearchFilter): Condition {
-    TODO("Not yet implemented")
-  }
-
-  override fun computeValue(record: Record): String? {
-    return "Not implemented yet"
-  }
-}
-
-open class EnumField<T : Enum<T>>(
-    override val fieldName: String,
-    override val databaseField: TableField<*, T?>,
-    override val table: SearchTable = SearchTables.Accession,
-    val getValue: (String) -> T?
-) : SingleColumnSearchField<T>() {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact)
-
-  override fun getCondition(filter: SearchFilter): Condition? {
-    if (filter.type == SearchFilterType.Exact) {
-      val enumInstances =
-          filter.values.map {
-            getValue(it)
-                ?: throw IllegalArgumentException("Value $it not recognized for $fieldName")
-          }
-      return databaseField.`in`(enumInstances)
-    } else {
-      throw IllegalArgumentException("$fieldName only supports exact searches")
-    }
-  }
-}
-
-open class GeolocationField(
-    override val fieldName: String,
-    private val latitudeField: TableField<*, BigDecimal?>,
-    private val longitudeField: TableField<*, BigDecimal?>,
-    override val table: SearchTable = SearchTables.Accession
-) : SearchField<String> {
-  override val supportedFilterTypes: Set<SearchFilterType>
-    get() = emptySet()
-
-  override val selectFields: List<Field<*>>
-    get() = listOf(latitudeField, longitudeField)
-
-  override fun getConditions(filter: SearchFilter): List<Condition> {
-    throw IllegalArgumentException("Filters not supported for geolocation")
-  }
-
-  override fun computeValue(record: Record): String? {
-    return record[latitudeField]?.let { latitude ->
-      record[longitudeField]?.let { longitude ->
-        "${latitude.toPlainString()}, ${longitude.toPlainString()}"
-      }
-    }
-  }
-}
-
 @ManagedBean
-class SearchFields {
+class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
+    UsesFuzzySearchOperators {
   private val fields: List<SearchField<*>> by lazy { createFieldList() }
   private val fieldsByName: Map<String, SearchField<*>> by lazy {
     fields.associateBy { it.fieldName }
@@ -277,7 +60,7 @@ class SearchFields {
 
   private fun createFieldList(): List<SearchField<*>> {
     return listOf(
-        TextField("accessionNumber", ACCESSION.NUMBER),
+        UpperCaseTextField("accessionNumber", ACCESSION.NUMBER),
         ActiveField("active"),
         DateField("collectedDate", ACCESSION.COLLECTED_DATE),
         TextField("collectionNotes", ACCESSION.COLLECTION_SITE_NOTES),
@@ -361,4 +144,256 @@ class SearchFields {
   }
 
   operator fun get(fieldName: String) = fieldsByName[fieldName]
+
+  abstract class SingleColumnSearchField<T : Any> : SearchField<T> {
+    abstract val databaseField: Field<T?>
+
+    abstract fun getCondition(filter: SearchFilter): Condition?
+
+    override val selectFields: List<Field<*>>
+      get() = listOf(databaseField)
+
+    override fun getConditions(filter: SearchFilter) = listOfNotNull(getCondition(filter))
+
+    override fun computeValue(record: Record) = record.get(databaseField)
+
+    override fun toString() = fieldName
+
+    override fun hashCode() = fieldName.hashCode()
+
+    override fun equals(other: Any?): Boolean {
+      return other != null &&
+          other is SingleColumnSearchField<*> &&
+          other.javaClass == javaClass &&
+          other.fieldName == fieldName &&
+          other.databaseField == databaseField &&
+          other.table == table
+    }
+  }
+
+  class ActiveField(override val fieldName: String) : SearchField<AccessionActive> {
+    override val table
+      get() = SearchTables.Accession
+    override val selectFields
+      get() = listOf(ACCESSION.STATE_ID)
+
+    override fun getConditions(filter: SearchFilter): List<Condition> {
+      val values = filter.values.map { AccessionActive.valueOf(it) }.toSet()
+
+      // Asking for all possible values or none at all? Filter is a no-op.
+      return if (values.isEmpty() || values.size == AccessionActive.values().size) {
+        emptyList()
+      } else {
+        // Filter for all the states that map to a requested active value.
+        val states = AccessionState.values().filter { it.toActiveEnum() in values }
+        listOf(ACCESSION.STATE_ID.`in`(states))
+      }
+    }
+
+    override fun computeValue(record: Record): AccessionActive? {
+      return record[ACCESSION.STATE_ID]?.toActiveEnum()
+    }
+
+    override val orderByFields: List<Field<*>>
+      get() =
+          listOf(
+              DSL.case_(ACCESSION.STATE_ID)
+                  .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" }))
+
+    override fun toString() = fieldName
+    override fun hashCode() = fieldName.hashCode()
+    override fun equals(other: Any?) = other is ActiveField && other.fieldName == fieldName
+  }
+
+  class BigDecimalField(
+      override val fieldName: String,
+      override val databaseField: TableField<*, BigDecimal?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SingleColumnSearchField<BigDecimal>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
+
+    override fun getCondition(filter: SearchFilter): Condition {
+      return when (filter.type) {
+        SearchFilterType.Exact -> databaseField.`in`(filter.values.map { BigDecimal(it) })
+        SearchFilterType.Fuzzy ->
+            throw RuntimeException("Fuzzy search not supported for numeric fields")
+        SearchFilterType.Range ->
+            if (filter.values.size == 2) {
+              databaseField.between(BigDecimal(filter.values[0]), BigDecimal(filter.values[1]))
+            } else {
+              throw IllegalArgumentException("Range search must have two values")
+            }
+      }
+    }
+  }
+
+  class BooleanField(
+      override val fieldName: String,
+      override val databaseField: TableField<*, Boolean?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SingleColumnSearchField<Boolean>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact)
+
+    override fun getCondition(filter: SearchFilter): Condition? {
+      val hasTrue = "true" in filter.values
+      val hasFalse = "false" in filter.values
+      return if (hasTrue && !hasFalse) {
+        databaseField.isTrue
+      } else if (hasFalse && !hasTrue) {
+        databaseField.isFalse
+      } else {
+        null
+      }
+    }
+  }
+
+  class DateField(
+      override val fieldName: String,
+      override val databaseField: TableField<*, LocalDate?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SingleColumnSearchField<LocalDate>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
+
+    override fun getCondition(filter: SearchFilter): Condition? {
+      TODO("Not yet implemented")
+    }
+  }
+
+  class EnumField<T : Enum<T>>(
+      override val fieldName: String,
+      override val databaseField: TableField<*, T?>,
+      override val table: SearchTable = SearchTables.Accession,
+      val getValue: (String) -> T?
+  ) : SingleColumnSearchField<T>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact)
+
+    override fun getCondition(filter: SearchFilter): Condition {
+      if (filter.type == SearchFilterType.Exact) {
+        val enumInstances =
+            filter.values.map {
+              getValue(it)
+                  ?: throw IllegalArgumentException("Value $it not recognized for $fieldName")
+            }
+        return databaseField.`in`(enumInstances)
+      } else {
+        throw IllegalArgumentException("$fieldName only supports exact searches")
+      }
+    }
+  }
+
+  class GeolocationField(
+      override val fieldName: String,
+      private val latitudeField: TableField<*, BigDecimal?>,
+      private val longitudeField: TableField<*, BigDecimal?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SearchField<String> {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = emptySet()
+
+    override val selectFields: List<Field<*>>
+      get() = listOf(latitudeField, longitudeField)
+
+    override fun getConditions(filter: SearchFilter): List<Condition> {
+      throw IllegalArgumentException("Filters not supported for geolocation")
+    }
+
+    override fun computeValue(record: Record): String? {
+      return record[latitudeField]?.let { latitude ->
+        record[longitudeField]?.let { longitude ->
+          "${latitude.toPlainString()}, ${longitude.toPlainString()}"
+        }
+      }
+    }
+
+    override fun toString() = fieldName
+  }
+
+  class IntegerField(
+      override val fieldName: String,
+      override val databaseField: TableField<*, Int?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SingleColumnSearchField<Int>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
+
+    override fun getCondition(filter: SearchFilter): Condition {
+      return when (filter.type) {
+        SearchFilterType.Exact -> databaseField.`in`(filter.values.map { it.toInt() })
+        SearchFilterType.Fuzzy ->
+            throw RuntimeException("Fuzzy search not supported for numeric fields")
+        SearchFilterType.Range ->
+            if (filter.values.size == 2) {
+              databaseField.between(filter.values[0].toInt(), filter.values[0].toInt())
+            } else {
+              throw IllegalArgumentException("Range search must have two values")
+            }
+      }
+    }
+  }
+
+  class PlaceholderField(override val fieldName: String) : SingleColumnSearchField<String>() {
+    override val table: SearchTable
+      get() = SearchTables.Accession
+    override val databaseField: Field<String?>
+      get() = ACCESSION.NUMBER
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = emptySet()
+
+    override fun getCondition(filter: SearchFilter): Condition {
+      throw RuntimeException("Not implemented")
+    }
+
+    override fun computeValue(record: Record): String {
+      return "Not implemented yet"
+    }
+  }
+
+  inner class TextField(
+      override val fieldName: String,
+      override val databaseField: Field<String?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SingleColumnSearchField<String>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
+
+    override fun getCondition(filter: SearchFilter): Condition {
+      return when (filter.type) {
+        SearchFilterType.Exact -> databaseField.`in`(filter.values)
+        SearchFilterType.Fuzzy ->
+            DSL.or(
+                filter.values.flatMap {
+                  listOf(databaseField.likeFuzzy(it), databaseField.like("$it%"))
+                })
+        SearchFilterType.Range ->
+            throw IllegalArgumentException("Range search not supported for text fields")
+      }
+    }
+  }
+
+  /** Case-insensitive search for fields whose values are always upper case. */
+  inner class UpperCaseTextField(
+      override val fieldName: String,
+      override val databaseField: Field<String?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SingleColumnSearchField<String>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
+
+    override fun getCondition(filter: SearchFilter): Condition {
+      return when (filter.type) {
+        SearchFilterType.Exact -> databaseField.`in`(filter.values.map { it.toUpperCase() })
+        SearchFilterType.Fuzzy ->
+            DSL.or(
+                filter.values.map { it.toUpperCase() }.flatMap {
+                  listOf(databaseField.likeFuzzy(it), databaseField.like("$it%"))
+                })
+        SearchFilterType.Range ->
+            throw IllegalArgumentException("Range search not supported for text fields")
+      }
+    }
+  }
 }
