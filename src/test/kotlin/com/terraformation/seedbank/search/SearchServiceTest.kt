@@ -4,25 +4,38 @@ import com.terraformation.seedbank.api.seedbank.SearchDirection
 import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
 import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
 import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
+import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
+import com.terraformation.seedbank.db.tables.daos.AccessionDao
+import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.model.AccessionActive
+import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class SearchServiceTest : DatabaseTest() {
+  @Autowired private lateinit var config: TerrawareServerConfig
+  private lateinit var accessionDao: AccessionDao
   private lateinit var searchService: SearchService
 
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
-  private val speciesField = searchFields["species"]!!
   private val accessionNumberField = searchFields["accessionNumber"]!!
-  private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
   private val activeField = searchFields["active"]!!
+  private val receivedDateField = searchFields["receivedDate"]!!
+  private val speciesField = searchFields["species"]!!
+  private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
 
   @BeforeEach
   fun init() {
+    accessionDao = AccessionDao(dslContext.configuration())
     searchService = SearchService(dslContext, searchFields)
   }
 
@@ -119,6 +132,64 @@ class SearchServiceTest : DatabaseTest() {
 
     val secondPage = searchService.search(criteria.copy(cursor = firstPage.cursor))
     assertEquals(expectedSecondPage, secondPage)
+  }
+
+  @Nested
+  inner class DateFieldSearchTest {
+    @BeforeEach
+    fun insertReceivedDateExamples() {
+      listOf(1, 2, 8).forEach { day ->
+        accessionDao.insert(
+            Accession(
+                createdTime = Instant.now(),
+                number = "JAN$day",
+                siteModuleId = config.siteModuleId,
+                stateId = AccessionState.Processing,
+                receivedDate = LocalDate.of(2021, 1, day)))
+      }
+    }
+
+    @Test
+    fun `can search for exact date`() {
+      val fields = listOf(accessionNumberField)
+      val filters =
+          listOf(SearchFilter(receivedDateField, listOf("2021-01-02"), SearchFilterType.Exact))
+      val criteria = SearchRequestPayload(fields = fields, filters = filters)
+
+      val expected = SearchResponsePayload(listOf(mapOf("accessionNumber" to "JAN2")), null)
+      val actual = searchService.search(criteria)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `can search by date range`() {
+      val fields = listOf(accessionNumberField)
+      val sortFields = listOf(SearchSortOrderElement(receivedDateField))
+      val filters =
+          listOf(
+              SearchFilter(
+                  receivedDateField, listOf("2021-01-02", "2021-01-15"), SearchFilterType.Range))
+      val criteria =
+          SearchRequestPayload(fields = fields, sortOrder = sortFields, filters = filters)
+
+      val expected =
+          SearchResponsePayload(
+              listOf(mapOf("accessionNumber" to "JAN2"), mapOf("accessionNumber" to "JAN8")), null)
+      val actual = searchService.search(criteria)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `malformed dates are rejected`() {
+      val fields = listOf(accessionNumberField)
+      val filters =
+          listOf(SearchFilter(receivedDateField, listOf("NOT_A_DATE"), SearchFilterType.Exact))
+      val criteria = SearchRequestPayload(fields = fields, filters = filters)
+
+      assertThrows(IllegalArgumentException::class.java) { searchService.search(criteria) }
+    }
   }
 
   @Test

@@ -24,6 +24,7 @@ import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.toActiveEnum
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.format.DateTimeParseException
 import java.util.EnumSet
 import javax.annotation.ManagedBean
 import org.jooq.Condition
@@ -257,8 +258,25 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
 
-    override fun getCondition(filter: SearchFilter): Condition? {
-      TODO("Not yet implemented")
+    override fun getCondition(filter: SearchFilter): Condition {
+      val dateValues =
+          try {
+            filter.values.map { LocalDate.parse(it) }
+          } catch (e: DateTimeParseException) {
+            throw IllegalArgumentException("Dates must be in YYYY-MM-DD format")
+          }
+
+      return when (filter.type) {
+        SearchFilterType.Exact -> databaseField.`in`(dateValues)
+        SearchFilterType.Fuzzy ->
+            throw IllegalArgumentException("Fuzzy search not supported for dates")
+        SearchFilterType.Range ->
+            if (dateValues.size == 2) {
+              databaseField.between(dateValues[0], dateValues[1])
+            } else {
+              throw IllegalArgumentException("Range search must have two values")
+            }
+      }
     }
   }
 
