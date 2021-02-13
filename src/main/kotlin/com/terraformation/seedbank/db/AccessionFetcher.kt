@@ -3,6 +3,7 @@ package com.terraformation.seedbank.db
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
+import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
 import com.terraformation.seedbank.db.tables.references.SPECIES
 import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
@@ -15,6 +16,7 @@ import com.terraformation.seedbank.services.perClassLogger
 import com.terraformation.seedbank.services.toListOrNull
 import com.terraformation.seedbank.services.toSetOrNull
 import java.time.Clock
+import java.time.LocalDate
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.InsertSetMoreStep
@@ -198,6 +200,16 @@ class AccessionFetcher(
                     ?.get(ID)!!
               }
 
+          with(ACCESSION_STATE_HISTORY) {
+            dslContext
+                .insertInto(ACCESSION_STATE_HISTORY)
+                .set(ACCESSION_ID, accessionId)
+                .set(REASON, "Accession created")
+                .set(NEW_STATE_ID, AccessionState.Pending)
+                .set(UPDATED_TIME, clock.instant())
+                .execute()
+          }
+
           insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
           bagFetcher.updateBags(accessionId, emptySet(), accession.bagNumbers)
           collectionEventFetcher.updateGeolocations(accessionId, emptySet(), accession.geolocations)
@@ -246,10 +258,29 @@ class AccessionFetcher(
       withdrawalFetcher.updateWithdrawals(
           accessionId, accession, existing.withdrawals, accession.withdrawals)
 
+      val stateTransition = existing.getStateTransition(accession, clock)
+      if (stateTransition != null) {
+        log.info(
+            "Accession $accessionNumber transitioning from ${existing.state} to " +
+                "${stateTransition.newState}: ${stateTransition.reason}")
+
+        with(ACCESSION_STATE_HISTORY) {
+          dslContext
+              .insertInto(ACCESSION_STATE_HISTORY)
+              .set(ACCESSION_ID, accessionId)
+              .set(NEW_STATE_ID, stateTransition.newState)
+              .set(OLD_STATE_ID, existing.state)
+              .set(REASON, stateTransition.reason)
+              .set(UPDATED_TIME, clock.instant())
+              .execute()
+        }
+      }
+
       val rowsUpdated =
           with(ACCESSION) {
             dslContext
                 .update(ACCESSION)
+                .set(STATE_ID, stateTransition?.newState ?: existing.state)
                 .set(SPECIES_ID, getSpeciesId(accession.species))
                 .set(SPECIES_FAMILY_ID, getSpeciesFamilyId(accession.family))
                 .set(COLLECTION_TREES, accession.numberOfTrees)
@@ -302,6 +333,37 @@ class AccessionFetcher(
     }
 
     return true
+  }
+
+  /**
+   * Returns a list of accessions for which the scheduled date for a time-based state transition has
+   * arrived or passed.
+   */
+  fun fetchTimedStateTransitionCandidates(): List<AccessionModel> {
+    val today = LocalDate.now(clock)
+    val twoWeeksAgo = today.minusDays(14)
+
+    return with(ACCESSION) {
+      dslContext
+          .select(NUMBER)
+          .from(ACCESSION)
+          .where(
+              STATE_ID
+                  .eq(AccessionState.Processing)
+                  .and(PROCESSING_START_DATE.le(twoWeeksAgo).or(DRYING_START_DATE.le(today))))
+          .or(STATE_ID.eq(AccessionState.Processed).and(DRYING_START_DATE.le(today)))
+          .or(
+              STATE_ID
+                  .eq(AccessionState.Drying)
+                  .and(STORAGE_START_DATE.le(today).or(DRYING_END_DATE.le(today))))
+          .or(STATE_ID.eq(AccessionState.Dried).and(STORAGE_START_DATE.le(today)))
+          .fetch(NUMBER)
+          .mapNotNull { accessionNumber ->
+            // This is an N+1 query which isn't ideal but we are going to be processing these one
+            // at a time anyway so optimizing this to a single SELECT wouldn't help much.
+            fetchByNumber(accessionNumber!!)
+          }
+    }
   }
 
   private fun fetchSecondaryCollectorNames(accessionId: Long): Set<String>? {

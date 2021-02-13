@@ -6,6 +6,7 @@ import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
 import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
+import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
@@ -17,11 +18,13 @@ import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
+import com.terraformation.seedbank.db.tables.pojos.AccessionStateHistory
 import com.terraformation.seedbank.db.tables.pojos.Bag
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
+import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.model.AccessionNumberGenerator
 import com.terraformation.seedbank.photo.PhotoRepository
 import io.mockk.every
@@ -644,6 +647,154 @@ internal class AccessionFetcherTest : DatabaseTest() {
     val fetched = fetcher.fetchByNumber(initial.accessionNumber)
 
     assertEquals(10, fetched?.seedsRemaining)
+  }
+
+  @Test
+  fun `state history row is inserted at creation time`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    val historyRecords =
+        dslContext
+            .selectFrom(ACCESSION_STATE_HISTORY)
+            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
+            .fetchInto(AccessionStateHistory::class.java)
+
+    assertEquals(
+        listOf(
+            AccessionStateHistory(
+                accessionId = 1,
+                newStateId = AccessionState.Pending,
+                reason = "Accession created",
+                updatedTime = clock.instant())),
+        historyRecords)
+  }
+
+  @Test
+  fun `state transitions to Processing when seed count entered`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(AccessionState.Processing, fetched?.state)
+
+    val historyRecords =
+        dslContext
+            .selectFrom(ACCESSION_STATE_HISTORY)
+            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
+            .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.Processing))
+            .fetchInto(AccessionStateHistory::class.java)
+
+    assertEquals(
+        listOf(
+            AccessionStateHistory(
+                accessionId = 1,
+                newStateId = AccessionState.Processing,
+                oldStateId = AccessionState.Pending,
+                reason = "Seeds have been counted",
+                updatedTime = clock.instant())),
+        historyRecords)
+  }
+
+  @Test
+  fun `state short-circuits to Withdrawn when seeds withdrawn during processing`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    fetcher.update(
+        initial.accessionNumber,
+        AccessionPayload(initial)
+            .copy(
+                seedsCounted = 10,
+                withdrawals =
+                    listOf(
+                        WithdrawalPayload(
+                            date = LocalDate.now(),
+                            purpose = WithdrawalPurpose.Other,
+                            seedsWithdrawn = 10))))
+    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(AccessionState.Withdrawn, fetched?.state)
+
+    val historyRecords =
+        dslContext
+            .selectFrom(ACCESSION_STATE_HISTORY)
+            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
+            .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.Withdrawn))
+            .fetchInto(AccessionStateHistory::class.java)
+
+    assertEquals(
+        listOf(
+            AccessionStateHistory(
+                accessionId = 1,
+                newStateId = AccessionState.Withdrawn,
+                oldStateId = AccessionState.Processing,
+                reason = "No seeds remaining",
+                updatedTime = clock.instant())),
+        historyRecords)
+  }
+
+  @Test
+  fun `fetchTimedStateTransitionCandidates matches correct dates based on state`() {
+    val clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
+    val today = LocalDate.now(clock)
+    val yesterday = today.minusDays(1)
+    val tomorrow = today.plusDays(1)
+    val twoWeeksAgo = today.minusDays(14)
+
+    val shouldMatch =
+        listOf(
+            Accession(
+                number = "ProcessingTimePassed",
+                stateId = AccessionState.Processing,
+                processingStartDate = twoWeeksAgo),
+            Accession(
+                number = "ProcessingToDrying",
+                stateId = AccessionState.Processing,
+                dryingStartDate = today),
+            Accession(
+                number = "ProcessedToDrying",
+                stateId = AccessionState.Processed,
+                dryingStartDate = today),
+            Accession(
+                number = "DryingToDried", stateId = AccessionState.Drying, dryingEndDate = today),
+            Accession(
+                number = "DryingToStorage",
+                stateId = AccessionState.Drying,
+                storageStartDate = today),
+            Accession(
+                number = "DriedToStorage",
+                stateId = AccessionState.Dried,
+                storageStartDate = yesterday),
+        )
+
+    val shouldNotMatch =
+        listOf(
+            Accession(
+                number = "NoSeedCountYet",
+                stateId = AccessionState.Pending,
+                processingStartDate = twoWeeksAgo),
+            Accession(
+                number = "ProcessingTimeNotUpYet",
+                stateId = AccessionState.Processing,
+                processingStartDate = yesterday),
+            Accession(
+                number = "ProcessedToStorage",
+                stateId = AccessionState.Processed,
+                storageStartDate = today),
+            Accession(
+                number = "DriedToStorageTomorrow",
+                stateId = AccessionState.Dried,
+                storageStartDate = tomorrow),
+        )
+
+    (shouldMatch + shouldNotMatch).forEach { accession ->
+      accessionDao.insert(
+          accession.copy(createdTime = clock.instant(), siteModuleId = config.siteModuleId))
+    }
+
+    val expected = shouldMatch.map { it.number!! }.toSortedSet()
+    val actual =
+        fetcher.fetchTimedStateTransitionCandidates().map { it.accessionNumber }.toSortedSet()
+
+    assertEquals(expected, actual)
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {

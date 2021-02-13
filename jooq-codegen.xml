@@ -43,7 +43,11 @@
           <converter>com.terraformation.seedbank.db.AccessionStateConverter</converter>
           <includeTypes>INTEGER</includeTypes>
           <!-- Regex matches both accession.state_id and notification.accession_state_id -->
-          <includeExpression>(?i:accession.state_id)</includeExpression>
+          <includeExpression>(?i:
+            accession\.state_id
+            | .*\.accession_state_id
+            | accession_state_history\.(old|new)_state_id)
+          </includeExpression>
         </forcedType>
 
         <forcedType>

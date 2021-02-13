@@ -35,7 +35,7 @@ class DailyTaskRunner(
   private val log = perClassLogger()
 
   @EventListener
-  fun startWorkerThread(event: ApplicationStartedEvent) {
+  fun startWorkerThread(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
     thread.isDaemon = false
     thread.start()
   }

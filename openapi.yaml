@@ -385,8 +385,11 @@ components:
       properties:
         accessionNumber:
           type: string
+          description: Server-generated unique identifier for the accession.
         state:
           type: string
+          description: Server-calculated accession state. Can change due to modifications
+            to accession data or based on passage of time.
           enum:
           - Pending
           - Processing
@@ -397,6 +400,8 @@ components:
           - Withdrawn
         active:
           type: string
+          description: Server-calculated active indicator. This is based on the accession's
+            state.
           enum:
           - Inactive
           - Active
@@ -1013,10 +1018,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
+          default: Ascending
           enum:
           - Ascending
           - Descending
-          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error

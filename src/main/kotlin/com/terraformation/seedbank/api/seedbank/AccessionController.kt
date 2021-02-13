@@ -155,8 +155,15 @@ data class UpdateAccessionRequestPayload(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class AccessionPayload(
+    @Schema(description = "Server-generated unique identifier for the accession.")
     override val accessionNumber: String,
+    @Schema(
+        description =
+            "Server-calculated accession state. Can change due to modifications to accession data " +
+                "or based on passage of time.")
     override val state: AccessionState,
+    @Schema(
+        description = "Server-calculated active indicator. This is based on the accession's state.")
     override val active: AccessionActive,
     override val species: String? = null,
     override val family: String? = null,

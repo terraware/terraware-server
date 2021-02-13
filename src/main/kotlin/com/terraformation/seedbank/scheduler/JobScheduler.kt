@@ -105,7 +105,7 @@ class JobScheduler(
   }
 
   @EventListener
-  fun onApplicationStart(event: ApplicationStartedEvent) {
+  fun onApplicationStart(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
     log.debug("Loading scheduled events")
     refresh()
   }

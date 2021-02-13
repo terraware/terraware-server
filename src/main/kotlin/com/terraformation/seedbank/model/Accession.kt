@@ -6,6 +6,7 @@ import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.StorageCondition
 import java.math.BigDecimal
+import java.time.Clock
 import java.time.LocalDate
 
 enum class AccessionActive {
@@ -266,4 +267,75 @@ data class AccessionModel(
     override val cutTestSeedsCompromised: Int? = null,
     override val deviceInfo: AppDeviceModel? = null,
     override val seedsRemaining: Int? = null,
-) : ConcreteAccession
+) : ConcreteAccession {
+  fun getStateTransition(newFields: AccessionFields, clock: Clock): AccessionStateTransition? {
+    val seedsRemaining = newFields.calculateSeedsRemaining()
+    val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining <= 0
+    val today = LocalDate.now(clock)
+
+    fun LocalDate?.hasArrived(daysAgo: Long = 0) = this != null && this <= today.minusDays(daysAgo)
+
+    val seedCountPresent =
+        newFields.seedsCounted != null || newFields.calculateEstimatedSeedCount() != null
+    val processingForTwoWeeks = newFields.processingStartDate.hasArrived(daysAgo = 14)
+    val dryingStarted = newFields.dryingStartDate.hasArrived()
+    val noDryingEndDateEntered = newFields.dryingEndDate == null
+    val dryingEnded = newFields.dryingEndDate.hasArrived()
+    val storageStarted = newFields.storageStartDate.hasArrived()
+    val storageDetailsEntered =
+        newFields.storagePackets != null || newFields.storageLocation != null
+
+    // See if the required conditions are met to transition from the current state to one of the
+    // possible next states.
+    val transition: Pair<AccessionState, String>? =
+        when (state) {
+          AccessionState.Pending ->
+              when {
+                seedCountPresent -> AccessionState.Processing to "Seeds have been counted"
+                else -> null
+              }
+          AccessionState.Processing ->
+              when {
+                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
+                dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
+                processingForTwoWeeks -> AccessionState.Processed to "Processing time has elapsed"
+                else -> null
+              }
+          AccessionState.Processed ->
+              when {
+                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
+                dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
+                else -> null
+              }
+          AccessionState.Drying ->
+              when {
+                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
+                noDryingEndDateEntered -> null
+                storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
+                storageDetailsEntered -> AccessionState.InStorage to "Storage information entered"
+                dryingEnded -> AccessionState.Dried to "Drying end date has arrived"
+                else -> null
+              }
+          AccessionState.Dried ->
+              when {
+                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
+                storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
+                storageDetailsEntered -> AccessionState.InStorage to "Storage information entered"
+                else -> null
+              }
+          AccessionState.InStorage ->
+              when {
+                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
+                else -> null
+              }
+          AccessionState.Withdrawn -> null
+        }
+
+    return transition?.let { AccessionStateTransition(it.first, it.second) }
+  }
+}
+
+data class AccessionStateTransition(
+    val newState: AccessionState,
+    val reason: String,
+)
