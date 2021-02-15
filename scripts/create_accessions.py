@@ -197,8 +197,6 @@ def generate_accession() -> Dict:
 def create_accession(server: str) -> Dict:
     payload = generate_accession()
 
-    print(json.dumps(payload))
-
     return requests.post(f"{server}/api/v1/seedbank/accession", json=payload).json()[
         "accession"
     ]
@@ -223,7 +221,7 @@ def main():
         if args.verbose:
             pprint(accession)
         else:
-            print(accession.accession_number)
+            print(accession["accessionNumber"])
 
 
 if __name__ == "__main__":
