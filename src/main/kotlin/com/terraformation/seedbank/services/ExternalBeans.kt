@@ -8,7 +8,6 @@ import com.terraformation.seedbank.db.tables.daos.SiteDao
 import com.terraformation.seedbank.db.tables.daos.SiteModuleDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.daos.TimeseriesDao
-import java.time.Clock
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,6 +32,4 @@ class ExternalBeans(dslContext: DSLContext) {
   @Bean fun siteModuleDao() = SiteModuleDao(configuration)
   @Bean fun storageLocationDao() = StorageLocationDao(configuration)
   @Bean fun timeseriesDao() = TimeseriesDao(configuration)
-
-  @Bean fun clock() = Clock.systemUTC()!!
 }

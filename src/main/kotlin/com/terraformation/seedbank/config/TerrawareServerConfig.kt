@@ -2,6 +2,8 @@ package com.terraformation.seedbank.config
 
 import java.net.URI
 import java.nio.file.Path
+import java.time.ZoneId
+import java.time.ZoneOffset
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -37,6 +39,18 @@ class TerrawareServerConfig {
    * `/x/y/A/B/C/ABCDEFG`.
    */
   @Min(0) var photoIntermediateDepth: Int = 3
+
+  /**
+   * Server's time zone. This is mostly used to determine when scheduled daily jobs are run. Default
+   * is UTC. May be specified as a time zone name or a UTC offset.
+   */
+  var timeZone: ZoneId = ZoneOffset.UTC
+
+  /**
+   * Use a fake clock that can be advanced via API requests. This should only be enabled in test
+   * environments.
+   */
+  var useTestClock: Boolean = false
 
   /** Configures the server's communication with an MQTT broker. */
   var mqtt: MqttConfig = MqttConfig()

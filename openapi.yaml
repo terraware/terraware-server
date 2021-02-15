@@ -191,6 +191,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/seedbank/clock:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Get the server's current date and time.
+      description: "In test environments, the clock can be advanced artificially,\
+        \ which will cause it to differ from the real-world date and time."
+      operationId: getCurrentTime
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCurrentTimeResponsePayload'
+  /api/v1/seedbank/clock/advance:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Advance the server's clock.
+      description: Advancing the clock causes any scheduled processes to run. Subsequent
+        GET requests to read the current time will take the advancement into account.
+        Only supported in test and development environments.
+      operationId: advanceClock
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvanceClockRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The clock has been advanced. The response includes the newly-adjusted
+            time.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCurrentTimeResponsePayload'
   /api/v1/seedbank/notification:
     get:
       tags:
@@ -508,6 +546,15 @@ components:
             by the server when the accession's seed count (actual or estimated) is
             known.
           format: int32
+    AdvanceClockRequestPayload:
+      required:
+      - days
+      type: object
+      properties:
+        days:
+          minimum: 1
+          type: integer
+          format: int32
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -717,6 +764,17 @@ components:
       properties:
         accession:
           $ref: '#/components/schemas/AccessionPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetCurrentTimeResponsePayload:
+      required:
+      - currentTime
+      - status
+      type: object
+      properties:
+        currentTime:
+          type: string
+          format: date-time
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListFieldValuesRequestPayload:
