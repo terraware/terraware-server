@@ -7,9 +7,11 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import javax.annotation.ManagedBean
-import javax.annotation.PostConstruct
 import javax.inject.Inject
 import org.jooq.DSLContext
+import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.event.EventListener
+import org.springframework.core.annotation.Order
 
 /**
  * User-adjustable clock with database-backed settings.
@@ -59,7 +61,16 @@ private constructor(
 
   private val log = perClassLogger()
 
-  @PostConstruct
+  /**
+   * Loads the clock settings from the database after database migrations have finished. This allows
+   * us to use migrations to update the clock configuration.
+   */
+  @EventListener
+  @Order(1)
+  fun initialize(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
+    readFromDatabase()
+  }
+
   fun readFromDatabase() {
     if (useTestClock) {
       val record = dslContext.selectFrom(TEST_CLOCK).fetchOne()
