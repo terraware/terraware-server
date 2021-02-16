@@ -2,6 +2,7 @@ package com.terraformation.seedbank.config
 
 import java.net.URI
 import java.nio.file.Path
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import javax.validation.constraints.Min
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.io.Resource
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.validation.annotation.Validated
 
 @ConfigurationProperties("terraware")
@@ -42,7 +44,8 @@ class TerrawareServerConfig {
 
   /**
    * Server's time zone. This is mostly used to determine when scheduled daily jobs are run. Default
-   * is UTC. May be specified as a time zone name or a UTC offset.
+   * is UTC. May be specified as a tz database time zone name such as `US/Hawaii` or a UTC offset
+   * such as `+04:00`.
    */
   var timeZone: ZoneId = ZoneOffset.UTC
 
@@ -51,6 +54,13 @@ class TerrawareServerConfig {
    * environments.
    */
   var useTestClock: Boolean = false
+
+  /**
+   * What time of day the daily tasks are run. This is treated as a local time in the configured
+   * [timeZone]. Default is 8AM.
+   */
+  @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+  var dailyTasksStartTime: LocalTime = LocalTime.of(8, 0)
 
   /** Configures the server's communication with an MQTT broker. */
   var mqtt: MqttConfig = MqttConfig()
