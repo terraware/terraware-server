@@ -1,6 +1,12 @@
 package com.terraformation.seedbank.services
 
 import java.math.BigDecimal
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.LocalTime
+import java.time.ZonedDateTime
+import java.time.temporal.TemporalAccessor
+import java.time.temporal.TemporalAdjusters
 import java.util.EnumSet
 import org.jooq.Field
 import org.slf4j.Logger
@@ -67,3 +73,49 @@ fun BigDecimal?.equalsIgnoreScale(other: BigDecimal?) =
  * value is null.
  */
 fun <T> Field<T>.eqOrIsNull(value: T) = if (value != null) eq(value) else isNull
+
+/**
+ * Logs how long a function takes to run. This isn't a robust performance monitoring tool; use a
+ * real metrics library if you want to track statistics over time. But it's useful for debugging.
+ */
+fun <T> Logger.debugWithTiming(message: String, func: () -> T): T {
+  val startTime = System.currentTimeMillis()
+  val result = func()
+  val endTime = System.currentTimeMillis()
+
+  debug("$message: ${endTime-startTime}ms")
+
+  return result
+}
+
+/**
+ * Returns the most recent ZonedDateTime in the past where the time of day is a certain value.
+ *
+ * For example, given a ZonedDateTime of Monday at 11:00, `atMostRecent(LocalTime.of(10, 0))` would
+ * return Monday at 10:00, while `atMostRecent(LocalTime.of(12, 0))` would return Sunday at 12:00
+ * (since Monday at 12:00 would be in the future relative to the original value).
+ */
+fun ZonedDateTime.atMostRecent(timeOfDay: LocalTime): ZonedDateTime {
+  val atTimeOfDay = with(timeOfDay)
+  return if (isBefore(atTimeOfDay)) {
+    atTimeOfDay.minusDays(1)
+  } else {
+    atTimeOfDay
+  }
+}
+
+/**
+ * Returns the most recent ZonedDateTime in the past where the day of the week is a certain value.
+ * If the original value is already on the requested day of the week, it is returned unaltered. For
+ * example, given a ZonedDateTime of Monday at 11:00, `atMostRecent(MONDAY)` would return the
+ * original time, while `atMostRecent(SUNDAY)` would subtract 1 day.
+ */
+fun ZonedDateTime.atMostRecent(dayOfWeek: DayOfWeek): ZonedDateTime {
+  return with(TemporalAdjusters.previousOrSame(dayOfWeek))
+}
+
+/**
+ * Converts an arbitrary time value to an [Instant]. This is just syntax sugar for [Instant.from] to
+ * work more cleanly with `?.` expressions.
+ */
+fun TemporalAccessor.toInstant() = Instant.from(this)!!

@@ -22,9 +22,12 @@ import com.terraformation.seedbank.db.tables.pojos.AccessionStateHistory
 import com.terraformation.seedbank.db.tables.pojos.Bag
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
+import com.terraformation.seedbank.db.tables.records.AccessionStateHistoryRecord
+import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.seedbank.db.tables.references.NOTIFICATION
 import com.terraformation.seedbank.model.AccessionNumberGenerator
 import com.terraformation.seedbank.photo.PhotoRepository
 import io.mockk.every
@@ -62,7 +65,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
         )
 
   private val accessionNumberGenerator = mockk<AccessionNumberGenerator>()
-  private val clock = Clock.fixed(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneOffset.UTC)
+  private val clock: Clock = mockk()
 
   private lateinit var fetcher: AccessionFetcher
   private lateinit var accessionDao: AccessionDao
@@ -74,7 +77,8 @@ internal class AccessionFetcherTest : DatabaseTest() {
   private lateinit var germinationTestDao: GerminationTestDao
   private lateinit var storageLocationDao: StorageLocationDao
 
-  private val accessionNumbers = listOf("one", "two", "three", "four")
+  private val accessionNumbers =
+      listOf("one", "two", "three", "four", "five", "six", "seven", "eight")
 
   @BeforeEach
   fun init() {
@@ -88,6 +92,11 @@ internal class AccessionFetcherTest : DatabaseTest() {
     germinationTestDao = GerminationTestDao(jooqConfig)
     storageLocationDao = StorageLocationDao(jooqConfig)
 
+    val support = FetcherSupport(config, dslContext)
+
+    every { clock.instant() } returns Instant.now()
+    every { clock.zone } returns ZoneOffset.UTC
+
     fetcher =
         AccessionFetcher(
             dslContext,
@@ -97,8 +106,10 @@ internal class AccessionFetcherTest : DatabaseTest() {
             CollectionEventFetcher(dslContext, clock),
             GerminationFetcher(dslContext),
             PhotoRepository(config, accessionPhotoDao, clock),
+            SpeciesFetcher(clock, support),
             WithdrawalFetcher(dslContext, clock),
-            clock)
+            clock,
+            support)
 
     fetcher.accessionNumberGenerator = accessionNumberGenerator
 
@@ -795,6 +806,151 @@ internal class AccessionFetcherTest : DatabaseTest() {
         fetcher.fetchTimedStateTransitionCandidates().map { it.accessionNumber }.toSortedSet()
 
     assertEquals(expected, actual)
+  }
+
+  /**
+   * Tests the query that generates the summary page's statistics.
+   *
+   * Use a test data set of accession state changes on either side of the time boundaries we're
+   * going to be scanning. The test will look for accessions in the Processing state. In the
+   * diagram, `[` is when the state enters Processing and `]` is when it enters Processed.
+   *
+   * ```
+   *    1   2   3   4   5   Time
+   *        |-------|       Search window for both time boundaries
+   *        |------------   Search window for startingAt test
+   *    ------------|       Search window for sinceBefore test
+   *
+   * 1  [---------------]   Not counted: no longer Processing
+   * 2  [----------------   Counted (sinceBefore, unbounded): entered before window
+   * 3      [------------   Counted (all): entered during window, never exited
+   * 4      [-----------]   Not counted: no longer Processing
+   * 5              [----   Counted (all): entered during window (inclusive), never exited
+   * 6                  [   Counted (sinceAfter, unbounded): entered after window
+   * 7                  [   Counted (sinceAfter, unbounded): entered after window
+   * ```
+   */
+  @Test
+  fun `countInState correctly examines state changes`() {
+    deleteDevEnvironmentData()
+
+    // Insert dummy accession rows so we can use the accession IDs
+    repeat(7) { fetcher.create(CreateAccessionRequestPayload()) }
+
+    listOf(1 to 6, 1 to null, 2 to null, 2 to 5, 4 to null, 6 to null, 6 to null).forEachIndexed {
+        index,
+        (processingStartTime, processedStartTime) ->
+      val accessionId = (index + 1).toLong()
+      val currentState =
+          if (processedStartTime == null) AccessionState.Processing else AccessionState.Processed
+
+      dslContext
+          .insertInto(ACCESSION_STATE_HISTORY)
+          .set(
+              AccessionStateHistoryRecord(
+                  accessionId = accessionId,
+                  updatedTime = Instant.ofEpochMilli(processingStartTime.toLong()),
+                  oldStateId = AccessionState.Pending,
+                  newStateId = AccessionState.Processing,
+                  reason = "test"))
+          .execute()
+
+      if (processedStartTime != null) {
+        dslContext
+            .insertInto(ACCESSION_STATE_HISTORY)
+            .set(
+                AccessionStateHistoryRecord(
+                    accessionId = accessionId,
+                    updatedTime = Instant.ofEpochMilli(processedStartTime.toLong()),
+                    oldStateId = AccessionState.Processing,
+                    newStateId = AccessionState.Processed,
+                    reason = "test"))
+            .execute()
+      }
+
+      dslContext
+          .update(ACCESSION)
+          .set(ACCESSION.STATE_ID, currentState)
+          .where(ACCESSION.ID.eq(accessionId))
+          .execute()
+    }
+
+    assertEquals(
+        "Search with both time bounds",
+        2,
+        fetcher.countInState(
+            state = AccessionState.Processing,
+            sinceAfter = Instant.ofEpochMilli(2),
+            sinceBefore = Instant.ofEpochMilli(4)))
+
+    assertEquals(
+        "Search with startingAt",
+        4,
+        fetcher.countInState(
+            state = AccessionState.Processing, sinceAfter = Instant.ofEpochMilli(2)))
+
+    assertEquals(
+        "Search with sinceBefore",
+        3,
+        fetcher.countInState(
+            state = AccessionState.Processing, sinceBefore = Instant.ofEpochMilli(4)))
+
+    assertEquals("Search without time bounds", 5, fetcher.countInState(AccessionState.Processing))
+  }
+
+  /**
+   * Test data:
+   *
+   * ```
+   *     1  2  3  4  5
+   * 1   [--]
+   * 2   [-----]
+   * 3   [--------]
+   * 4   [-----------]
+   * 5   [------------
+   * 6         [------
+   * ```
+   */
+  @Test
+  fun `countActive correctly examines history`() {
+    listOf(1 to 2, 1 to 3, 1 to 4, 1 to 5, 1 to null, 3 to null).forEachIndexed {
+        index,
+        (createdTime, withdrawnTime) ->
+      every { clock.instant() } returns Instant.ofEpochMilli(createdTime.toLong())
+      val accession = fetcher.create(CreateAccessionRequestPayload())
+
+      if (withdrawnTime != null) {
+        dslContext
+            .insertInto(ACCESSION_STATE_HISTORY)
+            .set(
+                AccessionStateHistoryRecord(
+                    accessionId = accession.id,
+                    updatedTime = Instant.ofEpochMilli(withdrawnTime.toLong()),
+                    oldStateId = AccessionState.InStorage,
+                    newStateId = AccessionState.Withdrawn,
+                    reason = "test"))
+            .execute()
+
+        dslContext
+            .update(ACCESSION)
+            .set(ACCESSION.STATE_ID, AccessionState.Withdrawn)
+            .where(ACCESSION.ID.eq(accession.id))
+            .execute()
+      }
+    }
+
+    val expectedCounts = listOf(0, 5, 4, 4, 3, 2, 2)
+    expectedCounts.forEachIndexed { asOf, expectedCount ->
+      assertEquals(
+          "Count as of time $asOf",
+          expectedCount,
+          fetcher.countActive(Instant.ofEpochMilli(asOf.toLong())))
+    }
+  }
+
+  private fun deleteDevEnvironmentData() {
+    dslContext.deleteFrom(NOTIFICATION).execute()
+    dslContext.deleteFrom(ACCESSION).execute()
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {

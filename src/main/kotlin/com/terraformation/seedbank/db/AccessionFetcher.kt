@@ -5,24 +5,26 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
-import com.terraformation.seedbank.db.tables.references.SPECIES
-import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
 import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
+import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionNumberGenerator
+import com.terraformation.seedbank.model.toActiveEnum
 import com.terraformation.seedbank.photo.PhotoRepository
+import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
+import com.terraformation.seedbank.services.toInstant
 import com.terraformation.seedbank.services.toListOrNull
 import com.terraformation.seedbank.services.toSetOrNull
 import java.time.Clock
 import java.time.LocalDate
+import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.jooq.InsertSetMoreStep
-import org.jooq.Record
-import org.jooq.TableField
+import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
+import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
@@ -34,8 +36,10 @@ class AccessionFetcher(
     private val collectionEventFetcher: CollectionEventFetcher,
     private val germinationFetcher: GerminationFetcher,
     private val photoRepository: PhotoRepository,
+    private val speciesFetcher: SpeciesFetcher,
     private val withdrawalFetcher: WithdrawalFetcher,
     private val clock: Clock,
+    private val support: FetcherSupport,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -168,8 +172,8 @@ class AccessionFetcher(
                     .set(SITE_MODULE_ID, config.siteModuleId)
                     .set(CREATED_TIME, clock.instant())
                     .set(STATE_ID, AccessionState.Pending)
-                    .set(SPECIES_ID, getSpeciesId(accession.species))
-                    .set(SPECIES_FAMILY_ID, getSpeciesFamilyId(accession.family))
+                    .set(SPECIES_ID, speciesFetcher.getSpeciesId(accession.species))
+                    .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
                     .set(COLLECTION_TREES, accession.numberOfTrees)
                     .set(FOUNDER_TREE, accession.founderId)
                     .set(SPECIES_ENDANGERED, accession.endangered)
@@ -281,8 +285,8 @@ class AccessionFetcher(
             dslContext
                 .update(ACCESSION)
                 .set(STATE_ID, stateTransition?.newState ?: existing.state)
-                .set(SPECIES_ID, getSpeciesId(accession.species))
-                .set(SPECIES_FAMILY_ID, getSpeciesFamilyId(accession.family))
+                .set(SPECIES_ID, speciesFetcher.getSpeciesId(accession.species))
+                .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
                 .set(COLLECTION_TREES, accession.numberOfTrees)
                 .set(FOUNDER_TREE, accession.founderId)
                 .set(SPECIES_ENDANGERED, accession.endangered)
@@ -396,79 +400,98 @@ class AccessionFetcher(
     }
   }
 
-  private fun getSpeciesId(speciesName: String?): Long? {
-    return getOrInsertId(speciesName, SPECIES.ID, SPECIES.NAME) {
-      it.set(SPECIES.CREATED_TIME, clock.instant())
-      it.set(SPECIES.MODIFIED_TIME, clock.instant())
-    }
-  }
-
-  private fun getSpeciesFamilyId(familyName: String?): Long? {
-    return getOrInsertId(familyName, SPECIES_FAMILY.ID, SPECIES_FAMILY.NAME) {
-      it.set(SPECIES_FAMILY.CREATED_TIME, clock.instant())
-    }
-  }
-
   private fun getCollectorId(name: String?): Long? {
-    return getOrInsertId(name, COLLECTOR.ID, COLLECTOR.NAME, COLLECTOR.SITE_MODULE_ID)
+    return support.getOrInsertId(name, COLLECTOR.ID, COLLECTOR.NAME, COLLECTOR.SITE_MODULE_ID)
   }
 
   private fun getStorageLocationId(name: String?): Long? {
-    return getId(name, STORAGE_LOCATION.ID, STORAGE_LOCATION.NAME, STORAGE_LOCATION.SITE_MODULE_ID)
+    return support.getId(
+        name, STORAGE_LOCATION.ID, STORAGE_LOCATION.NAME, STORAGE_LOCATION.SITE_MODULE_ID)
   }
 
-  private fun getOrInsertId(
-      name: String?,
-      idField: TableField<*, Long?>,
-      nameField: TableField<*, String?>,
-      siteModuleIdField: TableField<*, Long?>? = null,
-      extraSetters: (InsertSetMoreStep<out Record>) -> Unit = {}
-  ): Long? {
-    if (name == null) {
-      return null
-    }
+  /**
+   * Returns the number of accessions that were active as of a particular time.
+   *
+   * Assumptions that will cause this to break if they become false later on:
+   *
+   * - Accessions can't become active again once they enter an inactive state.
+   * - [asOf] will be a fairly recent time. (The correct result will be returned even if not, but
+   * the query will be inefficient.)
+   */
+  fun countActive(asOf: TemporalAccessor): Int {
+    val statesByActive = AccessionState.values().groupBy { it.toActiveEnum() }
 
-    val existingId =
+    val query =
         dslContext
-            .select(idField)
-            .from(idField.table)
-            .where(nameField.eq(name))
-            .apply { if (siteModuleIdField != null) and(siteModuleIdField.eq(config.siteModuleId)) }
-            .fetchOne(idField)
-    if (existingId != null) {
-      return existingId
-    }
+            .select(DSL.count())
+            .from(ACCESSION)
+            .where(ACCESSION.CREATED_TIME.le(asOf.toInstant()))
+            .and(
+                ACCESSION
+                    .STATE_ID
+                    .`in`(statesByActive[AccessionActive.Active])
+                    .orNotExists(
+                        dslContext
+                            .selectOne()
+                            .from(ACCESSION_STATE_HISTORY)
+                            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSION.ID))
+                            .and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(asOf.toInstant()))
+                            .and(
+                                ACCESSION_STATE_HISTORY.NEW_STATE_ID.`in`(
+                                    statesByActive[AccessionActive.Inactive]))))
 
-    val table = idField.table!!
+    log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
 
-    return dslContext
-        .insertInto(table)
-        .set(nameField, name)
-        .apply { if (siteModuleIdField != null) set(siteModuleIdField, config.siteModuleId) }
-        .apply { extraSetters(this) }
-        .returning(idField)
-        .fetchOne()
-        ?.get(idField)
-        ?: throw DataAccessException("Unable to insert new ${table.name.toLowerCase()} $name")
+    return log.debugWithTiming("Active accessions query") { query.fetchOne()?.value1() ?: 0 }
   }
 
-  private fun getId(
-      name: String?,
-      idField: TableField<*, Long?>,
-      nameField: TableField<*, String?>,
-      siteModuleIdField: TableField<*, Long?>? = null
-  ): Long? {
-    if (name == null) {
-      return null
-    }
+  /**
+   * Returns the number of accessions that entered a state during a time period and are still in
+   * that state now.
+   *
+   * @param sinceAfter Only count accessions that changed to the state at or after this time.
+   * @param sinceBefore Only count accessions that changed to the state at or before this time.
+   */
+  fun countInState(
+      state: AccessionState,
+      sinceAfter: TemporalAccessor? = null,
+      sinceBefore: TemporalAccessor? = null,
+  ): Int {
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(
+                DSL
+                    .selectDistinct(ACCESSION.ID)
+                    .from(ACCESSION_STATE_HISTORY)
+                    .join(ACCESSION)
+                    .on(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSION.ID))
+                    .where(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(state))
+                    .and(ACCESSION.STATE_ID.eq(state))
+                    .apply {
+                      if (sinceAfter != null) {
+                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.ge(sinceAfter.toInstant()))
+                      }
+                    }
+                    .apply {
+                      if (sinceBefore != null) {
+                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(sinceBefore.toInstant()))
+                      }
+                    })
 
-    return dslContext
-        .select(idField)
-        .from(idField.table)
-        .where(nameField.eq(name))
-        .apply { if (siteModuleIdField != null) and(siteModuleIdField.eq(config.siteModuleId)) }
-        .fetchOne(idField)
-        ?: throw IllegalArgumentException(
-            "Unable to find ${idField.table?.name?.toLowerCase()} $name")
+    log.info("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
+
+    return log.debugWithTiming("Accession state count with time bounds") {
+      query.fetchOne()?.value1() ?: 0
+    }
+  }
+
+  /** Returns the number of accessions currently in a given state. */
+  fun countInState(state: AccessionState): Int {
+    val query = dslContext.select(DSL.count()).from(ACCESSION).where(ACCESSION.STATE_ID.eq(state))
+
+    log.info("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
+
+    return log.debugWithTiming("Accession state count query") { query.fetchOne()?.value1() ?: 0 }
   }
 }

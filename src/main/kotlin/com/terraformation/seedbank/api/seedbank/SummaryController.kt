@@ -1,8 +1,16 @@
 package com.terraformation.seedbank.api.seedbank
 
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.AccessionFetcher
+import com.terraformation.seedbank.db.AccessionState
+import com.terraformation.seedbank.db.SpeciesFetcher
+import com.terraformation.seedbank.services.atMostRecent
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Clock
+import java.time.DayOfWeek
+import java.time.ZonedDateTime
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -10,18 +18,44 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/seedbank/summary")
 @SeedBankAppEndpoint
-class SummaryController {
+class SummaryController(
+    private val accessionFetcher: AccessionFetcher,
+    private val clock: Clock,
+    private val config: TerrawareServerConfig,
+    private val speciesFetcher: SpeciesFetcher,
+) {
   @GetMapping
   @Operation(summary = "Get summary statistics about the seed bank")
   fun getSummary(): SummaryResponse {
+    val now = ZonedDateTime.now(clock)
+    val startOfDay = now.atMostRecent(config.dailyTasksStartTime)
+    val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
+
+    // For purposes of scanning for overdue accessions, "One week ago" is 6 days before the most
+    // recent start of day because we need to include accessions that happened after start-of-day on
+    // the same day a week earlier. Spec says if it is Monday morning, the count of week-old pending
+    // accessions should include ones that arrived the previous Monday afternoon, so we need to use
+    // start-of-day on the previous Tuesday (6 days earlier) as the cutoff.
+    val oneWeekAgo = startOfDay.minusDays(6)
+    val twoWeeksAgo = startOfDay.minusDays(13)
+
     return SummaryResponse(
-        activeAccessions = SummaryStatistic(500, 550),
-        species = SummaryStatistic(180, 150),
-        families = SummaryStatistic(95, 90),
-        overduePendingAccessions = 100,
-        overdueProcessedAccessions = 70,
-        overdueDriedAccessions = 50,
-        recentlyWithdrawnAccessions = 10)
+        activeAccessions =
+            SummaryStatistic(
+                accessionFetcher.countActive(now), accessionFetcher.countActive(startOfWeek)),
+        species =
+            SummaryStatistic(
+                speciesFetcher.countSpecies(now), speciesFetcher.countSpecies(startOfWeek)),
+        families =
+            SummaryStatistic(
+                speciesFetcher.countFamilies(now), speciesFetcher.countFamilies(startOfWeek)),
+        overduePendingAccessions =
+            accessionFetcher.countInState(AccessionState.Pending, sinceBefore = oneWeekAgo),
+        overdueProcessedAccessions =
+            accessionFetcher.countInState(AccessionState.Processed, sinceBefore = twoWeeksAgo),
+        overdueDriedAccessions = accessionFetcher.countInState(AccessionState.Dried),
+        recentlyWithdrawnAccessions =
+            accessionFetcher.countInState(AccessionState.Withdrawn, sinceAfter = startOfWeek))
   }
 }
 
