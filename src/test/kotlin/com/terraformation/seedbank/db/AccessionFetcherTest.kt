@@ -94,7 +94,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     val support = FetcherSupport(config, dslContext)
 
-    every { clock.instant() } returns Instant.now()
+    every { clock.instant() } returns Instant.ofEpochMilli(System.currentTimeMillis())
     every { clock.zone } returns ZoneOffset.UTC
 
     fetcher =
