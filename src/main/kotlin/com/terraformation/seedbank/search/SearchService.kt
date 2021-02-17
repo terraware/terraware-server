@@ -53,8 +53,13 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     // Query one more row than the limit so we can tell the client whether or not there are
     // additional pages of results.
+    val orderedQuery = query.where(conditions).orderBy(orderBy)
     val fullQuery =
-        query.where(conditions).orderBy(orderBy).limit(criteria.count + 1).offset(offset)
+        if (criteria.count < Int.MAX_VALUE) {
+          orderedQuery.limit(criteria.count + 1).offset(offset)
+        } else {
+          orderedQuery
+        }
 
     log.debug("search criteria: $criteria")
     log.debug("search SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")

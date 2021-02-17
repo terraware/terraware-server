@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-import json
 import requests
-import pprint
 import time
+
+
+def export_csv(criteria, server, filename):
+    r = requests.post(f"{server}/api/v1/seedbank/search/export", json=criteria)
+    r.raise_for_status()
+    with open(filename, "wb") as f:
+        f.write(r.content)
 
 
 def time_search(criteria):
@@ -33,7 +38,7 @@ criteria = {
         "totalViabilityPercent",
         "treesCollectedFrom",
         "withdrawalSeeds",
-        "withdrawalSeedsRemaining",
+        "seedsRemaining",
     ],
     "sortOrder": [{"field": "receivedDate", "direction": "Descending"}],
     "filters": [{"field": "accessionNumber", "type": "Fuzzy", "values": ["A"]}],

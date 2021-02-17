@@ -331,6 +331,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponsePayload'
+  /api/v1/seedbank/search/export:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Exports the results of a search as a downloadable CSV file.
+      operationId: export
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: Data exported.
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
   /api/v1/seedbank/summary:
     get:
       tags:
@@ -675,6 +695,23 @@ components:
       properties:
         message:
           type: string
+    ExportRequestPayload:
+      required:
+      - fields
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchField'
+        sortOrder:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchSortOrderElement'
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchFilter'
     FieldValuesPayload:
       required:
       - partial
@@ -912,7 +949,6 @@ components:
       - dryingMoveDate
       - dryingStartDate
       - endangered
-      - estimatedSeeds
       - estimatedSeedsIncoming
       - family
       - geolocation
@@ -1018,10 +1054,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
-          default: Ascending
           enum:
           - Ascending
           - Descending
+          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error
