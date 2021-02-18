@@ -72,16 +72,16 @@ TREE_SPECIES = [
 ]
 
 FIRST_NAMES = [
-            "Brian",
-            "Carlos",
-            "Chris",
-            "Constanza",
-            "Jill",
-            "Léann",
-            "Peter",
-            "Rachel",
-            "Steve",
-            "Yacin",
-            "Yee",
-            "Yishan",
-        ]
+    "Brian",
+    "Carlos",
+    "Chris",
+    "Constanza",
+    "Jill",
+    "Léann",
+    "Peter",
+    "Rachel",
+    "Steve",
+    "Yacin",
+    "Yee",
+    "Yishan",
+]

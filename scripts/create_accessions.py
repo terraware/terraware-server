@@ -36,6 +36,7 @@ def generate_device_info() -> Optional[Dict]:
         "uniqueId": random.choice(["uid1", "uid2", "uid3"]),
     }
 
+
 def generate_species() -> Optional[str]:
     return random.choice(TREE_SPECIES + [None])
 

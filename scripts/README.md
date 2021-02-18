@@ -33,3 +33,26 @@ To see the server's response with additional fields populated, use the `-v` opti
 ```
 ./create_accessions.py -n 1 -v
 ```
+
+## Updating an accession's field values
+
+To set the `seedsCounted` and `processingStartDate` fields on accession ABCDEFG with
+the server running on port 8080 on the local host::
+
+```
+echo '{"seedsCounted":10, "processingStartDate":"2021-02-03"}' | ./edit_accession.py ABCDEFG
+```
+
+## Manipulating the server's clock
+
+To view the current time and date according to a server running on port 8080 on the local host:
+
+```
+./clock.py
+```
+
+To advance that server's clock by 3 days:
+
+```
+./clock.py -d 3
+```
