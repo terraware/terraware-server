@@ -378,6 +378,23 @@ internal class AccessionModelTest {
     assertEquals(25, accession.calculateSeedsRemaining())
   }
 
+  @Test
+  fun `calculateProcessingStartDate null if no seed count`() {
+    assertNull(accession().calculateProcessingStartDate(clock))
+  }
+
+  @Test
+  fun `calculateProcessingStartDate preserves existing processingStartDate`() {
+    val accession = accession(processingStartDate = tomorrow, seedsCounted = 150)
+    assertEquals(tomorrow, accession.calculateProcessingStartDate(clock))
+  }
+
+  @Test
+  fun `calculateProcessingStartDate defaults to today if seeds counted`() {
+    val accession = accession(seedsCounted = 150)
+    assertEquals(today, accession.calculateProcessingStartDate(clock))
+  }
+
   @Nested
   inner class StateTransitions {
     @Nested

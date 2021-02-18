@@ -280,6 +280,10 @@ class AccessionFetcher(
         }
       }
 
+      val processingStartDate =
+          accession.processingStartDate
+              ?: existing.processingStartDate ?: accession.calculateProcessingStartDate(clock)
+
       val rowsUpdated =
           with(ACCESSION) {
             dslContext
@@ -295,7 +299,7 @@ class AccessionFetcher(
                 .set(COLLECTED_DATE, accession.collectedDate)
                 .set(RECEIVED_DATE, accession.receivedDate)
                 .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
-                .set(PROCESSING_START_DATE, accession.processingStartDate)
+                .set(PROCESSING_START_DATE, processingStartDate)
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(SEEDS_COUNTED, accession.seedsCounted)
                 .set(SUBSET_WEIGHT, accession.subsetWeightGrams)

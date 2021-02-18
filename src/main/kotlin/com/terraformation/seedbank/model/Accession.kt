@@ -149,6 +149,10 @@ interface AccessionFields {
   private fun hasCutTestResults(): Boolean =
       cutTestSeedsCompromised != null && cutTestSeedsEmpty != null && cutTestSeedsFilled != null
 
+  fun hasSeedCount(): Boolean =
+      seedsCounted != null ||
+          (subsetCount != null && subsetWeightGrams != null && totalWeightGrams != null)
+
   private fun hasTestResults(): Boolean = hasCutTestResults() || hasGerminationTestResults()
 
   fun calculateLatestGerminationRecordingDate(): LocalDate? {
@@ -206,6 +210,10 @@ interface AccessionFields {
     } else {
       null
     }
+  }
+
+  fun calculateProcessingStartDate(clock: Clock): LocalDate? {
+    return processingStartDate ?: if (hasSeedCount()) LocalDate.now(clock) else null
   }
 }
 

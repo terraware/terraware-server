@@ -17,6 +17,12 @@ def main():
         default="http://localhost:8080",
         help="Base URL of seedbank-server.",
     )
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Show updated accession data after editing.",
+    )
     parser.add_argument("accessionNumber")
     parser.add_argument(
         "file",
@@ -40,7 +46,10 @@ def main():
     r = requests.put(uri, json=accession)
     r.raise_for_status()
 
-    print(r.json()["status"])
+    if args.verbose:
+        print(json.dumps(r.json()["accession"]))
+    else:
+        print(r.json()["status"])
 
 
 if __name__ == "__main__":

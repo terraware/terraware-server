@@ -686,6 +686,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     val fetched = fetcher.fetchByNumber(initial.accessionNumber)
 
     assertEquals(AccessionState.Processing, fetched?.state)
+    assertEquals(LocalDate.now(clock), fetched?.processingStartDate)
 
     val historyRecords =
         dslContext
