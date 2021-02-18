@@ -33,10 +33,19 @@ class EnumGenerator : KotlinGenerator() {
 
     printPackage(out, schema)
     out.printImports()
-    out.println("import com.fasterxml.jackson.annotation.JsonCreator")
-    out.println("import com.fasterxml.jackson.annotation.JsonValue")
-    out.println("import org.jooq.impl.AbstractConverter")
-    out.println()
+    out.println(
+        """
+      import com.fasterxml.jackson.annotation.JsonCreator
+      import com.fasterxml.jackson.annotation.JsonValue
+      import org.jooq.impl.AbstractConverter
+      
+      interface EnumFromReferenceTable<T : Enum<T>> {
+        val id: Int
+        val displayName: String
+        val tableName: String
+      }
+
+    """.trimIndent())
 
     enumTables.forEach { printEnum(out, it, schema.database.connection) }
     closeJavaWriter(out)
@@ -69,8 +78,13 @@ class EnumGenerator : KotlinGenerator() {
 
     out.println(
         """
-      enum class $enumName(val id: Int, @get:JsonValue val displayName: String) {
+      enum class $enumName(
+          override val id: Int,
+          @get:JsonValue override val displayName: String
+      ) : EnumFromReferenceTable<$enumName> {
           $valuesCodeSnippet;
+          
+          override val tableName get() = "$tableName"
 
           companion object {
               private val byDisplayName = values().associateBy { it.displayName }

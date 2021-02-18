@@ -8,6 +8,7 @@ import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
+import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.model.AccessionActive
@@ -31,6 +32,7 @@ class SearchServiceTest : DatabaseTest() {
   private val activeField = searchFields["active"]!!
   private val receivedDateField = searchFields["receivedDate"]!!
   private val speciesField = searchFields["species"]!!
+  private val targetStorageConditionField = searchFields["targetStorageCondition"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
 
   @BeforeEach
@@ -91,6 +93,33 @@ class SearchServiceTest : DatabaseTest() {
                     "treesCollectedFrom" to "1",
                     "active" to "Active",
                 ),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `sorts enum fields by display name rather than ID`() {
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+            targetStorageCondition = StorageCondition.Freezer))
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("XYZ")!!.copy(
+            targetStorageCondition = StorageCondition.Refrigerator))
+
+    val fields = listOf(targetStorageConditionField)
+    val sortFields =
+        listOf(SearchSortOrderElement(targetStorageConditionField, SearchDirection.Descending))
+    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
+
+    val result = searchService.search(criteria)
+
+    val expected =
+        SearchResponsePayload(
+            listOf(
+                mapOf("accessionNumber" to "XYZ", "targetStorageCondition" to "Refrigerator"),
+                mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
             ),
             cursor = null)
 

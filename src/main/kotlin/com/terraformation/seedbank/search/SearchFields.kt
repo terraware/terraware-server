@@ -2,6 +2,7 @@ package com.terraformation.seedbank.search
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.seedbank.db.AccessionState
+import com.terraformation.seedbank.db.EnumFromReferenceTable
 import com.terraformation.seedbank.db.FuzzySearchOperators
 import com.terraformation.seedbank.db.GerminationSeedType
 import com.terraformation.seedbank.db.GerminationSubstrate
@@ -80,7 +81,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             COLLECTION_EVENT.LATITUDE,
             COLLECTION_EVENT.LONGITUDE,
             SearchTables.CollectionEvent),
-        EnumField(
+        EnumField.create(
             "germinationSeedType", GERMINATION_TEST.SEED_TYPE_ID, SearchTables.GerminationTest) {
           GerminationSeedType.forDisplayName(it)
         },
@@ -90,15 +91,16 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "germinationSeedsSown", GERMINATION_TEST.SEEDS_SOWN, SearchTables.GerminationTest),
         DateField(
             "germinationStartDate", GERMINATION_TEST.START_DATE, SearchTables.GerminationTest),
-        EnumField(
+        EnumField.create(
             "germinationSubstrate", GERMINATION_TEST.SUBSTRATE_ID, SearchTables.GerminationTest) {
           GerminationSubstrate.forDisplayName(it)
         },
         TextField("germinationTestNotes", GERMINATION_TEST.NOTES, SearchTables.GerminationTest),
-        EnumField("germinationTestType", GERMINATION_TEST.TEST_TYPE, SearchTables.GerminationTest) {
+        EnumField.create(
+            "germinationTestType", GERMINATION_TEST.TEST_TYPE, SearchTables.GerminationTest) {
           GerminationTestType.forDisplayName(it)
         },
-        EnumField(
+        EnumField.create(
             "germinationTreatment", GERMINATION_TEST.TREATMENT_ID, SearchTables.GerminationTest) {
           GerminationTreatment.forDisplayName(it)
         },
@@ -106,7 +108,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("latestGerminationTestDate", ACCESSION.LATEST_GERMINATION_RECORDING_DATE),
         IntegerField("latestViabilityPercent", ACCESSION.LATEST_VIABILITY_PERCENT),
         TextField("primaryCollector", COLLECTOR.NAME, SearchTables.PrimaryCollector),
-        EnumField("processingMethod", ACCESSION.PROCESSING_METHOD_ID) {
+        EnumField.create("processingMethod", ACCESSION.PROCESSING_METHOD_ID) {
           ProcessingMethod.forDisplayName(it)
         },
         TextField("processingNotes", ACCESSION.PROCESSING_NOTES),
@@ -117,15 +119,15 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         IntegerField("seedsRemaining", ACCESSION.SEEDS_REMAINING),
         TextField("siteLocation", ACCESSION.COLLECTION_SITE_NAME),
         TextField("species", SPECIES.NAME, SearchTables.Species),
-        EnumField("state", ACCESSION.STATE_ID) { AccessionState.forDisplayName(it) },
-        EnumField("storageCondition", ACCESSION.TARGET_STORAGE_CONDITION) {
+        EnumField.create("state", ACCESSION.STATE_ID) { AccessionState.forDisplayName(it) },
+        EnumField.create("storageCondition", ACCESSION.TARGET_STORAGE_CONDITION) {
           StorageCondition.forDisplayName(it)
         },
         TextField("storageLocation", STORAGE_LOCATION.NAME, SearchTables.StorageLocation),
         TextField("storageNotes", ACCESSION.STORAGE_NOTES),
         IntegerField("storagePackets", ACCESSION.STORAGE_PACKETS),
         DateField("storageStartDate", ACCESSION.STORAGE_START_DATE),
-        EnumField("targetStorageCondition", ACCESSION.TARGET_STORAGE_CONDITION) {
+        EnumField.create("targetStorageCondition", ACCESSION.TARGET_STORAGE_CONDITION) {
           StorageCondition.forDisplayName(it)
         },
         IntegerField("totalViabilityPercent", ACCESSION.TOTAL_VIABILITY_PERCENT),
@@ -134,7 +136,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         TextField("withdrawalDestination", WITHDRAWAL.DESTINATION, SearchTables.Withdrawal),
         BigDecimalField("withdrawalGrams", WITHDRAWAL.GRAMS_WITHDRAWN, SearchTables.Withdrawal),
         TextField("withdrawalNotes", WITHDRAWAL.NOTES, SearchTables.Withdrawal),
-        EnumField("withdrawalPurpose", WITHDRAWAL.PURPOSE_ID, SearchTables.Withdrawal) {
+        EnumField.create("withdrawalPurpose", WITHDRAWAL.PURPOSE_ID, SearchTables.Withdrawal) {
           WithdrawalPurpose.forDisplayName(it)
         },
         IntegerField("withdrawalSeeds", WITHDRAWAL.SEEDS_WITHDRAWN, SearchTables.Withdrawal),
@@ -280,10 +282,11 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     }
   }
 
-  class EnumField<T : Enum<T>>(
+  class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
       override val fieldName: String,
       override val databaseField: TableField<*, T?>,
       override val table: SearchTable = SearchTables.Accession,
+      private val enumClass: Class<T>,
       val getValue: (String) -> T?
   ) : SingleColumnSearchField<T>() {
     override val supportedFilterTypes: Set<SearchFilterType>
@@ -300,6 +303,21 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       } else {
         throw IllegalArgumentException("$fieldName only supports exact searches")
       }
+    }
+
+    override val orderByFields: List<Field<*>>
+      get() {
+        val displayNames = enumClass.enumConstants!!.map { it to it.displayName }.toMap()
+        return listOf(DSL.case_(databaseField).mapValues(displayNames))
+      }
+
+    companion object {
+      inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<E>> create(
+          fieldName: String,
+          databaseField: TableField<*, T?>,
+          table: SearchTable = SearchTables.Accession,
+          noinline getValue: (String) -> T?
+      ) = EnumField(fieldName, databaseField, table, T::class.java, getValue)
     }
   }
 
