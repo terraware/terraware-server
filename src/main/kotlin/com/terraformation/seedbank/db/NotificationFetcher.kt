@@ -1,15 +1,24 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.api.seedbank.NotificationPayload
+import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.tables.daos.SiteModuleDao
 import com.terraformation.seedbank.db.tables.references.NOTIFICATION
+import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
+import java.time.Clock
 import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 @ManagedBean
-class NotificationFetcher(private val dslContext: DSLContext) {
+class NotificationFetcher(
+    private val clock: Clock,
+    private val config: TerrawareServerConfig,
+    private val dslContext: DSLContext,
+    private val siteModuleDao: SiteModuleDao
+) {
   private val log = perClassLogger()
 
   fun fetchSince(since: Instant? = null, maxResults: Long? = null): List<NotificationPayload> {
@@ -69,5 +78,32 @@ class NotificationFetcher(private val dslContext: DSLContext) {
             .execute()
 
     log.debug("Marked $rowsUpdated notifications as unread")
+  }
+
+  /**
+   * Returns the timestamp of the most recently-generated notification about accessions being in a
+   * particular state. Notifications about specific accessions are ignored.
+   */
+  fun getLastStateNotificationTime(): Instant? {
+    return log.debugWithTiming("getLastStateNotificationTime") {
+      dslContext
+          .select(DSL.max(NOTIFICATION.CREATED_TIME))
+          .from(NOTIFICATION)
+          .where(NOTIFICATION.TYPE_ID.eq(NotificationType.State))
+          .fetchOne(DSL.max(NOTIFICATION.CREATED_TIME))
+    }
+  }
+
+  fun insertStateNotification(state: AccessionState, message: String) {
+    val siteId = siteModuleDao.fetchOneById(config.siteModuleId)!!.siteId!!
+
+    dslContext
+        .insertInto(NOTIFICATION)
+        .set(NOTIFICATION.ACCESSION_STATE_ID, state)
+        .set(NOTIFICATION.CREATED_TIME, clock.instant())
+        .set(NOTIFICATION.MESSAGE, message)
+        .set(NOTIFICATION.SITE_ID, siteId)
+        .set(NOTIFICATION.TYPE_ID, NotificationType.State)
+        .execute()
   }
 }

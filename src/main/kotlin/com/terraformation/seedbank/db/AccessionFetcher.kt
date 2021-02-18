@@ -479,7 +479,7 @@ class AccessionFetcher(
                       }
                     })
 
-    log.info("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
+    log.debug("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
 
     return log.debugWithTiming("Accession state count with time bounds") {
       query.fetchOne()?.value1() ?: 0
@@ -490,7 +490,7 @@ class AccessionFetcher(
   fun countInState(state: AccessionState): Int {
     val query = dslContext.select(DSL.count()).from(ACCESSION).where(ACCESSION.STATE_ID.eq(state))
 
-    log.info("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
+    log.debug("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
 
     return log.debugWithTiming("Accession state count query") { query.fetchOne()?.value1() ?: 0 }
   }

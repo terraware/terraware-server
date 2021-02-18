@@ -913,8 +913,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
    */
   @Test
   fun `countActive correctly examines history`() {
-    listOf(1 to 2, 1 to 3, 1 to 4, 1 to 5, 1 to null, 3 to null).forEachIndexed {
-        index,
+    listOf(1 to 2, 1 to 3, 1 to 4, 1 to 5, 1 to null, 3 to null).forEach {
         (createdTime, withdrawnTime) ->
       every { clock.instant() } returns Instant.ofEpochMilli(createdTime.toLong())
       val accession = fetcher.create(CreateAccessionRequestPayload())
