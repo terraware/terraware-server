@@ -37,12 +37,12 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertThrows
-import org.junit.Assert.assertTrue
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -170,14 +170,14 @@ internal class AccessionFetcherTest : DatabaseTest() {
     val initialRow = accessionDao.fetchOneById(1)!!
     val secondRow = accessionDao.fetchOneById(2)!!
 
-    assertNotEquals("Accession numbers", initialRow.number, secondRow.number)
-    assertEquals("Species", initialRow.speciesId, secondRow.speciesId)
-    assertEquals("Family", initialRow.speciesFamilyId, secondRow.speciesFamilyId)
-    assertEquals("Primary collector", initialRow.primaryCollectorId, secondRow.primaryCollectorId)
+    assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
+    assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
+    assertEquals(initialRow.speciesFamilyId, secondRow.speciesFamilyId, "Family")
+    assertEquals(initialRow.primaryCollectorId, secondRow.primaryCollectorId, "Primary collector")
 
-    assertEquals("Number of secondary collectors", 2, getSecondaryCollectors(1).size)
+    assertEquals(2, getSecondaryCollectors(1).size, "Number of secondary collectors")
 
-    assertEquals("Secondary collectors", getSecondaryCollectors(1), getSecondaryCollectors(2))
+    assertEquals(getSecondaryCollectors(1), getSecondaryCollectors(2), "Secondary collectors")
   }
 
   @Test
@@ -200,22 +200,22 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     // Insertion order is not defined by the API, so don't assume bag ID 1 is "bag 1".
 
-    assertEquals("Initial bag IDs", setOf(1L, 2L), initialBags.map { it.id }.toSet())
+    assertEquals(setOf(1L, 2L), initialBags.map { it.id }.toSet(), "Initial bag IDs")
     assertEquals(
-        "Initial bag numbers", setOf("bag 1", "bag 2"), initialBags.map { it.label }.toSet())
+        setOf("bag 1", "bag 2"), initialBags.map { it.label }.toSet(), "Initial bag numbers")
 
     val desired = AccessionPayload(initial).copy(bagNumbers = setOf("bag 2", "bag 3"))
 
-    assertTrue("Update succeeded", fetcher.update(initial.accessionNumber, desired))
+    assertTrue(fetcher.update(initial.accessionNumber, desired), "Update succeeded")
 
     val updatedBags = bagDao.fetchByAccessionId(1)
 
-    assertTrue("New bag inserted", Bag(3, 1, "bag 3") in updatedBags)
-    assertTrue("Missing bag deleted", updatedBags.none { it.label == "bag 1" })
+    assertTrue(Bag(3, 1, "bag 3") in updatedBags, "New bag inserted")
+    assertTrue(updatedBags.none { it.label == "bag 1" }, "Missing bag deleted")
     assertEquals(
-        "Existing bag is not replaced",
         initialBags.filter { it.label == "bag 2" },
-        updatedBags.filter { it.label == "bag 2" })
+        updatedBags.filter { it.label == "bag 2" },
+        "Existing bag is not replaced")
   }
 
   @Test
@@ -224,8 +224,8 @@ internal class AccessionFetcherTest : DatabaseTest() {
     fetcher.create(payload)
 
     val appDevice = appDeviceDao.fetchOneById(1)
-    assertNotNull("Device row should have been inserted", appDevice)
-    assertNull("App name should be null", appDevice?.appName)
+    assertNotNull(appDevice, "Device row should have been inserted")
+    assertNull(appDevice?.appName, "App name should be null")
     assertEquals(appDevice?.model, "model")
   }
 
@@ -253,9 +253,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     // Insertion order is not defined by the API.
 
-    assertEquals("Initial location IDs", setOf(1L, 2L), initialGeos.map { it.id }.toSet())
+    assertEquals(setOf(1L, 2L), initialGeos.map { it.id }.toSet(), "Initial location IDs")
     assertEquals(
-        "Accuracy is recorded", 100.0, initialGeos.mapNotNull { it.gpsAccuracy }.first(), 0.1)
+        100.0, initialGeos.mapNotNull { it.gpsAccuracy }.first(), 0.1, "Accuracy is recorded")
 
     val desired =
         AccessionPayload(initial)
@@ -265,18 +265,18 @@ internal class AccessionFetcherTest : DatabaseTest() {
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                         Geolocation(BigDecimal(5), BigDecimal(6))))
 
-    assertTrue("Update succeeded", fetcher.update(initial.accessionNumber, desired))
+    assertTrue(fetcher.update(initial.accessionNumber, desired), "Update succeeded")
 
     val updatedGeos = collectionEventDao.fetchByAccessionId(1)
 
     assertTrue(
-        "New geo inserted",
-        updatedGeos.any { it.id == 3L && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 })
-    assertTrue("Missing geo deleted", updatedGeos.none { it.latitude == BigDecimal(3) })
+        updatedGeos.any { it.id == 3L && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 },
+        "New geo inserted")
+    assertTrue(updatedGeos.none { it.latitude == BigDecimal(3) }, "Missing geo deleted")
     assertEquals(
-        "Existing geo retained",
         initialGeos.filter { it.latitude == BigDecimal(1) },
-        updatedGeos.filter { it.latitude == BigDecimal(1) })
+        updatedGeos.filter { it.latitude == BigDecimal(1) },
+        "Existing geo retained")
   }
 
   @Test
@@ -294,19 +294,19 @@ internal class AccessionFetcherTest : DatabaseTest() {
     val initialTests = germinationTestDao.fetchByAccessionId(1)
 
     assertTrue(
-        "Lab test is inserted",
         initialTests.any {
           it.testType == GerminationTestType.Lab &&
               it.substrateId == GerminationSubstrate.AgarPetriDish &&
               it.startDate == null
-        })
+        },
+        "Lab test is inserted")
     assertTrue(
-        "Nursery test is inserted",
         initialTests.any {
           it.testType == GerminationTestType.Nursery &&
               it.substrateId == GerminationSubstrate.NurseryMedia &&
               it.startDate == null
-        })
+        },
+        "Nursery test is inserted")
   }
 
   @Test
@@ -347,9 +347,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
         updatedTests)
 
     val updatedAccession = accessionDao.fetchOneById(1)
-    assertNull("totalViabilityPercent", updatedAccession?.totalViabilityPercent)
-    assertNull("latestViabilityPercent", updatedAccession?.latestViabilityPercent)
-    assertNull("latestGerminationRecordingDate", updatedAccession?.latestGerminationRecordingDate)
+    assertNull(updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
+    assertNull(updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
+    assertNull(updatedAccession?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
   }
 
   @Test
@@ -476,13 +476,13 @@ internal class AccessionFetcherTest : DatabaseTest() {
                                     seedsGerminated = 456))))))
     val germinations = germinationDao.fetchByTestId(1)
 
-    assertEquals("Number of germinations inserted", 2, germinations.size)
+    assertEquals(2, germinations.size, "Number of germinations inserted")
     assertTrue(
-        "First germination inserted",
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 123 })
+        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 123 },
+        "First germination inserted")
     assertTrue(
-        "First germination inserted",
-        germinations.any { it.recordingDate == localDate.plusDays(1) && it.seedsGerminated == 456 })
+        germinations.any { it.recordingDate == localDate.plusDays(1) && it.seedsGerminated == 456 },
+        "First germination inserted")
   }
 
   @Test
@@ -509,18 +509,18 @@ internal class AccessionFetcherTest : DatabaseTest() {
     fetcher.update(initial.accessionNumber, desired)
     val germinations = germinationDao.fetchByTestId(1)
 
-    assertEquals("Number of germinations after update", 1, germinations.size)
+    assertEquals(1, germinations.size, "Number of germinations after update")
     assertTrue(
-        "First germination preserved",
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 })
+        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
+        "First germination preserved")
 
     val updatedAccession = accessionDao.fetchOneById(1)
-    assertEquals("totalViabilityPercent", 75, updatedAccession?.totalViabilityPercent)
-    assertEquals("latestViabilityPercent", 75, updatedAccession?.latestViabilityPercent)
+    assertEquals(75, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
+    assertEquals(75, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
-        "latestGerminationRecordingDate",
         localDate,
-        updatedAccession?.latestGerminationRecordingDate)
+        updatedAccession?.latestGerminationRecordingDate,
+        "latestGerminationRecordingDate")
   }
 
   @Test
@@ -556,18 +556,18 @@ internal class AccessionFetcherTest : DatabaseTest() {
     fetcher.update(initial.accessionNumber, desired)
     val germinations = germinationDao.fetchByTestId(1)
 
-    assertEquals("Number of germinations after update", 1, germinations.size)
+    assertEquals(1, germinations.size, "Number of germinations after update")
     assertTrue(
-        "First germination preserved",
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 })
+        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
+        "First germination preserved")
 
     val updatedAccession = accessionDao.fetchOneById(1)
-    assertEquals("totalViabilityPercent", 75, updatedAccession?.totalViabilityPercent)
-    assertEquals("latestViabilityPercent", 75, updatedAccession?.latestViabilityPercent)
+    assertEquals(75, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
+    assertEquals(75, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
-        "latestGerminationRecordingDate",
         localDate,
-        updatedAccession?.latestGerminationRecordingDate)
+        updatedAccession?.latestGerminationRecordingDate,
+        "latestGerminationRecordingDate")
   }
 
   @Test
@@ -586,13 +586,13 @@ internal class AccessionFetcherTest : DatabaseTest() {
         initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = locationName))
 
     assertEquals(
-        "Existing storage location ID was used",
         locationId,
-        accessionDao.fetchOneById(1)?.storageLocationId)
+        accessionDao.fetchOneById(1)?.storageLocationId,
+        "Existing storage location ID was used")
 
     val updated = fetcher.fetchByNumber(initial.accessionNumber)!!
-    assertEquals("Location name", locationName, updated.storageLocation)
-    assertEquals("Storage condition", StorageCondition.Freezer, updated.storageCondition)
+    assertEquals(locationName, updated.storageLocation, "Location name")
+    assertEquals(StorageCondition.Freezer, updated.storageCondition, "Storage condition")
   }
 
   @Test
@@ -633,13 +633,13 @@ internal class AccessionFetcherTest : DatabaseTest() {
         ))
     val fetched = fetcher.fetchByNumber(initial.accessionNumber)!!
 
-    assertEquals("Estimated seed count is added", 10, fetched.estimatedSeedCount)
+    assertEquals(10, fetched.estimatedSeedCount, "Estimated seed count is added")
 
     fetcher.update(initial.accessionNumber, fetched.copy(totalWeightGrams = null))
 
     val fetchedAfterClear = fetcher.fetchByNumber(initial.accessionNumber)!!
 
-    assertNull("Estimated seed count is removed", fetchedAfterClear.estimatedSeedCount)
+    assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
   }
 
   @Test
@@ -877,26 +877,26 @@ internal class AccessionFetcherTest : DatabaseTest() {
     }
 
     assertEquals(
-        "Search with both time bounds",
         2,
         fetcher.countInState(
             state = AccessionState.Processing,
             sinceAfter = Instant.ofEpochMilli(2),
-            sinceBefore = Instant.ofEpochMilli(4)))
+            sinceBefore = Instant.ofEpochMilli(4)),
+        "Search with both time bounds")
 
     assertEquals(
-        "Search with startingAt",
         4,
         fetcher.countInState(
-            state = AccessionState.Processing, sinceAfter = Instant.ofEpochMilli(2)))
+            state = AccessionState.Processing, sinceAfter = Instant.ofEpochMilli(2)),
+        "Search with startingAt")
 
     assertEquals(
-        "Search with sinceBefore",
         3,
         fetcher.countInState(
-            state = AccessionState.Processing, sinceBefore = Instant.ofEpochMilli(4)))
+            state = AccessionState.Processing, sinceBefore = Instant.ofEpochMilli(4)),
+        "Search with sinceBefore")
 
-    assertEquals("Search without time bounds", 5, fetcher.countInState(AccessionState.Processing))
+    assertEquals(5, fetcher.countInState(AccessionState.Processing), "Search without time bounds")
   }
 
   /**
@@ -942,9 +942,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
     val expectedCounts = listOf(0, 5, 4, 4, 3, 2, 2)
     expectedCounts.forEachIndexed { asOf, expectedCount ->
       assertEquals(
-          "Count as of time $asOf",
           expectedCount,
-          fetcher.countActive(Instant.ofEpochMilli(asOf.toLong())))
+          fetcher.countActive(Instant.ofEpochMilli(asOf.toLong())),
+          "Count as of time $asOf")
     }
   }
 
