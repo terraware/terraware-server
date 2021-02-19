@@ -70,6 +70,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("dryingEndDate", "Drying end date", ACCESSION.DRYING_END_DATE),
         DateField("dryingMoveDate", "Drying move date", ACCESSION.DRYING_MOVE_DATE),
         DateField("dryingStartDate", "Drying start date", ACCESSION.DRYING_START_DATE),
+        IntegerField("effectiveSeedCount", "Effective seed count", ACCESSION.EFFECTIVE_SEED_COUNT),
         BooleanField("endangered", "Endangered", ACCESSION.SPECIES_ENDANGERED),
         IntegerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSION.EST_SEED_COUNT),

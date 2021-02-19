@@ -290,6 +290,7 @@ internal class AccessionModelTest {
                     subsetWeightGrams = subsetWeight,
                     totalWeightGrams = totalWeight)
             assertNull(accession.calculateEstimatedSeedCount(), "Estimated seed count: $values")
+            assertNull(accession.calculateEffectiveSeedCount(), "Effective seed count: $values")
             assertNull(accession.calculateSeedsRemaining(), "Seeds remaining: $values")
           }
         }
@@ -304,6 +305,7 @@ internal class AccessionModelTest {
             subsetCount = 10, subsetWeightGrams = BigDecimal.ONE, totalWeightGrams = BigDecimal.TEN)
 
     assertEquals(100, accession.calculateEstimatedSeedCount(), "Estimated seed count")
+    assertEquals(100, accession.calculateEffectiveSeedCount(), "Effective seed count")
     assertEquals(100, accession.calculateSeedsRemaining(), "Seeds remaining")
   }
 
@@ -317,6 +319,7 @@ internal class AccessionModelTest {
             totalWeightGrams = BigDecimal.TEN)
 
     assertNull(accession.calculateEstimatedSeedCount(), "Estimated seed count")
+    assertEquals(90, accession.calculateEffectiveSeedCount(), "Effective seed count")
     assertEquals(90, accession.calculateSeedsRemaining(), "Seeds remaining")
   }
 

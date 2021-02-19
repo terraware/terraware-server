@@ -186,6 +186,11 @@ data class AccessionPayload(
     override val totalWeightGrams: BigDecimal? = null,
     override val subsetCount: Int? = null,
     override val estimatedSeedCount: Int? = null,
+    @Schema(
+        description =
+            "Server-calculated effective seed count. This is the exact seed count if available, " +
+                "otherwise the estimated seed count, or null if neither seed count is available.")
+    override val effectiveSeedCount: Int? = null,
     override val targetStorageCondition: StorageCondition? = null,
     override val dryingStartDate: LocalDate? = null,
     override val dryingEndDate: LocalDate? = null,
@@ -244,6 +249,7 @@ data class AccessionPayload(
       model.totalWeightGrams,
       model.subsetCount,
       model.estimatedSeedCount,
+      model.effectiveSeedCount,
       model.targetStorageCondition,
       model.dryingStartDate,
       model.dryingEndDate,

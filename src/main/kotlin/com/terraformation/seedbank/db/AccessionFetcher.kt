@@ -123,6 +123,7 @@ class AccessionFetcher(
           totalWeightGrams = parentRow[TOTAL_WEIGHT],
           subsetCount = parentRow[SUBSET_COUNT],
           estimatedSeedCount = parentRow[EST_SEED_COUNT],
+          effectiveSeedCount = parentRow[EFFECTIVE_SEED_COUNT],
           targetStorageCondition = parentRow[TARGET_STORAGE_CONDITION],
           dryingStartDate = parentRow[DRYING_START_DATE],
           dryingEndDate = parentRow[DRYING_END_DATE],
@@ -306,6 +307,7 @@ class AccessionFetcher(
                 .set(TOTAL_WEIGHT, accession.totalWeightGrams)
                 .set(SUBSET_COUNT, accession.subsetCount)
                 .set(EST_SEED_COUNT, accession.calculateEstimatedSeedCount())
+                .set(EFFECTIVE_SEED_COUNT, accession.calculateEffectiveSeedCount())
                 .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
                 .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                 .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)

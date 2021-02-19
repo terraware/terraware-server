@@ -77,6 +77,8 @@ interface AccessionFields {
     get() = null
   val estimatedSeedCount: Int?
     get() = null
+  val effectiveSeedCount: Int?
+    get() = null
   val targetStorageCondition: StorageCondition?
     get() = null
   val dryingStartDate: LocalDate?
@@ -193,7 +195,7 @@ interface AccessionFields {
   }
 
   fun calculateSeedsRemaining(): Int? {
-    val initialCount = seedsCounted ?: calculateEstimatedSeedCount() ?: return null
+    val initialCount = calculateEffectiveSeedCount() ?: return null
     val cutTested = getCutTestTotal() ?: 0
     val sown = germinationTests?.mapNotNull { it.seedsSown }?.sum() ?: 0
     val withdrawn = withdrawals?.sumOf { it.computeSeedsWithdrawn(this, true) } ?: 0
@@ -210,6 +212,10 @@ interface AccessionFields {
     } else {
       null
     }
+  }
+
+  fun calculateEffectiveSeedCount(): Int? {
+    return seedsCounted ?: calculateEstimatedSeedCount()
   }
 
   fun calculateProcessingStartDate(clock: Clock): LocalDate? {
@@ -249,6 +255,7 @@ data class AccessionModel(
     override val totalWeightGrams: BigDecimal? = null,
     override val subsetCount: Int? = null,
     override val estimatedSeedCount: Int? = null,
+    override val effectiveSeedCount: Int? = null,
     override val targetStorageCondition: StorageCondition? = null,
     override val dryingStartDate: LocalDate? = null,
     override val dryingEndDate: LocalDate? = null,
@@ -283,8 +290,7 @@ data class AccessionModel(
 
     fun LocalDate?.hasArrived(daysAgo: Long = 0) = this != null && this <= today.minusDays(daysAgo)
 
-    val seedCountPresent =
-        newFields.seedsCounted != null || newFields.calculateEstimatedSeedCount() != null
+    val seedCountPresent = newFields.calculateEffectiveSeedCount() != null
     val processingForTwoWeeks = newFields.processingStartDate.hasArrived(daysAgo = 14)
     val dryingStarted = newFields.dryingStartDate.hasArrived()
     val noDryingEndDateEntered = newFields.dryingEndDate == null

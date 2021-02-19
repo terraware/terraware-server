@@ -480,6 +480,12 @@ components:
         estimatedSeedCount:
           type: integer
           format: int32
+        effectiveSeedCount:
+          type: integer
+          description: "Server-calculated effective seed count. This is the exact\
+            \ seed count if available, otherwise the estimated seed count, or null\
+            \ if neither seed count is available."
+          format: int32
         targetStorageCondition:
           type: string
           enum:
@@ -952,6 +958,7 @@ components:
       - dryingEndDate
       - dryingMoveDate
       - dryingStartDate
+      - effectiveSeedCount
       - endangered
       - estimatedSeedsIncoming
       - family

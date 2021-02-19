@@ -634,12 +634,14 @@ internal class AccessionFetcherTest : DatabaseTest() {
     val fetched = fetcher.fetchByNumber(initial.accessionNumber)!!
 
     assertEquals(10, fetched.estimatedSeedCount, "Estimated seed count is added")
+    assertEquals(10, fetched.effectiveSeedCount, "Effective seed count is added")
 
     fetcher.update(initial.accessionNumber, fetched.copy(totalWeightGrams = null))
 
     val fetchedAfterClear = fetcher.fetchByNumber(initial.accessionNumber)!!
 
     assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
+    assertNull(fetchedAfterClear.effectiveSeedCount, "Effective seed count is removed")
   }
 
   @Test
