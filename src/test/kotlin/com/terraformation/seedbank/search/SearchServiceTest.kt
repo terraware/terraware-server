@@ -101,6 +101,24 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
+  fun `can do range search on integer field`() {
+    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(collectionTrees = 500))
+    val fields = listOf(treesCollectedFromField)
+    val filters =
+        listOf(SearchFilter(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range))
+    val criteria = SearchRequestPayload(fields = fields, filters = filters)
+
+    val result = searchService.search(criteria)
+
+    val expected =
+        SearchResponsePayload(
+            listOf(mapOf("accessionNumber" to "ABCDEFG", "treesCollectedFrom" to "500")),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
   fun `sorts enum fields by display name rather than ID`() {
     accessionDao.update(
         accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
