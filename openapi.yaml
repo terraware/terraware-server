@@ -725,9 +725,7 @@ components:
             \ null value, not the string \"null\")."
           items:
             type: string
-            description: "List of values in the matching accessions. If there are\
-              \ accessions where the field has no value, this list will contain null\
-              \ (an actual null value, not the string \"null\")."
+            nullable: true
         partial:
           type: boolean
     Geolocation:
@@ -1005,6 +1003,7 @@ components:
         field:
           $ref: '#/components/schemas/SearchField'
         values:
+          minLength: 1
           type: array
           description: "List of values to match. For exact and fuzzy searches, a list\
             \ of at least one value to search for; the list may include null to match\
@@ -1012,11 +1011,7 @@ components:
             \ the list must contain exactly two values, the minimum and maximum."
           items:
             type: string
-            description: "List of values to match. For exact and fuzzy searches, a\
-              \ list of at least one value to search for; the list may include null\
-              \ to match accessions where the field does not have a value. For range\
-              \ searches, the list must contain exactly two values, the minimum and\
-              \ maximum."
+            nullable: true
         type:
           type: string
           enum:

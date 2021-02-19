@@ -7,6 +7,7 @@ import com.terraformation.seedbank.db.StorageLocationFetcher
 import com.terraformation.seedbank.search.SearchField
 import com.terraformation.seedbank.search.SearchFilter
 import com.terraformation.seedbank.search.SearchService
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -56,11 +57,14 @@ data class StorageLocationDetails(
 )
 
 data class FieldValuesPayload(
-    @Schema(
-        description =
-            "List of values in the matching accessions. If there are accessions where the field " +
-                "has no value, this list will contain null (an actual null value, not the string " +
-                "\"null\").")
+    @ArraySchema(
+        schema = Schema(nullable = true),
+        arraySchema =
+            Schema(
+                description =
+                    "List of values in the matching accessions. If there are accessions where " +
+                        "the field has no value, this list will contain null (an actual null " +
+                        "value, not the string \"null\")."))
     val values: List<String?>,
     val partial: Boolean
 )
