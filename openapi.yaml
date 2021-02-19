@@ -345,7 +345,7 @@ paths:
         required: true
       responses:
         "200":
-          description: Data exported.
+          description: Export succeeded.
           content:
             text/csv:
               schema:
@@ -720,8 +720,14 @@ components:
       properties:
         values:
           type: array
+          description: "List of values in the matching accessions. If there are accessions\
+            \ where the field has no value, this list will contain null (an actual\
+            \ null value, not the string \"null\")."
           items:
             type: string
+            description: "List of values in the matching accessions. If there are\
+              \ accessions where the field has no value, this list will contain null\
+              \ (an actual null value, not the string \"null\")."
         partial:
           type: boolean
     Geolocation:

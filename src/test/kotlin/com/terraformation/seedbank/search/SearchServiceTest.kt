@@ -149,6 +149,28 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
+  fun `search leaves out null values`() {
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+            targetStorageCondition = StorageCondition.Freezer))
+
+    val fields = listOf(targetStorageConditionField)
+    val criteria = SearchRequestPayload(fields = fields)
+
+    val result = searchService.search(criteria)
+
+    val expected =
+        SearchResponsePayload(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
+                mapOf("accessionNumber" to "XYZ"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
   fun `can use cursor to get next page of results`() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortFields = fields.map { SearchSortOrderElement(it) }
@@ -247,6 +269,13 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchFieldValues with no criteria for simple column value`() {
     val values = searchService.fetchFieldValues(speciesField, emptyList())
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
+  }
+
+  @Test
+  fun `fetchFieldValues renders null values as null, not as a string`() {
+    accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
+    val values = searchService.fetchFieldValues(speciesField, emptyList())
+    assertEquals(listOf("Other Dogwood", null), values)
   }
 
   @Test

@@ -97,7 +97,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
       field: SearchField<T>,
       filters: List<SearchFilter>,
       limit: Int = 50
-  ): List<String> {
+  ): List<String?> {
     val dependencyTables = field.table.dependsOn()
     val selectFields =
         field.selectFields +
@@ -115,7 +115,10 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val fullQuery =
         query
             .where(filters.flatMap { it.toFieldConditions() })
-            .orderBy(field.orderByFields.mapIndexed { index, _ -> DSL.field("field$index") })
+            .orderBy(
+                field.orderByFields.mapIndexed { index, _ ->
+                  DSL.field("field$index").asc().nullsLast()
+                })
             .limit(limit + 1)
 
     log.debug("fetchFieldValues ${field.fieldName} filters $filters")

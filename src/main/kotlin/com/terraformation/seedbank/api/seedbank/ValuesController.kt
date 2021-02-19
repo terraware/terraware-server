@@ -7,6 +7,7 @@ import com.terraformation.seedbank.db.StorageLocationFetcher
 import com.terraformation.seedbank.search.SearchField
 import com.terraformation.seedbank.search.SearchFilter
 import com.terraformation.seedbank.search.SearchService
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -37,8 +38,7 @@ class ValuesController(
 
     val values =
         payload.fields.associateWith { searchField ->
-          val values =
-              searchService.fetchFieldValues(searchField, filters, limit).map { it.toString() }
+          val values = searchService.fetchFieldValues(searchField, filters, limit)
           val partial = values.size > limit
           FieldValuesPayload(values.take(limit), partial)
         }
@@ -55,7 +55,15 @@ data class StorageLocationDetails(
     val storageCondition: StorageCondition
 )
 
-data class FieldValuesPayload(val values: List<String>, val partial: Boolean)
+data class FieldValuesPayload(
+    @Schema(
+        description =
+            "List of values in the matching accessions. If there are accessions where the field " +
+                "has no value, this list will contain null (an actual null value, not the string " +
+                "\"null\").")
+    val values: List<String?>,
+    val partial: Boolean
+)
 
 data class ListFieldValuesRequestPayload(
     val fields: List<SearchField<*>>,
