@@ -32,6 +32,7 @@ class SearchServiceTest : DatabaseTest() {
   private val receivedDateField = searchFields["receivedDate"]!!
   private val speciesField = searchFields["species"]!!
   private val stateField = searchFields["state"]!!
+  private val storageNotesField = searchFields["storageNotes"]!!
   private val targetStorageConditionField = searchFields["targetStorageCondition"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
 
@@ -171,6 +172,74 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
+  fun `can do exact search for null values`() {
+    accessionDao.insert(
+        Accession(
+            createdTime = Instant.now(),
+            number = "MISSING",
+            siteModuleId = config.siteModuleId,
+            stateId = AccessionState.Processing))
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+            targetStorageCondition = StorageCondition.Freezer))
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("XYZ")!!.copy(
+            targetStorageCondition = StorageCondition.Refrigerator))
+
+    val fields = listOf(targetStorageConditionField)
+    val criteria =
+        SearchRequestPayload(
+            fields = fields,
+            filters = listOf(SearchFilter(targetStorageConditionField, listOf("Freezer", null))))
+
+    val result = searchService.search(criteria)
+
+    val expected =
+        SearchResponsePayload(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
+                mapOf("accessionNumber" to "MISSING"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `can do fuzzy search for null values`() {
+    accessionDao.insert(
+        Accession(
+            createdTime = Instant.now(),
+            number = "MISSING",
+            siteModuleId = config.siteModuleId,
+            stateId = AccessionState.Processing))
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
+    accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
+
+    val fields = listOf(accessionNumberField)
+    val criteria =
+        SearchRequestPayload(
+            fields = fields,
+            filters =
+                listOf(
+                    SearchFilter(
+                        storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)))
+
+    val result = searchService.search(criteria)
+
+    val expected =
+        SearchResponsePayload(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG"),
+                mapOf("accessionNumber" to "MISSING"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
   fun `can use cursor to get next page of results`() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortFields = fields.map { SearchSortOrderElement(it) }
@@ -230,6 +299,27 @@ class SearchServiceTest : DatabaseTest() {
       val criteria = SearchRequestPayload(fields = fields, filters = filters)
 
       val expected = SearchResponsePayload(listOf(mapOf("accessionNumber" to "JAN2")), null)
+      val actual = searchService.search(criteria)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `can search for missing date`() {
+      val fields = listOf(accessionNumberField)
+      val filters =
+          listOf(
+              SearchFilter(receivedDateField, listOf("2021-01-02", null), SearchFilterType.Exact))
+      val criteria = SearchRequestPayload(fields = fields, filters = filters)
+
+      val expected =
+          SearchResponsePayload(
+              listOf(
+                  mapOf("accessionNumber" to "ABCDEFG"),
+                  mapOf("accessionNumber" to "JAN2"),
+                  mapOf("accessionNumber" to "XYZ"),
+              ),
+              null)
       val actual = searchService.search(criteria)
 
       assertEquals(expected, actual)

@@ -221,7 +221,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = listOf(ACCESSION.STATE_ID)
 
     override fun getConditions(filter: SearchFilter): List<Condition> {
-      val values = filter.values.map { AccessionActive.valueOf(it) }.toSet()
+      val values = filter.values.filterNotNull().map { AccessionActive.valueOf(it) }.toSet()
 
       // Asking for all possible values or none at all? Filter is a no-op.
       return if (values.isEmpty() || values.size == AccessionActive.values().size) {
@@ -258,15 +258,21 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
 
     override fun getCondition(filter: SearchFilter): Condition {
+      val bigDecimalValues = filter.values.filterNotNull().map { BigDecimal(it) }
       return when (filter.type) {
-        SearchFilterType.Exact -> databaseField.`in`(filter.values.map { BigDecimal(it) })
+        SearchFilterType.Exact -> {
+          DSL.or(
+              listOfNotNull(
+                  if (bigDecimalValues.isNotEmpty()) databaseField.`in`(bigDecimalValues) else null,
+                  if (filter.values.any { it == null }) databaseField.isNull else null))
+        }
         SearchFilterType.Fuzzy ->
             throw RuntimeException("Fuzzy search not supported for numeric fields")
         SearchFilterType.Range ->
-            if (filter.values.size == 2) {
+            if (filter.values.size == 2 && filter.values.none { it == null }) {
               databaseField.between(BigDecimal(filter.values[0]), BigDecimal(filter.values[1]))
             } else {
-              throw IllegalArgumentException("Range search must have two values")
+              throw IllegalArgumentException("Range search must have two non-null values")
             }
       }
     }
@@ -283,16 +289,16 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact)
 
-    override fun getCondition(filter: SearchFilter): Condition? {
-      val hasTrue = "true" in filter.values
-      val hasFalse = "false" in filter.values
-      return if (hasTrue && !hasFalse) {
-        databaseField.isTrue
-      } else if (hasFalse && !hasTrue) {
-        databaseField.isFalse
-      } else {
-        null
+    override fun getCondition(filter: SearchFilter): Condition {
+      if (filter.type != SearchFilterType.Exact) {
+        throw IllegalArgumentException("Only exact search is supported for boolean fields")
       }
+
+      return DSL.or(
+          listOfNotNull(
+              if ("true" in filter.values) databaseField.isTrue else null,
+              if ("false" in filter.values) databaseField.isFalse else null,
+              if (null in filter.values) databaseField.isNull else null))
     }
   }
 
@@ -308,20 +314,25 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     override fun getCondition(filter: SearchFilter): Condition {
       val dateValues =
           try {
-            filter.values.map { LocalDate.parse(it) }
+            filter.values.filterNotNull().map { LocalDate.parse(it) }
           } catch (e: DateTimeParseException) {
             throw IllegalArgumentException("Dates must be in YYYY-MM-DD format")
           }
 
       return when (filter.type) {
-        SearchFilterType.Exact -> databaseField.`in`(dateValues)
+        SearchFilterType.Exact ->
+            DSL.or(
+                listOfNotNull(
+                    if (dateValues.isNotEmpty()) databaseField.`in`(dateValues) else null,
+                    if (filter.values.any { it == null }) databaseField.isNull else null,
+                ))
         SearchFilterType.Fuzzy ->
             throw IllegalArgumentException("Fuzzy search not supported for dates")
         SearchFilterType.Range ->
             if (dateValues.size == 2) {
               databaseField.between(dateValues[0], dateValues[1])
             } else {
-              throw IllegalArgumentException("Range search must have two values")
+              throw IllegalArgumentException("Range search must have two non-null values")
             }
       }
     }
@@ -341,16 +352,20 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = EnumSet.of(SearchFilterType.Exact)
 
     override fun getCondition(filter: SearchFilter): Condition {
-      if (filter.type == SearchFilterType.Exact) {
-        val enumInstances =
-            filter.values.map {
-              byDisplayName[it]
-                  ?: throw IllegalArgumentException("Value $it not recognized for $fieldName")
-            }
-        return databaseField.`in`(enumInstances)
-      } else {
+      if (filter.type != SearchFilterType.Exact) {
         throw IllegalArgumentException("$fieldName only supports exact searches")
       }
+
+      val enumInstances =
+          filter.values.filterNotNull().map {
+            byDisplayName[it]
+                ?: throw IllegalArgumentException("Value $it not recognized for $fieldName")
+          }
+
+      return DSL.or(
+          listOfNotNull(
+              if (enumInstances.isNotEmpty()) databaseField.`in`(enumInstances) else null,
+              if (filter.values.any { it == null }) databaseField.isNull else null))
     }
 
     override val orderByFields: List<Field<*>>
@@ -409,15 +424,21 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
 
     override fun getCondition(filter: SearchFilter): Condition {
+      val intValues = filter.values.filterNotNull().map { it.toInt() }
       return when (filter.type) {
-        SearchFilterType.Exact -> databaseField.`in`(filter.values.map { it.toInt() })
+        SearchFilterType.Exact ->
+            DSL.or(
+                listOfNotNull(
+                    if (intValues.isNotEmpty()) databaseField.`in`(intValues) else null,
+                    if (filter.values.any { it == null }) databaseField.isNull else null,
+                ))
         SearchFilterType.Fuzzy ->
             throw RuntimeException("Fuzzy search not supported for numeric fields")
         SearchFilterType.Range ->
-            if (filter.values.size == 2) {
-              databaseField.between(filter.values[0].toInt(), filter.values[0].toInt())
+            if (intValues.size == 2 && filter.values.none { it == null }) {
+              databaseField.between(intValues[0], intValues[1])
             } else {
-              throw IllegalArgumentException("Range search must have two values")
+              throw IllegalArgumentException("Range search must have two non-null values")
             }
       }
     }
@@ -451,12 +472,21 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
     override fun getCondition(filter: SearchFilter): Condition {
+      val nonNullValues = filter.values.filterNotNull()
       return when (filter.type) {
-        SearchFilterType.Exact -> databaseField.`in`(filter.values)
+        SearchFilterType.Exact ->
+            DSL.or(
+                listOfNotNull(
+                    if (nonNullValues.isNotEmpty()) databaseField.`in`(nonNullValues) else null,
+                    if (filter.values.any { it == null }) databaseField.isNull else null))
         SearchFilterType.Fuzzy ->
             DSL.or(
-                filter.values.flatMap {
-                  listOf(databaseField.likeFuzzy(it), databaseField.like("$it%"))
+                filter.values.flatMap { value ->
+                  if (value != null) {
+                    listOf(databaseField.likeFuzzy(value), databaseField.like("$value%"))
+                  } else {
+                    listOf(databaseField.isNull)
+                  }
                 })
         SearchFilterType.Range ->
             throw IllegalArgumentException("Range search not supported for text fields")
@@ -475,12 +505,21 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
     override fun getCondition(filter: SearchFilter): Condition {
+      val values = filter.values.mapNotNull { it?.toUpperCase() }
       return when (filter.type) {
-        SearchFilterType.Exact -> databaseField.`in`(filter.values.map { it.toUpperCase() })
+        SearchFilterType.Exact ->
+            DSL.or(
+                listOfNotNull(
+                    if (values.isNotEmpty()) databaseField.`in`(values) else null,
+                    if (filter.values.any { it == null }) databaseField.isNull else null))
         SearchFilterType.Fuzzy ->
             DSL.or(
-                filter.values.map { it.toUpperCase() }.flatMap {
-                  listOf(databaseField.likeFuzzy(it), databaseField.like("$it%"))
+                filter.values.map { it?.toUpperCase() }.flatMap { value ->
+                  if (value != null) {
+                    listOf(databaseField.likeFuzzy(value), databaseField.like("$value%"))
+                  } else {
+                    listOf(databaseField.isNull)
+                  }
                 })
         SearchFilterType.Range ->
             throw IllegalArgumentException("Range search not supported for text fields")

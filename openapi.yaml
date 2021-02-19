@@ -1006,8 +1006,17 @@ components:
           $ref: '#/components/schemas/SearchField'
         values:
           type: array
+          description: "List of values to match. For exact and fuzzy searches, a list\
+            \ of at least one value to search for; the list may include null to match\
+            \ accessions where the field does not have a value. For range searches,\
+            \ the list must contain exactly two values, the minimum and maximum."
           items:
             type: string
+            description: "List of values to match. For exact and fuzzy searches, a\
+              \ list of at least one value to search for; the list may include null\
+              \ to match accessions where the field does not have a value. For range\
+              \ searches, the list must contain exactly two values, the minimum and\
+              \ maximum."
         type:
           type: string
           enum:
