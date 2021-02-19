@@ -76,7 +76,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
               .mapNotNull { field ->
                 val value = field.computeValue(record)
                 if (value != null) {
-                  field.fieldName to value.toString()
+                  field.fieldName to value
                 } else {
                   null
                 }
@@ -97,7 +97,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
       field: SearchField<T>,
       filters: List<SearchFilter>,
       limit: Int = 50
-  ): List<T> {
+  ): List<String> {
     val dependencyTables = field.table.dependsOn()
     val selectFields =
         field.selectFields +

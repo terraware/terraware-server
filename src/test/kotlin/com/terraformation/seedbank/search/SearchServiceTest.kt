@@ -11,7 +11,6 @@ import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
-import com.terraformation.seedbank.model.AccessionActive
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,6 +31,7 @@ class SearchServiceTest : DatabaseTest() {
   private val activeField = searchFields["active"]!!
   private val receivedDateField = searchFields["receivedDate"]!!
   private val speciesField = searchFields["species"]!!
+  private val stateField = searchFields["state"]!!
   private val targetStorageConditionField = searchFields["targetStorageCondition"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
 
@@ -120,6 +120,28 @@ class SearchServiceTest : DatabaseTest() {
             listOf(
                 mapOf("accessionNumber" to "XYZ", "targetStorageCondition" to "Refrigerator"),
                 mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `uses enum display name when it differs from Kotlin name`() {
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(stateId = AccessionState.InStorage))
+
+    val criteria =
+        SearchRequestPayload(
+            fields = listOf(stateField),
+            filters = listOf(SearchFilter(stateField, listOf("In Storage"))))
+
+    val result = searchService.search(criteria)
+
+    val expected =
+        SearchResponsePayload(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG", "state" to "In Storage"),
             ),
             cursor = null)
 
@@ -260,12 +282,12 @@ class SearchServiceTest : DatabaseTest() {
         searchService.fetchFieldValues(
             treesCollectedFromField, listOf(SearchFilter(treesCollectedFromField, listOf("1"))))
 
-    assertEquals(listOf(1), values)
+    assertEquals(listOf("1"), values)
   }
 
   @Test
   fun `fetchFieldValues with no criteria for computed column value`() {
     val values = searchService.fetchFieldValues(activeField, emptyList())
-    assertEquals(listOf(AccessionActive.Active), values)
+    assertEquals(listOf("Active"), values)
   }
 }

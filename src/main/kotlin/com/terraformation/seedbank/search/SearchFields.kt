@@ -39,7 +39,7 @@ interface SearchField<T> {
 
   fun getConditions(filter: SearchFilter): List<Condition>
 
-  fun computeValue(record: Record): T?
+  fun computeValue(record: Record): String?
 }
 
 @ManagedBean
@@ -197,7 +197,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
     override fun getConditions(filter: SearchFilter) = listOfNotNull(getCondition(filter))
 
-    override fun computeValue(record: Record) = record.get(databaseField)
+    override fun computeValue(record: Record) = record.get(databaseField)?.toString()
 
     override fun toString() = fieldName
 
@@ -233,8 +233,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       }
     }
 
-    override fun computeValue(record: Record): AccessionActive? {
-      return record[ACCESSION.STATE_ID]?.toActiveEnum()
+    override fun computeValue(record: Record): String? {
+      return record[ACCESSION.STATE_ID]?.toActiveEnum()?.toString()
     }
 
     override val orderByFields: List<Field<*>>
@@ -270,6 +270,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             }
       }
     }
+
+    override fun computeValue(record: Record) = record[databaseField]?.toPlainString()
   }
 
   class BooleanField(
@@ -356,6 +358,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         val displayNames = enumClass.enumConstants!!.map { it to it.displayName }.toMap()
         return listOf(DSL.case_(databaseField).mapValues(displayNames))
       }
+
+    override fun computeValue(record: Record) = record[databaseField]?.displayName
 
     companion object {
       inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<E>> create(
