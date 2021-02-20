@@ -25,6 +25,12 @@ The code uses a schema-first, code-generation approach to its data model, as opp
 
 To make changes to the data model, add migration scripts. See [src/main/resources/db/migration/README.md](src/main/resources/db/migration/README.md) for more details.
 
+### Dependency injection
+
+If you need to call methods in other classes and the other classes can be instantiated once and then reused, use dependency injection rather than explicitly instantiating them. This makes it easier to replace the dependencies with stubs when testing, and also makes the interaction between service classes more explicit in the code.
+
+In general, strongly prefer constructor injection, that is, declaring your dependencies as constructor arguments. You should almost never need to use the `@Autowired` or `@Inject` annotations on a field.
+
 ### Testability and tests
 
 Automated tests are important tools to allow the code to evolve safely, and they serve as documentation of the code's intended behavior. The project does not have a specific coverage target (since that often leads to low-quality, thoughtless tests) but in general, any nontrivial business logic should be well covered by tests, including failure cases.
