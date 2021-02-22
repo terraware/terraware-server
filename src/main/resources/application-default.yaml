@@ -7,6 +7,7 @@ terraware:
   site-config-url: "classpath:config/dev.json"
   photo-dir: "/tmp/seedbank-server-photos"
   use-test-clock: true
+  api-key: "dummyKey"
 
 spring:
   flyway:

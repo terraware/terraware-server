@@ -62,6 +62,15 @@ class TerrawareServerConfig {
   @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
   var dailyTasksStartTime: LocalTime = LocalTime.of(8, 0)
 
+  /**
+   * API key to create by default. If this is set and the key isn't already present in the `api_key`
+   * table, any other API keys are removed from the database at start time and the new key is
+   * created. If it is not set, the `api_key` table should be populated some other way.
+   *
+   * This is just a stopgap; in the future we'll introduce real API key management capability.
+   */
+  var apiKey: String? = null
+
   /** Configures the server's communication with an MQTT broker. */
   var mqtt: MqttConfig = MqttConfig()
 

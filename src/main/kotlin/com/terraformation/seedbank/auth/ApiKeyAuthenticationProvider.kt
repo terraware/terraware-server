@@ -34,7 +34,7 @@ class ApiKeyAuthenticationProvider(private val apiKeyDao: ApiKeyDao) : Authentic
     return null
   }
 
-  private fun hashApiKey(key: String): String {
+  fun hashApiKey(key: String): String {
     val keyBytes = key.toByteArray()
     val binaryHash = MessageDigest.getInstance("SHA1").digest(keyBytes)
     return DatatypeConverter.printHexBinary(binaryHash).toLowerCase()

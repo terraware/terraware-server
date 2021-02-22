@@ -3,11 +3,6 @@ INSERT INTO organization
 VALUES (1, 'dev')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
--- This is an API key of "dummyKey"
-INSERT INTO api_key (hash, key_part, organization_id, created_time)
-VALUES ('f7b5ee554cbb700b597979ff26bbba58197e1427', 'du..ey', 1, NOW())
-ON CONFLICT DO NOTHING;
-
 -- A dummy site+device configuration matching the "dev" site in the terraware-sites repo
 INSERT INTO site (id, organization_id, name, latitude, longitude, locale, timezone)
 VALUES (10, 1, 'sim', 123.456789, -98.76543, 'en-US', 'US/Pacific')
