@@ -3,6 +3,7 @@ package com.terraformation.seedbank.search
 import com.terraformation.seedbank.api.seedbank.SearchDirection
 import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
 import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
+import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.services.perClassLogger
 import javax.annotation.ManagedBean
@@ -17,13 +18,6 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
   private val log = perClassLogger()
 
   fun search(criteria: SearchRequestPayload): SearchResponsePayload {
-    val directlyReferencedTables =
-        (criteria.fields.map { it.table }.toSet() +
-            (criteria.filters?.map { it.field.table }?.toSet() ?: emptySet()) +
-            (criteria.sortOrder?.map { it.field.table }?.toSet() ?: emptySet()))
-    val dependencyTables =
-        directlyReferencedTables.flatMap { it.dependsOn() }.toSet() - directlyReferencedTables
-
     val fieldNames = setOf("accessionNumber") + criteria.fields.map { it.fieldName }.toSet()
     val fields =
         fieldNames.map {
@@ -44,8 +38,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSION)
 
-    dependencyTables.forEach { table -> query = table.addJoin(query) }
-    directlyReferencedTables.forEach { table -> query = table.addJoin(query) }
+    query = joinWithSecondaryTables(query, criteria.fields, criteria.filters, criteria.sortOrder)
 
     // TODO: Better cursor support. Should remember the most recent values of the sort fields
     //       and pass them to skip(). For now, just treat the cursor as an offset.
@@ -98,7 +91,6 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
       filters: List<SearchFilter>,
       limit: Int = 50
   ): List<String?> {
-    val dependencyTables = field.table.dependsOn()
     val selectFields =
         field.selectFields +
             field.orderByFields.mapIndexed { index, orderByField ->
@@ -107,10 +99,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     var query: SelectJoinStep<out Record> = dslContext.selectDistinct(selectFields).from(ACCESSION)
 
-    dependencyTables.forEach { table -> query = table.addJoin(query) }
-    if (field.table != SearchTables.Accession) {
-      query = field.table.addJoin(query)
-    }
+    query = joinWithSecondaryTables(query, listOf(field), filters, null)
 
     val fullQuery =
         query
@@ -133,5 +122,24 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
     return results.distinct()
+  }
+
+  private fun joinWithSecondaryTables(
+      selectFrom: SelectJoinStep<out Record>,
+      fields: List<SearchField<*>>,
+      filters: List<SearchFilter>?,
+      sortOrder: List<SearchSortOrderElement>?
+  ): SelectJoinStep<out Record> {
+    var query = selectFrom
+    val directlyReferencedTables =
+        (fields.map { it.table }.toSet() +
+            (filters?.map { it.field.table }?.toSet() ?: emptySet()) +
+            (sortOrder?.map { it.field.table }?.toSet() ?: emptySet()))
+    val dependencyTables =
+        directlyReferencedTables.flatMap { it.dependsOn() }.toSet() - directlyReferencedTables
+
+    dependencyTables.forEach { table -> query = table.addJoin(query) }
+    directlyReferencedTables.forEach { table -> query = table.addJoin(query) }
+    return query
   }
 }

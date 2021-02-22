@@ -414,6 +414,15 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
+  fun `fetchFieldValues with fuzzy search of text field in secondary table not in field list`() {
+    val values =
+        searchService.fetchFieldValues(
+            stateField,
+            listOf(SearchFilter(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy)))
+    assertEquals(listOf("Processed", "Processing"), values)
+  }
+
+  @Test
   fun `fetchFieldValues with exact search of integer column value`() {
     val values =
         searchService.fetchFieldValues(
