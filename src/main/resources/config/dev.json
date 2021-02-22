@@ -23,6 +23,54 @@
       "siteModuleId": 101,
       "deviceTypeId": 1,
       "name": "RO"
+    },
+    {
+      "id": 1004,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "BMU"
+    },
+    {
+      "id": 1005,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "router"
+    },
+    {
+      "id": 1006,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "rpi"
+    },
+    {
+      "id": 1007,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "fridge1"
+    },
+    {
+      "id": 1008,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "fridge2"
+    },
+    {
+      "id": 1009,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "fridge3"
+    },
+    {
+      "id": 1010,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "dryer1"
+    },
+    {
+      "id": 1011,
+      "siteModuleId": 102,
+      "deviceTypeId": 1,
+      "name": "dryer2"
     }
   ],
   "organizations": [
@@ -52,6 +100,12 @@
       "siteId": 10,
       "typeId": 3,
       "name": "garage"
+    },
+    {
+      "id": 102,
+      "siteId": 10,
+      "typeId": 1,
+      "name": "seedbank"
     }
   ],
   "storageLocations": [
