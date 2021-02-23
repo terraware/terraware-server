@@ -1,3 +1,4 @@
+import com.terraformation.gradle.computeGitVersion
 import java.nio.file.Files
 import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -28,7 +29,7 @@ plugins {
 }
 
 group = "com.terraformation"
-version = "0.1-SNAPSHOT"
+version = computeGitVersion("0.1")
 java.targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -113,6 +114,23 @@ val preprocessJooqConfig by tasks.registering {
   }
 }
 
+val generateVersionFile by tasks.registering {
+  val generatedPath =
+      File("$projectDir/src/generated/kotlin/com/terraformation/seedbank/Version.kt").toPath()
+
+  inputs.property("version", project.version)
+  outputs.file(generatedPath)
+
+  doLast {
+    Files.createDirectories(generatedPath.parent)
+    Files.writeString(generatedPath,
+        """package com.terraformation.seedbank
+          |const val VERSION = "$version"
+          |""".trimMargin()
+    )
+  }
+}
+
 tasks.withType<ch.ayedo.jooqmodelator.gradle.JooqModelatorTask> {
   dependsOn(preprocessJooqConfig)
 }
@@ -138,10 +156,12 @@ jooqModelator {
 
 sourceSets.main {
   java.srcDir("src/generated/jooq")
+  java.srcDir("src/generated/kotlin")
 }
 
 tasks.withType<KotlinCompile> {
   dependsOn(tasks.withType<ch.ayedo.jooqmodelator.gradle.JooqModelatorTask>())
+  dependsOn(generateVersionFile)
   kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
 }
 
