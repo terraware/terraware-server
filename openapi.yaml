@@ -8,7 +8,116 @@ info:
 servers:
 - url: http://localhost:32109
   description: Generated server url
+tags:
+- name: SeedBankApp
+- name: DeviceManager
 paths:
+  /api/v1/device/all/config:
+    get:
+      tags:
+      - DeviceManager
+      operationId: listDeviceConfigs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDeviceConfigsResponse'
+  /api/v1/resources:
+    post:
+      tags:
+      - DeviceManager
+      summary: Create a new resource (timeseries) for device metrics.
+      operationId: createResource
+      parameters:
+      - name: path
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: name
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: data_type
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: min_storage_interval
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: decimal_places
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: units
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: max_history
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: "The timeseries was successfully created, or it already existed\
+            \ so no action was needed."
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: No device with the given path was defined.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/resources/{*path}:
+    get:
+      tags:
+      - DeviceManager
+      summary: Tests for the existence of a resource (timeseries).
+      operationId: getResource
+      parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+          description: "Path of resource, typically including organization, site,\
+            \ site module, device, and timeseries name."
+          example: terraformation/pac-flight/ohana/BMU-L/system_voltage
+      responses:
+        "200":
+          description: The resource exists. The response body is just the string "Found".
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/accession:
     post:
       tags:
@@ -657,6 +766,64 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    DeviceConfig:
+      required:
+      - make
+      - model
+      - name
+      - serverPath
+      - siteModule
+      - type
+      type: object
+      properties:
+        siteModule:
+          type: string
+          description: Name of site module where this device is located.
+          example: garage
+        name:
+          type: string
+          description: Name of this device. Should be unique within the site module.
+          example: BMU-1
+        type:
+          type: string
+          description: High-level type of the device. Device manager may use this
+            in conjunction with the make and model to determine which metrics to report.
+          example: inverter
+        make:
+          type: string
+          description: Name of device manufacturer.
+          example: InHand Networks
+        model:
+          type: string
+          description: Model number or model name of the device.
+          example: IR915L
+        protocol:
+          type: string
+          description: Device manager protocol name.
+          example: modbus
+        address:
+          type: string
+          description: "Protocol-specific address of device, e.g., an IP address or\
+            \ a Bluetooth device ID."
+          example: 192.168.1.100
+        port:
+          type: integer
+          description: Port number if relevant for the protocol.
+          format: int32
+          example: 50000
+        settings:
+          type: string
+          description: Protocol- and device-specific custom settings. Format is defined
+            by the device manager.
+        pollingInterval:
+          type: integer
+          format: int32
+        serverPath:
+          type: string
+          description: "Device's resource path on the server, minus organization and\
+            \ site names. Currently, this is always just the site module and device\
+            \ name."
+          example: garage/BMU-1
     DeviceInfoPayload:
       type: object
       properties:
@@ -827,6 +994,18 @@ components:
         currentTime:
           type: string
           format: date-time
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListDeviceConfigsResponse:
+      required:
+      - devices
+      - status
+      type: object
+      properties:
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceConfig'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListFieldValuesRequestPayload:

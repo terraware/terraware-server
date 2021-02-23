@@ -3,74 +3,125 @@
     {
       "id": 1000,
       "siteModuleId": 100,
-      "deviceTypeId": 1,
-      "name": "generator-relay"
+      "deviceType": "generator",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "generator-relay",
+      "protocol": "relay",
+      "address": "192.168.10.15",
+      "port": 80,
+      "pollingInterval": 10
     },
     {
       "id": 1001,
       "siteModuleId": 100,
-      "deviceTypeId": 1,
-      "name": "BMU-L"
+      "deviceType": "BMU",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "BMU-L",
+      "protocol": "modbus",
+      "address": "192.168.10.20",
+      "port": 50000,
+      "settings": "rtu-over-tcp",
+      "pollingInterval": 10
     },
     {
       "id": 1002,
       "siteModuleId": 100,
-      "deviceTypeId": 1,
-      "name": "BMU-R"
+      "deviceType": "BMU",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "BMU-R",
+      "protocol": "modbus",
+      "address": "192.168.10.21",
+      "port": 50000,
+      "settings": "rtu-over-tcp",
+      "pollingInterval": 10
     },
     {
       "id": 1003,
       "siteModuleId": 101,
-      "deviceTypeId": 1,
-      "name": "RO"
+      "deviceType": "RO",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "RO",
+      "protocol": "modbus",
+      "address": "192.168.10.101",
+      "port": 502,
+      "settings": "holding",
+      "pollingInterval": 10
     },
     {
       "id": 1004,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "BMU"
+      "deviceType": "BMU",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "BMU",
+      "protocol": "modbus"
     },
     {
       "id": 1005,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "router"
+      "deviceType": "router",
+      "make": "InHand",
+      "model": "IR915L",
+      "name": "router",
+      "protocol": "snmp"
     },
     {
       "id": 1006,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "rpi"
+      "deviceType": "server",
+      "make": "Raspberry Pi",
+      "model": "4B",
+      "name": "rpi",
+      "protocol": "modbus"
     },
     {
       "id": 1007,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "fridge1"
+      "deviceType": "refrigerator",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "fridge1",
+      "protocol": "modbus"
     },
     {
       "id": 1008,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "fridge2"
+      "deviceType": "refrigerator",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "fridge2",
+      "protocol": "modbus"
     },
     {
       "id": 1009,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "fridge3"
+      "deviceType": "refrigerator",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "fridge3",
+      "protocol": "modbus"
     },
     {
       "id": 1010,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "dryer1"
+      "deviceType": "dryer",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "dryer1",
+      "protocol": "modbus"
     },
     {
       "id": 1011,
       "siteModuleId": 102,
-      "deviceTypeId": 1,
-      "name": "dryer2"
+      "deviceType": "dryer",
+      "make": "Unknown",
+      "model": "Unknown",
+      "name": "dryer2",
+      "protocol": "modbus"
     }
   ],
   "organizations": [

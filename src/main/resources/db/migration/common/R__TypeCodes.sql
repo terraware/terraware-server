@@ -8,10 +8,6 @@ VALUES (10, 'Pending', TRUE),
        (70, 'Withdrawn', FALSE)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO device_type (id, name)
-VALUES (1, 'Generic Sensor')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO germination_seed_type (id, name)
 VALUES (1, 'Fresh'),
        (2, 'Stored')

@@ -14,22 +14,6 @@ VALUES (100, 10, 1, 'ohana'),
 ON CONFLICT (id) DO UPDATE SET site_id = excluded.site_id,
                                name    = excluded.name;
 
-INSERT INTO device (id, site_module_id, device_type_id, name)
-VALUES (1000, 100, 1, 'generator-relay'),
-       (1001, 100, 1, 'BMU-L'),
-       (1002, 100, 1, 'BMU-R'),
-       (1003, 101, 1, 'RO')
-ON CONFLICT (id) DO UPDATE SET device_type_id = excluded.device_type_id,
-                               name           = excluded.name;
-
-INSERT INTO timeseries (id, type_id, device_id, name, units, decimal_places)
-VALUES (10000, 1, 1000, 'relay-1', NULL, NULL)
-ON CONFLICT (id) DO UPDATE SET type_id        = excluded.type_id,
-                               device_id      = excluded.device_id,
-                               name           = excluded.name,
-                               units          = excluded.units,
-                               decimal_places = excluded.decimal_places;
-
 INSERT INTO species (id, name, created_time, modified_time)
 VALUES (10000, 'Kousa Dogwood', NOW(), NOW()),
        (10001, 'Other Dogwood', NOW(), NOW())

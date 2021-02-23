@@ -1,13 +1,16 @@
 package com.terraformation.seedbank.api.rhizo
 
 import com.terraformation.seedbank.api.NotFoundException
+import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.db.DeviceFetcher
 import com.terraformation.seedbank.db.TimeSeriesFetcher
 import com.terraformation.seedbank.db.TimeSeriesWriter
 import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
-import io.swagger.v3.oas.annotations.Hidden
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
@@ -26,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
  * manager instance.
  */
 @Controller
-@Hidden
 @Tag(name = "DeviceManager")
 class ResourceController(
     private val deviceFetcher: DeviceFetcher,
@@ -35,6 +37,12 @@ class ResourceController(
 ) {
   private val log = perClassLogger()
 
+  @ApiResponse(
+      responseCode = "200",
+      description =
+          "The timeseries was successfully created, or it already existed so no action was needed.")
+  @ApiResponse404(description = "No device with the given path was defined.")
+  @Operation(summary = "Create a new resource (timeseries) for device metrics.")
   @PostMapping("/api/v1/resources", produces = [MediaType.TEXT_PLAIN_VALUE])
   @ResponseBody
   fun createResource(
@@ -71,9 +79,22 @@ class ResourceController(
     }
   }
 
+  @ApiResponse(
+      responseCode = "200",
+      description = "The resource exists. The response body is just the string \"Found\".")
+  @ApiResponse404
   @GetMapping("/api/v1/resources/{*path}", produces = [MediaType.TEXT_PLAIN_VALUE])
+  @Operation(summary = "Tests for the existence of a resource (timeseries).")
   @ResponseBody
-  fun getResource(@PathVariable path: String): String {
+  fun getResource(
+      @PathVariable
+      @Schema(
+          description =
+              "Path of resource, typically including organization, site, site module, device, " +
+                  "and timeseries name.",
+          example = "terraformation/pac-flight/ohana/BMU-L/system_voltage")
+      path: String
+  ): String {
     // Split the path into an MQTT topic and sequence name, /X/Y/Z -> (X/Y, Z)
     val deviceTopic = path.substringBeforeLast('/').substring(1)
     val sequenceName = path.substringAfterLast('/')

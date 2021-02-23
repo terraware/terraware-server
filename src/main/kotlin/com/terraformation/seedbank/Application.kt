@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.info.License
 import io.swagger.v3.oas.annotations.security.SecurityScheme
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -18,7 +19,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
             description = "Local server API for seed banks",
             license = License(name = "MIT"),
         ),
-)
+    tags = [Tag(name = "SeedBankApp"), Tag(name = "DeviceManager")])
 @SecurityScheme(
     name = "ApiKey",
     type = SecuritySchemeType.HTTP,

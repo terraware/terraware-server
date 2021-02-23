@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.db
 
+import com.terraformation.seedbank.api.rhizo.DeviceConfig
 import com.terraformation.seedbank.db.tables.references.DEVICE
 import com.terraformation.seedbank.db.tables.references.ORGANIZATION
 import com.terraformation.seedbank.db.tables.references.SITE
@@ -8,21 +9,10 @@ import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record1
 import org.jooq.SelectConditionStep
+import org.jooq.impl.DSL
 
 @ManagedBean
 class DeviceFetcher(private val dslContext: DSLContext) {
-  fun getOrganizationId(deviceId: Long): Long? {
-    return dslContext
-        .select(SITE.ORGANIZATION_ID)
-        .from(SITE)
-        .join(SITE_MODULE)
-        .on(SITE.ID.eq(SITE_MODULE.SITE_ID))
-        .join(DEVICE)
-        .on(SITE_MODULE.ID.eq(DEVICE.SITE_MODULE_ID))
-        .where(DEVICE.ID.eq(deviceId))
-        .fetchOne(SITE.ORGANIZATION_ID)
-  }
-
   /**
    * Returns the ID of the device named by an MQTT topic.
    *
@@ -53,5 +43,45 @@ class DeviceFetcher(private val dslContext: DSLContext) {
         .and(SITE.NAME.eq(siteName))
         .and(SITE_MODULE.NAME.eq(siteModuleName))
         .and(DEVICE.NAME.eq(deviceName))
+  }
+
+  fun fetchDeviceConfigurationForSite(siteModuleId: Long): List<DeviceConfig> {
+    return with(DEVICE) {
+      dslContext
+          .select(
+              SITE_MODULE.NAME,
+              ID,
+              NAME,
+              DEVICE_TYPE,
+              MAKE,
+              MODEL,
+              PROTOCOL,
+              ADDRESS,
+              PORT,
+              SETTINGS,
+              POLLING_INTERVAL)
+          .from(DEVICE)
+          .join(SITE_MODULE)
+          .on(DEVICE.SITE_MODULE_ID.eq(SITE_MODULE.ID))
+          .where(
+              SITE_MODULE.SITE_ID.eq(
+                  DSL.select(SITE_MODULE.SITE_ID)
+                      .from(SITE_MODULE)
+                      .where(SITE_MODULE.ID.eq(siteModuleId))))
+          .orderBy(NAME)
+          .fetch { record ->
+            DeviceConfig(
+                record[SITE_MODULE.NAME]!!,
+                record[NAME]!!,
+                record[DEVICE_TYPE]!!,
+                record[MAKE]!!,
+                record[MODEL]!!,
+                record[PROTOCOL],
+                record[ADDRESS],
+                record[PORT],
+                record[SETTINGS],
+                record[POLLING_INTERVAL])
+          }
+    }
   }
 }

@@ -23,7 +23,7 @@ class DatabaseBootstrapper(
   private val log = perClassLogger()
 
   @EventListener
-  fun onApplicationStart(event: ApplicationStartedEvent) {
+  fun onApplicationStart(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
     updateApiKey()
   }
 

@@ -120,7 +120,20 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
     val site =
         Site(2, organization.id, "testSite", BigDecimal("1.0000000"), BigDecimal("2.0000000"))
     val siteModule = SiteModule(3, site.id, 1, "testModule")
-    val device = Device(4, siteModule.id, 1, "testDevice")
+    val device =
+        Device(
+            4,
+            siteModule.id,
+            "testDevice",
+            1,
+            "type",
+            "make",
+            "model",
+            "protocol",
+            "address",
+            12345,
+            "settings",
+            5432)
     val storageLocation = StorageLocation(5, siteModule.id, "location", StorageCondition.Freezer)
 
     return PerSiteConfig(

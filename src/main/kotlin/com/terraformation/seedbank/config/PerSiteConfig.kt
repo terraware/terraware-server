@@ -75,7 +75,7 @@ class PerSiteConfigUpdater(
     delete(perSiteConfig.organizations, organizationDao)
   }
 
-  private fun <T> insertAndUpdate(desired: List<T>, dao: DAO<*, T, Long>) {
+  private fun <T, I : Number> insertAndUpdate(desired: List<T>, dao: DAO<*, T, I>) {
     val existingIds = dao.findAll().mapNotNull { dao.getId(it) }.toSet()
 
     desired.forEach { item ->
@@ -87,7 +87,7 @@ class PerSiteConfigUpdater(
     }
   }
 
-  private fun <T> delete(desired: List<T>, dao: DAO<*, T, Long>) {
+  private fun <T, I : Number> delete(desired: List<T>, dao: DAO<*, T, I>) {
     val existingIds = dao.findAll().mapNotNull { dao.getId(it) }.toSet()
     val idsToDelete = existingIds - desired.map { dao.getId(it) }
 
