@@ -16,9 +16,9 @@ ALTER TABLE device DROP COLUMN device_type_id;
 
 DROP TABLE device_type;
 
-UPDATE device SET device_type = 'Unknown' WHERE make IS NULL;
+UPDATE device SET device_type = 'Unknown' WHERE device_type IS NULL;
 UPDATE device SET make = 'Unknown' WHERE make IS NULL;
-UPDATE device SET model = 'Unknown' WHERE make IS NULL;
+UPDATE device SET model = 'Unknown' WHERE model IS NULL;
 
 ALTER TABLE device ALTER COLUMN device_type SET NOT NULL;
 ALTER TABLE device ALTER COLUMN make SET NOT NULL;
