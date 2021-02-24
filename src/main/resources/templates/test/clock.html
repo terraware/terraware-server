@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Seed Bank Server Clock Adjustment</title>
+    <meta http-equiv="refresh" content="30">
+</head>
+
+<body>
+<h1>Seed Bank Server Clock Adjustment</h1>
+<p style="background-color: lightgreen;" th:if="${!#strings.isEmpty(successMessage)}"
+   th:text="${successMessage}"></p>
+<p>
+    Current server time is <b th:text="${currentTime}"></b>. (Will refresh every 30 seconds.)
+</p>
+<p>
+<form method="POST">
+    Advance clock by
+    <input name="days" size="2" maxlength="2" type="text" value="1"/>
+    day(s):
+    <input type="submit" value="Do It!"/>
+</form>
+</p>
+</body>
+</html>
