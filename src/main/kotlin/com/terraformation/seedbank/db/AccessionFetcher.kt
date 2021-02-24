@@ -1,11 +1,14 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
+import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
 import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
+import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
 import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
@@ -499,5 +502,46 @@ class AccessionFetcher(
     log.debug("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
 
     return log.debugWithTiming("Accession state count query") { query.fetchOne()?.value1() ?: 0 }
+  }
+
+  fun fetchDryingMoveDue(after: TemporalAccessor, until: TemporalAccessor): Map<String, Long> {
+    return with(ACCESSION) {
+      dslContext
+          .select(ID, NUMBER)
+          .from(ACCESSION)
+          .where(STATE_ID.eq(AccessionState.Drying))
+          .and(DRYING_MOVE_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
+          .and(DRYING_MOVE_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+          .fetch { it[NUMBER]!! to it[ID]!! }
+          .toMap()
+    }
+  }
+
+  fun fetchGerminationTestDue(
+      after: TemporalAccessor,
+      until: TemporalAccessor
+  ): Map<String, GerminationTest> {
+    return dslContext
+        .select(ACCESSION.NUMBER, GERMINATION_TEST.asterisk())
+        .from(ACCESSION)
+        .join(GERMINATION_TEST)
+        .on(GERMINATION_TEST.ACCESSION_ID.eq(ACCESSION.ID))
+        .where(ACCESSION.STATE_ID.`in`(AccessionState.Processing, AccessionState.Processed))
+        .and(GERMINATION_TEST.START_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
+        .and(GERMINATION_TEST.START_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+        .fetch { it[ACCESSION.NUMBER]!! to it.into(GerminationTest::class.java)!! }
+        .toMap()
+  }
+
+  fun fetchWithdrawalDue(after: TemporalAccessor, until: TemporalAccessor): Map<String, Long> {
+    return dslContext
+        .selectDistinct(ACCESSION.ID, ACCESSION.NUMBER)
+        .from(ACCESSION)
+        .join(WITHDRAWAL)
+        .on(WITHDRAWAL.ACCESSION_ID.eq(ACCESSION.ID))
+        .where(WITHDRAWAL.DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
+        .and(WITHDRAWAL.DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+        .fetch { it[ACCESSION.NUMBER]!! to it[ACCESSION.ID]!! }
+        .toMap()
   }
 }

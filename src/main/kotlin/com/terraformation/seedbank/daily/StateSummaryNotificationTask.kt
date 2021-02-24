@@ -4,6 +4,7 @@ import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionFetcher
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.NotificationFetcher
+import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimeDao
 import com.terraformation.seedbank.i18n.Messages
 import com.terraformation.seedbank.services.atMostRecent
 import com.terraformation.seedbank.services.perClassLogger
@@ -16,34 +17,28 @@ import org.springframework.context.event.EventListener
 @ManagedBean
 class StateSummaryNotificationTask(
     private val accessionFetcher: AccessionFetcher,
-    private val clock: Clock,
+    override val clock: Clock,
     private val config: TerrawareServerConfig,
+    override val taskProcessedTimeDao: TaskProcessedTimeDao,
     private val messages: Messages,
     private val notificationFetcher: NotificationFetcher
-) {
+) : TimePeriodTask {
   private val log = perClassLogger()
 
   @EventListener
   fun generateNotifications(
       @Suppress("UNUSED_PARAMETER") event: AccessionScheduledStateTask.FinishedEvent
   ): FinishedEvent {
-    // We don't want to search an unbounded period of time, just cover any recent days when we
-    // failed to generate notifications.
-    val timeLimit = ZonedDateTime.now(clock).minusDays(30)
+    processNewWork { sinceInstant, _ ->
+      log.info("Generating state update notifications")
 
-    val lastNotificationTime =
-        notificationFetcher
-            .getLastStateNotificationTime()
-            ?.atZone(clock.zone)
-            ?.coerceAtLeast(timeLimit)
-            ?: timeLimit
+      val since = ZonedDateTime.ofInstant(sinceInstant, clock.zone)
 
-    log.info("Generating state update notifications")
-
-    pending(lastNotificationTime)
-    processed(2, lastNotificationTime)
-    processed(4, lastNotificationTime)
-    dried(lastNotificationTime)
+      pending(since)
+      processed(2, since)
+      processed(4, since)
+      dried(since)
+    }
 
     return FinishedEvent()
   }

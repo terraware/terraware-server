@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.i18n
 
+import com.terraformation.seedbank.db.GerminationTestType
 import javax.annotation.ManagedBean
 
 /**
@@ -28,4 +29,18 @@ class Messages {
   fun driedNotification(count: Int) =
       if (count == 1) "1 accession has passed its drying end date and is ready to be stored."
       else "$count accessions have passed their drying end date and are ready to be stored."
+
+  fun dryingMoveDateNotification(accessionNumber: String) =
+      "$accessionNumber is scheduled to be moved from racks to dry cabinets today!"
+
+  fun germinationTestDateNotification(accessionNumber: String, testType: GerminationTestType) =
+      when (testType) {
+        GerminationTestType.Lab ->
+            "$accessionNumber is scheduled to begin a lab germination test today!"
+        GerminationTestType.Nursery ->
+            "$accessionNumber is scheduled to begin a nursery germination test today!"
+      }
+
+  fun withdrawalDateNotification(accessionNumber: String) =
+      "$accessionNumber is scheduled for a withdrawal today!"
 }
