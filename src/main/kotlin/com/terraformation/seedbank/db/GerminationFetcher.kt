@@ -47,56 +47,58 @@ class GerminationFetcher(private val dslContext: DSLContext) {
             }
             .groupBy { it.testId }
 
-    return dslContext
-        .select(
-            GERMINATION_TEST.asterisk(),
-            GERMINATION_TEST.TREATMENT_ID,
-            GERMINATION_TEST.SEED_TYPE_ID,
-            GERMINATION_TEST.SUBSTRATE_ID,
-        )
-        .from(GERMINATION_TEST)
-        .where(GERMINATION_TEST.ACCESSION_ID.eq(accessionId))
-        .orderBy(GERMINATION_TEST.ID)
-        .fetch { record ->
-          val testId = record[GERMINATION_TEST.ID]!!
-          GerminationTestModel(
-              testId,
-              record[GERMINATION_TEST.ACCESSION_ID]!!,
-              record[GERMINATION_TEST.TEST_TYPE]!!,
-              record[GERMINATION_TEST.START_DATE],
-              record[GERMINATION_TEST.SEED_TYPE_ID],
-              record[GERMINATION_TEST.SUBSTRATE_ID],
-              record[GERMINATION_TEST.TREATMENT_ID],
-              record[GERMINATION_TEST.SEEDS_SOWN],
-              record[GERMINATION_TEST.NOTES],
-              record[GERMINATION_TEST.STAFF_RESPONSIBLE],
-              germinationsByTestId[testId],
-          )
-        }
-        .toListOrNull()
+    return with(GERMINATION_TEST) {
+      dslContext
+          .selectFrom(GERMINATION_TEST)
+          .where(ACCESSION_ID.eq(accessionId))
+          .orderBy(ID)
+          .fetch { record ->
+            val testId = record[ID]!!
+            GerminationTestModel(
+                testId,
+                record[ACCESSION_ID]!!,
+                record[TEST_TYPE]!!,
+                record[START_DATE],
+                record[SEED_TYPE_ID],
+                record[SUBSTRATE_ID],
+                record[TREATMENT_ID],
+                record[SEEDS_SOWN],
+                record[TOTAL_PERCENT_GERMINATED],
+                record[TOTAL_SEEDS_GERMINATED],
+                record[NOTES],
+                record[STAFF_RESPONSIBLE],
+                germinationsByTestId[testId],
+            )
+          }
+          .toListOrNull()
+    }
   }
 
-  fun insertGerminationTest(accessionId: Long, germinationTest: GerminationTestFields) {
+  private fun insertGerminationTest(accessionId: Long, germinationTest: GerminationTestFields) {
     val testId =
-        dslContext
-            .insertInto(GERMINATION_TEST)
-            .set(GERMINATION_TEST.ACCESSION_ID, accessionId)
-            .set(GERMINATION_TEST.NOTES, germinationTest.notes)
-            .set(GERMINATION_TEST.SEED_TYPE_ID, germinationTest.seedType)
-            .set(GERMINATION_TEST.SEEDS_SOWN, germinationTest.seedsSown)
-            .set(GERMINATION_TEST.STAFF_RESPONSIBLE, germinationTest.staffResponsible)
-            .set(GERMINATION_TEST.START_DATE, germinationTest.startDate)
-            .set(GERMINATION_TEST.SUBSTRATE_ID, germinationTest.substrate)
-            .set(GERMINATION_TEST.TEST_TYPE, germinationTest.testType)
-            .set(GERMINATION_TEST.TREATMENT_ID, germinationTest.treatment)
-            .returning(GERMINATION_TEST.ID)
-            .fetchOne()
-            ?.get(GERMINATION_TEST.ID)!!
+        with(GERMINATION_TEST) {
+          dslContext
+              .insertInto(GERMINATION_TEST)
+              .set(ACCESSION_ID, accessionId)
+              .set(NOTES, germinationTest.notes)
+              .set(SEED_TYPE_ID, germinationTest.seedType)
+              .set(SEEDS_SOWN, germinationTest.seedsSown)
+              .set(STAFF_RESPONSIBLE, germinationTest.staffResponsible)
+              .set(START_DATE, germinationTest.startDate)
+              .set(SUBSTRATE_ID, germinationTest.substrate)
+              .set(TEST_TYPE, germinationTest.testType)
+              .set(TOTAL_PERCENT_GERMINATED, germinationTest.calculateTotalPercentGerminated())
+              .set(TOTAL_SEEDS_GERMINATED, germinationTest.calculateTotalSeedsGerminated())
+              .set(TREATMENT_ID, germinationTest.treatment)
+              .returning(ID)
+              .fetchOne()
+              ?.get(ID)!!
+        }
 
     germinationTest.germinations?.forEach { insertGermination(testId, it) }
   }
 
-  fun insertGermination(testId: Long, germination: GerminationFields) {
+  private fun insertGermination(testId: Long, germination: GerminationFields) {
     dslContext
         .insertInto(GERMINATION)
         .set(GERMINATION.RECORDING_DATE, germination.recordingDate)
@@ -159,17 +161,21 @@ class GerminationFetcher(private val dslContext: DSLContext) {
               ?: throw IllegalArgumentException(
                   "Germination test IDs must refer to existing tests; leave ID off to insert a new test.")
       if (!desiredTest.fieldsEqual(existingTest)) {
-        dslContext
-            .update(GERMINATION_TEST)
-            .set(GERMINATION_TEST.NOTES, desiredTest.notes)
-            .set(GERMINATION_TEST.SEED_TYPE_ID, desiredTest.seedType)
-            .set(GERMINATION_TEST.SEEDS_SOWN, desiredTest.seedsSown)
-            .set(GERMINATION_TEST.SUBSTRATE_ID, desiredTest.substrate)
-            .set(GERMINATION_TEST.STAFF_RESPONSIBLE, desiredTest.staffResponsible)
-            .set(GERMINATION_TEST.START_DATE, desiredTest.startDate)
-            .set(GERMINATION_TEST.TREATMENT_ID, desiredTest.treatment)
-            .where(GERMINATION_TEST.ID.eq(existingTest.id))
-            .execute()
+        with(GERMINATION_TEST) {
+          dslContext
+              .update(GERMINATION_TEST)
+              .set(NOTES, desiredTest.notes)
+              .set(SEED_TYPE_ID, desiredTest.seedType)
+              .set(SEEDS_SOWN, desiredTest.seedsSown)
+              .set(SUBSTRATE_ID, desiredTest.substrate)
+              .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
+              .set(START_DATE, desiredTest.startDate)
+              .set(TOTAL_PERCENT_GERMINATED, desiredTest.calculateTotalPercentGerminated())
+              .set(TOTAL_SEEDS_GERMINATED, desiredTest.calculateTotalSeedsGerminated())
+              .set(TREATMENT_ID, desiredTest.treatment)
+              .where(ID.eq(existingTest.id))
+              .execute()
+        }
       }
 
       // TODO: Smarter diff of germinations

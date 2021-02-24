@@ -501,22 +501,27 @@ internal class AccessionFetcherTest : DatabaseTest() {
                         GerminationTestPayload(
                             id = initial.germinationTests?.get(0)?.id,
                             testType = GerminationTestType.Lab,
-                            seedsSown = 100,
+                            seedsSown = 200,
                             germinations =
                                 listOf(
                                     GerminationPayload(
                                         recordingDate = localDate, seedsGerminated = 75)))))
     fetcher.update(initial.accessionNumber, desired)
-    val germinations = germinationDao.fetchByTestId(1)
 
+    val germinationTests = germinationTestDao.fetchByAccessionId(1)
+    assertEquals(1, germinationTests.size, "Number of germination tests after update")
+    assertEquals(37, germinationTests[0].totalPercentGerminated, "totalPercentGerminated")
+    assertEquals(75, germinationTests[0].totalSeedsGerminated, "totalSeedsGerminated")
+
+    val germinations = germinationDao.fetchByTestId(1)
     assertEquals(1, germinations.size, "Number of germinations after update")
     assertTrue(
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First germination preserved")
 
     val updatedAccession = accessionDao.fetchOneById(1)
-    assertEquals(75, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
-    assertEquals(75, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
+    assertEquals(37, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
+    assertEquals(37, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
         localDate,
         updatedAccession?.latestGerminationRecordingDate,

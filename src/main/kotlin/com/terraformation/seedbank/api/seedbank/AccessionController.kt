@@ -322,6 +322,8 @@ data class GerminationTestPayload(
     override val notes: String? = null,
     override val staffResponsible: String? = null,
     override val seedsSown: Int? = null,
+    override val totalPercentGerminated: Int? = null,
+    override val totalSeedsGerminated: Int? = null,
     @Valid override val germinations: List<GerminationPayload>? = null
 ) : GerminationTestFields {
   constructor(
@@ -336,6 +338,8 @@ data class GerminationTestPayload(
       model.notes,
       model.staffResponsible,
       model.seedsSown,
+      model.totalPercentGerminated,
+      model.totalSeedsGerminated,
       model.germinations?.map { GerminationPayload(it) })
 }
 

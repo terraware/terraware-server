@@ -81,6 +81,11 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             COLLECTION_EVENT.LATITUDE,
             COLLECTION_EVENT.LONGITUDE,
             SearchTables.CollectionEvent),
+        IntegerField(
+            "germinationPercentGerminated",
+            "Total % of seeds germinated",
+            GERMINATION_TEST.TOTAL_PERCENT_GERMINATED,
+            SearchTables.GerminationTest),
         EnumField.create(
             "germinationSeedType",
             "Seed type",
@@ -180,9 +185,6 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "Number of seeds withdrawn",
             WITHDRAWAL.SEEDS_WITHDRAWN,
             SearchTables.Withdrawal),
-
-        // Need to think more about these
-        PlaceholderField("germinationPercentGerminated", "Total % of seeds germinated"),
     )
   }
 
@@ -442,24 +444,6 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
               throw IllegalArgumentException("Range search must have two non-null values")
             }
       }
-    }
-  }
-
-  class PlaceholderField(override val fieldName: String, override val displayName: String) :
-      SingleColumnSearchField<String>() {
-    override val table: SearchTable
-      get() = SearchTables.Accession
-    override val databaseField: Field<String?>
-      get() = ACCESSION.NUMBER
-    override val supportedFilterTypes: Set<SearchFilterType>
-      get() = emptySet()
-
-    override fun getCondition(filter: SearchFilter): Condition {
-      throw RuntimeException("Not implemented")
-    }
-
-    override fun computeValue(record: Record): String {
-      return "Not implemented yet"
     }
   }
 

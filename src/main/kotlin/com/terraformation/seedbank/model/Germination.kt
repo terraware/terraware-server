@@ -32,6 +32,10 @@ interface GerminationTestFields {
     get() = null
   val seedsSown: Int?
     get() = null
+  val totalSeedsGerminated: Int?
+    get() = null
+  val totalPercentGerminated: Int?
+    get() = null
   val notes: String?
     get() = null
   val staffResponsible: String?
@@ -57,6 +61,17 @@ interface GerminationTestFields {
   fun calculateTotalSeedsGerminated(): Int? {
     return germinations?.sumOf { it.seedsGerminated }
   }
+
+  fun calculateTotalPercentGerminated(): Int? {
+    return calculateTotalSeedsGerminated()?.let { germinated ->
+      val sown = seedsSown ?: 0
+      if (sown > 0) {
+        germinated * 100 / sown
+      } else {
+        null
+      }
+    }
+  }
 }
 
 data class GerminationTestModel(
@@ -68,6 +83,8 @@ data class GerminationTestModel(
     override val substrate: GerminationSubstrate? = null,
     override val treatment: GerminationTreatment? = null,
     override val seedsSown: Int? = null,
+    override val totalPercentGerminated: Int? = null,
+    override val totalSeedsGerminated: Int? = null,
     override val notes: String? = null,
     override val staffResponsible: String? = null,
     override val germinations: Collection<GerminationModel>? = null

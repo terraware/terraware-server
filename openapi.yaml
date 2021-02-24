@@ -971,6 +971,12 @@ components:
         seedsSown:
           type: integer
           format: int32
+        totalPercentGerminated:
+          type: integer
+          format: int32
+        totalSeedsGerminated:
+          type: integer
+          format: int32
         germinations:
           type: array
           items:
@@ -1250,10 +1256,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
+          default: Ascending
           enum:
           - Ascending
           - Descending
-          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error

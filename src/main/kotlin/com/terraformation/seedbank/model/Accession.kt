@@ -162,14 +162,7 @@ interface AccessionFields {
   }
 
   fun calculateLatestViabilityPercent(): Int? {
-    val latestTest = getLatestGerminationTestWithResults()
-    val germinated = latestTest?.calculateTotalSeedsGerminated()
-    val sown = latestTest?.seedsSown ?: 0
-    return if (sown > 0 && germinated != null) {
-      germinated * 100 / sown
-    } else {
-      null
-    }
+    return getLatestGerminationTestWithResults()?.calculateTotalPercentGerminated()
   }
 
   fun calculateTotalViabilityPercent(): Int? {
