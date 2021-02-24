@@ -11,7 +11,7 @@ val postgresJdbcVersion = "42.2.18"
 val springDocVersion = "1.5.3"
 
 plugins {
-  val kotlinVersion = "1.4.255-SNAPSHOT"
+  val kotlinVersion = "1.4.30"
 
   kotlin("jvm") version kotlinVersion
   kotlin("kapt") version kotlinVersion
@@ -34,9 +34,6 @@ java.targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
   mavenCentral()
-  maven {
-    url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-  }
 }
 
 dependencies {
@@ -167,7 +164,7 @@ tasks.withType<KotlinCompile> {
 
 spotless {
   kotlin {
-    ktfmt("0.19")
+    ktfmt("0.20")
     targetExclude("src/generated/**")
   }
 }
