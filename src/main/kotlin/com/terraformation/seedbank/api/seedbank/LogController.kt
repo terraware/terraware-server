@@ -1,7 +1,9 @@
 package com.terraformation.seedbank.api.seedbank
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.services.log
+import io.swagger.v3.oas.annotations.media.Schema
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import org.springframework.web.bind.annotation.PathVariable
@@ -12,9 +14,22 @@ import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v1/seedbank/log")
 @RestController
+@SeedBankAppEndpoint
 class LogController(private val objectMapper: ObjectMapper) {
   @PostMapping("/{tag}")
-  fun recordLogMessage(@PathVariable tag: String, @RequestBody payload: Map<String, Any>) {
+  fun recordLogMessage(
+      @PathVariable
+      @Schema(description = "Source of the log message.", example = "seedbank-app")
+      tag: String,
+      @RequestBody
+      @Schema(
+          description =
+              "Values to log. This can be an arbitrary bucket of key/value pairs, but the " +
+                  "'level' field should be set to one of 'debug', 'info', 'warn', or " +
+                  "'error'. Default level is 'info'. If there is a human-readable message, " +
+                  "it should go in the 'message' field.")
+      payload: Map<String, Any>
+  ) {
     val level =
         when (payload["level"]?.toString()?.toLowerCase()) {
           "debug" -> Level.DEBUG

@@ -338,6 +338,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetCurrentTimeResponsePayload'
+  /api/v1/seedbank/log/{tag}:
+    post:
+      tags:
+      - SeedBankApp
+      operationId: recordLogMessage
+      parameters:
+      - name: tag
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Source of the log message.
+          example: seedbank-app
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+                description: "Values to log. This can be an arbitrary bucket of key/value\
+                  \ pairs, but the 'level' field should be set to one of 'debug',\
+                  \ 'info', 'warn', or 'error'. Default level is 'info'. If there\
+                  \ is a human-readable message, it should go in the 'message' field."
+              description: "Values to log. This can be an arbitrary bucket of key/value\
+                \ pairs, but the 'level' field should be set to one of 'debug', 'info',\
+                \ 'warn', or 'error'. Default level is 'info'. If there is a human-readable\
+                \ message, it should go in the 'message' field."
+        required: true
+      responses:
+        "200":
+          description: OK
   /api/v1/seedbank/notification:
     get:
       tags:
@@ -1256,10 +1288,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
-          default: Ascending
           enum:
           - Ascending
           - Descending
+          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error
