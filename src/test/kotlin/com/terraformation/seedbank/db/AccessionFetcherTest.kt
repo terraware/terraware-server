@@ -668,6 +668,16 @@ internal class AccessionFetcherTest : DatabaseTest() {
   }
 
   @Test
+  fun `update rejects future storageStartDate`() {
+    val initial = fetcher.create(CreateAccessionRequestPayload())
+    assertThrows(IllegalArgumentException::class.java) {
+      fetcher.update(
+          initial.accessionNumber,
+          initial.copy(storageStartDate = LocalDate.now(clock).plusDays(1)))
+    }
+  }
+
+  @Test
   fun `state history row is inserted at creation time`() {
     val initial = fetcher.create(CreateAccessionRequestPayload())
     val historyRecords =

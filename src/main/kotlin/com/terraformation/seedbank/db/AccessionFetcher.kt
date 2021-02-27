@@ -245,6 +245,11 @@ class AccessionFetcher(
   fun update(accessionNumber: String, accession: AccessionFields): Boolean {
     val existing = fetchByNumber(accessionNumber) ?: return false
     val accessionId = existing.id
+    val todayLocal = LocalDate.now(clock)
+
+    if (accession.storageStartDate?.isAfter(todayLocal) == true) {
+      throw IllegalArgumentException("Storage start date may not be in the future")
+    }
 
     dslContext.transaction { _ ->
       if (existing.secondaryCollectors != accession.secondaryCollectors) {

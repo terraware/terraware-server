@@ -44,9 +44,10 @@ def main():
     accession.update(edits)
 
     r = requests.put(uri, json=accession)
-    r.raise_for_status()
-
-    if args.verbose:
+    if r.status_code != 200:
+        print("Request failed!")
+        print(r.json())
+    elif args.verbose:
         print(json.dumps(r.json()["accession"]))
     else:
         print(r.json()["status"])
