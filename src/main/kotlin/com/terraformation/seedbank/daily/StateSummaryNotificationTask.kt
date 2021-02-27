@@ -73,12 +73,13 @@ class StateSummaryNotificationTask(
    *
    * It is currently January 10. We last generated notifications on January 8.
    *
-   * Thus in today's run, we want to notify about accessions that became overdue between January 8
-   * and now.
+   * Thus in today's run, we want to publish a notification if there are accessions that became
+   * overdue between January 8 and now.
    *
    * More precisely, because an accession becomes overdue when it reaches 1 week of pending status,
-   * that means we want a count of accessions that went into Pending state on or before January 3 (1
-   * week before now) and after January 1 (1 week before the last time we generated notifications).
+   * that means we want to see if there are accessions that went into Pending state on or before
+   * January 3 (1 week before now) and after January 1 (1 week before the last time we generated
+   * notifications).
    *
    * To implement "on or before January 3," we actually do "before January 4," that is, we turn the
    * equivalent of `x <= y` into `x < y+1`. This is because "on or before January 3" actually means
@@ -104,17 +105,22 @@ class StateSummaryNotificationTask(
 
     log.debug("Scanning for $state from $endOfAlreadyCoveredPeriod to $stateChangedBefore")
 
-    val count =
+    // We want to generate the notification if there are newly-overdue accessions, but the number
+    // in the notification should be the total of all overdue accessions, including any that were
+    // already covered by previous runs.
+    val anyNew =
         accessionFetcher.countInState(
-            state, sinceAfter = endOfAlreadyCoveredPeriod, sinceBefore = stateChangedBefore)
-
-    if (count > 0) {
-      val message = getMessage(count)
-      log.info("Generated notification: $message")
-      notificationFetcher.insertStateNotification(state, message)
-    } else {
+            state, sinceAfter = endOfAlreadyCoveredPeriod, sinceBefore = stateChangedBefore) > 0
+    if (!anyNew) {
       log.info("No notification needed for state $state at $weeks week(s)")
+      return
     }
+
+    val count = accessionFetcher.countInState(state, sinceBefore = stateChangedBefore)
+
+    val message = getMessage(count)
+    log.info("Generated notification: $message")
+    notificationFetcher.insertStateNotification(state, message)
   }
 
   /**
