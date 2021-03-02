@@ -7,11 +7,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val jacksonVersion = "2.11.3"
 val jooqVersion = "3.14.4"
-val postgresJdbcVersion = "42.2.18"
-val springDocVersion = "1.5.3"
+val postgresJdbcVersion = "42.2.19"
+val springDocVersion = "1.5.5"
 
 plugins {
-  val kotlinVersion = "1.4.30"
+  val kotlinVersion = "1.4.31"
 
   kotlin("jvm") version kotlinVersion
   kotlin("kapt") version kotlinVersion
@@ -19,13 +19,13 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion
 
   id("ch.ayedo.jooqmodelator") version "3.8.0"
-  id("com.diffplug.spotless") version "5.8.2"
-  id("org.springframework.boot") version "2.4.1"
-  id("io.spring.dependency-management") version "1.0.10.RELEASE"
+  id("com.diffplug.spotless") version "5.10.2"
+  id("org.springframework.boot") version "2.4.3"
+  id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
-  id("org.springdoc.openapi-gradle-plugin") version "1.3.0"
+  id("org.springdoc.openapi-gradle-plugin") version "1.3.1"
 }
 
 group = "com.terraformation"
@@ -49,30 +49,30 @@ dependencies {
 
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-  implementation("com.nimbusds:nimbus-jose-jwt:9.4.1")
+  implementation("com.nimbusds:nimbus-jose-jwt:9.7")
   implementation("com.opencsv:opencsv:5.3")
-  implementation("io.swagger.core.v3:swagger-annotations:2.1.6")
+  implementation("io.swagger.core.v3:swagger-annotations:2.1.7")
   implementation("javax.inject:javax.inject:1")
-  implementation("org.codehaus.janino:janino:3.1.2")
-  implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0")
-  implementation("org.flywaydb:flyway-core:7.5.0")
+  implementation("org.codehaus.janino:janino:3.1.3")
+  implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+  implementation("org.flywaydb:flyway-core:7.5.4")
   implementation(kotlin("reflect"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.2")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
 
   implementation("org.springdoc:springdoc-openapi-kotlin:$springDocVersion")
   implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")
   implementation("org.springdoc:springdoc-openapi-ui:$springDocVersion")
 
-  testImplementation("io.mockk:mockk:1.10.3-jdk8")
+  testImplementation("io.mockk:mockk:1.10.6")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation(platform("org.testcontainers:testcontainers-bom:1.15.1"))
+  testImplementation(platform("org.testcontainers:testcontainers-bom:1.15.2"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
@@ -165,7 +165,7 @@ tasks.withType<KotlinCompile> {
 
 spotless {
   kotlin {
-    ktfmt("0.20")
+    ktfmt("0.21")
     targetExclude("src/generated/**")
   }
 }
