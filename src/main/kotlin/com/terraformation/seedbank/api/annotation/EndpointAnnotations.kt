@@ -14,6 +14,11 @@ import org.springframework.http.MediaType
 annotation class SeedBankAppEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "DeviceManager")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class DeviceManagerAppEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponse(
     responseCode = "404",
