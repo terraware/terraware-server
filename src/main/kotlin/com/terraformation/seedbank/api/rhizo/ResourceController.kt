@@ -2,6 +2,7 @@ package com.terraformation.seedbank.api.rhizo
 
 import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.annotation.ApiResponse404
+import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.db.DeviceFetcher
 import com.terraformation.seedbank.db.TimeSeriesFetcher
@@ -11,7 +12,6 @@ import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
  * manager instance.
  */
 @Controller
-@Tag(name = "DeviceManager")
+@DeviceManagerAppEndpoint
 class ResourceController(
     private val deviceFetcher: DeviceFetcher,
     private val timeSeriesFetcher: TimeSeriesFetcher,

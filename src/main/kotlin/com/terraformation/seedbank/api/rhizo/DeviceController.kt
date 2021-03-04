@@ -1,40 +1,27 @@
 package com.terraformation.seedbank.api.rhizo
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.terraformation.seedbank.api.InternalErrorException
 import com.terraformation.seedbank.api.SuccessResponsePayload
+import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.DeviceFetcher
-import com.terraformation.seedbank.db.tables.daos.SiteModuleDao
-import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@DeviceManagerAppEndpoint
 @RestController
 @RequestMapping("/api/v1/device")
-@Tag(name = "DeviceManager")
 class DeviceController(
     private val config: TerrawareServerConfig,
     private val deviceFetcher: DeviceFetcher,
-    private val siteModuleDao: SiteModuleDao,
 ) {
-  private val log = perClassLogger()
-
   @GetMapping("/all/config")
   fun listDeviceConfigs(@AuthenticationPrincipal auth: ClientIdentity): ListDeviceConfigsResponse {
-    val siteModuleName = siteModuleDao.fetchOneById(config.siteModuleId)?.name
-    if (siteModuleName == null) {
-      log.error("Can't get site module ${config.siteModuleId} name")
-      throw InternalErrorException()
-    }
-
     val devices = deviceFetcher.fetchDeviceConfigurationForSite(config.siteModuleId)
-
     return ListDeviceConfigsResponse(devices)
   }
 }

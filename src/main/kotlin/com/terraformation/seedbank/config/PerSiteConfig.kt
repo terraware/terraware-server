@@ -17,6 +17,8 @@ import java.io.IOException
 import javax.annotation.ManagedBean
 import javax.validation.constraints.NotEmpty
 import org.jooq.DAO
+import org.jooq.DSLContext
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.scheduling.annotation.Scheduled
 
 data class PerSiteConfig(
@@ -30,6 +32,7 @@ data class PerSiteConfig(
 @ManagedBean
 class PerSiteConfigUpdater(
     private val deviceDao: DeviceDao,
+    private val dslContext: DSLContext,
     private val organizationDao: OrganizationDao,
     private val siteDao: SiteDao,
     private val siteModuleDao: SiteModuleDao,
@@ -61,6 +64,13 @@ class PerSiteConfigUpdater(
   }
 
   fun updateDatabase(perSiteConfig: PerSiteConfig) {
+    // Any entries that aren't explicitly marked as disabled in the config should be enabled.
+    perSiteConfig.devices.forEach { it.enabled = it.enabled ?: true }
+    perSiteConfig.organizations.forEach { it.enabled = it.enabled ?: true }
+    perSiteConfig.sites.forEach { it.enabled = it.enabled ?: true }
+    perSiteConfig.siteModules.forEach { it.enabled = it.enabled ?: true }
+    perSiteConfig.storageLocations.forEach { it.enabled = it.enabled ?: true }
+
     // Need to insert and delete IDs in the right order because there are foreign key relationships.
     insertAndUpdate(perSiteConfig.organizations, organizationDao)
     insertAndUpdate(perSiteConfig.sites, siteDao)
@@ -68,31 +78,36 @@ class PerSiteConfigUpdater(
     insertAndUpdate(perSiteConfig.devices, deviceDao)
     insertAndUpdate(perSiteConfig.storageLocations, storageLocationDao)
 
-    delete(perSiteConfig.devices, deviceDao)
-    delete(perSiteConfig.storageLocations, storageLocationDao)
-    delete(perSiteConfig.siteModules, siteModuleDao)
-    delete(perSiteConfig.sites, siteDao)
-    delete(perSiteConfig.organizations, organizationDao)
+    delete(perSiteConfig.devices, deviceDao) { it.enabled = false }
+    delete(perSiteConfig.storageLocations, storageLocationDao) { it.enabled = false }
+    delete(perSiteConfig.siteModules, siteModuleDao) { it.enabled = false }
+    delete(perSiteConfig.sites, siteDao) { it.enabled = false }
+    delete(perSiteConfig.organizations, organizationDao) { it.enabled = false }
   }
 
   private fun <T, I : Number> insertAndUpdate(desired: List<T>, dao: DAO<*, T, I>) {
     val existingIds = dao.findAll().mapNotNull { dao.getId(it) }.toSet()
 
-    desired.forEach { item ->
-      if (dao.getId(item) in existingIds) {
-        dao.update(item)
-      } else {
-        dao.insert(item)
-      }
-    }
+    dao.update(desired.filter { dao.getId(it) in existingIds })
+    dao.insert(desired.filter { dao.getId(it) !in existingIds })
   }
 
-  private fun <T, I : Number> delete(desired: List<T>, dao: DAO<*, T, I>) {
-    val existingIds = dao.findAll().mapNotNull { dao.getId(it) }.toSet()
+  private fun <T, I : Number> delete(desired: List<T>, dao: DAO<*, T, I>, disable: (T) -> Unit) {
+    val existing = dao.findAll()
+    val existingById = existing.associateBy { dao.getId(it)!! }
+    val existingIds = existingById.keys
     val idsToDelete = existingIds - desired.map { dao.getId(it) }
 
-    if (idsToDelete.isNotEmpty()) {
-      dao.deleteById(idsToDelete)
+    idsToDelete.forEach { id ->
+      try {
+        // Delete in a transaction so that if the delete fails due to an integrity constraint
+        // violation, any enclosing transaction won't also be rolled back.
+        dslContext.transaction { _ -> dao.deleteById(id) }
+      } catch (e: DataIntegrityViolationException) {
+        val item = existingById[id]!!
+        disable(item)
+        dao.update(item)
+      }
     }
   }
 }

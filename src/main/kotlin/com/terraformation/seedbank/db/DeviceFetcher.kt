@@ -41,8 +41,11 @@ class DeviceFetcher(private val dslContext: DSLContext) {
         .on(SITE_MODULE.ID.eq(DEVICE.SITE_MODULE_ID))
         .where(ORGANIZATION.NAME.eq(orgName))
         .and(SITE.NAME.eq(siteName))
+        .and(SITE.ENABLED.isTrue)
         .and(SITE_MODULE.NAME.eq(siteModuleName))
+        .and(SITE_MODULE.ENABLED.isTrue)
         .and(DEVICE.NAME.eq(deviceName))
+        .and(DEVICE.ENABLED.isTrue)
   }
 
   fun fetchDeviceConfigurationForSite(siteModuleId: Long): List<DeviceConfig> {
@@ -68,6 +71,8 @@ class DeviceFetcher(private val dslContext: DSLContext) {
                   DSL.select(SITE_MODULE.SITE_ID)
                       .from(SITE_MODULE)
                       .where(SITE_MODULE.ID.eq(siteModuleId))))
+          .and(DEVICE.ENABLED.isTrue)
+          .and(SITE_MODULE.ENABLED.isTrue)
           .orderBy(NAME)
           .fetch { record ->
             DeviceConfig(

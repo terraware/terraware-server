@@ -2,13 +2,17 @@ package com.terraformation.seedbank.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.StorageCondition
+import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.daos.DeviceDao
 import com.terraformation.seedbank.db.tables.daos.OrganizationDao
 import com.terraformation.seedbank.db.tables.daos.SiteDao
 import com.terraformation.seedbank.db.tables.daos.SiteModuleDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
+import com.terraformation.seedbank.db.tables.daos.TimeseriesDao
+import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.db.tables.pojos.Device
 import com.terraformation.seedbank.db.tables.pojos.Organization
 import com.terraformation.seedbank.db.tables.pojos.Site
@@ -17,6 +21,7 @@ import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
+import java.time.Instant
 import org.jooq.DAO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -29,11 +34,13 @@ import org.springframework.core.io.ResourceLoader
 internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   @Autowired private lateinit var resourceLoader: ResourceLoader
 
+  private lateinit var accessionDao: AccessionDao
   private lateinit var deviceDao: DeviceDao
   private lateinit var organizationDao: OrganizationDao
   private lateinit var siteDao: SiteDao
   private lateinit var siteModuleDao: SiteModuleDao
   private lateinit var storageLocationDao: StorageLocationDao
+  private lateinit var timeseriesDao: TimeseriesDao
   private lateinit var updater: PerSiteConfigUpdater
 
   private val serverConfig: TerrawareServerConfig = mockk()
@@ -42,15 +49,18 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   fun setup() {
     val config = dslContext.configuration()
 
+    accessionDao = AccessionDao(config)
     deviceDao = DeviceDao(config)
     organizationDao = OrganizationDao(config)
     siteDao = SiteDao(config)
     siteModuleDao = SiteModuleDao(config)
     storageLocationDao = StorageLocationDao(config)
+    timeseriesDao = TimeseriesDao(config)
 
     updater =
         PerSiteConfigUpdater(
             deviceDao,
+            dslContext,
             organizationDao,
             siteDao,
             siteModuleDao,
@@ -78,6 +88,35 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
     updater.updateDatabase(emptyConfig)
 
     assertConfigInDatabase(emptyConfig)
+  }
+
+  @Test
+  fun `parent rows are marked disabled if still referenced`() {
+    val initial = simpleConfig()
+    val emptyConfig = PerSiteConfig(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+
+    updater.updateDatabase(initial)
+
+    // Add an accession that refers to the storage location, which refers to the site module, which
+    // refers to the site, which refers to the organization.
+    accessionDao.insert(
+        Accession(
+            createdTime = Instant.EPOCH,
+            number = "1",
+            siteModuleId = 3,
+            stateId = AccessionState.Pending,
+            storageLocationId = 5))
+
+    val expected =
+        PerSiteConfig(
+            devices = emptyList(),
+            organizations = initial.organizations.map { it.copy(enabled = false) },
+            sites = initial.sites.map { it.copy(enabled = false) },
+            siteModules = initial.siteModules.map { it.copy(enabled = false) },
+            storageLocations = initial.storageLocations.map { it.copy(enabled = false) })
+
+    updater.updateDatabase(emptyConfig)
+    assertConfigInDatabase(expected)
   }
 
   @Test
@@ -116,10 +155,16 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   }
 
   private fun simpleConfig(): PerSiteConfig {
-    val organization = Organization(1, "test")
+    val organization = Organization(1, "test", true)
     val site =
-        Site(2, organization.id, "testSite", BigDecimal("1.0000000"), BigDecimal("2.0000000"))
-    val siteModule = SiteModule(3, site.id, 1, "testModule")
+        Site(
+            2,
+            organization.id,
+            "testSite",
+            BigDecimal("1.0000000"),
+            BigDecimal("2.0000000"),
+            enabled = true)
+    val siteModule = SiteModule(3, site.id, 1, "testModule", enabled = true)
     val device =
         Device(
             4,
@@ -133,8 +178,10 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             "address",
             12345,
             "settings",
-            5432)
-    val storageLocation = StorageLocation(5, siteModule.id, "location", StorageCondition.Freezer)
+            5432,
+            true)
+    val storageLocation =
+        StorageLocation(5, siteModule.id, "location", StorageCondition.Freezer, true)
 
     return PerSiteConfig(
         organizations = listOf(organization),
