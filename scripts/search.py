@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import requests
 import time
 
@@ -12,6 +13,18 @@ def export_csv(criteria, server, filename):
 
 def run_search(criteria, server):
     r = requests.post(f"{server}/api/v1/seedbank/search", json=criteria)
+    r.raise_for_status()
+    return r.json()["results"]
+
+
+def run_values(criteria, server):
+    r = requests.post(f"{server}/api/v1/seedbank/values", json=criteria)
+    r.raise_for_status()
+    return r.json()["results"]
+
+
+def run_all_values(criteria, server):
+    r = requests.post(f"{server}/api/v1/seedbank/values/all", json=criteria)
     r.raise_for_status()
     return r.json()["results"]
 
@@ -62,4 +75,4 @@ criteria = {
 
 server = "http://localhost:8080"
 
-print(run_search(criteria, server))
+print(json.dumps(run_all_values(criteria, server)))

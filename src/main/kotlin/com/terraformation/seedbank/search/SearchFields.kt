@@ -37,6 +37,14 @@ interface SearchField<T> {
   val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.allOf(SearchFilterType::class.java)
 
+  /** The values that this field could have, or null if it doesn't have a fixed set of options. */
+  val possibleValues: List<String>?
+    get() = null
+
+  /** If true, the field is allowed to not have a value. */
+  val nullable: Boolean
+    get() = true
+
   fun getConditions(filter: SearchFilter): List<Condition>
 
   fun computeValue(record: Record): String?
@@ -56,7 +64,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
   private fun createFieldList(): List<SearchField<*>> {
     return listOf(
-        UpperCaseTextField("accessionNumber", "Accession", ACCESSION.NUMBER),
+        UpperCaseTextField("accessionNumber", "Accession", ACCESSION.NUMBER, nullable = false),
         ActiveField("active", "Active"),
         DateField("collectedDate", "Collected on", ACCESSION.COLLECTED_DATE),
         TextField("collectionNotes", "Notes (collection)", ACCESSION.COLLECTION_SITE_NOTES),
@@ -146,7 +154,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         IntegerField("seedsRemaining", "Number of seeds remaining", ACCESSION.SEEDS_REMAINING),
         TextField("siteLocation", "Site location", ACCESSION.COLLECTION_SITE_NAME),
         TextField("species", "Species", SPECIES.NAME, SearchTables.Species),
-        EnumField.create("state", "State", ACCESSION.STATE_ID),
+        EnumField.create("state", "State", ACCESSION.STATE_ID, nullable = false),
         EnumField.create(
             "storageCondition", "Storage condition", ACCESSION.TARGET_STORAGE_CONDITION),
         TextField(
@@ -222,6 +230,9 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = SearchTables.Accession
     override val selectFields
       get() = listOf(ACCESSION.STATE_ID)
+    override val possibleValues = AccessionActive::class.java.enumConstants!!.map { "$it" }
+    override val nullable
+      get() = false
 
     override fun getConditions(filter: SearchFilter): List<Condition> {
       val values = filter.values.filterNotNull().map { AccessionActive.valueOf(it) }.toSet()
@@ -287,10 +298,12 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       override val fieldName: String,
       override val displayName: String,
       override val databaseField: TableField<*, Boolean?>,
-      override val table: SearchTable = SearchTables.Accession
+      override val table: SearchTable = SearchTables.Accession,
+      override val nullable: Boolean = true
   ) : SingleColumnSearchField<Boolean>() {
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact)
+    override val possibleValues = listOf("true", "false")
 
     override fun getCondition(filter: SearchFilter): Condition {
       if (filter.type != SearchFilterType.Exact) {
@@ -309,7 +322,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       override val fieldName: String,
       override val displayName: String,
       override val databaseField: TableField<*, LocalDate?>,
-      override val table: SearchTable = SearchTables.Accession
+      override val table: SearchTable = SearchTables.Accession,
+      override val nullable: Boolean = true
   ) : SingleColumnSearchField<LocalDate>() {
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
@@ -347,12 +361,14 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       override val databaseField: TableField<*, T?>,
       override val table: SearchTable = SearchTables.Accession,
       private val enumClass: Class<T>,
+      override val nullable: Boolean = true
   ) : SingleColumnSearchField<T>() {
     private val byDisplayName: Map<String, T> =
         enumClass.enumConstants!!.associateBy { it.displayName }
 
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact)
+    override val possibleValues = enumClass.enumConstants!!.map { it.displayName }
 
     override fun getCondition(filter: SearchFilter): Condition {
       if (filter.type != SearchFilterType.Exact) {
@@ -385,7 +401,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
           displayName: String,
           databaseField: TableField<*, T?>,
           table: SearchTable = SearchTables.Accession,
-      ) = EnumField(fieldName, displayName, databaseField, table, T::class.java)
+          nullable: Boolean = true
+      ) = EnumField(fieldName, displayName, databaseField, table, T::class.java, nullable)
     }
   }
 
@@ -394,7 +411,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       override val displayName: String,
       private val latitudeField: TableField<*, BigDecimal?>,
       private val longitudeField: TableField<*, BigDecimal?>,
-      override val table: SearchTable = SearchTables.Accession
+      override val table: SearchTable = SearchTables.Accession,
+      override val nullable: Boolean = true
   ) : SearchField<String> {
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = emptySet()
@@ -421,7 +439,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       override val fieldName: String,
       override val displayName: String,
       override val databaseField: TableField<*, Int?>,
-      override val table: SearchTable = SearchTables.Accession
+      override val table: SearchTable = SearchTables.Accession,
+      override val nullable: Boolean = true
   ) : SingleColumnSearchField<Int>() {
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
@@ -451,7 +470,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       override val fieldName: String,
       override val displayName: String,
       override val databaseField: Field<String?>,
-      override val table: SearchTable = SearchTables.Accession
+      override val table: SearchTable = SearchTables.Accession,
+      override val nullable: Boolean = true
   ) : SingleColumnSearchField<String>() {
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
@@ -484,7 +504,8 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       override val fieldName: String,
       override val displayName: String,
       override val databaseField: Field<String?>,
-      override val table: SearchTable = SearchTables.Accession
+      override val table: SearchTable = SearchTables.Accession,
+      override val nullable: Boolean = true
   ) : SingleColumnSearchField<String>() {
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)

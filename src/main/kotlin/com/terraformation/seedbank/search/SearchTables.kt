@@ -12,14 +12,19 @@ import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
 import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
 import org.jooq.Record
 import org.jooq.SelectJoinStep
+import org.jooq.Table
 import org.jooq.TableField
 
 interface SearchTable {
+  val fromTable: Table<out Record>
   fun addJoin(query: SelectJoinStep<out Record>): SelectJoinStep<out Record>
   fun dependsOn(): Set<SearchTable> = emptySet()
 }
 
 abstract class AccessionChildTable(private val idField: TableField<*, Long?>) : SearchTable {
+  override val fromTable
+    get() = idField.table!!
+
   override fun addJoin(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> {
     return query.leftJoin(idField.table!!).on(idField.eq(ACCESSION.ID))
   }
@@ -29,6 +34,9 @@ abstract class AccessionParentTable<T>(
     private val parentTableIdField: TableField<*, T?>,
     private val accessionForeignKeyField: TableField<AccessionRecord, T?>
 ) : SearchTable {
+  override val fromTable
+    get() = parentTableIdField.table!!
+
   override fun addJoin(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> {
     return query
         .leftJoin(parentTableIdField.table!!)
@@ -38,6 +46,9 @@ abstract class AccessionParentTable<T>(
 
 class SearchTables {
   object Accession : SearchTable {
+    override val fromTable
+      get() = ACCESSION
+
     override fun addJoin(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> {
       // No-op; initial query always selects from accession
       return query
@@ -47,6 +58,9 @@ class SearchTables {
   object CollectionEvent : AccessionChildTable(COLLECTION_EVENT.ACCESSION_ID)
 
   object Germination : SearchTable {
+    override val fromTable
+      get() = GERMINATION
+
     override fun dependsOn(): Set<SearchTable> {
       return setOf(GerminationTest)
     }

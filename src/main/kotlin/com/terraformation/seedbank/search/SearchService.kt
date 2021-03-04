@@ -5,8 +5,10 @@ import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
 import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
 import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
 import javax.annotation.ManagedBean
+import org.jetbrains.annotations.NotNull
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.SelectJoinStep
@@ -86,7 +88,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     return SearchResponsePayload(cursor = cursor, results = results.take(criteria.count))
   }
 
-  fun <T> fetchFieldValues(
+  fun <T> fetchValues(
       field: SearchField<T>,
       filters: List<SearchFilter>,
       limit: Int = 50
@@ -122,6 +124,49 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
     return results.distinct()
+  }
+
+  /**
+   * Returns all the values for a particular field.
+   *
+   * This is not the same as calling [fetchValues] with no filter criteria, because it does not
+   * limit the results to values that are currently used on accessions; for values from reference
+   * tables such as `storage_location`, that means the list of values may include ones that are
+   * currently not used anywhere.
+   */
+  fun <T> fetchAllValues(field: SearchField<T>, limit: Int = 50): List<String?> {
+    val values = field.possibleValues ?: queryAllValues(field, limit)
+    val hasNull = values.any { it == null }
+
+    return if (field.nullable && !hasNull) {
+      listOf(null) + values
+    } else {
+      values
+    }
+  }
+
+  private fun <T> queryAllValues(field: SearchField<T>, limit: Int): List<String?> {
+    val selectFields =
+        field.selectFields +
+            field.orderByFields.mapIndexed { index, orderByField ->
+              orderByField.`as`(DSL.field("field$index"))
+            }
+
+    val fullQuery =
+        dslContext
+            .selectDistinct(selectFields)
+            .from(field.table.fromTable)
+            .orderBy(
+                field.orderByFields.mapIndexed { index, _ ->
+                  DSL.field("field$index").asc().nullsLast()
+                },
+            )
+            .limit(limit + 1)
+
+    log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
+    return log.debugWithTiming<@NotNull MutableList<String>>("queryAllValues") {
+      fullQuery.fetch { field.computeValue(it) }
+    }
   }
 
   private fun joinWithSecondaryTables(

@@ -29,10 +29,8 @@ paths:
       tags:
       - DeviceManager
       summary: Get credentials for the MQTT broker.
-      description: "This generates a JSON Web Token which is valid for 2 minutes,\
-        \ but may be used to establish a persistent connection to the broker. For\
-        \ backward compatibility, the response is returned in JSON form even if the\
-        \ client requests text/plain."
+      description: "The password is a JSON Web Token which is valid for 2 minutes,\
+        \ but may be used to establish a persistent connection to the broker."
       operationId: credentials
       responses:
         "200":
@@ -529,6 +527,8 @@ paths:
     post:
       tags:
       - SeedBankApp
+      summary: List the values of a set of search fields for a set of accessions matching
+        certain filter criteria.
       operationId: listFieldValues
       requestBody:
         content:
@@ -543,6 +543,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListFieldValuesResponsePayload'
+  /api/v1/seedbank/values/all:
+    post:
+      tags:
+      - SeedBankApp
+      summary: List the possible values of a set of search fields.
+      operationId: listAllFieldValues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListAllFieldValuesRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAllFieldValuesResponsePayload'
   /api/v1/seedbank/values/storageLocation:
     get:
       tags:
@@ -747,6 +766,25 @@ components:
           minimum: 1
           type: integer
           format: int32
+    AllFieldValuesPayload:
+      required:
+      - partial
+      - values
+      type: object
+      properties:
+        values:
+          type: array
+          description: "All the values this field could possibly have, whether or\
+            \ not any accessions have them. For fields that allow the user to enter\
+            \ arbitrary values, this is equivalent to querying the list of values\
+            \ without any filter criteria, that is, it's a list of all the user-entered\
+            \ values."
+          items:
+            type: string
+        partial:
+          type: boolean
+          description: "If true, the list of values is too long to return in its entirety\
+            \ and \"values\" is a partial list."
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -953,6 +991,8 @@ components:
             nullable: true
         partial:
           type: boolean
+          description: "If true, the list of values is too long to return in its entirety\
+            \ and \"values\" is a partial list."
     Geolocation:
       required:
       - latitude
@@ -1052,6 +1092,27 @@ components:
         currentTime:
           type: string
           format: date-time
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListAllFieldValuesRequestPayload:
+      required:
+      - fields
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchField'
+    ListAllFieldValuesResponsePayload:
+      required:
+      - results
+      - status
+      type: object
+      properties:
+        results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AllFieldValuesPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListDeviceConfigsResponse:
@@ -1318,10 +1379,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
+          default: Ascending
           enum:
           - Ascending
           - Descending
-          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error

@@ -7,6 +7,7 @@ import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
+import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
@@ -14,6 +15,7 @@ import com.terraformation.seedbank.db.tables.pojos.Accession
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -29,9 +31,11 @@ class SearchServiceTest : DatabaseTest() {
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
   private val accessionNumberField = searchFields["accessionNumber"]!!
   private val activeField = searchFields["active"]!!
+  private val germinationTestTypeField = searchFields["germinationTestType"]!!
   private val receivedDateField = searchFields["receivedDate"]!!
   private val speciesField = searchFields["species"]!!
   private val stateField = searchFields["state"]!!
+  private val storageLocationField = searchFields["storageLocation"]!!
   private val storageNotesField = searchFields["storageNotes"]!!
   private val targetStorageConditionField = searchFields["targetStorageCondition"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
@@ -374,66 +378,93 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
-  fun `fetchFieldValues with no criteria for simple column value`() {
-    val values = searchService.fetchFieldValues(speciesField, emptyList())
+  fun `fetchValues with no criteria for simple column value`() {
+    val values = searchService.fetchValues(speciesField, emptyList())
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
   @Test
-  fun `fetchFieldValues renders null values as null, not as a string`() {
+  fun `fetchValues renders null values as null, not as a string`() {
     accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
-    val values = searchService.fetchFieldValues(speciesField, emptyList())
+    val values = searchService.fetchValues(speciesField, emptyList())
     assertEquals(listOf("Other Dogwood", null), values)
   }
 
   @Test
-  fun `fetchFieldValues with fuzzy search of accession number`() {
+  fun `fetchValues with fuzzy search of accession number`() {
     val values =
-        searchService.fetchFieldValues(
+        searchService.fetchValues(
             speciesField,
             listOf(SearchFilter(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy)))
     assertEquals(listOf("Kousa Dogwood"), values)
   }
 
   @Test
-  fun `fetchFieldValues with prefix search of accession number`() {
+  fun `fetchValues with prefix search of accession number`() {
     val values =
-        searchService.fetchFieldValues(
+        searchService.fetchValues(
             speciesField,
             listOf(SearchFilter(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy)))
     assertEquals(listOf("Other Dogwood"), values)
   }
 
   @Test
-  fun `fetchFieldValues with fuzzy search of text field in secondary table`() {
+  fun `fetchValues with fuzzy search of text field in secondary table`() {
     val values =
-        searchService.fetchFieldValues(
+        searchService.fetchValues(
             speciesField,
             listOf(SearchFilter(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy)))
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
   @Test
-  fun `fetchFieldValues with fuzzy search of text field in secondary table not in field list`() {
+  fun `fetchValues with fuzzy search of text field in secondary table not in field list`() {
     val values =
-        searchService.fetchFieldValues(
+        searchService.fetchValues(
             stateField,
             listOf(SearchFilter(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy)))
     assertEquals(listOf("Processed", "Processing"), values)
   }
 
   @Test
-  fun `fetchFieldValues with exact search of integer column value`() {
+  fun `fetchValues with exact search of integer column value`() {
     val values =
-        searchService.fetchFieldValues(
+        searchService.fetchValues(
             treesCollectedFromField, listOf(SearchFilter(treesCollectedFromField, listOf("1"))))
 
     assertEquals(listOf("1"), values)
   }
 
   @Test
-  fun `fetchFieldValues with no criteria for computed column value`() {
-    val values = searchService.fetchFieldValues(activeField, emptyList())
+  fun `fetchValues with no criteria for computed column value`() {
+    val values = searchService.fetchValues(activeField, emptyList())
     assertEquals(listOf("Active"), values)
+  }
+
+  @Test
+  fun `fetchAllValues does not return null for non-nullable field`() {
+    val values = searchService.fetchAllValues(accessionNumberField)
+    assertFalse(values.any { it == null }, "List of values should not contain null")
+  }
+
+  @Test
+  fun `fetchAllValues returns values for enum-mapped field`() {
+    val expected = listOf(null) + GerminationTestType.values().map { it.displayName }
+    val values = searchService.fetchAllValues(germinationTestTypeField)
+    assertEquals(expected, values)
+  }
+
+  @Test
+  fun `fetchAllValues returns values for free-text field on accession table`() {
+    val expected = listOf(null, "Kousa Dogwood", "Other Dogwood")
+    val values = searchService.fetchAllValues(speciesField)
+    assertEquals(expected, values)
+  }
+
+  @Test
+  fun `fetchAllValues returns values for field from reference table`() {
+    val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
+    val values = searchService.fetchAllValues(storageLocationField)
+    assertEquals(expected, values)
   }
 }
