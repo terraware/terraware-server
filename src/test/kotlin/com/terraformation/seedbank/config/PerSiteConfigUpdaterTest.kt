@@ -20,7 +20,9 @@ import com.terraformation.seedbank.db.tables.pojos.SiteModule
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.Instant
 import org.jooq.DAO
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,7 +31,10 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.core.io.ResourceLoader
+import org.springframework.scheduling.TaskScheduler
 
 internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   @Autowired private lateinit var resourceLoader: ResourceLoader
@@ -44,6 +49,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   private lateinit var updater: PerSiteConfigUpdater
 
   private val serverConfig: TerrawareServerConfig = mockk()
+  private val taskScheduler: TaskScheduler = mockk()
 
   @BeforeEach
   fun setup() {
@@ -66,7 +72,8 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             siteModuleDao,
             storageLocationDao,
             ObjectMapper().registerKotlinModule(),
-            serverConfig)
+            serverConfig,
+            taskScheduler)
 
     deleteDemoData()
   }
@@ -190,6 +197,24 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
         devices = listOf(device),
         storageLocations = listOf(storageLocation),
     )
+  }
+
+  @Test
+  fun `periodic refresh is scheduled based on configuration`() {
+    every { taskScheduler.scheduleAtFixedRate(any(), any(), any<Duration>()) } returns mockk()
+    every { serverConfig.siteConfigRefreshSecs } returns 10
+
+    updater.scheduleTasks(ApplicationStartedEvent(SpringApplication(), emptyArray(), null))
+    verify { taskScheduler.scheduleAtFixedRate(any(), Instant.EPOCH, Duration.ofSeconds(10)) }
+  }
+
+  @Test
+  fun `periodic refresh is not scheduled if interval is 0`() {
+    every { serverConfig.siteConfigRefreshSecs } returns 0
+
+    // If this calls the scheduler, the scheduler mock will throw an exception since we haven't
+    // set behavior of any method calls.
+    updater.scheduleTasks(ApplicationStartedEvent(SpringApplication(), emptyArray(), null))
   }
 
   private fun assertConfigInDatabase(expected: PerSiteConfig) {

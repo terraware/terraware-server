@@ -26,6 +26,9 @@ class TerrawareServerConfig {
   /** URL of site-specific configuration file. */
   @NotNull lateinit var siteConfigUrl: Resource
 
+  /** How often to refresh site-specific configuration, in seconds. 0 disables periodic refresh. */
+  @Min(0) var siteConfigRefreshSecs: Long = 3600
+
   @Min(1) var siteModuleId: Long = 0
 
   /**

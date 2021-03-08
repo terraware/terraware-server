@@ -14,12 +14,16 @@ import com.terraformation.seedbank.db.tables.pojos.SiteModule
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import com.terraformation.seedbank.services.perClassLogger
 import java.io.IOException
+import java.time.Duration
+import java.time.Instant
 import javax.annotation.ManagedBean
 import javax.validation.constraints.NotEmpty
 import org.jooq.DAO
 import org.jooq.DSLContext
+import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.event.EventListener
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.scheduling.TaskScheduler
 
 data class PerSiteConfig(
     val devices: List<Device> = emptyList(),
@@ -38,12 +42,24 @@ class PerSiteConfigUpdater(
     private val siteModuleDao: SiteModuleDao,
     private val storageLocationDao: StorageLocationDao,
     private val objectMapper: ObjectMapper,
-    private val serverConfig: TerrawareServerConfig
+    private val serverConfig: TerrawareServerConfig,
+    private val taskScheduler: TaskScheduler
 ) {
   private val log = perClassLogger()
 
-  @Scheduled(initialDelay = 0, fixedRate = 3600000)
-  fun refreshConfig() {
+  @EventListener
+  fun scheduleTasks(event: ApplicationStartedEvent) {
+    if (serverConfig.siteConfigRefreshSecs > 0) {
+      taskScheduler.scheduleAtFixedRate(
+          this::refreshConfig,
+          Instant.EPOCH,
+          Duration.ofSeconds(serverConfig.siteConfigRefreshSecs))
+    } else {
+      log.info("Disabling periodic refresh of per-site configuration")
+    }
+  }
+
+  private fun refreshConfig() {
     log.info("Refreshing per-site configuration")
 
     val config = fetchConfig()
