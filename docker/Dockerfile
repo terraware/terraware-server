@@ -1,6 +1,7 @@
 FROM openjdk:15-buster
 WORKDIR /home/app
-COPY entrypoint.sh /
+COPY entrypoint.sh metrics.sh /usr/local/bin/
+RUN cd /usr/local/bin && chmod 755 entrypoint.sh metrics.sh
 
 # Copy libraries as an explicit step so they end up in a separate layer from the
 # application code. This way, pulling a new version of the application when the
@@ -15,5 +16,5 @@ COPY BOOT-INF/classes .
 
 EXPOSE 8080
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["java", "-cp", ".:lib/*", "com.terraformation.seedbank.ApplicationKt"]

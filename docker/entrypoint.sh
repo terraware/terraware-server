@@ -26,6 +26,8 @@ if [ "$BALENA" = 1 ]; then
             mount "$DISK_DEVICE" /data
             ;;
     esac
+
+    /usr/local/bin/metrics.sh &
 fi
 
 exec "$@"
