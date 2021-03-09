@@ -19,11 +19,24 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RestController
 
-@Profile("default", "apidoc")
-@Controller
+@RestController
 @SeedBankAppEndpoint
 class ClockController(private val clock: DatabaseBackedClock) {
+  @GetMapping("/api/v1/seedbank/clock")
+  @Operation(
+      summary = "Get the server's current date and time.",
+      description =
+          "In test environments, the clock can be advanced artificially, which will cause it to " +
+              "differ from the real-world date and time.")
+  fun getCurrentTime() = GetCurrentTimeResponsePayload(clock.instant())
+}
+
+@Controller
+@Profile("default", "apidoc")
+@SeedBankAppEndpoint
+class ClockAdjustmentController(private val clock: DatabaseBackedClock) {
   @GetMapping("/api/test/clock")
   @Hidden
   fun getClockTestUi(model: Model): String {
@@ -41,15 +54,6 @@ class ClockController(private val clock: DatabaseBackedClock) {
     model.addAttribute("successMessage", "Clock advanced by $days $daysWord.")
     return getClockTestUi(model)
   }
-
-  @GetMapping("/api/v1/seedbank/clock")
-  @Operation(
-      summary = "Get the server's current date and time.",
-      description =
-          "In test environments, the clock can be advanced artificially, which will cause it to " +
-              "differ from the real-world date and time.")
-  @ResponseBody
-  fun getCurrentTime() = GetCurrentTimeResponsePayload(clock.instant())
 
   @ApiResponse(
       responseCode = "200",
