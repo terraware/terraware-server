@@ -89,4 +89,14 @@ class DeviceFetcher(private val dslContext: DSLContext) {
           }
     }
   }
+
+  fun getDeviceIdByName(siteModuleId: Long, name: String): Long? {
+    return dslContext
+        .select(DEVICE.ID)
+        .from(DEVICE)
+        .where(DEVICE.SITE_MODULE_ID.eq(siteModuleId))
+        .and(DEVICE.NAME.eq(name))
+        .and(DEVICE.ENABLED.isTrue)
+        .fetchOne(DEVICE.ID)
+  }
 }

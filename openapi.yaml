@@ -523,6 +523,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
+  /api/v1/seedbank/timeseries:
+    post:
+      tags:
+      - DeviceManager
+      summary: Report a numeric timeseries value.
+      operationId: reportNumericValue
+      parameters:
+      - name: device
+        in: query
+        required: true
+        schema:
+          type: string
+          description: Name of device. Must match the device name as defined in the
+            per-site configuration.
+      - name: timeseries
+        in: query
+        required: true
+        schema:
+          type: string
+          description: "Name of timeseries. If the timeseries does not already exist,\
+            \ it will be created."
+      - name: value
+        in: query
+        required: true
+        schema:
+          type: number
+      - name: units
+        in: query
+        required: false
+        schema:
+          type: string
+          description: The type of unit the value measures. Ignored if the timeseries
+            already exists.
+          example: MB
+      - name: decimalPlaces
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Number of significant decimal places. Ignored if the timeseries
+            already exists. Values are always stored in their entirety but dashboards
+            and reports can use this value to control how many decimal places to display.
+          format: int32
+      - name: siteModuleId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "Which site module the device is in, if it isn't in the seed\
+            \ bank's default site module. Must match the site module ID the device\
+            \ is associated with in the per-site configuration."
+          format: int64
+      responses:
+        "200":
+          description: Timeseries value recorded successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/values:
     post:
       tags:

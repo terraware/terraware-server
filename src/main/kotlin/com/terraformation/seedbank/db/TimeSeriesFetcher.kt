@@ -32,4 +32,15 @@ class TimeSeriesFetcher(
           .associateBy({ it.value1()!! }) { it.value2()!! }
     }
   }
+
+  fun getTimeseriesIdByName(deviceId: Long, name: String): Long? {
+    with(TIMESERIES) {
+      return dslContext
+          .select(ID)
+          .from(TIMESERIES)
+          .where(DEVICE_ID.eq(deviceId))
+          .and(NAME.eq(name))
+          .fetchOne(ID)
+    }
+  }
 }
