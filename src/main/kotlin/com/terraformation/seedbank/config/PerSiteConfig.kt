@@ -48,7 +48,7 @@ class PerSiteConfigUpdater(
   private val log = perClassLogger()
 
   @EventListener
-  fun scheduleTasks(event: ApplicationStartedEvent) {
+  fun scheduleTasks(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
     if (serverConfig.siteConfigRefreshSecs > 0) {
       taskScheduler.scheduleAtFixedRate(
           this::refreshConfig,
