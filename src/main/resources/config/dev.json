@@ -58,7 +58,7 @@
       "deviceType": "server",
       "make": "sim",
       "model": "rpi",
-      "name": "rpi",
+      "name": "server",
       "protocol": "modbus",
       "address": "sim",
       "port": 0,

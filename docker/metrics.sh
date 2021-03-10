@@ -4,7 +4,7 @@ DATA_PATH=/data/.
 
 post_metric() {
     curl -sSf \
-        --data device=rpi \
+        --data device=server \
         --data-urlencode "timeseries=$1" \
         --data "value=$2" \
         --data "units=$3" \
