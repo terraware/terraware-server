@@ -1323,6 +1323,7 @@ components:
       enum:
       - accessionNumber
       - active
+      - bagNumber
       - collectedDate
       - collectionNotes
       - cutTestSeedsCompromised
@@ -1444,10 +1445,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
-          default: Ascending
           enum:
           - Ascending
           - Descending
+          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error

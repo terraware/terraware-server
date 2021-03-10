@@ -2,6 +2,7 @@ package com.terraformation.seedbank.search
 
 import com.terraformation.seedbank.db.tables.records.AccessionRecord
 import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.db.tables.references.BAG
 import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
 import com.terraformation.seedbank.db.tables.references.GERMINATION
@@ -54,6 +55,8 @@ class SearchTables {
       return query
     }
   }
+
+  object Bag : AccessionChildTable(BAG.ACCESSION_ID)
 
   object CollectionEvent : AccessionChildTable(COLLECTION_EVENT.ACCESSION_ID)
 

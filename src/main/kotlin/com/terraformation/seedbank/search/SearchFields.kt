@@ -6,6 +6,7 @@ import com.terraformation.seedbank.db.EnumFromReferenceTable
 import com.terraformation.seedbank.db.FuzzySearchOperators
 import com.terraformation.seedbank.db.UsesFuzzySearchOperators
 import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.db.tables.references.BAG
 import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
 import com.terraformation.seedbank.db.tables.references.GERMINATION
@@ -66,6 +67,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     return listOf(
         UpperCaseTextField("accessionNumber", "Accession", ACCESSION.NUMBER, nullable = false),
         ActiveField("active", "Active"),
+        TextField("bagNumber", "Bag number", BAG.LABEL, SearchTables.Bag),
         DateField("collectedDate", "Collected on", ACCESSION.COLLECTED_DATE),
         TextField("collectionNotes", "Notes (collection)", ACCESSION.COLLECTION_SITE_NOTES),
         IntegerField(
