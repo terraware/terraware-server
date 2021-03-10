@@ -30,7 +30,7 @@ plugins {
 
 group = "com.terraformation"
 version = computeGitVersion("0.1")
-java.targetCompatibility = JavaVersion.VERSION_11
+java.targetCompatibility = JavaVersion.VERSION_15
 
 repositories {
   mavenCentral()

@@ -8,7 +8,7 @@ The code should be written in idiomatic Kotlin and should generally follow the g
 
 It runs on the JVM, and thus makes extensive use of Java libraries. There are no plans to support multiplatform builds. If you find a Java library that does just what you need, use it rather than reinventing the wheel!
 
-Currently, the build targets the Java 11 environment, but this will change in the future; avoid using any libraries that are marked deprecated in Java 15 or later.
+Currently, the build targets the Java 15 JVM. It will likely track new JVM releases since there are often garbage collection improvements that can be significant in memory-constrained environments.
 
 ### Formatting
 
