@@ -87,6 +87,9 @@ class TerrawareServerConfig {
       /** Client identifier to send during MQTT authentication. */
       var clientId: String? = "seedbank-server",
 
+      /** Password to send during MQTT authentication. */
+      var password: String? = null,
+
       /**
        * Prefix to use in front of topic names. The server will automatically add "/" between this
        * and the topic names it generates. Default is to directly use the generated topics with no

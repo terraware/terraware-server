@@ -44,6 +44,7 @@ class MqttClientManager(
       config.mqtt.address ?: throw IllegalArgumentException("terraware.mqtt.address not set")
   private val clientId =
       config.mqtt.clientId ?: throw IllegalArgumentException("terraware.mqtt.clientId not set")
+  private val password = config.mqtt.password?.toCharArray()
   private val topicFilter = listOfNotNull(config.mqtt.topicPrefix, "#").joinToString("/")
   private val retryIntervalMillis: Long = config.mqtt.connectRetryIntervalMillis
 
@@ -97,7 +98,7 @@ class MqttClientManager(
 
               try {
                 connectOptions.password =
-                    jwtGenerator.generateMqttToken(clientId, topicFilter).toCharArray()
+                    password ?: jwtGenerator.generateMqttToken(clientId, topicFilter).toCharArray()
 
                 newClient.setCallback(this@MqttClientManager)
                 newClient.connect(connectOptions)
