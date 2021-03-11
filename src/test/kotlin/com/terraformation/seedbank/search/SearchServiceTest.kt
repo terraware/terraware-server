@@ -106,7 +106,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can do range search on integer field`() {
-    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(collectionTrees = 500))
+    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
     val filters =
         listOf(SearchFilter(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range))

@@ -4,7 +4,7 @@
 
 -- Foreign key columns. Not all foreign keys are indexed, just ones where the index was observed
 -- to make a difference in actual query execution.
-CREATE INDEX IF NOT EXISTS collection_event__accession_id_ix ON collection_event (accession_id);
+CREATE INDEX IF NOT EXISTS geolocation__accession_id_ix ON geolocation (accession_id);
 CREATE INDEX IF NOT EXISTS germination__test_id_ix ON germination (test_id);
 CREATE INDEX IF NOT EXISTS germination_test__accession_id_ix ON germination_test (accession_id);
 CREATE INDEX IF NOT EXISTS withdrawal__accession_id_ix ON withdrawal (accession_id);

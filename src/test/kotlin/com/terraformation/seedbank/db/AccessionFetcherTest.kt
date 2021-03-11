@@ -12,7 +12,7 @@ import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.daos.AppDeviceDao
 import com.terraformation.seedbank.db.tables.daos.BagDao
-import com.terraformation.seedbank.db.tables.daos.CollectionEventDao
+import com.terraformation.seedbank.db.tables.daos.GeolocationDao
 import com.terraformation.seedbank.db.tables.daos.GerminationDao
 import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
@@ -72,7 +72,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   private lateinit var accessionPhotoDao: AccessionPhotoDao
   private lateinit var appDeviceDao: AppDeviceDao
   private lateinit var bagDao: BagDao
-  private lateinit var collectionEventDao: CollectionEventDao
+  private lateinit var geolocationDao: GeolocationDao
   private lateinit var germinationDao: GerminationDao
   private lateinit var germinationTestDao: GerminationTestDao
   private lateinit var storageLocationDao: StorageLocationDao
@@ -87,7 +87,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     accessionPhotoDao = AccessionPhotoDao(jooqConfig)
     appDeviceDao = AppDeviceDao(jooqConfig)
     bagDao = BagDao(jooqConfig)
-    collectionEventDao = CollectionEventDao(jooqConfig)
+    geolocationDao = GeolocationDao(jooqConfig)
     germinationDao = GerminationDao(jooqConfig)
     germinationTestDao = GerminationTestDao(jooqConfig)
     storageLocationDao = StorageLocationDao(jooqConfig)
@@ -103,7 +103,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
             config,
             AppDeviceFetcher(dslContext, clock),
             BagFetcher(dslContext),
-            CollectionEventFetcher(dslContext, clock),
+            GeolocationFetcher(dslContext, clock),
             GerminationFetcher(dslContext),
             PhotoRepository(config, accessionPhotoDao, clock),
             SpeciesFetcher(clock, support),
@@ -202,7 +202,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     assertEquals(setOf(1L, 2L), initialBags.map { it.id }.toSet(), "Initial bag IDs")
     assertEquals(
-        setOf("bag 1", "bag 2"), initialBags.map { it.label }.toSet(), "Initial bag numbers")
+        setOf("bag 1", "bag 2"), initialBags.map { it.bagNumber }.toSet(), "Initial bag numbers")
 
     val desired = AccessionPayload(initial).copy(bagNumbers = setOf("bag 2", "bag 3"))
 
@@ -211,10 +211,10 @@ internal class AccessionFetcherTest : DatabaseTest() {
     val updatedBags = bagDao.fetchByAccessionId(1)
 
     assertTrue(Bag(3, 1, "bag 3") in updatedBags, "New bag inserted")
-    assertTrue(updatedBags.none { it.label == "bag 1" }, "Missing bag deleted")
+    assertTrue(updatedBags.none { it.bagNumber == "bag 1" }, "Missing bag deleted")
     assertEquals(
-        initialBags.filter { it.label == "bag 2" },
-        updatedBags.filter { it.label == "bag 2" },
+        initialBags.filter { it.bagNumber == "bag 2" },
+        updatedBags.filter { it.bagNumber == "bag 2" },
         "Existing bag is not replaced")
   }
 
@@ -249,7 +249,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                     setOf(
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                         Geolocation(BigDecimal(3), BigDecimal(4)))))
-    val initialGeos = collectionEventDao.fetchByAccessionId(1)
+    val initialGeos = geolocationDao.fetchByAccessionId(1)
 
     // Insertion order is not defined by the API.
 
@@ -267,7 +267,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     assertTrue(fetcher.update(initial.accessionNumber, desired), "Update succeeded")
 
-    val updatedGeos = collectionEventDao.fetchByAccessionId(1)
+    val updatedGeos = geolocationDao.fetchByAccessionId(1)
 
     assertTrue(
         updatedGeos.any { it.id == 3L && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 },

@@ -1,7 +1,7 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.api.seedbank.Geolocation
-import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
+import com.terraformation.seedbank.db.tables.references.GEOLOCATION
 import com.terraformation.seedbank.services.toSetOrNull
 import java.math.BigDecimal
 import java.time.Clock
@@ -10,17 +10,17 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 @ManagedBean
-class CollectionEventFetcher(private val dslContext: DSLContext, private val clock: Clock) {
+class GeolocationFetcher(private val dslContext: DSLContext, private val clock: Clock) {
   fun fetchGeolocations(accessionId: Long): Set<Geolocation>? {
     return dslContext
-        .selectFrom(COLLECTION_EVENT)
-        .where(COLLECTION_EVENT.ACCESSION_ID.eq(accessionId))
-        .orderBy(COLLECTION_EVENT.LATITUDE, COLLECTION_EVENT.LONGITUDE)
+        .selectFrom(GEOLOCATION)
+        .where(GEOLOCATION.ACCESSION_ID.eq(accessionId))
+        .orderBy(GEOLOCATION.LATITUDE, GEOLOCATION.LONGITUDE)
         .fetch { record ->
           Geolocation(
-              record[COLLECTION_EVENT.LATITUDE]!!,
-              record[COLLECTION_EVENT.LONGITUDE]!!,
-              record[COLLECTION_EVENT.GPS_ACCURACY]?.let { BigDecimal(it) },
+              record[GEOLOCATION.LATITUDE]!!,
+              record[GEOLOCATION.LONGITUDE]!!,
+              record[GEOLOCATION.GPS_ACCURACY]?.let { BigDecimal(it) },
           )
         }
         .toSetOrNull()
@@ -37,10 +37,10 @@ class CollectionEventFetcher(private val dslContext: DSLContext, private val clo
       val deleted = existing.minus(desired)
       val added = desired.minus(existing)
 
-      with(COLLECTION_EVENT) {
+      with(GEOLOCATION) {
         if (deleted.isNotEmpty()) {
           dslContext
-              .deleteFrom(COLLECTION_EVENT)
+              .deleteFrom(GEOLOCATION)
               .where(ACCESSION_ID.eq(accessionId))
               .and(
                   DSL.row(LATITUDE, LONGITUDE)
@@ -51,7 +51,7 @@ class CollectionEventFetcher(private val dslContext: DSLContext, private val clo
         added.forEach { geolocation ->
           dslContext
               .insertInto(
-                  COLLECTION_EVENT, ACCESSION_ID, CREATED_TIME, LATITUDE, LONGITUDE, GPS_ACCURACY)
+                  GEOLOCATION, ACCESSION_ID, CREATED_TIME, LATITUDE, LONGITUDE, GPS_ACCURACY)
               .values(
                   accessionId,
                   clock.instant(),

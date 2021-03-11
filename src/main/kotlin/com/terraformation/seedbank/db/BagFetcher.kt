@@ -9,11 +9,11 @@ import org.jooq.DSLContext
 class BagFetcher(private val dslContext: DSLContext) {
   fun fetchBagNumbers(accessionId: Long): Set<String>? {
     return dslContext
-        .select(BAG.LABEL)
+        .select(BAG.BAG_NUMBER)
         .from(BAG)
         .where(BAG.ACCESSION_ID.eq(accessionId))
-        .orderBy(BAG.LABEL)
-        .fetch(BAG.LABEL)
+        .orderBy(BAG.BAG_NUMBER)
+        .fetch(BAG.BAG_NUMBER)
         .toSetOrNull()
   }
 
@@ -32,13 +32,13 @@ class BagFetcher(private val dslContext: DSLContext) {
         dslContext
             .deleteFrom(BAG)
             .where(BAG.ACCESSION_ID.eq(accessionId))
-            .and(BAG.LABEL.`in`(deletedBagNumbers))
+            .and(BAG.BAG_NUMBER.`in`(deletedBagNumbers))
             .execute()
       }
 
       addedBagNumbers.forEach { bagNumber ->
         dslContext
-            .insertInto(BAG, BAG.ACCESSION_ID, BAG.LABEL)
+            .insertInto(BAG, BAG.ACCESSION_ID, BAG.BAG_NUMBER)
             .values(accessionId, bagNumber)
             .execute()
       }

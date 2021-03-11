@@ -7,8 +7,8 @@ import com.terraformation.seedbank.db.FuzzySearchOperators
 import com.terraformation.seedbank.db.UsesFuzzySearchOperators
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.BAG
-import com.terraformation.seedbank.db.tables.references.COLLECTION_EVENT
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
+import com.terraformation.seedbank.db.tables.references.GEOLOCATION
 import com.terraformation.seedbank.db.tables.references.GERMINATION
 import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
 import com.terraformation.seedbank.db.tables.references.SPECIES
@@ -67,9 +67,9 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     return listOf(
         UpperCaseTextField("accessionNumber", "Accession", ACCESSION.NUMBER, nullable = false),
         ActiveField("active", "Active"),
-        TextField("bagNumber", "Bag number", BAG.LABEL, SearchTables.Bag),
+        TextField("bagNumber", "Bag number", BAG.BAG_NUMBER, SearchTables.Bag),
         DateField("collectedDate", "Collected on", ACCESSION.COLLECTED_DATE),
-        TextField("collectionNotes", "Notes (collection)", ACCESSION.COLLECTION_SITE_NOTES),
+        TextField("collectionNotes", "Notes (collection)", ACCESSION.ENVIRONMENTAL_NOTES),
         IntegerField(
             "cutTestSeedsCompromised",
             "Number of seeds compromised",
@@ -88,9 +88,9 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         GeolocationField(
             "geolocation",
             "Geolocation",
-            COLLECTION_EVENT.LATITUDE,
-            COLLECTION_EVENT.LONGITUDE,
-            SearchTables.CollectionEvent),
+            GEOLOCATION.LATITUDE,
+            GEOLOCATION.LONGITUDE,
+            SearchTables.Geolocation),
         IntegerField(
             "germinationPercentGerminated",
             "Total % of seeds germinated",
@@ -174,7 +174,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "Total estimated % viability",
             ACCESSION.TOTAL_VIABILITY_PERCENT),
         IntegerField(
-            "treesCollectedFrom", "Number of trees collected from", ACCESSION.COLLECTION_TREES),
+            "treesCollectedFrom", "Number of trees collected from", ACCESSION.TREES_COLLECTED_FROM),
         DateField("withdrawalDate", "Date of withdrawal", WITHDRAWAL.DATE, SearchTables.Withdrawal),
         TextField(
             "withdrawalDestination",

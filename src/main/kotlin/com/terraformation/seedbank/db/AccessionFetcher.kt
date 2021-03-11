@@ -36,7 +36,7 @@ class AccessionFetcher(
     private val config: TerrawareServerConfig,
     private val appDeviceFetcher: AppDeviceFetcher,
     private val bagFetcher: BagFetcher,
-    private val collectionEventFetcher: CollectionEventFetcher,
+    private val geolocationFetcher: GeolocationFetcher,
     private val germinationFetcher: GerminationFetcher,
     private val photoRepository: PhotoRepository,
     private val speciesFetcher: SpeciesFetcher,
@@ -94,7 +94,7 @@ class AccessionFetcher(
     val secondaryCollectorNames = fetchSecondaryCollectorNames(accessionId)
     val bagNumbers = bagFetcher.fetchBagNumbers(accessionId)
     val deviceInfo = appDeviceFetcher.fetchById(parentRow[ACCESSION.APP_DEVICE_ID])
-    val geolocations = collectionEventFetcher.fetchGeolocations(accessionId)
+    val geolocations = geolocationFetcher.fetchGeolocations(accessionId)
     val germinationTestTypes = germinationFetcher.fetchGerminationTestTypes(accessionId)
     val germinationTests = germinationFetcher.fetchGerminationTests(accessionId)
     val photoFilenames = photoRepository.listPhotos(accessionId).map { it.filename }.toListOrNull()
@@ -107,8 +107,8 @@ class AccessionFetcher(
           state = parentRow[STATE_ID]!!,
           species = parentRow[species().NAME],
           family = parentRow[speciesFamily().NAME],
-          numberOfTrees = parentRow[COLLECTION_TREES],
-          founderId = parentRow[FOUNDER_TREE],
+          numberOfTrees = parentRow[TREES_COLLECTED_FROM],
+          founderId = parentRow[FOUNDER_ID],
           endangered = parentRow[SPECIES_ENDANGERED],
           rare = parentRow[SPECIES_RARE],
           fieldNotes = parentRow[FIELD_NOTES],
@@ -118,7 +118,7 @@ class AccessionFetcher(
           secondaryCollectors = secondaryCollectorNames,
           siteLocation = parentRow[COLLECTION_SITE_NAME],
           landowner = parentRow[COLLECTION_SITE_LANDOWNER],
-          environmentalNotes = parentRow[COLLECTION_SITE_NOTES],
+          environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
           processingStartDate = parentRow[PROCESSING_START_DATE],
           processingMethod = parentRow[PROCESSING_METHOD_ID],
           seedsCounted = parentRow[SEEDS_COUNTED],
@@ -178,8 +178,8 @@ class AccessionFetcher(
                     .set(STATE_ID, AccessionState.Pending)
                     .set(SPECIES_ID, speciesFetcher.getSpeciesId(accession.species))
                     .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
-                    .set(COLLECTION_TREES, accession.numberOfTrees)
-                    .set(FOUNDER_TREE, accession.founderId)
+                    .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
+                    .set(FOUNDER_ID, accession.founderId)
                     .set(SPECIES_ENDANGERED, accession.endangered)
                     .set(SPECIES_RARE, accession.rare)
                     .set(FIELD_NOTES, accession.fieldNotes)
@@ -188,7 +188,7 @@ class AccessionFetcher(
                     .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
                     .set(COLLECTION_SITE_NAME, accession.siteLocation)
                     .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
-                    .set(COLLECTION_SITE_NOTES, accession.environmentalNotes)
+                    .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                     .set(STORAGE_START_DATE, accession.storageStartDate)
                     .set(STORAGE_PACKETS, accession.storagePackets)
                     .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
@@ -220,7 +220,7 @@ class AccessionFetcher(
 
           insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
           bagFetcher.updateBags(accessionId, emptySet(), accession.bagNumbers)
-          collectionEventFetcher.updateGeolocations(accessionId, emptySet(), accession.geolocations)
+          geolocationFetcher.updateGeolocations(accessionId, emptySet(), accession.geolocations)
           germinationFetcher.updateGerminationTestTypes(
               accessionId, emptySet(), accession.germinationTestTypes)
           germinationFetcher.updateGerminationTests(
@@ -262,7 +262,7 @@ class AccessionFetcher(
       }
 
       bagFetcher.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
-      collectionEventFetcher.updateGeolocations(
+      geolocationFetcher.updateGeolocations(
           accessionId, existing.geolocations, accession.geolocations)
       germinationFetcher.updateGerminationTestTypes(
           accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
@@ -300,8 +300,8 @@ class AccessionFetcher(
                 .set(STATE_ID, stateTransition?.newState ?: existing.state)
                 .set(SPECIES_ID, speciesFetcher.getSpeciesId(accession.species))
                 .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
-                .set(COLLECTION_TREES, accession.numberOfTrees)
-                .set(FOUNDER_TREE, accession.founderId)
+                .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
+                .set(FOUNDER_ID, accession.founderId)
                 .set(SPECIES_ENDANGERED, accession.endangered)
                 .set(SPECIES_RARE, accession.rare)
                 .set(FIELD_NOTES, accession.fieldNotes)
@@ -327,7 +327,7 @@ class AccessionFetcher(
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
                 .set(COLLECTION_SITE_NAME, accession.siteLocation)
                 .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
-                .set(COLLECTION_SITE_NOTES, accession.environmentalNotes)
+                .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                 .set(STORAGE_START_DATE, accession.storageStartDate)
                 .set(STORAGE_PACKETS, accession.storagePackets)
                 .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))

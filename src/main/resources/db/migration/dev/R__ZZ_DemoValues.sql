@@ -31,13 +31,13 @@ ON CONFLICT (id) DO UPDATE SET name         = excluded.name,
                                condition_id = excluded.condition_id;
 
 INSERT INTO accession (id, number, state_id, site_module_id, created_time, species_id,
-                       species_family_id, collection_trees)
+                       species_family_id, trees_collected_from)
 VALUES (1000, 'XYZ', 30, 100, '2021-01-03T15:31:20Z', 10000, 20000, 1),
        (1001, 'ABCDEFG', 20, 100, '2021-01-10T13:08:11Z', 10001, 20000, 2)
 ON CONFLICT (id) DO UPDATE SET number           = excluded.number,
                                state_id         = excluded.state_id,
                                species_id       = excluded.species_id,
-                               collection_trees = excluded.collection_trees;
+                               trees_collected_from = excluded.trees_collected_from;
 
 INSERT INTO notification (id, site_id, type_id, accession_id, created_time, read, message,
                           accession_state_id)
