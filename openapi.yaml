@@ -24,24 +24,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListDeviceConfigsResponse'
-  /api/v1/mqtt/credentials:
-    post:
-      tags:
-      - DeviceManager
-      summary: Get credentials for the MQTT broker.
-      description: "The password is a JSON Web Token which is valid for 2 minutes,\
-        \ but may be used to establish a persistent connection to the broker."
-      operationId: credentials
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MqttCredentialsResponse'
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/MqttCredentialsResponse'
   /api/v1/resources:
     post:
       tags:
@@ -1252,16 +1234,6 @@ components:
             $ref: '#/components/schemas/ListPhotosResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    MqttCredentialsResponse:
-      required:
-      - password
-      - username
-      type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
     NotificationListResponse:
       required:
       - notifications
@@ -1445,10 +1417,10 @@ components:
           $ref: '#/components/schemas/SearchField'
         direction:
           type: string
+          default: Ascending
           enum:
           - Ascending
           - Descending
-          default: Ascending
     SimpleErrorResponsePayload:
       required:
       - error

@@ -2,7 +2,6 @@
 # multi-service deployment.
 
 terraware:
-  jwt-secret: "${TERRAWARE_JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}"
   mqtt:
     enabled: true
     address: "ws://mosquitto:1883/"

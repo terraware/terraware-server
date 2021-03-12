@@ -7,7 +7,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.io.Resource
 import org.springframework.format.annotation.DateTimeFormat
@@ -16,13 +15,6 @@ import org.springframework.validation.annotation.Validated
 @ConfigurationProperties("terraware")
 @Validated
 class TerrawareServerConfig {
-  /**
-   * Base64-encoded secret key to use for JWT signing. This must match the key in the Mosquitto
-   * configuration.
-   */
-  @Size(min = 32, message = "Secret must be at least 32 bytes (256 bits)")
-  var jwtSecret: ByteArray? = null
-
   /** URL of site-specific configuration file. */
   @NotNull lateinit var siteConfigUrl: Resource
 

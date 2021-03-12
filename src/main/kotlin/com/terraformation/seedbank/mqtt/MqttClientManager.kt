@@ -36,7 +36,6 @@ import org.springframework.context.event.EventListener
 @ManagedBean
 class MqttClientManager(
     config: TerrawareServerConfig,
-    private val jwtGenerator: JwtGenerator,
     private val parser: MessageParser,
     private val publisher: ApplicationEventPublisher,
 ) : MqttCallbackExtended {
@@ -44,7 +43,9 @@ class MqttClientManager(
       config.mqtt.address ?: throw IllegalArgumentException("terraware.mqtt.address not set")
   private val clientId =
       config.mqtt.clientId ?: throw IllegalArgumentException("terraware.mqtt.clientId not set")
-  private val password = config.mqtt.password?.toCharArray()
+  private val password =
+      config.mqtt.password?.toCharArray()
+          ?: throw IllegalArgumentException("terraware.mqtt.password not set")
   private val topicFilter = listOfNotNull(config.mqtt.topicPrefix, "#").joinToString("/")
   private val retryIntervalMillis: Long = config.mqtt.connectRetryIntervalMillis
 
@@ -97,9 +98,7 @@ class MqttClientManager(
               val newClient = MqttClient("$address", clientId, persistence)
 
               try {
-                connectOptions.password =
-                    password ?: jwtGenerator.generateMqttToken(clientId, topicFilter).toCharArray()
-
+                connectOptions.password = password
                 newClient.setCallback(this@MqttClientManager)
                 newClient.connect(connectOptions)
                 newClient.subscribe(topicFilter)
