@@ -5,7 +5,7 @@ import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.config.TerrawareServerConfig
-import com.terraformation.seedbank.db.DeviceFetcher
+import com.terraformation.seedbank.db.DeviceStore
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/device")
 class DeviceController(
     private val config: TerrawareServerConfig,
-    private val deviceFetcher: DeviceFetcher,
+    private val deviceStore: DeviceStore,
 ) {
   @GetMapping("/all/config")
   fun listDeviceConfigs(@AuthenticationPrincipal auth: ClientIdentity): ListDeviceConfigsResponse {
-    val devices = deviceFetcher.fetchDeviceConfigurationForSite(config.siteModuleId)
+    val devices = deviceStore.fetchDeviceConfigurationForSite(config.siteModuleId)
     return ListDeviceConfigsResponse(devices)
   }
 }

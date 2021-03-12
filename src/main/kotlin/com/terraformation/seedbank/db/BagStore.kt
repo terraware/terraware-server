@@ -6,7 +6,7 @@ import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
-class BagFetcher(private val dslContext: DSLContext) {
+class BagStore(private val dslContext: DSLContext) {
   fun fetchBagNumbers(accessionId: Long): Set<String>? {
     return dslContext
         .select(BAG.BAG_NUMBER)

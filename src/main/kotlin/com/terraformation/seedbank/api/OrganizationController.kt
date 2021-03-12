@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.api
 
-import com.terraformation.seedbank.db.OrganizationFetcher
+import com.terraformation.seedbank.db.tables.daos.OrganizationDao
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/organization")
 @Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @PreAuthorize("isAuthenticated()")
-class OrganizationController(private val organizationFetcher: OrganizationFetcher) {
+class OrganizationController(private val organizationDao: OrganizationDao) {
   private val log = perClassLogger()
 
   @GetMapping
@@ -25,7 +25,7 @@ class OrganizationController(private val organizationFetcher: OrganizationFetche
   )
   fun listAll(): ListOrganizationsResponse {
     val elements =
-        organizationFetcher.getAllOrganizations().map { record ->
+        organizationDao.findAll().map { record ->
           ListOrganizationsElement(record.id!!, record.name!!)
         }
     return ListOrganizationsResponse(elements)

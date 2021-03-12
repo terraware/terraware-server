@@ -5,8 +5,8 @@ import com.terraformation.seedbank.api.SimpleSuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.config.TerrawareServerConfig
-import com.terraformation.seedbank.db.DeviceFetcher
-import com.terraformation.seedbank.db.TimeSeriesFetcher
+import com.terraformation.seedbank.db.DeviceStore
+import com.terraformation.seedbank.db.TimeSeriesStore
 import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
@@ -24,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class TimeseriesController(
     private val config: TerrawareServerConfig,
-    private val deviceFetcher: DeviceFetcher,
-    private val timeSeriesFetcher: TimeSeriesFetcher,
+    private val deviceStore: DeviceStore,
+    private val timeSeriesStore: TimeSeriesStore,
 ) {
   private val log = perClassLogger()
 
@@ -67,14 +67,14 @@ class TimeseriesController(
       siteModuleId: Long?,
   ): SimpleSuccessResponsePayload {
     val deviceId =
-        deviceFetcher.getDeviceIdByName(siteModuleId ?: config.siteModuleId, device)
+        deviceStore.getDeviceIdByName(siteModuleId ?: config.siteModuleId, device)
             ?: throw NotFoundException("Device $device does not exist")
     val timeseriesId =
-        timeSeriesFetcher.getTimeseriesIdByName(deviceId, timeseries)
-            ?: timeSeriesFetcher.create(
+        timeSeriesStore.getTimeseriesIdByName(deviceId, timeseries)
+            ?: timeSeriesStore.create(
                 deviceId, timeseries, TimeseriesType.Numeric, units, decimalPlaces)
 
-    timeSeriesFetcher.insertValue(timeseriesId, value.toPlainString())
+    timeSeriesStore.insertValue(timeseriesId, value.toPlainString())
 
     log.info("Got timeseries value $device/$timeseries = $value")
     return SimpleSuccessResponsePayload()

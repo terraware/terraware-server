@@ -12,7 +12,7 @@ import org.jooq.SelectConditionStep
 import org.jooq.impl.DSL
 
 @ManagedBean
-class DeviceFetcher(private val dslContext: DSLContext) {
+class DeviceStore(private val dslContext: DSLContext) {
   /**
    * Returns the ID of the device named by an MQTT topic.
    *

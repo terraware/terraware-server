@@ -3,7 +3,7 @@ package com.terraformation.seedbank.api.seedbank
 import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.db.StorageCondition
-import com.terraformation.seedbank.db.StorageLocationFetcher
+import com.terraformation.seedbank.db.StorageLocationStore
 import com.terraformation.seedbank.search.SearchField
 import com.terraformation.seedbank.search.SearchFilter
 import com.terraformation.seedbank.search.SearchService
@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class ValuesController(
-    private val storageLocationFetcher: StorageLocationFetcher,
+    private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService
 ) {
   @GetMapping("/storageLocation")
   fun getStorageLocations(): StorageLocationsResponsePayload {
     return StorageLocationsResponsePayload(
-        storageLocationFetcher.fetchStorageConditionsByLocationName().map {
+        storageLocationStore.fetchStorageConditionsByLocationName().map {
           StorageLocationDetails(it.key, it.value)
         })
   }

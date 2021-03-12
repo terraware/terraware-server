@@ -31,18 +31,18 @@ import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
-class AccessionFetcher(
+class AccessionStore(
     private val dslContext: DSLContext,
     private val config: TerrawareServerConfig,
-    private val appDeviceFetcher: AppDeviceFetcher,
-    private val bagFetcher: BagFetcher,
-    private val geolocationFetcher: GeolocationFetcher,
-    private val germinationFetcher: GerminationFetcher,
+    private val appDeviceStore: AppDeviceStore,
+    private val bagStore: BagStore,
+    private val geolocationStore: GeolocationStore,
+    private val germinationStore: GerminationStore,
     private val photoRepository: PhotoRepository,
     private val speciesFetcher: SpeciesFetcher,
-    private val withdrawalFetcher: WithdrawalFetcher,
+    private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
-    private val support: FetcherSupport,
+    private val support: StoreSupport,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -92,13 +92,13 @@ class AccessionFetcher(
     val accessionId = parentRow[ACCESSION.ID]!!
 
     val secondaryCollectorNames = fetchSecondaryCollectorNames(accessionId)
-    val bagNumbers = bagFetcher.fetchBagNumbers(accessionId)
-    val deviceInfo = appDeviceFetcher.fetchById(parentRow[ACCESSION.APP_DEVICE_ID])
-    val geolocations = geolocationFetcher.fetchGeolocations(accessionId)
-    val germinationTestTypes = germinationFetcher.fetchGerminationTestTypes(accessionId)
-    val germinationTests = germinationFetcher.fetchGerminationTests(accessionId)
+    val bagNumbers = bagStore.fetchBagNumbers(accessionId)
+    val deviceInfo = appDeviceStore.fetchById(parentRow[ACCESSION.APP_DEVICE_ID])
+    val geolocations = geolocationStore.fetchGeolocations(accessionId)
+    val germinationTestTypes = germinationStore.fetchGerminationTestTypes(accessionId)
+    val germinationTests = germinationStore.fetchGerminationTests(accessionId)
     val photoFilenames = photoRepository.listPhotos(accessionId).map { it.filename }.toListOrNull()
-    val withdrawals = withdrawalFetcher.fetchWithdrawals(accessionId)
+    val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
 
     return with(ACCESSION) {
       AccessionModel(
@@ -166,7 +166,7 @@ class AccessionFetcher(
       try {
         dslContext.transaction { _ ->
           val appDeviceId =
-              accession.deviceInfo?.nullIfEmpty()?.let { appDeviceFetcher.getOrInsertDevice(it) }
+              accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
 
           val accessionId =
               with(ACCESSION) {
@@ -219,13 +219,13 @@ class AccessionFetcher(
           }
 
           insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
-          bagFetcher.updateBags(accessionId, emptySet(), accession.bagNumbers)
-          geolocationFetcher.updateGeolocations(accessionId, emptySet(), accession.geolocations)
-          germinationFetcher.updateGerminationTestTypes(
+          bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
+          geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
+          germinationStore.updateGerminationTestTypes(
               accessionId, emptySet(), accession.germinationTestTypes)
-          germinationFetcher.updateGerminationTests(
+          germinationStore.updateGerminationTests(
               accessionId, emptyList(), accession.germinationTests)
-          withdrawalFetcher.updateWithdrawals(
+          withdrawalStore.updateWithdrawals(
               accessionId, accession, emptyList(), accession.withdrawals)
         }
 
@@ -261,14 +261,14 @@ class AccessionFetcher(
         insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
       }
 
-      bagFetcher.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
-      geolocationFetcher.updateGeolocations(
+      bagStore.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
+      geolocationStore.updateGeolocations(
           accessionId, existing.geolocations, accession.geolocations)
-      germinationFetcher.updateGerminationTestTypes(
+      germinationStore.updateGerminationTestTypes(
           accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
-      germinationFetcher.updateGerminationTests(
+      germinationStore.updateGerminationTests(
           accessionId, existing.germinationTests, accession.germinationTests)
-      withdrawalFetcher.updateWithdrawals(
+      withdrawalStore.updateWithdrawals(
           accessionId, accession, existing.withdrawals, accession.withdrawals)
 
       val stateTransition = existing.getStateTransition(accession, clock)

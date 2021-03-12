@@ -2,8 +2,8 @@ package com.terraformation.seedbank.api.seedbank
 
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.config.TerrawareServerConfig
-import com.terraformation.seedbank.db.AccessionFetcher
 import com.terraformation.seedbank.db.AccessionState
+import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.SpeciesFetcher
 import com.terraformation.seedbank.services.atMostRecent
 import io.swagger.v3.oas.annotations.Operation
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/summary")
 @SeedBankAppEndpoint
 class SummaryController(
-    private val accessionFetcher: AccessionFetcher,
+    private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val speciesFetcher: SpeciesFetcher,
@@ -42,7 +42,7 @@ class SummaryController(
     return SummaryResponse(
         activeAccessions =
             SummaryStatistic(
-                accessionFetcher.countActive(now), accessionFetcher.countActive(startOfWeek)),
+                accessionStore.countActive(now), accessionStore.countActive(startOfWeek)),
         species =
             SummaryStatistic(
                 speciesFetcher.countSpecies(now), speciesFetcher.countSpecies(startOfWeek)),
@@ -50,12 +50,12 @@ class SummaryController(
             SummaryStatistic(
                 speciesFetcher.countFamilies(now), speciesFetcher.countFamilies(startOfWeek)),
         overduePendingAccessions =
-            accessionFetcher.countInState(AccessionState.Pending, sinceBefore = oneWeekAgo),
+            accessionStore.countInState(AccessionState.Pending, sinceBefore = oneWeekAgo),
         overdueProcessedAccessions =
-            accessionFetcher.countInState(AccessionState.Processed, sinceBefore = twoWeeksAgo),
-        overdueDriedAccessions = accessionFetcher.countInState(AccessionState.Dried),
+            accessionStore.countInState(AccessionState.Processed, sinceBefore = twoWeeksAgo),
+        overdueDriedAccessions = accessionStore.countInState(AccessionState.Dried),
         recentlyWithdrawnAccessions =
-            accessionFetcher.countInState(AccessionState.Withdrawn, sinceAfter = startOfWeek))
+            accessionStore.countInState(AccessionState.Withdrawn, sinceAfter = startOfWeek))
   }
 }
 

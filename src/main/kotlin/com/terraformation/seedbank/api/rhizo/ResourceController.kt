@@ -4,8 +4,8 @@ import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.auth.ClientIdentity
-import com.terraformation.seedbank.db.DeviceFetcher
-import com.terraformation.seedbank.db.TimeSeriesFetcher
+import com.terraformation.seedbank.db.DeviceStore
+import com.terraformation.seedbank.db.TimeSeriesStore
 import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 @Controller
 @DeviceManagerAppEndpoint
 class ResourceController(
-    private val deviceFetcher: DeviceFetcher,
-    private val timeSeriesFetcher: TimeSeriesFetcher,
+    private val deviceStore: DeviceStore,
+    private val timeSeriesStore: TimeSeriesStore,
 ) {
   private val log = perClassLogger()
 
@@ -61,14 +61,14 @@ class ResourceController(
       throw UnsupportedResourceTypeException()
     }
 
-    val deviceId = deviceFetcher.getDeviceIdForMqttTopic(path.substring(1))
+    val deviceId = deviceStore.getDeviceIdForMqttTopic(path.substring(1))
     if (deviceId == null) {
       log.warn("Unable to create sequence $name for unknown device $path")
       throw NotFoundException()
     }
 
     return try {
-      timeSeriesFetcher.create(deviceId, name, dataType, units, decimal_places)
+      timeSeriesStore.create(deviceId, name, dataType, units, decimal_places)
       log.info("Created timeseries $name for device $path")
       "Timeseries created"
     } catch (e: DuplicateKeyException) {
@@ -96,7 +96,7 @@ class ResourceController(
     // Split the path into an MQTT topic and sequence name, /X/Y/Z -> (X/Y, Z)
     val deviceTopic = path.substringBeforeLast('/').substring(1)
     val sequenceName = path.substringAfterLast('/')
-    if (timeSeriesFetcher.getIdByMqttTopic(deviceTopic, sequenceName) != null) {
+    if (timeSeriesStore.getIdByMqttTopic(deviceTopic, sequenceName) != null) {
       return "Found"
     } else {
       throw NotFoundException()

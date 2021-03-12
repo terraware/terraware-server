@@ -10,7 +10,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 @ManagedBean
-class GeolocationFetcher(private val dslContext: DSLContext, private val clock: Clock) {
+class GeolocationStore(private val dslContext: DSLContext, private val clock: Clock) {
   fun fetchGeolocations(accessionId: Long): Set<Geolocation>? {
     return dslContext
         .selectFrom(GEOLOCATION)

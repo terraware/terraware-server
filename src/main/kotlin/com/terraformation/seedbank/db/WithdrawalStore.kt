@@ -11,7 +11,7 @@ import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
-class WithdrawalFetcher(private val dslContext: DSLContext, private val clock: Clock) {
+class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clock) {
   val log = perClassLogger()
 
   fun fetchWithdrawals(accessionId: Long): List<WithdrawalModel>? {

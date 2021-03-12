@@ -1,13 +1,13 @@
 package com.terraformation.seedbank.daily
 
-import com.terraformation.seedbank.db.AccessionFetcher
+import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.services.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.springframework.context.event.EventListener
 
 @ManagedBean
-class AccessionScheduledStateTask(private val fetcher: AccessionFetcher, private val clock: Clock) {
+class AccessionScheduledStateTask(private val store: AccessionStore, private val clock: Clock) {
   private val log = perClassLogger()
 
   /** Updates the states of any accessions that are scheduled for a time-based state transition. */
@@ -17,10 +17,10 @@ class AccessionScheduledStateTask(private val fetcher: AccessionFetcher, private
   ): FinishedEvent {
     log.info("Scanning for scheduled accession state updates")
 
-    fetcher
+    store
         .fetchTimedStateTransitionCandidates()
         .filter { it.getStateTransition(it, clock) != null }
-        .forEach { fetcher.update(it.accessionNumber, it) }
+        .forEach { store.update(it.accessionNumber, it) }
 
     return FinishedEvent()
   }

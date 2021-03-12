@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
-internal class WithdrawalFetcherTest : DatabaseTest() {
+internal class WithdrawalStoreTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
-  private lateinit var fetcher: WithdrawalFetcher
+  private lateinit var store: WithdrawalStore
   private lateinit var withdrawalDao: WithdrawalDao
 
   private val clock: Clock = mockk()
@@ -35,7 +35,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
 
   @BeforeEach
   fun setup() {
-    fetcher = WithdrawalFetcher(dslContext, clock)
+    store = WithdrawalStore(dslContext, clock)
     withdrawalDao = WithdrawalDao(dslContext.configuration())
 
     every { clock.instant() } returns Instant.now()
@@ -108,7 +108,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
 
     withdrawalDao.insert(pojos)
 
-    val actual = fetcher.fetchWithdrawals(accessionId)
+    val actual = store.fetchWithdrawals(accessionId)
 
     assertEquals(expected, actual?.toSet())
   }
@@ -139,9 +139,9 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
             ),
         )
 
-    fetcher.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(newWithdrawal))
+    store.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(newWithdrawal))
 
-    val actual = fetcher.fetchWithdrawals(accessionId)
+    val actual = store.fetchWithdrawals(accessionId)
 
     assertEquals(expected, actual?.toSet())
   }
@@ -175,12 +175,12 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
             ),
         )
 
-    fetcher.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(initial))
-    val afterInsert = fetcher.fetchWithdrawals(accessionId)
+    store.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
 
-    fetcher.updateWithdrawals(accessionId, emptyAccessionFields, afterInsert, listOf(desired))
+    store.updateWithdrawals(accessionId, emptyAccessionFields, afterInsert, listOf(desired))
 
-    val actual = fetcher.fetchWithdrawals(accessionId)
+    val actual = store.fetchWithdrawals(accessionId)
 
     assertEquals(expected, actual?.toSet())
   }
@@ -195,12 +195,12 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 gramsWithdrawn = BigDecimal.ONE))
 
     assertThrows<IllegalArgumentException>("No subset weight or subset count") {
-      fetcher.updateWithdrawals(
+      store.updateWithdrawals(
           accessionId, CreateAccessionRequestPayload(), emptyList(), desiredWithdrawals)
     }
 
     assertThrows<IllegalArgumentException>("Subset weight but no subset count") {
-      fetcher.updateWithdrawals(
+      store.updateWithdrawals(
           accessionId,
           UpdateAccessionRequestPayload(subsetWeightGrams = BigDecimal.ONE),
           emptyList(),
@@ -208,7 +208,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
     }
 
     assertThrows<IllegalArgumentException>("Subset count but no subset weight") {
-      fetcher.updateWithdrawals(
+      store.updateWithdrawals(
           accessionId,
           UpdateAccessionRequestPayload(subsetCount = 1),
           emptyList(),
@@ -222,7 +222,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
         UpdateAccessionRequestPayload(subsetCount = 100, subsetWeightGrams = BigDecimal("2.00"))
 
     assertThrows<IllegalArgumentException> {
-      fetcher.updateWithdrawals(
+      store.updateWithdrawals(
           accessionId,
           accession,
           emptyList(),
@@ -234,7 +234,7 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
     }
 
     assertThrows<IllegalArgumentException> {
-      fetcher.updateWithdrawals(
+      store.updateWithdrawals(
           accessionId,
           accession,
           emptyList(),
@@ -266,9 +266,9 @@ internal class WithdrawalFetcherTest : DatabaseTest() {
                 // 4.11 * 100 / 2.0 = 205.5
                 seedsWithdrawn = 206))
 
-    fetcher.updateWithdrawals(accessionId, accession, emptyList(), listOf(newWithdrawal))
+    store.updateWithdrawals(accessionId, accession, emptyList(), listOf(newWithdrawal))
 
-    val actual = fetcher.fetchWithdrawals(accessionId)
+    val actual = store.fetchWithdrawals(accessionId)
     assertEquals(expected, actual)
   }
 }

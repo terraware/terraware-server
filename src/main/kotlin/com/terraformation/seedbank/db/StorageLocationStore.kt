@@ -6,7 +6,7 @@ import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
-class StorageLocationFetcher(
+class StorageLocationStore(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext
 ) {

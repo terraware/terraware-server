@@ -8,13 +8,13 @@ import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
-class TimeSeriesFetcher(
+class TimeSeriesStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
-    private val deviceFetcher: DeviceFetcher
+    private val deviceStore: DeviceStore
 ) {
   fun getIdByMqttTopic(topic: String, name: String): Long? {
-    val deviceIdSubquery = deviceFetcher.queryDeviceIdForMqttTopic(topic) ?: return null
+    val deviceIdSubquery = deviceStore.queryDeviceIdForMqttTopic(topic) ?: return null
 
     val query =
         dslContext

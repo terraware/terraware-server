@@ -8,7 +8,7 @@ import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.db.AccessionState
-import com.terraformation.seedbank.db.NotificationFetcher
+import com.terraformation.seedbank.db.NotificationStore
 import com.terraformation.seedbank.db.NotificationType
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/seedbank/notification")
 @RestController
 @SeedBankAppEndpoint
-class NotificationController(private val notificationFetcher: NotificationFetcher) {
+class NotificationController(private val notificationStore: NotificationStore) {
   @ApiResponse(
       responseCode = "200", description = "Notifications in reverse time order (newest first).")
   @GetMapping
@@ -34,7 +34,7 @@ class NotificationController(private val notificationFetcher: NotificationFetche
       @RequestParam
       limit: Long? = null
   ): NotificationListResponse {
-    return NotificationListResponse(notificationFetcher.fetchSince(since, limit))
+    return NotificationListResponse(notificationStore.fetchSince(since, limit))
   }
 
   @ApiResponse404(description = "The requested notification ID was not valid.")
@@ -46,7 +46,7 @@ class NotificationController(private val notificationFetcher: NotificationFetche
       @Parameter(description = "ID of notification to mark as read") @PathVariable id: String
   ): SimpleSuccessResponsePayload {
     val notificationId = id.toLongOrNull()
-    if (notificationId != null && notificationFetcher.markRead(notificationId)) {
+    if (notificationId != null && notificationStore.markRead(notificationId)) {
       return SimpleSuccessResponsePayload()
     } else {
       throw NotFoundException("Notification not found.")
@@ -58,7 +58,7 @@ class NotificationController(private val notificationFetcher: NotificationFetche
   @PostMapping("/all/markRead")
   @ResponseBody
   fun markAllRead(): SimpleSuccessResponsePayload {
-    notificationFetcher.markAllRead()
+    notificationStore.markAllRead()
     return SimpleSuccessResponsePayload()
   }
 }
@@ -67,7 +67,7 @@ class NotificationController(private val notificationFetcher: NotificationFetche
 @RequestMapping("/api/v1/seedbank/notification")
 @RestController
 @SeedBankAppEndpoint
-class NotificationDevController(private val notificationFetcher: NotificationFetcher) {
+class NotificationDevController(private val notificationStore: NotificationStore) {
   @ApiResponseSimpleSuccess(description = "All notifications have been marked as unread.")
   @Operation(
       summary = "Mark all notifications as unread.",
@@ -75,7 +75,7 @@ class NotificationDevController(private val notificationFetcher: NotificationFet
   @PostMapping("/all/markUnread")
   @ResponseBody
   fun markAllUnread(): SimpleSuccessResponsePayload {
-    notificationFetcher.markAllUnread()
+    notificationStore.markAllUnread()
     return SimpleSuccessResponsePayload()
   }
 }

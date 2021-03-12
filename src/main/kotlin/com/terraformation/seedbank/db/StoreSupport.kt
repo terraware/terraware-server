@@ -13,10 +13,7 @@ import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 
 @ManagedBean
-class FetcherSupport(
-    private val config: TerrawareServerConfig,
-    private val dslContext: DSLContext
-) {
+class StoreSupport(private val config: TerrawareServerConfig, private val dslContext: DSLContext) {
 
   fun getOrInsertId(
       name: String?,

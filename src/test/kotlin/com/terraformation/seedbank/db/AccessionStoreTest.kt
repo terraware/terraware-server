@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 
-internal class AccessionFetcherTest : DatabaseTest() {
+internal class AccessionStoreTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
 
   override val sequencesToReset
@@ -67,7 +67,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   private val accessionNumberGenerator = mockk<AccessionNumberGenerator>()
   private val clock: Clock = mockk()
 
-  private lateinit var fetcher: AccessionFetcher
+  private lateinit var store: AccessionStore
   private lateinit var accessionDao: AccessionDao
   private lateinit var accessionPhotoDao: AccessionPhotoDao
   private lateinit var appDeviceDao: AppDeviceDao
@@ -92,33 +92,33 @@ internal class AccessionFetcherTest : DatabaseTest() {
     germinationTestDao = GerminationTestDao(jooqConfig)
     storageLocationDao = StorageLocationDao(jooqConfig)
 
-    val support = FetcherSupport(config, dslContext)
+    val support = StoreSupport(config, dslContext)
 
     every { clock.instant() } returns Instant.ofEpochMilli(System.currentTimeMillis())
     every { clock.zone } returns ZoneOffset.UTC
 
-    fetcher =
-        AccessionFetcher(
+    store =
+        AccessionStore(
             dslContext,
             config,
-            AppDeviceFetcher(dslContext, clock),
-            BagFetcher(dslContext),
-            GeolocationFetcher(dslContext, clock),
-            GerminationFetcher(dslContext),
+            AppDeviceStore(dslContext, clock),
+            BagStore(dslContext),
+            GeolocationStore(dslContext, clock),
+            GerminationStore(dslContext),
             PhotoRepository(config, accessionPhotoDao, clock),
             SpeciesFetcher(clock, support),
-            WithdrawalFetcher(dslContext, clock),
+            WithdrawalStore(dslContext, clock),
             clock,
             support)
 
-    fetcher.accessionNumberGenerator = accessionNumberGenerator
+    store.accessionNumberGenerator = accessionNumberGenerator
 
     every { accessionNumberGenerator.generateAccessionNumber() } returnsMany accessionNumbers
   }
 
   @Test
   fun `create of empty accession populates default values`() {
-    fetcher.create(CreateAccessionRequestPayload())
+    store.create(CreateAccessionRequestPayload())
 
     assertEquals(
         Accession(
@@ -136,8 +136,8 @@ internal class AccessionFetcherTest : DatabaseTest() {
     every { accessionNumberGenerator.generateAccessionNumber() } returnsMany
         collidingAccessionNumbers
 
-    fetcher.create(CreateAccessionRequestPayload())
-    fetcher.create(CreateAccessionRequestPayload())
+    store.create(CreateAccessionRequestPayload())
+    store.create(CreateAccessionRequestPayload())
 
     assertNotNull(accessionDao.fetchOneByNumber("two"))
   }
@@ -146,10 +146,10 @@ internal class AccessionFetcherTest : DatabaseTest() {
   fun `create gives up if it can't generate an unused accession number`() {
     every { accessionNumberGenerator.generateAccessionNumber() } returns ("duplicate")
 
-    fetcher.create(CreateAccessionRequestPayload())
+    store.create(CreateAccessionRequestPayload())
 
     assertThrows(DuplicateKeyException::class.java) {
-      fetcher.create(CreateAccessionRequestPayload())
+      store.create(CreateAccessionRequestPayload())
     }
   }
 
@@ -163,9 +163,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
             secondaryCollectors = setOf("secondary 1", "secondary 2"))
 
     // First time inserts the reference table rows
-    fetcher.create(payload)
+    store.create(payload)
     // Second time should reuse them
-    fetcher.create(payload)
+    store.create(payload)
 
     val initialRow = accessionDao.fetchOneById(1)!!
     val secondRow = accessionDao.fetchOneById(2)!!
@@ -183,8 +183,8 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `bag numbers are not shared between accessions`() {
     val payload = CreateAccessionRequestPayload(bagNumbers = setOf("bag 1", "bag 2"))
-    fetcher.create(payload)
-    fetcher.create(payload)
+    store.create(payload)
+    store.create(payload)
 
     val initialBags = bagDao.fetchByAccessionId(1).toSet()
     val secondBags = bagDao.fetchByAccessionId(2).toSet()
@@ -194,8 +194,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `bags are inserted and deleted as needed`() {
-    val initial =
-        fetcher.create(CreateAccessionRequestPayload(bagNumbers = setOf("bag 1", "bag 2")))
+    val initial = store.create(CreateAccessionRequestPayload(bagNumbers = setOf("bag 1", "bag 2")))
     val initialBags = bagDao.fetchByAccessionId(1)
 
     // Insertion order is not defined by the API, so don't assume bag ID 1 is "bag 1".
@@ -206,7 +205,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     val desired = AccessionPayload(initial).copy(bagNumbers = setOf("bag 2", "bag 3"))
 
-    assertTrue(fetcher.update(initial.accessionNumber, desired), "Update succeeded")
+    assertTrue(store.update(initial.accessionNumber, desired), "Update succeeded")
 
     val updatedBags = bagDao.fetchByAccessionId(1)
 
@@ -221,7 +220,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `device info is inserted at creation`() {
     val payload = CreateAccessionRequestPayload(deviceInfo = DeviceInfoPayload(model = "model"))
-    fetcher.create(payload)
+    store.create(payload)
 
     val appDevice = appDeviceDao.fetchOneById(1)
     assertNotNull(appDevice, "Device row should have been inserted")
@@ -232,9 +231,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `device info is retrieved`() {
     val payload = CreateAccessionRequestPayload(deviceInfo = DeviceInfoPayload(model = "model"))
-    val initial = fetcher.create(payload)
+    val initial = store.create(payload)
 
-    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+    val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertNotNull(fetched?.deviceInfo)
     assertEquals("model", fetched?.deviceInfo?.model)
@@ -243,7 +242,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `geolocations are inserted and deleted as needed`() {
     val initial =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(
                 geolocations =
                     setOf(
@@ -265,7 +264,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                         Geolocation(BigDecimal(5), BigDecimal(6))))
 
-    assertTrue(fetcher.update(initial.accessionNumber, desired), "Update succeeded")
+    assertTrue(store.update(initial.accessionNumber, desired), "Update succeeded")
 
     val updatedGeos = geolocationDao.fetchByAccessionId(1)
 
@@ -281,7 +280,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `germination tests are inserted at creation time`() {
-    fetcher.create(
+    store.create(
         CreateAccessionRequestPayload(
             germinationTests =
                 listOf(
@@ -311,7 +310,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `germination test types are inserted at creation time`() {
-    fetcher.create(
+    store.create(
         CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
     val types =
         dslContext
@@ -325,7 +324,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `germination tests are inserted by update`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
+    val initial = store.create(CreateAccessionRequestPayload())
     val startDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val withTest =
         AccessionPayload(initial)
@@ -334,7 +333,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                     listOf(
                         GerminationTestPayload(
                             testType = GerminationTestType.Lab, startDate = startDate)))
-    fetcher.update(initial.accessionNumber, withTest)
+    store.update(initial.accessionNumber, withTest)
 
     val updatedTests = germinationTestDao.fetchByAccessionId(1)
     assertEquals(
@@ -355,13 +354,13 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `germination test types are inserted by update`() {
     val initial =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
     val desired =
         AccessionPayload(initial)
             .copy(
                 germinationTestTypes = setOf(GerminationTestType.Lab, GerminationTestType.Nursery))
-    fetcher.update(initial.accessionNumber, desired)
+    store.update(initial.accessionNumber, desired)
 
     val types =
         dslContext
@@ -375,11 +374,11 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `germination test types are deleted by update`() {
     val initial =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
     val desired =
         AccessionPayload(initial).copy(germinationTestTypes = setOf(GerminationTestType.Nursery))
-    fetcher.update(initial.accessionNumber, desired)
+    store.update(initial.accessionNumber, desired)
 
     val types =
         dslContext
@@ -393,7 +392,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `existing germination tests are updated`() {
     val initial =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(
                 germinationTests =
                     listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
@@ -410,7 +409,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                             substrate = GerminationSubstrate.PaperPetriDish,
                             notes = "notes",
                             seedsSown = 5)))
-    fetcher.update(initial.accessionNumber, desired)
+    store.update(initial.accessionNumber, desired)
 
     val updatedTests = germinationTestDao.fetchByAccessionId(1)
     assertEquals(
@@ -430,12 +429,12 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `cannot update germination test from a different accession`() {
     val other =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(
                 germinationTests =
                     listOf(GerminationTestPayload(testType = GerminationTestType.Nursery))))
     val initial =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(
                 germinationTests =
                     listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
@@ -454,14 +453,14 @@ internal class AccessionFetcherTest : DatabaseTest() {
                             seedsSown = 5)))
 
     assertThrows(IllegalArgumentException::class.java) {
-      fetcher.update(initial.accessionNumber, desired)
+      store.update(initial.accessionNumber, desired)
     }
   }
 
   @Test
   fun `germinations are inserted by create`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
-    fetcher.create(
+    store.create(
         CreateAccessionRequestPayload(
             germinationTests =
                 listOf(
@@ -489,7 +488,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   fun `germinations are inserted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val initial =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(
                 germinationTests =
                     listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
@@ -506,7 +505,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                                 listOf(
                                     GerminationPayload(
                                         recordingDate = localDate, seedsGerminated = 75)))))
-    fetcher.update(initial.accessionNumber, desired)
+    store.update(initial.accessionNumber, desired)
 
     val germinationTests = germinationTestDao.fetchByAccessionId(1)
     assertEquals(1, germinationTests.size, "Number of germination tests after update")
@@ -532,7 +531,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
   fun `germinations are deleted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val initial =
-        fetcher.create(
+        store.create(
             CreateAccessionRequestPayload(
                 germinationTests =
                     listOf(
@@ -558,7 +557,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                                 listOf(
                                     GerminationPayload(
                                         recordingDate = localDate, seedsGerminated = 75)))))
-    fetcher.update(initial.accessionNumber, desired)
+    store.update(initial.accessionNumber, desired)
     val germinations = germinationDao.fetchByTestId(1)
 
     assertEquals(1, germinations.size, "Number of germinations after update")
@@ -586,8 +585,8 @@ internal class AccessionFetcherTest : DatabaseTest() {
             name = locationName,
             conditionId = StorageCondition.Freezer))
 
-    val initial = fetcher.create(CreateAccessionRequestPayload())
-    fetcher.update(
+    val initial = store.create(CreateAccessionRequestPayload())
+    store.update(
         initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = locationName))
 
     assertEquals(
@@ -595,7 +594,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
         accessionDao.fetchOneById(1)?.storageLocationId,
         "Existing storage location ID was used")
 
-    val updated = fetcher.fetchByNumber(initial.accessionNumber)!!
+    val updated = store.fetchByNumber(initial.accessionNumber)!!
     assertEquals(locationName, updated.storageLocation, "Location name")
     assertEquals(StorageCondition.Freezer, updated.storageCondition, "Storage condition")
   }
@@ -603,15 +602,15 @@ internal class AccessionFetcherTest : DatabaseTest() {
   @Test
   fun `unknown storage locations are rejected`() {
     assertThrows(IllegalArgumentException::class.java) {
-      val initial = fetcher.create(CreateAccessionRequestPayload())
-      fetcher.update(
+      val initial = store.create(CreateAccessionRequestPayload())
+      store.update(
           initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = "bogus"))
     }
   }
 
   @Test
   fun `photo filenames are returned`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
+    val initial = store.create(CreateAccessionRequestPayload())
     accessionPhotoDao.insert(
         AccessionPhoto(
             accessionId = 1,
@@ -621,29 +620,29 @@ internal class AccessionFetcherTest : DatabaseTest() {
             contentType = MediaType.IMAGE_JPEG_VALUE,
             size = 123))
 
-    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+    val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertEquals(listOf("photo.jpg"), fetched?.photoFilenames)
   }
 
   @Test
   fun `update recalculates estimated seed count`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
-    fetcher.update(
+    val initial = store.create(CreateAccessionRequestPayload())
+    store.update(
         initial.accessionNumber,
         initial.copy(
             subsetCount = 1,
             subsetWeightGrams = BigDecimal.ONE,
             totalWeightGrams = BigDecimal.TEN,
         ))
-    val fetched = fetcher.fetchByNumber(initial.accessionNumber)!!
+    val fetched = store.fetchByNumber(initial.accessionNumber)!!
 
     assertEquals(10, fetched.estimatedSeedCount, "Estimated seed count is added")
     assertEquals(10, fetched.effectiveSeedCount, "Effective seed count is added")
 
-    fetcher.update(initial.accessionNumber, fetched.copy(totalWeightGrams = null))
+    store.update(initial.accessionNumber, fetched.copy(totalWeightGrams = null))
 
-    val fetchedAfterClear = fetcher.fetchByNumber(initial.accessionNumber)!!
+    val fetchedAfterClear = store.fetchByNumber(initial.accessionNumber)!!
 
     assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
     assertNull(fetchedAfterClear.effectiveSeedCount, "Effective seed count is removed")
@@ -651,27 +650,27 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `update recalculates seeds remaining when seed count is filled in`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
-    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
-    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+    val initial = store.create(CreateAccessionRequestPayload())
+    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertEquals(10, fetched?.seedsRemaining)
   }
 
   @Test
   fun `update recalculates seeds remaining on withdrawal`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
-    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
-    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+    val initial = store.create(CreateAccessionRequestPayload())
+    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertEquals(10, fetched?.seedsRemaining)
   }
 
   @Test
   fun `update rejects future storageStartDate`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
+    val initial = store.create(CreateAccessionRequestPayload())
     assertThrows(IllegalArgumentException::class.java) {
-      fetcher.update(
+      store.update(
           initial.accessionNumber,
           initial.copy(storageStartDate = LocalDate.now(clock).plusDays(1)))
     }
@@ -679,7 +678,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `state history row is inserted at creation time`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
+    val initial = store.create(CreateAccessionRequestPayload())
     val historyRecords =
         dslContext
             .selectFrom(ACCESSION_STATE_HISTORY)
@@ -698,9 +697,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `state transitions to Processing when seed count entered`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
-    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
-    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+    val initial = store.create(CreateAccessionRequestPayload())
+    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertEquals(AccessionState.Processing, fetched?.state)
     assertEquals(LocalDate.now(clock), fetched?.processingStartDate)
@@ -725,9 +724,9 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
   @Test
   fun `state short-circuits to Withdrawn when seeds withdrawn during processing`() {
-    val initial = fetcher.create(CreateAccessionRequestPayload())
-    fetcher.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
-    fetcher.update(
+    val initial = store.create(CreateAccessionRequestPayload())
+    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    store.update(
         initial.accessionNumber,
         AccessionPayload(initial)
             .copy(
@@ -738,7 +737,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
                             date = LocalDate.now(),
                             purpose = WithdrawalPurpose.Other,
                             seedsWithdrawn = 10))))
-    val fetched = fetcher.fetchByNumber(initial.accessionNumber)
+    val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertEquals(AccessionState.Withdrawn, fetched?.state)
 
@@ -821,7 +820,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     val expected = shouldMatch.map { it.number!! }.toSortedSet()
     val actual =
-        fetcher.fetchTimedStateTransitionCandidates().map { it.accessionNumber }.toSortedSet()
+        store.fetchTimedStateTransitionCandidates().map { it.accessionNumber }.toSortedSet()
 
     assertEquals(expected, actual)
   }
@@ -853,7 +852,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     deleteDevEnvironmentData()
 
     // Insert dummy accession rows so we can use the accession IDs
-    repeat(7) { fetcher.create(CreateAccessionRequestPayload()) }
+    repeat(7) { store.create(CreateAccessionRequestPayload()) }
 
     listOf(1 to 6, 1 to null, 2 to null, 2 to 5, 4 to null, 6 to null, 6 to null).forEachIndexed {
         index,
@@ -895,7 +894,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     assertEquals(
         2,
-        fetcher.countInState(
+        store.countInState(
             state = AccessionState.Processing,
             sinceAfter = Instant.ofEpochMilli(2),
             sinceBefore = Instant.ofEpochMilli(4)),
@@ -903,17 +902,16 @@ internal class AccessionFetcherTest : DatabaseTest() {
 
     assertEquals(
         4,
-        fetcher.countInState(
-            state = AccessionState.Processing, sinceAfter = Instant.ofEpochMilli(2)),
+        store.countInState(state = AccessionState.Processing, sinceAfter = Instant.ofEpochMilli(2)),
         "Search with startingAt")
 
     assertEquals(
         3,
-        fetcher.countInState(
+        store.countInState(
             state = AccessionState.Processing, sinceBefore = Instant.ofEpochMilli(4)),
         "Search with sinceBefore")
 
-    assertEquals(5, fetcher.countInState(AccessionState.Processing), "Search without time bounds")
+    assertEquals(5, store.countInState(AccessionState.Processing), "Search without time bounds")
   }
 
   /**
@@ -934,7 +932,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     listOf(1 to 2, 1 to 3, 1 to 4, 1 to 5, 1 to null, 3 to null).forEach {
         (createdTime, withdrawnTime) ->
       every { clock.instant() } returns Instant.ofEpochMilli(createdTime.toLong())
-      val accession = fetcher.create(CreateAccessionRequestPayload())
+      val accession = store.create(CreateAccessionRequestPayload())
 
       if (withdrawnTime != null) {
         dslContext
@@ -960,7 +958,7 @@ internal class AccessionFetcherTest : DatabaseTest() {
     expectedCounts.forEachIndexed { asOf, expectedCount ->
       assertEquals(
           expectedCount,
-          fetcher.countActive(Instant.ofEpochMilli(asOf.toLong())),
+          store.countActive(Instant.ofEpochMilli(asOf.toLong())),
           "Count as of time $asOf")
     }
   }

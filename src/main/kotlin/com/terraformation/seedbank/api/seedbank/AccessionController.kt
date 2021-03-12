@@ -8,8 +8,8 @@ import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
-import com.terraformation.seedbank.db.AccessionFetcher
 import com.terraformation.seedbank.db.AccessionState
+import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.GerminationSeedType
 import com.terraformation.seedbank.db.GerminationSubstrate
 import com.terraformation.seedbank.db.GerminationTestType
@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/accession")
 @RestController
 @SeedBankAppEndpoint
-class AccessionController(private val accessionFetcher: AccessionFetcher) {
+class AccessionController(private val accessionStore: AccessionStore) {
   @ApiResponse(
       responseCode = "200",
       description =
@@ -52,7 +52,7 @@ class AccessionController(private val accessionFetcher: AccessionFetcher) {
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val updatedPayload = accessionFetcher.create(payload)
+    val updatedPayload = accessionStore.create(payload)
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload))
   }
 
@@ -69,10 +69,10 @@ class AccessionController(private val accessionFetcher: AccessionFetcher) {
       @PathVariable accessionNumber: String
   ): UpdateAccessionResponsePayload {
     perClassLogger().info("Payload $payload")
-    if (!accessionFetcher.update(accessionNumber, payload)) {
+    if (!accessionStore.update(accessionNumber, payload)) {
       throw NotFoundException()
     } else {
-      val updatedModel = accessionFetcher.fetchByNumber(accessionNumber)!!
+      val updatedModel = accessionStore.fetchByNumber(accessionNumber)!!
       return UpdateAccessionResponsePayload(AccessionPayload(updatedModel))
     }
   }
@@ -83,7 +83,7 @@ class AccessionController(private val accessionFetcher: AccessionFetcher) {
   @Operation(summary = "Retrieve an existing accession.")
   fun read(@PathVariable accessionNumber: String): GetAccessionResponsePayload {
     val accession =
-        accessionFetcher.fetchByNumber(accessionNumber)
+        accessionStore.fetchByNumber(accessionNumber)
             ?: throw NotFoundException("The specified accession doesn't exist.")
     return GetAccessionResponsePayload(AccessionPayload(accession))
   }

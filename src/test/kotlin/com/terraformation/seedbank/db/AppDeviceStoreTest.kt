@@ -15,11 +15,11 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class AppDeviceFetcherTest : DatabaseTest() {
+internal class AppDeviceStoreTest : DatabaseTest() {
   private val clock: Clock = mockk()
 
   private lateinit var appDeviceDao: AppDeviceDao
-  private lateinit var fetcher: AppDeviceFetcher
+  private lateinit var store: AppDeviceStore
 
   override val sequencesToReset: List<String>
     get() = listOf("app_device_id_seq")
@@ -27,7 +27,7 @@ internal class AppDeviceFetcherTest : DatabaseTest() {
   @BeforeEach
   fun setup() {
     appDeviceDao = AppDeviceDao(dslContext.configuration())
-    fetcher = AppDeviceFetcher(dslContext, clock)
+    store = AppDeviceStore(dslContext, clock)
 
     every { clock.instant() } returns Instant.ofEpochMilli(50000)
   }
@@ -54,7 +54,7 @@ internal class AppDeviceFetcherTest : DatabaseTest() {
     val payload =
         DeviceInfoPayload(
             "appBuild", "appName", "brand", "model", "name", "osType", "osVersion", "uniqueId")
-    val id = fetcher.getOrInsertDevice(payload)
+    val id = store.getOrInsertDevice(payload)
 
     assertEquals(1, id, "New device ID")
 
@@ -73,7 +73,7 @@ internal class AppDeviceFetcherTest : DatabaseTest() {
     appDeviceDao.insert(appDevice())
     assertNotNull(appDeviceDao.fetchOneById(1))
 
-    val id = fetcher.getOrInsertDevice(payload)
+    val id = store.getOrInsertDevice(payload)
     assertEquals(1, id)
   }
 
@@ -82,7 +82,7 @@ internal class AppDeviceFetcherTest : DatabaseTest() {
     appDeviceDao.insert(AppDevice(createdTime = clock.instant()))
     assertNotNull(appDeviceDao.fetchOneById(1))
 
-    val id = fetcher.getOrInsertDevice(DeviceInfoPayload())
+    val id = store.getOrInsertDevice(DeviceInfoPayload())
 
     val rows = dslContext.selectFrom(APP_DEVICE).fetch()
     println(rows)
@@ -91,12 +91,12 @@ internal class AppDeviceFetcherTest : DatabaseTest() {
 
   @Test
   fun `fetchById returns null for null ID`() {
-    assertNull(fetcher.fetchById(null))
+    assertNull(store.fetchById(null))
   }
 
   @Test
   fun `fetchById returns null for nonexistent ID`() {
-    assertNull(fetcher.fetchById(1))
+    assertNull(store.fetchById(1))
   }
 
   @Test
@@ -106,7 +106,7 @@ internal class AppDeviceFetcherTest : DatabaseTest() {
     val expected =
         AppDeviceModel(
             1, "appBuild", "appName", "brand", "model", "name", "osType", "osVersion", "uniqueId")
-    val actual = fetcher.fetchById(1)
+    val actual = store.fetchById(1)
     assertEquals(expected, actual)
   }
 }

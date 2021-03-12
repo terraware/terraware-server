@@ -13,7 +13,7 @@ import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
-class GerminationFetcher(private val dslContext: DSLContext) {
+class GerminationStore(private val dslContext: DSLContext) {
   fun fetchGerminationTestTypes(accessionId: Long): Set<GerminationTestType>? {
     return dslContext
         .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)

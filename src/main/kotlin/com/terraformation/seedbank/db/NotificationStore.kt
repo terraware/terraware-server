@@ -12,7 +12,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 @ManagedBean
-class NotificationFetcher(
+class NotificationStore(
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,

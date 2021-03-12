@@ -10,7 +10,7 @@ import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
 
 @ManagedBean
-class AppDeviceFetcher(private val dslContext: DSLContext, private val clock: Clock) {
+class AppDeviceStore(private val dslContext: DSLContext, private val clock: Clock) {
   /**
    * Returns an app device ID for a given set of details about a device. If there is already a
    * device with those values, returns its existing ID, otherwise inserts a new one.

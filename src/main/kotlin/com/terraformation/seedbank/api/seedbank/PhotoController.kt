@@ -12,7 +12,7 @@ import com.terraformation.seedbank.api.UnsupportedPhotoFormatException
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
-import com.terraformation.seedbank.db.AccessionFetcher
+import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.photo.PhotoRepository
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
@@ -43,7 +43,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @SeedBankAppEndpoint
 class PhotoController(
-    private val accessionFetcher: AccessionFetcher,
+    private val accessionStore: AccessionStore,
     private val photoRepository: PhotoRepository
 ) {
   private val log = perClassLogger()
@@ -70,7 +70,7 @@ class PhotoController(
       @RequestPart("metadata") metadata: UploadPhotoMetadataPayload
   ): SimpleSuccessResponsePayload {
     val accessionId =
-        accessionFetcher.getIdByNumber(accessionNumber)
+        accessionStore.getIdByNumber(accessionNumber)
             ?: throw NotFoundException("Accession $accessionNumber does not exist.")
 
     val contentType = file.contentType?.substringBefore(';')
@@ -113,7 +113,7 @@ class PhotoController(
       @PathVariable accessionNumber: String,
       @PathVariable photoFilename: String
   ): ResponseEntity<InputStreamResource> {
-    if (accessionFetcher.fetchByNumber(accessionNumber) == null) {
+    if (accessionStore.fetchByNumber(accessionNumber) == null) {
       throw NotFoundException("Accession $accessionNumber does not exist.")
     }
 
@@ -138,7 +138,7 @@ class PhotoController(
   @Operation(summary = "List all the available photos for an accession.")
   fun listPhotos(@PathVariable accessionNumber: String): ListPhotosResponsePayload {
     val accessionId =
-        accessionFetcher.getIdByNumber(accessionNumber)
+        accessionStore.getIdByNumber(accessionNumber)
             ?: throw NotFoundException("Accession $accessionNumber does not exist.")
 
     return ListPhotosResponsePayload(photoRepository.listPhotos(accessionId))

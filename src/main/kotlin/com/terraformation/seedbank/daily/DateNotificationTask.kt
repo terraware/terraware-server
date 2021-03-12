@@ -1,7 +1,7 @@
 package com.terraformation.seedbank.daily
 
-import com.terraformation.seedbank.db.AccessionFetcher
-import com.terraformation.seedbank.db.NotificationFetcher
+import com.terraformation.seedbank.db.AccessionStore
+import com.terraformation.seedbank.db.NotificationStore
 import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimeDao
 import com.terraformation.seedbank.i18n.Messages
 import com.terraformation.seedbank.services.perClassLogger
@@ -13,12 +13,12 @@ import org.springframework.context.event.EventListener
 
 @ManagedBean
 class DateNotificationTask(
-    private val accessionFetcher: AccessionFetcher,
+    private val accessionStore: AccessionStore,
     override val clock: Clock,
     private val dslContext: DSLContext,
     override val taskProcessedTimeDao: TaskProcessedTimeDao,
     private val messages: Messages,
-    private val notificationFetcher: NotificationFetcher
+    private val notificationStore: NotificationStore
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -40,26 +40,26 @@ class DateNotificationTask(
   }
 
   private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
-    accessionFetcher.fetchDryingMoveDue(after, until).forEach { (number, id) ->
+    accessionStore.fetchDryingMoveDue(after, until).forEach { (number, id) ->
       insert(id, messages.dryingMoveDateNotification(number))
     }
   }
 
   private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
-    accessionFetcher.fetchGerminationTestDue(after, until).forEach { (number, test) ->
+    accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
       insert(test.accessionId!!, messages.germinationTestDateNotification(number, test.testType!!))
     }
   }
 
   private fun withdraw(after: TemporalAccessor, until: TemporalAccessor) {
-    accessionFetcher.fetchWithdrawalDue(after, until).forEach { (number, id) ->
+    accessionStore.fetchWithdrawalDue(after, until).forEach { (number, id) ->
       insert(id, messages.withdrawalDateNotification(number))
     }
   }
 
   private fun insert(accessionId: Long, message: String) {
     log.info("Generated notification: $message")
-    notificationFetcher.insertDateNotification(accessionId, message)
+    notificationStore.insertDateNotification(accessionId, message)
   }
 
   class FinishedEvent
