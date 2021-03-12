@@ -4,7 +4,6 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
 import javax.annotation.ManagedBean
-import org.jetbrains.annotations.NotNull
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.SelectJoinStep
@@ -180,16 +179,15 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
     val values = field.possibleValues ?: queryAllValues(field, limit)
-    val hasNull = values.any { it == null }
 
-    return if (field.nullable && !hasNull) {
-      listOf(null) + values
+    return if (field.nullable) {
+      listOf(null) + values.take(limit)
     } else {
       values
     }
   }
 
-  private fun <T> queryAllValues(field: SearchField<T>, limit: Int): List<String?> {
+  private fun <T> queryAllValues(field: SearchField<T>, limit: Int): List<String> {
     val selectFields =
         field.selectFields +
             field.orderByFields.mapIndexed { index, orderByField ->
@@ -208,8 +206,8 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
             .limit(limit + 1)
 
     log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
-    return log.debugWithTiming<@NotNull MutableList<String>>("queryAllValues") {
-      fullQuery.fetch { field.computeValue(it) }
+    return log.debugWithTiming("queryAllValues") {
+      fullQuery.fetch { field.computeValue(it) }.filterNotNull()
     }
   }
 
