@@ -145,6 +145,7 @@ class PhotoController(
   }
 }
 
+// JsonDeserialize annotation is needed by OctetStreamJsonConverter
 @JsonDeserialize
 data class UploadPhotoMetadataPayload(
     val capturedTime: Instant,

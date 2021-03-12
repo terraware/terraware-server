@@ -15,16 +15,39 @@ import org.jooq.SelectJoinStep
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 
+/**
+ * Searches the database based on user-supplied search criteria. Since the user is allowed to
+ * specify an arbitrary set of query criteria and ask for an arbitrary set of fields that may span
+ * multiple tables, we dynamically construct SQL queries to return exactly what the user asked for.
+ * This class is just the scaffolding; much of the SQL construction is done in [SearchField],
+ * [SearchFilter], and [SearchTable].
+ *
+ * The design goal is to construct a single SQL query that returns exactly the requested data, as
+ * opposed to issuing a series of smaller queries and assembling their results in the application.
+ * This maximizes the database's flexibility to optimize the query.
+ */
 @ManagedBean
 class SearchService(private val dslContext: DSLContext, private val searchFields: SearchFields) {
   private val log = perClassLogger()
 
+  /**
+   * Queries the values of a list of fields on accessions that match a list of filter criteria.
+   *
+   * The search results in the return value do not include fields with `null` values. That is, only
+   * non-null values are included.
+   *
+   * If there are more search results than the requested limit, the return value includes a cursor
+   * that can be used to view the next set of results.
+   */
   fun search(criteria: SearchRequestPayload): SearchResponsePayload {
     val fieldNames = setOf("accessionNumber") + criteria.fields.map { it.fieldName }.toSet()
     val fields =
         fieldNames.map {
           searchFields[it] ?: throw IllegalArgumentException("Unknown field name $it")
         }
+
+    // A SearchField might map to multiple database columns (e.g., geolocation is a composite of
+    // latitude and longitude).
     val databaseFields = fields.flatMap { it.selectFields }.toSet()
 
     val conditions = criteria.filters?.flatMap { it.toFieldConditions() } ?: emptyList()
@@ -69,6 +92,8 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
         records.map { record ->
           fields
               .mapNotNull { field ->
+                // There can be field-specific logic for rendering column values as strings,
+                // e.g., geolocation includes both latitude and longitude.
                 val value = field.computeValue(record)
                 if (value != null) {
                   field.fieldName to value
@@ -88,6 +113,16 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     return SearchResponsePayload(cursor = cursor, results = results.take(criteria.count))
   }
 
+  /**
+   * Returns a list of all the values a single field has on accessions matching a set of filter
+   * criteria.
+   *
+   * @param limit Maximum number of results desired. The return value may be larger than this limit
+   * by at most 1 element, which callers can use to detect that the number of values exceeds the
+   * limit.
+   * @return A list of values, which may include `null` if the field is optional and has no value on
+   * some of the matching accessions.
+   */
   fun <T> fetchValues(
       field: SearchField<T>,
       filters: List<SearchFilter>,
@@ -101,7 +136,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     var query: SelectJoinStep<out Record> = dslContext.selectDistinct(selectFields).from(ACCESSION)
 
-    query = joinWithSecondaryTables(query, listOf(field), filters, null)
+    query = joinWithSecondaryTables(query, listOf(field), filters)
 
     val fullQuery =
         query
@@ -133,8 +168,15 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * limit the results to values that are currently used on accessions; for values from reference
    * tables such as `storage_location`, that means the list of values may include ones that are
    * currently not used anywhere.
+   *
+   * @param limit Maximum number of results desired. The return value may be larger than this limit
+   * by at most 1 element, which callers can use to detect that the number of values exceeds the
+   * limit.
+   * @return A list of values, which may include `null` if the field is not mandatory.
    */
   fun <T> fetchAllValues(field: SearchField<T>, limit: Int = 50): List<String?> {
+    // If the field is in a reference table that gets turned into an enum at build time, we don't
+    // need to hit the database.
     val values = field.possibleValues ?: queryAllValues(field, limit)
     val hasNull = values.any { it == null }
 
@@ -169,11 +211,18 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     }
   }
 
+  /**
+   * Adds JOIN clauses to a query to join the accession table with any other tables referenced by a
+   * list of [SearchField] s.
+   *
+   * This handles indirect references; if a field is in a table that is two foreign-key hops away
+   * from `accession`, the intermediate table is included here too.
+   */
   private fun joinWithSecondaryTables(
       selectFrom: SelectJoinStep<out Record>,
       fields: List<SearchField<*>>,
       filters: List<SearchFilter>?,
-      sortOrder: List<SearchSortOrderElement>?
+      sortOrder: List<SearchSortOrderElement>? = null
   ): SelectJoinStep<out Record> {
     var query = selectFrom
     val directlyReferencedTables =
@@ -183,8 +232,8 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val dependencyTables =
         directlyReferencedTables.flatMap { it.dependsOn() }.toSet() - directlyReferencedTables
 
-    dependencyTables.forEach { table -> query = table.addJoin(query) }
-    directlyReferencedTables.forEach { table -> query = table.addJoin(query) }
+    dependencyTables.forEach { table -> query = table.leftJoinWithAccession(query) }
+    directlyReferencedTables.forEach { table -> query = table.leftJoinWithAccession(query) }
     return query
   }
 }

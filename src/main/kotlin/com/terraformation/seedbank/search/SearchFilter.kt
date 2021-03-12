@@ -10,6 +10,11 @@ enum class SearchFilterType {
   Range
 }
 
+/**
+ * A filter criterion to use when searching for accessions.
+ *
+ * @see SearchService
+ */
 data class SearchFilter(
     val field: SearchField<*>,
     @ArraySchema(

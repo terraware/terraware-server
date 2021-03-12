@@ -28,13 +28,49 @@ import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
+/**
+ * Metadata about a field that can be included in accession search requests. This is used by
+ * [SearchService] to dynamically construct SQL queries for arbitrary user-specified searches.
+ */
 interface SearchField<T> {
+  /**
+   * The name of the field as presented in the search API. This does not necessarily exactly match
+   * the column name, though in most cases it should be similar.
+   */
   @get:JsonValue val fieldName: String
+
+  /**
+   * The field's human-readable name. This is used when exporting search results, where the exported
+   * file needs to include field labels. This generally matches the field name in the seed bank UI,
+   * though in some cases it's abbreviated here.
+   */
   val displayName: String
+
+  /**
+   * Which table the field is in. [SearchService] joins with this table when constructing queries.
+   */
   val table: SearchTable
+
+  /**
+   * Which database columns contain the field's data. In most cases, this will be a 1-element list,
+   * but it can have multiple elements in the case of fields such as geolocation that are presented
+   * as composite values in search results but stored as individual components in the database.
+   */
   val selectFields: List<Field<*>>
+
+  /**
+   * Which values are used when the query results are ordered by this field. Most of the time this
+   * is the same as [selectFields] and the default implementation delegates to that value, but for
+   * fields with computed values, the "field" here may be an expression rather than a simple column
+   * name.
+   */
   val orderByFields: List<Field<*>>
     get() = selectFields
+
+  /**
+   * Which kinds of filters are allowed for this field. For example, it makes no sense to support
+   * fuzzy text search on numeric values.
+   */
   val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.allOf(SearchFilterType::class.java)
 
@@ -46,11 +82,27 @@ interface SearchField<T> {
   val nullable: Boolean
     get() = true
 
+  /**
+   * Returns a list of conditions to include in a WHERE clause when this field is used to filter
+   * search results. This may vary based on the filter type.
+   */
   fun getConditions(filter: SearchFilter): List<Condition>
 
+  /**
+   * Renders the value of this field as a string given a row of results from a search query.
+   * Typically this will just call `toString()` on the value of a single element of [record] but for
+   * fields with computed values or that are composites of multiple columns, this can include
+   * additional logic.
+   */
   fun computeValue(record: Record): String?
 }
 
+/**
+ * Contains a list of all the available [SearchField] s.
+ *
+ * The list is constructed at runtime rather than declared statically because some of the
+ * implementations depend on Spring-managed services.
+ */
 @ManagedBean
 class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     UsesFuzzySearchOperators {
@@ -59,7 +111,6 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     fields.associateBy { it.fieldName }
   }
 
-  @Suppress("unused")
   val fieldNames: Set<String>
     get() = fieldsByName.keys
 
@@ -200,6 +251,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
   operator fun get(fieldName: String) = fieldsByName[fieldName]
 
+  /** Base class for fields that map to a single database column. */
   abstract class SingleColumnSearchField<T : Any> : SearchField<T> {
     abstract val databaseField: Field<T?>
 
@@ -226,6 +278,10 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     }
   }
 
+  /**
+   * Implements the `active` field. This field doesn't actually exist in the database; it is derived
+   * from the `state` field.
+   */
   class ActiveField(override val fieldName: String, override val displayName: String) :
       SearchField<AccessionActive> {
     override val table
@@ -264,6 +320,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     override fun equals(other: Any?) = other is ActiveField && other.fieldName == fieldName
   }
 
+  /** Search field for columns with decimal values. */
   class BigDecimalField(
       override val fieldName: String,
       override val displayName: String,
@@ -320,6 +377,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     }
   }
 
+  /** Search field for columns that have dates without times or timezones. */
   class DateField(
       override val fieldName: String,
       override val displayName: String,
@@ -357,6 +415,12 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     }
   }
 
+  /**
+   * Search field for columns that refer to reference tables that get compiled to Kotlin enum
+   * classes during code generation. Because the contents of these tables are known at compile time,
+   * we don't need to join with them and can instead directly include their IDs in our generated
+   * SQL.
+   */
   class EnumField<E : Enum<E>, T : EnumFromReferenceTable<E>>(
       override val fieldName: String,
       override val displayName: String,
@@ -408,6 +472,11 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     }
   }
 
+  /**
+   * Search field for geolocation data. Geolocation is represented in search results as a single
+   * string value that includes both latitude and longitude. But in the database, those two values
+   * are stored as separate columns.
+   */
   class GeolocationField(
       override val fieldName: String,
       override val displayName: String,
@@ -437,6 +506,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     override fun toString() = fieldName
   }
 
+  /** Search field for numeric columns that don't allow fractional values. */
   class IntegerField(
       override val fieldName: String,
       override val displayName: String,
@@ -468,6 +538,10 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     }
   }
 
+  /**
+   * Search field for arbitrary text values. This does not differentiate between short values such
+   * as a person's name and longer values such as notes.
+   */
   inner class TextField(
       override val fieldName: String,
       override val displayName: String,

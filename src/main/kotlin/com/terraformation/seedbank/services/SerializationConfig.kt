@@ -10,6 +10,10 @@ import com.terraformation.seedbank.search.SearchFields
 import javax.annotation.ManagedBean
 import javax.annotation.PostConstruct
 
+/**
+ * Configures the Jackson object mapper to handle application classes that need custom serialization
+ * logic.
+ */
 @ManagedBean
 class SerializationConfig(
     private val objectMapper: ObjectMapper,
@@ -29,10 +33,10 @@ private class SearchFieldsDeserializer(private val searchFields: SearchFields) :
     val fieldName = p.text
     val field = searchFields[fieldName]
     if (field == null) {
-      // This throws an exception; we never get to the `return`
       context.handleWeirdStringValue(
           SearchField::class.java, fieldName, "Field %s unknown", fieldName)
+      throw RuntimeException("BUG! Jackson error handling API should have thrown an exception")
     }
-    return field!!
+    return field
   }
 }
