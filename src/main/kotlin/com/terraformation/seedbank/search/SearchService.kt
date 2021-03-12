@@ -1,9 +1,5 @@
 package com.terraformation.seedbank.search
 
-import com.terraformation.seedbank.api.seedbank.SearchDirection
-import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
-import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
-import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
@@ -39,47 +35,52 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * If there are more search results than the requested limit, the return value includes a cursor
    * that can be used to view the next set of results.
    */
-  fun search(criteria: SearchRequestPayload): SearchResponsePayload {
-    val fieldNames = setOf("accessionNumber") + criteria.fields.map { it.fieldName }.toSet()
-    val fields =
+  fun search(
+      fields: List<SearchField<*>>,
+      filters: List<SearchFilter> = emptyList(),
+      sortOrder: List<SearchSortField> = emptyList(),
+      cursor: String? = null,
+      limit: Int = Int.MAX_VALUE
+  ): SearchResults {
+    val fieldNames = setOf("accessionNumber") + fields.map { it.fieldName }.toSet()
+    val fieldObjects =
         fieldNames.map {
           searchFields[it] ?: throw IllegalArgumentException("Unknown field name $it")
         }
 
     // A SearchField might map to multiple database columns (e.g., geolocation is a composite of
     // latitude and longitude).
-    val databaseFields = fields.flatMap { it.selectFields }.toSet()
+    val databaseFields = fieldObjects.flatMap { it.selectFields }.toSet()
 
-    val conditions = criteria.filters?.flatMap { it.toFieldConditions() } ?: emptyList()
+    val conditions = filters.flatMap { it.toFieldConditions() }
 
-    val sortOrderElements = criteria.sortOrder ?: emptyList()
     val orderBy =
-        sortOrderElements.flatMap { sortOrderElement ->
+        sortOrder.flatMap { sortOrderElement ->
           when (sortOrderElement.direction) {
-            SearchDirection.Ascending, null -> sortOrderElement.field.orderByFields
+            SearchDirection.Ascending -> sortOrderElement.field.orderByFields
             SearchDirection.Descending -> sortOrderElement.field.orderByFields.map { it.desc() }
           }
         } + listOf(ACCESSION.NUMBER)
 
     var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSION)
 
-    query = joinWithSecondaryTables(query, criteria.fields, criteria.filters, criteria.sortOrder)
+    query = joinWithSecondaryTables(query, fields, filters, sortOrder)
 
     // TODO: Better cursor support. Should remember the most recent values of the sort fields
     //       and pass them to skip(). For now, just treat the cursor as an offset.
-    val offset = criteria.cursor?.toIntOrNull() ?: 0
+    val offset = cursor?.toIntOrNull() ?: 0
 
     // Query one more row than the limit so we can tell the client whether or not there are
     // additional pages of results.
     val orderedQuery = query.where(conditions).orderBy(orderBy)
     val fullQuery =
-        if (criteria.count < Int.MAX_VALUE) {
-          orderedQuery.limit(criteria.count + 1).offset(offset)
+        if (limit < Int.MAX_VALUE) {
+          orderedQuery.limit(limit + 1).offset(offset)
         } else {
           orderedQuery
         }
 
-    log.debug("search criteria: $criteria")
+    log.debug("search criteria: fields=$fields filters=$filters sort=$sortOrder")
     log.debug("search SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
@@ -90,7 +91,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     val results =
         records.map { record ->
-          fields
+          fieldObjects
               .mapNotNull { field ->
                 // There can be field-specific logic for rendering column values as strings,
                 // e.g., geolocation includes both latitude and longitude.
@@ -104,13 +105,14 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
               .toMap()
         }
 
-    val cursor =
-        if (results.size > criteria.count) {
-          "${offset + criteria.count}"
+    val newCursor =
+        if (results.size > limit) {
+          "${offset + limit}"
         } else {
           null
         }
-    return SearchResponsePayload(cursor = cursor, results = results.take(criteria.count))
+
+    return SearchResults(results.take(limit), newCursor)
   }
 
   /**
@@ -221,14 +223,14 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
   private fun joinWithSecondaryTables(
       selectFrom: SelectJoinStep<out Record>,
       fields: List<SearchField<*>>,
-      filters: List<SearchFilter>?,
-      sortOrder: List<SearchSortOrderElement>? = null
+      filters: List<SearchFilter>,
+      sortOrder: List<SearchSortField> = emptyList()
   ): SelectJoinStep<out Record> {
     var query = selectFrom
     val directlyReferencedTables =
-        (fields.map { it.table }.toSet() +
-            (filters?.map { it.field.table }?.toSet() ?: emptySet()) +
-            (sortOrder?.map { it.field.table }?.toSet() ?: emptySet()))
+        fields.map { it.table }.toSet() +
+            filters.map { it.field.table }.toSet() +
+            sortOrder.map { it.field.table }.toSet()
     val dependencyTables =
         directlyReferencedTables.flatMap { it.dependsOn() }.toSet() - directlyReferencedTables
 
@@ -237,3 +239,19 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     return query
   }
 }
+
+/** Return value from [SearchService.search]. */
+data class SearchResults(
+    /**
+     * List of results containing the fields specified by the caller. Each element of the list is a
+     * map of field name to non-null value. If an accession does not have a value for a particular
+     * field, it is omitted from the map.
+     */
+    val results: List<Map<String, String>>,
+
+    /**
+     * Cursor that can be passed to [SearchService.search] to retrieve additional results. If
+     * [results] contains the full set of results, this will be null.
+     */
+    val cursor: String?
+)

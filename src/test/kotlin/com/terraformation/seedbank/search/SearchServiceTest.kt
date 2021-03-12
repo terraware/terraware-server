@@ -1,9 +1,5 @@
 package com.terraformation.seedbank.search
 
-import com.terraformation.seedbank.api.seedbank.SearchDirection
-import com.terraformation.seedbank.api.seedbank.SearchRequestPayload
-import com.terraformation.seedbank.api.seedbank.SearchResponsePayload
-import com.terraformation.seedbank.api.seedbank.SearchSortOrderElement
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
@@ -49,13 +45,12 @@ class SearchServiceTest : DatabaseTest() {
   @Test
   fun `finds example rows`() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
-    val sortFields = fields.map { SearchSortOrderElement(it) }
-    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
+    val sortOrder = fields.map { SearchSortField(it) }
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields, sortOrder = sortOrder)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf(
                     "species" to "Kousa Dogwood",
@@ -78,13 +73,12 @@ class SearchServiceTest : DatabaseTest() {
   @Test
   fun `honors sort order`() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
-    val sortFields = fields.map { SearchSortOrderElement(it, SearchDirection.Descending) }
-    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
+    val sortOrder = fields.map { SearchSortField(it, SearchDirection.Descending) }
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields, sortOrder = sortOrder)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf(
                     "species" to "Other Dogwood",
@@ -110,12 +104,11 @@ class SearchServiceTest : DatabaseTest() {
     val fields = listOf(treesCollectedFromField)
     val filters =
         listOf(SearchFilter(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range))
-    val criteria = SearchRequestPayload(fields = fields, filters = filters)
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields, filters)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(mapOf("accessionNumber" to "ABCDEFG", "treesCollectedFrom" to "500")),
             cursor = null)
 
@@ -132,14 +125,12 @@ class SearchServiceTest : DatabaseTest() {
             targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
-    val sortFields =
-        listOf(SearchSortOrderElement(targetStorageConditionField, SearchDirection.Descending))
-    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields)
+    val sortOrder = listOf(SearchSortField(targetStorageConditionField, SearchDirection.Descending))
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields, sortOrder = sortOrder)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf("accessionNumber" to "XYZ", "targetStorageCondition" to "Refrigerator"),
                 mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
@@ -154,15 +145,13 @@ class SearchServiceTest : DatabaseTest() {
     accessionDao.update(
         accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(stateId = AccessionState.InStorage))
 
-    val criteria =
-        SearchRequestPayload(
-            fields = listOf(stateField),
-            filters = listOf(SearchFilter(stateField, listOf("In Storage"))))
+    val filters = listOf(SearchFilter(stateField, listOf("In Storage")))
+    val fields = listOf(stateField)
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields, filters)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf("accessionNumber" to "ABCDEFG", "state" to "In Storage"),
             ),
@@ -178,12 +167,11 @@ class SearchServiceTest : DatabaseTest() {
             targetStorageCondition = StorageCondition.Freezer))
 
     val fields = listOf(targetStorageConditionField)
-    val criteria = SearchRequestPayload(fields = fields)
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
                 mapOf("accessionNumber" to "XYZ"),
@@ -209,15 +197,12 @@ class SearchServiceTest : DatabaseTest() {
             targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
-    val criteria =
-        SearchRequestPayload(
-            fields = fields,
-            filters = listOf(SearchFilter(targetStorageConditionField, listOf("Freezer", null))))
+    val filters = listOf(SearchFilter(targetStorageConditionField, listOf("Freezer", null)))
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields, filters)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
                 mapOf("accessionNumber" to "MISSING"),
@@ -240,18 +225,13 @@ class SearchServiceTest : DatabaseTest() {
     accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
 
     val fields = listOf(accessionNumberField)
-    val criteria =
-        SearchRequestPayload(
-            fields = fields,
-            filters =
-                listOf(
-                    SearchFilter(
-                        storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)))
+    val filters =
+        listOf(SearchFilter(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy))
 
-    val result = searchService.search(criteria)
+    val result = searchService.search(fields, filters)
 
     val expected =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf("accessionNumber" to "ABCDEFG"),
                 mapOf("accessionNumber" to "MISSING"),
@@ -264,8 +244,7 @@ class SearchServiceTest : DatabaseTest() {
   @Test
   fun `can use cursor to get next page of results`() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
-    val sortFields = fields.map { SearchSortOrderElement(it) }
-    val criteria = SearchRequestPayload(fields = fields, sortOrder = sortFields, count = 1)
+    val sortOrder = fields.map { SearchSortField(it) }
 
     val expectedFirstPageResults =
         listOf(
@@ -277,13 +256,13 @@ class SearchServiceTest : DatabaseTest() {
             ),
         )
 
-    val firstPage = searchService.search(criteria)
+    val firstPage = searchService.search(fields, sortOrder = sortOrder, limit = 1)
     assertEquals(expectedFirstPageResults, firstPage.results)
     // We just care that we get a cursor, not what it is specifically
     assertNotNull(firstPage.cursor)
 
     val expectedSecondPage =
-        SearchResponsePayload(
+        SearchResults(
             listOf(
                 mapOf(
                     "species" to "Other Dogwood",
@@ -294,7 +273,8 @@ class SearchServiceTest : DatabaseTest() {
             ),
             cursor = null)
 
-    val secondPage = searchService.search(criteria.copy(cursor = firstPage.cursor))
+    val secondPage =
+        searchService.search(fields, sortOrder = sortOrder, cursor = firstPage.cursor, limit = 1)
     assertEquals(expectedSecondPage, secondPage)
   }
 
@@ -318,10 +298,9 @@ class SearchServiceTest : DatabaseTest() {
       val fields = listOf(accessionNumberField)
       val filters =
           listOf(SearchFilter(receivedDateField, listOf("2021-01-02"), SearchFilterType.Exact))
-      val criteria = SearchRequestPayload(fields = fields, filters = filters)
 
-      val expected = SearchResponsePayload(listOf(mapOf("accessionNumber" to "JAN2")), null)
-      val actual = searchService.search(criteria)
+      val expected = SearchResults(listOf(mapOf("accessionNumber" to "JAN2")), null)
+      val actual = searchService.search(fields, filters)
 
       assertEquals(expected, actual)
     }
@@ -332,17 +311,16 @@ class SearchServiceTest : DatabaseTest() {
       val filters =
           listOf(
               SearchFilter(receivedDateField, listOf("2021-01-02", null), SearchFilterType.Exact))
-      val criteria = SearchRequestPayload(fields = fields, filters = filters)
 
       val expected =
-          SearchResponsePayload(
+          SearchResults(
               listOf(
                   mapOf("accessionNumber" to "ABCDEFG"),
                   mapOf("accessionNumber" to "JAN2"),
                   mapOf("accessionNumber" to "XYZ"),
               ),
               null)
-      val actual = searchService.search(criteria)
+      val actual = searchService.search(fields, filters)
 
       assertEquals(expected, actual)
     }
@@ -350,18 +328,16 @@ class SearchServiceTest : DatabaseTest() {
     @Test
     fun `can search by date range`() {
       val fields = listOf(accessionNumberField)
-      val sortFields = listOf(SearchSortOrderElement(receivedDateField))
+      val sortOrder = listOf(SearchSortField(receivedDateField))
       val filters =
           listOf(
               SearchFilter(
                   receivedDateField, listOf("2021-01-02", "2021-01-15"), SearchFilterType.Range))
-      val criteria =
-          SearchRequestPayload(fields = fields, sortOrder = sortFields, filters = filters)
 
       val expected =
-          SearchResponsePayload(
+          SearchResults(
               listOf(mapOf("accessionNumber" to "JAN2"), mapOf("accessionNumber" to "JAN8")), null)
-      val actual = searchService.search(criteria)
+      val actual = searchService.search(fields, filters, sortOrder)
 
       assertEquals(expected, actual)
     }
@@ -371,9 +347,8 @@ class SearchServiceTest : DatabaseTest() {
       val fields = listOf(accessionNumberField)
       val filters =
           listOf(SearchFilter(receivedDateField, listOf("NOT_A_DATE"), SearchFilterType.Exact))
-      val criteria = SearchRequestPayload(fields = fields, filters = filters)
 
-      assertThrows(IllegalArgumentException::class.java) { searchService.search(criteria) }
+      assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
     }
   }
 

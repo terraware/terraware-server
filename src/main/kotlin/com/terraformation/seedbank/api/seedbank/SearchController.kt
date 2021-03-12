@@ -3,9 +3,12 @@ package com.terraformation.seedbank.api.seedbank
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.opencsv.CSVWriter
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.search.SearchDirection
 import com.terraformation.seedbank.search.SearchField
 import com.terraformation.seedbank.search.SearchFilter
+import com.terraformation.seedbank.search.SearchResults
 import com.terraformation.seedbank.search.SearchService
+import com.terraformation.seedbank.search.SearchSortField
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -33,7 +36,13 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   @Operation(summary = "Searches for accessions based on filter criteria.")
   @PostMapping
   fun search(@RequestBody payload: SearchRequestPayload): SearchResponsePayload {
-    return searchService.search(payload)
+    return SearchResponsePayload(
+        searchService.search(
+            payload.fields,
+            payload.filters ?: emptyList(),
+            payload.searchSortFields ?: emptyList(),
+            payload.cursor,
+            payload.count))
   }
 
   @ApiResponse(
@@ -44,13 +53,15 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   @Operation(summary = "Exports the results of a search as a downloadable CSV file.")
   @PostMapping("/export", produces = ["text/csv"])
   fun export(@RequestBody payload: ExportRequestPayload): ResponseEntity<ByteArray> {
-    val searchResults = searchService.search(payload.toSearchRequest())
+    val searchResults =
+        searchService.search(
+            payload.fields, payload.filters ?: emptyList(), payload.searchSortFields ?: emptyList())
     return exportCsv(payload, searchResults)
   }
 
   private fun exportCsv(
       payload: ExportRequestPayload,
-      searchResults: SearchResponsePayload
+      searchResults: SearchResults
   ): ResponseEntity<ByteArray> {
     val dateAndTime =
         DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now(clock))
@@ -84,31 +95,34 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   }
 }
 
-enum class SearchDirection {
-  Ascending,
-  Descending
+private interface HasSortOrder {
+  val sortOrder: List<SearchSortOrderElement>?
+  val searchSortFields: List<SearchSortField>?
+    get() = sortOrder?.map { it.toSearchSortField() }
+}
+
+data class SearchRequestPayload(
+    @NotEmpty val fields: List<SearchField<*>>,
+    override val sortOrder: List<SearchSortOrderElement>? = null,
+    val filters: List<SearchFilter>? = null,
+    val cursor: String? = null,
+    @Schema(defaultValue = "10") val count: Int = 10
+) : HasSortOrder
+
+data class ExportRequestPayload(
+    @NotEmpty val fields: List<SearchField<*>>,
+    override val sortOrder: List<SearchSortOrderElement>? = null,
+    val filters: List<SearchFilter>? = null,
+) : HasSortOrder
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SearchResponsePayload(val results: List<Map<String, String>>, val cursor: String?) {
+  constructor(searchResults: SearchResults) : this(searchResults.results, searchResults.cursor)
 }
 
 data class SearchSortOrderElement(
     val field: SearchField<*>,
-    @Schema(defaultValue = "Ascending") val direction: SearchDirection? = SearchDirection.Ascending
-)
-
-data class SearchRequestPayload(
-    @NotEmpty val fields: List<SearchField<*>>,
-    val sortOrder: List<SearchSortOrderElement>? = null,
-    val filters: List<SearchFilter>? = null,
-    val cursor: String? = null,
-    @Schema(defaultValue = "10") val count: Int = 10
-)
-
-data class ExportRequestPayload(
-    @NotEmpty val fields: List<SearchField<*>>,
-    val sortOrder: List<SearchSortOrderElement>? = null,
-    val filters: List<SearchFilter>? = null,
+    @Schema(defaultValue = "Ascending") val direction: SearchDirection?
 ) {
-  fun toSearchRequest() = SearchRequestPayload(fields, sortOrder, filters, count = Int.MAX_VALUE)
+  fun toSearchSortField() = SearchSortField(field, direction ?: SearchDirection.Ascending)
 }
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class SearchResponsePayload(val results: List<Map<String, String>>, val cursor: String?)
