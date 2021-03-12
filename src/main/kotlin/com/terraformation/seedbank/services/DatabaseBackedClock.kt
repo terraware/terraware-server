@@ -35,7 +35,7 @@ import org.springframework.core.annotation.Order
  * configuration such that when the snapshot is restored later, the clock will be reset. To make
  * this work well, the process looks like
  *
- * 1. Just before capturing the snapshot, call `setFakeTime(instant())` to update the base real
+ * 1. Just before capturing the snapshot, call `advance(Duration.ZERO)` to update the base real
  * time.
  * 2. Capture the snapshot.
  * 3. Later on, restore the snapshot.
@@ -71,7 +71,7 @@ private constructor(
     readFromDatabase()
   }
 
-  fun readFromDatabase() {
+  private fun readFromDatabase() {
     if (useTestClock) {
       val record = dslContext.selectFrom(TEST_CLOCK).fetchOne()
       if (record != null) {
@@ -109,13 +109,26 @@ private constructor(
     }
   }
 
+  /**
+   * Advances the clock to a specific time. The new time must be later than the clock's current
+   * time.
+   */
   fun setFakeTime(fakeTime: Instant) {
     advance(Duration.between(instant(), fakeTime))
   }
 
+  /**
+   * Advances the clock by an amount of time. This also updates the base real time which is useful
+   * to do just before capturing a database snapshot (see class documentation). Call with
+   * [Duration.ZERO] to update the base real time without advancing the clock.
+   */
   fun advance(duration: Duration) {
     if (!useTestClock) {
       throw IllegalStateException("Test clock is not enabled")
+    }
+
+    if (duration < Duration.ZERO) {
+      throw IllegalArgumentException("Cannot set clock back to an earlier time")
     }
 
     val adjustment = Duration.between(baseRealTime, baseFakeTime) + duration

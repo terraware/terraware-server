@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.services
 
+import com.terraformation.seedbank.Application
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.tables.references.TEST_CLOCK
@@ -16,12 +17,17 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.context.event.ApplicationStartedEvent
 
 internal class DatabaseBackedClockTest : DatabaseTest() {
   private val config: TerrawareServerConfig = mockk()
 
   /** Lazily-instantiated test subject; this will pick up per-test config values. */
   private val clock: DatabaseBackedClock by lazy { DatabaseBackedClock(dslContext, config) }
+
+  private val applicationStartedEvent =
+      ApplicationStartedEvent(SpringApplication(Application::class.java), null, null)
 
   @BeforeEach
   fun setup() {
@@ -36,7 +42,7 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
         .set(TEST_CLOCK.REAL_TIME, Instant.now())
         .set(TEST_CLOCK.FAKE_TIME, Instant.EPOCH)
         .execute()
-    clock.readFromDatabase()
+    clock.initialize(applicationStartedEvent)
     assertSameInstant(Instant.EPOCH, clock.instant())
   }
 
@@ -45,14 +51,14 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
     assertEquals(
         0, dslContext.selectFrom(TEST_CLOCK).fetch().size, "Clock table should be empty initially")
 
-    clock.readFromDatabase()
+    clock.initialize(applicationStartedEvent)
     val results = dslContext.selectFrom(TEST_CLOCK).fetch()
     assertEquals(1, results.size, "Number of rows in test clock table")
   }
 
   @Test
   fun `fake clock advances on its own`() {
-    clock.readFromDatabase()
+    clock.initialize(applicationStartedEvent)
 
     val early = clock.instant()
     Thread.sleep(50)
@@ -68,7 +74,7 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
         .set(TEST_CLOCK.REAL_TIME, Instant.now())
         .set(TEST_CLOCK.FAKE_TIME, Instant.EPOCH)
         .execute()
-    clock.readFromDatabase()
+    clock.initialize(applicationStartedEvent)
 
     val newFake = Instant.EPOCH.plus(1, ChronoUnit.DAYS)
     clock.setFakeTime(newFake)
@@ -76,8 +82,22 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
     assertSameInstant(newFake, clock.instant(), "Time from existing instance")
 
     val newClock = DatabaseBackedClock(dslContext, config)
-    newClock.readFromDatabase()
+    newClock.initialize(applicationStartedEvent)
     assertSameInstant(newFake, newClock.instant(), "Time from fresh instance")
+  }
+
+  @Test
+  fun `does not allow clock to be advanced by a negative amount`() {
+    clock.initialize(applicationStartedEvent)
+    assertThrows<IllegalArgumentException> { clock.advance(Duration.ofSeconds(-1)) }
+  }
+
+  @Test
+  fun `does not allow clock to be set to an earlier time`() {
+    clock.initialize(applicationStartedEvent)
+    assertThrows<IllegalArgumentException> {
+      clock.setFakeTime(clock.instant() - Duration.ofSeconds(1))
+    }
   }
 
   /** Tests for default pass-through behavior. */
@@ -86,7 +106,7 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
     @BeforeEach
     fun useSystemClock() {
       every { config.useTestClock } returns false
-      clock.readFromDatabase()
+      clock.initialize(applicationStartedEvent)
     }
 
     @Test
