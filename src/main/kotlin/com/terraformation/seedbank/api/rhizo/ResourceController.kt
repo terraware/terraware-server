@@ -6,7 +6,6 @@ import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.auth.ClientIdentity
 import com.terraformation.seedbank.db.DeviceFetcher
 import com.terraformation.seedbank.db.TimeSeriesFetcher
-import com.terraformation.seedbank.db.TimeSeriesWriter
 import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
@@ -33,7 +32,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 class ResourceController(
     private val deviceFetcher: DeviceFetcher,
     private val timeSeriesFetcher: TimeSeriesFetcher,
-    private val timeSeriesWriter: TimeSeriesWriter
 ) {
   private val log = perClassLogger()
 
@@ -70,7 +68,7 @@ class ResourceController(
     }
 
     return try {
-      timeSeriesWriter.create(deviceId, name, dataType, units, decimal_places)
+      timeSeriesFetcher.create(deviceId, name, dataType, units, decimal_places)
       log.info("Created timeseries $name for device $path")
       "Timeseries created"
     } catch (e: DuplicateKeyException) {

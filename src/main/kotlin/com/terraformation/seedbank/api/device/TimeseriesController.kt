@@ -7,7 +7,6 @@ import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.DeviceFetcher
 import com.terraformation.seedbank.db.TimeSeriesFetcher
-import com.terraformation.seedbank.db.TimeSeriesWriter
 import com.terraformation.seedbank.db.TimeseriesType
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
@@ -27,7 +26,6 @@ class TimeseriesController(
     private val config: TerrawareServerConfig,
     private val deviceFetcher: DeviceFetcher,
     private val timeSeriesFetcher: TimeSeriesFetcher,
-    private val timeSeriesWriter: TimeSeriesWriter,
 ) {
   private val log = perClassLogger()
 
@@ -73,10 +71,10 @@ class TimeseriesController(
             ?: throw NotFoundException("Device $device does not exist")
     val timeseriesId =
         timeSeriesFetcher.getTimeseriesIdByName(deviceId, timeseries)
-            ?: timeSeriesWriter.create(
+            ?: timeSeriesFetcher.create(
                 deviceId, timeseries, TimeseriesType.Numeric, units, decimalPlaces)
 
-    timeSeriesWriter.insertValue(timeseriesId, value.toPlainString())
+    timeSeriesFetcher.insertValue(timeseriesId, value.toPlainString())
 
     log.info("Got timeseries value $device/$timeseries = $value")
     return SimpleSuccessResponsePayload()
