@@ -121,7 +121,7 @@ class PhotoController(
       @PathVariable accessionNumber: String,
       @PathVariable photoFilename: String
   ): ResponseEntity<InputStreamResource> {
-    if (accessionStore.fetchByNumber(accessionNumber) == null) {
+    if (accessionStore.getIdByNumber(accessionNumber) == null) {
       throw NotFoundException("Accession $accessionNumber does not exist.")
     }
 
