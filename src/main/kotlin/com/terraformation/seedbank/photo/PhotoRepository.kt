@@ -1,8 +1,8 @@
 package com.terraformation.seedbank.photo
 
-import com.terraformation.seedbank.api.seedbank.ListPhotosResponseElement
-import com.terraformation.seedbank.api.seedbank.UploadPhotoMetadataPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.AccessionNotFoundException
+import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
 import java.io.IOException
@@ -25,18 +25,16 @@ import javax.annotation.ManagedBean
 class PhotoRepository(
     private val config: TerrawareServerConfig,
     private val accessionPhotoDao: AccessionPhotoDao,
+    private val accessionStore: AccessionStore,
     private val clock: Clock,
 ) {
   @Throws(IOException::class)
-  fun storePhoto(
-      accessionId: Long,
-      accessionNumber: String,
-      filename: String,
-      contentType: String,
-      data: InputStream,
-      metadata: UploadPhotoMetadataPayload
-  ) {
-    val photoPath = getPhotoPath(accessionNumber, filename)
+  fun storePhoto(accessionNumber: String, data: InputStream, metadata: PhotoMetadataFields) {
+    val accessionId =
+        accessionStore.getIdByNumber(accessionNumber)
+            ?: throw AccessionNotFoundException(accessionNumber)
+
+    val photoPath = getPhotoPath(accessionNumber, metadata.filename)
     makePhotoDir(accessionNumber)
 
     try {
@@ -46,8 +44,8 @@ class PhotoRepository(
           AccessionPhoto(
               accessionId = accessionId,
               capturedTime = metadata.capturedTime,
-              contentType = contentType,
-              filename = filename,
+              contentType = metadata.contentType,
+              filename = metadata.filename,
               gpsAccuracy = metadata.gpsAccuracy,
               latitude = metadata.latitude,
               longitude = metadata.longitude,
@@ -76,19 +74,6 @@ class PhotoRepository(
   fun getPhotoFileSize(accessionNumber: String, filename: String): Long {
     val photoPath = getPhotoPath(accessionNumber, filename)
     return Files.size(photoPath)
-  }
-
-  fun listPhotos(accessionId: Long): List<ListPhotosResponseElement> {
-    return accessionPhotoDao.fetchByAccessionId(accessionId).map {
-      ListPhotosResponseElement(
-          filename = it.filename!!,
-          capturedTime = it.capturedTime!!,
-          gpsAccuracy = it.gpsAccuracy,
-          latitude = it.latitude,
-          longitude = it.longitude,
-          size = it.size!!,
-      )
-    }
   }
 
   @Throws(IOException::class)

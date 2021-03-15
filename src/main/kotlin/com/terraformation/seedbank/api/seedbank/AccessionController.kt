@@ -21,10 +21,10 @@ import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AppDeviceFields
 import com.terraformation.seedbank.model.ConcreteAccession
+import com.terraformation.seedbank.model.Geolocation
 import com.terraformation.seedbank.model.GerminationFields
 import com.terraformation.seedbank.model.GerminationTestFields
 import com.terraformation.seedbank.model.WithdrawalFields
-import com.terraformation.seedbank.services.equalsIgnoreScale
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -277,31 +277,6 @@ data class AccessionPayload(
       model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.seedsRemaining,
   )
-}
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-class Geolocation(
-    val latitude: BigDecimal,
-    val longitude: BigDecimal,
-    val accuracy: BigDecimal? = null
-) {
-  /** Tests property values for numeric equality, disregarding differences in decimal scale. */
-  override fun equals(other: Any?): Boolean {
-    return other is Geolocation &&
-        latitude.equalsIgnoreScale(other.latitude) &&
-        longitude.equalsIgnoreScale(other.longitude) &&
-        accuracy.equalsIgnoreScale(other.accuracy)
-  }
-
-  override fun hashCode(): Int {
-    return latitude.setScale(10).hashCode() xor
-        longitude.setScale(10).hashCode() xor
-        (accuracy?.setScale(10)?.hashCode() ?: 13)
-  }
-
-  override fun toString() =
-      "Geolocation(latitude=${latitude.toPlainString()}, longitude=${longitude.toPlainString()}, " +
-          "accuracy=${accuracy?.toPlainString()})"
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -1,6 +1,5 @@
 package com.terraformation.seedbank.model
 
-import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.ProcessingMethod

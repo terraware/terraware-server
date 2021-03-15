@@ -1,6 +1,7 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
@@ -14,7 +15,6 @@ import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionNumberGenerator
 import com.terraformation.seedbank.model.toActiveEnum
-import com.terraformation.seedbank.photo.PhotoRepository
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
 import com.terraformation.seedbank.services.toInstant
@@ -34,11 +34,11 @@ import org.springframework.dao.DuplicateKeyException
 class AccessionStore(
     private val dslContext: DSLContext,
     private val config: TerrawareServerConfig,
+    private val accessionPhotoDao: AccessionPhotoDao,
     private val appDeviceStore: AppDeviceStore,
     private val bagStore: BagStore,
     private val geolocationStore: GeolocationStore,
     private val germinationStore: GerminationStore,
-    private val photoRepository: PhotoRepository,
     private val speciesFetcher: SpeciesFetcher,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
@@ -97,7 +97,8 @@ class AccessionStore(
     val geolocations = geolocationStore.fetchGeolocations(accessionId)
     val germinationTestTypes = germinationStore.fetchGerminationTestTypes(accessionId)
     val germinationTests = germinationStore.fetchGerminationTests(accessionId)
-    val photoFilenames = photoRepository.listPhotos(accessionId).map { it.filename }.toListOrNull()
+    val photoFilenames =
+        accessionPhotoDao.fetchByAccessionId(accessionId).map { it.filename }.toListOrNull()
     val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
 
     return with(ACCESSION) {

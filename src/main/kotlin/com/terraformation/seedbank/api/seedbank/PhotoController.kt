@@ -12,7 +12,11 @@ import com.terraformation.seedbank.api.UnsupportedPhotoFormatException
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.db.AccessionNotFoundException
 import com.terraformation.seedbank.db.AccessionStore
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
+import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
+import com.terraformation.seedbank.photo.PhotoMetadata
 import com.terraformation.seedbank.photo.PhotoRepository
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
@@ -43,6 +47,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @SeedBankAppEndpoint
 class PhotoController(
+    private val accessionPhotoDao: AccessionPhotoDao,
     private val accessionStore: AccessionStore,
     private val photoRepository: PhotoRepository
 ) {
@@ -69,25 +74,28 @@ class PhotoController(
       @RequestPart("file") file: MultipartFile,
       @RequestPart("metadata") metadata: UploadPhotoMetadataPayload
   ): SimpleSuccessResponsePayload {
-    val accessionId =
-        accessionStore.getIdByNumber(accessionNumber)
-            ?: throw NotFoundException("Accession $accessionNumber does not exist.")
-
     val contentType = file.contentType?.substringBefore(';')
     if (contentType != MediaType.IMAGE_JPEG_VALUE) {
       throw UnsupportedPhotoFormatException()
     }
 
-    val duplicateNameException =
-        DuplicateNameException(
-            "Photo $photoFilename already exists for accession $accessionNumber.")
-
     try {
       photoRepository.storePhoto(
-          accessionId, accessionNumber, photoFilename, contentType, file.inputStream, metadata)
+          accessionNumber,
+          file.inputStream,
+          PhotoMetadata(
+              photoFilename,
+              contentType,
+              metadata.capturedTime,
+              metadata.latitude,
+              metadata.longitude,
+              metadata.gpsAccuracy))
+    } catch (e: AccessionNotFoundException) {
+      throw NotFoundException("Accession $accessionNumber does not exist.")
     } catch (e: FileAlreadyExistsException) {
       log.info("Rejecting duplicate photo $photoFilename for accession $accessionNumber")
-      throw duplicateNameException
+      throw DuplicateNameException(
+          "Photo $photoFilename already exists for accession $accessionNumber.")
     } catch (e: Exception) {
       log.error("Unable to store photo $photoFilename for accession $accessionNumber", e)
       throw InternalErrorException("Unable to store the photo.")
@@ -141,7 +149,8 @@ class PhotoController(
         accessionStore.getIdByNumber(accessionNumber)
             ?: throw NotFoundException("Accession $accessionNumber does not exist.")
 
-    return ListPhotosResponsePayload(photoRepository.listPhotos(accessionId))
+    return ListPhotosResponsePayload(
+        accessionPhotoDao.fetchByAccessionId(accessionId).map { ListPhotosResponseElement(it) })
   }
 }
 
@@ -162,7 +171,17 @@ data class ListPhotosResponseElement(
     val latitude: BigDecimal?,
     val longitude: BigDecimal?,
     @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
-)
+) {
+  constructor(
+      pojo: AccessionPhoto
+  ) : this(
+      pojo.filename!!,
+      pojo.size!!,
+      pojo.capturedTime!!,
+      pojo.latitude,
+      pojo.longitude,
+      pojo.gpsAccuracy)
+}
 
 data class ListPhotosResponsePayload(val photos: List<ListPhotosResponseElement>) :
     SuccessResponsePayload

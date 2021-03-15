@@ -1,8 +1,8 @@
 package com.terraformation.seedbank.photo
 
-import com.terraformation.seedbank.api.seedbank.ListPhotosResponseElement
-import com.terraformation.seedbank.api.seedbank.UploadPhotoMetadataPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.AccessionNotFoundException
+import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
 import io.mockk.every
@@ -31,9 +31,10 @@ import org.springframework.http.MediaType
 
 internal class PhotoRepositoryTest {
   private val accessionPhotoDao: AccessionPhotoDao = mockk()
+  private val accessionStore: AccessionStore = mockk()
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
-  private val repository = PhotoRepository(config, accessionPhotoDao, clock)
+  private val repository = PhotoRepository(config, accessionPhotoDao, accessionStore, clock)
 
   private lateinit var tempDir: Path
 
@@ -46,7 +47,8 @@ internal class PhotoRepositoryTest {
   private val longitude = BigDecimal("876.5432")
   private val accuracy = 50
   private val uploadedTime = Instant.now()
-  private val metadata = UploadPhotoMetadataPayload(capturedTime, latitude, longitude, accuracy)
+  private val metadata =
+      PhotoMetadata(filename, contentType, capturedTime, latitude, longitude, accuracy)
 
   private lateinit var photoPath: Path
 
@@ -54,6 +56,8 @@ internal class PhotoRepositoryTest {
   fun createTemporaryDirectory() {
     tempDir = Files.createTempDirectory(javaClass.simpleName)
 
+    every { accessionStore.getIdByNumber(any()) } throws AccessionNotFoundException("boom")
+    every { accessionStore.getIdByNumber(accessionNumber) } returns accessionId
     every { clock.instant() } returns uploadedTime
     every { config.photoDir } returns tempDir
     every { config.photoIntermediateDepth } returns 3
@@ -78,14 +82,7 @@ internal class PhotoRepositoryTest {
   fun `storePhoto writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
 
-    repository.storePhoto(
-        accessionId,
-        accessionNumber,
-        filename,
-        contentType,
-        photoData.inputStream(),
-        metadata,
-    )
+    repository.storePhoto(accessionNumber, photoData.inputStream(), metadata)
 
     val expectedPojo =
         AccessionPhoto(
@@ -113,8 +110,20 @@ internal class PhotoRepositoryTest {
     every { accessionPhotoDao.insert(any<AccessionPhoto>()) } throws exception
 
     assertThrows(DuplicateKeyException::class.java) {
-      repository.storePhoto(
-          accessionId, accessionNumber, filename, contentType, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
+    }
+
+    assertFalse(Files.exists(photoPath), "File should not exist")
+  }
+
+  @Test
+  fun `storePhoto throws exception if accession does not exist`() {
+    val exception = DuplicateKeyException("oops")
+
+    every { accessionPhotoDao.insert(any<AccessionPhoto>()) } throws exception
+
+    assertThrows(AccessionNotFoundException::class.java) {
+      repository.storePhoto("nonexistent", ByteArray(0).inputStream(), metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -127,8 +136,7 @@ internal class PhotoRepositoryTest {
     Files.createFile(photoPath.parent)
 
     assertThrows(IOException::class.java) {
-      repository.storePhoto(
-          accessionId, accessionNumber, filename, contentType, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
     }
   }
 
@@ -141,8 +149,7 @@ internal class PhotoRepositoryTest {
         RuntimeException("Should not be called")
 
     assertThrows(FileAlreadyExistsException::class.java) {
-      repository.storePhoto(
-          accessionId, accessionNumber, filename, contentType, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
     }
 
     verify(exactly = 0) { accessionPhotoDao.insert(any<AccessionPhoto>()) }
@@ -185,47 +192,5 @@ internal class PhotoRepositoryTest {
     assertThrows(NoSuchFileException::class.java) {
       repository.getPhotoFileSize(accessionNumber, filename)
     }
-  }
-
-  @Test
-  fun `listPhotos returns all photos`() {
-    val pojos =
-        listOf(
-            AccessionPhoto(
-                1,
-                accessionId,
-                filename,
-                uploadedTime,
-                capturedTime,
-                contentType,
-                1,
-                latitude,
-                longitude,
-                accuracy),
-            AccessionPhoto(
-                2,
-                accessionId,
-                "other.jpg",
-                Instant.ofEpochMilli(3000),
-                Instant.ofEpochMilli(2000),
-                contentType,
-                100),
-        )
-
-    every { accessionPhotoDao.fetchByAccessionId(accessionId) } returns pojos
-
-    val expected =
-        listOf(
-            ListPhotosResponseElement(filename, 1, capturedTime, latitude, longitude, accuracy),
-            ListPhotosResponseElement(
-                "other.jpg", 100, Instant.ofEpochMilli(2000), null, null, null))
-
-    assertEquals(expected, repository.listPhotos(accessionId))
-  }
-
-  @Test
-  fun `listPhotos returns empty list if no photos for accession`() {
-    every { accessionPhotoDao.fetchByAccessionId(accessionId) } returns emptyList()
-    assertEquals(emptyList<ListPhotosResponseElement>(), repository.listPhotos(accessionId))
   }
 }

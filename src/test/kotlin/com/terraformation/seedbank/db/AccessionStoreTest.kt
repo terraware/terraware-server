@@ -3,7 +3,6 @@ package com.terraformation.seedbank.db
 import com.terraformation.seedbank.api.seedbank.AccessionPayload
 import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
-import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
 import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
@@ -29,7 +28,7 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLL
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.db.tables.references.NOTIFICATION
 import com.terraformation.seedbank.model.AccessionNumberGenerator
-import com.terraformation.seedbank.photo.PhotoRepository
+import com.terraformation.seedbank.model.Geolocation
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -101,11 +100,11 @@ internal class AccessionStoreTest : DatabaseTest() {
         AccessionStore(
             dslContext,
             config,
+            accessionPhotoDao,
             AppDeviceStore(dslContext, clock),
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
-            PhotoRepository(config, accessionPhotoDao, clock),
             SpeciesFetcher(clock, support),
             WithdrawalStore(dslContext, clock),
             clock,

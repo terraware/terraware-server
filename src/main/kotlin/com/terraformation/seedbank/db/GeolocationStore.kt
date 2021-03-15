@@ -1,7 +1,7 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.api.seedbank.Geolocation
 import com.terraformation.seedbank.db.tables.references.GEOLOCATION
+import com.terraformation.seedbank.model.Geolocation
 import com.terraformation.seedbank.services.toSetOrNull
 import java.math.BigDecimal
 import java.time.Clock
