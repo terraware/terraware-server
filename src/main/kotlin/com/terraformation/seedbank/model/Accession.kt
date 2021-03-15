@@ -27,6 +27,11 @@ fun AccessionState.toActiveEnum() =
       AccessionState.InStorage -> AccessionActive.Active
     }
 
+enum class AccessionSource {
+  Web,
+  SeedCollectorApp
+}
+
 interface AccessionFields {
   val accessionNumber: String?
     get() = null
@@ -130,6 +135,8 @@ interface AccessionFields {
     get() = null
   val seedsRemaining: Int?
     get() = null
+  val source: AccessionSource?
+    get() = null
 
   private fun getLatestGerminationTestWithResults(): GerminationTestFields? {
     return germinationTests
@@ -220,12 +227,14 @@ interface ConcreteAccession : AccessionFields {
   override val state: AccessionState
   override val active: AccessionActive
     get() = state.toActiveEnum()
+  override val source: AccessionSource
 }
 
 data class AccessionModel(
     val id: Long,
     override val accessionNumber: String,
     override val state: AccessionState,
+    override val source: AccessionSource,
     override val species: String? = null,
     override val family: String? = null,
     override val numberOfTrees: Int? = null,

@@ -14,6 +14,7 @@ import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionNumberGenerator
+import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.toActiveEnum
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
@@ -101,11 +102,14 @@ class AccessionStore(
         accessionPhotoDao.fetchByAccessionId(accessionId).map { it.filename }.toListOrNull()
     val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
 
+    val source = if (deviceInfo != null) AccessionSource.SeedCollectorApp else AccessionSource.Web
+
     return with(ACCESSION) {
       AccessionModel(
           id = accessionId,
           accessionNumber = accessionNumber,
           state = parentRow[STATE_ID]!!,
+          source = source,
           species = parentRow[species().NAME],
           family = parentRow[speciesFamily().NAME],
           numberOfTrees = parentRow[TREES_COLLECTED_FROM],
@@ -293,6 +297,12 @@ class AccessionStore(
       val processingStartDate =
           accession.processingStartDate
               ?: existing.processingStartDate ?: accession.calculateProcessingStartDate(clock)
+      val collectedDate =
+          if (existing.source == AccessionSource.Web) accession.collectedDate
+          else existing.collectedDate
+      val receivedDate =
+          if (existing.source == AccessionSource.Web) accession.receivedDate
+          else existing.receivedDate
 
       val rowsUpdated =
           with(ACCESSION) {
@@ -306,8 +316,8 @@ class AccessionStore(
                 .set(SPECIES_ENDANGERED, accession.endangered)
                 .set(SPECIES_RARE, accession.rare)
                 .set(FIELD_NOTES, accession.fieldNotes)
-                .set(COLLECTED_DATE, accession.collectedDate)
-                .set(RECEIVED_DATE, accession.receivedDate)
+                .set(COLLECTED_DATE, collectedDate)
+                .set(RECEIVED_DATE, receivedDate)
                 .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
                 .set(PROCESSING_START_DATE, processingStartDate)
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)

@@ -627,6 +627,7 @@ components:
       required:
       - accessionNumber
       - active
+      - source
       - state
       type: object
       properties:
@@ -652,6 +653,13 @@ components:
           enum:
           - Inactive
           - Active
+        source:
+          type: string
+          description: Which application this accession originally came from. This
+            is currently based on the presence of the deviceInfo field.
+          enum:
+          - Web
+          - SeedCollectorApp
         species:
           type: string
         family:

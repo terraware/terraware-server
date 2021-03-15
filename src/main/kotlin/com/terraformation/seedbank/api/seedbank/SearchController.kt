@@ -9,6 +9,7 @@ import com.terraformation.seedbank.search.SearchFilter
 import com.terraformation.seedbank.search.SearchResults
 import com.terraformation.seedbank.search.SearchService
 import com.terraformation.seedbank.search.SearchSortField
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -98,7 +99,7 @@ class SearchController(private val clock: Clock, private val searchService: Sear
 private interface HasSortOrder {
   val sortOrder: List<SearchSortOrderElement>?
   val searchSortFields: List<SearchSortField>?
-    get() = sortOrder?.map { it.toSearchSortField() }
+    @Hidden get() = sortOrder?.map { it.toSearchSortField() }
 }
 
 data class SearchRequestPayload(

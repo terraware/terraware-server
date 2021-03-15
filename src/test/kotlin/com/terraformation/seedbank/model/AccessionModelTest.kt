@@ -53,6 +53,7 @@ internal class AccessionModelTest {
         id = 1L,
         processingStartDate = processingStartDate,
         seedsCounted = seedsCounted,
+        source = AccessionSource.Web,
         state = state,
         storageLocation = storageLocation,
         storagePackets = storagePackets,

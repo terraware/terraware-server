@@ -19,6 +19,7 @@ import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.WithdrawalPurpose
 import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
+import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.AppDeviceFields
 import com.terraformation.seedbank.model.ConcreteAccession
 import com.terraformation.seedbank.model.Geolocation
@@ -165,6 +166,11 @@ data class AccessionPayload(
     @Schema(
         description = "Server-calculated active indicator. This is based on the accession's state.")
     override val active: AccessionActive,
+    @Schema(
+        description =
+            "Which application this accession originally came from. This is currently based on " +
+                "the presence of the deviceInfo field.")
+    override val source: AccessionSource,
     override val species: String? = null,
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
@@ -228,6 +234,7 @@ data class AccessionPayload(
       model.accessionNumber,
       model.state,
       model.active,
+      model.source,
       model.species,
       model.family,
       model.numberOfTrees,

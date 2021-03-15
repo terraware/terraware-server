@@ -28,6 +28,7 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLL
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.db.tables.references.NOTIFICATION
 import com.terraformation.seedbank.model.AccessionNumberGenerator
+import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.Geolocation
 import io.mockk.every
 import io.mockk.mockk
@@ -236,6 +237,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertNotNull(fetched?.deviceInfo)
     assertEquals("model", fetched?.deviceInfo?.model)
+    assertEquals(AccessionSource.SeedCollectorApp, initial.source)
   }
 
   @Test
@@ -673,6 +675,50 @@ internal class AccessionStoreTest : DatabaseTest() {
           initial.accessionNumber,
           initial.copy(storageStartDate = LocalDate.now(clock).plusDays(1)))
     }
+  }
+
+  @Test
+  fun `absence of deviceInfo causes source to be set to Web`() {
+    val initial = store.create(CreateAccessionRequestPayload())
+    assertEquals(AccessionSource.Web, initial.source)
+  }
+
+  @Test
+  fun `update ignores received and collected date edits for accessions from seed collector app`() {
+    val initialCollectedDate = LocalDate.of(2021, 1, 1)
+    val initialReceivedDate = LocalDate.of(2021, 1, 2)
+    val updatedDate = LocalDate.of(2021, 2, 2)
+    val initial =
+        store.create(
+            CreateAccessionRequestPayload(
+                deviceInfo = DeviceInfoPayload(appName = "collector"),
+                collectedDate = initialCollectedDate,
+                receivedDate = initialReceivedDate))
+    val requested = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
+
+    store.update(initial.accessionNumber, requested)
+
+    val actual = store.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(initial, actual)
+  }
+
+  @Test
+  fun `update ignores received and collected date edits for accessions from web`() {
+    val initialCollectedDate = LocalDate.of(2021, 1, 1)
+    val initialReceivedDate = LocalDate.of(2021, 1, 2)
+    val updatedDate = LocalDate.of(2021, 2, 2)
+    val initial =
+        store.create(
+            CreateAccessionRequestPayload(
+                collectedDate = initialCollectedDate, receivedDate = initialReceivedDate))
+    val desired = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
+
+    store.update(initial.accessionNumber, desired)
+
+    val actual = store.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(desired, actual)
   }
 
   @Test
