@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.daily
 
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.NotificationStore
 import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimeDao
@@ -9,8 +10,10 @@ import java.time.Clock
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class DateNotificationTask(
     private val accessionStore: AccessionStore,

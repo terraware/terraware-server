@@ -28,7 +28,7 @@ class SummaryController(
   @Operation(summary = "Get summary statistics about the seed bank")
   fun getSummary(): SummaryResponse {
     val now = ZonedDateTime.now(clock)
-    val startOfDay = now.atMostRecent(config.dailyTasksStartTime)
+    val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
     val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
 
     // For purposes of scanning for overdue accessions, "One week ago" is 6 days before the most

@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.annotation.ManagedBean
 import javax.annotation.PreDestroy
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -22,6 +23,7 @@ import org.springframework.context.event.EventListener
  * that take the event class as an argument, and will call those methods; the listeners may return
  * values that are themselves published as events, allowing tasks to depend on other tasks.
  */
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class DailyTaskRunner(
     private val clock: Clock,
@@ -68,7 +70,7 @@ class DailyTaskRunner(
 
   private fun computeNextRunTime(): Instant {
     val now = ZonedDateTime.now(clock)
-    val todayAtStartTime = now.with(config.dailyTasksStartTime)
+    val todayAtStartTime = now.with(config.dailyTasks.startTime)
     val nextZonedDateTime =
         if (todayAtStartTime > now) todayAtStartTime else todayAtStartTime.plusDays(1)
     val nextInstant = nextZonedDateTime.toInstant()

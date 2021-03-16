@@ -11,9 +11,11 @@ import com.terraformation.seedbank.services.perClassLogger
 import java.time.Clock
 import java.time.ZonedDateTime
 import javax.annotation.ManagedBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 
 /** Generates summary notifications about accessions that are overdue for action. */
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class StateSummaryNotificationTask(
     private val accessionStore: AccessionStore,
@@ -89,7 +91,7 @@ class StateSummaryNotificationTask(
    * The previous paragraph was a bit of a lie, though. Per the app's specifications, we don't
    * consider January 4 to start until 8AM. So the time calculations round all the time ranges down
    * to the previous 8AM, not to midnight. (You won't find 8AM here as a literal value; it is pulled
-   * from [TerrawareServerConfig.dailyTasksStartTime].)
+   * from [TerrawareServerConfig.DailyTasksConfig.startTime].)
    */
   private fun generateNotification(
       state: AccessionState,
@@ -99,9 +101,9 @@ class StateSummaryNotificationTask(
   ) {
     val days = weeks * 7 - 1L
     val endOfAlreadyCoveredPeriod =
-        lastNotificationTime.atMostRecent(config.dailyTasksStartTime).minusDays(days)
+        lastNotificationTime.atMostRecent(config.dailyTasks.startTime).minusDays(days)
     val stateChangedBefore =
-        ZonedDateTime.now(clock).atMostRecent(config.dailyTasksStartTime).minusDays(days)
+        ZonedDateTime.now(clock).atMostRecent(config.dailyTasks.startTime).minusDays(days)
 
     log.debug("Scanning for $state from $endOfAlreadyCoveredPeriod to $stateChangedBefore")
 

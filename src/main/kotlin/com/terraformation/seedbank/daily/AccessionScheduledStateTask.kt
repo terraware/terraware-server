@@ -1,11 +1,14 @@
 package com.terraformation.seedbank.daily
 
+import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.services.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 
+@ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class AccessionScheduledStateTask(private val store: AccessionStore, private val clock: Clock) {
   private val log = perClassLogger()

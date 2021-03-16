@@ -51,13 +51,6 @@ class TerrawareServerConfig {
   var useTestClock: Boolean = false
 
   /**
-   * What time of day the daily tasks are run. This is treated as a local time in the configured
-   * [timeZone]. Default is 8AM.
-   */
-  @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
-  var dailyTasksStartTime: LocalTime = LocalTime.of(8, 0)
-
-  /**
    * API key to create by default. If this is set and the key isn't already present in the `api_key`
    * table, any other API keys are removed from the database at start time and the new key is
    * created. If it is not set, the `api_key` table should be populated some other way.
@@ -66,8 +59,22 @@ class TerrawareServerConfig {
    */
   var apiKey: String? = null
 
+  /** Configures execution of daily tasks. */
+  var dailyTasks: DailyTasksConfig = DailyTasksConfig()
+
   /** Configures the server's communication with an MQTT broker. */
   var mqtt: MqttConfig = MqttConfig()
+
+  class DailyTasksConfig(
+      /** Whether to run daily tasks. */
+      var enabled: Boolean = true,
+
+      /**
+       * What time of day the daily tasks are run. This is treated as a local time in the configured
+       * [timeZone]. Default is 8AM.
+       */
+      @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) var startTime: LocalTime = LocalTime.of(8, 0)
+  )
 
   class MqttConfig(
       /** If true, connect to an MQTT broker to publish and receive device data. */
@@ -94,6 +101,7 @@ class TerrawareServerConfig {
   )
 
   companion object {
+    const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"
     const val MQTT_ENABLED_PROPERTY = "terraware.mqtt.enabled"
   }
 }
