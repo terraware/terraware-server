@@ -9,6 +9,7 @@ terraware:
 
 logging:
   level:
+    root: WARN
     com.terraformation: DEBUG
 
 server:

@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.api.seedbank
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
@@ -90,6 +91,8 @@ class AccessionController(private val accessionStore: AccessionStore) {
   }
 }
 
+// Ignore properties that are defined on AccessionFields but not accepted as input (CU-px8k25)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayload(
     override val species: String? = null,
     override val family: String? = null,
@@ -112,6 +115,8 @@ data class CreateAccessionRequestPayload(
     override val deviceInfo: DeviceInfoPayload? = null,
 ) : AccessionFields
 
+// Ignore properties that are defined on AccessionFields but not accepted as input (CU-px8k25)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class UpdateAccessionRequestPayload(
     override val species: String? = null,
     override val family: String? = null,
