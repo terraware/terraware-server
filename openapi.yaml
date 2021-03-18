@@ -128,7 +128,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAccessionRequestPayload'
+              $ref: '#/components/schemas/CreateAccessionRequestPayloadV1'
         required: true
       responses:
         "200":
@@ -137,7 +137,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateAccessionResponsePayload'
+                $ref: '#/components/schemas/CreateAccessionResponsePayloadV1'
   /api/v1/seedbank/accession/{accessionNumber}:
     get:
       tags:
@@ -156,7 +156,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetAccessionResponsePayload'
+                $ref: '#/components/schemas/GetAccessionResponsePayloadV1'
         "404":
           description: The requested resource was not found.
           content:
@@ -178,7 +178,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateAccessionRequestPayload'
+              $ref: '#/components/schemas/UpdateAccessionRequestPayloadV1'
         required: true
       responses:
         "200":
@@ -187,7 +187,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateAccessionResponsePayload'
+                $ref: '#/components/schemas/UpdateAccessionResponsePayloadV1'
         "404":
           description: The specified accession doesn't exist.
           content:
@@ -621,9 +621,282 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StorageLocationsResponsePayload'
+  /api/v2/seedbank/accession:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Create a new accession.
+      operationId: createv2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccessionRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: "The accession was created successfully. Response includes\
+            \ fields populated by the server, including the accession number."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAccessionResponsePayload'
+  /api/v2/seedbank/accession/{accessionNumber}:
+    get:
+      tags:
+      - SeedBankApp
+      summary: Retrieve an existing accession.
+      operationId: readv2
+      parameters:
+      - name: accessionNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAccessionResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - SeedBankApp
+      summary: Update an existing accession.
+      operationId: updatev2
+      parameters:
+      - name: accessionNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccessionRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The accession was updated successfully. Response includes fields
+            populated or modified by the server as a result of the update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAccessionResponsePayload'
+        "404":
+          description: The specified accession doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
 components:
   schemas:
     AccessionPayload:
+      required:
+      - accessionNumber
+      - active
+      - source
+      - state
+      type: object
+      properties:
+        accessionNumber:
+          type: string
+          description: Server-generated unique identifier for the accession.
+        state:
+          type: string
+          description: Server-calculated accession state. Can change due to modifications
+            to accession data or based on passage of time.
+          enum:
+          - Pending
+          - Processing
+          - Processed
+          - Drying
+          - Dried
+          - In Storage
+          - Withdrawn
+        active:
+          type: string
+          description: Server-calculated active indicator. This is based on the accession's
+            state.
+          enum:
+          - Inactive
+          - Active
+        source:
+          type: string
+          description: Which application this accession originally came from. This
+            is currently based on the presence of the deviceInfo field.
+          enum:
+          - Web
+          - SeedCollectorApp
+        species:
+          type: string
+        family:
+          type: string
+        numberOfTrees:
+          type: integer
+          format: int32
+        founderId:
+          type: string
+        endangered:
+          type: string
+          enum:
+          - "No"
+          - "Yes"
+          - Unsure
+        rare:
+          type: string
+          enum:
+          - "No"
+          - "Yes"
+          - Unsure
+        fieldNotes:
+          type: string
+        collectedDate:
+          type: string
+          format: date
+        receivedDate:
+          type: string
+          format: date
+        primaryCollector:
+          type: string
+        secondaryCollectors:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        siteLocation:
+          type: string
+        landowner:
+          type: string
+        environmentalNotes:
+          type: string
+        processingStartDate:
+          type: string
+          format: date
+        processingMethod:
+          type: string
+          enum:
+          - Count
+          - Weight
+        seedsCounted:
+          type: integer
+          format: int32
+        subsetWeightGrams:
+          type: number
+        totalWeightGrams:
+          type: number
+        subsetCount:
+          type: integer
+          format: int32
+        estimatedSeedCount:
+          type: integer
+          format: int32
+        effectiveSeedCount:
+          type: integer
+          description: "Server-calculated effective seed count. This is the exact\
+            \ seed count if available, otherwise the estimated seed count, or null\
+            \ if neither seed count is available."
+          format: int32
+        targetStorageCondition:
+          type: string
+          enum:
+          - Refrigerator
+          - Freezer
+        dryingStartDate:
+          type: string
+          format: date
+        dryingEndDate:
+          type: string
+          format: date
+        dryingMoveDate:
+          type: string
+          format: date
+        processingNotes:
+          type: string
+        processingStaffResponsible:
+          type: string
+        bagNumbers:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        storageStartDate:
+          type: string
+          format: date
+        storagePackets:
+          type: integer
+          format: int32
+        storageLocation:
+          type: string
+        storageCondition:
+          type: string
+          enum:
+          - Refrigerator
+          - Freezer
+        storageNotes:
+          type: string
+        storageStaffResponsible:
+          type: string
+        photoFilenames:
+          type: array
+          items:
+            type: string
+        geolocations:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Geolocation'
+        germinationTestTypes:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - Lab
+            - Nursery
+        germinationTests:
+          type: array
+          items:
+            $ref: '#/components/schemas/GerminationTestPayload'
+        withdrawals:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalPayload'
+        cutTestSeedsFilled:
+          type: integer
+          format: int32
+        cutTestSeedsEmpty:
+          type: integer
+          format: int32
+        cutTestSeedsCompromised:
+          type: integer
+          format: int32
+        latestGerminationTestDate:
+          type: string
+          format: date
+        latestViabilityPercent:
+          type: integer
+          format: int32
+        totalViabilityPercent:
+          type: integer
+          format: int32
+        deviceInfo:
+          $ref: '#/components/schemas/DeviceInfoPayload'
+        seedsRemaining:
+          type: integer
+          description: Number of seeds remaining for withdrawal and testing. Calculated
+            by the server when the accession's seed count (actual or estimated) is
+            known.
+          format: int32
+    AccessionPayloadV1:
       required:
       - accessionNumber
       - active
@@ -845,51 +1118,76 @@ components:
       properties:
         species:
           type: string
+          writeOnly: true
         family:
           type: string
+          writeOnly: true
         numberOfTrees:
           type: integer
           format: int32
+          writeOnly: true
         founderId:
           type: string
+          writeOnly: true
         endangered:
-          type: boolean
+          type: string
+          writeOnly: true
+          enum:
+          - "No"
+          - "Yes"
+          - Unsure
         rare:
-          type: boolean
+          type: string
+          writeOnly: true
+          enum:
+          - "No"
+          - "Yes"
+          - Unsure
         fieldNotes:
           type: string
+          writeOnly: true
         collectedDate:
           type: string
           format: date
+          writeOnly: true
         receivedDate:
           type: string
           format: date
+          writeOnly: true
         primaryCollector:
           type: string
+          writeOnly: true
         secondaryCollectors:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             type: string
         siteLocation:
           type: string
+          writeOnly: true
         landowner:
           type: string
+          writeOnly: true
         environmentalNotes:
           type: string
+          writeOnly: true
         bagNumbers:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             type: string
         geolocations:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             $ref: '#/components/schemas/Geolocation'
         germinationTestTypes:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             type: string
             enum:
@@ -897,6 +1195,86 @@ components:
             - Nursery
         germinationTests:
           type: array
+          writeOnly: true
+          items:
+            $ref: '#/components/schemas/GerminationTestPayload'
+        deviceInfo:
+          $ref: '#/components/schemas/DeviceInfoPayload'
+    CreateAccessionRequestPayloadV1:
+      type: object
+      properties:
+        species:
+          type: string
+          writeOnly: true
+        family:
+          type: string
+          writeOnly: true
+        numberOfTrees:
+          type: integer
+          format: int32
+          writeOnly: true
+        founderId:
+          type: string
+          writeOnly: true
+        endangered:
+          type: boolean
+          writeOnly: true
+        rare:
+          type: boolean
+          writeOnly: true
+        fieldNotes:
+          type: string
+          writeOnly: true
+        collectedDate:
+          type: string
+          format: date
+          writeOnly: true
+        receivedDate:
+          type: string
+          format: date
+          writeOnly: true
+        primaryCollector:
+          type: string
+          writeOnly: true
+        secondaryCollectors:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            type: string
+        siteLocation:
+          type: string
+          writeOnly: true
+        landowner:
+          type: string
+          writeOnly: true
+        environmentalNotes:
+          type: string
+          writeOnly: true
+        bagNumbers:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            type: string
+        geolocations:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            $ref: '#/components/schemas/Geolocation'
+        germinationTestTypes:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            type: string
+            enum:
+            - Lab
+            - Nursery
+        germinationTests:
+          type: array
+          writeOnly: true
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
         deviceInfo:
@@ -909,6 +1287,16 @@ components:
       properties:
         accession:
           $ref: '#/components/schemas/AccessionPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    CreateAccessionResponsePayloadV1:
+      required:
+      - accession
+      - status
+      type: object
+      properties:
+        accession:
+          $ref: '#/components/schemas/AccessionPayloadV1'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     DeviceConfig:
@@ -1138,6 +1526,16 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetAccessionResponsePayloadV1:
+      required:
+      - accession
+      - status
+      type: object
+      properties:
+        accession:
+          $ref: '#/components/schemas/AccessionPayloadV1'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetCurrentTimeResponsePayload:
       required:
       - currentTime
@@ -1314,6 +1712,7 @@ components:
       - dryingStartDate
       - effectiveSeedCount
       - endangered
+      - endangered2
       - estimatedSeedsIncoming
       - family
       - geolocation
@@ -1334,6 +1733,7 @@ components:
       - processingNotes
       - processingStartDate
       - rare
+      - rare2
       - receivedDate
       - seedsCounted
       - seedsRemaining
@@ -1530,99 +1930,141 @@ components:
       properties:
         species:
           type: string
+          writeOnly: true
         family:
           type: string
+          writeOnly: true
         numberOfTrees:
           type: integer
           format: int32
+          writeOnly: true
         founderId:
           type: string
+          writeOnly: true
         endangered:
-          type: boolean
+          type: string
+          writeOnly: true
+          enum:
+          - "No"
+          - "Yes"
+          - Unsure
         rare:
-          type: boolean
+          type: string
+          writeOnly: true
+          enum:
+          - "No"
+          - "Yes"
+          - Unsure
         fieldNotes:
           type: string
+          writeOnly: true
         collectedDate:
           type: string
           format: date
+          writeOnly: true
         receivedDate:
           type: string
           format: date
+          writeOnly: true
         primaryCollector:
           type: string
+          writeOnly: true
         secondaryCollectors:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             type: string
         siteLocation:
           type: string
+          writeOnly: true
         landowner:
           type: string
+          writeOnly: true
         environmentalNotes:
           type: string
+          writeOnly: true
         processingStartDate:
           type: string
           format: date
+          writeOnly: true
         processingMethod:
           type: string
+          writeOnly: true
           enum:
           - Count
           - Weight
         seedsCounted:
           type: integer
           format: int32
+          writeOnly: true
         subsetWeightGrams:
           type: number
+          writeOnly: true
         totalWeightGrams:
           type: number
+          writeOnly: true
         subsetCount:
           type: integer
           format: int32
+          writeOnly: true
         targetStorageCondition:
           type: string
+          writeOnly: true
           enum:
           - Refrigerator
           - Freezer
         dryingStartDate:
           type: string
           format: date
+          writeOnly: true
         dryingEndDate:
           type: string
           format: date
+          writeOnly: true
         dryingMoveDate:
           type: string
           format: date
+          writeOnly: true
         processingNotes:
           type: string
+          writeOnly: true
         processingStaffResponsible:
           type: string
+          writeOnly: true
         bagNumbers:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             type: string
         storageStartDate:
           type: string
           format: date
+          writeOnly: true
         storagePackets:
           type: integer
           format: int32
+          writeOnly: true
         storageLocation:
           type: string
+          writeOnly: true
         storageNotes:
           type: string
+          writeOnly: true
         storageStaffResponsible:
           type: string
+          writeOnly: true
         geolocations:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             $ref: '#/components/schemas/Geolocation'
         germinationTestTypes:
           uniqueItems: true
           type: array
+          writeOnly: true
           items:
             type: string
             enum:
@@ -1631,18 +2073,182 @@ components:
         cutTestSeedsCompromised:
           type: integer
           format: int32
+          writeOnly: true
         cutTestSeedsEmpty:
           type: integer
           format: int32
+          writeOnly: true
         cutTestSeedsFilled:
           type: integer
           format: int32
+          writeOnly: true
         germinationTests:
           type: array
+          writeOnly: true
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
         withdrawals:
           type: array
+          writeOnly: true
+          items:
+            $ref: '#/components/schemas/WithdrawalPayload'
+    UpdateAccessionRequestPayloadV1:
+      type: object
+      properties:
+        species:
+          type: string
+          writeOnly: true
+        family:
+          type: string
+          writeOnly: true
+        numberOfTrees:
+          type: integer
+          format: int32
+          writeOnly: true
+        founderId:
+          type: string
+          writeOnly: true
+        endangered:
+          type: boolean
+          writeOnly: true
+        rare:
+          type: boolean
+          writeOnly: true
+        fieldNotes:
+          type: string
+          writeOnly: true
+        collectedDate:
+          type: string
+          format: date
+          writeOnly: true
+        receivedDate:
+          type: string
+          format: date
+          writeOnly: true
+        primaryCollector:
+          type: string
+          writeOnly: true
+        secondaryCollectors:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            type: string
+        siteLocation:
+          type: string
+          writeOnly: true
+        landowner:
+          type: string
+          writeOnly: true
+        environmentalNotes:
+          type: string
+          writeOnly: true
+        processingStartDate:
+          type: string
+          format: date
+          writeOnly: true
+        processingMethod:
+          type: string
+          writeOnly: true
+          enum:
+          - Count
+          - Weight
+        seedsCounted:
+          type: integer
+          format: int32
+          writeOnly: true
+        subsetWeightGrams:
+          type: number
+          writeOnly: true
+        totalWeightGrams:
+          type: number
+          writeOnly: true
+        subsetCount:
+          type: integer
+          format: int32
+          writeOnly: true
+        targetStorageCondition:
+          type: string
+          writeOnly: true
+          enum:
+          - Refrigerator
+          - Freezer
+        dryingStartDate:
+          type: string
+          format: date
+          writeOnly: true
+        dryingEndDate:
+          type: string
+          format: date
+          writeOnly: true
+        dryingMoveDate:
+          type: string
+          format: date
+          writeOnly: true
+        processingNotes:
+          type: string
+          writeOnly: true
+        processingStaffResponsible:
+          type: string
+          writeOnly: true
+        bagNumbers:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            type: string
+        storageStartDate:
+          type: string
+          format: date
+          writeOnly: true
+        storagePackets:
+          type: integer
+          format: int32
+          writeOnly: true
+        storageLocation:
+          type: string
+          writeOnly: true
+        storageNotes:
+          type: string
+          writeOnly: true
+        storageStaffResponsible:
+          type: string
+          writeOnly: true
+        geolocations:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            $ref: '#/components/schemas/Geolocation'
+        germinationTestTypes:
+          uniqueItems: true
+          type: array
+          writeOnly: true
+          items:
+            type: string
+            enum:
+            - Lab
+            - Nursery
+        cutTestSeedsCompromised:
+          type: integer
+          format: int32
+          writeOnly: true
+        cutTestSeedsEmpty:
+          type: integer
+          format: int32
+          writeOnly: true
+        cutTestSeedsFilled:
+          type: integer
+          format: int32
+          writeOnly: true
+        germinationTests:
+          type: array
+          writeOnly: true
+          items:
+            $ref: '#/components/schemas/GerminationTestPayload'
+        withdrawals:
+          type: array
+          writeOnly: true
           items:
             $ref: '#/components/schemas/WithdrawalPayload'
     UpdateAccessionResponsePayload:
@@ -1653,6 +2259,16 @@ components:
       properties:
         accession:
           $ref: '#/components/schemas/AccessionPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    UpdateAccessionResponsePayloadV1:
+      required:
+      - accession
+      - status
+      type: object
+      properties:
+        accession:
+          $ref: '#/components/schemas/AccessionPayloadV1'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     UploadPhotoMetadataPayload:

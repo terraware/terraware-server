@@ -1,6 +1,9 @@
 package com.terraformation.seedbank.search
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.seedbank.api.seedbank.toBoolean
+import com.terraformation.seedbank.api.seedbank.toSpeciesEndangeredType
+import com.terraformation.seedbank.api.seedbank.toSpeciesRareType
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.EnumFromReferenceTable
 import com.terraformation.seedbank.db.FuzzySearchOperators
@@ -132,7 +135,13 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("dryingMoveDate", "Drying move date", ACCESSION.DRYING_MOVE_DATE),
         DateField("dryingStartDate", "Drying start date", ACCESSION.DRYING_START_DATE),
         IntegerField("effectiveSeedCount", "Effective seed count", ACCESSION.EFFECTIVE_SEED_COUNT),
-        BooleanField("endangered", "Endangered", ACCESSION.SPECIES_ENDANGERED),
+        EnumField.create("endangered2", "Endangered", ACCESSION.SPECIES_ENDANGERED_TYPE_ID),
+        FakeBooleanField(
+            "endangered",
+            "Endangered",
+            ACCESSION.SPECIES_ENDANGERED_TYPE_ID,
+            { it.toBoolean() },
+            { it.toSpeciesEndangeredType() }),
         IntegerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSION.EST_SEED_COUNT),
         TextField("family", "Family", SPECIES_FAMILY.NAME, SearchTables.SpeciesFamily),
@@ -201,7 +210,13 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         EnumField.create("processingMethod", "Processing method", ACCESSION.PROCESSING_METHOD_ID),
         TextField("processingNotes", "Notes (processing)", ACCESSION.PROCESSING_NOTES),
         DateField("processingStartDate", "Processing start date", ACCESSION.PROCESSING_START_DATE),
-        BooleanField("rare", "Rare", ACCESSION.SPECIES_RARE),
+        FakeBooleanField(
+            "rare",
+            "Rare",
+            ACCESSION.SPECIES_RARE_TYPE_ID,
+            { it.toBoolean() },
+            { it.toSpeciesRareType() }),
+        EnumField.create("rare2", "Rare", ACCESSION.SPECIES_RARE_TYPE_ID),
         DateField("receivedDate", "Received on", ACCESSION.RECEIVED_DATE),
         IntegerField("seedsCounted", "Number of seeds counted", ACCESSION.SEEDS_COUNTED),
         IntegerField("seedsRemaining", "Number of seeds remaining", ACCESSION.SEEDS_REMAINING),
@@ -353,27 +368,45 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     override fun computeValue(record: Record) = record[databaseField]?.toPlainString()
   }
 
-  class BooleanField(
+  /**
+   * Implements the "endangered" and "rare" fields. This is a temporary shim for backward
+   * compatibility with clients that need the field to be boolean rather than an enum.
+   */
+  class FakeBooleanField<T>(
       override val fieldName: String,
       override val displayName: String,
-      override val databaseField: TableField<*, Boolean?>,
-      override val table: SearchTable = SearchTables.Accession,
-      override val nullable: Boolean = true
-  ) : SingleColumnSearchField<Boolean>() {
-    override val supportedFilterTypes: Set<SearchFilterType>
-      get() = EnumSet.of(SearchFilterType.Exact)
+      private val field: TableField<*, T?>,
+      private val toBoolean: (T?) -> Boolean?,
+      private val fromBoolean: (Boolean?) -> T?,
+  ) : SearchField<Boolean> {
     override val possibleValues = listOf("true", "false")
+    override val selectFields = listOf(field)
+    override val supportedFilterTypes = EnumSet.of(SearchFilterType.Exact)!!
+    override val table: SearchTable
+      get() = SearchTables.Accession
 
-    override fun getCondition(filter: SearchFilter): Condition {
+    override fun getConditions(filter: SearchFilter): List<Condition> {
       if (filter.type != SearchFilterType.Exact) {
-        throw IllegalArgumentException("Only exact search is supported for boolean fields")
+        throw IllegalArgumentException("Only exact search is supported for $fieldName")
       }
 
-      return DSL.or(
-          listOfNotNull(
-              if ("true" in filter.values) databaseField.isTrue else null,
-              if ("false" in filter.values) databaseField.isFalse else null,
-              if (null in filter.values) databaseField.isNull else null))
+      return listOf(
+          DSL.or(
+              listOfNotNull(
+                  if ("true" in filter.values) field.eq(fromBoolean(true)) else null,
+                  if ("false" in filter.values) field.eq(fromBoolean(false)) else null,
+                  if (null in filter.values) field.isNull else null)))
+    }
+
+    override val orderByFields: List<Field<Boolean?>> =
+        listOf(
+            DSL.case_(field)
+                .`when`(fromBoolean(true), true)
+                .`when`(fromBoolean(false), false)
+                .else_(DSL.castNull(Boolean::class.java)))
+
+    override fun computeValue(record: Record): String? {
+      return toBoolean(record[field])?.toString()
     }
   }
 

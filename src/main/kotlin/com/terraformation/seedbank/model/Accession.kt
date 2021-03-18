@@ -3,6 +3,8 @@ package com.terraformation.seedbank.model
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.SpeciesEndangeredType
+import com.terraformation.seedbank.db.SpeciesRareType
 import com.terraformation.seedbank.db.StorageCondition
 import java.math.BigDecimal
 import java.time.Clock
@@ -47,9 +49,9 @@ interface AccessionFields {
     get() = null
   val founderId: String?
     get() = null
-  val endangered: Boolean?
+  val endangered: SpeciesEndangeredType?
     get() = null
-  val rare: Boolean?
+  val rare: SpeciesRareType?
     get() = null
   val fieldNotes: String?
     get() = null
@@ -239,8 +241,8 @@ data class AccessionModel(
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
     override val founderId: String? = null,
-    override val endangered: Boolean? = null,
-    override val rare: Boolean? = null,
+    override val endangered: SpeciesEndangeredType? = null,
+    override val rare: SpeciesRareType? = null,
     override val fieldNotes: String? = null,
     override val collectedDate: LocalDate? = null,
     override val receivedDate: LocalDate? = null,

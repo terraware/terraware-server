@@ -114,8 +114,8 @@ class AccessionStore(
           family = parentRow[speciesFamily().NAME],
           numberOfTrees = parentRow[TREES_COLLECTED_FROM],
           founderId = parentRow[FOUNDER_ID],
-          endangered = parentRow[SPECIES_ENDANGERED],
-          rare = parentRow[SPECIES_RARE],
+          endangered = parentRow[SPECIES_ENDANGERED_TYPE_ID],
+          rare = parentRow[SPECIES_RARE_TYPE_ID],
           fieldNotes = parentRow[FIELD_NOTES],
           collectedDate = parentRow[COLLECTED_DATE],
           receivedDate = parentRow[RECEIVED_DATE],
@@ -185,8 +185,8 @@ class AccessionStore(
                     .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
                     .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                     .set(FOUNDER_ID, accession.founderId)
-                    .set(SPECIES_ENDANGERED, accession.endangered)
-                    .set(SPECIES_RARE, accession.rare)
+                    .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
+                    .set(SPECIES_RARE_TYPE_ID, accession.rare)
                     .set(FIELD_NOTES, accession.fieldNotes)
                     .set(COLLECTED_DATE, accession.collectedDate)
                     .set(RECEIVED_DATE, accession.receivedDate)
@@ -313,8 +313,8 @@ class AccessionStore(
                 .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .set(FOUNDER_ID, accession.founderId)
-                .set(SPECIES_ENDANGERED, accession.endangered)
-                .set(SPECIES_RARE, accession.rare)
+                .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
+                .set(SPECIES_RARE_TYPE_ID, accession.rare)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(COLLECTED_DATE, collectedDate)
                 .set(RECEIVED_DATE, receivedDate)

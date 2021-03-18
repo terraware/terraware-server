@@ -19,6 +19,8 @@ class EnumGenerator : KotlinGenerator() {
           "germination_treatment",
           "notification_type",
           "processing_method",
+          "species_endangered_type",
+          "species_rare_type",
           "storage_condition",
           "timeseries_type",
           "withdrawal_purpose")

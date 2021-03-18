@@ -16,6 +16,8 @@ import com.terraformation.seedbank.db.GerminationSubstrate
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.GerminationTreatment
 import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.SpeciesEndangeredType
+import com.terraformation.seedbank.db.SpeciesRareType
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.WithdrawalPurpose
 import com.terraformation.seedbank.model.AccessionActive
@@ -42,7 +44,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping("/api/v1/seedbank/accession")
+@RequestMapping("/api/v2/seedbank/accession")
 @RestController
 @SeedBankAppEndpoint
 class AccessionController(private val accessionStore: AccessionStore) {
@@ -51,7 +53,7 @@ class AccessionController(private val accessionStore: AccessionStore) {
       description =
           "The accession was created successfully. Response includes fields populated by the " +
               "server, including the accession number.")
-  @Operation(summary = "Create a new accession.")
+  @Operation(summary = "Create a new accession.", operationId = "createv2")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
     val updatedPayload = accessionStore.create(payload)
@@ -64,7 +66,7 @@ class AccessionController(private val accessionStore: AccessionStore) {
           "The accession was updated successfully. Response includes fields populated or " +
               "modified by the server as a result of the update.")
   @ApiResponse404(description = "The specified accession doesn't exist.")
-  @Operation(summary = "Update an existing accession.")
+  @Operation(summary = "Update an existing accession.", operationId = "updatev2")
   @PutMapping("/{accessionNumber}")
   fun update(
       @RequestBody payload: UpdateAccessionRequestPayload,
@@ -82,7 +84,7 @@ class AccessionController(private val accessionStore: AccessionStore) {
   @ApiResponse(responseCode = "200")
   @ApiResponse404
   @GetMapping("/{accessionNumber}")
-  @Operation(summary = "Retrieve an existing accession.")
+  @Operation(summary = "Retrieve an existing accession.", operationId = "readv2")
   fun read(@PathVariable accessionNumber: String): GetAccessionResponsePayload {
     val accession =
         accessionStore.fetchByNumber(accessionNumber)
@@ -98,8 +100,8 @@ data class CreateAccessionRequestPayload(
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
     override val founderId: String? = null,
-    override val endangered: Boolean? = null,
-    override val rare: Boolean? = null,
+    override val endangered: SpeciesEndangeredType? = null,
+    override val rare: SpeciesRareType? = null,
     override val fieldNotes: String? = null,
     override val collectedDate: LocalDate? = null,
     override val receivedDate: LocalDate? = null,
@@ -122,8 +124,8 @@ data class UpdateAccessionRequestPayload(
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
     override val founderId: String? = null,
-    override val endangered: Boolean? = null,
-    override val rare: Boolean? = null,
+    override val endangered: SpeciesEndangeredType? = null,
+    override val rare: SpeciesRareType? = null,
     override val fieldNotes: String? = null,
     override val collectedDate: LocalDate? = null,
     override val receivedDate: LocalDate? = null,
@@ -180,8 +182,8 @@ data class AccessionPayload(
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
     override val founderId: String? = null,
-    override val endangered: Boolean? = null,
-    override val rare: Boolean? = null,
+    override val endangered: SpeciesEndangeredType? = null,
+    override val rare: SpeciesRareType? = null,
     override val fieldNotes: String? = null,
     override val collectedDate: LocalDate? = null,
     override val receivedDate: LocalDate? = null,

@@ -5,6 +5,7 @@ import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
+import com.terraformation.seedbank.db.SpeciesEndangeredType
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
@@ -27,6 +28,8 @@ class SearchServiceTest : DatabaseTest() {
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
   private val accessionNumberField = searchFields["accessionNumber"]!!
   private val activeField = searchFields["active"]!!
+  private val endangeredField = searchFields["endangered"]!!
+  private val endangered2Field = searchFields["endangered2"]!!
   private val germinationTestTypeField = searchFields["germinationTestType"]!!
   private val receivedDateField = searchFields["receivedDate"]!!
   private val speciesField = searchFields["species"]!!
@@ -134,6 +137,54 @@ class SearchServiceTest : DatabaseTest() {
             listOf(
                 mapOf("accessionNumber" to "XYZ", "targetStorageCondition" to "Refrigerator"),
                 mapOf("accessionNumber" to "ABCDEFG", "targetStorageCondition" to "Freezer"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `can search for fake boolean fields`() {
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+            speciesEndangeredTypeId = SpeciesEndangeredType.Yes))
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("XYZ")!!.copy(
+            speciesEndangeredTypeId = SpeciesEndangeredType.No))
+
+    val fields = listOf(endangeredField, endangered2Field)
+    val sortOrder = listOf(SearchSortField(endangeredField, SearchDirection.Descending))
+
+    val result = searchService.search(fields, sortOrder = sortOrder)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "accessionNumber" to "ABCDEFG", "endangered" to "true", "endangered2" to "Yes"),
+                mapOf("accessionNumber" to "XYZ", "endangered" to "false", "endangered2" to "No"),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `fake boolean fields map non-boolean values to null`() {
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+            speciesEndangeredTypeId = SpeciesEndangeredType.Unsure))
+
+    val fields = listOf(endangeredField, endangered2Field)
+    val sortOrder = listOf(SearchSortField(endangeredField, SearchDirection.Descending))
+
+    val result = searchService.search(fields, sortOrder = sortOrder)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG", "endangered2" to "Unsure"),
+                mapOf("accessionNumber" to "XYZ"),
             ),
             cursor = null)
 

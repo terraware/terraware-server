@@ -23,6 +23,8 @@
         | notification_type$
         | processing_method$
         | storage_condition$
+        | species_endangered_type$
+        | species_rare_type$
         | timeseries_type$
         | withdrawal_purpose$
       </excludes>
@@ -102,6 +104,20 @@
           <includeExpression>
             (?i:(accession\.target_storage_condition|storage_location\.condition_id))
           </includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.SpeciesEndangeredType</userType>
+          <converter>com.terraformation.seedbank.db.SpeciesEndangeredTypeConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:.*\.species_endangered_type_id)</includeExpression>
+        </forcedType>
+
+        <forcedType>
+          <userType>com.terraformation.seedbank.db.SpeciesRareType</userType>
+          <converter>com.terraformation.seedbank.db.SpeciesRareTypeConverter</converter>
+          <includeTypes>INTEGER</includeTypes>
+          <includeExpression>(?i:.*\.species_rare_type_id)</includeExpression>
         </forcedType>
 
         <forcedType>
