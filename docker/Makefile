@@ -1,15 +1,24 @@
 IMAGE_NAME=seedbank-server
 
+BUILD_DIR=../build/docker
+FILES=\
+	$(BUILD_DIR)/Dockerfile \
+	$(BUILD_DIR)/entrypoint.sh
+
 DEFAULT: image
 
-prepare:
+prepare: $(BUILD_DIR) $(FILES)
 	cd .. && ./gradlew assemble
-	mkdir -p ../build/docker
-	cp Dockerfile entrypoint.sh ../build/docker
-	cd ../build/docker && jar -xf `ls -t ../libs/*.jar | head -1`
+	cd $(BUILD_DIR) && jar -xf `ls -t ../libs/*.jar | head -1`
 
 image: prepare
-	docker build -f Dockerfile -t $(IMAGE_NAME) ../build/docker
+	docker build -f Dockerfile -t $(IMAGE_NAME) $(BUILD_DIR)
 
 run: image
 	docker-compose -f docker-compose.yml up
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/%: %
+	cp $< $@
