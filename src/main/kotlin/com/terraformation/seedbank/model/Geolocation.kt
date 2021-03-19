@@ -3,6 +3,7 @@ package com.terraformation.seedbank.model
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.seedbank.services.equalsIgnoreScale
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Geolocation(
@@ -19,9 +20,9 @@ class Geolocation(
   }
 
   override fun hashCode(): Int {
-    return latitude.setScale(10).hashCode() xor
-        longitude.setScale(10).hashCode() xor
-        (accuracy?.setScale(10)?.hashCode() ?: 13)
+    return latitude.setScale(10, RoundingMode.DOWN).hashCode() xor
+        longitude.setScale(10, RoundingMode.DOWN).hashCode() xor
+        (accuracy?.setScale(10, RoundingMode.DOWN)?.hashCode() ?: 13)
   }
 
   override fun toString() =
