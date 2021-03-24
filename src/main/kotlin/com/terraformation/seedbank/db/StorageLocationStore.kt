@@ -16,6 +16,7 @@ class StorageLocationStore(
           .select(NAME, CONDITION_ID)
           .from(STORAGE_LOCATION)
           .where(SITE_MODULE_ID.eq(config.siteModuleId))
+          .orderBy(NAME)
           .fetch { it.value1()!! to it.value2()!! }
           .toMap()
     }
