@@ -1,6 +1,7 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.references.ACCESSION
@@ -13,7 +14,6 @@ import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
 import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
-import com.terraformation.seedbank.model.AccessionNumberGenerator
 import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.toActiveEnum
 import com.terraformation.seedbank.services.debugWithTiming
@@ -23,6 +23,7 @@ import com.terraformation.seedbank.services.toListOrNull
 import com.terraformation.seedbank.services.toSetOrNull
 import java.time.Clock
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -49,8 +50,6 @@ class AccessionStore(
     /** Number of times to try generating a unique accession number before giving up. */
     private const val ACCESSION_NUMBER_RETRIES = 10
   }
-
-  var accessionNumberGenerator = AccessionNumberGenerator()
 
   private val log = perClassLogger()
 
@@ -166,7 +165,7 @@ class AccessionStore(
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
-      val accessionNumber = accessionNumberGenerator.generateAccessionNumber()
+      val accessionNumber = generateAccessionNumber()
 
       try {
         dslContext.transaction { _ ->
@@ -559,5 +558,50 @@ class AccessionStore(
         .and(WITHDRAWAL.DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
         .fetch { it[ACCESSION.NUMBER]!! to it[ACCESSION.ID]!! }
         .toMap()
+  }
+
+  /**
+   * Returns the next unused accession number.
+   *
+   * Accession numbers are of the form YYYYMMDDXXX where XXX is a numeric suffix of three or more
+   * digits that starts at 000 for the first accession created on a particular date. The desired
+   * behavior is for the suffix to represent the order in which accessions were received, so ideally
+   * we want to avoid gaps or out-of-order values, though it's fine for that to be best-effort.
+   *
+   * The implementation uses a database sequence. The sequence's values follow the same pattern as
+   * the accession numbers, but the suffix is always 10 digits; it is rendered as a 3-or-more-digit
+   * value by this method.
+   *
+   * If the date part of the sequence value doesn't match the current date, this method resets the
+   * sequence to the zero suffix for the current date.
+   *
+   * Note that there is a bit of a race condition if multiple seedbank-server instances happen to
+   * allocate their first accession of a given day at the same time; they might both reset the
+   * sequence. To guard against that, [create] will retry a few times if it gets a unique constraint
+   * violation on the accession number.
+   */
+  private fun generateAccessionNumber(): String {
+    val suffixMultiplier = 10000000000L
+    val todayAsLong = LocalDate.now(clock).format(DateTimeFormatter.BASIC_ISO_DATE).toLong()
+
+    val sequenceValue =
+        dslContext.select(ACCESSION_NUMBER_SEQ.nextval()).fetchOne(ACCESSION_NUMBER_SEQ.nextval())!!
+    val datePart = sequenceValue / suffixMultiplier
+    val suffixPart = sequenceValue.rem(suffixMultiplier)
+
+    val suffix =
+        if (todayAsLong != datePart) {
+          val firstValueForToday = todayAsLong * suffixMultiplier
+          dslContext
+              .alterSequence(ACCESSION_NUMBER_SEQ)
+              .restartWith(firstValueForToday + 1)
+              .execute()
+          log.info("Resetting accession sequence to $firstValueForToday")
+          0
+        } else {
+          suffixPart
+        }
+
+    return "%08d%03d".format(todayAsLong, suffix)
   }
 }

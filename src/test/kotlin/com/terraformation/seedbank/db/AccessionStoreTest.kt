@@ -7,6 +7,7 @@ import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
 import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.daos.AppDeviceDao
@@ -27,7 +28,6 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.db.tables.references.NOTIFICATION
-import com.terraformation.seedbank.model.AccessionNumberGenerator
 import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.Geolocation
 import io.mockk.every
@@ -56,6 +56,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     get() =
         listOf(
             "accession_id_seq",
+            "accession_number_seq",
             "app_device_id_seq",
             "bag_id_seq",
             "collection_event_id_seq",
@@ -64,7 +65,18 @@ internal class AccessionStoreTest : DatabaseTest() {
             "species_family_id_seq",
         )
 
-  private val accessionNumberGenerator = mockk<AccessionNumberGenerator>()
+  private val accessionNumbers =
+      listOf(
+          "19700101000",
+          "19700101001",
+          "19700101002",
+          "19700101003",
+          "19700101004",
+          "19700101005",
+          "19700101006",
+          "19700101007",
+      )
+
   private val clock: Clock = mockk()
 
   private lateinit var store: AccessionStore
@@ -76,9 +88,6 @@ internal class AccessionStoreTest : DatabaseTest() {
   private lateinit var germinationDao: GerminationDao
   private lateinit var germinationTestDao: GerminationTestDao
   private lateinit var storageLocationDao: StorageLocationDao
-
-  private val accessionNumbers =
-      listOf("one", "two", "three", "four", "five", "six", "seven", "eight")
 
   @BeforeEach
   fun init() {
@@ -94,7 +103,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     val support = StoreSupport(config, dslContext)
 
-    every { clock.instant() } returns Instant.ofEpochMilli(System.currentTimeMillis())
+    every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
 
     store =
@@ -110,10 +119,6 @@ internal class AccessionStoreTest : DatabaseTest() {
             WithdrawalStore(dslContext, clock),
             clock,
             support)
-
-    store.accessionNumberGenerator = accessionNumberGenerator
-
-    every { accessionNumberGenerator.generateAccessionNumber() } returnsMany accessionNumbers
   }
 
   @Test
@@ -132,25 +137,29 @@ internal class AccessionStoreTest : DatabaseTest() {
 
   @Test
   fun `create deals with collisions in accession numbers`() {
-    val collidingAccessionNumbers = listOf("one", "one", "two")
-    every { accessionNumberGenerator.generateAccessionNumber() } returnsMany
-        collidingAccessionNumbers
-
     store.create(CreateAccessionRequestPayload())
+    dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
     store.create(CreateAccessionRequestPayload())
 
-    assertNotNull(accessionDao.fetchOneByNumber("two"))
+    assertNotNull(accessionDao.fetchOneByNumber(accessionNumbers[1]))
   }
 
   @Test
   fun `create gives up if it can't generate an unused accession number`() {
-    every { accessionNumberGenerator.generateAccessionNumber() } returns ("duplicate")
+    repeat(10) { store.create(CreateAccessionRequestPayload()) }
 
-    store.create(CreateAccessionRequestPayload())
+    dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
 
     assertThrows(DuplicateKeyException::class.java) {
       store.create(CreateAccessionRequestPayload())
     }
+  }
+
+  @Test
+  fun `create adds digit to accession number suffix if it exceeds 3 digits`() {
+    dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000001000).execute()
+    val inserted = store.create(CreateAccessionRequestPayload())
+    assertEquals(inserted.accessionNumber, "197001011000")
   }
 
   @Test
@@ -167,8 +176,8 @@ internal class AccessionStoreTest : DatabaseTest() {
     // Second time should reuse them
     store.create(payload)
 
-    val initialRow = accessionDao.fetchOneById(1)!!
-    val secondRow = accessionDao.fetchOneById(2)!!
+    val initialRow = accessionDao.fetchOneByNumber(accessionNumbers[0])!!
+    val secondRow = accessionDao.fetchOneByNumber(accessionNumbers[1])!!
 
     assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
     assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
@@ -806,7 +815,6 @@ internal class AccessionStoreTest : DatabaseTest() {
 
   @Test
   fun `fetchTimedStateTransitionCandidates matches correct dates based on state`() {
-    val clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
     val today = LocalDate.now(clock)
     val yesterday = today.minusDays(1)
     val tomorrow = today.plusDays(1)
