@@ -24,6 +24,8 @@ interface GerminationTestFields {
   val testType: GerminationTestType
   val startDate: LocalDate?
     get() = null
+  val endDate: LocalDate?
+    get() = null
   val seedType: GerminationSeedType?
     get() = null
   val substrate: GerminationSubstrate?
@@ -79,6 +81,7 @@ data class GerminationTestModel(
     val accessionId: Long,
     override val testType: GerminationTestType,
     override val startDate: LocalDate? = null,
+    override val endDate: LocalDate? = null,
     override val seedType: GerminationSeedType? = null,
     override val substrate: GerminationSubstrate? = null,
     override val treatment: GerminationTreatment? = null,

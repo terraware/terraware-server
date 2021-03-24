@@ -1479,6 +1479,9 @@ components:
         startDate:
           type: string
           format: date
+        endDate:
+          type: string
+          format: date
         seedType:
           type: string
           enum:
@@ -1716,6 +1719,7 @@ components:
       - estimatedSeedsIncoming
       - family
       - geolocation
+      - germinationEndDate
       - germinationPercentGerminated
       - germinationSeedType
       - germinationSeedsGerminated

@@ -151,6 +151,11 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             GEOLOCATION.LATITUDE,
             GEOLOCATION.LONGITUDE,
             SearchTables.Geolocation),
+        DateField(
+            "germinationEndDate",
+            "Germination end date",
+            GERMINATION_TEST.END_DATE,
+            SearchTables.GerminationTest),
         IntegerField(
             "germinationPercentGerminated",
             "Total % of seeds germinated",

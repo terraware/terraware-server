@@ -59,6 +59,7 @@ class GerminationStore(private val dslContext: DSLContext) {
                 record[ACCESSION_ID]!!,
                 record[TEST_TYPE]!!,
                 record[START_DATE],
+                record[END_DATE],
                 record[SEED_TYPE_ID],
                 record[SUBSTRATE_ID],
                 record[TREATMENT_ID],
@@ -80,6 +81,7 @@ class GerminationStore(private val dslContext: DSLContext) {
           dslContext
               .insertInto(GERMINATION_TEST)
               .set(ACCESSION_ID, accessionId)
+              .set(END_DATE, germinationTest.endDate)
               .set(NOTES, germinationTest.notes)
               .set(SEED_TYPE_ID, germinationTest.seedType)
               .set(SEEDS_SOWN, germinationTest.seedsSown)
@@ -164,6 +166,7 @@ class GerminationStore(private val dslContext: DSLContext) {
         with(GERMINATION_TEST) {
           dslContext
               .update(GERMINATION_TEST)
+              .set(END_DATE, desiredTest.endDate)
               .set(NOTES, desiredTest.notes)
               .set(SEED_TYPE_ID, desiredTest.seedType)
               .set(SEEDS_SOWN, desiredTest.seedsSown)

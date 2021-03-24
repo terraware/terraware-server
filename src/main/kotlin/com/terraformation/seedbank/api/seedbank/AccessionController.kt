@@ -305,6 +305,7 @@ data class GerminationTestPayload(
         description = "Which type of test is described. At most one of each test type is allowed.")
     override val testType: GerminationTestType,
     override val startDate: LocalDate? = null,
+    override val endDate: LocalDate? = null,
     override val seedType: GerminationSeedType? = null,
     override val substrate: GerminationSubstrate? = null,
     override val treatment: GerminationTreatment? = null,
@@ -321,6 +322,7 @@ data class GerminationTestPayload(
       model.id,
       model.testType,
       model.startDate,
+      model.endDate,
       model.seedType,
       model.substrate,
       model.treatment,
