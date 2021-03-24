@@ -59,12 +59,14 @@ class PerSiteConfigUpdater(
     }
   }
 
-  private fun refreshConfig() {
-    log.info("Refreshing per-site configuration")
+  fun refreshConfig() {
+    synchronized(this) {
+      log.info("Refreshing per-site configuration")
 
-    val config = fetchConfig()
-    if (config != null) {
-      updateDatabase(config)
+      val config = fetchConfig()
+      if (config != null) {
+        updateDatabase(config)
+      }
     }
   }
 
