@@ -180,7 +180,19 @@
     {
       "id": 1003,
       "siteModuleId": 100,
-      "name": "Freezer 1",
+      "name": "Freezer 2",
+      "conditionId": "Freezer"
+    },
+    {
+      "id": 1004,
+      "siteModuleId": 100,
+      "name": "Refrigerator 3",
+      "conditionId": "Refrigerator"
+    },
+    {
+      "id": 1005,
+      "siteModuleId": 100,
+      "name": "Freezer 3",
       "conditionId": "Freezer"
     }
   ]
