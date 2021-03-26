@@ -1,5 +1,12 @@
-FROM openjdk:15-buster
+FROM openjdk:16-slim-buster
 WORKDIR /home/app
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y curl \
+    && apt-get clean \
+    && rm -rf /var/cache/apt
+
 COPY entrypoint.sh metrics.sh /usr/local/bin/
 RUN cd /usr/local/bin && chmod 755 entrypoint.sh metrics.sh
 
