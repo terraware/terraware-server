@@ -40,6 +40,8 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     every { clock.instant() } returns Instant.now()
 
+    insertSiteData()
+
     // Insert a minimal accession so we can use its ID. The actual contents are irrelevant.
     dslContext
         .insertInto(ACCESSION)

@@ -8,7 +8,11 @@ import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
 import com.terraformation.seedbank.db.SpeciesEndangeredType
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
+import com.terraformation.seedbank.db.tables.daos.SpeciesDao
+import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
+import com.terraformation.seedbank.db.tables.pojos.Species
+import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -43,6 +47,35 @@ class SearchServiceTest : DatabaseTest() {
   fun init() {
     accessionDao = AccessionDao(dslContext.configuration())
     searchService = SearchService(dslContext, searchFields)
+
+    insertSiteData()
+
+    val now = Instant.now()
+
+    val speciesDao = SpeciesDao(dslContext.configuration())
+    speciesDao.insert(
+        Species(id = 10000, name = "Kousa Dogwood", createdTime = now, modifiedTime = now))
+    speciesDao.insert(
+        Species(id = 10001, name = "Other Dogwood", createdTime = now, modifiedTime = now))
+
+    accessionDao.insert(
+        Accession(
+            id = 1000,
+            number = "XYZ",
+            stateId = AccessionState.Processed,
+            createdTime = now,
+            siteModuleId = 100,
+            speciesId = 10000,
+            treesCollectedFrom = 1))
+    accessionDao.insert(
+        Accession(
+            id = 1001,
+            number = "ABCDEFG",
+            stateId = AccessionState.Processing,
+            createdTime = now,
+            siteModuleId = 100,
+            speciesId = 10001,
+            treesCollectedFrom = 2))
   }
 
   @Test
@@ -489,6 +522,26 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `fetchAllValues returns values for field from reference table`() {
+    val storageLocationDao = StorageLocationDao(dslContext.configuration())
+    storageLocationDao.insert(
+        StorageLocation(
+            id = 1000,
+            siteModuleId = 100,
+            name = "Refrigerator 1",
+            conditionId = StorageCondition.Refrigerator))
+    storageLocationDao.insert(
+        StorageLocation(
+            id = 1001,
+            siteModuleId = 100,
+            name = "Freezer 1",
+            conditionId = StorageCondition.Freezer))
+    storageLocationDao.insert(
+        StorageLocation(
+            id = 1002,
+            siteModuleId = 100,
+            name = "Freezer 2",
+            conditionId = StorageCondition.Freezer))
+
     val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
     val values = searchService.fetchAllValues(storageLocationField)
     assertEquals(expected, values)

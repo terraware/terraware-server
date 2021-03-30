@@ -119,6 +119,8 @@ internal class AccessionStoreTest : DatabaseTest() {
             WithdrawalStore(dslContext, clock),
             clock,
             support)
+
+    insertSiteData()
   }
 
   @Test

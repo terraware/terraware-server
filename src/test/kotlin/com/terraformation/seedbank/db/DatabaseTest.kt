@@ -1,15 +1,9 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.references.ACCESSION
-import com.terraformation.seedbank.db.tables.references.API_KEY
-import com.terraformation.seedbank.db.tables.references.DEVICE
-import com.terraformation.seedbank.db.tables.references.NOTIFICATION
 import com.terraformation.seedbank.db.tables.references.ORGANIZATION
 import com.terraformation.seedbank.db.tables.references.SITE
 import com.terraformation.seedbank.db.tables.references.SITE_MODULE
-import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
-import com.terraformation.seedbank.db.tables.references.TIMESERIES
-import com.terraformation.seedbank.db.tables.references.TIMESERIES_VALUE
+import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -68,26 +62,30 @@ abstract class DatabaseTest {
     }
   }
 
-  /**
-   * Cleans out all the demo data that's inserted by default in dev configurations. Use this if you
-   * want to run against a completely pristine database (e.g., if you're asserting the exact
-   * contents of tables). Reference tables (`device_type`, `storage_condition`, etc.) remain
-   * populated.
-   */
-  protected fun deleteDemoData() {
-    listOf(
-        API_KEY,
-        NOTIFICATION,
-        ACCESSION,
-        TIMESERIES_VALUE,
-        TIMESERIES,
-        STORAGE_LOCATION,
-        DEVICE,
-        SITE_MODULE,
-        SITE,
-        ORGANIZATION,
-    )
-        .forEach { dslContext.deleteFrom(it).execute() }
+  /** Creates an organization, site, and site module that can be referenced by various tests. */
+  fun insertSiteData() {
+    with(ORGANIZATION) { dslContext.insertInto(ORGANIZATION).set(ID, 1).set(NAME, "dev").execute() }
+
+    with(SITE) {
+      dslContext
+          .insertInto(SITE)
+          .set(ID, 10)
+          .set(ORGANIZATION_ID, 1)
+          .set(NAME, "sim")
+          .set(LATITUDE, BigDecimal.valueOf(1))
+          .set(LONGITUDE, BigDecimal.valueOf(2))
+          .execute()
+    }
+
+    with(SITE_MODULE) {
+      dslContext
+          .insertInto(SITE_MODULE)
+          .set(ID, 100)
+          .set(SITE_ID, 10)
+          .set(TYPE_ID, 1)
+          .set(NAME, "ohana")
+          .execute()
+    }
   }
 
   class DockerPostgresDataSourceInitializer :

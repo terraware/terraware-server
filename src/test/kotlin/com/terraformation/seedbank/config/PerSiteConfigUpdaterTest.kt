@@ -74,8 +74,6 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             ObjectMapper().registerKotlinModule(),
             serverConfig,
             taskScheduler)
-
-    deleteDemoData()
   }
 
   @Test
