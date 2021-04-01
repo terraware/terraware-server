@@ -35,6 +35,7 @@ data class PerSiteConfig(
 
 @ManagedBean
 class PerSiteConfigUpdater(
+    private val databaseBootstrapper: DatabaseBootstrapper,
     private val deviceDao: DeviceDao,
     private val dslContext: DSLContext,
     private val organizationDao: OrganizationDao,
@@ -101,6 +102,10 @@ class PerSiteConfigUpdater(
     delete(perSiteConfig.siteModules, siteModuleDao) { it.enabled = false }
     delete(perSiteConfig.sites, siteDao) { it.enabled = false }
     delete(perSiteConfig.organizations, organizationDao) { it.enabled = false }
+
+    // API keys are tied to organizations; we may have just inserted the organization that
+    // the configured API key needs to refer to, in which case we can now insert the key.
+    databaseBootstrapper.updateApiKey()
   }
 
   private fun <T, I : Number> insertAndUpdate(desired: List<T>, dao: DAO<*, T, I>) {

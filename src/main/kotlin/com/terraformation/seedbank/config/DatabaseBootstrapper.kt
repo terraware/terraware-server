@@ -27,7 +27,7 @@ class DatabaseBootstrapper(
     updateApiKey()
   }
 
-  private fun updateApiKey() {
+  fun updateApiKey() {
     val apiKey = config.apiKey ?: return
     val hashedKey = apiKeyAuthenticationProvider.hashApiKey(apiKey)
 
