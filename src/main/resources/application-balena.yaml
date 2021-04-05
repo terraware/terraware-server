@@ -11,13 +11,3 @@ logging:
   level:
     root: WARN
     com.terraformation: DEBUG
-
-server:
-  tomcat:
-    accesslog:
-      enabled: true
-      directory: "/dev"
-      prefix: "stdout"
-      suffix: ""
-      file-date-format: ""
-      buffered: false
