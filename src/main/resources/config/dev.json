@@ -55,15 +55,12 @@
     {
       "id": 1006,
       "siteModuleId": 102,
-      "deviceType": "server",
-      "make": "sim",
-      "model": "rpi",
       "name": "server",
-      "protocol": "modbus",
-      "address": "sim",
-      "port": 0,
-      "settings": "",
-      "pollingInterval": 10
+      "deviceType": "server",
+      "make": "Raspberry Pi",
+      "model": "4B",
+      "address": "",
+      "pollingInterval": 60
     },
     {
       "id": 1007,
