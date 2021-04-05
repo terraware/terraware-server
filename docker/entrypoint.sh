@@ -27,7 +27,7 @@ if [ "$BALENA" = 1 ]; then
             ;;
     esac
 
-    /usr/local/bin/metrics.sh &
+    gosu sbserver /usr/local/bin/metrics.sh &
 fi
 
-exec "$@"
+exec gosu sbserver "$@"
