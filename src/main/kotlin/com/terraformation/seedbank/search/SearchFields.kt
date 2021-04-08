@@ -133,7 +133,6 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("dryingStartDate", "Drying start date", ACCESSION.DRYING_START_DATE),
         IntegerField("effectiveSeedCount", "Effective seed count", ACCESSION.EFFECTIVE_SEED_COUNT),
         EnumField.create("endangered", "Endangered", ACCESSION.SPECIES_ENDANGERED_TYPE_ID),
-        EnumField.create("endangered2", "Endangered", ACCESSION.SPECIES_ENDANGERED_TYPE_ID),
         IntegerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSION.EST_SEED_COUNT),
         TextField("family", "Family", SPECIES_FAMILY.NAME, SearchTables.SpeciesFamily),
@@ -209,7 +208,6 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         TextField("processingNotes", "Notes (processing)", ACCESSION.PROCESSING_NOTES),
         DateField("processingStartDate", "Processing start date", ACCESSION.PROCESSING_START_DATE),
         EnumField.create("rare", "Rare", ACCESSION.SPECIES_RARE_TYPE_ID),
-        EnumField.create("rare2", "Rare", ACCESSION.SPECIES_RARE_TYPE_ID),
         DateField("receivedDate", "Received on", ACCESSION.RECEIVED_DATE),
         IntegerField("seedsCounted", "Number of seeds counted", ACCESSION.SEEDS_COUNTED),
         IntegerField("seedsRemaining", "Number of seeds remaining", ACCESSION.SEEDS_REMAINING),
