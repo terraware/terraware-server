@@ -45,7 +45,7 @@ jobs:
       run: ./gradlew spotlessCheck
 
     - name: Generate jOOQ classes
-      run: ./gradlew generateJooqMetamodel
+      run: ./gradlew generateJooqClasses
 
     - name: Compile main
       run: ./gradlew classes

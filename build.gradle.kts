@@ -5,20 +5,13 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val jacksonVersion = "2.11.3"
-val jooqVersion = "3.14.4"
-val postgresJdbcVersion = "42.2.19"
-val springDocVersion = "1.5.5"
-
 plugins {
-  val kotlinVersion = "1.4.31"
+  kotlin("jvm")
+  kotlin("kapt")
+  kotlin("plugin.allopen")
+  kotlin("plugin.spring")
 
-  kotlin("jvm") version kotlinVersion
-  kotlin("kapt") version kotlinVersion
-  kotlin("plugin.allopen") version kotlinVersion
-  kotlin("plugin.spring") version kotlinVersion
-
-  id("ch.ayedo.jooqmodelator") version "3.8.0"
+  id("com.revolut.jooq-docker") version "0.3.5"
   id("com.diffplug.spotless") version "5.10.2"
   id("org.springframework.boot") version "2.4.3"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
@@ -28,16 +21,30 @@ plugins {
   id("org.springdoc.openapi-gradle-plugin") version "1.3.1"
 }
 
-group = "com.terraformation"
-version = computeGitVersion("0.1")
-java.targetCompatibility = JavaVersion.VERSION_15
-
-repositories {
-  mavenCentral()
+buildscript {
+  // Force the jOOQ codegen plugin to use the same jOOQ version we use in the application code.
+  val jooqVersion: String by project
+  configurations.classpath {
+    resolutionStrategy {
+      setForcedModules("org.jooq:jooq-codegen:$jooqVersion")
+    }
+  }
 }
 
+group = "com.terraformation"
+
+version = computeGitVersion("0.1")
+
+java.targetCompatibility = JavaVersion.VERSION_15
+
+repositories { mavenCentral() }
+
 dependencies {
-  jooqModelatorRuntime("org.postgresql:postgresql:$postgresJdbcVersion")
+  val jacksonVersion: String by project
+  val postgresJdbcVersion: String by project
+  val springDocVersion: String by project
+
+  jdbc("org.postgresql:postgresql:$postgresJdbcVersion")
 
   kapt("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -78,13 +85,14 @@ dependencies {
 }
 
 tasks.register("downloadDependencies") {
-  fun ConfigurationContainer.resolveAll() = this
-    .filter {
-      it.isCanBeResolved &&
-          (it !is DeprecatableConfiguration || it.resolutionAlternatives == null) &&
-          !it.name.contains("Metadata")
-    }
-    .forEach { it.resolve() }
+  fun ConfigurationContainer.resolveAll() =
+      this
+          .filter {
+            it.isCanBeResolved &&
+                (it !is DeprecatableConfiguration || it.resolutionAlternatives == null) &&
+                !it.name.contains("Metadata")
+          }
+          .forEach { it.resolve() }
 
   doLast {
     configurations.resolveAll()
@@ -97,68 +105,76 @@ tasks.test {
   testLogging { exceptionFormat = TestExceptionFormat.FULL }
 }
 
-val preprocessJooqConfig by tasks.registering {
-  val generatedConfigPath = File("$projectDir/src/generated/jooq-config.xml").toPath()
-
-  inputs.file("$projectDir/jooq-codegen.xml")
-  outputs.file(generatedConfigPath)
-
-  doLast {
-    val xml = File("$projectDir/jooq-codegen.xml")
-      .readText()
-      .replace("\$projectDir", projectDir.absolutePath)
-    Files.createDirectories(generatedConfigPath.parent)
-    Files.writeString(generatedConfigPath, xml)
-  }
-}
-
 val generateVersionFile by tasks.registering {
   val generatedPath =
-      File("$projectDir/src/generated/kotlin/com/terraformation/seedbank/Version.kt").toPath()
+      File("$buildDir/generated/kotlin/com/terraformation/seedbank/Version.kt").toPath()
 
   inputs.property("version", project.version)
   outputs.file(generatedPath)
 
   doLast {
     Files.createDirectories(generatedPath.parent)
-    Files.writeString(generatedPath,
+    Files.writeString(
+        generatedPath,
         """package com.terraformation.seedbank
           |const val VERSION = "$version"
-          |""".trimMargin()
-    )
+          |""".trimMargin())
   }
 }
 
-tasks.withType<ch.ayedo.jooqmodelator.gradle.JooqModelatorTask> {
-  dependsOn(preprocessJooqConfig)
+tasks {
+  generateJooqClasses {
+    basePackageName = "com.terraformation.seedbank.db"
+    excludeFlywayTable = true
+    schemas = arrayOf("public")
+
+    customizeGenerator {
+      val enumGenerator = com.terraformation.seedbank.jooq.EnumGenerator()
+      val forcedTypeForInstant =
+          org.jooq.meta.jaxb.ForcedType()
+              .withName("INSTANT")
+              .withIncludeTypes("(?i:TIMESTAMP\\ WITH\\ TIME\\ ZONE)")
+
+      name = enumGenerator.javaClass.name
+      database.apply {
+        withName("org.jooq.meta.postgres.PostgresDatabase")
+        withIncludes(".*")
+        withExcludes(enumGenerator.enumTables.joinToString("|") { "$it\$" })
+        withForcedTypes(enumGenerator.forcedTypes(basePackageName) + listOf(forcedTypeForInstant))
+      }
+
+      generate.apply {
+        isDaos = true
+        isJavaTimeTypes = true
+        isPojos = true
+        isPojosAsKotlinDataClasses = true
+        isRecords = true
+        isRoutines = false
+      }
+    }
+
+    flywayProperties =
+        mapOf(
+            "flyway.locations" to
+                listOf(
+                        "src/main/resources/db/migration/dev",
+                        "src/main/resources/db/migration/postgres",
+                        "src/main/resources/db/migration/common")
+                    .joinToString(",") { "filesystem:$it" })
+  }
 }
 
-jooqModelator {
-  jooqVersion = "3.14.4"
-  jooqEdition = "OSS"
-  jooqConfigPath = preprocessJooqConfig.get().outputs.files.asPath
-  jooqOutputPath = "$projectDir/src/generated/jooq"
-  migrationEngine = "FLYWAY"
-  migrationsPaths = listOf(
-      "src/main/resources/db/migration/dev",
-      "src/main/resources/db/migration/postgres",
-      "src/main/resources/db/migration/common")
-  dockerTag = "postgres:12"
-  dockerEnv = listOf(
-    "POSTGRES_DB=seedbank-build",
-    "POSTGRES_USER=seedbank",
-    "POSTGRES_PASSWORD=seedbank")
-  dockerHostPort = 15432
-  dockerContainerPort = 5432
+jooq {
+  image {
+    tag = "12"
+  }
 }
 
 sourceSets.main {
-  java.srcDir("src/generated/jooq")
-  java.srcDir("src/generated/kotlin")
+  java.srcDir("build/generated/kotlin")
 }
 
 tasks.withType<KotlinCompile> {
-  dependsOn(tasks.withType<ch.ayedo.jooqmodelator.gradle.JooqModelatorTask>())
   dependsOn(generateVersionFile)
   kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
 }
@@ -166,7 +182,7 @@ tasks.withType<KotlinCompile> {
 spotless {
   kotlin {
     ktfmt("0.21")
-    targetExclude("src/generated/**")
+    targetExclude("build/**")
   }
 }
 
