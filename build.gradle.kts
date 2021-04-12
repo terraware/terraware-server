@@ -18,7 +18,7 @@ plugins {
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
-  id("org.springdoc.openapi-gradle-plugin") version "1.3.1"
+  id("org.springdoc.openapi-gradle-plugin") version "1.3.2"
 }
 
 buildscript {
@@ -177,6 +177,10 @@ sourceSets.main {
 tasks.withType<KotlinCompile> {
   dependsOn(generateVersionFile)
   kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask> {
+  dependsOn(tasks.generateJooqClasses)
 }
 
 spotless {
