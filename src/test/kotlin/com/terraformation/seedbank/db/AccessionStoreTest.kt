@@ -15,19 +15,20 @@ import com.terraformation.seedbank.db.tables.daos.BagDao
 import com.terraformation.seedbank.db.tables.daos.GeolocationDao
 import com.terraformation.seedbank.db.tables.daos.GerminationDao
 import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
+import com.terraformation.seedbank.db.tables.daos.SpeciesDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
 import com.terraformation.seedbank.db.tables.pojos.AccessionStateHistory
 import com.terraformation.seedbank.db.tables.pojos.Bag
 import com.terraformation.seedbank.db.tables.pojos.GerminationTest
+import com.terraformation.seedbank.db.tables.pojos.Species
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import com.terraformation.seedbank.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.seedbank.db.tables.references.NOTIFICATION
 import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.Geolocation
 import io.mockk.every
@@ -87,6 +88,7 @@ internal class AccessionStoreTest : DatabaseTest() {
   private lateinit var geolocationDao: GeolocationDao
   private lateinit var germinationDao: GerminationDao
   private lateinit var germinationTestDao: GerminationTestDao
+  private lateinit var speciesDao: SpeciesDao
   private lateinit var storageLocationDao: StorageLocationDao
 
   @BeforeEach
@@ -99,6 +101,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     geolocationDao = GeolocationDao(jooqConfig)
     germinationDao = GerminationDao(jooqConfig)
     germinationTestDao = GerminationTestDao(jooqConfig)
+    speciesDao = SpeciesDao(jooqConfig)
     storageLocationDao = StorageLocationDao(jooqConfig)
 
     val support = StoreSupport(config, dslContext)
@@ -115,7 +118,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
-            SpeciesStore(clock, support),
+            SpeciesStore(clock, dslContext, support),
             WithdrawalStore(dslContext, clock),
             clock,
             support)
@@ -174,15 +177,18 @@ internal class AccessionStoreTest : DatabaseTest() {
             secondaryCollectors = setOf("secondary 1", "secondary 2"))
 
     // First time inserts the reference table rows
-    store.create(payload)
+    val initialAccession = store.create(payload)
     // Second time should reuse them
-    store.create(payload)
+    val secondAccession = store.create(payload)
 
     val initialRow = accessionDao.fetchOneByNumber(accessionNumbers[0])!!
     val secondRow = accessionDao.fetchOneByNumber(accessionNumbers[1])!!
 
     assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
     assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
+    assertEquals(
+        initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
+    assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
     assertEquals(initialRow.speciesFamilyId, secondRow.speciesFamilyId, "Family")
     assertEquals(initialRow.primaryCollectorId, secondRow.primaryCollectorId, "Primary collector")
 
@@ -904,8 +910,6 @@ internal class AccessionStoreTest : DatabaseTest() {
    */
   @Test
   fun `countInState correctly examines state changes`() {
-    deleteDevEnvironmentData()
-
     // Insert dummy accession rows so we can use the accession IDs
     repeat(7) { store.create(CreateAccessionRequestPayload()) }
 
@@ -1018,9 +1022,59 @@ internal class AccessionStoreTest : DatabaseTest() {
     }
   }
 
-  private fun deleteDevEnvironmentData() {
-    dslContext.deleteFrom(NOTIFICATION).execute()
-    dslContext.deleteFrom(ACCESSION).execute()
+  @Test
+  fun `updateSpecies renames species when there is no name collision`() {
+    val accession1 = store.create(CreateAccessionRequestPayload(species = "species1"))
+    val accession2 = store.create(CreateAccessionRequestPayload(species = "species2"))
+
+    val now = Instant.now()
+    every { clock.instant() } returns now
+
+    val newId = store.updateSpecies(1, "species1a")
+
+    assertNull(newId, "No new species ID should be returned")
+    assertEquals(
+        Species(id = 1, name = "species1a", createdTime = Instant.EPOCH, modifiedTime = now),
+        speciesDao.fetchOneById(1),
+        "Updated species")
+    assertEquals(
+        Species(
+            id = 2, name = "species2", createdTime = Instant.EPOCH, modifiedTime = Instant.EPOCH),
+        speciesDao.fetchOneById(2),
+        "Unmodified species")
+    assertEquals(
+        "species1a",
+        store.fetchByNumber(accession1.accessionNumber)?.species,
+        "Updated species name on accession")
+    assertEquals(
+        "species2",
+        store.fetchByNumber(accession2.accessionNumber)?.species,
+        "Unmodified species name on accession")
+  }
+
+  @Test
+  fun `updateSpecies merges species when there is a name collision`() {
+    val accession1 = store.create(CreateAccessionRequestPayload(species = "species1"))
+    val accession2 = store.create(CreateAccessionRequestPayload(species = "species2"))
+
+    val newId = store.updateSpecies(1, "species2")
+
+    assertEquals(2, newId, "Existing species ID should be returned")
+    assertNull(speciesDao.fetchOneById(1), "Old species should be deleted")
+    assertEquals("species2", speciesDao.fetchOneById(2)?.name, "Unmodified species name")
+    assertEquals(
+        "species2",
+        store.fetchByNumber(accession1.accessionNumber)?.species,
+        "Updated species name on accession")
+    assertEquals(
+        "species2",
+        store.fetchByNumber(accession2.accessionNumber)?.species,
+        "Unmodified species name on accession")
+  }
+
+  @Test
+  fun `updateSpecies throws exception when species does not exist`() {
+    assertThrows(SpeciesNotFoundException::class.java) { store.updateSpecies(1, "nonexistent") }
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {

@@ -263,6 +263,7 @@ data class AccessionPayloadV1(
                 "the presence of the deviceInfo field.")
     val source: AccessionSource,
     val species: String? = null,
+    @Schema(description = "Server-generated unique ID of the species.") val speciesId: Long? = null,
     val family: String? = null,
     val numberOfTrees: Int? = null,
     val founderId: String? = null,
@@ -327,6 +328,7 @@ data class AccessionPayloadV1(
       model.active,
       model.source,
       model.species,
+      model.speciesId,
       model.family,
       model.numberOfTrees,
       model.founderId,

@@ -179,6 +179,8 @@ data class AccessionPayload(
                 "the presence of the deviceInfo field.")
     override val source: AccessionSource,
     override val species: String? = null,
+    @Schema(description = "Server-generated unique ID of the species.")
+    override val speciesId: Long? = null,
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
     override val founderId: String? = null,
@@ -243,6 +245,7 @@ data class AccessionPayload(
       model.active,
       model.source,
       model.species,
+      model.speciesId,
       model.family,
       model.numberOfTrees,
       model.founderId,

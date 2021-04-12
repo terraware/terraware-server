@@ -1,7 +1,14 @@
 package com.terraformation.seedbank.api.seedbank
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.seedbank.api.DuplicateNameException
+import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.SuccessResponsePayload
+import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.db.AccessionStore
+import com.terraformation.seedbank.db.SpeciesNotFoundException
+import com.terraformation.seedbank.db.SpeciesStore
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.StorageLocationStore
 import com.terraformation.seedbank.search.SearchField
@@ -10,7 +17,11 @@ import com.terraformation.seedbank.search.SearchService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,9 +31,53 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class ValuesController(
+    private val accessionStore: AccessionStore,
     private val storageLocationStore: StorageLocationStore,
-    private val searchService: SearchService
+    private val searchService: SearchService,
+    private val speciesStore: SpeciesStore,
 ) {
+  @GetMapping("/species")
+  fun listSpecies(): ListSpeciesResponsePayload {
+    return ListSpeciesResponsePayload(
+        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!, it.name!!) })
+  }
+
+  @ApiResponses(
+      ApiResponse(responseCode = "200", description = "Species created."),
+      ApiResponse(
+          responseCode = "409", description = "A species with the requested name already exists."))
+  @PostMapping("/species")
+  fun createSpecies(payload: CreateSpeciesRequestPayload): CreateSpeciesResponsePayload {
+    try {
+      val species = speciesStore.createSpecies(payload.name)
+      return CreateSpeciesResponsePayload(SpeciesDetails(species.id!!, species.name!!))
+    } catch (e: DuplicateKeyException) {
+      throw DuplicateNameException("A species with that name already exists.")
+    }
+  }
+
+  @ApiResponse(
+      responseCode = "200", description = "Species updated or merged with an existing species.")
+  @ApiResponse404
+  @Operation(
+      summary = "Updates an existing species.",
+      description =
+          "If the species is being renamed and the species name in the payload already exists, " +
+              "the existing species replaces the one in the request (thus merging the requested " +
+              "species into the one that already had the name) and its ID is returned.")
+  @PostMapping("/species/{id}")
+  fun updateSpecies(
+      @RequestBody payload: CreateSpeciesRequestPayload,
+      @PathVariable id: Long
+  ): UpdateSpeciesResponsePayload {
+    try {
+      val newId = accessionStore.updateSpecies(id, payload.name)
+      return UpdateSpeciesResponsePayload(newId)
+    } catch (e: SpeciesNotFoundException) {
+      throw NotFoundException("Species not found.")
+    }
+  }
+
   @GetMapping("/storageLocation")
   fun getStorageLocations(): StorageLocationsResponsePayload {
     return StorageLocationsResponsePayload(
@@ -69,6 +124,23 @@ class ValuesController(
     return ListAllFieldValuesResponsePayload(values)
   }
 }
+
+data class SpeciesDetails(val id: Long, val name: String)
+
+data class ListSpeciesResponsePayload(val values: List<SpeciesDetails>) : SuccessResponsePayload
+
+data class CreateSpeciesRequestPayload(val name: String)
+
+data class CreateSpeciesResponsePayload(val details: SpeciesDetails) : SuccessResponsePayload
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class UpdateSpeciesResponsePayload(
+    @Schema(
+        description =
+            "If the requested species name already existed, the ID of the existing species. " +
+                "Will not be present if the requested species name did not already exist.")
+    val mergedWithSpeciesId: Long?
+) : SuccessResponsePayload
 
 data class StorageLocationsResponsePayload(val locations: List<StorageLocationDetails>) :
     SuccessResponsePayload

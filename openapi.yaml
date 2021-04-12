@@ -609,6 +609,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListAllFieldValuesResponsePayload'
+  /api/v1/seedbank/values/species:
+    get:
+      tags:
+      - SeedBankApp
+      operationId: listSpecies
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSpeciesResponsePayload'
+    post:
+      tags:
+      - SeedBankApp
+      operationId: createSpecies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSpeciesRequestPayload'
+      responses:
+        "200":
+          description: Species created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSpeciesResponsePayload'
+        "409":
+          description: A species with the requested name already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSpeciesResponsePayload'
+  /api/v1/seedbank/values/species/{id}:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Updates an existing species.
+      description: "If the species is being renamed and the species name in the payload\
+        \ already exists, the existing species replaces the one in the request (thus\
+        \ merging the requested species into the one that already had the name) and\
+        \ its ID is returned."
+      operationId: updateSpecies
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSpeciesRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: Species updated or merged with an existing species.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateSpeciesResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/values/storageLocation:
     get:
       tags:
@@ -738,6 +808,10 @@ components:
           - SeedCollectorApp
         species:
           type: string
+        speciesId:
+          type: integer
+          description: Server-generated unique ID of the species.
+          format: int64
         family:
           type: string
         numberOfTrees:
@@ -935,6 +1009,10 @@ components:
           - SeedCollectorApp
         species:
           type: string
+        speciesId:
+          type: integer
+          description: Server-generated unique ID of the species.
+          format: int64
         family:
           type: string
         numberOfTrees:
@@ -1299,6 +1377,23 @@ components:
           $ref: '#/components/schemas/AccessionPayloadV1'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateSpeciesRequestPayload:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+    CreateSpeciesResponsePayload:
+      required:
+      - details
+      - status
+      type: object
+      properties:
+        details:
+          $ref: '#/components/schemas/SpeciesDetails'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     DeviceConfig:
       required:
       - make
@@ -1643,6 +1738,18 @@ components:
             $ref: '#/components/schemas/ListPhotosResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ListSpeciesResponsePayload:
+      required:
+      - status
+      - values
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpeciesDetails'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     NotificationListResponse:
       required:
       - notifications
@@ -1850,6 +1957,17 @@ components:
       properties:
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    SpeciesDetails:
+      required:
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
     StorageLocationDetails:
       required:
       - storageCondition
@@ -2273,6 +2391,19 @@ components:
       properties:
         accession:
           $ref: '#/components/schemas/AccessionPayloadV1'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    UpdateSpeciesResponsePayload:
+      required:
+      - status
+      type: object
+      properties:
+        mergedWithSpeciesId:
+          type: integer
+          description: "If the requested species name already existed, the ID of the\
+            \ existing species. Will not be present if the requested species name\
+            \ did not already exist."
+          format: int64
         status:
           $ref: '#/components/schemas/SuccessOrError'
     UploadPhotoMetadataPayload:

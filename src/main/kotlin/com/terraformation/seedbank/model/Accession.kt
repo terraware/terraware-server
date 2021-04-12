@@ -43,6 +43,8 @@ interface AccessionFields {
     get() = state?.toActiveEnum()
   val species: String?
     get() = null
+  val speciesId: Long?
+    get() = null
   val family: String?
     get() = null
   val numberOfTrees: Int?
@@ -238,6 +240,7 @@ data class AccessionModel(
     override val state: AccessionState,
     override val source: AccessionSource,
     override val species: String? = null,
+    override val speciesId: Long? = null,
     override val family: String? = null,
     override val numberOfTrees: Int? = null,
     override val founderId: String? = null,

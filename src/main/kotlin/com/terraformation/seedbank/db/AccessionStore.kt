@@ -110,6 +110,7 @@ class AccessionStore(
           state = parentRow[STATE_ID]!!,
           source = source,
           species = parentRow[species().NAME],
+          speciesId = parentRow[SPECIES_ID],
           family = parentRow[speciesFamily().NAME],
           numberOfTrees = parentRow[TREES_COLLECTED_FROM],
           founderId = parentRow[FOUNDER_ID],
@@ -361,6 +362,47 @@ class AccessionStore(
     }
 
     return true
+  }
+
+  /**
+   * Updates information about a species. If the new species name is already in use, updates any
+   * existing accessions that use the old name to use the existing species ID for the new name.
+   *
+   * @return The ID of the existing species with the requested name if the name was already in use
+   * or null if not.
+   */
+  fun updateSpecies(speciesId: Long, name: String): Long? {
+    try {
+      dslContext.transaction { _ -> speciesStore.updateSpecies(speciesId, name) }
+
+      log.info("Renamed species $speciesId to $name")
+
+      return null
+    } catch (e: DuplicateKeyException) {
+      val existingSpeciesId = speciesStore.getSpeciesId(name)!!
+
+      dslContext.transaction { _ ->
+        val rowsUpdated =
+            dslContext
+                .update(ACCESSION)
+                .set(ACCESSION.SPECIES_ID, existingSpeciesId)
+                .where(ACCESSION.SPECIES_ID.eq(speciesId))
+                .execute()
+        speciesStore.deleteSpecies(speciesId)
+
+        log.info(
+            "Updated $rowsUpdated accession(s) to change species ID $speciesId to " +
+                "$existingSpeciesId with name $name")
+      }
+
+      return existingSpeciesId
+    } catch (e: DataAccessException) {
+      if (e.cause is SpeciesNotFoundException) {
+        throw e.cause!!
+      } else {
+        throw e
+      }
+    }
   }
 
   /**

@@ -160,7 +160,7 @@ tasks {
                         "src/main/resources/db/migration/dev",
                         "src/main/resources/db/migration/postgres",
                         "src/main/resources/db/migration/common")
-                    .joinToString(",") { "filesystem:$it" })
+                    .joinToString(",") { "filesystem:$projectDir/$it" })
   }
 }
 
