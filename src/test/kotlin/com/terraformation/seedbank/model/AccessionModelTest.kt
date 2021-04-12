@@ -10,9 +10,9 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
 
 internal class AccessionModelTest {
   private val clock: Clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
@@ -399,254 +399,62 @@ internal class AccessionModelTest {
     assertEquals(today, accession.calculateProcessingStartDate(clock))
   }
 
-  @Nested
-  inner class StateTransitions {
-    @Nested
-    inner class FromPending {
-      @BeforeEach
-      fun setDefaultState() {
-        defaultState = AccessionState.Pending
-      }
+  @TestFactory
+  fun stateTransitionRules(): List<DynamicTest> {
+    val tests = mutableListOf<DynamicTest>()
 
-      @Test
-      fun `no transition when start dates entered`() {
-        val accession =
-            accession(
-                dryingEndDate = today,
-                dryingStartDate = today,
-                processingStartDate = today,
-                storageStartDate = today)
-        assertNoStateTransition(accession)
-      }
-
-      @Test
-      fun `no transition to Processing when weight-based seed count is incomplete`() {
-        listOf(1, null).forEach { subsetCount ->
-          listOf(BigDecimal.ONE, null).forEach { subsetWeight ->
-            listOf(BigDecimal.TEN, null).forEach { totalWeight ->
-              if (subsetCount == null || subsetWeight == null || totalWeight == null) {
-                assertNoStateTransition(
-                    accession(
-                        subsetCount = subsetCount,
-                        subsetWeightGrams = subsetWeight,
-                        totalWeightGrams = totalWeight))
-              }
+    fun AccessionModel.addStateTest(
+        expectedState: AccessionState,
+        displayName: String
+    ): AccessionModel {
+      tests.add(
+          DynamicTest.dynamicTest("$expectedState: $displayName") {
+            val transition = getStateTransition(this, clock)
+            if (expectedState == state) {
+              assertNull(transition, "Unexpected state transition $transition")
+            } else {
+              assertEquals(
+                  expectedState, transition?.newState, "Unexpected state transition $transition")
             }
-          }
-        }
-      }
+          })
 
-      @Test
-      fun `transitions to Processing when weight-based seed count is entered`() {
-        val accession =
-            accession(
-                subsetCount = 1,
-                subsetWeightGrams = BigDecimal.ONE,
-                totalWeightGrams = BigDecimal.TEN)
-        assertStateTransition(accession, AccessionState.Processing)
-      }
-
-      @Test
-      fun `transitions to Processing when exact seed count is entered`() {
-        val accession = accession(seedsCounted = 10)
-        assertStateTransition(accession, AccessionState.Processing)
-      }
+      return this
     }
 
-    @Nested
-    inner class FromProcessing {
-      @BeforeEach
-      fun setDefaultState() {
-        defaultState = AccessionState.Processing
-      }
+    // Start off with an accession that meets all the conditions, then peel them back in descending
+    // order of precedence to make sure the highest-precedence rule gets applied.
+    accession()
+        .copy(
+            nurseryStartDate = today,
+            withdrawals = listOf(withdrawal(10)),
+            storageLocation = "location",
+            storagePackets = 10,
+            storageStartDate = today,
+            dryingEndDate = today,
+            dryingStartDate = today,
+            processingStartDate = today.minusDays(14),
+            seedsCounted = 10,
+        )
+        .addStateTest(AccessionState.Nursery, "Nursery start date entered")
+        .copy(nurseryStartDate = null)
+        .addStateTest(AccessionState.Withdrawn, "All seeds marked as withdrawn")
+        .copy(withdrawals = null)
+        .addStateTest(AccessionState.InStorage, "Number of packets or location has been entered")
+        .copy(storageLocation = null)
+        .addStateTest(AccessionState.InStorage, "Number of packets or location has been entered")
+        .copy(storagePackets = null)
+        .addStateTest(AccessionState.InStorage, "Storage start date is today or earlier")
+        .copy(storageStartDate = tomorrow)
+        .addStateTest(AccessionState.Dried, "Drying end date is today or earlier")
+        .copy(dryingEndDate = tomorrow)
+        .addStateTest(AccessionState.Drying, "Drying start date is today or earlier")
+        .copy(dryingStartDate = tomorrow)
+        .addStateTest(AccessionState.Processed, "2 weeks have passed since processing start date")
+        .copy(processingStartDate = null)
+        .addStateTest(AccessionState.Processing, "Seed count/weight entered")
+        .copy(seedsCounted = null)
+        .addStateTest(AccessionState.Pending, "No state conditions applied")
 
-      @Test
-      fun `no transition when drying start date is in the future`() {
-        assertNoStateTransition(accession(dryingStartDate = tomorrow))
-      }
-
-      @Test
-      fun `no transition based on drying end date or storage start date`() {
-        assertNoStateTransition(accession(dryingEndDate = today, storageStartDate = today))
-      }
-
-      @Test
-      fun `transitions to Drying when drying start date arrives`() {
-        assertStateTransition(accession(dryingStartDate = today), AccessionState.Drying)
-      }
-
-      @Test
-      fun `transitions to Withdrawn when no seeds remaining`() {
-        assertStateTransition(
-            accession(seedsCounted = 10, withdrawals = listOf(withdrawal(10))),
-            AccessionState.Withdrawn)
-      }
-
-      @Test
-      fun `state remains in Processing until 2 weeks have passed`() {
-        assertNoStateTransition(accession(processingStartDate = today.minusDays(13)))
-      }
-
-      @Test
-      fun `state transitions from Processing to Processed after 2 weeks`() {
-        assertStateTransition(
-            accession(processingStartDate = today.minusDays(14)), AccessionState.Processed)
-      }
-    }
-
-    @Nested
-    inner class FromProcessed {
-      @BeforeEach
-      fun setDefaultState() {
-        defaultState = AccessionState.Processed
-      }
-
-      @Test
-      fun `transitions to Drying when drying start date arrives`() {
-        assertStateTransition(accession(dryingStartDate = today), AccessionState.Drying)
-      }
-
-      @Test
-      fun `transitions to Withdrawn when no seeds remaining`() {
-        assertStateTransition(
-            accession(seedsCounted = 10, withdrawals = listOf(withdrawal(10))),
-            AccessionState.Withdrawn)
-      }
-
-      @Test
-      fun `no transition based on drying end date or storage start date`() {
-        assertNoStateTransition(accession(dryingEndDate = today, storageStartDate = today))
-      }
-    }
-
-    @Nested
-    inner class FromDrying {
-      @BeforeEach
-      fun setDefaultState() {
-        defaultState = AccessionState.Drying
-      }
-
-      @Test
-      fun `transitions to Dried when drying end date arrives`() {
-        assertStateTransition(accession(dryingEndDate = today), AccessionState.Dried)
-      }
-
-      @Test
-      fun `no transition when drying end date is in the future`() {
-        assertNoStateTransition(accession(dryingEndDate = tomorrow))
-      }
-
-      @Test
-      fun `no transition when storage start date arrives but no drying end date entered`() {
-        assertNoStateTransition(accession(storageStartDate = today))
-      }
-
-      @Test
-      fun `no transition when storage and drying start dates are in the future`() {
-        assertNoStateTransition(accession(dryingEndDate = tomorrow, storageStartDate = tomorrow))
-      }
-
-      @Test
-      fun `transitions to InStorage when both drying end date and storage start date have arrived`() {
-        assertStateTransition(
-            accession(dryingEndDate = today, storageStartDate = today), AccessionState.InStorage)
-      }
-
-      @Test
-      fun `no transition when number of packets and storage location entered without drying end date`() {
-        assertNoStateTransition(accession(storageLocation = "location", storagePackets = 1))
-      }
-
-      @Test
-      fun `transitions to InStorage when number of packets is entered`() {
-        assertStateTransition(
-            accession(dryingEndDate = today, storagePackets = 1), AccessionState.InStorage)
-      }
-
-      @Test
-      fun `transitions to InStorage when storage location is entered`() {
-        assertStateTransition(
-            accession(dryingEndDate = today, storageLocation = "location"),
-            AccessionState.InStorage)
-      }
-
-      @Test
-      fun `transitions to Withdrawn when no seeds remaining`() {
-        assertStateTransition(
-            accession(seedsCounted = 10, withdrawals = listOf(withdrawal(10))),
-            AccessionState.Withdrawn)
-      }
-    }
-
-    @Nested
-    inner class FromDried {
-      @BeforeEach
-      fun setDefaultState() {
-        defaultState = AccessionState.Dried
-      }
-
-      @Test
-      fun `transitions to InStorage when storage start date arrives`() {
-        assertStateTransition(accession(storageStartDate = today), AccessionState.InStorage)
-      }
-
-      @Test
-      fun `no transition when storage start date is in the future`() {
-        assertNoStateTransition(accession(storageStartDate = tomorrow))
-      }
-
-      @Test
-      fun `transitions to InStorage when number of packets is entered`() {
-        assertStateTransition(accession(storagePackets = 1), AccessionState.InStorage)
-      }
-
-      @Test
-      fun `transitions to InStorage when storage location is entered`() {
-        assertStateTransition(accession(storageLocation = "location"), AccessionState.InStorage)
-      }
-
-      @Test
-      fun `transitions to Withdrawn when no seeds remaining`() {
-        assertStateTransition(
-            accession(seedsCounted = 10, withdrawals = listOf(withdrawal(10))),
-            AccessionState.Withdrawn)
-      }
-    }
-
-    @Nested
-    inner class FromInStorage {
-      @BeforeEach
-      fun setDefaultState() {
-        defaultState = AccessionState.InStorage
-      }
-
-      @Test
-      fun `transitions to Withdrawn when no seeds remaining`() {
-        assertStateTransition(
-            accession(seedsCounted = 10, withdrawals = listOf(withdrawal(10))),
-            AccessionState.Withdrawn)
-      }
-    }
-
-    @Nested
-    inner class FromWithdrawn {
-      @BeforeEach
-      fun setDefaultState() {
-        defaultState = AccessionState.Withdrawn
-      }
-
-      @Test
-      fun `adjustment to previous withdrawal does not revert state`() {
-        assertNoStateTransition(accession(seedsCounted = 10, withdrawals = listOf(withdrawal(9))))
-      }
-    }
-
-    private fun assertStateTransition(accession: AccessionModel, state: AccessionState) {
-      assertEquals(state, accession.getStateTransition(accession, clock)?.newState)
-    }
-
-    private fun assertNoStateTransition(accession: AccessionModel) {
-      assertNull(accession.getStateTransition(accession, clock))
-    }
+    return tests
   }
 }

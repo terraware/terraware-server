@@ -5,7 +5,6 @@ import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
-import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
@@ -780,44 +779,7 @@ internal class AccessionStoreTest : DatabaseTest() {
                 accessionId = 1,
                 newStateId = AccessionState.Processing,
                 oldStateId = AccessionState.Pending,
-                reason = "Seeds have been counted",
-                updatedTime = clock.instant())),
-        historyRecords)
-  }
-
-  @Test
-  fun `state short-circuits to Withdrawn when seeds withdrawn during processing`() {
-    val initial = store.create(CreateAccessionRequestPayload())
-    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
-    store.update(
-        initial.accessionNumber,
-        AccessionPayload(initial)
-            .copy(
-                seedsCounted = 10,
-                withdrawals =
-                    listOf(
-                        WithdrawalPayload(
-                            date = LocalDate.now(),
-                            purpose = WithdrawalPurpose.Other,
-                            seedsWithdrawn = 10))))
-    val fetched = store.fetchByNumber(initial.accessionNumber)
-
-    assertEquals(AccessionState.Withdrawn, fetched?.state)
-
-    val historyRecords =
-        dslContext
-            .selectFrom(ACCESSION_STATE_HISTORY)
-            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
-            .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.Withdrawn))
-            .fetchInto(AccessionStateHistory::class.java)
-
-    assertEquals(
-        listOf(
-            AccessionStateHistory(
-                accessionId = 1,
-                newStateId = AccessionState.Withdrawn,
-                oldStateId = AccessionState.Processing,
-                reason = "No seeds remaining",
+                reason = "Seed count/weight has been entered",
                 updatedTime = clock.instant())),
         historyRecords)
   }

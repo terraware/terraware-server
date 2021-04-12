@@ -5,7 +5,8 @@ VALUES (10, 'Pending', TRUE),
        (40, 'Drying', TRUE),
        (50, 'Dried', TRUE),
        (60, 'In Storage', TRUE),
-       (70, 'Withdrawn', FALSE)
+       (70, 'Withdrawn', FALSE),
+       (80, 'Nursery', FALSE)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO germination_seed_type (id, name)

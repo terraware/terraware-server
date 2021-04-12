@@ -18,7 +18,7 @@ enum class AccessionActive {
 
 fun AccessionState.toActiveEnum() =
     when (this) {
-      AccessionState.Withdrawn -> AccessionActive.Inactive
+      AccessionState.Withdrawn, AccessionState.Nursery -> AccessionActive.Inactive
 
       // Don't use "else" here -- we want it to be a compile error if we add a state and forget
       // to specify whether it is active or inactive.
@@ -85,6 +85,8 @@ interface AccessionFields {
   val latestViabilityPercent: Int?
     get() = null
   val numberOfTrees: Int?
+    get() = null
+  val nurseryStartDate: LocalDate?
     get() = null
   val photoFilenames: List<String>?
     get() = null
@@ -263,6 +265,7 @@ data class AccessionModel(
     override val latestGerminationTestDate: LocalDate? = null,
     override val latestViabilityPercent: Int? = null,
     override val numberOfTrees: Int? = null,
+    override val nurseryStartDate: LocalDate? = null,
     override val photoFilenames: List<String>? = null,
     override val primaryCollector: String? = null,
     override val processingMethod: ProcessingMethod? = null,
@@ -303,59 +306,32 @@ data class AccessionModel(
     val seedCountPresent = newFields.calculateEffectiveSeedCount() != null
     val processingForTwoWeeks = newFields.processingStartDate.hasArrived(daysAgo = 14)
     val dryingStarted = newFields.dryingStartDate.hasArrived()
-    val noDryingEndDateEntered = newFields.dryingEndDate == null
     val dryingEnded = newFields.dryingEndDate.hasArrived()
     val storageStarted = newFields.storageStartDate.hasArrived()
     val storageDetailsEntered =
         newFields.storagePackets != null || newFields.storageLocation != null
+    val nurseryStarted = newFields.nurseryStartDate.hasArrived()
 
-    // See if the required conditions are met to transition from the current state to one of the
-    // possible next states.
-    val transition: Pair<AccessionState, String>? =
-        when (state) {
-          AccessionState.Pending ->
-              when {
-                seedCountPresent -> AccessionState.Processing to "Seeds have been counted"
-                else -> null
-              }
-          AccessionState.Processing ->
-              when {
-                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
-                dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
-                processingForTwoWeeks -> AccessionState.Processed to "Processing time has elapsed"
-                else -> null
-              }
-          AccessionState.Processed ->
-              when {
-                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
-                dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
-                else -> null
-              }
-          AccessionState.Drying ->
-              when {
-                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
-                noDryingEndDateEntered -> null
-                storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
-                storageDetailsEntered -> AccessionState.InStorage to "Storage information entered"
-                dryingEnded -> AccessionState.Dried to "Drying end date has arrived"
-                else -> null
-              }
-          AccessionState.Dried ->
-              when {
-                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
-                storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
-                storageDetailsEntered -> AccessionState.InStorage to "Storage information entered"
-                else -> null
-              }
-          AccessionState.InStorage ->
-              when {
-                allSeedsWithdrawn -> AccessionState.Withdrawn to "No seeds remaining"
-                else -> null
-              }
-          AccessionState.Withdrawn -> null
+    val desiredState: Pair<AccessionState, String> =
+        when {
+          nurseryStarted -> AccessionState.Nursery to "Nursery start date has arrived"
+          allSeedsWithdrawn -> AccessionState.Withdrawn to "All seeds marked as withdrawn"
+          storageDetailsEntered ->
+              AccessionState.InStorage to "Number of packets or location has been entered"
+          storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
+          dryingEnded -> AccessionState.Dried to "Drying end date has arrived"
+          dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
+          processingForTwoWeeks ->
+              AccessionState.Processed to "2 weeks have passed since processing start date"
+          seedCountPresent -> AccessionState.Processing to "Seed count/weight has been entered"
+          else -> AccessionState.Pending to "No state conditions have been met"
         }
 
-    return transition?.let { AccessionStateTransition(it.first, it.second) }
+    return if (desiredState.first != state) {
+      AccessionStateTransition(desiredState.first, desiredState.second)
+    } else {
+      null
+    }
   }
 }
 

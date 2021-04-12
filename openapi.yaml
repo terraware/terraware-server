@@ -867,6 +867,9 @@ components:
         numberOfTrees:
           type: integer
           format: int32
+        nurseryStartDate:
+          type: string
+          format: date
         photoFilenames:
           type: array
           items:
@@ -940,6 +943,7 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+          - Nursery
         storageCondition:
           type: string
           enum:
@@ -1526,6 +1530,7 @@ components:
           - Dried
           - In Storage
           - Withdrawn
+          - Nursery
     SearchField:
       type: string
       enum:
@@ -1850,6 +1855,10 @@ components:
         numberOfTrees:
           type: integer
           format: int32
+          writeOnly: true
+        nurseryStartDate:
+          type: string
+          format: date
           writeOnly: true
         primaryCollector:
           type: string
