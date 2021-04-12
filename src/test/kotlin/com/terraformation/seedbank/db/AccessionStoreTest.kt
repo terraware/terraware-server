@@ -115,7 +115,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
-            SpeciesFetcher(clock, support),
+            SpeciesStore(clock, support),
             WithdrawalStore(dslContext, clock),
             clock,
             support)

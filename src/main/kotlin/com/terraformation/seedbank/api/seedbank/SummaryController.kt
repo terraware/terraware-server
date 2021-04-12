@@ -4,7 +4,7 @@ import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.AccessionStore
-import com.terraformation.seedbank.db.SpeciesFetcher
+import com.terraformation.seedbank.db.SpeciesStore
 import com.terraformation.seedbank.services.atMostRecent
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -22,7 +22,7 @@ class SummaryController(
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
-    private val speciesFetcher: SpeciesFetcher,
+    private val speciesStore: SpeciesStore,
 ) {
   @GetMapping
   @Operation(summary = "Get summary statistics about the seed bank")
@@ -45,10 +45,10 @@ class SummaryController(
                 accessionStore.countActive(now), accessionStore.countActive(startOfWeek)),
         species =
             SummaryStatistic(
-                speciesFetcher.countSpecies(now), speciesFetcher.countSpecies(startOfWeek)),
+                speciesStore.countSpecies(now), speciesStore.countSpecies(startOfWeek)),
         families =
             SummaryStatistic(
-                speciesFetcher.countFamilies(now), speciesFetcher.countFamilies(startOfWeek)),
+                speciesStore.countFamilies(now), speciesStore.countFamilies(startOfWeek)),
         overduePendingAccessions =
             accessionStore.countInState(AccessionState.Pending, sinceBefore = oneWeekAgo),
         overdueProcessedAccessions =

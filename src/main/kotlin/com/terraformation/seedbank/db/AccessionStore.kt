@@ -41,7 +41,7 @@ class AccessionStore(
     private val bagStore: BagStore,
     private val geolocationStore: GeolocationStore,
     private val germinationStore: GerminationStore,
-    private val speciesFetcher: SpeciesFetcher,
+    private val speciesStore: SpeciesStore,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val support: StoreSupport,
@@ -180,8 +180,8 @@ class AccessionStore(
                     .set(SITE_MODULE_ID, config.siteModuleId)
                     .set(CREATED_TIME, clock.instant())
                     .set(STATE_ID, AccessionState.Pending)
-                    .set(SPECIES_ID, speciesFetcher.getSpeciesId(accession.species))
-                    .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
+                    .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
+                    .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                     .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                     .set(FOUNDER_ID, accession.founderId)
                     .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
@@ -308,8 +308,8 @@ class AccessionStore(
             dslContext
                 .update(ACCESSION)
                 .set(STATE_ID, stateTransition?.newState ?: existing.state)
-                .set(SPECIES_ID, speciesFetcher.getSpeciesId(accession.species))
-                .set(SPECIES_FAMILY_ID, speciesFetcher.getSpeciesFamilyId(accession.family))
+                .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
+                .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .set(FOUNDER_ID, accession.founderId)
                 .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)

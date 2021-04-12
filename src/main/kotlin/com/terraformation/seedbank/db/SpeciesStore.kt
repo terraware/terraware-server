@@ -7,7 +7,7 @@ import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 
 @ManagedBean
-class SpeciesFetcher(private val clock: Clock, private val support: StoreSupport) {
+class SpeciesStore(private val clock: Clock, private val support: StoreSupport) {
 
   fun getSpeciesId(speciesName: String?): Long? {
     return support.getOrInsertId(speciesName, SPECIES.ID, SPECIES.NAME) {
