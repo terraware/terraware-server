@@ -47,7 +47,9 @@ class ValuesController(
       ApiResponse(
           responseCode = "409", description = "A species with the requested name already exists."))
   @PostMapping("/species")
-  fun createSpecies(payload: CreateSpeciesRequestPayload): CreateSpeciesResponsePayload {
+  fun createSpecies(
+      @RequestBody payload: CreateSpeciesRequestPayload
+  ): CreateSpeciesResponsePayload {
     try {
       val species = speciesStore.createSpecies(payload.name)
       return CreateSpeciesResponsePayload(SpeciesDetails(species.id!!, species.name!!))
