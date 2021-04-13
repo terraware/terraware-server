@@ -38,6 +38,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.time.temporal.ChronoField
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -1027,7 +1028,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     val accession1 = store.create(CreateAccessionRequestPayload(species = "species1"))
     val accession2 = store.create(CreateAccessionRequestPayload(species = "species2"))
 
-    val now = Instant.now()
+    val now = Instant.now().with(ChronoField.MILLI_OF_SECOND, 0)
     every { clock.instant() } returns now
 
     val newId = store.updateSpecies(1, "species1a")
