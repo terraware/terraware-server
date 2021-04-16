@@ -16,6 +16,7 @@ import com.terraformation.seedbank.db.GerminationSubstrate
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.GerminationTreatment
 import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.SourcePlantOrigin
 import com.terraformation.seedbank.db.SpeciesEndangeredType
 import com.terraformation.seedbank.db.SpeciesRareType
 import com.terraformation.seedbank.db.StorageCondition
@@ -114,6 +115,7 @@ data class CreateAccessionRequestPayload(
     override val receivedDate: LocalDate? = null,
     override val secondaryCollectors: Set<String>? = null,
     override val siteLocation: String? = null,
+    override val sourcePlantOrigin: SourcePlantOrigin? = null,
     override val species: String? = null,
 ) : AccessionFields
 
@@ -148,6 +150,7 @@ data class UpdateAccessionRequestPayload(
     override val secondaryCollectors: Set<String>? = null,
     override val seedsCounted: Int? = null,
     override val siteLocation: String? = null,
+    override val sourcePlantOrigin: SourcePlantOrigin? = null,
     override val species: String? = null,
     override val storageLocation: String? = null,
     override val storageNotes: String? = null,
@@ -216,6 +219,7 @@ data class AccessionPayload(
             "Which application this accession originally came from. This is currently based on " +
                 "the presence of the deviceInfo field.")
     override val source: AccessionSource,
+    override val sourcePlantOrigin: SourcePlantOrigin? = null,
     override val species: String? = null,
     @Schema(description = "Server-generated unique ID of the species.")
     override val speciesId: Long? = null,
@@ -278,6 +282,7 @@ data class AccessionPayload(
       model.seedsRemaining,
       model.siteLocation,
       model.source,
+      model.sourcePlantOrigin,
       model.species,
       model.speciesId,
       model.state,

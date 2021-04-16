@@ -55,6 +55,11 @@ VALUES (1, 'Seed Bank'),
        (3, 'Reverse Osmosis')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO source_plant_origin (id, name)
+VALUES (1, 'Wild'),
+       (2, 'Outplant')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO storage_condition (id, name)
 VALUES (1, 'Refrigerator'),
        (2, 'Freezer')

@@ -917,6 +917,11 @@ components:
           enum:
           - Web
           - SeedCollectorApp
+        sourcePlantOrigin:
+          type: string
+          enum:
+          - Wild
+          - Outplant
         species:
           type: string
         speciesId:
@@ -1276,6 +1281,12 @@ components:
         siteLocation:
           type: string
           writeOnly: true
+        sourcePlantOrigin:
+          type: string
+          writeOnly: true
+          enum:
+          - Wild
+          - Outplant
         species:
           type: string
           writeOnly: true
@@ -1850,6 +1861,7 @@ components:
       - seedsCounted
       - seedsRemaining
       - siteLocation
+      - sourcePlantOrigin
       - species
       - state
       - storageCondition
@@ -2174,6 +2186,12 @@ components:
         siteLocation:
           type: string
           writeOnly: true
+        sourcePlantOrigin:
+          type: string
+          writeOnly: true
+          enum:
+          - Wild
+          - Outplant
         species:
           type: string
           writeOnly: true

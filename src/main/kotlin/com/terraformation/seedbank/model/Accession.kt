@@ -3,6 +3,7 @@ package com.terraformation.seedbank.model
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.SourcePlantOrigin
 import com.terraformation.seedbank.db.SpeciesEndangeredType
 import com.terraformation.seedbank.db.SpeciesRareType
 import com.terraformation.seedbank.db.StorageCondition
@@ -110,6 +111,8 @@ interface AccessionFields {
   val siteLocation: String?
     get() = null
   val source: AccessionSource?
+    get() = null
+  val sourcePlantOrigin: SourcePlantOrigin?
     get() = null
   val species: String?
     get() = null
@@ -273,6 +276,7 @@ data class AccessionModel(
     override val seedsRemaining: Int? = null,
     override val siteLocation: String? = null,
     override val source: AccessionSource,
+    override val sourcePlantOrigin: SourcePlantOrigin? = null,
     override val species: String? = null,
     override val speciesId: Long? = null,
     override val state: AccessionState,

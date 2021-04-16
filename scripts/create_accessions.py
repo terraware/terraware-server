@@ -37,6 +37,14 @@ def generate_device_info() -> Optional[Dict]:
     }
 
 
+def generate_endangered() -> Optional[str]:
+    return random.choice([None, "Yes", "No", "Unsure"])
+
+
+def generate_rare() -> Optional[str]:
+    return random.choice([None, "Yes", "No", "Unsure"])
+
+
 def generate_species() -> Optional[str]:
     return random.choice(TREE_SPECIES + [None])
 
@@ -142,6 +150,10 @@ def generate_site_location() -> Optional[str]:
     )
 
 
+def generate_source_plant_origin() -> Optional[str]:
+    return random.choice([None, "Wild", "Outplant"])
+
+
 def generate_founder_id() -> Optional[str]:
     # No clue what this will actually look like, so just generate a number
     return str(randint(100000, 999999)) if randint(0, 4) > 0 else None
@@ -176,7 +188,7 @@ def generate_accession() -> Dict:
         "bagNumbers": bag_numbers,
         "collectedDate": str(collected_date) if collected_date else None,
         "deviceInfo": generate_device_info(),
-        "endangered": randint(0, 1) == 1,
+        "endangered": generate_endangered(),
         "environmentalNotes": generate_notes(),
         "family": family,
         "fieldNotes": generate_notes(),
@@ -187,10 +199,11 @@ def generate_accession() -> Dict:
         "landowner": generate_staff_responsible(),
         "numberOfTrees": randint(1, 10),
         "primaryCollector": primary_collector,
-        "rare": randint(0, 1) == 1,
+        "rare": generate_rare(),
         "receivedDate": str(received_date) if received_date else None,
         "secondaryCollectors": secondary_collectors,
         "siteLocation": generate_site_location(),
+        "sourcePlantOrigin": generate_source_plant_origin(),
         "species": species,
     }
 
@@ -198,7 +211,7 @@ def generate_accession() -> Dict:
 def create_accession(server: str) -> Dict:
     payload = generate_accession()
 
-    return requests.post(f"{server}/api/v1/seedbank/accession", json=payload).json()[
+    return requests.post(f"{server}/api/v2/seedbank/accession", json=payload).json()[
         "accession"
     ]
 

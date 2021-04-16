@@ -226,6 +226,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         IntegerField("seedsCounted", "Number of seeds counted", ACCESSION.SEEDS_COUNTED),
         IntegerField("seedsRemaining", "Number of seeds remaining", ACCESSION.SEEDS_REMAINING),
         TextField("siteLocation", "Site location", ACCESSION.COLLECTION_SITE_NAME),
+        EnumField.create("sourcePlantOrigin", "Wild/Outplant", ACCESSION.SOURCE_PLANT_ORIGIN_ID),
         TextField("species", "Species", SPECIES.NAME, SearchTables.Species),
         EnumField.create("state", "State", ACCESSION.STATE_ID, nullable = false),
         EnumField.create(

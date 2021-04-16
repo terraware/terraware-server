@@ -143,6 +143,7 @@ class AccessionStore(
           seedsRemaining = parentRow[SEEDS_REMAINING],
           siteLocation = parentRow[COLLECTION_SITE_NAME],
           source = source,
+          sourcePlantOrigin = parentRow[SOURCE_PLANT_ORIGIN_ID],
           species = parentRow[species().NAME],
           speciesId = parentRow[SPECIES_ID],
           state = parentRow[STATE_ID]!!,
@@ -196,6 +197,7 @@ class AccessionStore(
                     .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
                     .set(RECEIVED_DATE, accession.receivedDate)
                     .set(SITE_MODULE_ID, config.siteModuleId)
+                    .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                     .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                     .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                     .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
@@ -334,6 +336,7 @@ class AccessionStore(
                 .set(RECEIVED_DATE, receivedDate)
                 .set(SEEDS_COUNTED, accession.seedsCounted)
                 .set(SEEDS_REMAINING, accession.calculateSeedsRemaining())
+                .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                 .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                 .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                 .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))

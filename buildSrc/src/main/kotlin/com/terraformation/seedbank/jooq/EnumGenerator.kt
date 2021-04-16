@@ -44,6 +44,7 @@ class EnumGenerator : KotlinGenerator() {
           "germination_treatment" to listOf("germination_test\\.treatment_id"),
           "notification_type" to listOf("notification\\.type_id"),
           "processing_method" to listOf("accession\\.processing_method_id"),
+          "source_plant_origin" to listOf(".*\\.source_plant_origin_id"),
           "species_endangered_type" to listOf(".*\\.species_endangered_type_id"),
           "species_rare_type" to listOf(".*\\.species_rare_type_id"),
           "storage_condition" to

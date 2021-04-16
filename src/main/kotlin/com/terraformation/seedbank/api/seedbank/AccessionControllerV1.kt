@@ -154,6 +154,7 @@ data class CreateAccessionRequestPayloadV1(
         receivedDate,
         secondaryCollectors,
         siteLocation,
+        null,
         species,
     )
   }
@@ -232,6 +233,7 @@ data class UpdateAccessionRequestPayloadV1(
         secondaryCollectors,
         seedsCounted,
         siteLocation,
+        null,
         species,
         storageLocation,
         storageNotes,
