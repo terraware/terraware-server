@@ -37,83 +37,39 @@ enum class AccessionSource {
 interface AccessionFields {
   val accessionNumber: String?
     get() = null
-  val state: AccessionState?
-    get() = null
   val active: AccessionActive?
     get() = state?.toActiveEnum()
-  val species: String?
-    get() = null
-  val speciesId: Long?
-    get() = null
-  val family: String?
-    get() = null
-  val numberOfTrees: Int?
-    get() = null
-  val founderId: String?
-    get() = null
-  val endangered: SpeciesEndangeredType?
-    get() = null
-  val rare: SpeciesRareType?
-    get() = null
-  val fieldNotes: String?
+  val bagNumbers: Set<String>?
     get() = null
   val collectedDate: LocalDate?
     get() = null
-  val receivedDate: LocalDate?
+  val cutTestSeedsCompromised: Int?
     get() = null
-  val primaryCollector: String?
+  val cutTestSeedsEmpty: Int?
     get() = null
-  val secondaryCollectors: Set<String>?
+  val cutTestSeedsFilled: Int?
     get() = null
-  val siteLocation: String?
-    get() = null
-  val landowner: String?
-    get() = null
-  val environmentalNotes: String?
-    get() = null
-  val processingStartDate: LocalDate?
-    get() = null
-  val processingMethod: ProcessingMethod?
-    get() = null
-  val seedsCounted: Int?
-    get() = null
-  val subsetWeightGrams: BigDecimal?
-    get() = null
-  val totalWeightGrams: BigDecimal?
-    get() = null
-  val subsetCount: Int?
-    get() = null
-  val estimatedSeedCount: Int?
-    get() = null
-  val effectiveSeedCount: Int?
-    get() = null
-  val targetStorageCondition: StorageCondition?
-    get() = null
-  val dryingStartDate: LocalDate?
+  val deviceInfo: AppDeviceFields?
     get() = null
   val dryingEndDate: LocalDate?
     get() = null
   val dryingMoveDate: LocalDate?
     get() = null
-  val processingNotes: String?
+  val dryingStartDate: LocalDate?
     get() = null
-  val processingStaffResponsible: String?
+  val effectiveSeedCount: Int?
     get() = null
-  val bagNumbers: Set<String>?
+  val endangered: SpeciesEndangeredType?
     get() = null
-  val storageStartDate: LocalDate?
+  val environmentalNotes: String?
     get() = null
-  val storagePackets: Int?
+  val estimatedSeedCount: Int?
     get() = null
-  val storageLocation: String?
+  val family: String?
     get() = null
-  val storageCondition: StorageCondition?
+  val fieldNotes: String?
     get() = null
-  val storageNotes: String?
-    get() = null
-  val storageStaffResponsible: String?
-    get() = null
-  val photoFilenames: List<String>?
+  val founderId: String?
     get() = null
   val geolocations: Set<Geolocation>?
     get() = null
@@ -121,25 +77,69 @@ interface AccessionFields {
     get() = null
   val germinationTests: List<GerminationTestFields>?
     get() = null
-  val withdrawals: List<WithdrawalFields>?
+  val landowner: String?
     get() = null
   val latestGerminationTestDate: LocalDate?
     get() = null
   val latestViabilityPercent: Int?
     get() = null
-  val totalViabilityPercent: Int?
+  val numberOfTrees: Int?
     get() = null
-  val cutTestSeedsFilled: Int?
+  val photoFilenames: List<String>?
     get() = null
-  val cutTestSeedsEmpty: Int?
+  val primaryCollector: String?
     get() = null
-  val cutTestSeedsCompromised: Int?
+  val processingMethod: ProcessingMethod?
     get() = null
-  val deviceInfo: AppDeviceFields?
+  val processingNotes: String?
+    get() = null
+  val processingStaffResponsible: String?
+    get() = null
+  val processingStartDate: LocalDate?
+    get() = null
+  val rare: SpeciesRareType?
+    get() = null
+  val receivedDate: LocalDate?
+    get() = null
+  val secondaryCollectors: Set<String>?
+    get() = null
+  val seedsCounted: Int?
     get() = null
   val seedsRemaining: Int?
     get() = null
+  val siteLocation: String?
+    get() = null
   val source: AccessionSource?
+    get() = null
+  val species: String?
+    get() = null
+  val speciesId: Long?
+    get() = null
+  val state: AccessionState?
+    get() = null
+  val storageCondition: StorageCondition?
+    get() = null
+  val storageLocation: String?
+    get() = null
+  val storageNotes: String?
+    get() = null
+  val storagePackets: Int?
+    get() = null
+  val storageStaffResponsible: String?
+    get() = null
+  val storageStartDate: LocalDate?
+    get() = null
+  val subsetCount: Int?
+    get() = null
+  val subsetWeightGrams: BigDecimal?
+    get() = null
+  val targetStorageCondition: StorageCondition?
+    get() = null
+  val totalViabilityPercent: Int?
+    get() = null
+  val totalWeightGrams: BigDecimal?
+    get() = null
+  val withdrawals: List<WithdrawalFields>?
     get() = null
 
   private fun getLatestGerminationTestWithResults(): GerminationTestFields? {
@@ -237,57 +237,57 @@ interface ConcreteAccession : AccessionFields {
 data class AccessionModel(
     val id: Long,
     override val accessionNumber: String,
-    override val state: AccessionState,
-    override val source: AccessionSource,
-    override val species: String? = null,
-    override val speciesId: Long? = null,
-    override val family: String? = null,
-    override val numberOfTrees: Int? = null,
-    override val founderId: String? = null,
-    override val endangered: SpeciesEndangeredType? = null,
-    override val rare: SpeciesRareType? = null,
-    override val fieldNotes: String? = null,
+    override val bagNumbers: Set<String>? = null,
     override val collectedDate: LocalDate? = null,
-    override val receivedDate: LocalDate? = null,
-    override val primaryCollector: String? = null,
-    override val secondaryCollectors: Set<String>? = null,
-    override val siteLocation: String? = null,
-    override val landowner: String? = null,
-    override val environmentalNotes: String? = null,
-    override val processingStartDate: LocalDate? = null,
-    override val processingMethod: ProcessingMethod? = null,
-    override val seedsCounted: Int? = null,
-    override val subsetWeightGrams: BigDecimal? = null,
-    override val totalWeightGrams: BigDecimal? = null,
-    override val subsetCount: Int? = null,
-    override val estimatedSeedCount: Int? = null,
-    override val effectiveSeedCount: Int? = null,
-    override val targetStorageCondition: StorageCondition? = null,
-    override val dryingStartDate: LocalDate? = null,
+    override val cutTestSeedsCompromised: Int? = null,
+    override val cutTestSeedsEmpty: Int? = null,
+    override val cutTestSeedsFilled: Int? = null,
+    override val deviceInfo: AppDeviceModel? = null,
     override val dryingEndDate: LocalDate? = null,
     override val dryingMoveDate: LocalDate? = null,
-    override val processingNotes: String? = null,
-    override val processingStaffResponsible: String? = null,
-    override val bagNumbers: Set<String>? = null,
-    override val storageStartDate: LocalDate? = null,
-    override val storagePackets: Int? = null,
-    override val storageLocation: String? = null,
-    override val storageCondition: StorageCondition? = null,
-    override val storageNotes: String? = null,
-    override val storageStaffResponsible: String? = null,
-    override val photoFilenames: List<String>? = null,
+    override val dryingStartDate: LocalDate? = null,
+    override val effectiveSeedCount: Int? = null,
+    override val endangered: SpeciesEndangeredType? = null,
+    override val environmentalNotes: String? = null,
+    override val estimatedSeedCount: Int? = null,
+    override val family: String? = null,
+    override val fieldNotes: String? = null,
+    override val founderId: String? = null,
     override val geolocations: Set<Geolocation>? = null,
     override val germinationTestTypes: Set<GerminationTestType>? = null,
     override val germinationTests: List<GerminationTestModel>? = null,
-    override val withdrawals: List<WithdrawalModel>? = null,
+    override val landowner: String? = null,
     override val latestGerminationTestDate: LocalDate? = null,
     override val latestViabilityPercent: Int? = null,
-    override val totalViabilityPercent: Int? = null,
-    override val cutTestSeedsFilled: Int? = null,
-    override val cutTestSeedsEmpty: Int? = null,
-    override val cutTestSeedsCompromised: Int? = null,
-    override val deviceInfo: AppDeviceModel? = null,
+    override val numberOfTrees: Int? = null,
+    override val photoFilenames: List<String>? = null,
+    override val primaryCollector: String? = null,
+    override val processingMethod: ProcessingMethod? = null,
+    override val processingNotes: String? = null,
+    override val processingStaffResponsible: String? = null,
+    override val processingStartDate: LocalDate? = null,
+    override val rare: SpeciesRareType? = null,
+    override val receivedDate: LocalDate? = null,
+    override val secondaryCollectors: Set<String>? = null,
+    override val seedsCounted: Int? = null,
     override val seedsRemaining: Int? = null,
+    override val siteLocation: String? = null,
+    override val source: AccessionSource,
+    override val species: String? = null,
+    override val speciesId: Long? = null,
+    override val state: AccessionState,
+    override val storageCondition: StorageCondition? = null,
+    override val storageLocation: String? = null,
+    override val storageNotes: String? = null,
+    override val storagePackets: Int? = null,
+    override val storageStaffResponsible: String? = null,
+    override val storageStartDate: LocalDate? = null,
+    override val subsetCount: Int? = null,
+    override val subsetWeightGrams: BigDecimal? = null,
+    override val targetStorageCondition: StorageCondition? = null,
+    override val totalViabilityPercent: Int? = null,
+    override val totalWeightGrams: BigDecimal? = null,
+    override val withdrawals: List<WithdrawalModel>? = null,
 ) : ConcreteAccession {
   fun getStateTransition(newFields: AccessionFields, clock: Clock): AccessionStateTransition? {
     val seedsRemaining = newFields.calculateSeedsRemaining()

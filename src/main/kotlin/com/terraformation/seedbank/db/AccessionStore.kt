@@ -105,59 +105,59 @@ class AccessionStore(
 
     return with(ACCESSION) {
       AccessionModel(
-          id = accessionId,
           accessionNumber = accessionNumber,
-          state = parentRow[STATE_ID]!!,
-          source = source,
-          species = parentRow[species().NAME],
-          speciesId = parentRow[SPECIES_ID],
-          family = parentRow[speciesFamily().NAME],
-          numberOfTrees = parentRow[TREES_COLLECTED_FROM],
-          founderId = parentRow[FOUNDER_ID],
-          endangered = parentRow[SPECIES_ENDANGERED_TYPE_ID],
-          rare = parentRow[SPECIES_RARE_TYPE_ID],
-          fieldNotes = parentRow[FIELD_NOTES],
+          bagNumbers = bagNumbers,
           collectedDate = parentRow[COLLECTED_DATE],
-          receivedDate = parentRow[RECEIVED_DATE],
-          primaryCollector = parentRow[collector().NAME],
-          secondaryCollectors = secondaryCollectorNames,
-          siteLocation = parentRow[COLLECTION_SITE_NAME],
-          landowner = parentRow[COLLECTION_SITE_LANDOWNER],
-          environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
-          processingStartDate = parentRow[PROCESSING_START_DATE],
-          processingMethod = parentRow[PROCESSING_METHOD_ID],
-          seedsCounted = parentRow[SEEDS_COUNTED],
-          subsetWeightGrams = parentRow[SUBSET_WEIGHT],
-          totalWeightGrams = parentRow[TOTAL_WEIGHT],
-          subsetCount = parentRow[SUBSET_COUNT],
-          estimatedSeedCount = parentRow[EST_SEED_COUNT],
-          effectiveSeedCount = parentRow[EFFECTIVE_SEED_COUNT],
-          targetStorageCondition = parentRow[TARGET_STORAGE_CONDITION],
-          dryingStartDate = parentRow[DRYING_START_DATE],
+          cutTestSeedsCompromised = parentRow[CUT_TEST_SEEDS_COMPROMISED],
+          cutTestSeedsEmpty = parentRow[CUT_TEST_SEEDS_EMPTY],
+          cutTestSeedsFilled = parentRow[CUT_TEST_SEEDS_FILLED],
+          deviceInfo = deviceInfo,
           dryingEndDate = parentRow[DRYING_END_DATE],
           dryingMoveDate = parentRow[DRYING_MOVE_DATE],
-          processingNotes = parentRow[PROCESSING_NOTES],
-          processingStaffResponsible = parentRow[PROCESSING_STAFF_RESPONSIBLE],
-          bagNumbers = bagNumbers,
-          storageStartDate = parentRow[STORAGE_START_DATE],
-          storagePackets = parentRow[STORAGE_PACKETS],
-          storageLocation = parentRow[storageLocation().NAME],
-          storageCondition = parentRow[storageLocation().CONDITION_ID],
-          storageNotes = parentRow[STORAGE_NOTES],
-          storageStaffResponsible = parentRow[STORAGE_STAFF_RESPONSIBLE],
-          photoFilenames = photoFilenames,
+          dryingStartDate = parentRow[DRYING_START_DATE],
+          effectiveSeedCount = parentRow[EFFECTIVE_SEED_COUNT],
+          endangered = parentRow[SPECIES_ENDANGERED_TYPE_ID],
+          environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
+          estimatedSeedCount = parentRow[EST_SEED_COUNT],
+          family = parentRow[speciesFamily().NAME],
+          fieldNotes = parentRow[FIELD_NOTES],
+          founderId = parentRow[FOUNDER_ID],
           geolocations = geolocations,
           germinationTestTypes = germinationTestTypes,
           germinationTests = germinationTests,
-          withdrawals = withdrawals,
-          cutTestSeedsFilled = parentRow[CUT_TEST_SEEDS_FILLED],
-          cutTestSeedsEmpty = parentRow[CUT_TEST_SEEDS_EMPTY],
-          cutTestSeedsCompromised = parentRow[CUT_TEST_SEEDS_COMPROMISED],
+          id = accessionId,
+          landowner = parentRow[COLLECTION_SITE_LANDOWNER],
           latestGerminationTestDate = parentRow[LATEST_GERMINATION_RECORDING_DATE],
           latestViabilityPercent = parentRow[LATEST_VIABILITY_PERCENT],
-          totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
-          deviceInfo = deviceInfo,
+          numberOfTrees = parentRow[TREES_COLLECTED_FROM],
+          photoFilenames = photoFilenames,
+          primaryCollector = parentRow[collector().NAME],
+          processingMethod = parentRow[PROCESSING_METHOD_ID],
+          processingNotes = parentRow[PROCESSING_NOTES],
+          processingStaffResponsible = parentRow[PROCESSING_STAFF_RESPONSIBLE],
+          processingStartDate = parentRow[PROCESSING_START_DATE],
+          rare = parentRow[SPECIES_RARE_TYPE_ID],
+          receivedDate = parentRow[RECEIVED_DATE],
+          secondaryCollectors = secondaryCollectorNames,
+          seedsCounted = parentRow[SEEDS_COUNTED],
           seedsRemaining = parentRow[SEEDS_REMAINING],
+          siteLocation = parentRow[COLLECTION_SITE_NAME],
+          source = source,
+          species = parentRow[species().NAME],
+          speciesId = parentRow[SPECIES_ID],
+          state = parentRow[STATE_ID]!!,
+          storageCondition = parentRow[storageLocation().CONDITION_ID],
+          storageLocation = parentRow[storageLocation().NAME],
+          storageNotes = parentRow[STORAGE_NOTES],
+          storagePackets = parentRow[STORAGE_PACKETS],
+          storageStaffResponsible = parentRow[STORAGE_STAFF_RESPONSIBLE],
+          storageStartDate = parentRow[STORAGE_START_DATE],
+          subsetCount = parentRow[SUBSET_COUNT],
+          subsetWeightGrams = parentRow[SUBSET_WEIGHT],
+          targetStorageCondition = parentRow[TARGET_STORAGE_CONDITION],
+          totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
+          totalWeightGrams = parentRow[TOTAL_WEIGHT],
+          withdrawals = withdrawals,
       )
     }
   }
@@ -177,37 +177,37 @@ class AccessionStore(
               with(ACCESSION) {
                 dslContext
                     .insertInto(ACCESSION)
-                    .set(NUMBER, accessionNumber)
-                    .set(SITE_MODULE_ID, config.siteModuleId)
-                    .set(CREATED_TIME, clock.instant())
-                    .set(STATE_ID, AccessionState.Pending)
-                    .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
-                    .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
-                    .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
-                    .set(FOUNDER_ID, accession.founderId)
-                    .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
-                    .set(SPECIES_RARE_TYPE_ID, accession.rare)
-                    .set(FIELD_NOTES, accession.fieldNotes)
+                    .set(APP_DEVICE_ID, appDeviceId)
                     .set(COLLECTED_DATE, accession.collectedDate)
-                    .set(RECEIVED_DATE, accession.receivedDate)
-                    .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
-                    .set(COLLECTION_SITE_NAME, accession.siteLocation)
                     .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
-                    .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
-                    .set(STORAGE_START_DATE, accession.storageStartDate)
-                    .set(STORAGE_PACKETS, accession.storagePackets)
-                    .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
-                    .set(STORAGE_NOTES, accession.storageNotes)
-                    .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
+                    .set(COLLECTION_SITE_NAME, accession.siteLocation)
+                    .set(CREATED_TIME, clock.instant())
                     .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                     .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                     .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
-                    .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
-                    .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                    .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
+                    .set(FIELD_NOTES, accession.fieldNotes)
+                    .set(FOUNDER_ID, accession.founderId)
                     .set(
                         LATEST_GERMINATION_RECORDING_DATE,
                         accession.calculateLatestGerminationRecordingDate())
-                    .set(APP_DEVICE_ID, appDeviceId)
+                    .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                    .set(NUMBER, accessionNumber)
+                    .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
+                    .set(RECEIVED_DATE, accession.receivedDate)
+                    .set(SITE_MODULE_ID, config.siteModuleId)
+                    .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
+                    .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
+                    .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
+                    .set(SPECIES_RARE_TYPE_ID, accession.rare)
+                    .set(STATE_ID, AccessionState.Pending)
+                    .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
+                    .set(STORAGE_NOTES, accession.storageNotes)
+                    .set(STORAGE_PACKETS, accession.storagePackets)
+                    .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
+                    .set(STORAGE_START_DATE, accession.storageStartDate)
+                    .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                    .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                     .returning(ID)
                     .fetchOne()
                     ?.get(ID)!!
@@ -308,48 +308,48 @@ class AccessionStore(
           with(ACCESSION) {
             dslContext
                 .update(ACCESSION)
-                .set(STATE_ID, stateTransition?.newState ?: existing.state)
-                .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
-                .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
-                .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
-                .set(FOUNDER_ID, accession.founderId)
-                .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
-                .set(SPECIES_RARE_TYPE_ID, accession.rare)
-                .set(FIELD_NOTES, accession.fieldNotes)
                 .set(COLLECTED_DATE, collectedDate)
-                .set(RECEIVED_DATE, receivedDate)
-                .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
-                .set(PROCESSING_START_DATE, processingStartDate)
-                .set(PROCESSING_METHOD_ID, accession.processingMethod)
-                .set(SEEDS_COUNTED, accession.seedsCounted)
-                .set(SUBSET_WEIGHT, accession.subsetWeightGrams)
-                .set(TOTAL_WEIGHT, accession.totalWeightGrams)
-                .set(SUBSET_COUNT, accession.subsetCount)
-                .set(EST_SEED_COUNT, accession.calculateEstimatedSeedCount())
-                .set(EFFECTIVE_SEED_COUNT, accession.calculateEffectiveSeedCount())
-                .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
-                .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
-                .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
+                .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
+                .set(COLLECTION_SITE_NAME, accession.siteLocation)
                 .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
-                .set(DRYING_START_DATE, accession.dryingStartDate)
+                .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
+                .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                 .set(DRYING_END_DATE, accession.dryingEndDate)
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
-                .set(PROCESSING_NOTES, accession.processingNotes)
-                .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
-                .set(COLLECTION_SITE_NAME, accession.siteLocation)
-                .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
+                .set(DRYING_START_DATE, accession.dryingStartDate)
+                .set(EFFECTIVE_SEED_COUNT, accession.calculateEffectiveSeedCount())
                 .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
-                .set(STORAGE_START_DATE, accession.storageStartDate)
-                .set(STORAGE_PACKETS, accession.storagePackets)
-                .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
-                .set(STORAGE_NOTES, accession.storageNotes)
-                .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
+                .set(EST_SEED_COUNT, accession.calculateEstimatedSeedCount())
+                .set(FIELD_NOTES, accession.fieldNotes)
+                .set(FOUNDER_ID, accession.founderId)
                 .set(
                     LATEST_GERMINATION_RECORDING_DATE,
                     accession.calculateLatestGerminationRecordingDate())
                 .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
-                .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
+                .set(PROCESSING_METHOD_ID, accession.processingMethod)
+                .set(PROCESSING_NOTES, accession.processingNotes)
+                .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
+                .set(PROCESSING_START_DATE, processingStartDate)
+                .set(RECEIVED_DATE, receivedDate)
+                .set(SEEDS_COUNTED, accession.seedsCounted)
                 .set(SEEDS_REMAINING, accession.calculateSeedsRemaining())
+                .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
+                .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
+                .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
+                .set(SPECIES_RARE_TYPE_ID, accession.rare)
+                .set(STATE_ID, stateTransition?.newState ?: existing.state)
+                .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
+                .set(STORAGE_NOTES, accession.storageNotes)
+                .set(STORAGE_PACKETS, accession.storagePackets)
+                .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
+                .set(STORAGE_START_DATE, accession.storageStartDate)
+                .set(SUBSET_COUNT, accession.subsetCount)
+                .set(SUBSET_WEIGHT, accession.subsetWeightGrams)
+                .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
+                .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                .set(TOTAL_WEIGHT, accession.totalWeightGrams)
+                .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(NUMBER.eq(accessionNumber))
                 .and(SITE_MODULE_ID.eq(config.siteModuleId))
                 .execute()
