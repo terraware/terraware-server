@@ -150,7 +150,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             SearchTables.GerminationTest),
         IntegerField(
             "germinationPercentGerminated",
-            "Total % of seeds germinated",
+            "% Viability",
             GERMINATION_TEST.TOTAL_PERCENT_GERMINATED,
             SearchTables.GerminationTest),
         EnumField.create(
