@@ -7,6 +7,7 @@ import com.terraformation.seedbank.db.SourcePlantOrigin
 import com.terraformation.seedbank.db.SpeciesEndangeredType
 import com.terraformation.seedbank.db.SpeciesRareType
 import com.terraformation.seedbank.db.StorageCondition
+import com.terraformation.seedbank.db.WithdrawalPurpose
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
@@ -206,7 +207,13 @@ interface AccessionFields {
     val initialCount = calculateEffectiveSeedCount() ?: return null
     val cutTested = getCutTestTotal() ?: 0
     val sown = germinationTests?.mapNotNull { it.seedsSown }?.sum() ?: 0
-    val withdrawn = withdrawals?.sumOf { it.computeSeedsWithdrawn(this, true) } ?: 0
+
+    // Don't count germination testing withdrawals because they are already accounted for by
+    // examining the tests, and more importantly because at the time this method is called, the
+    // list of germination-testing withdrawals might be stale if the tests have changed.
+    val manualWithdrawals =
+        withdrawals?.filter { it.purpose != WithdrawalPurpose.GerminationTesting } ?: emptyList()
+    val withdrawn = manualWithdrawals.sumOf { it.computeSeedsWithdrawn(this, true) }
 
     return initialCount - sown - cutTested - withdrawn
   }

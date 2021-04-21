@@ -15,6 +15,7 @@ import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionSource
+import com.terraformation.seedbank.model.GerminationTestWithdrawal
 import com.terraformation.seedbank.model.toActiveEnum
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
@@ -277,8 +278,13 @@ class AccessionStore(
           accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
       germinationStore.updateGerminationTests(
           accessionId, existing.germinationTests, accession.germinationTests)
+
+      val manualWithdrawals =
+          accession.withdrawals?.filter { it.purpose != WithdrawalPurpose.GerminationTesting }
+              ?: emptyList()
+      val desiredWithdrawals = manualWithdrawals + generateGerminationTestWithdrawals(accessionId)
       withdrawalStore.updateWithdrawals(
-          accessionId, accession, existing.withdrawals, accession.withdrawals)
+          accessionId, accession, existing.withdrawals, desiredWithdrawals)
 
       val stateTransition = existing.getStateTransition(accession, clock)
       if (stateTransition != null) {
@@ -368,6 +374,26 @@ class AccessionStore(
     }
 
     return true
+  }
+
+  /**
+   * Updates an accession and returns the modified accession data including any computed field
+   * values.
+   *
+   * @return null if the accession didn't exist.
+   */
+  fun updateAndFetch(
+      accession: AccessionFields,
+      accessionNumber: String = accession.accessionNumber!!
+  ): AccessionModel {
+    val updated =
+        if (update(accessionNumber, accession)) {
+          fetchByNumber(accessionNumber)
+        } else {
+          null
+        }
+
+    return updated ?: throw AccessionNotFoundException(accessionNumber)
   }
 
   /**
@@ -651,5 +677,22 @@ class AccessionStore(
         }
 
     return "%08d%03d".format(todayAsLong, suffix)
+  }
+
+  private fun generateGerminationTestWithdrawals(
+      accessionId: Long
+  ): List<GerminationTestWithdrawal> {
+    val tests = germinationStore.fetchGerminationTests(accessionId) ?: return emptyList()
+    val withdrawalsByTestId =
+        withdrawalStore
+            .fetchWithdrawals(accessionId)
+            ?.filter { it.germinationTestId != null }
+            ?.associateBy { it.germinationTestId }
+            ?: emptyMap()
+
+    return tests.mapNotNull { test ->
+      val existingWithdrawalId = withdrawalsByTestId[test.id]?.id
+      test.toWithdrawal(existingWithdrawalId, clock)
+    }
   }
 }

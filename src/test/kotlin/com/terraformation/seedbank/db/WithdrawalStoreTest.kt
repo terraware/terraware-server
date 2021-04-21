@@ -4,7 +4,9 @@ import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.UpdateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
+import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
 import com.terraformation.seedbank.db.tables.daos.WithdrawalDao
+import com.terraformation.seedbank.db.tables.pojos.GerminationTest
 import com.terraformation.seedbank.db.tables.pojos.Withdrawal
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.model.WithdrawalModel
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 internal class WithdrawalStoreTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
+  private lateinit var germinationTestDao: GerminationTestDao
   private lateinit var store: WithdrawalStore
   private lateinit var withdrawalDao: WithdrawalDao
 
@@ -29,12 +32,14 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
   private val accessionId = 9999L
   private val emptyAccessionFields = CreateAccessionRequestPayload()
+  private val germinationTestId = 9998L
 
   override val sequencesToReset: List<String>
     get() = listOf("withdrawal_id_seq")
 
   @BeforeEach
   fun setup() {
+    germinationTestDao = GerminationTestDao(dslContext.configuration())
     store = WithdrawalStore(dslContext, clock)
     withdrawalDao = WithdrawalDao(dslContext.configuration())
 
@@ -42,7 +47,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     insertSiteData()
 
-    // Insert a minimal accession so we can use its ID. The actual contents are irrelevant.
+    // Insert a minimal accession and germination test so we can use their IDs.
     dslContext
         .insertInto(ACCESSION)
         .set(ACCESSION.ID, accessionId)
@@ -50,6 +55,10 @@ internal class WithdrawalStoreTest : DatabaseTest() {
         .set(ACCESSION.SITE_MODULE_ID, config.siteModuleId)
         .set(ACCESSION.STATE_ID, AccessionState.InStorage)
         .execute()
+
+    germinationTestDao.insert(
+        GerminationTest(
+            id = germinationTestId, accessionId = accessionId, testType = GerminationTestType.Lab))
   }
 
   @Test
@@ -149,6 +158,84 @@ internal class WithdrawalStoreTest : DatabaseTest() {
   }
 
   @Test
+  fun `rejects new germination testing withdrawals without test IDs`() {
+    val desired =
+        WithdrawalPayload(
+            date = LocalDate.now(),
+            purpose = WithdrawalPurpose.GerminationTesting,
+            seedsWithdrawn = 1)
+
+    assertThrows<IllegalArgumentException> {
+      store.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(desired))
+    }
+  }
+
+  @Test
+  fun `rejects test IDs on non-germination-testing withdrawals`() {
+    val desired =
+        WithdrawalPayload(
+            date = LocalDate.now(),
+            germinationTestId = germinationTestId,
+            purpose = WithdrawalPurpose.Other,
+            seedsWithdrawn = 1)
+
+    assertThrows<IllegalArgumentException> {
+      store.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(desired))
+    }
+  }
+
+  @Test
+  fun `accepts new germination testing withdrawals with test IDs`() {
+    val desired =
+        WithdrawalPayload(
+            date = LocalDate.now(),
+            germinationTestId = germinationTestId,
+            purpose = WithdrawalPurpose.GerminationTesting,
+            seedsWithdrawn = 1)
+
+    val expected =
+        setOf(
+            WithdrawalModel(
+                id = 1,
+                accessionId = accessionId,
+                date = desired.date,
+                destination = desired.destination,
+                germinationTestId = germinationTestId,
+                notes = desired.notes,
+                purpose = desired.purpose,
+                seedsWithdrawn = desired.seedsWithdrawn!!,
+                staffResponsible = desired.staffResponsible,
+            ),
+        )
+
+    store.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(desired))
+
+    val actual = store.fetchWithdrawals(accessionId)
+
+    assertEquals(expected, actual?.toSet())
+  }
+
+  @Test
+  fun `does not allow modifying test IDs on existing germination testing withdrawals`() {
+    val initial =
+        WithdrawalPayload(
+            date = LocalDate.now(),
+            germinationTestId = germinationTestId,
+            purpose = WithdrawalPurpose.GerminationTesting,
+            seedsWithdrawn = 1)
+    store.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(initial))
+    val inserted = store.fetchWithdrawals(accessionId)!!.first()
+
+    assertThrows<IllegalArgumentException> {
+      store.updateWithdrawals(
+          accessionId,
+          emptyAccessionFields,
+          listOf(inserted),
+          listOf(inserted.copy(germinationTestId = germinationTestId + 1)))
+    }
+  }
+
+  @Test
   fun `updates existing withdrawals`() {
     val initial =
         WithdrawalPayload(
@@ -185,6 +272,25 @@ internal class WithdrawalStoreTest : DatabaseTest() {
     val actual = store.fetchWithdrawals(accessionId)
 
     assertEquals(expected, actual?.toSet())
+  }
+
+  @Test
+  fun `rejects attempts to change existing withdrawal purpose to germination testing`() {
+    val initial =
+        WithdrawalPayload(
+            date = LocalDate.now(),
+            destination = "dest 1",
+            purpose = WithdrawalPurpose.Other,
+            seedsWithdrawn = 1,
+        )
+    val desired = initial.copy(id = 1L, purpose = WithdrawalPurpose.GerminationTesting)
+
+    store.updateWithdrawals(accessionId, emptyAccessionFields, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+
+    assertThrows<IllegalArgumentException>("Cannot switch purpose to germination testing") {
+      store.updateWithdrawals(accessionId, emptyAccessionFields, afterInsert, listOf(desired))
+    }
   }
 
   @Test

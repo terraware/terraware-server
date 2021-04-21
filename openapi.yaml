@@ -2013,6 +2013,7 @@ components:
           - Broadcast
           - Share with Another Site
           - Other
+          - Germination Testing
         seedsWithdrawn:
           type: integer
           description: "Number of seeds withdrawn. If gramsWithdrawn is specified,\
@@ -2032,6 +2033,12 @@ components:
           type: string
         staffResponsible:
           type: string
+        germinationTestId:
+          type: integer
+          description: "If this withdrawal is of type \"Germination Testing\", the\
+            \ ID of the test it is associated with. This is always set by the server\
+            \ and cannot be modified."
+          format: int64
   securitySchemes:
     ApiKey:
       type: http

@@ -77,5 +77,6 @@ VALUES (1, 'Propagation'),
        (3, 'Research'),
        (4, 'Broadcast'),
        (5, 'Share with Another Site'),
-       (6, 'Other')
+       (6, 'Other'),
+       (7, 'Germination Testing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;

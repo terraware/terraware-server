@@ -367,6 +367,20 @@ internal class AccessionModelTest {
   }
 
   @Test
+  fun `withdrawals for germination testing are not subtracted from seeds remaining`() {
+    val accession =
+        accession(
+            seedsCounted = 100,
+            withdrawals =
+                listOf(
+                    withdrawal(1).copy(purpose = WithdrawalPurpose.GerminationTesting),
+                    withdrawal(5),
+                ))
+
+    assertEquals(95, accession.calculateSeedsRemaining())
+  }
+
+  @Test
   fun `withdrawn seeds counted by weight are subtracted from seeds remaining`() {
     val accession =
         accession(

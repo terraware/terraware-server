@@ -9,6 +9,7 @@ import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.SuccessResponsePayload
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.db.AccessionNotFoundException
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.GerminationSeedType
@@ -73,12 +74,12 @@ class AccessionController(private val accessionStore: AccessionStore) {
       @RequestBody payload: UpdateAccessionRequestPayload,
       @PathVariable accessionNumber: String
   ): UpdateAccessionResponsePayload {
-    perClassLogger().info("Payload $payload")
-    if (!accessionStore.update(accessionNumber, payload)) {
-      throw NotFoundException()
-    } else {
-      val updatedModel = accessionStore.fetchByNumber(accessionNumber)!!
+    perClassLogger().debug("Payload $payload")
+    try {
+      val updatedModel = accessionStore.updateAndFetch(payload, accessionNumber)
       return UpdateAccessionResponsePayload(AccessionPayload(updatedModel))
+    } catch (e: AccessionNotFoundException) {
+      throw NotFoundException()
     }
   }
 
@@ -377,6 +378,11 @@ data class WithdrawalPayload(
     override val destination: String? = null,
     override val notes: String? = null,
     override val staffResponsible: String? = null,
+    @Schema(
+        description =
+            "If this withdrawal is of type \"Germination Testing\", the ID of the test it is " +
+                "associated with. This is always set by the server and cannot be modified.")
+    override val germinationTestId: Long? = null,
 ) : WithdrawalFields {
   constructor(
       model: WithdrawalFields
@@ -388,7 +394,9 @@ data class WithdrawalPayload(
       model.gramsWithdrawn,
       model.destination,
       model.notes,
-      model.staffResponsible)
+      model.staffResponsible,
+      model.germinationTestId,
+  )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

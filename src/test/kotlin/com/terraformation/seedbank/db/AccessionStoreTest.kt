@@ -33,6 +33,7 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.Geolocation
+import com.terraformation.seedbank.model.WithdrawalModel
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -68,6 +69,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             "germination_test_id_seq",
             "species_id_seq",
             "species_family_id_seq",
+            "withdrawal_id_seq",
         )
 
   private val accessionNumbers =
@@ -743,6 +745,96 @@ internal class AccessionStoreTest : DatabaseTest() {
   }
 
   @Test
+  fun `update generates withdrawals for new germination tests`() {
+    val accession = createAccessionWithGerminationTest()
+    val test = accession.germinationTests!![0]
+
+    assertEquals(
+        listOf(
+            WithdrawalModel(
+                id = 1,
+                accessionId = accession.id,
+                date = test.startDate!!,
+                purpose = WithdrawalPurpose.GerminationTesting,
+                seedsWithdrawn = 5,
+                germinationTestId = test.id)),
+        accession.withdrawals)
+  }
+
+  @Test
+  fun `update correctly deducts from seed count for germination tests`() {
+    val accession = createAccessionWithGerminationTest()
+    val test = accession.germinationTests!![0]
+    val expectedSeedsRemaining = accession.seedsCounted!! - test.seedsSown!!
+
+    assertEquals(
+        expectedSeedsRemaining, accession.seedsRemaining, "Seeds remaining after test creation")
+
+    val updated = store.updateAndFetch(accession)
+    assertEquals(
+        expectedSeedsRemaining, updated.seedsRemaining, "Seeds remaining after test update")
+  }
+
+  @Test
+  fun `update modifies withdrawals when their germination tests are modified`() {
+    val initial = createAccessionWithGerminationTest()
+    val initialTest = initial.germinationTests!![0]
+    val initialWithdrawal = initial.withdrawals!![0]
+
+    val modifiedStartDate = initialTest.startDate!!.plusDays(10)
+    val modifiedTest = initialTest.copy(startDate = modifiedStartDate, seedsSown = 6)
+    val modifiedWithdrawal =
+        initialWithdrawal.copy(
+            date = modifiedTest.startDate!!, seedsWithdrawn = modifiedTest.seedsSown!!)
+
+    val afterTestModified =
+        store.updateAndFetch(initial.copy(germinationTests = listOf(modifiedTest)))
+
+    assertEquals(listOf(modifiedWithdrawal), afterTestModified.withdrawals)
+  }
+
+  @Test
+  fun `update does not modify withdrawals when their germination tests are not modified`() {
+    val initial = createAccessionWithGerminationTest()
+    val updated = store.updateAndFetch(initial.copy(receivedDate = LocalDate.now()))
+
+    assertEquals(initial.withdrawals, updated.withdrawals)
+  }
+
+  @Test
+  fun `update removes withdrawals when germination tests are removed`() {
+    val initial = createAccessionWithGerminationTest()
+    val updated = store.updateAndFetch(initial.copy(germinationTests = null))
+
+    assertNull(updated.withdrawals)
+  }
+
+  @Test
+  fun `update ignores germination test withdrawals in accession object`() {
+    val initial = createAccessionWithGerminationTest()
+    val initialWithdrawal = initial.withdrawals!![0]
+
+    val modifiedInitialWithdrawal =
+        WithdrawalPayload(initialWithdrawal)
+            .copy(
+                date = initialWithdrawal.date.plusDays(1),
+                seedsWithdrawn = initialWithdrawal.seedsWithdrawn + 1)
+    val newWithdrawal =
+        WithdrawalPayload(
+            date = LocalDate.now(),
+            purpose = WithdrawalPurpose.GerminationTesting,
+            seedsWithdrawn = 1,
+            germinationTestId = initialWithdrawal.germinationTestId)
+
+    val updated =
+        store.updateAndFetch(
+            AccessionPayload(initial)
+                .copy(withdrawals = listOf(modifiedInitialWithdrawal, newWithdrawal)))
+
+    assertEquals(initial.withdrawals, updated.withdrawals)
+  }
+
+  @Test
   fun `state history row is inserted at creation time`() {
     val initial = store.create(CreateAccessionRequestPayload())
     val historyRecords =
@@ -1181,9 +1273,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             conditionId = StorageCondition.Freezer))
 
     val initial = store.create(CreateAccessionRequestPayload())
-
-    store.update(initial.accessionNumber, update)
-    val stored = store.fetchByNumber(initial.accessionNumber)!!
+    val stored = store.updateAndFetch(update, initial.accessionNumber)
 
     accessionModelProperties.filter { it.name in propertyNames }.forEach { prop ->
       assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
@@ -1200,5 +1290,21 @@ internal class AccessionStoreTest : DatabaseTest() {
           .filterNotNull()
           .toSet()
     }
+  }
+
+  private fun createAccessionWithGerminationTest(): AccessionModel {
+    val initial = store.create(CreateAccessionRequestPayload())
+    val accession =
+        AccessionPayload(initial)
+            .copy(
+                seedsCounted = 10,
+                germinationTests =
+                    listOf(
+                        GerminationTestPayload(
+                            testType = GerminationTestType.Lab,
+                            startDate = LocalDate.of(2021, 4, 1),
+                            seedsSown = 5)))
+
+    return store.updateAndFetch(accession)
   }
 }

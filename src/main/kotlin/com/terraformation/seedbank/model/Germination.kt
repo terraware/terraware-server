@@ -4,6 +4,7 @@ import com.terraformation.seedbank.db.GerminationSeedType
 import com.terraformation.seedbank.db.GerminationSubstrate
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.GerminationTreatment
+import java.time.Clock
 import java.time.LocalDate
 
 interface GerminationFields {
@@ -91,4 +92,19 @@ data class GerminationTestModel(
     override val notes: String? = null,
     override val staffResponsible: String? = null,
     override val germinations: Collection<GerminationModel>? = null
-) : GerminationTestFields
+) : GerminationTestFields {
+  fun toWithdrawal(withdrawalId: Long?, clock: Clock): GerminationTestWithdrawal? {
+    if (seedsSown == null) {
+      return null
+    }
+
+    return GerminationTestWithdrawal(
+        accessionId = accessionId,
+        date = startDate ?: LocalDate.now(clock),
+        germinationTestId = id,
+        gramsWithdrawn = null,
+        id = withdrawalId,
+        seedsWithdrawn = seedsSown,
+    )
+  }
+}

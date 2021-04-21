@@ -21,6 +21,8 @@ interface WithdrawalFields {
     get() = null
   val staffResponsible: String?
     get() = null
+  val germinationTestId: Long?
+    get() = null
 
   /**
    * Computes a withdrawal's seed count. A withdrawal can be sized in number of seeds or number of
@@ -82,9 +84,19 @@ interface WithdrawalFields {
   }
 }
 
-interface ConcreteWithdrawal : WithdrawalFields {
-  override val id: Long
-  override val seedsWithdrawn: Int
+data class GerminationTestWithdrawal(
+    override val id: Long?,
+    val accessionId: Long,
+    override val date: LocalDate,
+    override val seedsWithdrawn: Int,
+    override val gramsWithdrawn: BigDecimal? = null,
+    override val destination: String? = null,
+    override val notes: String? = null,
+    override val staffResponsible: String? = null,
+    override val germinationTestId: Long? = null,
+) : WithdrawalFields {
+  override val purpose
+    get() = WithdrawalPurpose.GerminationTesting
 }
 
 data class WithdrawalModel(
@@ -97,4 +109,5 @@ data class WithdrawalModel(
     override val destination: String? = null,
     override val notes: String? = null,
     override val staffResponsible: String? = null,
-) : ConcreteWithdrawal
+    override val germinationTestId: Long? = null,
+) : WithdrawalFields

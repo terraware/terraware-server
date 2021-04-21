@@ -31,6 +31,7 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
               record.destination,
               record.notes,
               record.staffResponsible,
+              record.germinationTestId,
           )
         }
         .toListOrNull()
@@ -49,6 +50,33 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
     val idsToDelete = existingById.keys - desiredById.keys
     val idsToUpdate = existingById.keys.intersect(desiredById.keys)
 
+    idsToUpdate.forEach { id ->
+      val existing = existingById[id]!!
+      val desired = desiredById[id]!!
+
+      if ((existing.purpose == WithdrawalPurpose.GerminationTesting) xor
+          (desired.purpose == WithdrawalPurpose.GerminationTesting)) {
+        throw IllegalArgumentException(
+            "Cannot change withdrawal purpose to or from Germination Testing")
+      }
+
+      if (existing.germinationTestId != desired.germinationTestId) {
+        throw IllegalArgumentException("Cannot change test ID of germination testing withdrawal")
+      }
+    }
+
+    newWithdrawals.forEach { withdrawal ->
+      if (withdrawal.purpose == WithdrawalPurpose.GerminationTesting &&
+          withdrawal.germinationTestId == null) {
+        throw IllegalArgumentException("Germination testing withdrawals must have test IDs")
+      }
+
+      if (withdrawal.purpose != WithdrawalPurpose.GerminationTesting &&
+          withdrawal.germinationTestId != null) {
+        throw IllegalArgumentException("Only germination testing withdrawals may have test IDs")
+      }
+    }
+
     with(WITHDRAWAL) {
       newWithdrawals.forEach { withdrawal ->
         val seedsWithdrawn = withdrawal.computeSeedsWithdrawn(accession, false)
@@ -60,6 +88,7 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
                 .set(CREATED_TIME, clock.instant())
                 .set(DATE, withdrawal.date)
                 .set(DESTINATION, withdrawal.destination)
+                .set(GERMINATION_TEST_ID, withdrawal.germinationTestId)
                 .set(GRAMS_WITHDRAWN, withdrawal.gramsWithdrawn)
                 .set(NOTES, withdrawal.notes)
                 .set(PURPOSE_ID, withdrawal.purpose)
