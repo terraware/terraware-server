@@ -202,6 +202,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "latestViabilityPercent",
             "Most recent % viability",
             ACCESSION.LATEST_VIABILITY_PERCENT),
+        DateField("nurseryStartDate", "Nursery start date", ACCESSION.NURSERY_START_DATE),
         TextField(
             "primaryCollector", "Primary collector", COLLECTOR.NAME, SearchTables.PrimaryCollector),
         EnumField.create("processingMethod", "Processing method", ACCESSION.PROCESSING_METHOD_ID),

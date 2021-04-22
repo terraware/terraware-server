@@ -1564,6 +1564,7 @@ components:
       - landowner
       - latestGerminationTestDate
       - latestViabilityPercent
+      - nurseryStartDate
       - primaryCollector
       - processingMethod
       - processingNotes

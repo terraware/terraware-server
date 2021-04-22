@@ -130,6 +130,7 @@ class AccessionStore(
           latestGerminationTestDate = parentRow[LATEST_GERMINATION_RECORDING_DATE],
           latestViabilityPercent = parentRow[LATEST_VIABILITY_PERCENT],
           numberOfTrees = parentRow[TREES_COLLECTED_FROM],
+          nurseryStartDate = parentRow[NURSERY_START_DATE],
           photoFilenames = photoFilenames,
           primaryCollector = parentRow[collector().NAME],
           processingMethod = parentRow[PROCESSING_METHOD_ID],
@@ -194,6 +195,7 @@ class AccessionStore(
                         accession.calculateLatestGerminationRecordingDate())
                     .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
                     .set(NUMBER, accessionNumber)
+                    .set(NURSERY_START_DATE, accession.nurseryStartDate)
                     .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
                     .set(RECEIVED_DATE, accession.receivedDate)
                     .set(SITE_MODULE_ID, config.siteModuleId)
@@ -328,6 +330,7 @@ class AccessionStore(
                     LATEST_GERMINATION_RECORDING_DATE,
                     accession.calculateLatestGerminationRecordingDate())
                 .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                .set(NURSERY_START_DATE, accession.nurseryStartDate)
                 .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
