@@ -5,6 +5,8 @@ import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
+import com.terraformation.seedbank.api.seedbank.UpdateAccessionRequestPayload
+import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
@@ -28,6 +30,7 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.Geolocation
 import io.mockk.every
@@ -38,6 +41,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.ChronoField
+import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -1038,6 +1042,152 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `updateSpecies throws exception when species does not exist`() {
     assertThrows(SpeciesNotFoundException::class.java) { store.updateSpecies(1, "nonexistent") }
+  }
+
+  @Test
+  fun `create writes all fields to database`() {
+    val today = LocalDate.now(clock)
+    val accession =
+        CreateAccessionRequestPayload(
+            bagNumbers = setOf("abc"),
+            collectedDate = today,
+            deviceInfo =
+                DeviceInfoPayload(
+                    appBuild = "build",
+                    appName = "name",
+                    brand = "brand",
+                    model = "model",
+                    name = "name",
+                    osType = "osType",
+                    osVersion = "osVersion",
+                    uniqueId = "uniqueId"),
+            endangered = SpeciesEndangeredType.Unsure,
+            environmentalNotes = "envNotes",
+            family = "family",
+            fieldNotes = "fieldNotes",
+            founderId = "founderId",
+            geolocations =
+                setOf(
+                    Geolocation(
+                        latitude = BigDecimal.ONE,
+                        longitude = BigDecimal.TEN,
+                        accuracy = BigDecimal(3))),
+            germinationTestTypes = setOf(GerminationTestType.Lab),
+            germinationTests =
+                listOf(
+                    GerminationTestPayload(testType = GerminationTestType.Lab, startDate = today)),
+            landowner = "landowner",
+            numberOfTrees = 10,
+            primaryCollector = "primaryCollector",
+            rare = SpeciesRareType.Yes,
+            receivedDate = today,
+            secondaryCollectors = setOf("second1", "second2"),
+            siteLocation = "siteLocation",
+            sourcePlantOrigin = SourcePlantOrigin.Wild,
+            species = "species",
+        )
+
+    val createPayloadProperties = CreateAccessionRequestPayload::class.declaredMemberProperties
+    val accessionModelProperties = AccessionModel::class.declaredMemberProperties
+    val propertyNames = createPayloadProperties.map { it.name }.toSet()
+
+    createPayloadProperties.forEach { prop ->
+      assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
+    }
+
+    val stored = store.create(accession)
+
+    accessionModelProperties.filter { it.name in propertyNames }.forEach { prop ->
+      assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
+    }
+  }
+
+  @Test
+  fun `update writes all fields to database`() {
+    val storageLocationName = "Test Location"
+    val today = LocalDate.now(clock)
+    val update =
+        UpdateAccessionRequestPayload(
+            bagNumbers = setOf("abc"),
+            collectedDate = today,
+            cutTestSeedsCompromised = 20,
+            cutTestSeedsEmpty = 21,
+            cutTestSeedsFilled = 22,
+            dryingEndDate = today,
+            dryingMoveDate = today,
+            dryingStartDate = today,
+            endangered = SpeciesEndangeredType.Unsure,
+            environmentalNotes = "envNotes",
+            family = "family",
+            fieldNotes = "fieldNotes",
+            founderId = "founderId",
+            geolocations =
+                setOf(
+                    Geolocation(
+                        latitude = BigDecimal.ONE,
+                        longitude = BigDecimal.TEN,
+                        accuracy = BigDecimal(3))),
+            germinationTestTypes = setOf(GerminationTestType.Lab),
+            germinationTests =
+                listOf(
+                    GerminationTestPayload(testType = GerminationTestType.Lab, startDate = today)),
+            landowner = "landowner",
+            numberOfTrees = 10,
+            nurseryStartDate = today,
+            primaryCollector = "primaryCollector",
+            processingMethod = ProcessingMethod.Count,
+            processingNotes = "processingNotes",
+            processingStaffResponsible = "procStaff",
+            processingStartDate = today,
+            rare = SpeciesRareType.Yes,
+            receivedDate = today,
+            secondaryCollectors = setOf("second1", "second2"),
+            seedsCounted = 30,
+            siteLocation = "siteLocation",
+            sourcePlantOrigin = SourcePlantOrigin.Wild,
+            species = "species",
+            storageLocation = storageLocationName,
+            storageNotes = "storageNotes",
+            storagePackets = 5,
+            storageStaffResponsible = "storageStaff",
+            storageStartDate = today,
+            subsetCount = 32,
+            subsetWeightGrams = BigDecimal(33),
+            targetStorageCondition = StorageCondition.Freezer,
+            totalWeightGrams = BigDecimal(432),
+            withdrawals =
+                listOf(
+                    WithdrawalPayload(
+                        date = today,
+                        purpose = WithdrawalPurpose.Other,
+                        gramsWithdrawn = BigDecimal(41),
+                        destination = "destination",
+                        notes = "notes",
+                        staffResponsible = "staff")),
+        )
+
+    val updatePayloadProperties = UpdateAccessionRequestPayload::class.declaredMemberProperties
+    val accessionModelProperties = AccessionModel::class.declaredMemberProperties
+    val propertyNames = updatePayloadProperties.map { it.name }.toSet()
+
+    updatePayloadProperties.forEach { prop ->
+      assertNotNull(prop.get(update), "Field ${prop.name} is null in example object")
+    }
+
+    storageLocationDao.insert(
+        StorageLocation(
+            siteModuleId = config.siteModuleId,
+            name = storageLocationName,
+            conditionId = StorageCondition.Freezer))
+
+    val initial = store.create(CreateAccessionRequestPayload())
+
+    store.update(initial.accessionNumber, update)
+    val stored = store.fetchByNumber(initial.accessionNumber)!!
+
+    accessionModelProperties.filter { it.name in propertyNames }.forEach { prop ->
+      assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
+    }
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {
