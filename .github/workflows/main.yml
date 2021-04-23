@@ -41,11 +41,11 @@ jobs:
         docker pull postgres:12
         ./gradlew downloadDependencies
 
-    - name: Check code style
-      run: ./gradlew spotlessCheck
-
     - name: Generate jOOQ classes
       run: ./gradlew generateJooqClasses
+
+    - name: Check code style
+      run: ./gradlew spotlessCheck
 
     - name: Compile main
       run: ./gradlew classes
