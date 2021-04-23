@@ -149,6 +149,48 @@ class SearchServiceTest : DatabaseTest() {
   }
 
   @Test
+  fun `can do range search on integer field with no minimum`() {
+    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    val fields = listOf(treesCollectedFromField)
+    val filters =
+        listOf(SearchFilter(treesCollectedFromField, listOf(null, "3"), SearchFilterType.Range))
+
+    val result = searchService.search(fields, filters)
+
+    val expected =
+        SearchResults(
+            listOf(mapOf("accessionNumber" to "XYZ", "treesCollectedFrom" to "1")), cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `can do range search on integer field with no maximum`() {
+    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    val fields = listOf(treesCollectedFromField)
+    val filters =
+        listOf(SearchFilter(treesCollectedFromField, listOf("2", null), SearchFilterType.Range))
+
+    val result = searchService.search(fields, filters)
+
+    val expected =
+        SearchResults(
+            listOf(mapOf("accessionNumber" to "ABCDEFG", "treesCollectedFrom" to "500")),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `range search on integer field with two nulls is rejected`() {
+    val fields = listOf(treesCollectedFromField)
+    val filters =
+        listOf(SearchFilter(treesCollectedFromField, listOf(null, null), SearchFilterType.Range))
+
+    assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
+  }
+
+  @Test
   fun `sorts enum fields by display name rather than ID`() {
     accessionDao.update(
         accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
@@ -373,6 +415,45 @@ class SearchServiceTest : DatabaseTest() {
       val actual = searchService.search(fields, filters, sortOrder)
 
       assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `can search by date range with only minimum`() {
+      val fields = listOf(accessionNumberField)
+      val sortOrder = listOf(SearchSortField(receivedDateField))
+      val filters =
+          listOf(
+              SearchFilter(receivedDateField, listOf("2021-01-07", null), SearchFilterType.Range))
+
+      val expected = SearchResults(listOf(mapOf("accessionNumber" to "JAN8")), null)
+      val actual = searchService.search(fields, filters, sortOrder)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `can search by date range with only maximum`() {
+      val fields = listOf(accessionNumberField)
+      val sortOrder = listOf(SearchSortField(receivedDateField))
+      val filters =
+          listOf(
+              SearchFilter(receivedDateField, listOf(null, "2021-01-03"), SearchFilterType.Range))
+
+      val expected =
+          SearchResults(
+              listOf(mapOf("accessionNumber" to "JAN1"), mapOf("accessionNumber" to "JAN2")), null)
+      val actual = searchService.search(fields, filters, sortOrder)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `date range with two nulls is rejected`() {
+      val fields = listOf(accessionNumberField)
+      val filters =
+          listOf(SearchFilter(receivedDateField, listOf(null, null), SearchFilterType.Range))
+
+      assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
     }
 
     @Test
