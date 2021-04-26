@@ -127,7 +127,8 @@ internal class AccessionStoreTest : DatabaseTest() {
             SpeciesStore(clock, dslContext, support),
             WithdrawalStore(dslContext, clock),
             clock,
-            support)
+            support,
+            transactionManager)
 
     insertSiteData()
   }
@@ -878,6 +879,15 @@ internal class AccessionStoreTest : DatabaseTest() {
                 reason = "Seed count/weight has been entered",
                 updatedTime = clock.instant())),
         historyRecords)
+  }
+
+  @Test
+  fun `dryRun does not persist changes`() {
+    val initial = store.create(CreateAccessionRequestPayload(species = "Initial Species"))
+    store.dryRun(initial.copy(species = "Modified Species"))
+    val fetched = store.fetchByNumber(initial.accessionNumber)
+
+    assertEquals(initial.species, fetched?.species)
   }
 
   @Test

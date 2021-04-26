@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v2/seedbank/accession")
@@ -72,11 +73,22 @@ class AccessionController(private val accessionStore: AccessionStore) {
   @PutMapping("/{accessionNumber}")
   fun update(
       @RequestBody payload: UpdateAccessionRequestPayload,
-      @PathVariable accessionNumber: String
+      @PathVariable accessionNumber: String,
+      @RequestParam
+      @Schema(
+          description =
+              "If true, do not actually save the accession; just return the result that would " +
+                  "have been returned if it had been saved.")
+      simulate: Boolean?
   ): UpdateAccessionResponsePayload {
     perClassLogger().debug("Payload $payload")
     try {
-      val updatedModel = accessionStore.updateAndFetch(payload, accessionNumber)
+      val updatedModel =
+          if (simulate == true) {
+            accessionStore.dryRun(payload, accessionNumber)
+          } else {
+            accessionStore.updateAndFetch(payload, accessionNumber)
+          }
       return UpdateAccessionResponsePayload(AccessionPayload(updatedModel))
     } catch (e: AccessionNotFoundException) {
       throw NotFoundException()

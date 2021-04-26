@@ -32,6 +32,10 @@ import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.support.DefaultTransactionDefinition
+import org.springframework.transaction.support.TransactionTemplate
 
 @ManagedBean
 class AccessionStore(
@@ -46,6 +50,7 @@ class AccessionStore(
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val support: StoreSupport,
+    private val transactionManager: PlatformTransactionManager,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -391,6 +396,37 @@ class AccessionStore(
           fetchByNumber(accessionNumber)
         } else {
           null
+        }
+
+    return updated ?: throw AccessionNotFoundException(accessionNumber)
+  }
+
+  /**
+   * Returns the accession data that would result from updating an accession, but does not write the
+   * modified data to the database.
+   *
+   * This works by performing the actual update and then rolling it back. We do it that way rather
+   * than as a purely in-memory transformation because the update might fail due to integrity
+   * constraints at the database level, and we don't want the dry run to succeed if the real update
+   * wouldn't.
+   *
+   * @return null if the accession didn't exist.
+   */
+  fun dryRun(
+      accession: AccessionFields,
+      accessionNumber: String = accession.accessionNumber!!
+  ): AccessionModel {
+    // Perform the update in a nested transaction that gets unconditionally rolled back. This will
+    // start a new transaction if there isn't already one active.
+    val template =
+        TransactionTemplate(
+            transactionManager,
+            DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NESTED))
+
+    val updated =
+        template.execute { transactionStatus ->
+          transactionStatus.setRollbackOnly()
+          updateAndFetch(accession, accessionNumber)
         }
 
     return updated ?: throw AccessionNotFoundException(accessionNumber)

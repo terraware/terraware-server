@@ -18,6 +18,12 @@ def main():
         help="Base URL of seedbank-server.",
     )
     parser.add_argument(
+        "--simulate",
+        "-n",
+        action="store_true",
+        help="Do not save edits, just show what the resulting data would have been.",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -40,8 +46,14 @@ def main():
 
     uri = f"{args.server}/api/v1/seedbank/accession/{args.accessionNumber}"
 
-    accession = requests.get(uri).json()
+    r = requests.get(uri)
+    r.raise_for_status()
+    accession = requests.get(uri).json()["accession"]
+
     accession.update(edits)
+
+    if args.simulate:
+        uri += "?simulate=true"
 
     r = requests.put(uri, json=accession)
     if r.status_code != 200:
