@@ -13,6 +13,7 @@ import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
+import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
@@ -22,6 +23,8 @@ import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.javaField
 import org.jooq.DSLContext
 import org.springdoc.core.SpringDocUtils
 import org.springdoc.core.customizers.OpenApiCustomiser
@@ -55,6 +58,7 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
     sortResponseCodes(openApi)
     sortSchemas(openApi)
     removeInheritedPropertiesFromPayloads(openApi)
+    addDescriptionsToRefs(openApi)
   }
 
   private fun renderSearchFieldAsEnum(openApi: OpenAPI) {
@@ -93,7 +97,6 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
   private fun removeInheritedPropertiesFromPayloads(openApi: OpenAPI) {
     val payloadClasses =
         listOf(
-            AccessionPayload::class,
             CreateAccessionRequestPayload::class,
             DeviceInfoPayload::class,
             GerminationPayload::class,
@@ -122,6 +125,44 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
       // Sometimes interfaces seem to get included too, so explicitly check for them.
       payloadClass.allSuperclasses.forEach { superclass ->
         openApi.components.schemas.remove(superclass.swaggerSchemaName)
+      }
+    }
+  }
+
+  private fun addDescriptionsToRefs(openApi: OpenAPI) {
+    val payloadClasses =
+        listOf(
+            AccessionPayload::class,
+            GerminationTestPayload::class,
+            UpdateAccessionRequestPayload::class,
+            WithdrawalPayload::class,
+        )
+
+    payloadClasses.forEach { payloadClass ->
+      val schemaName = payloadClass.swaggerSchemaName
+      val classSchema = openApi.components.schemas[schemaName]
+
+      val constructorParameters =
+          payloadClass.primaryConstructor?.parameters?.associateBy { it.name } ?: emptyMap()
+
+      if (classSchema != null) {
+        payloadClass.declaredMemberProperties.forEach { property ->
+          val propertyAnnotation =
+              constructorParameters[property.name]?.findAnnotation()
+                  ?: property.findAnnotation() ?: property.getter.findAnnotation()
+                      ?: property.javaField?.getAnnotation(Schema::class.java)
+          val propertyName = propertyAnnotation?.name.orEmpty().ifEmpty { property.name }
+          val propertySchema = classSchema.properties[propertyName]
+
+          if (propertySchema != null &&
+              propertySchema.`$ref` != null &&
+              propertyAnnotation != null) {
+            val composedSchema = ComposedSchema()
+            composedSchema.allOf = listOf(propertySchema)
+            composedSchema.description = propertyAnnotation.description
+            classSchema.properties[propertyName] = composedSchema
+          }
+        }
       }
     }
   }

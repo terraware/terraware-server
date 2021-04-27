@@ -50,6 +50,15 @@ VALUES (1, 'Fresh'),
        (2, 'Stored')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO seed_quantity_units (id, name)
+VALUES (1, 'Seeds'),
+       (2, 'Grams'),
+       (3, 'Milligrams'),
+       (4, 'Kilograms'),
+       (5, 'Ounces'),
+       (6, 'Pounds')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO site_module_type (id, name)
 VALUES (1, 'Seed Bank'),
        (2, 'Desalination'),

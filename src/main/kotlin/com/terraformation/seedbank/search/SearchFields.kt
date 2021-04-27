@@ -131,7 +131,6 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("dryingEndDate", "Drying end date", ACCESSION.DRYING_END_DATE),
         DateField("dryingMoveDate", "Drying move date", ACCESSION.DRYING_MOVE_DATE),
         DateField("dryingStartDate", "Drying start date", ACCESSION.DRYING_START_DATE),
-        IntegerField("effectiveSeedCount", "Effective seed count", ACCESSION.EFFECTIVE_SEED_COUNT),
         EnumField.create("endangered", "Endangered", ACCESSION.SPECIES_ENDANGERED_TYPE_ID),
         IntegerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSION.EST_SEED_COUNT),
@@ -209,8 +208,9 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("processingStartDate", "Processing start date", ACCESSION.PROCESSING_START_DATE),
         EnumField.create("rare", "Rare", ACCESSION.SPECIES_RARE_TYPE_ID),
         DateField("receivedDate", "Received on", ACCESSION.RECEIVED_DATE),
-        IntegerField("seedsCounted", "Number of seeds counted", ACCESSION.SEEDS_COUNTED),
-        IntegerField("seedsRemaining", "Number of seeds remaining", ACCESSION.SEEDS_REMAINING),
+        BigDecimalField("remainingGrams", "Remaining (grams)", ACCESSION.REMAINING_GRAMS),
+        BigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSION.REMAINING_QUANTITY),
+        EnumField.create("remainingUnits", "Remaining (units)", ACCESSION.REMAINING_UNITS_ID),
         TextField("siteLocation", "Site location", ACCESSION.COLLECTION_SITE_NAME),
         EnumField.create("sourcePlantOrigin", "Wild/Outplant", ACCESSION.SOURCE_PLANT_ORIGIN_ID),
         TextField("species", "Species", SPECIES.NAME, SearchTables.Species),
@@ -227,6 +227,9 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("storageStartDate", "Storing start date", ACCESSION.STORAGE_START_DATE),
         EnumField.create(
             "targetStorageCondition", "Target %RH", ACCESSION.TARGET_STORAGE_CONDITION),
+        BigDecimalField("totalGrams", "Total size (grams)", ACCESSION.TOTAL_GRAMS),
+        BigDecimalField("totalQuantity", "Total size (quantity)", ACCESSION.TOTAL_QUANTITY),
+        EnumField.create("totalUnits", "Total size (units)", ACCESSION.TOTAL_UNITS_ID),
         IntegerField(
             "totalViabilityPercent",
             "Total estimated % viability",
@@ -242,16 +245,36 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         BigDecimalField(
             "withdrawalGrams",
             "Weight of seeds withdrawn (g)",
-            WITHDRAWAL.GRAMS_WITHDRAWN,
+            WITHDRAWAL.WITHDRAWN_GRAMS,
             SearchTables.Withdrawal),
         TextField(
             "withdrawalNotes", "Notes (withdrawal)", WITHDRAWAL.NOTES, SearchTables.Withdrawal),
         EnumField.create(
             "withdrawalPurpose", "Purpose", WITHDRAWAL.PURPOSE_ID, SearchTables.Withdrawal),
-        IntegerField(
-            "withdrawalSeeds",
-            "Number of seeds withdrawn",
-            WITHDRAWAL.SEEDS_WITHDRAWN,
+        BigDecimalField(
+            "withdrawalRemainingGrams",
+            "Weight in grams of seeds remaining (withdrawal)",
+            WITHDRAWAL.REMAINING_GRAMS,
+            SearchTables.Withdrawal),
+        BigDecimalField(
+            "withdrawalRemainingQuantity",
+            "Weight or count of seeds remaining (withdrawal)",
+            WITHDRAWAL.REMAINING_GRAMS,
+            SearchTables.Withdrawal),
+        EnumField.create(
+            "withdrawalRemainingUnits",
+            "Units of measurement of quantity remaining (withdrawal)",
+            WITHDRAWAL.REMAINING_UNITS_ID,
+            SearchTables.Withdrawal),
+        BigDecimalField(
+            "withdrawalQuantity",
+            "Quantity of seeds withdrawn",
+            WITHDRAWAL.WITHDRAWN_QUANTITY,
+            SearchTables.Withdrawal),
+        EnumField.create(
+            "withdrawalUnits",
+            "Units of measurement of quantity withdrawn",
+            WITHDRAWAL.WITHDRAWN_UNITS_ID,
             SearchTables.Withdrawal),
     )
   }

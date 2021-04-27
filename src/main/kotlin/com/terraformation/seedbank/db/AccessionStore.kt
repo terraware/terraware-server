@@ -15,7 +15,8 @@ import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionSource
-import com.terraformation.seedbank.model.GerminationTestWithdrawal
+import com.terraformation.seedbank.model.GerminationTestFields
+import com.terraformation.seedbank.model.SeedQuantityModel
 import com.terraformation.seedbank.model.toActiveEnum
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
@@ -121,7 +122,6 @@ class AccessionStore(
           dryingEndDate = parentRow[DRYING_END_DATE],
           dryingMoveDate = parentRow[DRYING_MOVE_DATE],
           dryingStartDate = parentRow[DRYING_START_DATE],
-          effectiveSeedCount = parentRow[EFFECTIVE_SEED_COUNT],
           endangered = parentRow[SPECIES_ENDANGERED_TYPE_ID],
           environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
           estimatedSeedCount = parentRow[EST_SEED_COUNT],
@@ -145,9 +145,9 @@ class AccessionStore(
           processingStartDate = parentRow[PROCESSING_START_DATE],
           rare = parentRow[SPECIES_RARE_TYPE_ID],
           receivedDate = parentRow[RECEIVED_DATE],
+          remaining =
+              SeedQuantityModel.of(parentRow[REMAINING_QUANTITY], parentRow[REMAINING_UNITS_ID]),
           secondaryCollectors = secondaryCollectorNames,
-          seedsCounted = parentRow[SEEDS_COUNTED],
-          seedsRemaining = parentRow[SEEDS_REMAINING],
           siteLocation = parentRow[COLLECTION_SITE_NAME],
           source = source,
           sourcePlantOrigin = parentRow[SOURCE_PLANT_ORIGIN_ID],
@@ -161,10 +161,12 @@ class AccessionStore(
           storageStaffResponsible = parentRow[STORAGE_STAFF_RESPONSIBLE],
           storageStartDate = parentRow[STORAGE_START_DATE],
           subsetCount = parentRow[SUBSET_COUNT],
-          subsetWeightGrams = parentRow[SUBSET_WEIGHT],
+          subsetWeightQuantity =
+              SeedQuantityModel.of(
+                  parentRow[SUBSET_WEIGHT_QUANTITY], parentRow[SUBSET_WEIGHT_UNITS_ID]),
           targetStorageCondition = parentRow[TARGET_STORAGE_CONDITION],
+          total = SeedQuantityModel.of(parentRow[TOTAL_QUANTITY], parentRow[TOTAL_UNITS_ID]),
           totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
-          totalWeightGrams = parentRow[TOTAL_WEIGHT],
           withdrawals = withdrawals,
       )
     }
@@ -240,8 +242,7 @@ class AccessionStore(
               accessionId, emptySet(), accession.germinationTestTypes)
           germinationStore.updateGerminationTests(
               accessionId, emptyList(), accession.germinationTests)
-          withdrawalStore.updateWithdrawals(
-              accessionId, accession, emptyList(), accession.withdrawals)
+          withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
         }
 
         return fetchByNumber(accessionNumber)!!
@@ -258,12 +259,18 @@ class AccessionStore(
   }
 
   fun update(accessionNumber: String, accession: AccessionFields): Boolean {
+    accession.validate()
+
     val existing = fetchByNumber(accessionNumber) ?: return false
     val accessionId = existing.id
     val todayLocal = LocalDate.now(clock)
 
     if (accession.storageStartDate?.isAfter(todayLocal) == true) {
       throw IllegalArgumentException("Storage start date may not be in the future")
+    }
+
+    if (accession.subsetWeightQuantity?.units == SeedQuantityUnits.Seeds) {
+      throw IllegalArgumentException("Subset weight must be a weight measurement, not a seed count")
     }
 
     dslContext.transaction { _ ->
@@ -276,20 +283,32 @@ class AccessionStore(
         insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
       }
 
+      val existingTests: MutableList<GerminationTestFields> =
+          existing.germinationTests.orEmpty().toMutableList()
+      val withdrawals =
+          accession.calculateWithdrawals(clock, existing.withdrawals).map { withdrawal ->
+            withdrawal.germinationTest?.let { germinationTest ->
+              if (germinationTest.id == null) {
+                val insertedTest =
+                    germinationStore.insertGerminationTest(accessionId, germinationTest)
+                existingTests.add(insertedTest)
+                withdrawal.withGerminationTest(insertedTest)
+              } else {
+                withdrawal
+              }
+            }
+                ?: withdrawal
+          }
+
+      val germinationTests = withdrawals.mapNotNull { it.germinationTest }
+
       bagStore.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
       geolocationStore.updateGeolocations(
           accessionId, existing.geolocations, accession.geolocations)
       germinationStore.updateGerminationTestTypes(
           accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
-      germinationStore.updateGerminationTests(
-          accessionId, existing.germinationTests, accession.germinationTests)
-
-      val manualWithdrawals =
-          accession.withdrawals?.filter { it.purpose != WithdrawalPurpose.GerminationTesting }
-              ?: emptyList()
-      val desiredWithdrawals = manualWithdrawals + generateGerminationTestWithdrawals(accessionId)
-      withdrawalStore.updateWithdrawals(
-          accessionId, accession, existing.withdrawals, desiredWithdrawals)
+      germinationStore.updateGerminationTests(accessionId, existingTests, germinationTests)
+      withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
       val stateTransition = existing.getStateTransition(accession, clock)
       if (stateTransition != null) {
@@ -318,6 +337,7 @@ class AccessionStore(
       val receivedDate =
           if (existing.source == AccessionSource.Web) accession.receivedDate
           else existing.receivedDate
+      val remaining = accession.calculateRemaining(clock)
 
       val rowsUpdated =
           with(ACCESSION) {
@@ -332,7 +352,6 @@ class AccessionStore(
                 .set(DRYING_END_DATE, accession.dryingEndDate)
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
-                .set(EFFECTIVE_SEED_COUNT, accession.calculateEffectiveSeedCount())
                 .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                 .set(EST_SEED_COUNT, accession.calculateEstimatedSeedCount())
                 .set(FIELD_NOTES, accession.fieldNotes)
@@ -348,8 +367,9 @@ class AccessionStore(
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
                 .set(PROCESSING_START_DATE, processingStartDate)
                 .set(RECEIVED_DATE, receivedDate)
-                .set(SEEDS_COUNTED, accession.seedsCounted)
-                .set(SEEDS_REMAINING, accession.calculateSeedsRemaining())
+                .set(REMAINING_GRAMS, remaining?.grams)
+                .set(REMAINING_QUANTITY, remaining?.quantity)
+                .set(REMAINING_UNITS_ID, remaining?.units)
                 .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                 .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                 .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
@@ -362,10 +382,14 @@ class AccessionStore(
                 .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
                 .set(STORAGE_START_DATE, accession.storageStartDate)
                 .set(SUBSET_COUNT, accession.subsetCount)
-                .set(SUBSET_WEIGHT, accession.subsetWeightGrams)
+                .set(SUBSET_WEIGHT_GRAMS, accession.subsetWeightQuantity?.grams)
+                .set(SUBSET_WEIGHT_QUANTITY, accession.subsetWeightQuantity?.quantity)
+                .set(SUBSET_WEIGHT_UNITS_ID, accession.subsetWeightQuantity?.units)
                 .set(TARGET_STORAGE_CONDITION, accession.targetStorageCondition)
+                .set(TOTAL_GRAMS, accession.total?.grams)
+                .set(TOTAL_QUANTITY, accession.total?.quantity)
+                .set(TOTAL_UNITS_ID, accession.total?.units)
                 .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
-                .set(TOTAL_WEIGHT, accession.totalWeightGrams)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(NUMBER.eq(accessionNumber))
                 .and(SITE_MODULE_ID.eq(config.siteModuleId))
@@ -387,10 +411,7 @@ class AccessionStore(
    *
    * @return null if the accession didn't exist.
    */
-  fun updateAndFetch(
-      accession: AccessionFields,
-      accessionNumber: String = accession.accessionNumber!!
-  ): AccessionModel {
+  fun updateAndFetch(accession: AccessionFields, accessionNumber: String): AccessionModel {
     val updated =
         if (update(accessionNumber, accession)) {
           fetchByNumber(accessionNumber)
@@ -412,10 +433,7 @@ class AccessionStore(
    *
    * @return null if the accession didn't exist.
    */
-  fun dryRun(
-      accession: AccessionFields,
-      accessionNumber: String = accession.accessionNumber!!
-  ): AccessionModel {
+  fun dryRun(accession: AccessionFields, accessionNumber: String): AccessionModel {
     // Perform the update in a nested transaction that gets unconditionally rolled back. This will
     // start a new transaction if there isn't already one active.
     val template =
@@ -713,22 +731,5 @@ class AccessionStore(
         }
 
     return "%08d%03d".format(todayAsLong, suffix)
-  }
-
-  private fun generateGerminationTestWithdrawals(
-      accessionId: Long
-  ): List<GerminationTestWithdrawal> {
-    val tests = germinationStore.fetchGerminationTests(accessionId) ?: return emptyList()
-    val withdrawalsByTestId =
-        withdrawalStore
-            .fetchWithdrawals(accessionId)
-            ?.filter { it.germinationTestId != null }
-            ?.associateBy { it.germinationTestId }
-            ?: emptyMap()
-
-    return tests.mapNotNull { test ->
-      val existingWithdrawalId = withdrawalsByTestId[test.id]?.id
-      test.toWithdrawal(existingWithdrawalId, clock)
-    }
   }
 }

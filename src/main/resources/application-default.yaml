@@ -24,3 +24,5 @@ spring:
 logging:
   level:
     com.terraformation: DEBUG
+    org.springdoc: DEBUG
+

@@ -1,9 +1,7 @@
 package com.terraformation.seedbank.model
 
 import com.terraformation.seedbank.db.WithdrawalPurpose
-import com.terraformation.seedbank.services.equalsIgnoreScale
-import java.math.BigDecimal
-import java.math.RoundingMode
+import com.terraformation.seedbank.services.compareNullsFirst
 import java.time.LocalDate
 
 interface WithdrawalFields {
@@ -11,92 +9,95 @@ interface WithdrawalFields {
     get() = null
   val date: LocalDate
   val purpose: WithdrawalPurpose
-  val seedsWithdrawn: Int?
-    get() = null
-  val gramsWithdrawn: BigDecimal?
-    get() = null
   val destination: String?
     get() = null
   val notes: String?
     get() = null
   val staffResponsible: String?
     get() = null
+  val germinationTest: GerminationTestFields?
+    get() = null
   val germinationTestId: Long?
     get() = null
-
+  val remaining: SeedQuantityModel?
+  /** The user-entered withdrawal quantity. */
+  val withdrawn: SeedQuantityModel?
   /**
-   * Computes a withdrawal's seed count. A withdrawal can be sized in number of seeds or number of
-   * grams. Weight-based sizing is only available if the accession has seed weight information,
-   * specifically a subset count and subset weight.
+   * The server-calculated withdrawal weight based on the difference between [remaining] on this
+   * withdrawal and the previous one. Only valid for weight-based accessions.
    */
-  fun computeSeedsWithdrawn(accession: AccessionFields, isExistingWithdrawal: Boolean): Int {
-    val desiredGrams = gramsWithdrawn
-    val desiredSeeds = seedsWithdrawn
+  val weightDifference: SeedQuantityModel?
 
-    if (desiredGrams == null && desiredSeeds == null) {
-      throw IllegalArgumentException("Withdrawal must have either a seed count or a weight.")
-    }
-
-    if (desiredGrams != null && desiredSeeds != null && !isExistingWithdrawal) {
-      throw IllegalArgumentException("New withdrawals can have a seed count or a weight, not both.")
-    }
-
-    return if (desiredGrams != null) {
-      val subsetWeightGrams = accession.subsetWeightGrams
-      val subsetCount = accession.subsetCount
-
-      if (desiredGrams <= BigDecimal.ZERO) {
-        throw IllegalArgumentException("Withdrawal weight must be greater than zero.")
+  fun validate() {
+    withdrawn?.quantity?.signum()?.let { signum ->
+      if (signum <= 0) {
+        throw IllegalArgumentException("Withdrawn quantity must be greater than 0")
       }
-
-      if (subsetWeightGrams != null && subsetCount != null) {
-        BigDecimal(subsetCount)
-            .multiply(desiredGrams)
-            .divide(subsetWeightGrams, 5, RoundingMode.CEILING)
-            .setScale(0, RoundingMode.CEILING)
-            .toInt()
-      } else if (desiredSeeds != null && isExistingWithdrawal) {
-        // If the user removed the weight from an existing accession after there were already
-        // weight-based withdrawals, retain the previously-computed withdrawal count.
-        desiredSeeds
-      } else {
-        throw IllegalArgumentException(
-            "Withdrawal can only be measured by weight if accession was measured by weight.")
-      }
-    } else {
-      desiredSeeds!!
     }
   }
 
   /**
-   * Compares two withdrawals for equality disregarding scale differences in gramsWithdrawn and also
+   * Compares two withdrawals for equality disregarding scale differences in quantities and also
    * ignoring differences in modification timestamp.
    */
   fun fieldsEqual(other: WithdrawalFields): Boolean {
     return id == other.id &&
         date == other.date &&
         purpose == other.purpose &&
-        seedsWithdrawn == other.seedsWithdrawn &&
-        gramsWithdrawn.equalsIgnoreScale(other.gramsWithdrawn) &&
         destination == other.destination &&
+        germinationTestId == other.germinationTestId &&
         notes == other.notes &&
-        staffResponsible == other.staffResponsible
+        staffResponsible == other.staffResponsible &&
+        remaining.equalsIgnoreScale(other.remaining) &&
+        weightDifference.equalsIgnoreScale(other.weightDifference) &&
+        withdrawn.equalsIgnoreScale(other.withdrawn)
   }
+
+  fun compareByTime(other: WithdrawalFields): Int {
+    val dateComparison = date.compareTo(other.date)
+    return if (dateComparison != 0) {
+      dateComparison
+    } else {
+      val idComparison = id.compareNullsFirst(other.id)
+      if (idComparison != 0) {
+        idComparison
+      } else {
+        // No useful sort order, but we want a stable one
+        hashCode().compareTo(other.hashCode())
+      }
+    }
+  }
+
+  fun calculateEstimatedQuantity(): SeedQuantityModel? = withdrawn ?: weightDifference
+
+  fun withDate(value: LocalDate): WithdrawalFields
+  fun withGerminationTest(value: GerminationTestFields): WithdrawalFields
+  fun withRemaining(value: SeedQuantityModel): WithdrawalFields
+  fun withWeightDifference(value: SeedQuantityModel): WithdrawalFields
 }
 
 data class GerminationTestWithdrawal(
-    override val id: Long?,
-    val accessionId: Long,
+    override val id: Long? = null,
+    val accessionId: Long? = null,
     override val date: LocalDate,
-    override val seedsWithdrawn: Int,
-    override val gramsWithdrawn: BigDecimal? = null,
     override val destination: String? = null,
     override val notes: String? = null,
     override val staffResponsible: String? = null,
     override val germinationTestId: Long? = null,
+    override val remaining: SeedQuantityModel?,
+    override val withdrawn: SeedQuantityModel?,
+    override val germinationTest: GerminationTestFields,
+    override val weightDifference: SeedQuantityModel? = null,
 ) : WithdrawalFields {
   override val purpose
     get() = WithdrawalPurpose.GerminationTesting
+
+  override fun withDate(value: LocalDate) = copy(date = value)
+  override fun withGerminationTest(value: GerminationTestFields) =
+      copy(germinationTest = value, germinationTestId = value.id)
+  override fun withRemaining(value: SeedQuantityModel) =
+      copy(remaining = value, germinationTest = germinationTest.withRemaining(value))
+  override fun withWeightDifference(value: SeedQuantityModel) = copy(weightDifference = value)
 }
 
 data class WithdrawalModel(
@@ -104,10 +105,19 @@ data class WithdrawalModel(
     val accessionId: Long,
     override val date: LocalDate,
     override val purpose: WithdrawalPurpose,
-    override val seedsWithdrawn: Int,
-    override val gramsWithdrawn: BigDecimal? = null,
     override val destination: String? = null,
     override val notes: String? = null,
     override val staffResponsible: String? = null,
     override val germinationTestId: Long? = null,
-) : WithdrawalFields
+    override val remaining: SeedQuantityModel,
+    override val withdrawn: SeedQuantityModel? = null,
+    override val germinationTest: GerminationTestFields? = null,
+    override val weightDifference: SeedQuantityModel? = null,
+) : WithdrawalFields {
+  override fun withDate(value: LocalDate) = copy(date = value)
+  override fun withGerminationTest(value: GerminationTestFields) =
+      copy(germinationTest = value, germinationTestId = value.id)
+  override fun withRemaining(value: SeedQuantityModel) =
+      copy(remaining = value, germinationTest = germinationTest?.withRemaining(value))
+  override fun withWeightDifference(value: SeedQuantityModel) = copy(weightDifference = value)
+}

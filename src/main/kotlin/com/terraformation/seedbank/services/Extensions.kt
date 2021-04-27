@@ -119,3 +119,13 @@ fun ZonedDateTime.atMostRecent(dayOfWeek: DayOfWeek): ZonedDateTime {
  * work more cleanly with `?.` expressions.
  */
 fun TemporalAccessor.toInstant() = Instant.from(this)!!
+
+/** Compares two comparable values, treating null values as less than non-null ones. */
+fun <T : Comparable<T>> T?.compareNullsFirst(other: T?): Int {
+  return when {
+    this != null && other != null -> this.compareTo(other)
+    this != null && other == null -> 1
+    this == null && other != null -> -1
+    else -> 0
+  }
+}

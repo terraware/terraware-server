@@ -7,6 +7,7 @@ import com.terraformation.seedbank.model.GerminationFields
 import com.terraformation.seedbank.model.GerminationModel
 import com.terraformation.seedbank.model.GerminationTestFields
 import com.terraformation.seedbank.model.GerminationTestModel
+import com.terraformation.seedbank.model.SeedQuantityModel
 import com.terraformation.seedbank.services.toListOrNull
 import com.terraformation.seedbank.services.toSetOrNull
 import javax.annotation.ManagedBean
@@ -69,13 +70,17 @@ class GerminationStore(private val dslContext: DSLContext) {
                 record[NOTES],
                 record[STAFF_RESPONSIBLE],
                 germinationsByTestId[testId],
+                SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
             )
           }
           .toListOrNull()
     }
   }
 
-  private fun insertGerminationTest(accessionId: Long, germinationTest: GerminationTestFields) {
+  fun insertGerminationTest(
+      accessionId: Long,
+      germinationTest: GerminationTestFields
+  ): GerminationTestFields {
     val testId =
         with(GERMINATION_TEST) {
           dslContext
@@ -83,6 +88,9 @@ class GerminationStore(private val dslContext: DSLContext) {
               .set(ACCESSION_ID, accessionId)
               .set(END_DATE, germinationTest.endDate)
               .set(NOTES, germinationTest.notes)
+              .set(REMAINING_GRAMS, germinationTest.remaining?.grams)
+              .set(REMAINING_QUANTITY, germinationTest.remaining?.quantity)
+              .set(REMAINING_UNITS_ID, germinationTest.remaining?.units)
               .set(SEED_TYPE_ID, germinationTest.seedType)
               .set(SEEDS_SOWN, germinationTest.seedsSown)
               .set(STAFF_RESPONSIBLE, germinationTest.staffResponsible)
@@ -98,6 +106,8 @@ class GerminationStore(private val dslContext: DSLContext) {
         }
 
     germinationTest.germinations?.forEach { insertGermination(testId, it) }
+
+    return germinationTest.withId(testId)
   }
 
   private fun insertGermination(testId: Long, germination: GerminationFields) {
@@ -138,7 +148,7 @@ class GerminationStore(private val dslContext: DSLContext) {
 
   fun updateGerminationTests(
       accessionId: Long,
-      existingTests: List<GerminationTestModel>?,
+      existingTests: List<GerminationTestFields>?,
       desiredTests: List<GerminationTestFields>?
   ) {
     val existing = existingTests ?: emptyList()
@@ -155,35 +165,42 @@ class GerminationStore(private val dslContext: DSLContext) {
           .execute()
     }
 
-    desired.filter { it.id == null }.forEach { insertGerminationTest(accessionId, it) }
+    desired.forEach { desiredTest ->
+      val testId = desiredTest.id
 
-    desired.filter { it.id != null }.forEach { desiredTest ->
-      val existingTest =
-          existingById[desiredTest.id]
-              ?: throw IllegalArgumentException(
-                  "Germination test IDs must refer to existing tests; leave ID off to insert a new test.")
-      if (!desiredTest.fieldsEqual(existingTest)) {
-        with(GERMINATION_TEST) {
-          dslContext
-              .update(GERMINATION_TEST)
-              .set(END_DATE, desiredTest.endDate)
-              .set(NOTES, desiredTest.notes)
-              .set(SEED_TYPE_ID, desiredTest.seedType)
-              .set(SEEDS_SOWN, desiredTest.seedsSown)
-              .set(SUBSTRATE_ID, desiredTest.substrate)
-              .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
-              .set(START_DATE, desiredTest.startDate)
-              .set(TOTAL_PERCENT_GERMINATED, desiredTest.calculateTotalPercentGerminated())
-              .set(TOTAL_SEEDS_GERMINATED, desiredTest.calculateTotalSeedsGerminated())
-              .set(TREATMENT_ID, desiredTest.treatment)
-              .where(ID.eq(existingTest.id))
-              .execute()
+      if (testId == null) {
+        insertGerminationTest(accessionId, desiredTest)
+      } else {
+        val existingTest =
+            existingById[testId]
+                ?: throw IllegalArgumentException(
+                    "Germination test IDs must refer to existing tests; leave ID off to insert a new test.")
+        if (!desiredTest.fieldsEqual(existingTest)) {
+          with(GERMINATION_TEST) {
+            dslContext
+                .update(GERMINATION_TEST)
+                .set(END_DATE, desiredTest.endDate)
+                .set(NOTES, desiredTest.notes)
+                .set(REMAINING_GRAMS, desiredTest.remaining?.grams)
+                .set(REMAINING_QUANTITY, desiredTest.remaining?.quantity)
+                .set(REMAINING_UNITS_ID, desiredTest.remaining?.units)
+                .set(SEED_TYPE_ID, desiredTest.seedType)
+                .set(SEEDS_SOWN, desiredTest.seedsSown)
+                .set(SUBSTRATE_ID, desiredTest.substrate)
+                .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
+                .set(START_DATE, desiredTest.startDate)
+                .set(TOTAL_PERCENT_GERMINATED, desiredTest.calculateTotalPercentGerminated())
+                .set(TOTAL_SEEDS_GERMINATED, desiredTest.calculateTotalSeedsGerminated())
+                .set(TREATMENT_ID, desiredTest.treatment)
+                .where(ID.eq(testId))
+                .execute()
+          }
         }
-      }
 
-      // TODO: Smarter diff of germinations
-      dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.eq(existingTest.id)).execute()
-      desiredTest.germinations?.forEach { insertGermination(existingTest.id, it) }
+        // TODO: Smarter diff of germinations
+        dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.eq(testId)).execute()
+        desiredTest.germinations?.forEach { insertGermination(testId, it) }
+      }
     }
   }
 }

@@ -1,10 +1,10 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.api.seedbank.AccessionPayload
 import com.terraformation.seedbank.api.seedbank.CreateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
 import com.terraformation.seedbank.api.seedbank.GerminationPayload
 import com.terraformation.seedbank.api.seedbank.GerminationTestPayload
+import com.terraformation.seedbank.api.seedbank.SeedQuantityPayload
 import com.terraformation.seedbank.api.seedbank.UpdateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
@@ -30,10 +30,14 @@ import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.seedbank.grams
+import com.terraformation.seedbank.kilograms
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionSource
 import com.terraformation.seedbank.model.Geolocation
+import com.terraformation.seedbank.model.SeedQuantityModel
 import com.terraformation.seedbank.model.WithdrawalModel
+import com.terraformation.seedbank.seeds
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -42,6 +46,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.ChronoField
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -51,6 +56,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
@@ -227,7 +233,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     assertEquals(
         setOf("bag 1", "bag 2"), initialBags.map { it.bagNumber }.toSet(), "Initial bag numbers")
 
-    val desired = AccessionPayload(initial).copy(bagNumbers = setOf("bag 2", "bag 3"))
+    val desired = initial.copy(bagNumbers = setOf("bag 2", "bag 3"))
 
     assertTrue(store.update(initial.accessionNumber, desired), "Update succeeded")
 
@@ -282,12 +288,11 @@ internal class AccessionStoreTest : DatabaseTest() {
         100.0, initialGeos.mapNotNull { it.gpsAccuracy }.first(), 0.1, "Accuracy is recorded")
 
     val desired =
-        AccessionPayload(initial)
-            .copy(
-                geolocations =
-                    setOf(
-                        Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
-                        Geolocation(BigDecimal(5), BigDecimal(6))))
+        initial.copy(
+            geolocations =
+                setOf(
+                    Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
+                    Geolocation(BigDecimal(5), BigDecimal(6))))
 
     assertTrue(store.update(initial.accessionNumber, desired), "Update succeeded")
 
@@ -301,36 +306,6 @@ internal class AccessionStoreTest : DatabaseTest() {
         initialGeos.filter { it.latitude == BigDecimal(1) },
         updatedGeos.filter { it.latitude == BigDecimal(1) },
         "Existing geo retained")
-  }
-
-  @Test
-  fun `germination tests are inserted at creation time`() {
-    store.create(
-        CreateAccessionRequestPayload(
-            germinationTests =
-                listOf(
-                    GerminationTestPayload(
-                        testType = GerminationTestType.Lab,
-                        substrate = GerminationSubstrate.AgarPetriDish),
-                    GerminationTestPayload(
-                        testType = GerminationTestType.Nursery,
-                        substrate = GerminationSubstrate.NurseryMedia))))
-    val initialTests = germinationTestDao.fetchByAccessionId(1)
-
-    assertTrue(
-        initialTests.any {
-          it.testType == GerminationTestType.Lab &&
-              it.substrateId == GerminationSubstrate.AgarPetriDish &&
-              it.startDate == null
-        },
-        "Lab test is inserted")
-    assertTrue(
-        initialTests.any {
-          it.testType == GerminationTestType.Nursery &&
-              it.substrateId == GerminationSubstrate.NurseryMedia &&
-              it.startDate == null
-        },
-        "Nursery test is inserted")
   }
 
   @Test
@@ -352,22 +327,28 @@ internal class AccessionStoreTest : DatabaseTest() {
     val initial = store.create(CreateAccessionRequestPayload())
     val startDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val withTest =
-        AccessionPayload(initial)
+        initial
+            .toUpdatePayload()
             .copy(
                 germinationTests =
                     listOf(
                         GerminationTestPayload(
-                            testType = GerminationTestType.Lab, startDate = startDate)))
+                            testType = GerminationTestType.Lab, startDate = startDate)),
+                processingMethod = ProcessingMethod.Count,
+                initialQuantity = seeds(100))
     store.update(initial.accessionNumber, withTest)
 
     val updatedTests = germinationTestDao.fetchByAccessionId(1)
     assertEquals(
         listOf(
             GerminationTest(
-                id = 1,
                 accessionId = 1,
+                id = 1,
+                remainingQuantity = BigDecimal(100),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+                startDate = startDate,
                 testType = GerminationTestType.Lab,
-                startDate = startDate)),
+            )),
         updatedTests)
 
     val updatedAccession = accessionDao.fetchOneById(1)
@@ -382,9 +363,8 @@ internal class AccessionStoreTest : DatabaseTest() {
         store.create(
             CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
     val desired =
-        AccessionPayload(initial)
-            .copy(
-                germinationTestTypes = setOf(GerminationTestType.Lab, GerminationTestType.Nursery))
+        initial.copy(
+            germinationTestTypes = setOf(GerminationTestType.Lab, GerminationTestType.Nursery))
     store.update(initial.accessionNumber, desired)
 
     val types =
@@ -401,8 +381,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     val initial =
         store.create(
             CreateAccessionRequestPayload(germinationTestTypes = setOf(GerminationTestType.Lab)))
-    val desired =
-        AccessionPayload(initial).copy(germinationTestTypes = setOf(GerminationTestType.Nursery))
+    val desired = initial.copy(germinationTestTypes = setOf(GerminationTestType.Nursery))
     store.update(initial.accessionNumber, desired)
 
     val types =
@@ -416,13 +395,16 @@ internal class AccessionStoreTest : DatabaseTest() {
 
   @Test
   fun `existing germination tests are updated`() {
-    val initial =
-        store.create(
-            CreateAccessionRequestPayload(
-                germinationTests =
-                    listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
+    val initial = createAndUpdate {
+      it.copy(
+          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)),
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(100))
+    }
+
     val desired =
-        AccessionPayload(initial)
+        initial
+            .toUpdatePayload()
             .copy(
                 germinationTests =
                     listOf(
@@ -447,24 +429,81 @@ internal class AccessionStoreTest : DatabaseTest() {
                 treatmentId = GerminationTreatment.Scarify,
                 substrateId = GerminationSubstrate.PaperPetriDish,
                 notes = "notes",
-                seedsSown = 5)),
+                seedsSown = 5,
+                remainingQuantity = BigDecimal(95),
+                remainingUnitsId = SeedQuantityUnits.Seeds)),
         updatedTests)
   }
 
   @Test
-  fun `cannot update germination test from a different accession`() {
-    val other =
-        store.create(
-            CreateAccessionRequestPayload(
-                germinationTests =
-                    listOf(GerminationTestPayload(testType = GerminationTestType.Nursery))))
-    val initial =
-        store.create(
-            CreateAccessionRequestPayload(
-                germinationTests =
-                    listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
+  fun `change to germination test weight remaining is propagated to withdrawal and accession`() {
+    val initial = createAndUpdate {
+      it.copy(
+          germinationTests =
+              listOf(
+                  GerminationTestPayload(
+                      testType = GerminationTestType.Lab, remainingQuantity = grams(75))),
+          initialQuantity = grams(100),
+          processingMethod = ProcessingMethod.Weight,
+      )
+    }
+
+    assertEquals(
+        grams<SeedQuantityModel>(75),
+        initial.remaining,
+        "Accession remaining quantity before update")
+    assertEquals(
+        grams<SeedQuantityModel>(75),
+        initial.withdrawals!![0].remaining,
+        "Withdrawal quantities remaining before update")
+    assertEquals(
+        grams<SeedQuantityModel>(75),
+        initial.germinationTests!![0].remaining,
+        "Test remaining quantity before update")
+
     val desired =
-        AccessionPayload(initial)
+        initial
+            .toUpdatePayload()
+            .copy(
+                germinationTests =
+                    listOf(
+                        GerminationTestPayload(initial.germinationTests!![0])
+                            .copy(remainingQuantity = grams(60)),
+                    ),
+            )
+    val updated = store.updateAndFetch(desired, initial.accessionNumber)
+
+    assertEquals(
+        grams<SeedQuantityModel>(60),
+        updated.remaining,
+        "Accession remaining quantity after update")
+    assertEquals(
+        grams<SeedQuantityModel>(60),
+        updated.withdrawals!![0].remaining,
+        "Withdrawal quantities remaining after update")
+    assertEquals(
+        grams<SeedQuantityModel>(60),
+        updated.germinationTests!![0].remaining,
+        "Test remaining quantity after update")
+  }
+
+  @Test
+  fun `cannot update germination test from a different accession`() {
+    val other = createAndUpdate {
+      it.copy(
+          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Nursery)),
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(100))
+    }
+    val initial = createAndUpdate {
+      it.copy(
+          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)),
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(100))
+    }
+    val desired =
+        initial
+            .toUpdatePayload()
             .copy(
                 germinationTests =
                     listOf(
@@ -483,42 +522,17 @@ internal class AccessionStoreTest : DatabaseTest() {
   }
 
   @Test
-  fun `germinations are inserted by create`() {
-    val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
-    store.create(
-        CreateAccessionRequestPayload(
-            germinationTests =
-                listOf(
-                    GerminationTestPayload(
-                        testType = GerminationTestType.Lab,
-                        germinations =
-                            listOf(
-                                GerminationPayload(
-                                    recordingDate = localDate, seedsGerminated = 123),
-                                GerminationPayload(
-                                    recordingDate = localDate.plusDays(1),
-                                    seedsGerminated = 456))))))
-    val germinations = germinationDao.fetchByTestId(1)
-
-    assertEquals(2, germinations.size, "Number of germinations inserted")
-    assertTrue(
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 123 },
-        "First germination inserted")
-    assertTrue(
-        germinations.any { it.recordingDate == localDate.plusDays(1) && it.seedsGerminated == 456 },
-        "First germination inserted")
-  }
-
-  @Test
   fun `germinations are inserted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
-    val initial =
-        store.create(
-            CreateAccessionRequestPayload(
-                germinationTests =
-                    listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
+    val initial = createAndUpdate {
+      it.copy(
+          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)),
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(100))
+    }
     val desired =
-        AccessionPayload(initial)
+        initial
+            .toUpdatePayload()
             .copy(
                 germinationTests =
                     listOf(
@@ -555,22 +569,24 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `germinations are deleted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
-    val initial =
-        store.create(
-            CreateAccessionRequestPayload(
-                germinationTests =
-                    listOf(
-                        GerminationTestPayload(
-                            testType = GerminationTestType.Lab,
-                            germinations =
-                                listOf(
-                                    GerminationPayload(
-                                        recordingDate = localDate, seedsGerminated = 75),
-                                    GerminationPayload(
-                                        recordingDate = localDate.plusDays(1),
-                                        seedsGerminated = 456))))))
+    val initial = createAndUpdate {
+      it.copy(
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(100),
+          germinationTests =
+              listOf(
+                  GerminationTestPayload(
+                      testType = GerminationTestType.Lab,
+                      germinations =
+                          listOf(
+                              GerminationPayload(recordingDate = localDate, seedsGerminated = 75),
+                              GerminationPayload(
+                                  recordingDate = localDate.plusDays(1), seedsGerminated = 456)))))
+    }
+
     val desired =
-        AccessionPayload(initial)
+        initial
+            .toUpdatePayload()
             .copy(
                 germinationTests =
                     listOf(
@@ -611,8 +627,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             conditionId = StorageCondition.Freezer))
 
     val initial = store.create(CreateAccessionRequestPayload())
-    store.update(
-        initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = locationName))
+    store.update(initial.accessionNumber, initial.copy(storageLocation = locationName))
 
     assertEquals(
         locationId,
@@ -629,7 +644,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     assertThrows(IllegalArgumentException::class.java) {
       val initial = store.create(CreateAccessionRequestPayload())
       store.update(
-          initial.accessionNumber, AccessionPayload(initial).copy(storageLocation = "bogus"))
+          initial.accessionNumber, initial.toUpdatePayload().copy(storageLocation = "bogus"))
     }
   }
 
@@ -656,39 +671,41 @@ internal class AccessionStoreTest : DatabaseTest() {
     store.update(
         initial.accessionNumber,
         initial.copy(
+            processingMethod = ProcessingMethod.Weight,
             subsetCount = 1,
-            subsetWeightGrams = BigDecimal.ONE,
-            totalWeightGrams = BigDecimal.TEN,
-        ))
+            subsetWeightQuantity = SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Ounces),
+            total = SeedQuantityModel(BigDecimal.TEN, SeedQuantityUnits.Pounds)))
     val fetched = store.fetchByNumber(initial.accessionNumber)!!
 
-    assertEquals(10, fetched.estimatedSeedCount, "Estimated seed count is added")
-    assertEquals(10, fetched.effectiveSeedCount, "Effective seed count is added")
+    assertEquals(160, fetched.estimatedSeedCount, "Estimated seed count is added")
 
-    store.update(initial.accessionNumber, fetched.copy(totalWeightGrams = null))
+    store.update(initial.accessionNumber, fetched.copy(total = null))
 
     val fetchedAfterClear = store.fetchByNumber(initial.accessionNumber)!!
 
     assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
-    assertNull(fetchedAfterClear.effectiveSeedCount, "Effective seed count is removed")
   }
 
   @Test
   fun `update recalculates seeds remaining when seed count is filled in`() {
     val initial = store.create(CreateAccessionRequestPayload())
-    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    store.update(
+        initial.accessionNumber,
+        initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
     val fetched = store.fetchByNumber(initial.accessionNumber)
 
-    assertEquals(10, fetched?.seedsRemaining)
+    assertEquals(seeds<SeedQuantityModel>(10), fetched?.remaining)
   }
 
   @Test
   fun `update recalculates seeds remaining on withdrawal`() {
     val initial = store.create(CreateAccessionRequestPayload())
-    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    store.update(
+        initial.accessionNumber,
+        initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
     val fetched = store.fetchByNumber(initial.accessionNumber)
 
-    assertEquals(10, fetched?.seedsRemaining)
+    assertEquals(seeds(10), fetched?.remaining)
   }
 
   @Test
@@ -757,23 +774,22 @@ internal class AccessionStoreTest : DatabaseTest() {
                 accessionId = accession.id,
                 date = test.startDate!!,
                 purpose = WithdrawalPurpose.GerminationTesting,
-                seedsWithdrawn = 5,
-                germinationTestId = test.id)),
+                withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
+                germinationTestId = test.id,
+                remaining = seeds(5))),
         accession.withdrawals)
   }
 
   @Test
   fun `update correctly deducts from seed count for germination tests`() {
     val accession = createAccessionWithGerminationTest()
-    val test = accession.germinationTests!![0]
-    val expectedSeedsRemaining = accession.seedsCounted!! - test.seedsSown!!
 
     assertEquals(
-        expectedSeedsRemaining, accession.seedsRemaining, "Seeds remaining after test creation")
+        seeds<SeedQuantityModel>(5), accession.remaining, "Seeds remaining after test creation")
 
-    val updated = store.updateAndFetch(accession)
+    val updated = store.updateAndFetch(accession, accession.accessionNumber)
     assertEquals(
-        expectedSeedsRemaining, updated.seedsRemaining, "Seeds remaining after test update")
+        seeds<SeedQuantityModel>(5), updated.remaining, "Seeds remaining after test update")
   }
 
   @Test
@@ -786,10 +802,13 @@ internal class AccessionStoreTest : DatabaseTest() {
     val modifiedTest = initialTest.copy(startDate = modifiedStartDate, seedsSown = 6)
     val modifiedWithdrawal =
         initialWithdrawal.copy(
-            date = modifiedTest.startDate!!, seedsWithdrawn = modifiedTest.seedsSown!!)
+            date = modifiedTest.startDate!!,
+            withdrawn = seeds(modifiedTest.seedsSown!!),
+            remaining = seeds(4))
 
     val afterTestModified =
-        store.updateAndFetch(initial.copy(germinationTests = listOf(modifiedTest)))
+        store.updateAndFetch(
+            initial.copy(germinationTests = listOf(modifiedTest)), initial.accessionNumber)
 
     assertEquals(listOf(modifiedWithdrawal), afterTestModified.withdrawals)
   }
@@ -797,7 +816,8 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `update does not modify withdrawals when their germination tests are not modified`() {
     val initial = createAccessionWithGerminationTest()
-    val updated = store.updateAndFetch(initial.copy(receivedDate = LocalDate.now()))
+    val updated =
+        store.updateAndFetch(initial.copy(receivedDate = LocalDate.now()), initial.accessionNumber)
 
     assertEquals(initial.withdrawals, updated.withdrawals)
   }
@@ -805,7 +825,8 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `update removes withdrawals when germination tests are removed`() {
     val initial = createAccessionWithGerminationTest()
-    val updated = store.updateAndFetch(initial.copy(germinationTests = null))
+    val updated =
+        store.updateAndFetch(initial.copy(germinationTests = null), initial.accessionNumber)
 
     assertNull(updated.withdrawals)
   }
@@ -817,20 +838,20 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     val modifiedInitialWithdrawal =
         WithdrawalPayload(initialWithdrawal)
-            .copy(
-                date = initialWithdrawal.date.plusDays(1),
-                seedsWithdrawn = initialWithdrawal.seedsWithdrawn + 1)
+            .copy(date = initialWithdrawal.date.plusDays(1), withdrawnQuantity = seeds(100))
     val newWithdrawal =
         WithdrawalPayload(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.GerminationTesting,
-            seedsWithdrawn = 1,
+            withdrawnQuantity = seeds(1),
             germinationTestId = initialWithdrawal.germinationTestId)
 
     val updated =
         store.updateAndFetch(
-            AccessionPayload(initial)
-                .copy(withdrawals = listOf(modifiedInitialWithdrawal, newWithdrawal)))
+            initial
+                .toUpdatePayload()
+                .copy(withdrawals = listOf(modifiedInitialWithdrawal, newWithdrawal)),
+            initial.accessionNumber)
 
     assertEquals(initial.withdrawals, updated.withdrawals)
   }
@@ -857,7 +878,9 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `state transitions to Processing when seed count entered`() {
     val initial = store.create(CreateAccessionRequestPayload())
-    store.update(initial.accessionNumber, initial.copy(seedsCounted = 10))
+    store.update(
+        initial.accessionNumber,
+        initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(100)))
     val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertEquals(AccessionState.Processing, fetched?.state)
@@ -884,7 +907,7 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `dryRun does not persist changes`() {
     val initial = store.create(CreateAccessionRequestPayload(species = "Initial Species"))
-    store.dryRun(initial.copy(species = "Modified Species"))
+    store.dryRun(initial.copy(species = "Modified Species"), initial.accessionNumber)
     val fetched = store.fetchByNumber(initial.accessionNumber)
 
     assertEquals(initial.species, fetched?.species)
@@ -1147,6 +1170,199 @@ internal class AccessionStoreTest : DatabaseTest() {
   }
 
   @Test
+  fun `update rejects weight-based withdrawals for count-based accessions`() {
+    val initial = store.create(CreateAccessionRequestPayload())
+
+    assertThrows(IllegalArgumentException::class.java) {
+      store.update(
+          initial.accessionNumber,
+          initial
+              .toUpdatePayload()
+              .copy(
+                  processingMethod = ProcessingMethod.Count,
+                  initialQuantity = seeds(50),
+                  withdrawals =
+                      listOf(
+                          WithdrawalPayload(
+                              date = LocalDate.now(clock),
+                              withdrawnQuantity = grams(1),
+                              purpose = WithdrawalPurpose.Other))))
+    }
+  }
+
+  @Test
+  fun `update rejects withdrawals without remaining quantity for weight-based accessions`() {
+    val initial = store.create(CreateAccessionRequestPayload())
+
+    assertThrows(IllegalArgumentException::class.java) {
+      store.update(
+          initial.accessionNumber,
+          initial
+              .toUpdatePayload()
+              .copy(
+                  processingMethod = ProcessingMethod.Weight,
+                  initialQuantity = grams(100),
+                  withdrawals =
+                      listOf(
+                          WithdrawalPayload(
+                              date = LocalDate.now(clock), purpose = WithdrawalPurpose.Other))))
+    }
+  }
+
+  @Test
+  fun `update computes remaining quantity on withdrawals for count-based accessions`() {
+    val initial = createAndUpdate {
+      it.copy(
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(100),
+          withdrawals =
+              listOf(
+                  WithdrawalPayload(
+                      date = LocalDate.EPOCH,
+                      purpose = WithdrawalPurpose.Other,
+                      withdrawnQuantity = seeds(10))))
+    }
+
+    assertEquals(
+        seeds<SeedQuantityModel>(90),
+        initial.withdrawals!![0].remaining,
+        "Quantity remaining on withdrawal")
+    assertEquals(seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
+  }
+
+  @Test
+  fun `update requires subset weight to use weight units`() {
+    val initial = store.create(CreateAccessionRequestPayload())
+
+    assertThrows(IllegalArgumentException::class.java) {
+      store.update(
+          initial.accessionNumber,
+          initial
+              .toUpdatePayload()
+              .copy(
+                  processingMethod = ProcessingMethod.Weight,
+                  initialQuantity = grams(10),
+                  subsetWeight = seeds(5)))
+    }
+  }
+
+  @Test
+  fun `update rejects withdrawals if accession total size not set`() {
+    val initial = store.create(CreateAccessionRequestPayload())
+
+    assertThrows(IllegalArgumentException::class.java) {
+      store.update(
+          initial.accessionNumber,
+          initial
+              .toUpdatePayload()
+              .copy(
+                  processingMethod = ProcessingMethod.Count,
+                  withdrawals =
+                      listOf(
+                          WithdrawalPayload(
+                              date = LocalDate.EPOCH,
+                              purpose = WithdrawalPurpose.Other,
+                              withdrawnQuantity = seeds(1)))))
+    }
+  }
+
+  @Test
+  fun `update rejects germination tests without remaining quantity for weight-based accessions`() {
+    val initial = store.create(CreateAccessionRequestPayload())
+
+    assertThrows(IllegalArgumentException::class.java) {
+      store.update(
+          initial.accessionNumber,
+          initial
+              .toUpdatePayload()
+              .copy(
+                  processingMethod = ProcessingMethod.Weight,
+                  initialQuantity = grams(100),
+                  germinationTests =
+                      listOf(GerminationTestPayload(testType = GerminationTestType.Lab))))
+    }
+  }
+
+  @Test
+  fun `update computes remaining quantity on germination tests for count-based accessions`() {
+    val initial = createAndUpdate {
+      it.copy(
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(100),
+          germinationTests =
+              listOf(GerminationTestPayload(testType = GerminationTestType.Lab, seedsSown = 10)))
+    }
+
+    assertEquals(
+        seeds<SeedQuantityModel>(90),
+        initial.germinationTests!![0].remaining,
+        "Quantity remaining on test")
+    assertEquals(seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
+  }
+
+  @Test
+  fun `update allows processing method to change if no tests or withdrawals exist`() {
+    val initial = createAndUpdate { it.copy(processingMethod = ProcessingMethod.Weight) }
+
+    val withCountMethod =
+        store.updateAndFetch(
+            initial
+                .toUpdatePayload()
+                .copy(processingMethod = ProcessingMethod.Count, initialQuantity = seeds(1)),
+            initial.accessionNumber)
+    assertEquals(seeds<SeedQuantityModel>(1), withCountMethod.total)
+
+    val withWeightMethod =
+        store.updateAndFetch(
+            withCountMethod
+                .toUpdatePayload()
+                .copy(processingMethod = ProcessingMethod.Weight, initialQuantity = grams(2)),
+            initial.accessionNumber)
+    assertEquals(grams<SeedQuantityModel>(2), withWeightMethod.total)
+  }
+
+  @Test
+  fun `update does not allow processing method to change if germination test exists`() {
+    val initial = createAndUpdate {
+      it.copy(
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(10),
+          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)))
+    }
+
+    assertThrows(IllegalArgumentException::class.java) {
+      store.update(
+          initial.accessionNumber,
+          initial
+              .toUpdatePayload()
+              .copy(processingMethod = ProcessingMethod.Weight, initialQuantity = grams(5)))
+    }
+  }
+
+  @Test
+  fun `update does not allow processing method to change if withdrawal exists`() {
+    val initial = createAndUpdate {
+      it.copy(
+          processingMethod = ProcessingMethod.Weight,
+          initialQuantity = grams(10),
+          withdrawals =
+              listOf(
+                  WithdrawalPayload(
+                      date = LocalDate.EPOCH,
+                      purpose = WithdrawalPurpose.Other,
+                      remainingQuantity = grams(5))))
+    }
+
+    assertThrows(IllegalArgumentException::class.java) {
+      store.update(
+          initial.accessionNumber,
+          initial
+              .toUpdatePayload()
+              .copy(processingMethod = ProcessingMethod.Count, initialQuantity = seeds(10)))
+    }
+  }
+
+  @Test
   fun `create writes all fields to database`() {
     val today = LocalDate.now(clock)
     val accession =
@@ -1175,9 +1391,6 @@ internal class AccessionStoreTest : DatabaseTest() {
                         longitude = BigDecimal.TEN,
                         accuracy = BigDecimal(3))),
             germinationTestTypes = setOf(GerminationTestType.Lab),
-            germinationTests =
-                listOf(
-                    GerminationTestPayload(testType = GerminationTestType.Lab, startDate = today)),
             landowner = "landowner",
             numberOfTrees = 10,
             primaryCollector = "primaryCollector",
@@ -1232,19 +1445,22 @@ internal class AccessionStoreTest : DatabaseTest() {
             germinationTestTypes = setOf(GerminationTestType.Lab),
             germinationTests =
                 listOf(
-                    GerminationTestPayload(testType = GerminationTestType.Lab, startDate = today)),
+                    GerminationTestPayload(
+                        remainingPayload = grams(10),
+                        testType = GerminationTestType.Lab,
+                        startDate = today)),
+            initialQuantity = kilograms(432),
             landowner = "landowner",
             numberOfTrees = 10,
             nurseryStartDate = today,
             primaryCollector = "primaryCollector",
-            processingMethod = ProcessingMethod.Count,
+            processingMethod = ProcessingMethod.Weight,
             processingNotes = "processingNotes",
             processingStaffResponsible = "procStaff",
             processingStartDate = today,
             rare = SpeciesRareType.Yes,
             receivedDate = today,
             secondaryCollectors = setOf("second1", "second2"),
-            seedsCounted = 30,
             siteLocation = "siteLocation",
             sourcePlantOrigin = SourcePlantOrigin.Wild,
             species = "species",
@@ -1254,18 +1470,18 @@ internal class AccessionStoreTest : DatabaseTest() {
             storageStaffResponsible = "storageStaff",
             storageStartDate = today,
             subsetCount = 32,
-            subsetWeightGrams = BigDecimal(33),
+            subsetWeight = grams(33),
             targetStorageCondition = StorageCondition.Freezer,
-            totalWeightGrams = BigDecimal(432),
             withdrawals =
                 listOf(
                     WithdrawalPayload(
                         date = today,
                         purpose = WithdrawalPurpose.Other,
-                        gramsWithdrawn = BigDecimal(41),
                         destination = "destination",
                         notes = "notes",
-                        staffResponsible = "staff")),
+                        remainingQuantity = grams(42),
+                        staffResponsible = "staff",
+                        withdrawnQuantity = seeds(41))),
         )
 
     val updatePayloadProperties = UpdateAccessionRequestPayload::class.declaredMemberProperties
@@ -1273,7 +1489,13 @@ internal class AccessionStoreTest : DatabaseTest() {
     val propertyNames = updatePayloadProperties.map { it.name }.toSet()
 
     updatePayloadProperties.forEach { prop ->
-      assertNotNull(prop.get(update), "Field ${prop.name} is null in example object")
+      if (prop.visibility == KVisibility.PUBLIC) {
+        try {
+          assertNotNull(prop.get(update), "Field ${prop.name} is null in example object")
+        } catch (e: Exception) {
+          fail("Unable to read ${prop.name}", e)
+        }
+      }
     }
 
     storageLocationDao.insert(
@@ -1302,19 +1524,70 @@ internal class AccessionStoreTest : DatabaseTest() {
     }
   }
 
-  private fun createAccessionWithGerminationTest(): AccessionModel {
+  private fun createAndUpdate(
+      edit: (UpdateAccessionRequestPayload) -> UpdateAccessionRequestPayload
+  ): AccessionModel {
     val initial = store.create(CreateAccessionRequestPayload())
-    val accession =
-        AccessionPayload(initial)
-            .copy(
-                seedsCounted = 10,
-                germinationTests =
-                    listOf(
-                        GerminationTestPayload(
-                            testType = GerminationTestType.Lab,
-                            startDate = LocalDate.of(2021, 4, 1),
-                            seedsSown = 5)))
+    val edited = edit(initial.toUpdatePayload())
+    return store.updateAndFetch(edited, initial.accessionNumber)
+  }
 
-    return store.updateAndFetch(accession)
+  private fun createAccessionWithGerminationTest(): AccessionModel {
+    return createAndUpdate {
+      it.copy(
+          processingMethod = ProcessingMethod.Count,
+          initialQuantity = seeds(10),
+          germinationTests =
+              listOf(
+                  GerminationTestPayload(
+                      testType = GerminationTestType.Lab,
+                      startDate = LocalDate.of(2021, 4, 1),
+                      seedsSown = 5)))
+    }
+  }
+
+  private fun AccessionModel.toUpdatePayload(): UpdateAccessionRequestPayload {
+    return UpdateAccessionRequestPayload(
+        bagNumbers = bagNumbers,
+        collectedDate = collectedDate,
+        cutTestSeedsCompromised = cutTestSeedsCompromised,
+        cutTestSeedsEmpty = cutTestSeedsEmpty,
+        cutTestSeedsFilled = cutTestSeedsFilled,
+        dryingEndDate = dryingEndDate,
+        dryingMoveDate = dryingMoveDate,
+        dryingStartDate = dryingStartDate,
+        endangered = endangered,
+        environmentalNotes = environmentalNotes,
+        family = family,
+        fieldNotes = fieldNotes,
+        founderId = founderId,
+        geolocations = geolocations,
+        germinationTests = germinationTests?.map { GerminationTestPayload(it) },
+        germinationTestTypes = germinationTestTypes,
+        initialQuantity = total?.let { SeedQuantityPayload(it) },
+        landowner = landowner,
+        numberOfTrees = numberOfTrees,
+        nurseryStartDate = nurseryStartDate,
+        primaryCollector = primaryCollector,
+        processingMethod = processingMethod,
+        processingNotes = processingNotes,
+        processingStaffResponsible = processingStaffResponsible,
+        processingStartDate = processingStartDate,
+        rare = rare,
+        receivedDate = receivedDate,
+        secondaryCollectors = secondaryCollectors,
+        siteLocation = siteLocation,
+        sourcePlantOrigin = sourcePlantOrigin,
+        species = species,
+        storageLocation = storageLocation,
+        storagePackets = storagePackets,
+        storageNotes = storageNotes,
+        storageStaffResponsible = storageStaffResponsible,
+        storageStartDate = storageStartDate,
+        subsetCount = subsetCount,
+        subsetWeight = subsetWeightQuantity?.let { SeedQuantityPayload(it) },
+        targetStorageCondition = targetStorageCondition,
+        withdrawals = withdrawals?.map { WithdrawalPayload(it) },
+    )
   }
 }

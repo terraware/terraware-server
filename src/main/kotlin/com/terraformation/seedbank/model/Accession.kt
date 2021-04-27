@@ -3,6 +3,7 @@ package com.terraformation.seedbank.model
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.SeedQuantityUnits
 import com.terraformation.seedbank.db.SourcePlantOrigin
 import com.terraformation.seedbank.db.SpeciesEndangeredType
 import com.terraformation.seedbank.db.SpeciesRareType
@@ -59,8 +60,6 @@ interface AccessionFields {
     get() = null
   val dryingStartDate: LocalDate?
     get() = null
-  val effectiveSeedCount: Int?
-    get() = null
   val endangered: SpeciesEndangeredType?
     get() = null
   val environmentalNotes: String?
@@ -105,11 +104,9 @@ interface AccessionFields {
     get() = null
   val receivedDate: LocalDate?
     get() = null
+  val remaining: SeedQuantityModel?
+    get() = null
   val secondaryCollectors: Set<String>?
-    get() = null
-  val seedsCounted: Int?
-    get() = null
-  val seedsRemaining: Int?
     get() = null
   val siteLocation: String?
     get() = null
@@ -137,16 +134,85 @@ interface AccessionFields {
     get() = null
   val subsetCount: Int?
     get() = null
-  val subsetWeightGrams: BigDecimal?
+  val subsetWeightQuantity: SeedQuantityModel?
     get() = null
   val targetStorageCondition: StorageCondition?
     get() = null
-  val totalViabilityPercent: Int?
+  val total: SeedQuantityModel?
     get() = null
-  val totalWeightGrams: BigDecimal?
+  val totalViabilityPercent: Int?
     get() = null
   val withdrawals: List<WithdrawalFields>?
     get() = null
+
+  fun validate() {
+    when (processingMethod) {
+      ProcessingMethod.Count -> validateCountBased()
+      ProcessingMethod.Weight -> validateWeightBased()
+      null -> {
+        if (total != null) {
+          throw IllegalArgumentException(
+              "Cannot set total accession size without selecting a processing method.")
+        }
+      }
+    }
+
+    if (total == null) {
+      if (!germinationTests.isNullOrEmpty()) {
+        throw IllegalArgumentException(
+            "Cannot create germination tests before setting total accession size")
+      }
+      if (!withdrawals.isNullOrEmpty()) {
+        throw IllegalArgumentException(
+            "Cannot withdraw from accession before setting total accession size")
+      }
+    }
+  }
+
+  private fun validateCountBased() {
+    total?.let { total ->
+      if (total.units != SeedQuantityUnits.Seeds) {
+        throw IllegalArgumentException(
+            "Total accession size must be a seed count if processing method is Count")
+      }
+    }
+
+    listOfNotNull(
+        withdrawals?.mapNotNull { it.withdrawn },
+        withdrawals?.mapNotNull { it.remaining },
+        germinationTests?.mapNotNull { it.remaining },
+    )
+        .flatten()
+        .forEach { quantity ->
+          if (quantity.units != SeedQuantityUnits.Seeds) {
+            throw IllegalArgumentException(
+                "Seed quantities can't be specified by weight if processing method is Count")
+          }
+        }
+  }
+
+  private fun validateWeightBased() {
+    total?.let { total ->
+      if (total.units == SeedQuantityUnits.Seeds) {
+        throw IllegalArgumentException(
+            "Total accession size must be a weight measurement if processing method is Weight")
+      }
+    }
+
+    val germinationTestRemaining = germinationTests.orEmpty().map { it.remaining }
+    val withdrawalRemaining = withdrawals.orEmpty().map { it.remaining }
+    (germinationTestRemaining + withdrawalRemaining).forEach { quantity ->
+      if (quantity == null) {
+        throw IllegalArgumentException(
+            "Germination tests and withdrawals must include remaining quantity if accession " +
+                "processing method is Weight")
+      } else if (quantity.units == SeedQuantityUnits.Seeds) {
+        throw IllegalArgumentException(
+            "Seeds remaining on germination tests and withdrawals must be weight-based if " +
+                "accession processing method is Weight")
+      }
+    }
+  }
 
   private fun getLatestGerminationTestWithResults(): GerminationTestFields? {
     return germinationTests
@@ -168,8 +234,8 @@ interface AccessionFields {
       cutTestSeedsCompromised != null && cutTestSeedsEmpty != null && cutTestSeedsFilled != null
 
   fun hasSeedCount(): Boolean =
-      seedsCounted != null ||
-          (subsetCount != null && subsetWeightGrams != null && totalWeightGrams != null)
+      total?.units == SeedQuantityUnits.Seeds ||
+          (total != null && subsetCount != null && subsetWeightQuantity != null)
 
   private fun hasTestResults(): Boolean = hasCutTestResults() || hasGerminationTestResults()
 
@@ -203,47 +269,156 @@ interface AccessionFields {
     }
   }
 
-  fun calculateSeedsRemaining(): Int? {
-    val initialCount = calculateEffectiveSeedCount() ?: return null
-    val cutTested = getCutTestTotal() ?: 0
-    val sown = germinationTests?.mapNotNull { it.seedsSown }?.sum() ?: 0
-
-    // Don't count germination testing withdrawals because they are already accounted for by
-    // examining the tests, and more importantly because at the time this method is called, the
-    // list of germination-testing withdrawals might be stale if the tests have changed.
-    val manualWithdrawals =
-        withdrawals?.filter { it.purpose != WithdrawalPurpose.GerminationTesting } ?: emptyList()
-    val withdrawn = manualWithdrawals.sumOf { it.computeSeedsWithdrawn(this, true) }
-
-    return initialCount - sown - cutTested - withdrawn
+  fun calculateRemaining(clock: Clock): SeedQuantityModel? {
+    val remaining = calculateWithdrawals(clock).lastOrNull()?.remaining ?: total
+    return remaining?.toUnits(total?.units ?: remaining.units)
   }
 
   fun calculateEstimatedSeedCount(): Int? {
-    return if (seedsCounted == null &&
-        subsetCount != null &&
-        subsetWeightGrams != null &&
-        totalWeightGrams != null) {
-      (BigDecimal(subsetCount!!) * totalWeightGrams!! / subsetWeightGrams!!).toInt()
-    } else {
-      null
-    }
-  }
+    val total = this.total ?: return null
 
-  fun calculateEffectiveSeedCount(): Int? {
-    return seedsCounted ?: calculateEstimatedSeedCount()
+    return if (total.units == SeedQuantityUnits.Seeds) {
+      total.quantity.toInt()
+    } else {
+      val subsetCount = this.subsetCount?.let { BigDecimal(it) } ?: return null
+      val subsetGrams = this.subsetWeightQuantity?.grams ?: return null
+      val totalGrams = total.grams ?: return null
+      (subsetCount * totalGrams / subsetGrams).toInt()
+    }
   }
 
   fun calculateProcessingStartDate(clock: Clock): LocalDate? {
     return processingStartDate ?: if (hasSeedCount()) LocalDate.now(clock) else null
   }
-}
 
-interface ConcreteAccession : AccessionFields {
-  override val accessionNumber: String
-  override val state: AccessionState
-  override val active: AccessionActive
-    get() = state.toActiveEnum()
-  override val source: AccessionSource
+  /**
+   * @return Withdrawals in descending order of seeds remaining; the last item in the list will be
+   * the one with the seeds-remaining value for the accession as a whole.
+   */
+  fun calculateWithdrawals(
+      clock: Clock,
+      existingWithdrawals: Collection<WithdrawalFields>? = withdrawals
+  ): List<WithdrawalFields> {
+    if (withdrawals.isNullOrEmpty() && germinationTests.isNullOrEmpty()) {
+      return emptyList()
+    }
+
+    var currentRemaining =
+        total
+            ?: throw IllegalStateException(
+                "Cannot withdraw from accession before specifying its total size")
+
+    val existingIds = existingWithdrawals.orEmpty().mapNotNull { it.id }.toSet()
+    withdrawals?.mapNotNull { it.id }?.forEach { id ->
+      if (id !in existingIds) {
+        throw IllegalArgumentException("Cannot update withdrawal with nonexistent ID $id")
+      }
+    }
+
+    val nonTestWithdrawals =
+        withdrawals.orEmpty().filter { it.purpose != WithdrawalPurpose.GerminationTesting }
+    val existingTestWithdrawals =
+        existingWithdrawals.orEmpty().filter { it.germinationTestId != null }.associateBy {
+          it.germinationTestId!!
+        }
+    val testWithdrawals =
+        germinationTests.orEmpty().map { test ->
+          val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
+          val withdrawn =
+              test.seedsSown?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
+          GerminationTestWithdrawal(
+              date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
+              germinationTest = test,
+              germinationTestId = test.id,
+              id = existingWithdrawal?.id,
+              remaining = test.remaining,
+              staffResponsible = test.staffResponsible,
+              withdrawn = withdrawn,
+          )
+        }
+
+    val unsortedWithdrawals = nonTestWithdrawals + testWithdrawals
+
+    return when (processingMethod) {
+      ProcessingMethod.Count -> {
+        unsortedWithdrawals.sortedWith { a, b -> a.compareByTime(b) }.map { withdrawal ->
+          withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
+          withdrawal.withRemaining(currentRemaining)
+        }
+      }
+      ProcessingMethod.Weight -> {
+        unsortedWithdrawals.sortedByDescending { it.remaining }.map { withdrawal ->
+          val remaining =
+              withdrawal.remaining
+                  ?: throw IllegalArgumentException(
+                      "Withdrawals from weight-based accessions must include seeds remaining")
+          val difference = currentRemaining - remaining
+          currentRemaining = remaining
+          withdrawal.withWeightDifference(difference)
+        }
+      }
+      null -> {
+        throw IllegalStateException("Cannot add withdrawals before setting processingMethod")
+      }
+    }
+  }
+
+  fun foldWithdrawalQuantities(
+      clock: Clock,
+      predicate: (WithdrawalFields) -> Boolean = { true }
+  ): SeedQuantityModel? {
+    val total = this.total ?: return null
+    val withdrawals = calculateWithdrawals(clock).filter(predicate)
+    val hasCountBasedQuantities = withdrawals.any { it.withdrawn?.units == SeedQuantityUnits.Seeds }
+    val hasNonCountBasedQuantities =
+        withdrawals.any { it.withdrawn != null && it.withdrawn?.units != SeedQuantityUnits.Seeds }
+    val units =
+        if (hasCountBasedQuantities && !hasNonCountBasedQuantities) SeedQuantityUnits.Seeds
+        else total.units
+    val zero = SeedQuantityModel(BigDecimal.ZERO, units)
+
+    // If all the quantities are count-based, return a count-based total.
+    val totalQuantity =
+        if (units == SeedQuantityUnits.Seeds) {
+          withdrawals.mapNotNull { it.withdrawn }.foldRight(zero) { quantity, acc ->
+            acc + quantity
+          }
+        } else {
+          withdrawals.mapNotNull { it.weightDifference }.foldRight(zero) { quantity, acc ->
+            acc + quantity
+          }
+        }
+
+    return if (totalQuantity > zero) totalQuantity else null
+  }
+
+  fun calculateTotalScheduledNonTestQuantity(clock: Clock): SeedQuantityModel? {
+    val today = LocalDate.now(clock)
+    return foldWithdrawalQuantities(clock) {
+      it.purpose != WithdrawalPurpose.GerminationTesting && it.date > today
+    }
+  }
+
+  fun calculateTotalScheduledTestQuantity(clock: Clock): SeedQuantityModel? {
+    val today = LocalDate.now(clock)
+    return foldWithdrawalQuantities(clock) {
+      it.purpose == WithdrawalPurpose.GerminationTesting && it.date > today
+    }
+  }
+
+  fun calculateTotalScheduledWithdrawalQuantity(clock: Clock): SeedQuantityModel? {
+    val today = LocalDate.now(clock)
+    return foldWithdrawalQuantities(clock) { it.date > today }
+  }
+
+  fun calculateTotalPastWithdrawalQuantity(clock: Clock): SeedQuantityModel? {
+    val today = LocalDate.now(clock)
+    return foldWithdrawalQuantities(clock) { it.date <= today }
+  }
+
+  fun calculateTotalWithdrawalQuantity(clock: Clock): SeedQuantityModel? {
+    return foldWithdrawalQuantities(clock)
+  }
 }
 
 data class AccessionModel(
@@ -258,7 +433,6 @@ data class AccessionModel(
     override val dryingEndDate: LocalDate? = null,
     override val dryingMoveDate: LocalDate? = null,
     override val dryingStartDate: LocalDate? = null,
-    override val effectiveSeedCount: Int? = null,
     override val endangered: SpeciesEndangeredType? = null,
     override val environmentalNotes: String? = null,
     override val estimatedSeedCount: Int? = null,
@@ -281,9 +455,8 @@ data class AccessionModel(
     override val processingStartDate: LocalDate? = null,
     override val rare: SpeciesRareType? = null,
     override val receivedDate: LocalDate? = null,
+    override val remaining: SeedQuantityModel? = null,
     override val secondaryCollectors: Set<String>? = null,
-    override val seedsCounted: Int? = null,
-    override val seedsRemaining: Int? = null,
     override val siteLocation: String? = null,
     override val source: AccessionSource,
     override val sourcePlantOrigin: SourcePlantOrigin? = null,
@@ -297,20 +470,27 @@ data class AccessionModel(
     override val storageStaffResponsible: String? = null,
     override val storageStartDate: LocalDate? = null,
     override val subsetCount: Int? = null,
-    override val subsetWeightGrams: BigDecimal? = null,
+    override val subsetWeightQuantity: SeedQuantityModel? = null,
     override val targetStorageCondition: StorageCondition? = null,
+    override val total: SeedQuantityModel? = null,
     override val totalViabilityPercent: Int? = null,
-    override val totalWeightGrams: BigDecimal? = null,
     override val withdrawals: List<WithdrawalModel>? = null,
-) : ConcreteAccession {
+) : AccessionFields {
+  init {
+    validate()
+  }
+
+  override val active: AccessionActive
+    get() = state.toActiveEnum()
+
   fun getStateTransition(newFields: AccessionFields, clock: Clock): AccessionStateTransition? {
-    val seedsRemaining = newFields.calculateSeedsRemaining()
-    val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining <= 0
+    val seedsRemaining = newFields.calculateRemaining(clock)
+    val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
     val today = LocalDate.now(clock)
 
     fun LocalDate?.hasArrived(daysAgo: Long = 0) = this != null && this <= today.minusDays(daysAgo)
 
-    val seedCountPresent = newFields.calculateEffectiveSeedCount() != null
+    val seedCountPresent = newFields.total != null
     val processingForTwoWeeks = newFields.processingStartDate.hasArrived(daysAgo = 14)
     val dryingStarted = newFields.dryingStartDate.hasArrived()
     val dryingEnded = newFields.dryingEndDate.hasArrived()

@@ -747,12 +747,6 @@ components:
         dryingStartDate:
           type: string
           format: date
-        effectiveSeedCount:
-          type: integer
-          description: "Server-calculated effective seed count. This is the exact\
-            \ seed count if available, otherwise the estimated seed count, or null\
-            \ if neither seed count is available."
-          format: int32
         endangered:
           type: string
           enum:
@@ -787,6 +781,11 @@ components:
             enum:
             - Lab
             - Nursery
+        initialQuantity:
+          description: Initial size of accession. The units of this value must match
+            the measurement type in "processingMethod".
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         landowner:
           type: string
         latestGerminationTestDate:
@@ -828,20 +827,16 @@ components:
         receivedDate:
           type: string
           format: date
+        remainingQuantity:
+          description: Number or weight of seeds remaining for withdrawal and testing.
+            Calculated by the server when the accession's total size is known.
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         secondaryCollectors:
           uniqueItems: true
           type: array
           items:
             type: string
-        seedsCounted:
-          type: integer
-          format: int32
-        seedsRemaining:
-          type: integer
-          description: Number of seeds remaining for withdrawal and testing. Calculated
-            by the server when the accession's seed count (actual or estimated) is
-            known.
-          format: int32
         siteLocation:
           type: string
         source:
@@ -895,18 +890,43 @@ components:
         subsetCount:
           type: integer
           format: int32
-        subsetWeightGrams:
-          type: number
+        subsetWeight:
+          description: "Weight of subset of seeds. Units must be a weight measurement,\
+            \ not \"Seeds\"."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         targetStorageCondition:
           type: string
           enum:
           - Refrigerator
           - Freezer
+        totalPastWithdrawalQuantity:
+          description: "Total quantity of all past withdrawals, including germination\
+            \ tests."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
+        totalScheduledNonTestQuantity:
+          description: "Total quantity of scheduled withdrawals, not counting germination\
+            \ tests."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
+        totalScheduledTestQuantity:
+          description: Total quantity of scheduled withdrawals for germination tests.
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
+        totalScheduledWithdrawalQuantity:
+          description: "Total quantity of scheduled withdrawals, including germination\
+            \ tests."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         totalViabilityPercent:
           type: integer
           format: int32
-        totalWeightGrams:
-          type: number
+        totalWithdrawalQuantity:
+          description: "Total quantity of all past and scheduled withdrawals, including\
+            \ germination tests."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         withdrawals:
           type: array
           items:
@@ -988,11 +1008,6 @@ components:
             enum:
             - Lab
             - Nursery
-        germinationTests:
-          type: array
-          writeOnly: true
-          items:
-            $ref: '#/components/schemas/GerminationTestPayload'
         landowner:
           type: string
           writeOnly: true
@@ -1264,6 +1279,12 @@ components:
           - Other
         notes:
           type: string
+        remainingQuantity:
+          description: "Quantity of seeds remaining. For weight-based accessions,\
+            \ this is user input and is required. For count-based accessions, it is\
+            \ calculated by the server and ignored on input."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         staffResponsible:
           type: string
         seedsSown:
@@ -1476,7 +1497,6 @@ components:
       - dryingEndDate
       - dryingMoveDate
       - dryingStartDate
-      - effectiveSeedCount
       - endangered
       - estimatedSeedsIncoming
       - family
@@ -1501,8 +1521,9 @@ components:
       - processingStartDate
       - rare
       - receivedDate
-      - seedsCounted
-      - seedsRemaining
+      - remainingGrams
+      - remainingQuantity
+      - remainingUnits
       - siteLocation
       - sourcePlantOrigin
       - species
@@ -1513,6 +1534,9 @@ components:
       - storagePackets
       - storageStartDate
       - targetStorageCondition
+      - totalGrams
+      - totalQuantity
+      - totalUnits
       - totalViabilityPercent
       - treesCollectedFrom
       - withdrawalDate
@@ -1520,7 +1544,11 @@ components:
       - withdrawalGrams
       - withdrawalNotes
       - withdrawalPurpose
-      - withdrawalSeeds
+      - withdrawalQuantity
+      - withdrawalRemainingGrams
+      - withdrawalRemainingQuantity
+      - withdrawalRemainingUnits
+      - withdrawalUnits
     SearchFilter:
       required:
       - field
@@ -1598,6 +1626,54 @@ components:
           enum:
           - Ascending
           - Descending
+    SeedQuantityModel:
+      required:
+      - quantity
+      - units
+      type: object
+      properties:
+        quantity:
+          type: number
+        units:
+          type: string
+          enum:
+          - Seeds
+          - Grams
+          - Milligrams
+          - Kilograms
+          - Ounces
+          - Pounds
+        grams:
+          type: number
+    SeedQuantityPayload:
+      required:
+      - quantity
+      - units
+      type: object
+      properties:
+        quantity:
+          type: number
+          description: "Number of units of seeds. If \"units\" is \"Seeds\", this\
+            \ is the number of seeds and must be an integer. Otherwise it is a measurement\
+            \ in the weight units specified in the \"units\" field, and may have a\
+            \ fractional part."
+        units:
+          type: string
+          enum:
+          - Seeds
+          - Grams
+          - Milligrams
+          - Kilograms
+          - Ounces
+          - Pounds
+        grams:
+          type: number
+          description: "If this quantity is a weight measurement, the weight in grams.\
+            \ This is not set if the \"units\" field is \"Seeds\". This is always\
+            \ calculated on the server side and is ignored on input."
+          readOnly: true
+      description: "Represents a quantity of seeds, measured either in individual\
+        \ seeds or by weight."
     SimpleErrorResponsePayload:
       required:
       - error
@@ -1781,6 +1857,11 @@ components:
           writeOnly: true
           items:
             $ref: '#/components/schemas/GerminationTestPayload'
+        initialQuantity:
+          description: Initial size of accession. The units of this value must match
+            the measurement type in "processingMethod".
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         landowner:
           type: string
           writeOnly: true
@@ -1828,10 +1909,6 @@ components:
           writeOnly: true
           items:
             type: string
-        seedsCounted:
-          type: integer
-          format: int32
-          writeOnly: true
         siteLocation:
           type: string
           writeOnly: true
@@ -1865,18 +1942,17 @@ components:
           type: integer
           format: int32
           writeOnly: true
-        subsetWeightGrams:
-          type: number
-          writeOnly: true
+        subsetWeight:
+          description: "Weight of subset of seeds. Units must be a weight measurement,\
+            \ not \"Seeds\"."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         targetStorageCondition:
           type: string
           writeOnly: true
           enum:
           - Refrigerator
           - Freezer
-        totalWeightGrams:
-          type: number
-          writeOnly: true
         withdrawals:
           type: array
           writeOnly: true
@@ -1945,23 +2021,16 @@ components:
           - Share with Another Site
           - Other
           - Germination Testing
-        seedsWithdrawn:
-          type: integer
-          description: "Number of seeds withdrawn. If gramsWithdrawn is specified,\
-            \ this is a server-calculated estimate based on seed weight and is ignored\
-            \ (and may be omitted) when creating a new withdrawal."
-          format: int32
-        gramsWithdrawn:
-          type: number
-          description: "If the withdrawal was measured by weight, its weight in grams.\
-            \ Null if the withdrawal has an exact seed count. If this is non-null,\
-            \ seedsWithdrawn is a server-calculated estimate. Weight-based withdrawals\
-            \ are only allowed for accessions whose seed counts were estimated by\
-            \ weight."
         destination:
           type: string
         notes:
           type: string
+        remainingQuantity:
+          description: "Quantity of seeds remaining. For weight-based accessions,\
+            \ this is user input and is required. For count-based accessions, it is\
+            \ calculated by the server and ignored on input."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
         staffResponsible:
           type: string
         germinationTestId:
@@ -1970,6 +2039,20 @@ components:
             \ ID of the test it is associated with. This is always set by the server\
             \ and cannot be modified."
           format: int64
+        weightDifference:
+          description: "For weight-based accessions, the difference between the weight\
+            \ remaining before this withdrawal and the weight remaining after it.\
+            \ This is a server-calculated value and is ignored on input."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
+        withdrawnQuantity:
+          description: "Quantity of seeds withdrawn. For germination testing withdrawals,\
+            \ this is always the same as the test's \"seedsSown\" value, if that value\
+            \ is present. Otherwise, it is a user-supplied value. For count-based\
+            \ accessions, the units must always be \"Seeds\". For weight-based accessions,\
+            \ the units may either be a weight measurement or \"Seeds\"."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
   securitySchemes:
     ApiKey:
       type: http

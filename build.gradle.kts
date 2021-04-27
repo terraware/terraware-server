@@ -181,7 +181,7 @@ tasks.withType<KotlinCompile> {
 
 spotless {
   kotlin {
-    ktfmt("0.21")
+    ktfmt("0.25")
     targetExclude("build/**")
   }
 }

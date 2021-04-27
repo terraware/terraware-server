@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -314,6 +315,11 @@ class SearchServiceTest : DatabaseTest() {
             cursor = null)
 
     assertEquals(expected, result)
+  }
+
+  @Test
+  fun `can specify weight units when searching by grams`() {
+    Assumptions.assumeTrue(false, "TODO")
   }
 
   @Test

@@ -4,7 +4,6 @@ import com.terraformation.seedbank.db.GerminationSeedType
 import com.terraformation.seedbank.db.GerminationSubstrate
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.GerminationTreatment
-import java.time.Clock
 import java.time.LocalDate
 
 interface GerminationFields {
@@ -45,15 +44,21 @@ interface GerminationTestFields {
     get() = null
   val germinations: Collection<GerminationFields>?
     get() = null
+  val remaining: SeedQuantityModel?
+    get() = null
 
   fun fieldsEqual(other: GerminationTestFields): Boolean {
-    return notes == other.notes &&
+    return endDate == other.endDate &&
+        notes == other.notes &&
+        remaining.equalsIgnoreScale(other.remaining) &&
         seedsSown == other.seedsSown &&
         seedType == other.seedType &&
         staffResponsible == other.staffResponsible &&
         startDate == other.startDate &&
         substrate == other.substrate &&
         testType == other.testType &&
+        totalPercentGerminated == other.totalPercentGerminated &&
+        totalSeedsGerminated == other.totalSeedsGerminated &&
         treatment == other.treatment
   }
 
@@ -75,6 +80,9 @@ interface GerminationTestFields {
       }
     }
   }
+
+  fun withId(value: Long): GerminationTestFields
+  fun withRemaining(value: SeedQuantityModel): GerminationTestFields
 }
 
 data class GerminationTestModel(
@@ -91,20 +99,9 @@ data class GerminationTestModel(
     override val totalSeedsGerminated: Int? = null,
     override val notes: String? = null,
     override val staffResponsible: String? = null,
-    override val germinations: Collection<GerminationModel>? = null
+    override val germinations: Collection<GerminationModel>? = null,
+    override val remaining: SeedQuantityModel? = null,
 ) : GerminationTestFields {
-  fun toWithdrawal(withdrawalId: Long?, clock: Clock): GerminationTestWithdrawal? {
-    if (seedsSown == null) {
-      return null
-    }
-
-    return GerminationTestWithdrawal(
-        accessionId = accessionId,
-        date = startDate ?: LocalDate.now(clock),
-        germinationTestId = id,
-        gramsWithdrawn = null,
-        id = withdrawalId,
-        seedsWithdrawn = seedsSown,
-    )
-  }
+  override fun withId(value: Long) = copy(id = value)
+  override fun withRemaining(value: SeedQuantityModel) = copy(remaining = value)
 }
