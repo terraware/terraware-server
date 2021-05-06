@@ -593,7 +593,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
                   "Weight values must be a decimal number optionally followed by a unit name; couldn't interpret $value")
 
       val number = BigDecimal(matches.groupValues[1])
-      val unitsName = matches.groupValues[2].toLowerCase().capitalize()
+      val unitsName = matches.groupValues[2].lowercase().replaceFirstChar { it.titlecase() }
 
       val units =
           if (unitsName.isEmpty()) SeedQuantityUnits.Grams
@@ -694,7 +694,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
     override fun getCondition(fieldNode: FieldNode): Condition {
-      val values = fieldNode.values.mapNotNull { it?.toUpperCase() }
+      val values = fieldNode.values.mapNotNull { it?.uppercase() }
       return when (fieldNode.type) {
         SearchFilterType.Exact ->
             DSL.or(
@@ -703,7 +703,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
                     if (fieldNode.values.any { it == null }) databaseField.isNull else null))
         SearchFilterType.Fuzzy ->
             DSL.or(
-                fieldNode.values.map { it?.toUpperCase() }.flatMap { value ->
+                fieldNode.values.map { it?.uppercase() }.flatMap { value ->
                   if (value != null) {
                     listOf(databaseField.likeFuzzy(value), databaseField.like("$value%"))
                   } else {

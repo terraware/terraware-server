@@ -10,7 +10,7 @@ enum class SuccessOrError {
   Ok,
   Error;
 
-  @JsonValue override fun toString() = name.toLowerCase()
+  @JsonValue override fun toString() = name.lowercase()
 }
 
 interface ResponsePayload {

@@ -13,7 +13,7 @@ class EnumTable(private val tableName: String, includeExpressions: List<String>)
   // Convert "foo_bar_baz" to "FooBarBaz".
   val enumName = tableName.replace(Regex("_(.)")) { it.groupValues[1].capitalize() }.capitalize()
   val converterName = "${enumName}Converter"
-  val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"
+  private val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"
 
   override fun toString() = tableName
 
@@ -28,6 +28,7 @@ class EnumTable(private val tableName: String, includeExpressions: List<String>)
 
 /** Generates enums instead of table objects for a select set of reference tables. */
 class EnumGenerator : KotlinGenerator() {
+  @Suppress("MemberVisibilityCanBePrivate")  // Referenced by build.gradle.kts
   val enumTables =
       listOf(
           "accession_state" to

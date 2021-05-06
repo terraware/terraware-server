@@ -47,7 +47,7 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
         .returning(idField)
         .fetchOne()
         ?.get(idField)
-        ?: throw DataAccessException("Unable to insert new ${table.name.toLowerCase()} $name")
+        ?: throw DataAccessException("Unable to insert new ${table.name.lowercase()} $name")
   }
 
   fun getId(
@@ -67,7 +67,7 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
         .apply { if (siteModuleIdField != null) and(siteModuleIdField.eq(config.siteModuleId)) }
         .fetchOne(idField)
         ?: throw IllegalArgumentException(
-            "Unable to find ${idField.table?.name?.toLowerCase()} $name")
+            "Unable to find ${idField.table?.name?.lowercase()} $name")
   }
 
   fun countEarlierThan(until: TemporalAccessor, timeField: TableField<*, Instant?>): Int {

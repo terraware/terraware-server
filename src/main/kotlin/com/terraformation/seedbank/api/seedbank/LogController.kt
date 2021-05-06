@@ -31,7 +31,7 @@ class LogController(private val objectMapper: ObjectMapper) {
       payload: Map<String, Any>
   ) {
     val level =
-        when (payload["level"]?.toString()?.toLowerCase()) {
+        when (payload["level"]?.toString()?.lowercase()) {
           "debug" -> Level.DEBUG
           "warn", "warning" -> Level.WARN
           "error" -> Level.ERROR

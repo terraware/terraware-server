@@ -1,7 +1,6 @@
 package com.terraformation.seedbank.api
 
 import com.terraformation.seedbank.db.tables.daos.OrganizationDao
-import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.security.access.prepost.PreAuthorize
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.RestController
 @Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @PreAuthorize("isAuthenticated()")
 class OrganizationController(private val organizationDao: OrganizationDao) {
-  private val log = perClassLogger()
-
   @GetMapping
   @Hidden
   @PreAuthorize("hasRole('SUPER_ADMIN')")

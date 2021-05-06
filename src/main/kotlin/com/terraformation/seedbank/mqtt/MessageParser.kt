@@ -30,7 +30,7 @@ class MessageParser(private val objectMapper: ObjectMapper) {
       return null
     }
 
-    return when (val firstChar = message.payload[0].toChar()) {
+    return when (val firstChar = message.payload[0].toInt().toChar()) {
       '{' -> parseJsonMessage(topic, message)
       's' -> parseTextTimeseriesMessage(topic, message)
       else -> {
@@ -107,7 +107,7 @@ class MessageParser(private val objectMapper: ObjectMapper) {
       message: MqttMessage,
       timestamp: Instant,
       body: String
-  ): IncomingMqttMessage? {
+  ): IncomingMqttMessage {
     val parts = body.split(": ", limit = 2)
     val text = if (parts.size == 2) parts[1] else body
 
