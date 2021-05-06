@@ -30,7 +30,7 @@ jobs:
         path: |
           ~/.gradle
           ~/.m2
-        key: 2-${{ matrix.java-version }}-${{ hashFiles('*.gradle.kts') }}
+        key: 2-${{ matrix.java-version }}-${{ hashFiles('*.gradle.kts', 'gradle.properties') }}
 
     # The build/test process is broken out into individual steps here so it's easier to watch
     # the progress of the build in the GitHub UI and so it's clearer what failed if the build
@@ -75,6 +75,12 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    - name: Cache Docker build layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: 1-buildx-${{ matrix.java-version }}
+
     - name: Build Docker image and push if on main branch
       if: matrix.java-version == '15'
       uses: docker/build-push-action@v2
@@ -83,3 +89,10 @@ jobs:
         tags: terraware/seedbank-server:latest
         platforms: linux/amd64,linux/arm64
         push: ${{ github.ref == 'refs/heads/main' }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+    - name: Move Docker build cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
