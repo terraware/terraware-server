@@ -6,7 +6,7 @@ prepare:
 	cd .. && ./gradlew assemble
 	mkdir -p ../build/docker
 	cp Dockerfile entrypoint.sh metrics.sh ../build/docker
-	cd ../build/docker && jar -xf ../libs/*.jar
+	cd ../build/docker && jar -xf `ls -t ../libs/*.jar | head -1`
 
 image: prepare
 	docker build -f Dockerfile -t $(IMAGE_NAME) ../build/docker
