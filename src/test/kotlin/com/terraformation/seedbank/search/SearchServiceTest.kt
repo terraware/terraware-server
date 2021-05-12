@@ -84,7 +84,7 @@ class SearchServiceTest : DatabaseTest() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it) }
 
-    val result = searchService.search(fields, sortOrder = sortOrder)
+    val result = searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -112,7 +112,7 @@ class SearchServiceTest : DatabaseTest() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it, SearchDirection.Descending) }
 
-    val result = searchService.search(fields, sortOrder = sortOrder)
+    val result = searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -139,10 +139,9 @@ class SearchServiceTest : DatabaseTest() {
   fun `can do range search on integer field`() {
     accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
-    val filters =
-        listOf(SearchFilter(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range))
+    val searchNode = FieldNode(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range)
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     val expected =
         SearchResults(
@@ -156,10 +155,9 @@ class SearchServiceTest : DatabaseTest() {
   fun `can do range search on integer field with no minimum`() {
     accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
-    val filters =
-        listOf(SearchFilter(treesCollectedFromField, listOf(null, "3"), SearchFilterType.Range))
+    val searchNode = FieldNode(treesCollectedFromField, listOf(null, "3"), SearchFilterType.Range)
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     val expected =
         SearchResults(
@@ -172,10 +170,9 @@ class SearchServiceTest : DatabaseTest() {
   fun `can do range search on integer field with no maximum`() {
     accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
-    val filters =
-        listOf(SearchFilter(treesCollectedFromField, listOf("2", null), SearchFilterType.Range))
+    val searchNode = FieldNode(treesCollectedFromField, listOf("2", null), SearchFilterType.Range)
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     val expected =
         SearchResults(
@@ -188,10 +185,9 @@ class SearchServiceTest : DatabaseTest() {
   @Test
   fun `range search on integer field with two nulls is rejected`() {
     val fields = listOf(treesCollectedFromField)
-    val filters =
-        listOf(SearchFilter(treesCollectedFromField, listOf(null, null), SearchFilterType.Range))
+    val searchNode = FieldNode(treesCollectedFromField, listOf(null, null), SearchFilterType.Range)
 
-    assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
+    assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, searchNode) }
   }
 
   @Test
@@ -206,7 +202,7 @@ class SearchServiceTest : DatabaseTest() {
     val fields = listOf(targetStorageConditionField)
     val sortOrder = listOf(SearchSortField(targetStorageConditionField, SearchDirection.Descending))
 
-    val result = searchService.search(fields, sortOrder = sortOrder)
+    val result = searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -224,10 +220,10 @@ class SearchServiceTest : DatabaseTest() {
     accessionDao.update(
         accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(stateId = AccessionState.InStorage))
 
-    val filters = listOf(SearchFilter(stateField, listOf("In Storage")))
+    val searchNode = FieldNode(stateField, listOf("In Storage"))
     val fields = listOf(stateField)
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     val expected =
         SearchResults(
@@ -247,7 +243,7 @@ class SearchServiceTest : DatabaseTest() {
 
     val fields = listOf(targetStorageConditionField)
 
-    val result = searchService.search(fields)
+    val result = searchService.search(fields, criteria = NoConditionNode())
 
     val expected =
         SearchResults(
@@ -276,9 +272,9 @@ class SearchServiceTest : DatabaseTest() {
             targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
-    val filters = listOf(SearchFilter(targetStorageConditionField, listOf("Freezer", null)))
+    val searchNode = FieldNode(targetStorageConditionField, listOf("Freezer", null))
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     val expected =
         SearchResults(
@@ -304,10 +300,9 @@ class SearchServiceTest : DatabaseTest() {
     accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
 
     val fields = listOf(accessionNumberField)
-    val filters =
-        listOf(SearchFilter(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy))
+    val searchNode = FieldNode(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     val expected =
         SearchResults(
@@ -330,16 +325,15 @@ class SearchServiceTest : DatabaseTest() {
             totalUnitsId = SeedQuantityUnits.Kilograms))
 
     val fields = listOf(accessionNumberField)
-    val filters =
-        listOf(
-            SearchFilter(
-                totalGramsField,
-                listOf("900000 Milligrams", "650000.000001 Pounds"),
-                SearchFilterType.Range))
+    val searchNode =
+        FieldNode(
+            totalGramsField,
+            listOf("900000 Milligrams", "650000.000001 Pounds"),
+            SearchFilterType.Range)
 
     val expected = SearchResults(listOf(mapOf("accessionNumber" to "ABCDEFG")), cursor = null)
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     assertEquals(expected, result)
   }
@@ -354,11 +348,11 @@ class SearchServiceTest : DatabaseTest() {
             totalUnitsId = SeedQuantityUnits.Kilograms))
 
     val fields = listOf(accessionNumberField)
-    val filters = listOf(SearchFilter(totalGramsField, listOf("1000")))
+    val searchNode = FieldNode(totalGramsField, listOf("1000"))
 
     val expected = SearchResults(listOf(mapOf("accessionNumber" to "ABCDEFG")), cursor = null)
 
-    val result = searchService.search(fields, filters)
+    val result = searchService.search(fields, searchNode)
 
     assertEquals(expected, result)
   }
@@ -366,9 +360,9 @@ class SearchServiceTest : DatabaseTest() {
   @Test
   fun `searching on grams field throws exception for unknown units name`() {
     val fields = listOf(accessionNumberField)
-    val filters = listOf(SearchFilter(totalGramsField, listOf("1000 baseballs")))
+    val searchNode = FieldNode(totalGramsField, listOf("1000 baseballs"))
 
-    assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
+    assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, searchNode) }
   }
 
   @Test
@@ -386,7 +380,8 @@ class SearchServiceTest : DatabaseTest() {
             ),
         )
 
-    val firstPage = searchService.search(fields, sortOrder = sortOrder, limit = 1)
+    val firstPage =
+        searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder, limit = 1)
     assertEquals(expectedFirstPageResults, firstPage.results)
     // We just care that we get a cursor, not what it is specifically
     assertNotNull(firstPage.cursor)
@@ -404,8 +399,100 @@ class SearchServiceTest : DatabaseTest() {
             cursor = null)
 
     val secondPage =
-        searchService.search(fields, sortOrder = sortOrder, cursor = firstPage.cursor, limit = 1)
+        searchService.search(
+            fields,
+            criteria = NoConditionNode(),
+            sortOrder = sortOrder,
+            cursor = firstPage.cursor,
+            limit = 1)
     assertEquals(expectedSecondPage, secondPage)
+  }
+
+  @Nested
+  inner class CompoundSearchTest {
+    @BeforeEach
+    fun insertTreesCollectedFromExamples() {
+      (10..20).forEach { value ->
+        accessionDao.insert(
+            Accession(
+                createdTime = Instant.now(),
+                number = "$value",
+                siteModuleId = config.siteModuleId,
+                stateId = AccessionState.Processing,
+                treesCollectedFrom = value))
+      }
+    }
+
+    @Test
+    fun `simple field condition`() {
+      testSearch(exactly(13), listOf(13))
+    }
+
+    @Test
+    fun `simple OR condition`() {
+      testSearch(OrNode(listOf(exactly(13), exactly(15))), listOf(13, 15))
+    }
+
+    @Test
+    fun `simple AND condition`() {
+      testSearch(AndNode(listOf(between(13, 16), between(15, 18))), listOf(15, 16))
+    }
+
+    @Test
+    fun `simple NOT condition`() {
+      testSearch(NotNode(between(1, 18)), listOf(19, 20))
+    }
+
+    @Test
+    fun `nested AND conditions inside OR condition`() {
+      testSearch(
+          OrNode(
+              listOf(
+                  AndNode(listOf(between(10, 11), between(11, 12))),
+                  AndNode(listOf(between(13, 14), between(14, 15))))),
+          listOf(11, 14))
+    }
+
+    @Test
+    fun `nested OR conditions inside AND condition`() {
+      testSearch(
+          AndNode(
+              listOf(
+                  OrNode(listOf(exactly(11), exactly(13))),
+                  OrNode(listOf(exactly(13), exactly(15))))),
+          listOf(13))
+    }
+
+    @Test
+    fun `nested AND inside OR inside AND with NOT`() {
+      testSearch(
+          AndNode(
+              listOf(
+                  OrNode(
+                      listOf(
+                          AndNode(listOf(between(10, 14), between(11, 20))),
+                          AndNode(listOf(between(18, 19), between(19, 20))))),
+                  between(12, 20),
+                  NotNode(exactly(13)))),
+          listOf(12, 14, 19))
+    }
+
+    private fun exactly(value: Int) = FieldNode(treesCollectedFromField, listOf("$value"))
+
+    private fun between(minimum: Int?, maximum: Int?): FieldNode {
+      return FieldNode(
+          treesCollectedFromField,
+          listOf(minimum?.toString(), maximum?.toString()),
+          type = SearchFilterType.Range)
+    }
+
+    private fun testSearch(searchNode: SearchNode, expectedValues: List<Int>) {
+      val expected =
+          SearchResults(expectedValues.map { value -> mapOf("accessionNumber" to "$value") }, null)
+      val actual = searchService.search(listOf(accessionNumberField), searchNode)
+
+      assertEquals(expected, actual)
+    }
   }
 
   @Nested
@@ -426,11 +513,10 @@ class SearchServiceTest : DatabaseTest() {
     @Test
     fun `can search for exact date`() {
       val fields = listOf(accessionNumberField)
-      val filters =
-          listOf(SearchFilter(receivedDateField, listOf("2021-01-02"), SearchFilterType.Exact))
+      val searchNode = FieldNode(receivedDateField, listOf("2021-01-02"), SearchFilterType.Exact)
 
       val expected = SearchResults(listOf(mapOf("accessionNumber" to "JAN2")), null)
-      val actual = searchService.search(fields, filters)
+      val actual = searchService.search(fields, searchNode)
 
       assertEquals(expected, actual)
     }
@@ -438,9 +524,8 @@ class SearchServiceTest : DatabaseTest() {
     @Test
     fun `can search for missing date`() {
       val fields = listOf(accessionNumberField)
-      val filters =
-          listOf(
-              SearchFilter(receivedDateField, listOf("2021-01-02", null), SearchFilterType.Exact))
+      val searchNode =
+          FieldNode(receivedDateField, listOf("2021-01-02", null), SearchFilterType.Exact)
 
       val expected =
           SearchResults(
@@ -450,7 +535,7 @@ class SearchServiceTest : DatabaseTest() {
                   mapOf("accessionNumber" to "XYZ"),
               ),
               null)
-      val actual = searchService.search(fields, filters)
+      val actual = searchService.search(fields, searchNode)
 
       assertEquals(expected, actual)
     }
@@ -459,15 +544,13 @@ class SearchServiceTest : DatabaseTest() {
     fun `can search by date range`() {
       val fields = listOf(accessionNumberField)
       val sortOrder = listOf(SearchSortField(receivedDateField))
-      val filters =
-          listOf(
-              SearchFilter(
-                  receivedDateField, listOf("2021-01-02", "2021-01-15"), SearchFilterType.Range))
+      val searchNode =
+          FieldNode(receivedDateField, listOf("2021-01-02", "2021-01-15"), SearchFilterType.Range)
 
       val expected =
           SearchResults(
               listOf(mapOf("accessionNumber" to "JAN2"), mapOf("accessionNumber" to "JAN8")), null)
-      val actual = searchService.search(fields, filters, sortOrder)
+      val actual = searchService.search(fields, searchNode, sortOrder)
 
       assertEquals(expected, actual)
     }
@@ -476,12 +559,11 @@ class SearchServiceTest : DatabaseTest() {
     fun `can search by date range with only minimum`() {
       val fields = listOf(accessionNumberField)
       val sortOrder = listOf(SearchSortField(receivedDateField))
-      val filters =
-          listOf(
-              SearchFilter(receivedDateField, listOf("2021-01-07", null), SearchFilterType.Range))
+      val searchNode =
+          FieldNode(receivedDateField, listOf("2021-01-07", null), SearchFilterType.Range)
 
       val expected = SearchResults(listOf(mapOf("accessionNumber" to "JAN8")), null)
-      val actual = searchService.search(fields, filters, sortOrder)
+      val actual = searchService.search(fields, searchNode, sortOrder)
 
       assertEquals(expected, actual)
     }
@@ -490,14 +572,13 @@ class SearchServiceTest : DatabaseTest() {
     fun `can search by date range with only maximum`() {
       val fields = listOf(accessionNumberField)
       val sortOrder = listOf(SearchSortField(receivedDateField))
-      val filters =
-          listOf(
-              SearchFilter(receivedDateField, listOf(null, "2021-01-03"), SearchFilterType.Range))
+      val searchNode =
+          FieldNode(receivedDateField, listOf(null, "2021-01-03"), SearchFilterType.Range)
 
       val expected =
           SearchResults(
               listOf(mapOf("accessionNumber" to "JAN1"), mapOf("accessionNumber" to "JAN2")), null)
-      val actual = searchService.search(fields, filters, sortOrder)
+      val actual = searchService.search(fields, searchNode, sortOrder)
 
       assertEquals(expected, actual)
     }
@@ -505,32 +586,34 @@ class SearchServiceTest : DatabaseTest() {
     @Test
     fun `date range with two nulls is rejected`() {
       val fields = listOf(accessionNumberField)
-      val filters =
-          listOf(SearchFilter(receivedDateField, listOf(null, null), SearchFilterType.Range))
+      val searchNode = FieldNode(receivedDateField, listOf(null, null), SearchFilterType.Range)
 
-      assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
+      assertThrows(IllegalArgumentException::class.java) {
+        searchService.search(fields, searchNode)
+      }
     }
 
     @Test
     fun `malformed dates are rejected`() {
       val fields = listOf(accessionNumberField)
-      val filters =
-          listOf(SearchFilter(receivedDateField, listOf("NOT_A_DATE"), SearchFilterType.Exact))
+      val searchNode = FieldNode(receivedDateField, listOf("NOT_A_DATE"), SearchFilterType.Exact)
 
-      assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
+      assertThrows(IllegalArgumentException::class.java) {
+        searchService.search(fields, searchNode)
+      }
     }
   }
 
   @Test
   fun `fetchValues with no criteria for simple column value`() {
-    val values = searchService.fetchValues(speciesField, emptyList())
+    val values = searchService.fetchValues(speciesField, NoConditionNode())
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
   @Test
   fun `fetchValues renders null values as null, not as a string`() {
     accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
-    val values = searchService.fetchValues(speciesField, emptyList())
+    val values = searchService.fetchValues(speciesField, NoConditionNode())
     assertEquals(listOf("Other Dogwood", null), values)
   }
 
@@ -538,8 +621,7 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchValues with fuzzy search of accession number`() {
     val values =
         searchService.fetchValues(
-            speciesField,
-            listOf(SearchFilter(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy)))
+            speciesField, FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy))
     assertEquals(listOf("Kousa Dogwood"), values)
   }
 
@@ -547,8 +629,7 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchValues with prefix search of accession number`() {
     val values =
         searchService.fetchValues(
-            speciesField,
-            listOf(SearchFilter(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy)))
+            speciesField, FieldNode(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy))
     assertEquals(listOf("Other Dogwood"), values)
   }
 
@@ -556,8 +637,7 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchValues with fuzzy search of text field in secondary table`() {
     val values =
         searchService.fetchValues(
-            speciesField,
-            listOf(SearchFilter(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy)))
+            speciesField, FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
     assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
   }
 
@@ -565,8 +645,7 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchValues with fuzzy search of text field in secondary table not in field list`() {
     val values =
         searchService.fetchValues(
-            stateField,
-            listOf(SearchFilter(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy)))
+            stateField, FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
     assertEquals(listOf("Processed", "Processing"), values)
   }
 
@@ -574,14 +653,14 @@ class SearchServiceTest : DatabaseTest() {
   fun `fetchValues with exact search of integer column value`() {
     val values =
         searchService.fetchValues(
-            treesCollectedFromField, listOf(SearchFilter(treesCollectedFromField, listOf("1"))))
+            treesCollectedFromField, FieldNode(treesCollectedFromField, listOf("1")))
 
     assertEquals(listOf("1"), values)
   }
 
   @Test
   fun `fetchValues with no criteria for computed column value`() {
-    val values = searchService.fetchValues(activeField, emptyList())
+    val values = searchService.fetchValues(activeField, NoConditionNode())
     assertEquals(listOf("Active"), values)
   }
 

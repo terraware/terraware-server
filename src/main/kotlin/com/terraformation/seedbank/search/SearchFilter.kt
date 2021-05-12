@@ -1,8 +1,7 @@
 package com.terraformation.seedbank.search
 
-import io.swagger.v3.oas.annotations.media.ArraySchema
-import io.swagger.v3.oas.annotations.media.Schema
-import javax.validation.constraints.NotEmpty
+import org.jooq.Condition
+import org.jooq.impl.DSL
 
 enum class SearchFilterType {
   Exact,
@@ -10,28 +9,64 @@ enum class SearchFilterType {
   Range
 }
 
-/**
- * A filter criterion to use when searching for accessions.
- *
- * @see SearchService
- */
-data class SearchFilter(
+interface SearchNode {
+  fun toCondition(): Condition
+  fun referencedTables(): Set<SearchTable>
+}
+
+class OrNode(private val children: List<SearchNode>) : SearchNode {
+  override fun toCondition(): Condition {
+    val conditions = children.map { it.toCondition() }
+    return if (conditions.size == 1) conditions[0] else DSL.or(conditions)
+  }
+
+  override fun referencedTables(): Set<SearchTable> {
+    return children.flatMap { it.referencedTables() }.toSet()
+  }
+}
+
+class AndNode(private val children: List<SearchNode>) : SearchNode {
+  override fun toCondition(): Condition {
+    val conditions = children.map { it.toCondition() }
+    return if (conditions.size == 1) conditions[0] else DSL.and(conditions)
+  }
+
+  override fun referencedTables(): Set<SearchTable> {
+    return children.flatMap { it.referencedTables() }.toSet()
+  }
+}
+
+class NotNode(val child: SearchNode) : SearchNode {
+  override fun toCondition(): Condition {
+    return DSL.not(child.toCondition())
+  }
+
+  override fun referencedTables(): Set<SearchTable> {
+    return child.referencedTables()
+  }
+}
+
+class FieldNode(
     val field: SearchField<*>,
-    @ArraySchema(
-        schema = Schema(nullable = true),
-        arraySchema =
-            Schema(
-                minLength = 1,
-                description =
-                    "List of values to match. For exact and fuzzy searches, a list of at least " +
-                        "one value to search for; the list may include null to match accessions " +
-                        "where the field does not have a value. For range searches, the list " +
-                        "must contain exactly two values, the minimum and maximum; one of the " +
-                        "values may be null to search for all values above a minimum or below a " +
-                        "maximum."))
-    @NotEmpty
     val values: List<String?>,
     val type: SearchFilterType = SearchFilterType.Exact
-) {
-  fun toFieldConditions() = field.getConditions(this)
+) : SearchNode {
+  override fun toCondition(): Condition {
+    val conditions = field.getConditions(this)
+    return if (conditions.size == 1) conditions[0] else DSL.and(conditions)
+  }
+
+  override fun referencedTables(): Set<SearchTable> {
+    return setOf(field.table)
+  }
+}
+
+class NoConditionNode : SearchNode {
+  override fun toCondition(): Condition {
+    return DSL.noCondition()
+  }
+
+  override fun referencedTables(): Set<SearchTable> {
+    return emptySet()
+  }
 }

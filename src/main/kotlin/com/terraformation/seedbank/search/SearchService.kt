@@ -15,7 +15,7 @@ import org.jooq.impl.DSL
  * specify an arbitrary set of query criteria and ask for an arbitrary set of fields that may span
  * multiple tables, we dynamically construct SQL queries to return exactly what the user asked for.
  * This class is just the scaffolding; much of the SQL construction is done in [SearchField],
- * [SearchFilter], and [SearchTable].
+ * [SearchNode], and [SearchTable].
  *
  * The design goal is to construct a single SQL query that returns exactly the requested data, as
  * opposed to issuing a series of smaller queries and assembling their results in the application.
@@ -36,7 +36,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    */
   fun search(
       fields: List<SearchField<*>>,
-      filters: List<SearchFilter> = emptyList(),
+      criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
       limit: Int = Int.MAX_VALUE
@@ -51,7 +51,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     // latitude and longitude).
     val databaseFields = fieldObjects.flatMap { it.selectFields }.toSet()
 
-    val conditions = filters.flatMap { it.toFieldConditions() }
+    val conditions = criteria.toCondition()
 
     val orderBy =
         sortOrder.flatMap { sortOrderElement ->
@@ -63,7 +63,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSION)
 
-    query = joinWithSecondaryTables(query, fields, filters, sortOrder)
+    query = joinWithSecondaryTables(query, fields, criteria, sortOrder)
 
     // TODO: Better cursor support. Should remember the most recent values of the sort fields
     //       and pass them to skip(). For now, just treat the cursor as an offset.
@@ -79,7 +79,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
           orderedQuery
         }
 
-    log.debug("search criteria: fields=$fields filters=$filters sort=$sortOrder")
+    log.debug("search criteria: fields=$fields criteria=$criteria sort=$sortOrder")
     log.debug("search SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
@@ -124,11 +124,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * @return A list of values, which may include `null` if the field is optional and has no value on
    * some of the matching accessions.
    */
-  fun <T> fetchValues(
-      field: SearchField<T>,
-      filters: List<SearchFilter>,
-      limit: Int = 50
-  ): List<String?> {
+  fun <T> fetchValues(field: SearchField<T>, criteria: SearchNode, limit: Int = 50): List<String?> {
     val selectFields =
         field.selectFields +
             field.orderByFields.mapIndexed { index, orderByField ->
@@ -137,18 +133,18 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     var query: SelectJoinStep<out Record> = dslContext.selectDistinct(selectFields).from(ACCESSION)
 
-    query = joinWithSecondaryTables(query, listOf(field), filters)
+    query = joinWithSecondaryTables(query, listOf(field), criteria)
 
     val fullQuery =
         query
-            .where(filters.flatMap { it.toFieldConditions() })
+            .where(criteria.toCondition())
             .orderBy(
                 field.orderByFields.mapIndexed { index, _ ->
                   DSL.field("field$index").asc().nullsLast()
                 })
             .limit(limit + 1)
 
-    log.debug("fetchFieldValues ${field.fieldName} filters $filters")
+    log.debug("fetchFieldValues ${field.fieldName} criteria $criteria")
     log.debug("fetchFieldValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
@@ -221,13 +217,13 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
   private fun joinWithSecondaryTables(
       selectFrom: SelectJoinStep<out Record>,
       fields: List<SearchField<*>>,
-      filters: List<SearchFilter>,
+      criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList()
   ): SelectJoinStep<out Record> {
     var query = selectFrom
     val directlyReferencedTables =
         fields.map { it.table }.toSet() +
-            filters.map { it.field.table }.toSet() +
+            criteria.referencedTables() +
             sortOrder.map { it.field.table }.toSet()
     val dependencyTables =
         directlyReferencedTables.flatMap { it.dependsOn() }.toSet() - directlyReferencedTables

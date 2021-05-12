@@ -471,6 +471,43 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SearchRequestPayload'
+            examples:
+              example1:
+                description: Search for all accessions of species "Species Name" whose
+                  remaining seeds weigh between 100 and 200 milligrams or that have
+                  between 30 and 40 seeds remaining.
+                value:
+                  fields:
+                  - accessionNumber
+                  - remainingQuantity
+                  - remainingUnits
+                  search:
+                    operation: and
+                    children:
+                    - operation: field
+                      field: species
+                      values:
+                      - Species Name
+                    - operation: or
+                      children:
+                      - operation: field
+                        field: remainingGrams
+                        type: Range
+                        values:
+                        - 100 Milligrams
+                        - 200 Milligrams
+                      - operation: and
+                        children:
+                        - operation: field
+                          field: remainingUnits
+                          values:
+                          - Seeds
+                        - operation: field
+                          field: remainingQuantity
+                          type: Range
+                          values:
+                          - "30"
+                          - "40"
         required: true
       responses:
         "200":
@@ -959,6 +996,22 @@ components:
           type: boolean
           description: "If true, the list of values is too long to return in its entirety\
             \ and \"values\" is a partial list."
+    AndNodePayload:
+      required:
+      - children
+      type: object
+      description: "Search criterion that matches results that meet all of a set of\
+        \ other search criteria. That is, if the list of children is x, y, and z,\
+        \ this will require x AND y AND z."
+      allOf:
+      - $ref: '#/components/schemas/SearchNodePayload'
+      - type: object
+        properties:
+          children:
+            minItems: 1
+            type: array
+            items:
+              $ref: '#/components/schemas/SearchNodePayload'
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -1193,6 +1246,42 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchFilter'
+        search:
+          oneOf:
+          - $ref: '#/components/schemas/AndNodePayload'
+          - $ref: '#/components/schemas/FieldNodePayload'
+          - $ref: '#/components/schemas/NotNodePayload'
+          - $ref: '#/components/schemas/OrNodePayload'
+    FieldNodePayload:
+      required:
+      - field
+      - type
+      - values
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SearchNodePayload'
+      - type: object
+        properties:
+          field:
+            $ref: '#/components/schemas/SearchField'
+          values:
+            minItems: 1
+            type: array
+            description: "List of values to match. For exact and fuzzy searches, a\
+              \ list of at least one value to search for; the list may include null\
+              \ to match accessions where the field does not have a value. For range\
+              \ searches, the list must contain exactly two values, the minimum and\
+              \ maximum; one of the values may be null to search for all values above\
+              \ a minimum or below a maximum."
+            items:
+              type: string
+              nullable: true
+          type:
+            type: string
+            enum:
+            - Exact
+            - Fuzzy
+            - Range
     FieldValuesPayload:
       required:
       - partial
@@ -1367,6 +1456,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchFilter'
+        search:
+          oneOf:
+          - $ref: '#/components/schemas/AndNodePayload'
+          - $ref: '#/components/schemas/FieldNodePayload'
+          - $ref: '#/components/schemas/NotNodePayload'
+          - $ref: '#/components/schemas/OrNodePayload'
     ListFieldValuesResponsePayload:
       required:
       - results
@@ -1426,6 +1521,18 @@ components:
             $ref: '#/components/schemas/SpeciesDetails'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    NotNodePayload:
+      required:
+      - child
+      type: object
+      description: Search criterion that matches results that do not match a set of
+        search criteria.
+      allOf:
+      - $ref: '#/components/schemas/SearchNodePayload'
+      - type: object
+        properties:
+          child:
+            $ref: '#/components/schemas/SearchNodePayload'
     NotificationListResponse:
       required:
       - notifications
@@ -1483,6 +1590,13 @@ components:
           - In Storage
           - Withdrawn
           - Nursery
+    OrNodePayload:
+      type: object
+      description: "Search criterion that matches results that meet any of a set of\
+        \ other search criteria. That is, if the list of children is x, y, and z,\
+        \ this will require x OR y OR z."
+      allOf:
+      - $ref: '#/components/schemas/SearchNodePayload'
     SearchField:
       type: string
       enum:
@@ -1576,6 +1690,28 @@ components:
           - Exact
           - Fuzzy
           - Range
+    SearchNodePayload:
+      required:
+      - operation
+      type: object
+      properties:
+        operation:
+          type: string
+      description: A search criterion. The search will return results that match this
+        criterion. The criterion can be composed of other search criteria to form
+        arbitrary Boolean search expressions.
+      discriminator:
+        propertyName: operation
+        mapping:
+          and: '#/components/schemas/AndNodePayload'
+          field: '#/components/schemas/FieldNodePayload'
+          not: '#/components/schemas/NotNodePayload'
+          or: '#/components/schemas/NotNodePayload'
+      oneOf:
+      - $ref: '#/components/schemas/AndNodePayload'
+      - $ref: '#/components/schemas/FieldNodePayload'
+      - $ref: '#/components/schemas/NotNodePayload'
+      - $ref: '#/components/schemas/OrNodePayload'
     SearchRequestPayload:
       required:
       - count
@@ -1594,6 +1730,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchFilter'
+        search:
+          oneOf:
+          - $ref: '#/components/schemas/AndNodePayload'
+          - $ref: '#/components/schemas/FieldNodePayload'
+          - $ref: '#/components/schemas/NotNodePayload'
+          - $ref: '#/components/schemas/OrNodePayload'
         cursor:
           type: string
         count:
@@ -1674,6 +1816,7 @@ components:
           readOnly: true
       description: "Represents a quantity of seeds, measured either in individual\
         \ seeds or by weight."
+      readOnly: true
     SimpleErrorResponsePayload:
       required:
       - error
@@ -2051,6 +2194,15 @@ components:
             \ is present. Otherwise, it is a user-supplied value. For count-based\
             \ accessions, the units must always be \"Seeds\". For weight-based accessions,\
             \ the units may either be a weight measurement or \"Seeds\"."
+          allOf:
+          - $ref: '#/components/schemas/SeedQuantityPayload'
+        estimatedQuantity:
+          description: "The best estimate of the number of seeds withdrawn. This is\
+            \ the same as \"withdrawnQuantity\" if that is present, or else the same\
+            \ as \"weightDifference\" if this is a weight-based accession. If this\
+            \ is a count-based accession and \"withdrawnQuantity\" does not have a\
+            \ value, this field will not be present. This is a server-calculated value\
+            \ and is ignored on input."
           allOf:
           - $ref: '#/components/schemas/SeedQuantityPayload'
   securitySchemes:

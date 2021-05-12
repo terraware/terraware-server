@@ -1,17 +1,29 @@
 package com.terraformation.seedbank.api.seedbank
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.opencsv.CSVWriter
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
+import com.terraformation.seedbank.search.AndNode
+import com.terraformation.seedbank.search.FieldNode
+import com.terraformation.seedbank.search.NoConditionNode
+import com.terraformation.seedbank.search.NotNode
+import com.terraformation.seedbank.search.OrNode
 import com.terraformation.seedbank.search.SearchDirection
 import com.terraformation.seedbank.search.SearchField
-import com.terraformation.seedbank.search.SearchFilter
+import com.terraformation.seedbank.search.SearchFilterType
+import com.terraformation.seedbank.search.SearchNode
 import com.terraformation.seedbank.search.SearchResults
 import com.terraformation.seedbank.search.SearchService
 import com.terraformation.seedbank.search.SearchSortField
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
+import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.io.ByteArrayOutputStream
@@ -36,11 +48,39 @@ import org.springframework.web.bind.annotation.RestController
 class SearchController(private val clock: Clock, private val searchService: SearchService) {
   @Operation(summary = "Searches for accessions based on filter criteria.")
   @PostMapping
-  fun search(@RequestBody payload: SearchRequestPayload): SearchResponsePayload {
+  fun search(
+      @RequestBody
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          content =
+              [
+                  Content(
+                      examples =
+                          [
+                              ExampleObject(
+                                  name = "example1",
+                                  description =
+                                      "Search for all accessions of species \"Species Name\" " +
+                                          "whose remaining seeds weigh between 100 and 200 " +
+                                          "milligrams or that have between 30 and 40 seeds " +
+                                          "remaining.",
+                                  // This value is parsed by the schema generator and rendered
+                                  // as JSON or YAML, so its formatting is irrelevant.
+                                  value =
+                                      """{ "fields": ["accessionNumber", "remainingQuantity", "remainingUnits"],
+                                           "search": {
+                                             "operation": "and", "children": [
+                                               { "operation": "field", "field": "species", "values": ["Species Name"] },
+                                               { "operation": "or", "children": [
+                                                   { "operation": "field", "field": "remainingGrams", "type": "Range", "values": ["100 Milligrams", "200 Milligrams"] },
+                                                   { "operation": "and", "children": [
+                                                       { "operation": "field", "field": "remainingUnits", "values": ["Seeds"] },
+                                                       { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] } }""")])])
+      payload: SearchRequestPayload
+  ): SearchResponsePayload {
     return SearchResponsePayload(
         searchService.search(
             payload.fields,
-            payload.filters ?: emptyList(),
+            payload.toSearchNode(),
             payload.searchSortFields ?: emptyList(),
             payload.cursor,
             payload.count))
@@ -56,7 +96,7 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   fun export(@RequestBody payload: ExportRequestPayload): ResponseEntity<ByteArray> {
     val searchResults =
         searchService.search(
-            payload.fields, payload.filters ?: emptyList(), payload.searchSortFields ?: emptyList())
+            payload.fields, payload.toSearchNode(), payload.searchSortFields ?: emptyList())
     return exportCsv(payload, searchResults)
   }
 
@@ -102,19 +142,37 @@ private interface HasSortOrder {
     @Hidden get() = sortOrder?.map { it.toSearchSortField() }
 }
 
+interface HasSearchNode {
+  val filters: List<SearchFilter>?
+  val search: SearchNodePayload?
+
+  fun toSearchNode(): SearchNode {
+    val filters = this.filters
+    val search = this.search
+
+    return when {
+      search != null -> search.toSearchNode()
+      filters.isNullOrEmpty() -> NoConditionNode()
+      else -> AndNode(filters.map { FieldNode(it.field, it.values, it.type) })
+    }
+  }
+}
+
 data class SearchRequestPayload(
     @NotEmpty val fields: List<SearchField<*>>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
-    val filters: List<SearchFilter>? = null,
+    override val filters: List<SearchFilter>? = null,
+    override val search: SearchNodePayload? = null,
     val cursor: String? = null,
     @Schema(defaultValue = "10") val count: Int = 10
-) : HasSortOrder
+) : HasSearchNode, HasSortOrder
 
 data class ExportRequestPayload(
     @NotEmpty val fields: List<SearchField<*>>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
-    val filters: List<SearchFilter>? = null,
-) : HasSortOrder
+    override val filters: List<SearchFilter>? = null,
+    override val search: SearchNodePayload? = null,
+) : HasSearchNode, HasSortOrder
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SearchResponsePayload(val results: List<Map<String, String>>, val cursor: String?) {
@@ -127,3 +185,117 @@ data class SearchSortOrderElement(
 ) {
   fun toSearchSortField() = SearchSortField(field, direction ?: SearchDirection.Ascending)
 }
+
+@JsonSubTypes(
+    JsonSubTypes.Type(name = "and", value = AndNodePayload::class),
+    JsonSubTypes.Type(name = "field", value = FieldNodePayload::class),
+    JsonSubTypes.Type(name = "not", value = NotNodePayload::class),
+    JsonSubTypes.Type(name = "or", value = OrNodePayload::class),
+)
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "operation")
+@Schema(
+    description =
+        "A search criterion. The search will return results that match this criterion. The " +
+            "criterion can be composed of other search criteria to form arbitrary Boolean " +
+            "search expressions.",
+    oneOf =
+        [
+            AndNodePayload::class,
+            FieldNodePayload::class,
+            NotNodePayload::class,
+            OrNodePayload::class],
+    discriminatorMapping =
+        [
+            DiscriminatorMapping(value = "and", schema = AndNodePayload::class),
+            DiscriminatorMapping(value = "field", schema = FieldNodePayload::class),
+            DiscriminatorMapping(value = "not", schema = NotNodePayload::class),
+            DiscriminatorMapping(value = "or", schema = NotNodePayload::class),
+        ])
+interface SearchNodePayload {
+  fun toSearchNode(): SearchNode
+}
+
+@JsonTypeName("or")
+@Schema(
+    description =
+        "Search criterion that matches results that meet any of a set of other search criteria. " +
+            "That is, if the list of children is x, y, and z, this will require x OR y OR z.")
+data class OrNodePayload(
+    @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
+) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return OrNode(children.map { it.toSearchNode() })
+  }
+}
+
+@JsonTypeName("and")
+@Schema(
+    description =
+        "Search criterion that matches results that meet all of a set of other search criteria. " +
+            "That is, if the list of children is x, y, and z, this will require x AND y AND z.")
+data class AndNodePayload(
+    @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
+) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return AndNode(children.map { it.toSearchNode() })
+  }
+}
+
+@JsonTypeName("not")
+@Schema(
+    description =
+        "Search criterion that matches results that do not match a set of search criteria.")
+data class NotNodePayload(val child: SearchNodePayload) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return NotNode(child.toSearchNode())
+  }
+}
+
+@JsonTypeName("field")
+data class FieldNodePayload(
+    val field: SearchField<*>,
+    @ArraySchema(
+        schema = Schema(nullable = true),
+        minItems = 1,
+        arraySchema =
+            Schema(
+                description =
+                    "List of values to match. For exact and fuzzy searches, a list of at least " +
+                        "one value to search for; the list may include null to match accessions " +
+                        "where the field does not have a value. For range searches, the list " +
+                        "must contain exactly two values, the minimum and maximum; one of the " +
+                        "values may be null to search for all values above a minimum or below a " +
+                        "maximum."))
+    @NotEmpty
+    val values: List<String?>,
+    val type: SearchFilterType = SearchFilterType.Exact
+) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return FieldNode(field, values, type)
+  }
+}
+
+/**
+ * A filter criterion to use when searching for accessions.
+ *
+ * @see SearchService
+ */
+data class SearchFilter(
+    val field: SearchField<*>,
+    @ArraySchema(
+        schema = Schema(nullable = true),
+        arraySchema =
+            Schema(
+                minLength = 1,
+                description =
+                    "List of values to match. For exact and fuzzy searches, a list of at least " +
+                        "one value to search for; the list may include null to match accessions " +
+                        "where the field does not have a value. For range searches, the list " +
+                        "must contain exactly two values, the minimum and maximum; one of the " +
+                        "values may be null to search for all values above a minimum or below a " +
+                        "maximum."))
+    @NotEmpty
+    val values: List<String?>,
+    val type: SearchFilterType = SearchFilterType.Exact
+)

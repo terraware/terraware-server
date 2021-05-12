@@ -12,7 +12,6 @@ import com.terraformation.seedbank.db.SpeciesStore
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.StorageLocationStore
 import com.terraformation.seedbank.search.SearchField
-import com.terraformation.seedbank.search.SearchFilter
 import com.terraformation.seedbank.search.SearchService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -97,11 +96,10 @@ class ValuesController(
       @RequestBody payload: ListFieldValuesRequestPayload
   ): ListFieldValuesResponsePayload {
     val limit = 20
-    val filters = payload.filters ?: emptyList()
 
     val values =
         payload.fields.associateWith { searchField ->
-          val values = searchService.fetchValues(searchField, filters, limit)
+          val values = searchService.fetchValues(searchField, payload.toSearchNode(), limit)
           val partial = values.size > limit
           FieldValuesPayload(values.take(limit), partial)
         }
@@ -171,8 +169,9 @@ data class FieldValuesPayload(
 
 data class ListFieldValuesRequestPayload(
     val fields: List<SearchField<*>>,
-    val filters: List<SearchFilter>?
-)
+    override val filters: List<SearchFilter>?,
+    override val search: SearchNodePayload?,
+) : HasSearchNode
 
 data class ListFieldValuesResponsePayload(val results: Map<SearchField<*>, FieldValuesPayload>) :
     SuccessResponsePayload
