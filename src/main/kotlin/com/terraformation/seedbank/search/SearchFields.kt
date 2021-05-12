@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.EnumFromReferenceTable
 import com.terraformation.seedbank.db.FuzzySearchOperators
+import com.terraformation.seedbank.db.SeedQuantityUnits
 import com.terraformation.seedbank.db.UsesFuzzySearchOperators
 import com.terraformation.seedbank.db.tables.references.ACCESSION
 import com.terraformation.seedbank.db.tables.references.BAG
@@ -17,11 +18,13 @@ import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
 import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
 import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.toActiveEnum
+import com.terraformation.seedbank.model.toGrams
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.util.EnumSet
 import javax.annotation.ManagedBean
+import org.jetbrains.annotations.NotNull
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
@@ -208,7 +211,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("processingStartDate", "Processing start date", ACCESSION.PROCESSING_START_DATE),
         EnumField.create("rare", "Rare", ACCESSION.SPECIES_RARE_TYPE_ID),
         DateField("receivedDate", "Received on", ACCESSION.RECEIVED_DATE),
-        BigDecimalField("remainingGrams", "Remaining (grams)", ACCESSION.REMAINING_GRAMS),
+        GramsField("remainingGrams", "Remaining (grams)", ACCESSION.REMAINING_GRAMS),
         BigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSION.REMAINING_QUANTITY),
         EnumField.create("remainingUnits", "Remaining (units)", ACCESSION.REMAINING_UNITS_ID),
         TextField("siteLocation", "Site location", ACCESSION.COLLECTION_SITE_NAME),
@@ -227,7 +230,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         DateField("storageStartDate", "Storing start date", ACCESSION.STORAGE_START_DATE),
         EnumField.create(
             "targetStorageCondition", "Target %RH", ACCESSION.TARGET_STORAGE_CONDITION),
-        BigDecimalField("totalGrams", "Total size (grams)", ACCESSION.TOTAL_GRAMS),
+        GramsField("totalGrams", "Total size (grams)", ACCESSION.TOTAL_GRAMS),
         BigDecimalField("totalQuantity", "Total size (quantity)", ACCESSION.TOTAL_QUANTITY),
         EnumField.create("totalUnits", "Total size (units)", ACCESSION.TOTAL_UNITS_ID),
         IntegerField(
@@ -242,7 +245,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "Destination",
             WITHDRAWAL.DESTINATION,
             SearchTables.Withdrawal),
-        BigDecimalField(
+        GramsField(
             "withdrawalGrams",
             "Weight of seeds withdrawn (g)",
             WITHDRAWAL.WITHDRAWN_GRAMS,
@@ -251,12 +254,12 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "withdrawalNotes", "Notes (withdrawal)", WITHDRAWAL.NOTES, SearchTables.Withdrawal),
         EnumField.create(
             "withdrawalPurpose", "Purpose", WITHDRAWAL.PURPOSE_ID, SearchTables.Withdrawal),
-        BigDecimalField(
+        GramsField(
             "withdrawalRemainingGrams",
             "Weight in grams of seeds remaining (withdrawal)",
             WITHDRAWAL.REMAINING_GRAMS,
             SearchTables.Withdrawal),
-        BigDecimalField(
+        GramsField(
             "withdrawalRemainingQuantity",
             "Weight or count of seeds remaining (withdrawal)",
             WITHDRAWAL.REMAINING_GRAMS,
@@ -477,7 +480,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
     override val orderByFields: List<Field<*>>
       get() {
-        val displayNames = enumClass.enumConstants!!.map { it to it.displayName }.toMap()
+        val displayNames = enumClass.enumConstants!!.associate { it to it.displayName }
         return listOf(DSL.case_(databaseField).mapValues(displayNames))
       }
 
@@ -526,6 +529,73 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     }
 
     override fun toString() = fieldName
+  }
+
+  /**
+   * Search field for columns with weights in grams. Supports unit conversions on search criteria.
+   */
+  class GramsField(
+      override val fieldName: String,
+      override val displayName: String,
+      override val databaseField: TableField<*, BigDecimal?>,
+      override val table: SearchTable = SearchTables.Accession
+  ) : SingleColumnSearchField<BigDecimal>() {
+    override val supportedFilterTypes: Set<SearchFilterType> =
+        EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
+
+    override fun computeValue(record: Record) = record[databaseField]?.toPlainString()
+
+    override fun getCondition(filter: SearchFilter): Condition {
+      val bigDecimalValues = filter.values.map { parseGrams(it) }
+      val nonNullValues = bigDecimalValues.filterNotNull()
+
+      return when (filter.type) {
+        SearchFilterType.Exact -> {
+          DSL.or(
+              listOfNotNull<@NotNull Condition>(
+                  if (nonNullValues.isNotEmpty()) databaseField.`in`(nonNullValues) else null,
+                  if (filter.values.any { it == null }) databaseField.isNull else null))
+        }
+        SearchFilterType.Fuzzy ->
+            throw RuntimeException("Fuzzy search not supported for numeric fields")
+        SearchFilterType.Range ->
+            if (bigDecimalValues.size == 2 && nonNullValues.isNotEmpty()) {
+              if (bigDecimalValues[0] != null && bigDecimalValues[1] != null) {
+                databaseField.between(bigDecimalValues[0], bigDecimalValues[1])
+              } else if (bigDecimalValues[0] == null) {
+                databaseField.le(bigDecimalValues[1])
+              } else {
+                databaseField.ge(bigDecimalValues[0])
+              }
+            } else {
+              throw IllegalArgumentException("Range search must have two non-null values")
+            }
+      }
+    }
+
+    private val formatRegex = Regex("([\\d.]+)\\s*(\\D*)")
+
+    private fun parseGrams(value: String?): BigDecimal? {
+      if (value == null) {
+        return null
+      }
+
+      val matches =
+          formatRegex.matchEntire(value)
+              ?: throw IllegalStateException(
+                  "Weight values must be a decimal number optionally followed by a unit name; couldn't interpret $value")
+
+      val number = BigDecimal(matches.groupValues[1])
+      val unitsName = matches.groupValues[2].toLowerCase().capitalize()
+
+      val units =
+          if (unitsName.isEmpty()) SeedQuantityUnits.Grams
+          else
+              SeedQuantityUnits.forDisplayName(unitsName)
+                  ?: throw IllegalArgumentException("Unrecognized weight unit in $value")
+
+      return units.toGrams(number)
+    }
   }
 
   /** Search field for numeric columns that don't allow fractional values. */

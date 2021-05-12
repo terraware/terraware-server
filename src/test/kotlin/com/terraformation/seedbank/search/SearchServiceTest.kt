@@ -5,6 +5,8 @@ import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
+import com.terraformation.seedbank.db.ProcessingMethod
+import com.terraformation.seedbank.db.SeedQuantityUnits
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
 import com.terraformation.seedbank.db.tables.daos.SpeciesDao
@@ -12,13 +14,13 @@ import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
 import com.terraformation.seedbank.db.tables.pojos.Species
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -39,6 +41,7 @@ class SearchServiceTest : DatabaseTest() {
   private val storageLocationField = searchFields["storageLocation"]!!
   private val storageNotesField = searchFields["storageNotes"]!!
   private val targetStorageConditionField = searchFields["targetStorageCondition"]!!
+  private val totalGramsField = searchFields["totalGrams"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
 
   @BeforeEach
@@ -319,7 +322,53 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can specify weight units when searching by grams`() {
-    Assumptions.assumeTrue(false, "TODO")
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+            processingMethodId = ProcessingMethod.Weight,
+            totalGrams = BigDecimal(1000),
+            totalQuantity = BigDecimal(1),
+            totalUnitsId = SeedQuantityUnits.Kilograms))
+
+    val fields = listOf(accessionNumberField)
+    val filters =
+        listOf(
+            SearchFilter(
+                totalGramsField,
+                listOf("900000 Milligrams", "650000.000001 Pounds"),
+                SearchFilterType.Range))
+
+    val expected = SearchResults(listOf(mapOf("accessionNumber" to "ABCDEFG")), cursor = null)
+
+    val result = searchService.search(fields, filters)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `searching on grams field defaults to grams if no units explicitly specified`() {
+    accessionDao.update(
+        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+            processingMethodId = ProcessingMethod.Weight,
+            totalGrams = BigDecimal(1000),
+            totalQuantity = BigDecimal(1),
+            totalUnitsId = SeedQuantityUnits.Kilograms))
+
+    val fields = listOf(accessionNumberField)
+    val filters = listOf(SearchFilter(totalGramsField, listOf("1000")))
+
+    val expected = SearchResults(listOf(mapOf("accessionNumber" to "ABCDEFG")), cursor = null)
+
+    val result = searchService.search(fields, filters)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `searching on grams field throws exception for unknown units name`() {
+    val fields = listOf(accessionNumberField)
+    val filters = listOf(SearchFilter(totalGramsField, listOf("1000 baseballs")))
+
+    assertThrows(IllegalArgumentException::class.java) { searchService.search(fields, filters) }
   }
 
   @Test

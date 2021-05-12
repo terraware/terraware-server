@@ -1446,7 +1446,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             germinationTests =
                 listOf(
                     GerminationTestPayload(
-                        remainingPayload = grams(10),
+                        remainingQuantity = grams(10),
                         testType = GerminationTestType.Lab,
                         startDate = today)),
             initialQuantity = kilograms(432),
