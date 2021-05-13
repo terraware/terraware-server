@@ -12,17 +12,14 @@ import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
 import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
 import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
 import com.terraformation.seedbank.model.AccessionActive
-import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionSource
-import com.terraformation.seedbank.model.GerminationTestFields
+import com.terraformation.seedbank.model.GerminationTestModel
 import com.terraformation.seedbank.model.SeedQuantityModel
 import com.terraformation.seedbank.model.toActiveEnum
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
 import com.terraformation.seedbank.services.toInstant
-import com.terraformation.seedbank.services.toListOrNull
-import com.terraformation.seedbank.services.toSetOrNull
 import java.time.Clock
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -33,10 +30,6 @@ import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
-import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.TransactionDefinition
-import org.springframework.transaction.support.DefaultTransactionDefinition
-import org.springframework.transaction.support.TransactionTemplate
 
 @ManagedBean
 class AccessionStore(
@@ -51,7 +44,6 @@ class AccessionStore(
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val support: StoreSupport,
-    private val transactionManager: PlatformTransactionManager,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -105,7 +97,7 @@ class AccessionStore(
     val germinationTestTypes = germinationStore.fetchGerminationTestTypes(accessionId)
     val germinationTests = germinationStore.fetchGerminationTests(accessionId)
     val photoFilenames =
-        accessionPhotoDao.fetchByAccessionId(accessionId).map { it.filename }.toListOrNull()
+        accessionPhotoDao.fetchByAccessionId(accessionId).mapNotNull { it.filename }
     val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
 
     val source = if (deviceInfo != null) AccessionSource.SeedCollectorApp else AccessionSource.Web
@@ -172,7 +164,7 @@ class AccessionStore(
     }
   }
 
-  fun create(accession: AccessionFields): AccessionModel {
+  fun create(accession: AccessionModel): AccessionModel {
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
@@ -258,11 +250,10 @@ class AccessionStore(
     throw RuntimeException("BUG! Inserting accession failed but error was not caught.")
   }
 
-  fun update(accessionNumber: String, accession: AccessionFields): Boolean {
-    accession.validate()
-
+  fun update(accessionNumber: String, updated: AccessionModel): Boolean {
     val existing = fetchByNumber(accessionNumber) ?: return false
-    val accessionId = existing.id
+    val accessionId = existing.id ?: return false
+    val accession = updated.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)
 
     if (accession.storageStartDate?.isAfter(todayLocal) == true) {
@@ -283,16 +274,16 @@ class AccessionStore(
         insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
       }
 
-      val existingTests: MutableList<GerminationTestFields> =
-          existing.germinationTests.orEmpty().toMutableList()
+      val existingTests: MutableList<GerminationTestModel> =
+          existing.germinationTests.toMutableList()
       val withdrawals =
-          accession.calculateWithdrawals(clock, existing.withdrawals).map { withdrawal ->
+          accession.withdrawals.map { withdrawal ->
             withdrawal.germinationTest?.let { germinationTest ->
               if (germinationTest.id == null) {
                 val insertedTest =
                     germinationStore.insertGerminationTest(accessionId, germinationTest)
                 existingTests.add(insertedTest)
-                withdrawal.withGerminationTest(insertedTest)
+                withdrawal.copy(germinationTest = insertedTest, germinationTestId = insertedTest.id)
               } else {
                 withdrawal
               }
@@ -310,40 +301,30 @@ class AccessionStore(
       germinationStore.updateGerminationTests(accessionId, existingTests, germinationTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
-      val stateTransition = existing.getStateTransition(accession, clock)
-      if (stateTransition != null) {
-        log.info(
-            "Accession $accessionNumber transitioning from ${existing.state} to " +
-                "${stateTransition.newState}: ${stateTransition.reason}")
+      if (existing.state != accession.state) {
+        existing.getStateTransition(accession, clock)?.let { stateTransition ->
+          log.info(
+              "Accession $accessionNumber transitioning from ${existing.state} to " +
+                  "${stateTransition.newState}: ${stateTransition.reason}")
 
-        with(ACCESSION_STATE_HISTORY) {
-          dslContext
-              .insertInto(ACCESSION_STATE_HISTORY)
-              .set(ACCESSION_ID, accessionId)
-              .set(NEW_STATE_ID, stateTransition.newState)
-              .set(OLD_STATE_ID, existing.state)
-              .set(REASON, stateTransition.reason)
-              .set(UPDATED_TIME, clock.instant())
-              .execute()
+          with(ACCESSION_STATE_HISTORY) {
+            dslContext
+                .insertInto(ACCESSION_STATE_HISTORY)
+                .set(ACCESSION_ID, accessionId)
+                .set(NEW_STATE_ID, stateTransition.newState)
+                .set(OLD_STATE_ID, existing.state)
+                .set(REASON, stateTransition.reason)
+                .set(UPDATED_TIME, clock.instant())
+                .execute()
+          }
         }
       }
-
-      val processingStartDate =
-          accession.processingStartDate
-              ?: existing.processingStartDate ?: accession.calculateProcessingStartDate(clock)
-      val collectedDate =
-          if (existing.source == AccessionSource.Web) accession.collectedDate
-          else existing.collectedDate
-      val receivedDate =
-          if (existing.source == AccessionSource.Web) accession.receivedDate
-          else existing.receivedDate
-      val remaining = accession.calculateRemaining(clock)
 
       val rowsUpdated =
           with(ACCESSION) {
             dslContext
                 .update(ACCESSION)
-                .set(COLLECTED_DATE, collectedDate)
+                .set(COLLECTED_DATE, accession.collectedDate)
                 .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
                 .set(COLLECTION_SITE_NAME, accession.siteLocation)
                 .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
@@ -353,29 +334,27 @@ class AccessionStore(
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
-                .set(EST_SEED_COUNT, accession.calculateEstimatedSeedCount())
+                .set(EST_SEED_COUNT, accession.estimatedSeedCount)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
-                .set(
-                    LATEST_GERMINATION_RECORDING_DATE,
-                    accession.calculateLatestGerminationRecordingDate())
-                .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestGerminationTestDate)
+                .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)
                 .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
-                .set(PROCESSING_START_DATE, processingStartDate)
-                .set(RECEIVED_DATE, receivedDate)
-                .set(REMAINING_GRAMS, remaining?.grams)
-                .set(REMAINING_QUANTITY, remaining?.quantity)
-                .set(REMAINING_UNITS_ID, remaining?.units)
+                .set(PROCESSING_START_DATE, accession.processingStartDate)
+                .set(RECEIVED_DATE, accession.receivedDate)
+                .set(REMAINING_GRAMS, accession.remaining?.grams)
+                .set(REMAINING_QUANTITY, accession.remaining?.quantity)
+                .set(REMAINING_UNITS_ID, accession.remaining?.units)
                 .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                 .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                 .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                 .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
                 .set(SPECIES_RARE_TYPE_ID, accession.rare)
-                .set(STATE_ID, stateTransition?.newState ?: existing.state)
+                .set(STATE_ID, accession.state)
                 .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
                 .set(STORAGE_NOTES, accession.storageNotes)
                 .set(STORAGE_PACKETS, accession.storagePackets)
@@ -389,7 +368,7 @@ class AccessionStore(
                 .set(TOTAL_GRAMS, accession.total?.grams)
                 .set(TOTAL_QUANTITY, accession.total?.quantity)
                 .set(TOTAL_UNITS_ID, accession.total?.units)
-                .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(NUMBER.eq(accessionNumber))
                 .and(SITE_MODULE_ID.eq(config.siteModuleId))
@@ -411,7 +390,7 @@ class AccessionStore(
    *
    * @return null if the accession didn't exist.
    */
-  fun updateAndFetch(accession: AccessionFields, accessionNumber: String): AccessionModel {
+  fun updateAndFetch(accession: AccessionModel, accessionNumber: String): AccessionModel {
     val updated =
         if (update(accessionNumber, accession)) {
           fetchByNumber(accessionNumber)
@@ -426,28 +405,12 @@ class AccessionStore(
    * Returns the accession data that would result from updating an accession, but does not write the
    * modified data to the database.
    *
-   * This works by performing the actual update and then rolling it back. We do it that way rather
-   * than as a purely in-memory transformation because the update might fail due to integrity
-   * constraints at the database level, and we don't want the dry run to succeed if the real update
-   * wouldn't.
-   *
-   * @return null if the accession didn't exist.
+   * @throws AccessionNotFoundException if the accession doesn't exist.
    */
-  fun dryRun(accession: AccessionFields, accessionNumber: String): AccessionModel {
-    // Perform the update in a nested transaction that gets unconditionally rolled back. This will
-    // start a new transaction if there isn't already one active.
-    val template =
-        TransactionTemplate(
-            transactionManager,
-            DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NESTED))
-
-    val updated =
-        template.execute { transactionStatus ->
-          transactionStatus.setRollbackOnly()
-          updateAndFetch(accession, accessionNumber)
-        }
-
-    return updated ?: throw AccessionNotFoundException(accessionNumber)
+  fun dryRun(accession: AccessionModel, accessionNumber: String): AccessionModel {
+    val existing =
+        fetchByNumber(accessionNumber) ?: throw AccessionNotFoundException(accessionNumber)
+    return accession.withCalculatedValues(clock, existing)
   }
 
   /**
@@ -522,7 +485,7 @@ class AccessionStore(
     }
   }
 
-  private fun fetchSecondaryCollectorNames(accessionId: Long): Set<String>? {
+  private fun fetchSecondaryCollectorNames(accessionId: Long): Set<String> {
     return dslContext
         .select(COLLECTOR.NAME)
         .from(COLLECTOR)
@@ -531,7 +494,8 @@ class AccessionStore(
         .where(ACCESSION_SECONDARY_COLLECTOR.ACCESSION_ID.eq(accessionId))
         .orderBy(COLLECTOR.NAME)
         .fetch(COLLECTOR.NAME)
-        .toSetOrNull()
+        .filterNotNull()
+        .toSet()
   }
 
   private fun insertSecondaryCollectors(

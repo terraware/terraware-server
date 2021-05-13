@@ -5,6 +5,7 @@ import com.terraformation.seedbank.db.AccessionNotFoundException
 import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
+import com.terraformation.seedbank.model.PhotoMetadata
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.FileAlreadyExistsException
@@ -29,7 +30,7 @@ class PhotoRepository(
     private val clock: Clock,
 ) {
   @Throws(IOException::class)
-  fun storePhoto(accessionNumber: String, data: InputStream, metadata: PhotoMetadataFields) {
+  fun storePhoto(accessionNumber: String, data: InputStream, metadata: PhotoMetadata) {
     val accessionId =
         accessionStore.getIdByNumber(accessionNumber)
             ?: throw AccessionNotFoundException(accessionNumber)

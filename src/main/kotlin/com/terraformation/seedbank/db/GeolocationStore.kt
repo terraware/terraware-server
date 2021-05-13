@@ -2,7 +2,6 @@ package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.db.tables.references.GEOLOCATION
 import com.terraformation.seedbank.model.Geolocation
-import com.terraformation.seedbank.services.toSetOrNull
 import java.math.BigDecimal
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -11,7 +10,7 @@ import org.jooq.impl.DSL
 
 @ManagedBean
 class GeolocationStore(private val dslContext: DSLContext, private val clock: Clock) {
-  fun fetchGeolocations(accessionId: Long): Set<Geolocation>? {
+  fun fetchGeolocations(accessionId: Long): Set<Geolocation> {
     return dslContext
         .selectFrom(GEOLOCATION)
         .where(GEOLOCATION.ACCESSION_ID.eq(accessionId))
@@ -23,7 +22,7 @@ class GeolocationStore(private val dslContext: DSLContext, private val clock: Cl
               record[GEOLOCATION.GPS_ACCURACY]?.let { BigDecimal(it) },
           )
         }
-        .toSetOrNull()
+        .toSet()
   }
 
   fun updateGeolocations(

@@ -1,20 +1,20 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.db.tables.references.BAG
-import com.terraformation.seedbank.services.toSetOrNull
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
 class BagStore(private val dslContext: DSLContext) {
-  fun fetchBagNumbers(accessionId: Long): Set<String>? {
+  fun fetchBagNumbers(accessionId: Long): Set<String> {
     return dslContext
         .select(BAG.BAG_NUMBER)
         .from(BAG)
         .where(BAG.ACCESSION_ID.eq(accessionId))
         .orderBy(BAG.BAG_NUMBER)
         .fetch(BAG.BAG_NUMBER)
-        .toSetOrNull()
+        .filterNotNull()
+        .toSet()
   }
 
   fun updateBags(

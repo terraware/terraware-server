@@ -2,40 +2,21 @@ package com.terraformation.seedbank.model
 
 import com.terraformation.seedbank.db.tables.records.AppDeviceRecord
 
-interface AppDeviceFields {
-  val appBuild: String?
-  val appName: String?
-  val brand: String?
-  val model: String?
-  val name: String?
-  val osType: String?
-  val osVersion: String?
-  val uniqueId: String?
-
-  fun nullIfEmpty(): AppDeviceFields? =
-      if (listOfNotNull(appBuild, appName, brand, model, name, osType, osVersion, uniqueId)
-          .isNotEmpty()) {
-        this
-      } else {
-        null
-      }
-}
-
 data class AppDeviceModel(
-    val id: Long,
-    override val appBuild: String?,
-    override val appName: String?,
-    override val brand: String?,
-    override val model: String?,
-    override val name: String?,
-    override val osType: String?,
-    override val osVersion: String?,
-    override val uniqueId: String?
-) : AppDeviceFields {
+    val id: Long? = null,
+    val appBuild: String? = null,
+    val appName: String? = null,
+    val brand: String? = null,
+    val model: String? = null,
+    val name: String? = null,
+    val osType: String? = null,
+    val osVersion: String? = null,
+    val uniqueId: String? = null
+) {
   constructor(
       record: AppDeviceRecord
   ) : this(
-      record.id!!,
+      record.id,
       record.appBuild,
       record.appName,
       record.brand,
@@ -44,4 +25,12 @@ data class AppDeviceModel(
       record.osType,
       record.osVersion,
       record.uniqueId)
+
+  fun nullIfEmpty(): AppDeviceModel? =
+      if (listOfNotNull(appBuild, appName, brand, model, name, osType, osVersion, uniqueId)
+          .isNotEmpty()) {
+        this
+      } else {
+        null
+      }
 }

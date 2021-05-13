@@ -3,28 +3,25 @@ package com.terraformation.seedbank.db
 import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.GERMINATION
 import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
-import com.terraformation.seedbank.model.GerminationFields
 import com.terraformation.seedbank.model.GerminationModel
-import com.terraformation.seedbank.model.GerminationTestFields
 import com.terraformation.seedbank.model.GerminationTestModel
 import com.terraformation.seedbank.model.SeedQuantityModel
-import com.terraformation.seedbank.services.toListOrNull
-import com.terraformation.seedbank.services.toSetOrNull
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
 class GerminationStore(private val dslContext: DSLContext) {
-  fun fetchGerminationTestTypes(accessionId: Long): Set<GerminationTestType>? {
+  fun fetchGerminationTestTypes(accessionId: Long): Set<GerminationTestType> {
     return dslContext
         .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
         .from(ACCESSION_GERMINATION_TEST_TYPE)
         .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(accessionId))
         .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
-        .toSetOrNull()
+        .filterNotNull()
+        .toSet()
   }
 
-  fun fetchGerminationTests(accessionId: Long): List<GerminationTestModel>? {
+  fun fetchGerminationTests(accessionId: Long): List<GerminationTestModel> {
     val germinationsByTestId =
         dslContext
             .select(
@@ -73,14 +70,13 @@ class GerminationStore(private val dslContext: DSLContext) {
                 SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
             )
           }
-          .toListOrNull()
     }
   }
 
   fun insertGerminationTest(
       accessionId: Long,
-      germinationTest: GerminationTestFields
-  ): GerminationTestFields {
+      germinationTest: GerminationTestModel
+  ): GerminationTestModel {
     val testId =
         with(GERMINATION_TEST) {
           dslContext
@@ -107,10 +103,10 @@ class GerminationStore(private val dslContext: DSLContext) {
 
     germinationTest.germinations?.forEach { insertGermination(testId, it) }
 
-    return germinationTest.withId(testId)
+    return germinationTest.copy(id = testId)
   }
 
-  private fun insertGermination(testId: Long, germination: GerminationFields) {
+  private fun insertGermination(testId: Long, germination: GerminationModel) {
     dslContext
         .insertInto(GERMINATION)
         .set(GERMINATION.RECORDING_DATE, germination.recordingDate)
@@ -148,8 +144,8 @@ class GerminationStore(private val dslContext: DSLContext) {
 
   fun updateGerminationTests(
       accessionId: Long,
-      existingTests: List<GerminationTestFields>?,
-      desiredTests: List<GerminationTestFields>?
+      existingTests: List<GerminationTestModel>?,
+      desiredTests: List<GerminationTestModel>?
   ) {
     val existing = existingTests ?: emptyList()
     val existingById = existing.associateBy { it.id }

@@ -16,7 +16,7 @@ import com.terraformation.seedbank.db.AccessionNotFoundException
 import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
 import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
-import com.terraformation.seedbank.photo.PhotoMetadata
+import com.terraformation.seedbank.model.PhotoMetadata
 import com.terraformation.seedbank.photo.PhotoRepository
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation

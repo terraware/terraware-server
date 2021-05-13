@@ -740,9 +740,7 @@ components:
   schemas:
     AccessionPayload:
       required:
-      - accessionNumber
       - active
-      - source
       - state
       type: object
       properties:
@@ -1768,25 +1766,6 @@ components:
           enum:
           - Ascending
           - Descending
-    SeedQuantityModel:
-      required:
-      - quantity
-      - units
-      type: object
-      properties:
-        quantity:
-          type: number
-        units:
-          type: string
-          enum:
-          - Seeds
-          - Grams
-          - Milligrams
-          - Kilograms
-          - Ounces
-          - Pounds
-        grams:
-          type: number
     SeedQuantityPayload:
       required:
       - quantity

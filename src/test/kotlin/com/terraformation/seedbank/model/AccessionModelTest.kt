@@ -25,7 +25,7 @@ internal class AccessionModelTest {
   private var defaultState = AccessionState.Processing
 
   private fun accession(
-      germinationTests: List<GerminationTestModel>? = null,
+      germinationTests: List<GerminationTestModel> = emptyList(),
       cutTestSeedsCompromised: Int? = null,
       cutTestSeedsEmpty: Int? = null,
       cutTestSeedsFilled: Int? = null,
@@ -39,7 +39,7 @@ internal class AccessionModelTest {
       storageStartDate: LocalDate? = null,
       subsetWeight: SeedQuantityModel? = null,
       total: SeedQuantityModel? = null,
-      withdrawals: List<WithdrawalModel>? = null,
+      withdrawals: List<WithdrawalModel> = emptyList(),
       processingMethod: ProcessingMethod? =
           total?.let { if (it.grams != null) ProcessingMethod.Weight else ProcessingMethod.Count },
   ): AccessionModel {
@@ -780,9 +780,7 @@ internal class AccessionModelTest {
       assertEquals(
           january(5), withdrawals[0].date, "Withdrawal date should be copied from test date")
       assertEquals(
-          accession.withdrawals!![0].id,
-          withdrawals[0].id,
-          "Should update existing test withdrawal")
+          accession.withdrawals[0].id, withdrawals[0].id, "Should update existing test withdrawal")
     }
 
     @Test
@@ -794,7 +792,7 @@ internal class AccessionModelTest {
       val withdrawals = accession.calculateWithdrawals(clock)
       assertEquals(1, withdrawals.size, "Number of generated withdrawals")
       assertEquals(
-          accession.germinationTests!![0].id,
+          accession.germinationTests[0].id,
           withdrawals[0].germinationTestId,
           "Withdrawal should refer to germination test")
       assertNull(withdrawals[0].withdrawn, "Withdrawal amount")
@@ -904,7 +902,7 @@ internal class AccessionModelTest {
           .addStateTest(AccessionState.Nursery, "Nursery start date entered")
           .copy(nurseryStartDate = null)
           .addStateTest(AccessionState.Withdrawn, "All seeds marked as withdrawn")
-          .copy(withdrawals = null)
+          .copy(withdrawals = emptyList())
           .addStateTest(AccessionState.InStorage, "Number of packets or location has been entered")
           .copy(storageLocation = null)
           .addStateTest(AccessionState.InStorage, "Number of packets or location has been entered")

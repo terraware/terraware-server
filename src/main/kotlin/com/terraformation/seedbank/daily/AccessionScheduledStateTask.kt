@@ -23,7 +23,11 @@ class AccessionScheduledStateTask(private val store: AccessionStore, private val
     store
         .fetchTimedStateTransitionCandidates()
         .filter { it.getStateTransition(it, clock) != null }
-        .forEach { store.update(it.accessionNumber, it) }
+        .forEach { model ->
+          if (model.accessionNumber != null) {
+            store.update(model.accessionNumber, model)
+          }
+        }
 
     return FinishedEvent()
   }

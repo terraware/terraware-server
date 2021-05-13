@@ -37,115 +37,106 @@ enum class AccessionSource {
   SeedCollectorApp
 }
 
-interface AccessionFields {
-  val accessionNumber: String?
-    get() = null
+data class AccessionModel(
+    val id: Long? = null,
+    val accessionNumber: String? = null,
+    val bagNumbers: Set<String> = emptySet(),
+    val collectedDate: LocalDate? = null,
+    val cutTestSeedsCompromised: Int? = null,
+    val cutTestSeedsEmpty: Int? = null,
+    val cutTestSeedsFilled: Int? = null,
+    val deviceInfo: AppDeviceModel? = null,
+    val dryingEndDate: LocalDate? = null,
+    val dryingMoveDate: LocalDate? = null,
+    val dryingStartDate: LocalDate? = null,
+    val endangered: SpeciesEndangeredType? = null,
+    val environmentalNotes: String? = null,
+    val estimatedSeedCount: Int? = null,
+    val family: String? = null,
+    val fieldNotes: String? = null,
+    val founderId: String? = null,
+    val geolocations: Set<Geolocation> = emptySet(),
+    val germinationTestTypes: Set<GerminationTestType> = emptySet(),
+    val germinationTests: List<GerminationTestModel> = emptyList(),
+    val landowner: String? = null,
+    val latestGerminationTestDate: LocalDate? = null,
+    val latestViabilityPercent: Int? = null,
+    val numberOfTrees: Int? = null,
+    val nurseryStartDate: LocalDate? = null,
+    val photoFilenames: List<String> = emptyList(),
+    val primaryCollector: String? = null,
+    val processingMethod: ProcessingMethod? = null,
+    val processingNotes: String? = null,
+    val processingStaffResponsible: String? = null,
+    val processingStartDate: LocalDate? = null,
+    val rare: SpeciesRareType? = null,
+    val receivedDate: LocalDate? = null,
+    val remaining: SeedQuantityModel? = null,
+    val secondaryCollectors: Set<String> = emptySet(),
+    val siteLocation: String? = null,
+    val source: AccessionSource? = null,
+    val sourcePlantOrigin: SourcePlantOrigin? = null,
+    val species: String? = null,
+    val speciesId: Long? = null,
+    val state: AccessionState? = null,
+    val storageCondition: StorageCondition? = null,
+    val storageLocation: String? = null,
+    val storageNotes: String? = null,
+    val storagePackets: Int? = null,
+    val storageStaffResponsible: String? = null,
+    val storageStartDate: LocalDate? = null,
+    val subsetCount: Int? = null,
+    val subsetWeightQuantity: SeedQuantityModel? = null,
+    val targetStorageCondition: StorageCondition? = null,
+    val total: SeedQuantityModel? = null,
+    val totalViabilityPercent: Int? = null,
+    val withdrawals: List<WithdrawalModel> = emptyList(),
+) {
+  init {
+    validate()
+  }
+
   val active: AccessionActive?
     get() = state?.toActiveEnum()
-  val bagNumbers: Set<String>?
-    get() = null
-  val collectedDate: LocalDate?
-    get() = null
-  val cutTestSeedsCompromised: Int?
-    get() = null
-  val cutTestSeedsEmpty: Int?
-    get() = null
-  val cutTestSeedsFilled: Int?
-    get() = null
-  val deviceInfo: AppDeviceFields?
-    get() = null
-  val dryingEndDate: LocalDate?
-    get() = null
-  val dryingMoveDate: LocalDate?
-    get() = null
-  val dryingStartDate: LocalDate?
-    get() = null
-  val endangered: SpeciesEndangeredType?
-    get() = null
-  val environmentalNotes: String?
-    get() = null
-  val estimatedSeedCount: Int?
-    get() = null
-  val family: String?
-    get() = null
-  val fieldNotes: String?
-    get() = null
-  val founderId: String?
-    get() = null
-  val geolocations: Set<Geolocation>?
-    get() = null
-  val germinationTestTypes: Set<GerminationTestType>?
-    get() = null
-  val germinationTests: List<GerminationTestFields>?
-    get() = null
-  val landowner: String?
-    get() = null
-  val latestGerminationTestDate: LocalDate?
-    get() = null
-  val latestViabilityPercent: Int?
-    get() = null
-  val numberOfTrees: Int?
-    get() = null
-  val nurseryStartDate: LocalDate?
-    get() = null
-  val photoFilenames: List<String>?
-    get() = null
-  val primaryCollector: String?
-    get() = null
-  val processingMethod: ProcessingMethod?
-    get() = null
-  val processingNotes: String?
-    get() = null
-  val processingStaffResponsible: String?
-    get() = null
-  val processingStartDate: LocalDate?
-    get() = null
-  val rare: SpeciesRareType?
-    get() = null
-  val receivedDate: LocalDate?
-    get() = null
-  val remaining: SeedQuantityModel?
-    get() = null
-  val secondaryCollectors: Set<String>?
-    get() = null
-  val siteLocation: String?
-    get() = null
-  val source: AccessionSource?
-    get() = null
-  val sourcePlantOrigin: SourcePlantOrigin?
-    get() = null
-  val species: String?
-    get() = null
-  val speciesId: Long?
-    get() = null
-  val state: AccessionState?
-    get() = null
-  val storageCondition: StorageCondition?
-    get() = null
-  val storageLocation: String?
-    get() = null
-  val storageNotes: String?
-    get() = null
-  val storagePackets: Int?
-    get() = null
-  val storageStaffResponsible: String?
-    get() = null
-  val storageStartDate: LocalDate?
-    get() = null
-  val subsetCount: Int?
-    get() = null
-  val subsetWeightQuantity: SeedQuantityModel?
-    get() = null
-  val targetStorageCondition: StorageCondition?
-    get() = null
-  val total: SeedQuantityModel?
-    get() = null
-  val totalViabilityPercent: Int?
-    get() = null
-  val withdrawals: List<WithdrawalFields>?
-    get() = null
 
-  fun validate() {
+  fun getStateTransition(newModel: AccessionModel, clock: Clock): AccessionStateTransition? {
+    val seedsRemaining = newModel.calculateRemaining(clock)
+    val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
+    val today = LocalDate.now(clock)
+
+    fun LocalDate?.hasArrived(daysAgo: Long = 0) = this != null && this <= today.minusDays(daysAgo)
+
+    val seedCountPresent = newModel.total != null
+    val processingForTwoWeeks = newModel.processingStartDate.hasArrived(daysAgo = 14)
+    val dryingStarted = newModel.dryingStartDate.hasArrived()
+    val dryingEnded = newModel.dryingEndDate.hasArrived()
+    val storageStarted = newModel.storageStartDate.hasArrived()
+    val storageDetailsEntered = newModel.storagePackets != null || newModel.storageLocation != null
+    val nurseryStarted = newModel.nurseryStartDate.hasArrived()
+
+    val desiredState: Pair<AccessionState, String> =
+        when {
+          nurseryStarted -> AccessionState.Nursery to "Nursery start date has arrived"
+          allSeedsWithdrawn -> AccessionState.Withdrawn to "All seeds marked as withdrawn"
+          storageDetailsEntered ->
+              AccessionState.InStorage to "Number of packets or location has been entered"
+          storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
+          dryingEnded -> AccessionState.Dried to "Drying end date has arrived"
+          dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
+          processingForTwoWeeks ->
+              AccessionState.Processed to "2 weeks have passed since processing start date"
+          seedCountPresent -> AccessionState.Processing to "Seed count/weight has been entered"
+          else -> AccessionState.Pending to "No state conditions have been met"
+        }
+
+    return if (desiredState.first != state) {
+      AccessionStateTransition(desiredState.first, desiredState.second)
+    } else {
+      null
+    }
+  }
+
+  private fun validate() {
     when (processingMethod) {
       ProcessingMethod.Count -> validateCountBased()
       ProcessingMethod.Weight -> validateWeightBased()
@@ -158,11 +149,11 @@ interface AccessionFields {
     }
 
     if (total == null) {
-      if (!germinationTests.isNullOrEmpty()) {
+      if (germinationTests.isNotEmpty()) {
         throw IllegalArgumentException(
             "Cannot create germination tests before setting total accession size")
       }
-      if (!withdrawals.isNullOrEmpty()) {
+      if (withdrawals.isNotEmpty()) {
         throw IllegalArgumentException(
             "Cannot withdraw from accession before setting total accession size")
       }
@@ -178,9 +169,9 @@ interface AccessionFields {
     }
 
     listOfNotNull(
-        withdrawals?.mapNotNull { it.withdrawn },
-        withdrawals?.mapNotNull { it.remaining },
-        germinationTests?.mapNotNull { it.remaining },
+        withdrawals.mapNotNull { it.withdrawn },
+        withdrawals.mapNotNull { it.remaining },
+        germinationTests.mapNotNull { it.remaining },
     )
         .flatten()
         .forEach { quantity ->
@@ -199,8 +190,8 @@ interface AccessionFields {
       }
     }
 
-    val germinationTestRemaining = germinationTests.orEmpty().map { it.remaining }
-    val withdrawalRemaining = withdrawals.orEmpty().map { it.remaining }
+    val germinationTestRemaining = germinationTests.map { it.remaining }
+    val withdrawalRemaining = withdrawals.map { it.remaining }
     (germinationTestRemaining + withdrawalRemaining).forEach { quantity ->
       if (quantity == null) {
         throw IllegalArgumentException(
@@ -214,10 +205,10 @@ interface AccessionFields {
     }
   }
 
-  private fun getLatestGerminationTestWithResults(): GerminationTestFields? {
+  private fun getLatestGerminationTestWithResults(): GerminationTestModel? {
     return germinationTests
-        ?.filter { it.calculateLatestRecordingDate() != null && it.seedsSown != null }
-        ?.maxByOrNull { it.calculateLatestRecordingDate()!! }
+        .filter { it.calculateLatestRecordingDate() != null && it.seedsSown != null }
+        .maxByOrNull { it.calculateLatestRecordingDate()!! }
   }
 
   private fun getCutTestTotal(): Int? =
@@ -228,12 +219,12 @@ interface AccessionFields {
       }
 
   private fun hasGerminationTestResults(): Boolean =
-      germinationTests.orEmpty().any { !it.germinations.isNullOrEmpty() }
+      germinationTests.any { !it.germinations.isNullOrEmpty() }
 
   private fun hasCutTestResults(): Boolean =
       cutTestSeedsCompromised != null && cutTestSeedsEmpty != null && cutTestSeedsFilled != null
 
-  fun hasSeedCount(): Boolean =
+  private fun hasSeedCount(): Boolean =
       total?.units == SeedQuantityUnits.Seeds ||
           (total != null && subsetCount != null && subsetWeightQuantity != null)
 
@@ -252,7 +243,7 @@ interface AccessionFields {
       return null
     }
 
-    val tests = germinationTests ?: emptyList()
+    val tests = germinationTests
 
     val totalGerminationTested = tests.mapNotNull { it.seedsSown }.sum()
     val totalGerminated =
@@ -297,8 +288,8 @@ interface AccessionFields {
    */
   fun calculateWithdrawals(
       clock: Clock,
-      existingWithdrawals: Collection<WithdrawalFields>? = withdrawals
-  ): List<WithdrawalFields> {
+      existingWithdrawals: Collection<WithdrawalModel> = withdrawals
+  ): List<WithdrawalModel> {
     if (withdrawals.isNullOrEmpty() && germinationTests.isNullOrEmpty()) {
       return emptyList()
     }
@@ -308,29 +299,30 @@ interface AccessionFields {
             ?: throw IllegalStateException(
                 "Cannot withdraw from accession before specifying its total size")
 
-    val existingIds = existingWithdrawals.orEmpty().mapNotNull { it.id }.toSet()
-    withdrawals?.mapNotNull { it.id }?.forEach { id ->
+    val existingIds = existingWithdrawals.mapNotNull { it.id }.toSet()
+    withdrawals.mapNotNull { it.id }.forEach { id ->
       if (id !in existingIds) {
         throw IllegalArgumentException("Cannot update withdrawal with nonexistent ID $id")
       }
     }
 
     val nonTestWithdrawals =
-        withdrawals.orEmpty().filter { it.purpose != WithdrawalPurpose.GerminationTesting }
+        withdrawals.filter { it.purpose != WithdrawalPurpose.GerminationTesting }
     val existingTestWithdrawals =
-        existingWithdrawals.orEmpty().filter { it.germinationTestId != null }.associateBy {
+        existingWithdrawals.filter { it.germinationTestId != null }.associateBy {
           it.germinationTestId!!
         }
     val testWithdrawals =
-        germinationTests.orEmpty().map { test ->
+        germinationTests.map { test ->
           val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
           val withdrawn =
               test.seedsSown?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
-          GerminationTestWithdrawal(
+          WithdrawalModel(
               date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
               germinationTest = test,
               germinationTestId = test.id,
               id = existingWithdrawal?.id,
+              purpose = WithdrawalPurpose.GerminationTesting,
               remaining = test.remaining,
               staffResponsible = test.staffResponsible,
               withdrawn = withdrawn,
@@ -343,7 +335,9 @@ interface AccessionFields {
       ProcessingMethod.Count -> {
         unsortedWithdrawals.sortedWith { a, b -> a.compareByTime(b) }.map { withdrawal ->
           withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
-          withdrawal.withRemaining(currentRemaining)
+          withdrawal.copy(
+              remaining = currentRemaining,
+              germinationTest = withdrawal.germinationTest?.copy(remaining = currentRemaining))
         }
       }
       ProcessingMethod.Weight -> {
@@ -354,7 +348,7 @@ interface AccessionFields {
                       "Withdrawals from weight-based accessions must include seeds remaining")
           val difference = currentRemaining - remaining
           currentRemaining = remaining
-          withdrawal.withWeightDifference(difference)
+          withdrawal.copy(weightDifference = difference)
         }
       }
       null -> {
@@ -363,15 +357,15 @@ interface AccessionFields {
     }
   }
 
-  fun foldWithdrawalQuantities(
+  private fun foldWithdrawalQuantities(
       clock: Clock,
-      predicate: (WithdrawalFields) -> Boolean = { true }
+      predicate: (WithdrawalModel) -> Boolean = { true }
   ): SeedQuantityModel? {
     val total = this.total ?: return null
     val withdrawals = calculateWithdrawals(clock).filter(predicate)
     val hasCountBasedQuantities = withdrawals.any { it.withdrawn?.units == SeedQuantityUnits.Seeds }
     val hasNonCountBasedQuantities =
-        withdrawals.any { it.withdrawn != null && it.withdrawn?.units != SeedQuantityUnits.Seeds }
+        withdrawals.any { it.withdrawn != null && it.withdrawn.units != SeedQuantityUnits.Seeds }
     val units =
         if (hasCountBasedQuantities && !hasNonCountBasedQuantities) SeedQuantityUnits.Seeds
         else total.units
@@ -419,106 +413,31 @@ interface AccessionFields {
   fun calculateTotalWithdrawalQuantity(clock: Clock): SeedQuantityModel? {
     return foldWithdrawalQuantities(clock)
   }
-}
 
-data class AccessionModel(
-    val id: Long,
-    override val accessionNumber: String,
-    override val bagNumbers: Set<String>? = null,
-    override val collectedDate: LocalDate? = null,
-    override val cutTestSeedsCompromised: Int? = null,
-    override val cutTestSeedsEmpty: Int? = null,
-    override val cutTestSeedsFilled: Int? = null,
-    override val deviceInfo: AppDeviceModel? = null,
-    override val dryingEndDate: LocalDate? = null,
-    override val dryingMoveDate: LocalDate? = null,
-    override val dryingStartDate: LocalDate? = null,
-    override val endangered: SpeciesEndangeredType? = null,
-    override val environmentalNotes: String? = null,
-    override val estimatedSeedCount: Int? = null,
-    override val family: String? = null,
-    override val fieldNotes: String? = null,
-    override val founderId: String? = null,
-    override val geolocations: Set<Geolocation>? = null,
-    override val germinationTestTypes: Set<GerminationTestType>? = null,
-    override val germinationTests: List<GerminationTestModel>? = null,
-    override val landowner: String? = null,
-    override val latestGerminationTestDate: LocalDate? = null,
-    override val latestViabilityPercent: Int? = null,
-    override val numberOfTrees: Int? = null,
-    override val nurseryStartDate: LocalDate? = null,
-    override val photoFilenames: List<String>? = null,
-    override val primaryCollector: String? = null,
-    override val processingMethod: ProcessingMethod? = null,
-    override val processingNotes: String? = null,
-    override val processingStaffResponsible: String? = null,
-    override val processingStartDate: LocalDate? = null,
-    override val rare: SpeciesRareType? = null,
-    override val receivedDate: LocalDate? = null,
-    override val remaining: SeedQuantityModel? = null,
-    override val secondaryCollectors: Set<String>? = null,
-    override val siteLocation: String? = null,
-    override val source: AccessionSource,
-    override val sourcePlantOrigin: SourcePlantOrigin? = null,
-    override val species: String? = null,
-    override val speciesId: Long? = null,
-    override val state: AccessionState,
-    override val storageCondition: StorageCondition? = null,
-    override val storageLocation: String? = null,
-    override val storageNotes: String? = null,
-    override val storagePackets: Int? = null,
-    override val storageStaffResponsible: String? = null,
-    override val storageStartDate: LocalDate? = null,
-    override val subsetCount: Int? = null,
-    override val subsetWeightQuantity: SeedQuantityModel? = null,
-    override val targetStorageCondition: StorageCondition? = null,
-    override val total: SeedQuantityModel? = null,
-    override val totalViabilityPercent: Int? = null,
-    override val withdrawals: List<WithdrawalModel>? = null,
-) : AccessionFields {
-  init {
-    validate()
-  }
+  fun withCalculatedValues(clock: Clock, existing: AccessionModel = this): AccessionModel {
+    val newProcessingStartDate =
+        processingStartDate ?: existing.processingStartDate ?: calculateProcessingStartDate(clock)
+    val newCollectedDate =
+        if (existing.source == AccessionSource.Web) collectedDate else existing.collectedDate
+    val newReceivedDate =
+        if (existing.source == AccessionSource.Web) receivedDate else existing.receivedDate
+    val newRemaining = calculateRemaining(clock)
+    val newWithdrawals = calculateWithdrawals(clock, existing.withdrawals)
+    val newGerminationTests = newWithdrawals.mapNotNull { it.germinationTest }
+    val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
 
-  override val active: AccessionActive
-    get() = state.toActiveEnum()
-
-  fun getStateTransition(newFields: AccessionFields, clock: Clock): AccessionStateTransition? {
-    val seedsRemaining = newFields.calculateRemaining(clock)
-    val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
-    val today = LocalDate.now(clock)
-
-    fun LocalDate?.hasArrived(daysAgo: Long = 0) = this != null && this <= today.minusDays(daysAgo)
-
-    val seedCountPresent = newFields.total != null
-    val processingForTwoWeeks = newFields.processingStartDate.hasArrived(daysAgo = 14)
-    val dryingStarted = newFields.dryingStartDate.hasArrived()
-    val dryingEnded = newFields.dryingEndDate.hasArrived()
-    val storageStarted = newFields.storageStartDate.hasArrived()
-    val storageDetailsEntered =
-        newFields.storagePackets != null || newFields.storageLocation != null
-    val nurseryStarted = newFields.nurseryStartDate.hasArrived()
-
-    val desiredState: Pair<AccessionState, String> =
-        when {
-          nurseryStarted -> AccessionState.Nursery to "Nursery start date has arrived"
-          allSeedsWithdrawn -> AccessionState.Withdrawn to "All seeds marked as withdrawn"
-          storageDetailsEntered ->
-              AccessionState.InStorage to "Number of packets or location has been entered"
-          storageStarted -> AccessionState.InStorage to "Storage start date has arrived"
-          dryingEnded -> AccessionState.Dried to "Drying end date has arrived"
-          dryingStarted -> AccessionState.Drying to "Drying start date has arrived"
-          processingForTwoWeeks ->
-              AccessionState.Processed to "2 weeks have passed since processing start date"
-          seedCountPresent -> AccessionState.Processing to "Seed count/weight has been entered"
-          else -> AccessionState.Pending to "No state conditions have been met"
-        }
-
-    return if (desiredState.first != state) {
-      AccessionStateTransition(desiredState.first, desiredState.second)
-    } else {
-      null
-    }
+    return copy(
+        collectedDate = newCollectedDate,
+        estimatedSeedCount = calculateEstimatedSeedCount(),
+        germinationTests = newGerminationTests,
+        latestGerminationTestDate = calculateLatestGerminationRecordingDate(),
+        latestViabilityPercent = calculateLatestViabilityPercent(),
+        processingStartDate = newProcessingStartDate,
+        receivedDate = newReceivedDate,
+        remaining = newRemaining,
+        state = newState,
+        totalViabilityPercent = calculateTotalViabilityPercent(),
+        withdrawals = newWithdrawals)
   }
 }
 

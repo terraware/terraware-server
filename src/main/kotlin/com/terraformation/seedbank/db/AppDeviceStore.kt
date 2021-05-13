@@ -1,7 +1,6 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.db.tables.references.APP_DEVICE
-import com.terraformation.seedbank.model.AppDeviceFields
 import com.terraformation.seedbank.model.AppDeviceModel
 import com.terraformation.seedbank.services.eqOrIsNull
 import java.time.Clock
@@ -15,7 +14,7 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
    * Returns an app device ID for a given set of details about a device. If there is already a
    * device with those values, returns its existing ID, otherwise inserts a new one.
    */
-  fun getOrInsertDevice(appDevice: AppDeviceFields): Long {
+  fun getOrInsertDevice(appDevice: AppDeviceModel): Long {
     with(APP_DEVICE) {
       val existingId =
           dslContext

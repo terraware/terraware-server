@@ -2,10 +2,8 @@ package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
 import com.terraformation.seedbank.model.SeedQuantityModel
-import com.terraformation.seedbank.model.WithdrawalFields
 import com.terraformation.seedbank.model.WithdrawalModel
 import com.terraformation.seedbank.services.perClassLogger
-import com.terraformation.seedbank.services.toListOrNull
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -14,7 +12,7 @@ import org.jooq.DSLContext
 class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clock) {
   val log = perClassLogger()
 
-  fun fetchWithdrawals(accessionId: Long): List<WithdrawalModel>? {
+  fun fetchWithdrawals(accessionId: Long): List<WithdrawalModel> {
     return dslContext
         .selectFrom(WITHDRAWAL)
         .where(WITHDRAWAL.ACCESSION_ID.eq(accessionId))
@@ -33,13 +31,12 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
               SeedQuantityModel.of(record.remainingQuantity, record.remainingUnitsId)!!,
               SeedQuantityModel.of(record.withdrawnQuantity, record.withdrawnUnitsId))
         }
-        .toListOrNull()
   }
 
   fun updateWithdrawals(
       accessionId: Long,
       existingWithdrawals: Collection<WithdrawalModel>?,
-      desiredWithdrawals: Collection<WithdrawalFields>?,
+      desiredWithdrawals: Collection<WithdrawalModel>?,
   ) {
     desiredWithdrawals?.forEach { it.validate() }
 

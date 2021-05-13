@@ -1,6 +1,5 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
 import com.terraformation.seedbank.db.tables.daos.WithdrawalDao
@@ -125,20 +124,20 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual?.toSet())
+    assertEquals(expected, actual.toSet())
   }
 
   @Test
   fun `creates new withdrawals`() {
     val newWithdrawal =
-        WithdrawalPayload(
+        WithdrawalModel(
             date = LocalDate.now(),
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remainingQuantity = grams(10),
+            remaining = grams(10),
             staffResponsible = "staff 1",
-            withdrawnQuantity = seeds(1),
+            withdrawn = seeds(1),
         )
 
     val expected =
@@ -160,17 +159,17 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual?.toSet())
+    assertEquals(expected, actual.toSet())
   }
 
   @Test
   fun `rejects new germination testing withdrawals without test IDs`() {
     val desired =
-        WithdrawalPayload(
+        WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.GerminationTesting,
-            remainingQuantity = grams(4),
-            withdrawnQuantity = grams(1))
+            remaining = grams(4),
+            withdrawn = grams(1))
 
     assertThrows<IllegalArgumentException> {
       store.updateWithdrawals(accessionId, emptyList(), listOf(desired))
@@ -180,12 +179,12 @@ internal class WithdrawalStoreTest : DatabaseTest() {
   @Test
   fun `rejects test IDs on non-germination-testing withdrawals`() {
     val desired =
-        WithdrawalPayload(
+        WithdrawalModel(
             date = LocalDate.now(),
             germinationTestId = germinationTestId,
             purpose = WithdrawalPurpose.Other,
-            remainingQuantity = grams(4),
-            withdrawnQuantity = grams(1))
+            remaining = grams(4),
+            withdrawn = grams(1))
 
     assertThrows<IllegalArgumentException> {
       store.updateWithdrawals(accessionId, emptyList(), listOf(desired))
@@ -203,12 +202,12 @@ internal class WithdrawalStoreTest : DatabaseTest() {
             remainingUnitsId = SeedQuantityUnits.Grams))
 
     val desired =
-        WithdrawalPayload(
+        WithdrawalModel(
             date = LocalDate.now(),
             germinationTestId = germinationTestId,
             purpose = WithdrawalPurpose.GerminationTesting,
-            remainingQuantity = grams(4),
-            withdrawnQuantity = seeds(1))
+            remaining = grams(4),
+            withdrawn = seeds(1))
 
     val expected =
         setOf(
@@ -230,7 +229,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual?.toSet())
+    assertEquals(expected, actual.toSet())
   }
 
   @Test
@@ -244,14 +243,14 @@ internal class WithdrawalStoreTest : DatabaseTest() {
             remainingUnitsId = SeedQuantityUnits.Grams))
 
     val initial =
-        WithdrawalPayload(
+        WithdrawalModel(
             date = LocalDate.now(),
             germinationTestId = germinationTestId,
             purpose = WithdrawalPurpose.GerminationTesting,
-            remainingQuantity = grams(4),
-            withdrawnQuantity = seeds(1))
+            remaining = grams(4),
+            withdrawn = seeds(1))
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
-    val inserted = store.fetchWithdrawals(accessionId)!!.first()
+    val inserted = store.fetchWithdrawals(accessionId).first()
 
     assertThrows<IllegalArgumentException> {
       store.updateWithdrawals(
@@ -264,21 +263,18 @@ internal class WithdrawalStoreTest : DatabaseTest() {
   @Test
   fun `updates existing withdrawals`() {
     val initial =
-        WithdrawalPayload(
+        WithdrawalModel(
             date = LocalDate.now(),
             destination = "dest 1",
             notes = "notes 1",
             purpose = WithdrawalPurpose.Other,
-            remainingQuantity = grams(4),
+            remaining = grams(4),
             staffResponsible = "staff 1",
-            withdrawnQuantity = grams(1),
+            withdrawn = grams(1),
         )
     val desired =
         initial.copy(
-            id = 1L,
-            destination = "updated dest",
-            notes = "updated notes",
-            withdrawnQuantity = grams(2))
+            id = 1L, destination = "updated dest", notes = "updated notes", withdrawn = grams(2))
 
     val expected =
         setOf(
@@ -302,18 +298,18 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual?.toSet())
+    assertEquals(expected, actual.toSet())
   }
 
   @Test
   fun `rejects attempts to change existing withdrawal purpose to germination testing`() {
     val initial =
-        WithdrawalPayload(
+        WithdrawalModel(
             date = LocalDate.now(),
             destination = "dest 1",
             purpose = WithdrawalPurpose.Other,
-            remainingQuantity = grams(4),
-            withdrawnQuantity = grams(1),
+            remaining = grams(4),
+            withdrawn = grams(1),
         )
     val desired = initial.copy(id = 1L, purpose = WithdrawalPurpose.GerminationTesting)
 
@@ -332,11 +328,11 @@ internal class WithdrawalStoreTest : DatabaseTest() {
           accessionId,
           emptyList(),
           listOf(
-              WithdrawalPayload(
+              WithdrawalModel(
                   date = LocalDate.now(),
                   purpose = WithdrawalPurpose.Other,
-                  remainingQuantity = grams(4),
-                  withdrawnQuantity = grams(0))))
+                  remaining = grams(4),
+                  withdrawn = grams(0))))
     }
   }
 
@@ -347,11 +343,11 @@ internal class WithdrawalStoreTest : DatabaseTest() {
           accessionId,
           emptyList(),
           listOf(
-              WithdrawalPayload(
+              WithdrawalModel(
                   date = LocalDate.now(),
                   purpose = WithdrawalPurpose.Other,
-                  remainingQuantity = grams(4),
-                  withdrawnQuantity = grams(-1),
+                  remaining = grams(4),
+                  withdrawn = grams(-1),
               ),
           ),
       )

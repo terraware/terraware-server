@@ -1,7 +1,6 @@
 package com.terraformation.seedbank.api.seedbank
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
@@ -25,16 +24,15 @@ import com.terraformation.seedbank.db.SpeciesRareType
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.WithdrawalPurpose
 import com.terraformation.seedbank.model.AccessionActive
-import com.terraformation.seedbank.model.AccessionFields
 import com.terraformation.seedbank.model.AccessionModel
 import com.terraformation.seedbank.model.AccessionSource
-import com.terraformation.seedbank.model.AppDeviceFields
+import com.terraformation.seedbank.model.AppDeviceModel
 import com.terraformation.seedbank.model.Geolocation
-import com.terraformation.seedbank.model.GerminationFields
-import com.terraformation.seedbank.model.GerminationTestFields
-import com.terraformation.seedbank.model.GerminationTestWithdrawal
+import com.terraformation.seedbank.model.GerminationModel
+import com.terraformation.seedbank.model.GerminationTestModel
 import com.terraformation.seedbank.model.SeedQuantityModel
-import com.terraformation.seedbank.model.WithdrawalFields
+import com.terraformation.seedbank.model.WithdrawalModel
+import com.terraformation.seedbank.services.orNull
 import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -65,7 +63,7 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val updatedPayload = accessionStore.create(payload)
+    val updatedPayload = accessionStore.create(payload.toModel())
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
   }
 
@@ -91,9 +89,9 @@ class AccessionController(private val accessionStore: AccessionStore, private va
     try {
       val updatedModel =
           if (simulate == true) {
-            accessionStore.dryRun(payload, accessionNumber)
+            accessionStore.dryRun(payload.toModel(), accessionNumber)
           } else {
-            accessionStore.updateAndFetch(payload, accessionNumber)
+            accessionStore.updateAndFetch(payload.toModel(), accessionNumber)
           }
       return UpdateAccessionResponsePayload(AccessionPayload(updatedModel, clock))
     } catch (e: AccessionNotFoundException) {
@@ -116,97 +114,55 @@ class AccessionController(private val accessionStore: AccessionStore, private va
 // Ignore properties that are defined on AccessionFields but not accepted as input (CU-px8k25)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayload(
-    override val bagNumbers: Set<String>? = null,
-    override val collectedDate: LocalDate? = null,
-    override val deviceInfo: DeviceInfoPayload? = null,
-    override val endangered: SpeciesEndangeredType? = null,
-    override val environmentalNotes: String? = null,
-    override val family: String? = null,
-    override val fieldNotes: String? = null,
-    override val founderId: String? = null,
-    override val geolocations: Set<Geolocation>? = null,
-    override val germinationTestTypes: Set<GerminationTestType>? = null,
-    override val landowner: String? = null,
-    override val numberOfTrees: Int? = null,
-    override val primaryCollector: String? = null,
-    override val rare: SpeciesRareType? = null,
-    override val receivedDate: LocalDate? = null,
-    override val secondaryCollectors: Set<String>? = null,
-    override val siteLocation: String? = null,
-    override val sourcePlantOrigin: SourcePlantOrigin? = null,
-    override val species: String? = null,
-) : AccessionFields
+    val bagNumbers: Set<String>? = null,
+    val collectedDate: LocalDate? = null,
+    val deviceInfo: DeviceInfoPayload? = null,
+    val endangered: SpeciesEndangeredType? = null,
+    val environmentalNotes: String? = null,
+    val family: String? = null,
+    val fieldNotes: String? = null,
+    val founderId: String? = null,
+    val geolocations: Set<Geolocation>? = null,
+    val germinationTestTypes: Set<GerminationTestType>? = null,
+    val landowner: String? = null,
+    val numberOfTrees: Int? = null,
+    val primaryCollector: String? = null,
+    val rare: SpeciesRareType? = null,
+    val receivedDate: LocalDate? = null,
+    val secondaryCollectors: Set<String>? = null,
+    val siteLocation: String? = null,
+    val sourcePlantOrigin: SourcePlantOrigin? = null,
+    val species: String? = null,
+) {
+  fun toModel(): AccessionModel {
+    return AccessionModel(
+        bagNumbers = bagNumbers.orEmpty(),
+        collectedDate = collectedDate,
+        deviceInfo = deviceInfo?.toModel(),
+        endangered = endangered,
+        environmentalNotes = environmentalNotes,
+        family = family,
+        fieldNotes = fieldNotes,
+        founderId = founderId,
+        geolocations = geolocations.orEmpty(),
+        germinationTestTypes = germinationTestTypes.orEmpty(),
+        landowner = landowner,
+        numberOfTrees = numberOfTrees,
+        primaryCollector = primaryCollector,
+        rare = rare,
+        receivedDate = receivedDate,
+        secondaryCollectors = secondaryCollectors.orEmpty(),
+        siteLocation = siteLocation,
+        sourcePlantOrigin = sourcePlantOrigin,
+        species = species)
+  }
+}
 
 // Ignore properties that are defined on AccessionFields but not accepted as input (CU-px8k25)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class UpdateAccessionRequestPayload(
-    override val bagNumbers: Set<String>? = null,
-    override val collectedDate: LocalDate? = null,
-    override val cutTestSeedsCompromised: Int? = null,
-    override val cutTestSeedsEmpty: Int? = null,
-    override val cutTestSeedsFilled: Int? = null,
-    override val dryingEndDate: LocalDate? = null,
-    override val dryingMoveDate: LocalDate? = null,
-    override val dryingStartDate: LocalDate? = null,
-    override val endangered: SpeciesEndangeredType? = null,
-    override val environmentalNotes: String? = null,
-    override val family: String? = null,
-    override val fieldNotes: String? = null,
-    override val founderId: String? = null,
-    override val geolocations: Set<Geolocation>? = null,
-    override val germinationTestTypes: Set<GerminationTestType>? = null,
-    @Valid override val germinationTests: List<GerminationTestPayload>? = null,
-    @Schema(
-        description =
-            "Initial size of accession. The units of this value must match the measurement type " +
-                "in \"processingMethod\".")
-    val initialQuantity: SeedQuantityPayload? = null,
-    override val landowner: String? = null,
-    override val numberOfTrees: Int? = null,
-    override val nurseryStartDate: LocalDate? = null,
-    override val primaryCollector: String? = null,
-    override val processingMethod: ProcessingMethod? = null,
-    override val processingNotes: String? = null,
-    override val processingStaffResponsible: String? = null,
-    override val processingStartDate: LocalDate? = null,
-    override val rare: SpeciesRareType? = null,
-    override val receivedDate: LocalDate? = null,
-    override val secondaryCollectors: Set<String>? = null,
-    override val siteLocation: String? = null,
-    override val sourcePlantOrigin: SourcePlantOrigin? = null,
-    override val species: String? = null,
-    override val storageLocation: String? = null,
-    override val storageNotes: String? = null,
-    override val storagePackets: Int? = null,
-    override val storageStaffResponsible: String? = null,
-    override val storageStartDate: LocalDate? = null,
-    override val subsetCount: Int? = null,
-    @Schema(
-        description =
-            "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
-    private val subsetWeight: SeedQuantityPayload? = null,
-    override val targetStorageCondition: StorageCondition? = null,
-    @Valid override val withdrawals: List<WithdrawalPayload>? = null,
-) : AccessionFields {
-  @get:JsonIgnore
-  override val subsetWeightQuantity: SeedQuantityModel?
-    get() = subsetWeight?.toModel()
-  @get:JsonIgnore
-  override val total: SeedQuantityModel?
-    get() = initialQuantity?.toModel()
-}
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema
-data class AccessionPayload(
-    @Schema(description = "Server-generated unique identifier for the accession.")
-    val accessionNumber: String,
-    @Schema(
-        description = "Server-calculated active indicator. This is based on the accession's state.")
-    val active: AccessionActive,
     val bagNumbers: Set<String>? = null,
     val collectedDate: LocalDate? = null,
-    val deviceInfo: DeviceInfoPayload? = null,
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,
     val cutTestSeedsFilled: Int? = null,
@@ -215,24 +171,20 @@ data class AccessionPayload(
     val dryingStartDate: LocalDate? = null,
     val endangered: SpeciesEndangeredType? = null,
     val environmentalNotes: String? = null,
-    val estimatedSeedCount: Int? = null,
     val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
-    val germinationTests: List<GerminationTestPayload>? = null,
     val germinationTestTypes: Set<GerminationTestType>? = null,
+    @Valid val germinationTests: List<GerminationTestPayload>? = null,
     @Schema(
         description =
             "Initial size of accession. The units of this value must match the measurement type " +
                 "in \"processingMethod\".")
     val initialQuantity: SeedQuantityPayload? = null,
     val landowner: String? = null,
-    val latestGerminationTestDate: LocalDate? = null,
-    val latestViabilityPercent: Int? = null,
     val numberOfTrees: Int? = null,
     val nurseryStartDate: LocalDate? = null,
-    val photoFilenames: List<String>? = null,
     val primaryCollector: String? = null,
     val processingMethod: ProcessingMethod? = null,
     val processingNotes: String? = null,
@@ -240,61 +192,166 @@ data class AccessionPayload(
     val processingStartDate: LocalDate? = null,
     val rare: SpeciesRareType? = null,
     val receivedDate: LocalDate? = null,
-    @Schema(
-        description =
-            "Number or weight of seeds remaining for withdrawal and testing. Calculated by the " +
-                "server when the accession's total size is known.")
-    val remainingQuantity: SeedQuantityPayload? = null,
     val secondaryCollectors: Set<String>? = null,
     val siteLocation: String? = null,
-    @Schema(
-        description =
-            "Which application this accession originally came from. This is currently based on " +
-                "the presence of the deviceInfo field.")
-    val source: AccessionSource,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
-    @Schema(description = "Server-generated unique ID of the species.") val speciesId: Long? = null,
-    @Schema(
-        description =
-            "Server-calculated accession state. Can change due to modifications to accession data " +
-                "or based on passage of time.")
-    val state: AccessionState,
-    val storageCondition: StorageCondition? = null,
     val storageLocation: String? = null,
-    val storagePackets: Int? = null,
     val storageNotes: String? = null,
+    val storagePackets: Int? = null,
     val storageStaffResponsible: String? = null,
     val storageStartDate: LocalDate? = null,
     val subsetCount: Int? = null,
     @Schema(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
-    val subsetWeight: SeedQuantityPayload? = null,
+    private val subsetWeight: SeedQuantityPayload? = null,
     val targetStorageCondition: StorageCondition? = null,
+    @Valid val withdrawals: List<WithdrawalPayload>? = null,
+) {
+  fun toModel() =
+      AccessionModel(
+          bagNumbers = bagNumbers.orEmpty(),
+          collectedDate = collectedDate,
+          cutTestSeedsCompromised = cutTestSeedsCompromised,
+          cutTestSeedsEmpty = cutTestSeedsEmpty,
+          cutTestSeedsFilled = cutTestSeedsFilled,
+          dryingEndDate = dryingEndDate,
+          dryingMoveDate = dryingMoveDate,
+          dryingStartDate = dryingStartDate,
+          endangered = endangered,
+          environmentalNotes = environmentalNotes,
+          family = family,
+          fieldNotes = fieldNotes,
+          founderId = founderId,
+          geolocations = geolocations.orEmpty(),
+          germinationTestTypes = germinationTestTypes.orEmpty(),
+          germinationTests = germinationTests.orEmpty().map { it.toModel() },
+          landowner = landowner,
+          numberOfTrees = numberOfTrees,
+          nurseryStartDate = nurseryStartDate,
+          primaryCollector = primaryCollector,
+          processingMethod = processingMethod,
+          processingNotes = processingNotes,
+          processingStaffResponsible = processingStaffResponsible,
+          processingStartDate = processingStartDate,
+          rare = rare,
+          receivedDate = receivedDate,
+          secondaryCollectors = secondaryCollectors.orEmpty(),
+          siteLocation = siteLocation,
+          sourcePlantOrigin = sourcePlantOrigin,
+          species = species,
+          storageLocation = storageLocation,
+          storageNotes = storageNotes,
+          storagePackets = storagePackets,
+          storageStaffResponsible = storageStaffResponsible,
+          storageStartDate = storageStartDate,
+          subsetCount = subsetCount,
+          subsetWeightQuantity = subsetWeight?.toModel(),
+          targetStorageCondition = targetStorageCondition,
+          total = initialQuantity?.toModel(),
+          withdrawals = withdrawals.orEmpty().map { it.toModel() })
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema
+data class AccessionPayload(
+    @Schema(description = "Server-generated unique identifier for the accession.")
+    val accessionNumber: String?,
+    @Schema(
+        description = "Server-calculated active indicator. This is based on the accession's state.")
+    val active: AccessionActive,
+    val bagNumbers: Set<String>?,
+    val collectedDate: LocalDate?,
+    val deviceInfo: DeviceInfoPayload?,
+    val cutTestSeedsCompromised: Int?,
+    val cutTestSeedsEmpty: Int?,
+    val cutTestSeedsFilled: Int?,
+    val dryingEndDate: LocalDate?,
+    val dryingMoveDate: LocalDate?,
+    val dryingStartDate: LocalDate?,
+    val endangered: SpeciesEndangeredType?,
+    val environmentalNotes: String?,
+    val estimatedSeedCount: Int?,
+    val family: String?,
+    val fieldNotes: String?,
+    val founderId: String?,
+    val geolocations: Set<Geolocation>?,
+    val germinationTests: List<GerminationTestPayload>?,
+    val germinationTestTypes: Set<GerminationTestType>?,
+    @Schema(
+        description =
+            "Initial size of accession. The units of this value must match the measurement type " +
+                "in \"processingMethod\".")
+    val initialQuantity: SeedQuantityPayload?,
+    val landowner: String?,
+    val latestGerminationTestDate: LocalDate?,
+    val latestViabilityPercent: Int?,
+    val numberOfTrees: Int?,
+    val nurseryStartDate: LocalDate?,
+    val photoFilenames: List<String>?,
+    val primaryCollector: String?,
+    val processingMethod: ProcessingMethod?,
+    val processingNotes: String?,
+    val processingStaffResponsible: String?,
+    val processingStartDate: LocalDate?,
+    val rare: SpeciesRareType?,
+    val receivedDate: LocalDate?,
+    @Schema(
+        description =
+            "Number or weight of seeds remaining for withdrawal and testing. Calculated by the " +
+                "server when the accession's total size is known.")
+    val remainingQuantity: SeedQuantityPayload?,
+    val secondaryCollectors: Set<String>?,
+    val siteLocation: String?,
+    @Schema(
+        description =
+            "Which application this accession originally came from. This is currently based on " +
+                "the presence of the deviceInfo field.")
+    val source: AccessionSource?,
+    val sourcePlantOrigin: SourcePlantOrigin?,
+    val species: String?,
+    @Schema(description = "Server-generated unique ID of the species.") val speciesId: Long?,
+    @Schema(
+        description =
+            "Server-calculated accession state. Can change due to modifications to accession data " +
+                "or based on passage of time.")
+    val state: AccessionState,
+    val storageCondition: StorageCondition?,
+    val storageLocation: String?,
+    val storagePackets: Int?,
+    val storageNotes: String?,
+    val storageStaffResponsible: String?,
+    val storageStartDate: LocalDate?,
+    val subsetCount: Int?,
+    @Schema(
+        description =
+            "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
+    val subsetWeight: SeedQuantityPayload?,
+    val targetStorageCondition: StorageCondition?,
     @Schema(description = "Total quantity of all past withdrawals, including germination tests.")
-    val totalPastWithdrawalQuantity: SeedQuantityPayload? = null,
+    val totalPastWithdrawalQuantity: SeedQuantityPayload?,
     @Schema(
         description = "Total quantity of scheduled withdrawals, not counting germination tests.")
-    val totalScheduledNonTestQuantity: SeedQuantityPayload? = null,
+    val totalScheduledNonTestQuantity: SeedQuantityPayload?,
     @Schema(description = "Total quantity of scheduled withdrawals for germination tests.")
-    val totalScheduledTestQuantity: SeedQuantityPayload? = null,
+    val totalScheduledTestQuantity: SeedQuantityPayload?,
     @Schema(description = "Total quantity of scheduled withdrawals, including germination tests.")
-    val totalScheduledWithdrawalQuantity: SeedQuantityPayload? = null,
-    val totalViabilityPercent: Int? = null,
+    val totalScheduledWithdrawalQuantity: SeedQuantityPayload?,
+    val totalViabilityPercent: Int?,
     @Schema(
         description =
             "Total quantity of all past and scheduled withdrawals, including germination tests.")
-    val totalWithdrawalQuantity: SeedQuantityPayload? = null,
-    val withdrawals: List<WithdrawalPayload>? = null,
+    val totalWithdrawalQuantity: SeedQuantityPayload?,
+    val withdrawals: List<WithdrawalPayload>?,
 ) {
   constructor(
       model: AccessionModel,
       clock: Clock
   ) : this(
       model.accessionNumber,
-      model.active,
-      model.bagNumbers,
+      model.active ?: AccessionActive.Active,
+      model.bagNumbers.orNull(),
       model.collectedDate,
       model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.cutTestSeedsCompromised,
@@ -309,16 +366,16 @@ data class AccessionPayload(
       model.family,
       model.fieldNotes,
       model.founderId,
-      model.geolocations,
-      model.germinationTests?.map { GerminationTestPayload(it) },
-      model.germinationTestTypes,
+      model.geolocations.orNull(),
+      model.germinationTests.map { GerminationTestPayload(it) }.orNull(),
+      model.germinationTestTypes.orNull(),
       model.total?.toPayload(),
       model.landowner,
       model.latestGerminationTestDate,
       model.latestViabilityPercent,
       model.numberOfTrees,
       model.nurseryStartDate,
-      model.photoFilenames,
+      model.photoFilenames.orNull(),
       model.primaryCollector,
       model.processingMethod,
       model.processingNotes,
@@ -327,13 +384,13 @@ data class AccessionPayload(
       model.rare,
       model.receivedDate,
       model.remaining?.toPayload(),
-      model.secondaryCollectors,
+      model.secondaryCollectors.orNull(),
       model.siteLocation,
       model.source,
       model.sourcePlantOrigin,
       model.species,
       model.speciesId,
-      model.state,
+      model.state ?: AccessionState.Pending,
       model.storageCondition,
       model.storageLocation,
       model.storagePackets,
@@ -349,7 +406,7 @@ data class AccessionPayload(
       model.calculateTotalScheduledWithdrawalQuantity(clock)?.toPayload(),
       model.totalViabilityPercent,
       model.calculateTotalWithdrawalQuantity(clock)?.toPayload(),
-      model.withdrawals?.map { WithdrawalPayload(it) },
+      model.withdrawals.map { WithdrawalPayload(it) }.orNull(),
   )
 }
 
@@ -388,30 +445,30 @@ data class GerminationTestPayload(
             "Server-assigned unique ID of this germination test. Null when creating a new test.",
         type = "string")
     @JsonSerialize(using = ToStringSerializer::class)
-    override val id: Long? = null,
+    val id: Long? = null,
     @Schema(
         description = "Which type of test is described. At most one of each test type is allowed.")
-    override val testType: GerminationTestType,
-    override val startDate: LocalDate? = null,
-    override val endDate: LocalDate? = null,
-    override val seedType: GerminationSeedType? = null,
-    override val substrate: GerminationSubstrate? = null,
-    override val treatment: GerminationTreatment? = null,
-    override val notes: String? = null,
+    val testType: GerminationTestType,
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    val seedType: GerminationSeedType? = null,
+    val substrate: GerminationSubstrate? = null,
+    val treatment: GerminationTreatment? = null,
+    val notes: String? = null,
     @Schema(
         description =
             "Quantity of seeds remaining. For weight-based accessions, this is user input and " +
                 "is required. For count-based accessions, it is calculated by the server and " +
                 "ignored on input.")
     val remainingQuantity: SeedQuantityPayload? = null,
-    override val staffResponsible: String? = null,
-    override val seedsSown: Int? = null,
-    override val totalPercentGerminated: Int? = null,
-    override val totalSeedsGerminated: Int? = null,
-    @Valid override val germinations: List<GerminationPayload>? = null
-) : GerminationTestFields {
+    val staffResponsible: String? = null,
+    val seedsSown: Int? = null,
+    val totalPercentGerminated: Int? = null,
+    val totalSeedsGerminated: Int? = null,
+    @Valid val germinations: List<GerminationPayload>? = null
+) {
   constructor(
-      model: GerminationTestFields
+      model: GerminationTestModel
   ) : this(
       model.id,
       model.testType,
@@ -428,20 +485,30 @@ data class GerminationTestPayload(
       model.totalSeedsGerminated,
       model.germinations?.map { GerminationPayload(it) })
 
-  @get:JsonIgnore
-  override val remaining: SeedQuantityModel?
-    get() = remainingQuantity?.toModel()
-
-  override fun withId(value: Long) = copy(id = value)
-  override fun withRemaining(value: SeedQuantityModel) =
-      copy(remainingQuantity = SeedQuantityPayload(value))
+  fun toModel() =
+      GerminationTestModel(
+          germinations = germinations?.map { it.toModel() },
+          id = id,
+          endDate = endDate,
+          notes = notes,
+          seedsSown = seedsSown,
+          seedType = seedType,
+          staffResponsible = staffResponsible,
+          startDate = startDate,
+          substrate = substrate,
+          remaining = remainingQuantity?.toModel(),
+          testType = testType,
+          treatment = treatment,
+      )
 }
 
 data class GerminationPayload(
-    override val recordingDate: LocalDate,
-    @JsonProperty(required = true) override val seedsGerminated: Int
-) : GerminationFields {
-  constructor(model: GerminationFields) : this(model.recordingDate, model.seedsGerminated)
+    val recordingDate: LocalDate,
+    @JsonProperty(required = true) val seedsGerminated: Int
+) {
+  constructor(model: GerminationModel) : this(model.recordingDate, model.seedsGerminated)
+
+  fun toModel() = GerminationModel(null, null, recordingDate, seedsGerminated)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -450,32 +517,30 @@ data class WithdrawalPayload(
         description =
             "Server-assigned unique ID of this withdrawal, its ID. Omit when creating a new " +
                 "withdrawal.")
-    override val id: Long? = null,
-    override val date: LocalDate,
-    override val purpose: WithdrawalPurpose,
-    override val destination: String? = null,
-    override val notes: String? = null,
+    val id: Long? = null,
+    val date: LocalDate,
+    val purpose: WithdrawalPurpose,
+    val destination: String? = null,
+    val notes: String? = null,
     @Schema(
         description =
             "Quantity of seeds remaining. For weight-based accessions, this is user input and " +
                 "is required. For count-based accessions, it is calculated by the server and " +
                 "ignored on input.")
     val remainingQuantity: SeedQuantityPayload? = null,
-    override val staffResponsible: String? = null,
+    val staffResponsible: String? = null,
     @Schema(
         description =
             "If this withdrawal is of type \"Germination Testing\", the ID of the test it is " +
                 "associated with. This is always set by the server and cannot be modified.")
-    override val germinationTestId: Long? = null,
-    @JsonProperty("weightDifference")
+    val germinationTestId: Long? = null,
     @Schema(
-        name = "weightDifference",
         description =
             "For weight-based accessions, the difference between the weight remaining before " +
                 "this withdrawal and the weight remaining after it. This is a server-calculated " +
                 "value and is ignored on input.",
         readOnly = true)
-    val weightDifferencePayload: SeedQuantityPayload? = null,
+    val weightDifference: SeedQuantityPayload? = null,
     @Schema(
         description =
             "Quantity of seeds withdrawn. For germination testing withdrawals, this is always " +
@@ -494,9 +559,9 @@ data class WithdrawalPayload(
                 "ignored on input.",
         readOnly = true)
     val estimatedQuantity: SeedQuantityPayload? = null,
-) : WithdrawalFields {
+) {
   constructor(
-      model: WithdrawalFields
+      model: WithdrawalModel
   ) : this(
       model.id,
       model.date,
@@ -511,38 +576,18 @@ data class WithdrawalPayload(
       model.calculateEstimatedQuantity()?.toPayload(),
   )
 
-  @get:JsonIgnore
-  override val remaining: SeedQuantityModel?
-    get() = remainingQuantity?.toModel()
-  @get:JsonIgnore
-  override val weightDifference: SeedQuantityModel?
-    get() = weightDifferencePayload?.toModel()
-  @get:JsonIgnore
-  override val withdrawn: SeedQuantityModel?
-    get() = withdrawnQuantity?.toModel()
-
-  override fun withDate(value: LocalDate) = copy(date = value)
-
-  override fun withGerminationTest(value: GerminationTestFields): WithdrawalFields {
-    return GerminationTestWithdrawal(
-        id = id,
-        accessionId = null,
-        date = date,
-        destination = destination,
-        germinationTest = value,
-        germinationTestId = value.id,
-        notes = notes,
-        staffResponsible = staffResponsible,
-        remaining = remaining,
-        withdrawn = withdrawn,
-    )
-  }
-
-  override fun withRemaining(value: SeedQuantityModel) =
-      copy(remainingQuantity = SeedQuantityPayload(value))
-
-  override fun withWeightDifference(value: SeedQuantityModel) =
-      copy(weightDifferencePayload = value.toPayload())
+  fun toModel() =
+      WithdrawalModel(
+          date = date,
+          destination = destination,
+          germinationTestId = germinationTestId,
+          id = id,
+          notes = notes,
+          purpose = purpose,
+          remaining = remainingQuantity?.toModel(),
+          staffResponsible = staffResponsible,
+          withdrawn = withdrawnQuantity?.toModel(),
+      )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -554,34 +599,34 @@ data class DeviceInfoPayload(
     @Schema(
         description =
             "Build number of application that is submitting the accession, e.g., from React Native getBuildId()")
-    override val appBuild: String? = null,
+    val appBuild: String? = null,
     @Schema(description = "Name of application", example = "Seed Collector")
-    override val appName: String? = null,
+    val appName: String? = null,
     @Schema(
         description = "Brand of device, e.g., from React Native getBrand().", example = "Samsung")
-    override val brand: String? = null,
+    val brand: String? = null,
     @Schema(description = "Model of device hardware, e.g., from React Native getDeviceId().")
-    override val model: String? = null,
+    val model: String? = null,
     @Schema(
         description =
             "Name the user has assigned to the device, e.g., from React Native getDeviceName().",
         example = "Carlos's iPhone")
-    override val name: String? = null,
+    val name: String? = null,
     @Schema(
         description = "Type of operating system, e.g., from React Native getSystemName().",
         example = "Android")
-    override val osType: String? = null,
+    val osType: String? = null,
     @Schema(
         description = "Version of operating system, e.g., from React Native getSystemVersion().",
         example = "7.1.1")
-    override val osVersion: String? = null,
+    val osVersion: String? = null,
     @Schema(
         description =
             "Unique identifier of the hardware device, e.g., from React Native getUniqueId().")
-    override val uniqueId: String? = null,
-) : AppDeviceFields {
+    val uniqueId: String? = null,
+) {
   constructor(
-      model: AppDeviceFields
+      model: AppDeviceModel
   ) : this(
       model.appBuild,
       model.appName,
@@ -591,6 +636,17 @@ data class DeviceInfoPayload(
       model.osType,
       model.osVersion,
       model.uniqueId)
+
+  fun toModel() =
+      AppDeviceModel(
+          appBuild = appBuild,
+          appName = appName,
+          brand = brand,
+          model = model,
+          name = name,
+          osType = osType,
+          osVersion = osVersion,
+          uniqueId = uniqueId)
 }
 
 data class CreateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload

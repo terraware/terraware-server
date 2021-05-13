@@ -14,7 +14,6 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
-import org.springframework.transaction.PlatformTransactionManager
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
 
@@ -48,7 +47,6 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @Testcontainers
 abstract class DatabaseTest {
   @Autowired protected lateinit var dslContext: DSLContext
-  @Autowired protected lateinit var transactionManager: PlatformTransactionManager
 
   /**
    * List of sequences to reset before each test method. Test classes can use this to get

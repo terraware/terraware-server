@@ -54,7 +54,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
     val payload =
         DeviceInfoPayload(
             "appBuild", "appName", "brand", "model", "name", "osType", "osVersion", "uniqueId")
-    val id = store.getOrInsertDevice(payload)
+    val id = store.getOrInsertDevice(payload.toModel())
 
     assertEquals(1, id, "New device ID")
 
@@ -73,7 +73,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
     appDeviceDao.insert(appDevice())
     assertNotNull(appDeviceDao.fetchOneById(1))
 
-    val id = store.getOrInsertDevice(payload)
+    val id = store.getOrInsertDevice(payload.toModel())
     assertEquals(1, id)
   }
 
@@ -82,7 +82,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
     appDeviceDao.insert(AppDevice(createdTime = clock.instant()))
     assertNotNull(appDeviceDao.fetchOneById(1))
 
-    val id = store.getOrInsertDevice(DeviceInfoPayload())
+    val id = store.getOrInsertDevice(AppDeviceModel())
 
     val rows = dslContext.selectFrom(APP_DEVICE).fetch()
     println(rows)

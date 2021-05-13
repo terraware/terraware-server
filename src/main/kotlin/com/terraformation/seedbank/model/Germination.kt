@@ -6,48 +6,31 @@ import com.terraformation.seedbank.db.GerminationTestType
 import com.terraformation.seedbank.db.GerminationTreatment
 import java.time.LocalDate
 
-interface GerminationFields {
-  val recordingDate: LocalDate
-  val seedsGerminated: Int
-}
-
 data class GerminationModel(
-    val id: Long,
-    val testId: Long,
-    override val recordingDate: LocalDate,
-    override val seedsGerminated: Int
-) : GerminationFields
+    val id: Long? = null,
+    val testId: Long? = null,
+    val recordingDate: LocalDate,
+    val seedsGerminated: Int
+)
 
-interface GerminationTestFields {
-  val id: Long?
-    get() = null
-  val testType: GerminationTestType
-  val startDate: LocalDate?
-    get() = null
-  val endDate: LocalDate?
-    get() = null
-  val seedType: GerminationSeedType?
-    get() = null
-  val substrate: GerminationSubstrate?
-    get() = null
-  val treatment: GerminationTreatment?
-    get() = null
-  val seedsSown: Int?
-    get() = null
-  val totalSeedsGerminated: Int?
-    get() = null
-  val totalPercentGerminated: Int?
-    get() = null
-  val notes: String?
-    get() = null
-  val staffResponsible: String?
-    get() = null
-  val germinations: Collection<GerminationFields>?
-    get() = null
-  val remaining: SeedQuantityModel?
-    get() = null
-
-  fun fieldsEqual(other: GerminationTestFields): Boolean {
+data class GerminationTestModel(
+    val id: Long? = null,
+    val accessionId: Long? = null,
+    val testType: GerminationTestType,
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    val seedType: GerminationSeedType? = null,
+    val substrate: GerminationSubstrate? = null,
+    val treatment: GerminationTreatment? = null,
+    val seedsSown: Int? = null,
+    val totalPercentGerminated: Int? = null,
+    val totalSeedsGerminated: Int? = null,
+    val notes: String? = null,
+    val staffResponsible: String? = null,
+    val germinations: Collection<GerminationModel>? = null,
+    val remaining: SeedQuantityModel? = null,
+) {
+  fun fieldsEqual(other: GerminationTestModel): Boolean {
     return endDate == other.endDate &&
         notes == other.notes &&
         remaining.equalsIgnoreScale(other.remaining) &&
@@ -80,28 +63,4 @@ interface GerminationTestFields {
       }
     }
   }
-
-  fun withId(value: Long): GerminationTestFields
-  fun withRemaining(value: SeedQuantityModel): GerminationTestFields
-}
-
-data class GerminationTestModel(
-    override val id: Long,
-    val accessionId: Long,
-    override val testType: GerminationTestType,
-    override val startDate: LocalDate? = null,
-    override val endDate: LocalDate? = null,
-    override val seedType: GerminationSeedType? = null,
-    override val substrate: GerminationSubstrate? = null,
-    override val treatment: GerminationTreatment? = null,
-    override val seedsSown: Int? = null,
-    override val totalPercentGerminated: Int? = null,
-    override val totalSeedsGerminated: Int? = null,
-    override val notes: String? = null,
-    override val staffResponsible: String? = null,
-    override val germinations: Collection<GerminationModel>? = null,
-    override val remaining: SeedQuantityModel? = null,
-) : GerminationTestFields {
-  override fun withId(value: Long) = copy(id = value)
-  override fun withRemaining(value: SeedQuantityModel) = copy(remaining = value)
 }
