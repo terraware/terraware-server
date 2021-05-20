@@ -97,6 +97,9 @@ class SearchTables {
     }
   }
 
+  object AccessionGerminationTestType :
+      AccessionChildTable(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID)
+
   object Bag : AccessionChildTable(BAG.ACCESSION_ID)
 
   object Geolocation : AccessionChildTable(GEOLOCATION.ACCESSION_ID)

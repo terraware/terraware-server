@@ -1651,6 +1651,7 @@ components:
       - totalUnits
       - totalViabilityPercent
       - treesCollectedFrom
+      - viabilityTestType
       - withdrawalDate
       - withdrawalDestination
       - withdrawalGrams

@@ -7,6 +7,7 @@ import com.terraformation.seedbank.db.FuzzySearchOperators
 import com.terraformation.seedbank.db.SeedQuantityUnits
 import com.terraformation.seedbank.db.UsesFuzzySearchOperators
 import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
 import com.terraformation.seedbank.db.tables.references.BAG
 import com.terraformation.seedbank.db.tables.references.COLLECTOR
 import com.terraformation.seedbank.db.tables.references.GEOLOCATION
@@ -239,6 +240,11 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             ACCESSION.TOTAL_VIABILITY_PERCENT),
         IntegerField(
             "treesCollectedFrom", "Number of trees collected from", ACCESSION.TREES_COLLECTED_FROM),
+        EnumField.create(
+            "viabilityTestType",
+            "Viability test type (accession)",
+            ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID,
+            SearchTables.AccessionGerminationTestType),
         DateField("withdrawalDate", "Date of withdrawal", WITHDRAWAL.DATE, SearchTables.Withdrawal),
         TextField(
             "withdrawalDestination",

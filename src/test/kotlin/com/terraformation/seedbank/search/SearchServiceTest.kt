@@ -9,9 +9,11 @@ import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.SeedQuantityUnits
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionDao
+import com.terraformation.seedbank.db.tables.daos.AccessionGerminationTestTypeDao
 import com.terraformation.seedbank.db.tables.daos.SpeciesDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
 import com.terraformation.seedbank.db.tables.pojos.Accession
+import com.terraformation.seedbank.db.tables.pojos.AccessionGerminationTestType
 import com.terraformation.seedbank.db.tables.pojos.Species
 import com.terraformation.seedbank.db.tables.pojos.StorageLocation
 import java.math.BigDecimal
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class SearchServiceTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
   private lateinit var accessionDao: AccessionDao
+  private lateinit var accessionGerminationTestTypeDao: AccessionGerminationTestTypeDao
   private lateinit var searchService: SearchService
 
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
@@ -43,10 +46,12 @@ class SearchServiceTest : DatabaseTest() {
   private val targetStorageConditionField = searchFields["targetStorageCondition"]!!
   private val totalGramsField = searchFields["totalGrams"]!!
   private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
+  private val viabilityTestTypeField = searchFields["viabilityTestType"]!!
 
   @BeforeEach
   fun init() {
     accessionDao = AccessionDao(dslContext.configuration())
+    accessionGerminationTestTypeDao = AccessionGerminationTestTypeDao(dslContext.configuration())
     searchService = SearchService(dslContext, searchFields)
 
     insertSiteData()
@@ -406,6 +411,30 @@ class SearchServiceTest : DatabaseTest() {
             cursor = firstPage.cursor,
             limit = 1)
     assertEquals(expectedSecondPage, secondPage)
+  }
+
+  @Test
+  fun `can search on enum in child table`() {
+    accessionGerminationTestTypeDao.insert(
+        AccessionGerminationTestType(1000, GerminationTestType.Lab),
+        AccessionGerminationTestType(1000, GerminationTestType.Nursery),
+        AccessionGerminationTestType(1001, GerminationTestType.Lab))
+
+    val fields = listOf(viabilityTestTypeField)
+    val sortOrder =
+        listOf(SearchSortField(accessionNumberField), SearchSortField(viabilityTestTypeField))
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG", "viabilityTestType" to "Lab"),
+                mapOf("accessionNumber" to "XYZ", "viabilityTestType" to "Lab"),
+                mapOf("accessionNumber" to "XYZ", "viabilityTestType" to "Nursery"),
+            ),
+            cursor = null)
+
+    val actual = searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+    assertEquals(expected, actual)
   }
 
   @Nested
