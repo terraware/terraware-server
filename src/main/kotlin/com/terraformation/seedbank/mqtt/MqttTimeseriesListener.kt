@@ -1,5 +1,6 @@
 package com.terraformation.seedbank.mqtt
 
+import com.terraformation.seedbank.db.DeviceNotFoundException
 import com.terraformation.seedbank.db.DeviceStore
 import com.terraformation.seedbank.db.TimeSeriesStore
 import com.terraformation.seedbank.services.perClassLogger
@@ -15,11 +16,13 @@ class MqttTimeseriesListener(
 
   @EventListener
   fun handle(message: IncomingTimeseriesUpdateMessage) {
-    val deviceId = deviceStore.getDeviceIdForMqttTopic(message.topic)
-    if (deviceId == null) {
-      log.info("Ignoring sequence update for unknown device ${message.topic}")
-      return
-    }
+    val deviceId =
+        try {
+          deviceStore.getDeviceIdForMqttTopic(message.topic)
+        } catch (e: DeviceNotFoundException) {
+          log.info("Ignoring sequence update for unknown device: ${e.message}")
+          return
+        }
 
     val timeseriesIds = timeSeriesStore.getTimeseriesIdsByName(deviceId, message.values.keys)
     val valuesByTimeseriesId =

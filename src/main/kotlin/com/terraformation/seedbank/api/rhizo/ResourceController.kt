@@ -4,6 +4,7 @@ import com.terraformation.seedbank.api.NotFoundException
 import com.terraformation.seedbank.api.annotation.ApiResponse404
 import com.terraformation.seedbank.api.annotation.DeviceManagerAppEndpoint
 import com.terraformation.seedbank.auth.ClientIdentity
+import com.terraformation.seedbank.db.DeviceNotFoundException
 import com.terraformation.seedbank.db.DeviceStore
 import com.terraformation.seedbank.db.TimeSeriesStore
 import com.terraformation.seedbank.db.TimeseriesType
@@ -61,11 +62,13 @@ class ResourceController(
       throw UnsupportedResourceTypeException()
     }
 
-    val deviceId = deviceStore.getDeviceIdForMqttTopic(path.substring(1))
-    if (deviceId == null) {
-      log.warn("Unable to create sequence $name for unknown device $path")
-      throw NotFoundException()
-    }
+    val deviceId =
+        try {
+          deviceStore.getDeviceIdForMqttTopic(path.substring(1))
+        } catch (e: DeviceNotFoundException) {
+          log.warn("Unable to create sequence $name for unknown device $path: ${e.message}")
+          throw NotFoundException(e.message)
+        }
 
     return try {
       timeSeriesStore.create(deviceId, name, dataType, units, decimal_places)
@@ -99,7 +102,12 @@ class ResourceController(
     if (timeSeriesStore.getIdByMqttTopic(deviceTopic, sequenceName) != null) {
       return "Found"
     } else {
-      throw NotFoundException()
+      try {
+        deviceStore.getDeviceIdForMqttTopic(deviceTopic)
+        throw NotFoundException("Resource $sequenceName not found for device $deviceTopic")
+      } catch (e: DeviceNotFoundException) {
+        throw NotFoundException(e.message)
+      }
     }
   }
 }

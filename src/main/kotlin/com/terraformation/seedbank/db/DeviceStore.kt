@@ -17,10 +17,13 @@ class DeviceStore(private val dslContext: DSLContext) {
    * Returns the ID of the device named by an MQTT topic.
    *
    * MQTT topics are assumed to follow the format `organization/site/module/device`.
+   *
+   * @throws DeviceNotFoundException The device didn't exist.
    */
-  fun getDeviceIdForMqttTopic(topic: String): Long? {
+  fun getDeviceIdForMqttTopic(topic: String): Long {
     val query = queryDeviceIdForMqttTopic(topic)
     return query?.fetchOne(DEVICE.ID)
+        ?: throw DeviceNotFoundException(getErrorForMissingDevice(topic))
   }
 
   fun queryDeviceIdForMqttTopic(topic: String): SelectConditionStep<Record1<Long?>>? {
@@ -46,6 +49,50 @@ class DeviceStore(private val dslContext: DSLContext) {
         .and(SITE_MODULE.ENABLED.isTrue)
         .and(DEVICE.NAME.eq(deviceName))
         .and(DEVICE.ENABLED.isTrue)
+  }
+
+  private fun getErrorForMissingDevice(topic: String): String {
+    val topicParts = topic.split('/', limit = 4)
+    if (topicParts.size != 4) {
+      return "Expected 4 elements in device path, not ${topicParts.size}"
+    }
+    val (orgName, siteName, siteModuleName, deviceName) = topicParts
+
+    val orgId =
+        dslContext
+            .select(ORGANIZATION.ID)
+            .from(ORGANIZATION)
+            .where(ORGANIZATION.NAME.eq(orgName))
+            .fetchOne(ORGANIZATION.ID)
+            ?: return "Organization $orgName not found"
+    val siteId =
+        dslContext
+            .select(SITE.ID)
+            .from(SITE)
+            .where(SITE.NAME.eq(siteName))
+            .and(SITE.ORGANIZATION_ID.eq(orgId))
+            .fetchOne(SITE.ID)
+            ?: return "Site $siteName not found for organization $orgName"
+    val siteModuleId =
+        dslContext
+            .select(SITE_MODULE.ID)
+            .from(SITE_MODULE)
+            .where(SITE_MODULE.NAME.eq(siteModuleName))
+            .and(SITE_MODULE.SITE_ID.eq(siteId))
+            .fetchOne(SITE_MODULE.ID)
+            ?: return "Site module $siteModuleName not found for site $siteName"
+    val deviceRecord =
+        dslContext
+            .selectFrom(DEVICE)
+            .where(DEVICE.NAME.eq(deviceName))
+            .and(DEVICE.SITE_MODULE_ID.eq(siteModuleId))
+            .fetchOne()
+            ?: return "Device $deviceName not found for site module $siteModuleName"
+    if (deviceRecord.enabled != true) {
+      return "Device $deviceName is marked as disabled"
+    }
+
+    return "Unable to determine why $topic was not found"
   }
 
   fun fetchDeviceConfigurationForSite(siteModuleId: Long): List<DeviceConfig> {
