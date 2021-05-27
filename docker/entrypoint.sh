@@ -26,8 +26,6 @@ if [ "$BALENA" = 1 ]; then
             mount "$DISK_DEVICE" /data
             ;;
     esac
-
-    gosu sbserver /usr/local/bin/metrics.sh &
 fi
 
 exec gosu sbserver "$@"
