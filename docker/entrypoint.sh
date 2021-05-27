@@ -1,31 +1,34 @@
 #!/bin/bash
 #
-# Set up the filesystem for file (photo) storage when running under Balena.
+# Configure the location of photo storage when running under Balena.
 #
-
 set -e -o pipefail
 
-if [ "$BALENA" = 1 ]; then
+if [ "$BALENA" = 1 -a -z "$TERRAWARE_PHOTO_DIR" ]; then
     case "$TERRAWARE_USE_INTERNAL_STORAGE" in
         1|y*|t*|Y*|T*)
-            if [ -d /data ]; then
-                rmdir /data
+            VOLUME=/file-storage-volume
+            if [ -d "$VOLUME" ]; then
+                TERRAWARE_PHOTO_DIR="$VOLUME/photos"
+            else
+                echo "TERRAWARE_USE_INTERNAL_STORAGE requires binding a volume to $VOLUME"
+                exit 1
             fi
-            if [ -L /data ]; then
-                rm /data
-            fi
-            ln -s /file-storage-volume /data
             ;;
 
         *)
-            DISK_DEVICE="${TERRAWARE_FILE_STORAGE_DISK:-/dev/md0p3}"
-            if [ -L /data ]; then
-                rm /data
+            TERRAWARE_PHOTO_DIR="/run/log/journal/terraware/photos"
+            if [ ! -d "$TERRAWARE_PHOTO_DIR" ]; then
+                echo "$TERRAWARE_PHOTO_DIR not found; will restart so disk manager can create it"
+                sleep 10
+                exit 1
             fi
-            mkdir -p /data
-            mount "$DISK_DEVICE" /data
             ;;
     esac
 fi
 
-exec gosu sbserver "$@"
+if [ -n "$TERRAWARE_PHOTO_DIR" ]; then
+    exec /usr/bin/env TERRAWARE_PHOTO_DIR="$TERRAWARE_PHOTO_DIR" "$@"
+else
+    exec "$@"
+fi
