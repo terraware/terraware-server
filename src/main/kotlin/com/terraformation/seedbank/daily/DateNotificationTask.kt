@@ -3,7 +3,7 @@ package com.terraformation.seedbank.daily
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.NotificationStore
-import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimeDao
+import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.seedbank.i18n.Messages
 import com.terraformation.seedbank.services.perClassLogger
 import java.time.Clock
@@ -19,7 +19,7 @@ class DateNotificationTask(
     private val accessionStore: AccessionStore,
     override val clock: Clock,
     private val dslContext: DSLContext,
-    override val taskProcessedTimeDao: TaskProcessedTimeDao,
+    override val taskProcessedTimesDao: TaskProcessedTimesDao,
     private val messages: Messages,
     private val notificationStore: NotificationStore
 ) : TimePeriodTask {

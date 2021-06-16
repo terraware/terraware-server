@@ -4,7 +4,7 @@ import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.AccessionStore
 import com.terraformation.seedbank.db.NotificationStore
-import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimeDao
+import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.seedbank.i18n.Messages
 import com.terraformation.seedbank.services.atMostRecent
 import com.terraformation.seedbank.services.perClassLogger
@@ -21,7 +21,7 @@ class StateSummaryNotificationTask(
     private val accessionStore: AccessionStore,
     override val clock: Clock,
     private val config: TerrawareServerConfig,
-    override val taskProcessedTimeDao: TaskProcessedTimeDao,
+    override val taskProcessedTimesDao: TaskProcessedTimesDao,
     private val messages: Messages,
     private val notificationStore: NotificationStore
 ) : TimePeriodTask {

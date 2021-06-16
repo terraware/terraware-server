@@ -5,19 +5,19 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.terraformation.seedbank.db.AccessionState
 import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.StorageCondition
-import com.terraformation.seedbank.db.tables.daos.AccessionDao
-import com.terraformation.seedbank.db.tables.daos.DeviceDao
-import com.terraformation.seedbank.db.tables.daos.OrganizationDao
-import com.terraformation.seedbank.db.tables.daos.SiteDao
-import com.terraformation.seedbank.db.tables.daos.SiteModuleDao
-import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
+import com.terraformation.seedbank.db.tables.daos.AccessionsDao
+import com.terraformation.seedbank.db.tables.daos.DevicesDao
+import com.terraformation.seedbank.db.tables.daos.OrganizationsDao
+import com.terraformation.seedbank.db.tables.daos.SiteModulesDao
+import com.terraformation.seedbank.db.tables.daos.SitesDao
+import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
 import com.terraformation.seedbank.db.tables.daos.TimeseriesDao
-import com.terraformation.seedbank.db.tables.pojos.Accession
-import com.terraformation.seedbank.db.tables.pojos.Device
-import com.terraformation.seedbank.db.tables.pojos.Organization
-import com.terraformation.seedbank.db.tables.pojos.Site
-import com.terraformation.seedbank.db.tables.pojos.SiteModule
-import com.terraformation.seedbank.db.tables.pojos.StorageLocation
+import com.terraformation.seedbank.db.tables.pojos.AccessionsRow
+import com.terraformation.seedbank.db.tables.pojos.DevicesRow
+import com.terraformation.seedbank.db.tables.pojos.OrganizationsRow
+import com.terraformation.seedbank.db.tables.pojos.SiteModulesRow
+import com.terraformation.seedbank.db.tables.pojos.SitesRow
+import com.terraformation.seedbank.db.tables.pojos.StorageLocationsRow
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -40,12 +40,12 @@ import org.springframework.scheduling.TaskScheduler
 internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   @Autowired private lateinit var resourceLoader: ResourceLoader
 
-  private lateinit var accessionDao: AccessionDao
-  private lateinit var deviceDao: DeviceDao
-  private lateinit var organizationDao: OrganizationDao
-  private lateinit var siteDao: SiteDao
-  private lateinit var siteModuleDao: SiteModuleDao
-  private lateinit var storageLocationDao: StorageLocationDao
+  private lateinit var accessionsDao: AccessionsDao
+  private lateinit var devicesDao: DevicesDao
+  private lateinit var organizationsDao: OrganizationsDao
+  private lateinit var sitesDao: SitesDao
+  private lateinit var siteModulesDao: SiteModulesDao
+  private lateinit var storageLocationsDao: StorageLocationsDao
   private lateinit var timeseriesDao: TimeseriesDao
   private lateinit var updater: PerSiteConfigUpdater
 
@@ -57,23 +57,23 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   fun setup() {
     val config = dslContext.configuration()
 
-    accessionDao = AccessionDao(config)
-    deviceDao = DeviceDao(config)
-    organizationDao = OrganizationDao(config)
-    siteDao = SiteDao(config)
-    siteModuleDao = SiteModuleDao(config)
-    storageLocationDao = StorageLocationDao(config)
+    accessionsDao = AccessionsDao(config)
+    devicesDao = DevicesDao(config)
+    organizationsDao = OrganizationsDao(config)
+    sitesDao = SitesDao(config)
+    siteModulesDao = SiteModulesDao(config)
+    storageLocationsDao = StorageLocationsDao(config)
     timeseriesDao = TimeseriesDao(config)
 
     updater =
         PerSiteConfigUpdater(
             databaseBootstrapper,
-            deviceDao,
+            devicesDao,
             dslContext,
-            organizationDao,
-            siteDao,
-            siteModuleDao,
-            storageLocationDao,
+            organizationsDao,
+            sitesDao,
+            siteModulesDao,
+            storageLocationsDao,
             ObjectMapper().registerKotlinModule(),
             serverConfig,
             taskScheduler)
@@ -110,8 +110,8 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
 
     // Add an accession that refers to the storage location, which refers to the site module, which
     // refers to the site, which refers to the organization.
-    accessionDao.insert(
-        Accession(
+    accessionsDao.insert(
+        AccessionsRow(
             createdTime = Instant.EPOCH,
             number = "1",
             siteModuleId = 3,
@@ -166,18 +166,18 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   }
 
   private fun simpleConfig(): PerSiteConfig {
-    val organization = Organization(1, "test", true)
+    val organization = OrganizationsRow(1, "test", true)
     val site =
-        Site(
+        SitesRow(
             2,
             organization.id,
             "testSite",
             BigDecimal("1.0000000"),
             BigDecimal("2.0000000"),
             enabled = true)
-    val siteModule = SiteModule(3, site.id, 1, "testModule", enabled = true)
+    val siteModule = SiteModulesRow(3, site.id, 1, "testModule", enabled = true)
     val device =
-        Device(
+        DevicesRow(
             4,
             siteModule.id,
             "testDevice",
@@ -192,7 +192,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             5432,
             true)
     val storageLocation =
-        StorageLocation(5, siteModule.id, "location", StorageCondition.Freezer, true)
+        StorageLocationsRow(5, siteModule.id, "location", StorageCondition.Freezer, true)
 
     return PerSiteConfig(
         organizations = listOf(organization),
@@ -222,11 +222,11 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   }
 
   private fun assertConfigInDatabase(expected: PerSiteConfig) {
-    assertRows(expected.organizations, organizationDao)
-    assertRows(expected.sites, siteDao)
-    assertRows(expected.siteModules, siteModuleDao)
-    assertRows(expected.devices, deviceDao)
-    assertRows(expected.storageLocations, storageLocationDao)
+    assertRows(expected.organizations, organizationsDao)
+    assertRows(expected.sites, sitesDao)
+    assertRows(expected.siteModules, siteModulesDao)
+    assertRows(expected.devices, devicesDao)
+    assertRows(expected.storageLocations, storageLocationsDao)
   }
 
   private fun <T> assertRows(expected: Collection<T>, dao: DAO<*, T, *>) {

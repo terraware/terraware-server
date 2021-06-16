@@ -1,14 +1,14 @@
 package com.terraformation.seedbank.services
 
-import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
-import com.terraformation.seedbank.db.tables.daos.ApiKeyDao
-import com.terraformation.seedbank.db.tables.daos.DeviceDao
-import com.terraformation.seedbank.db.tables.daos.OrganizationDao
-import com.terraformation.seedbank.db.tables.daos.SiteDao
-import com.terraformation.seedbank.db.tables.daos.SiteModuleDao
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotosDao
+import com.terraformation.seedbank.db.tables.daos.ApiKeysDao
+import com.terraformation.seedbank.db.tables.daos.DevicesDao
+import com.terraformation.seedbank.db.tables.daos.OrganizationsDao
+import com.terraformation.seedbank.db.tables.daos.SiteModulesDao
+import com.terraformation.seedbank.db.tables.daos.SitesDao
 import com.terraformation.seedbank.db.tables.daos.SpeciesDao
-import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
-import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimeDao
+import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
+import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.seedbank.db.tables.daos.TimeseriesDao
 import org.jooq.DSLContext
 import org.springframework.context.annotation.Bean
@@ -26,14 +26,14 @@ class ExternalBeans(dslContext: DSLContext) {
 
   // jOOQ DAO classes. Only instantiate the ones we actually use.
 
-  @Bean fun accessionPhotoDao() = AccessionPhotoDao(configuration)
-  @Bean fun apiKeyDao() = ApiKeyDao(configuration)
-  @Bean fun deviceDao() = DeviceDao(configuration)
-  @Bean fun organizationDao() = OrganizationDao(configuration)
-  @Bean fun siteDao() = SiteDao(configuration)
-  @Bean fun siteModuleDao() = SiteModuleDao(configuration)
+  @Bean fun accessionPhotoDao() = AccessionPhotosDao(configuration)
+  @Bean fun apiKeyDao() = ApiKeysDao(configuration)
+  @Bean fun deviceDao() = DevicesDao(configuration)
+  @Bean fun organizationDao() = OrganizationsDao(configuration)
+  @Bean fun siteDao() = SitesDao(configuration)
+  @Bean fun siteModuleDao() = SiteModulesDao(configuration)
   @Bean fun speciesDao() = SpeciesDao(configuration)
-  @Bean fun storageLocationDao() = StorageLocationDao(configuration)
-  @Bean fun taskProcessedTimeDao() = TaskProcessedTimeDao(configuration)
+  @Bean fun storageLocationDao() = StorageLocationsDao(configuration)
+  @Bean fun taskProcessedTimeDao() = TaskProcessedTimesDao(configuration)
   @Bean fun timeseriesDao() = TimeseriesDao(configuration)
 }

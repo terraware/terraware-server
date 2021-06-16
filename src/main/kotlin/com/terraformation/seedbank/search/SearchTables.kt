@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.search
 
-import com.terraformation.seedbank.db.tables.records.AccessionRecord
+import com.terraformation.seedbank.db.tables.records.AccessionsRecord
 import com.terraformation.seedbank.db.tables.references.*
 import org.jooq.Record
 import org.jooq.SelectJoinStep
@@ -49,7 +49,7 @@ abstract class AccessionChildTable(private val idField: TableField<*, Long?>) : 
   override fun leftJoinWithAccession(
       query: SelectJoinStep<out Record>
   ): SelectJoinStep<out Record> {
-    return query.leftJoin(idField.table!!).on(idField.eq(ACCESSION.ID))
+    return query.leftJoin(idField.table!!).on(idField.eq(ACCESSIONS.ID))
   }
 }
 
@@ -66,7 +66,7 @@ abstract class AccessionChildTable(private val idField: TableField<*, Long?>) : 
  */
 abstract class AccessionParentTable<T>(
     private val parentTableIdField: TableField<*, T?>,
-    private val accessionForeignKeyField: TableField<AccessionRecord, T?>
+    private val accessionForeignKeyField: TableField<AccessionsRecord, T?>
 ) : SearchTable {
   override val fromTable
     get() = parentTableIdField.table!!
@@ -87,7 +87,7 @@ abstract class AccessionParentTable<T>(
 class SearchTables {
   object Accession : SearchTable {
     override val fromTable
-      get() = ACCESSION
+      get() = ACCESSIONS
 
     override fun leftJoinWithAccession(
         query: SelectJoinStep<out Record>
@@ -98,15 +98,15 @@ class SearchTables {
   }
 
   object AccessionGerminationTestType :
-      AccessionChildTable(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID)
+      AccessionChildTable(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID)
 
-  object Bag : AccessionChildTable(BAG.ACCESSION_ID)
+  object Bag : AccessionChildTable(BAGS.ACCESSION_ID)
 
-  object Geolocation : AccessionChildTable(GEOLOCATION.ACCESSION_ID)
+  object Geolocation : AccessionChildTable(GEOLOCATIONS.ACCESSION_ID)
 
   object Germination : SearchTable {
     override val fromTable
-      get() = GERMINATION
+      get() = GERMINATIONS
 
     override fun dependsOn(): Set<SearchTable> {
       return setOf(GerminationTest)
@@ -116,21 +116,22 @@ class SearchTables {
         query: SelectJoinStep<out Record>
     ): SelectJoinStep<out Record> {
       // We'll already be joined with germination_test
-      return query.leftJoin(GERMINATION).on(GERMINATION.TEST_ID.eq(GERMINATION_TEST.ID))
+      return query.leftJoin(GERMINATIONS).on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
     }
   }
 
-  object GerminationTest : AccessionChildTable(GERMINATION_TEST.ACCESSION_ID)
+  object GerminationTest : AccessionChildTable(GERMINATION_TESTS.ACCESSION_ID)
 
   object PrimaryCollector :
-      AccessionParentTable<Long>(COLLECTOR.ID, ACCESSION.PRIMARY_COLLECTOR_ID)
+      AccessionParentTable<Long>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID)
 
-  object Species : AccessionParentTable<Long>(SPECIES.ID, ACCESSION.SPECIES_ID)
+  object Species : AccessionParentTable<Long>(SPECIES.ID, ACCESSIONS.SPECIES_ID)
 
-  object SpeciesFamily : AccessionParentTable<Long>(SPECIES_FAMILY.ID, ACCESSION.SPECIES_FAMILY_ID)
+  object SpeciesFamily :
+      AccessionParentTable<Long>(SPECIES_FAMILIES.ID, ACCESSIONS.SPECIES_FAMILY_ID)
 
   object StorageLocation :
-      AccessionParentTable<Long>(STORAGE_LOCATION.ID, ACCESSION.STORAGE_LOCATION_ID)
+      AccessionParentTable<Long>(STORAGE_LOCATIONS.ID, ACCESSIONS.STORAGE_LOCATION_ID)
 
-  object Withdrawal : AccessionChildTable(WITHDRAWAL.ACCESSION_ID)
+  object Withdrawal : AccessionChildTable(WITHDRAWALS.ACCESSION_ID)
 }

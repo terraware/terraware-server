@@ -14,8 +14,8 @@ import com.terraformation.seedbank.api.annotation.ApiResponseSimpleSuccess
 import com.terraformation.seedbank.api.annotation.SeedBankAppEndpoint
 import com.terraformation.seedbank.db.AccessionNotFoundException
 import com.terraformation.seedbank.db.AccessionStore
-import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
-import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotosDao
+import com.terraformation.seedbank.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.seedbank.model.PhotoMetadata
 import com.terraformation.seedbank.photo.PhotoRepository
 import com.terraformation.seedbank.services.perClassLogger
@@ -47,7 +47,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @SeedBankAppEndpoint
 class PhotoController(
-    private val accessionPhotoDao: AccessionPhotoDao,
+    private val accessionPhotosDao: AccessionPhotosDao,
     private val accessionStore: AccessionStore,
     private val photoRepository: PhotoRepository
 ) {
@@ -150,7 +150,7 @@ class PhotoController(
             ?: throw NotFoundException("Accession $accessionNumber does not exist.")
 
     return ListPhotosResponsePayload(
-        accessionPhotoDao.fetchByAccessionId(accessionId).map { ListPhotosResponseElement(it) })
+        accessionPhotosDao.fetchByAccessionId(accessionId).map { ListPhotosResponseElement(it) })
   }
 }
 
@@ -173,7 +173,7 @@ data class ListPhotosResponseElement(
     @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
 ) {
   constructor(
-      pojo: AccessionPhoto
+      pojo: AccessionPhotosRow
   ) : this(
       pojo.filename!!,
       pojo.size!!,

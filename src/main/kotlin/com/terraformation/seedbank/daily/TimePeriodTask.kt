@@ -1,7 +1,7 @@
 package com.terraformation.seedbank.daily
 
-import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimeDao
-import com.terraformation.seedbank.db.tables.pojos.TaskProcessedTime
+import com.terraformation.seedbank.db.tables.daos.TaskProcessedTimesDao
+import com.terraformation.seedbank.db.tables.pojos.TaskProcessedTimesRow
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -14,7 +14,7 @@ import java.time.Instant
  */
 interface TimePeriodTask {
   val clock: Clock
-  val taskProcessedTimeDao: TaskProcessedTimeDao
+  val taskProcessedTimesDao: TaskProcessedTimesDao
 
   /** The maximum amount of time that can be covered by a single run. */
   val maximumPeriod: Duration
@@ -30,17 +30,17 @@ interface TimePeriodTask {
    */
   fun processNewWork(taskName: String = javaClass.simpleName, processor: TimePeriodProcessor) {
     val now = clock.instant()
-    val lastRun = taskProcessedTimeDao.fetchOneByName(taskName)
+    val lastRun = taskProcessedTimesDao.fetchOneByName(taskName)
     val since = lastRun?.processedUpTo ?: startTimeForFirstRun(now)
     val until = (since + maximumPeriod).coerceAtMost(now)
 
     processor.processPeriod(since, until)
 
-    val newRun = TaskProcessedTime(name = javaClass.simpleName, processedUpTo = until)
+    val newRun = TaskProcessedTimesRow(name = javaClass.simpleName, processedUpTo = until)
     if (lastRun == null) {
-      taskProcessedTimeDao.insert(newRun)
+      taskProcessedTimesDao.insert(newRun)
     } else {
-      taskProcessedTimeDao.update(newRun)
+      taskProcessedTimesDao.update(newRun)
     }
   }
 

@@ -3,8 +3,8 @@ package com.terraformation.seedbank.photo
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionNotFoundException
 import com.terraformation.seedbank.db.AccessionStore
-import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
-import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotosDao
+import com.terraformation.seedbank.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.seedbank.model.PhotoMetadata
 import java.io.IOException
 import java.io.InputStream
@@ -25,7 +25,7 @@ import javax.annotation.ManagedBean
 @ManagedBean
 class PhotoRepository(
     private val config: TerrawareServerConfig,
-    private val accessionPhotoDao: AccessionPhotoDao,
+    private val accessionPhotosDao: AccessionPhotosDao,
     private val accessionStore: AccessionStore,
     private val clock: Clock,
 ) {
@@ -42,7 +42,7 @@ class PhotoRepository(
       val size = Files.copy(data, photoPath)
 
       val databaseRow =
-          AccessionPhoto(
+          AccessionPhotosRow(
               accessionId = accessionId,
               capturedTime = metadata.capturedTime,
               contentType = metadata.contentType,
@@ -54,7 +54,7 @@ class PhotoRepository(
               uploadedTime = clock.instant(),
           )
 
-      accessionPhotoDao.insert(databaseRow)
+      accessionPhotosDao.insert(databaseRow)
     } catch (e: FileAlreadyExistsException) {
       // Don't delete the existing file
       throw e

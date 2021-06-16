@@ -1,8 +1,8 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.references.ORGANIZATION
-import com.terraformation.seedbank.db.tables.references.SITE
-import com.terraformation.seedbank.db.tables.references.SITE_MODULE
+import com.terraformation.seedbank.db.tables.references.ORGANIZATIONS
+import com.terraformation.seedbank.db.tables.references.SITES
+import com.terraformation.seedbank.db.tables.references.SITE_MODULES
 import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
@@ -64,11 +64,13 @@ abstract class DatabaseTest {
 
   /** Creates an organization, site, and site module that can be referenced by various tests. */
   fun insertSiteData() {
-    with(ORGANIZATION) { dslContext.insertInto(ORGANIZATION).set(ID, 1).set(NAME, "dev").execute() }
+    with(ORGANIZATIONS) {
+      dslContext.insertInto(ORGANIZATIONS).set(ID, 1).set(NAME, "dev").execute()
+    }
 
-    with(SITE) {
+    with(SITES) {
       dslContext
-          .insertInto(SITE)
+          .insertInto(SITES)
           .set(ID, 10)
           .set(ORGANIZATION_ID, 1)
           .set(NAME, "sim")
@@ -77,9 +79,9 @@ abstract class DatabaseTest {
           .execute()
     }
 
-    with(SITE_MODULE) {
+    with(SITE_MODULES) {
       dslContext
-          .insertInto(SITE_MODULE)
+          .insertInto(SITE_MODULES)
           .set(ID, 100)
           .set(SITE_ID, 10)
           .set(TYPE_ID, 1)

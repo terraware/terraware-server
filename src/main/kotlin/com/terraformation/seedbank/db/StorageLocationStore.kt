@@ -1,7 +1,7 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.config.TerrawareServerConfig
-import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
+import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATIONS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
@@ -11,10 +11,10 @@ class StorageLocationStore(
     private val dslContext: DSLContext
 ) {
   fun fetchStorageConditionsByLocationName(): Map<String, StorageCondition> {
-    return with(STORAGE_LOCATION) {
+    return with(STORAGE_LOCATIONS) {
       dslContext
           .select(NAME, CONDITION_ID)
-          .from(STORAGE_LOCATION)
+          .from(STORAGE_LOCATIONS)
           .where(SITE_MODULE_ID.eq(config.siteModuleId))
           .orderBy(NAME)
           .fetch { it.value1()!! to it.value2()!! }

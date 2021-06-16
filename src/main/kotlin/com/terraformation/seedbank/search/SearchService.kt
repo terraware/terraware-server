@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.search
 
-import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.db.tables.references.ACCESSIONS
 import com.terraformation.seedbank.services.debugWithTiming
 import com.terraformation.seedbank.services.perClassLogger
 import javax.annotation.ManagedBean
@@ -59,9 +59,9 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
             SearchDirection.Ascending -> sortOrderElement.field.orderByFields
             SearchDirection.Descending -> sortOrderElement.field.orderByFields.map { it.desc() }
           }
-        } + listOf(ACCESSION.NUMBER)
+        } + listOf(ACCESSIONS.NUMBER)
 
-    var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSION)
+    var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSIONS)
 
     query = joinWithSecondaryTables(query, fields, criteria, sortOrder)
 
@@ -131,7 +131,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
               orderByField.`as`(DSL.field("field$index"))
             }
 
-    var query: SelectJoinStep<out Record> = dslContext.selectDistinct(selectFields).from(ACCESSION)
+    var query: SelectJoinStep<out Record> = dslContext.selectDistinct(selectFields).from(ACCESSIONS)
 
     query = joinWithSecondaryTables(query, listOf(field), criteria)
 

@@ -1,9 +1,9 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.api.seedbank.DeviceInfoPayload
-import com.terraformation.seedbank.db.tables.daos.AppDeviceDao
-import com.terraformation.seedbank.db.tables.pojos.AppDevice
-import com.terraformation.seedbank.db.tables.references.APP_DEVICE
+import com.terraformation.seedbank.db.tables.daos.AppDevicesDao
+import com.terraformation.seedbank.db.tables.pojos.AppDevicesRow
+import com.terraformation.seedbank.db.tables.references.APP_DEVICES
 import com.terraformation.seedbank.model.AppDeviceModel
 import io.mockk.every
 import io.mockk.mockk
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 internal class AppDeviceStoreTest : DatabaseTest() {
   private val clock: Clock = mockk()
 
-  private lateinit var appDeviceDao: AppDeviceDao
+  private lateinit var appDevicesDao: AppDevicesDao
   private lateinit var store: AppDeviceStore
 
   override val sequencesToReset: List<String>
@@ -26,7 +26,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
   @BeforeEach
   fun setup() {
-    appDeviceDao = AppDeviceDao(dslContext.configuration())
+    appDevicesDao = AppDevicesDao(dslContext.configuration())
     store = AppDeviceStore(dslContext, clock)
 
     every { clock.instant() } returns Instant.ofEpochMilli(50000)
@@ -44,8 +44,8 @@ internal class AppDeviceStoreTest : DatabaseTest() {
       osType: String? = "osType",
       osVersion: String? = "osVersion",
       uniqueId: String? = "uniqueId"
-  ): AppDevice {
-    return AppDevice(
+  ): AppDevicesRow {
+    return AppDevicesRow(
         id, appBuild, appName, brand, createdTime, model, name, osType, osVersion, uniqueId)
   }
 
@@ -59,7 +59,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
     assertEquals(1, id, "New device ID")
 
     val expected = appDevice(id)
-    val actual = appDeviceDao.fetchOneById(id)!!
+    val actual = appDevicesDao.fetchOneById(id)!!
 
     assertEquals(expected, actual)
   }
@@ -70,8 +70,8 @@ internal class AppDeviceStoreTest : DatabaseTest() {
         DeviceInfoPayload(
             "appBuild", "appName", "brand", "model", "name", "osType", "osVersion", "uniqueId")
 
-    appDeviceDao.insert(appDevice())
-    assertNotNull(appDeviceDao.fetchOneById(1))
+    appDevicesDao.insert(appDevice())
+    assertNotNull(appDevicesDao.fetchOneById(1))
 
     val id = store.getOrInsertDevice(payload.toModel())
     assertEquals(1, id)
@@ -79,12 +79,12 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
   @Test
   fun `getOrInsertDevice matches null values`() {
-    appDeviceDao.insert(AppDevice(createdTime = clock.instant()))
-    assertNotNull(appDeviceDao.fetchOneById(1))
+    appDevicesDao.insert(AppDevicesRow(createdTime = clock.instant()))
+    assertNotNull(appDevicesDao.fetchOneById(1))
 
     val id = store.getOrInsertDevice(AppDeviceModel())
 
-    val rows = dslContext.selectFrom(APP_DEVICE).fetch()
+    val rows = dslContext.selectFrom(APP_DEVICES).fetch()
     println(rows)
     assertEquals(1, id)
   }
@@ -101,7 +101,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
   @Test
   fun `fetchById fetches existing device`() {
-    appDeviceDao.insert(appDevice())
+    appDevicesDao.insert(appDevice())
 
     val expected =
         AppDeviceModel(

@@ -4,8 +4,8 @@ import com.terraformation.seedbank.auth.AnonymousClient
 import com.terraformation.seedbank.auth.ControllerClientIdentity
 import com.terraformation.seedbank.auth.LoggedInUserIdentity
 import com.terraformation.seedbank.auth.Role
-import com.terraformation.seedbank.db.tables.daos.SiteDao
-import com.terraformation.seedbank.db.tables.pojos.Site
+import com.terraformation.seedbank.db.tables.daos.SitesDao
+import com.terraformation.seedbank.db.tables.pojos.SitesRow
 import com.terraformation.seedbank.services.emptyEnumSet
 import io.mockk.every
 import io.mockk.mockk
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class SiteControllerTest {
-  private val siteDao = mockk<SiteDao>()
+  private val siteDao = mockk<SitesDao>()
   private val siteController = SiteController(siteDao)
 
   private val organizationId = 1L
@@ -48,7 +48,7 @@ class SiteControllerTest {
     @Test
     fun `returns list of sites`() {
       every { siteDao.fetchByOrganizationId(organizationId) } returns
-          listOf(Site(id = 1, name = "First Site"), Site(id = 2, name = "Second Site"))
+          listOf(SitesRow(id = 1, name = "First Site"), SitesRow(id = 2, name = "Second Site"))
 
       val expected =
           ListSitesResponse(
@@ -67,7 +67,7 @@ class SiteControllerTest {
     private val longitude = BigDecimal(longitudeString)
     private val latitude = BigDecimal(latitudeString)
     private val site =
-        Site(
+        SitesRow(
             id = siteId,
             organizationId = organizationId,
             name = "site",
@@ -98,7 +98,7 @@ class SiteControllerTest {
     @Test
     fun `rejects requests for sites owned by another organization`() {
       every { siteDao.fetchOneById(siteId) } returns
-          Site(id = siteId, organizationId = 0, name = "site")
+          SitesRow(id = siteId, organizationId = 0, name = "site")
       assertThrows(WrongOrganizationException::class.java) {
         siteController.getSite(authentication, siteId)
       }

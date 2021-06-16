@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.references.APP_DEVICE
+import com.terraformation.seedbank.db.tables.references.APP_DEVICES
 import com.terraformation.seedbank.model.AppDeviceModel
 import com.terraformation.seedbank.services.eqOrIsNull
 import java.time.Clock
@@ -15,11 +15,11 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
    * device with those values, returns its existing ID, otherwise inserts a new one.
    */
   fun getOrInsertDevice(appDevice: AppDeviceModel): Long {
-    with(APP_DEVICE) {
+    with(APP_DEVICES) {
       val existingId =
           dslContext
               .select(ID)
-              .from(APP_DEVICE)
+              .from(APP_DEVICES)
               .where(APP_BUILD.eqOrIsNull(appDevice.appBuild))
               .and(APP_NAME.eqOrIsNull(appDevice.appName))
               .and(BRAND.eqOrIsNull(appDevice.brand))
@@ -35,7 +35,7 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
       }
 
       return dslContext
-          .insertInto(APP_DEVICE)
+          .insertInto(APP_DEVICES)
           .set(APP_BUILD, appDevice.appBuild)
           .set(APP_NAME, appDevice.appName)
           .set(BRAND, appDevice.brand)
@@ -59,7 +59,9 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
    */
   fun fetchById(id: Long?): AppDeviceModel? {
     return if (id != null) {
-      dslContext.selectFrom(APP_DEVICE).where(APP_DEVICE.ID.eq(id)).fetchOne { AppDeviceModel(it) }
+      dslContext.selectFrom(APP_DEVICES).where(APP_DEVICES.ID.eq(id)).fetchOne {
+        AppDeviceModel(it)
+      }
     } else {
       null
     }

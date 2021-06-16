@@ -1,11 +1,11 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.config.TerrawareServerConfig
-import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
-import com.terraformation.seedbank.db.tables.daos.WithdrawalDao
-import com.terraformation.seedbank.db.tables.pojos.GerminationTest
-import com.terraformation.seedbank.db.tables.pojos.Withdrawal
-import com.terraformation.seedbank.db.tables.references.ACCESSION
+import com.terraformation.seedbank.db.tables.daos.GerminationTestsDao
+import com.terraformation.seedbank.db.tables.daos.WithdrawalsDao
+import com.terraformation.seedbank.db.tables.pojos.GerminationTestsRow
+import com.terraformation.seedbank.db.tables.pojos.WithdrawalsRow
+import com.terraformation.seedbank.db.tables.references.ACCESSIONS
 import com.terraformation.seedbank.grams
 import com.terraformation.seedbank.milligrams
 import com.terraformation.seedbank.model.WithdrawalModel
@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired
 
 internal class WithdrawalStoreTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
-  private lateinit var germinationTestDao: GerminationTestDao
+  private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var store: WithdrawalStore
-  private lateinit var withdrawalDao: WithdrawalDao
+  private lateinit var withdrawalsDao: WithdrawalsDao
 
   private val clock: Clock = mockk()
 
@@ -38,9 +38,9 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
   @BeforeEach
   fun setup() {
-    germinationTestDao = GerminationTestDao(dslContext.configuration())
+    germinationTestsDao = GerminationTestsDao(dslContext.configuration())
     store = WithdrawalStore(dslContext, clock)
-    withdrawalDao = WithdrawalDao(dslContext.configuration())
+    withdrawalsDao = WithdrawalsDao(dslContext.configuration())
 
     every { clock.instant() } returns Instant.now()
 
@@ -48,11 +48,11 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     // Insert a minimal accession and germination test so we can use their IDs.
     dslContext
-        .insertInto(ACCESSION)
-        .set(ACCESSION.ID, accessionId)
-        .set(ACCESSION.CREATED_TIME, Instant.now())
-        .set(ACCESSION.SITE_MODULE_ID, config.siteModuleId)
-        .set(ACCESSION.STATE_ID, AccessionState.InStorage)
+        .insertInto(ACCESSIONS)
+        .set(ACCESSIONS.ID, accessionId)
+        .set(ACCESSIONS.CREATED_TIME, Instant.now())
+        .set(ACCESSIONS.SITE_MODULE_ID, config.siteModuleId)
+        .set(ACCESSIONS.STATE_ID, AccessionState.InStorage)
         .execute()
   }
 
@@ -60,7 +60,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
   fun `fetches existing withdrawals`() {
     val pojos =
         listOf(
-            Withdrawal(
+            WithdrawalsRow(
                 accessionId = accessionId,
                 date = LocalDate.of(2021, 1, 1),
                 notes = "notes 1",
@@ -76,7 +76,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
                 withdrawnQuantity = BigDecimal(10000),
                 withdrawnUnitsId = SeedQuantityUnits.Milligrams,
             ),
-            Withdrawal(
+            WithdrawalsRow(
                 accessionId = accessionId,
                 date = LocalDate.of(2021, 1, 2),
                 notes = "notes 2",
@@ -120,7 +120,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
             ),
         )
 
-    withdrawalDao.insert(pojos)
+    withdrawalsDao.insert(pojos)
 
     val actual = store.fetchWithdrawals(accessionId)
 
@@ -193,8 +193,8 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
   @Test
   fun `accepts new germination testing withdrawals with test IDs`() {
-    germinationTestDao.insert(
-        GerminationTest(
+    germinationTestsDao.insert(
+        GerminationTestsRow(
             id = germinationTestId,
             accessionId = accessionId,
             testType = GerminationTestType.Lab,
@@ -234,8 +234,8 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
   @Test
   fun `does not allow modifying test IDs on existing germination testing withdrawals`() {
-    germinationTestDao.insert(
-        GerminationTest(
+    germinationTestsDao.insert(
+        GerminationTestsRow(
             id = germinationTestId,
             accessionId = accessionId,
             testType = GerminationTestType.Lab,

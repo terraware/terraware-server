@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.api
 
-import com.terraformation.seedbank.db.tables.daos.OrganizationDao
+import com.terraformation.seedbank.db.tables.daos.OrganizationsDao
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.security.access.prepost.PreAuthorize
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/organization")
 @Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @PreAuthorize("isAuthenticated()")
-class OrganizationController(private val organizationDao: OrganizationDao) {
+class OrganizationController(private val organizationsDao: OrganizationsDao) {
   @GetMapping
   @Hidden
   @PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -22,7 +22,7 @@ class OrganizationController(private val organizationDao: OrganizationDao) {
   )
   fun listAll(): ListOrganizationsResponse {
     val elements =
-        organizationDao.findAll().map { record ->
+        organizationsDao.findAll().map { record ->
           ListOrganizationsElement(record.id!!, record.name!!)
         }
     return ListOrganizationsResponse(elements)

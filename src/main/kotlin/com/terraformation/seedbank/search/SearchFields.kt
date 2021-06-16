@@ -6,17 +6,17 @@ import com.terraformation.seedbank.db.EnumFromReferenceTable
 import com.terraformation.seedbank.db.FuzzySearchOperators
 import com.terraformation.seedbank.db.SeedQuantityUnits
 import com.terraformation.seedbank.db.UsesFuzzySearchOperators
-import com.terraformation.seedbank.db.tables.references.ACCESSION
-import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
-import com.terraformation.seedbank.db.tables.references.BAG
-import com.terraformation.seedbank.db.tables.references.COLLECTOR
-import com.terraformation.seedbank.db.tables.references.GEOLOCATION
-import com.terraformation.seedbank.db.tables.references.GERMINATION
-import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
+import com.terraformation.seedbank.db.tables.references.ACCESSIONS
+import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
+import com.terraformation.seedbank.db.tables.references.BAGS
+import com.terraformation.seedbank.db.tables.references.COLLECTORS
+import com.terraformation.seedbank.db.tables.references.GEOLOCATIONS
+import com.terraformation.seedbank.db.tables.references.GERMINATIONS
+import com.terraformation.seedbank.db.tables.references.GERMINATION_TESTS
 import com.terraformation.seedbank.db.tables.references.SPECIES
-import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
-import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATION
-import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
+import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILIES
+import com.terraformation.seedbank.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.seedbank.db.tables.references.WITHDRAWALS
 import com.terraformation.seedbank.model.AccessionActive
 import com.terraformation.seedbank.model.toActiveEnum
 import com.terraformation.seedbank.model.toGrams
@@ -120,170 +120,176 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
   private fun createFieldList(): List<SearchField<*>> {
     return listOf(
-        UpperCaseTextField("accessionNumber", "Accession", ACCESSION.NUMBER, nullable = false),
+        UpperCaseTextField("accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
         ActiveField("active", "Active"),
-        TextField("bagNumber", "Bag number", BAG.BAG_NUMBER, SearchTables.Bag),
-        DateField("collectedDate", "Collected on", ACCESSION.COLLECTED_DATE),
-        TextField("collectionNotes", "Notes (collection)", ACCESSION.ENVIRONMENTAL_NOTES),
+        TextField("bagNumber", "Bag number", BAGS.BAG_NUMBER, SearchTables.Bag),
+        DateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
+        TextField("collectionNotes", "Notes (collection)", ACCESSIONS.ENVIRONMENTAL_NOTES),
         IntegerField(
             "cutTestSeedsCompromised",
             "Number of seeds compromised",
-            ACCESSION.CUT_TEST_SEEDS_COMPROMISED),
-        IntegerField("cutTestSeedsEmpty", "Number of seeds empty", ACCESSION.CUT_TEST_SEEDS_EMPTY),
+            ACCESSIONS.CUT_TEST_SEEDS_COMPROMISED),
+        IntegerField("cutTestSeedsEmpty", "Number of seeds empty", ACCESSIONS.CUT_TEST_SEEDS_EMPTY),
         IntegerField(
-            "cutTestSeedsFilled", "Number of seeds filled", ACCESSION.CUT_TEST_SEEDS_FILLED),
-        DateField("dryingEndDate", "Drying end date", ACCESSION.DRYING_END_DATE),
-        DateField("dryingMoveDate", "Drying move date", ACCESSION.DRYING_MOVE_DATE),
-        DateField("dryingStartDate", "Drying start date", ACCESSION.DRYING_START_DATE),
-        EnumField.create("endangered", "Endangered", ACCESSION.SPECIES_ENDANGERED_TYPE_ID),
+            "cutTestSeedsFilled", "Number of seeds filled", ACCESSIONS.CUT_TEST_SEEDS_FILLED),
+        DateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
+        DateField("dryingMoveDate", "Drying move date", ACCESSIONS.DRYING_MOVE_DATE),
+        DateField("dryingStartDate", "Drying start date", ACCESSIONS.DRYING_START_DATE),
+        EnumField.create("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
         IntegerField(
-            "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSION.EST_SEED_COUNT),
-        TextField("family", "Family", SPECIES_FAMILY.NAME, SearchTables.SpeciesFamily),
+            "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
+        TextField("family", "Family", SPECIES_FAMILIES.NAME, SearchTables.SpeciesFamily),
         GeolocationField(
             "geolocation",
             "Geolocation",
-            GEOLOCATION.LATITUDE,
-            GEOLOCATION.LONGITUDE,
+            GEOLOCATIONS.LATITUDE,
+            GEOLOCATIONS.LONGITUDE,
             SearchTables.Geolocation),
         DateField(
             "germinationEndDate",
             "Germination end date",
-            GERMINATION_TEST.END_DATE,
+            GERMINATION_TESTS.END_DATE,
             SearchTables.GerminationTest),
         IntegerField(
             "germinationPercentGerminated",
             "% Viability",
-            GERMINATION_TEST.TOTAL_PERCENT_GERMINATED,
+            GERMINATION_TESTS.TOTAL_PERCENT_GERMINATED,
             SearchTables.GerminationTest),
         EnumField.create(
             "germinationSeedType",
             "Seed type",
-            GERMINATION_TEST.SEED_TYPE_ID,
+            GERMINATION_TESTS.SEED_TYPE_ID,
             SearchTables.GerminationTest),
         IntegerField(
             "germinationSeedsGerminated",
             "Number of seeds germinated",
-            GERMINATION.SEEDS_GERMINATED,
+            GERMINATIONS.SEEDS_GERMINATED,
             SearchTables.Germination),
         IntegerField(
             "germinationSeedsSown",
             "Number of seeds sown",
-            GERMINATION_TEST.SEEDS_SOWN,
+            GERMINATION_TESTS.SEEDS_SOWN,
             SearchTables.GerminationTest),
         DateField(
             "germinationStartDate",
             "Germination start date",
-            GERMINATION_TEST.START_DATE,
+            GERMINATION_TESTS.START_DATE,
             SearchTables.GerminationTest),
         EnumField.create(
             "germinationSubstrate",
             "Germination substrate",
-            GERMINATION_TEST.SUBSTRATE_ID,
+            GERMINATION_TESTS.SUBSTRATE_ID,
             SearchTables.GerminationTest),
         TextField(
             "germinationTestNotes",
             "Notes (germination test)",
-            GERMINATION_TEST.NOTES,
+            GERMINATION_TESTS.NOTES,
             SearchTables.GerminationTest),
         EnumField.create(
             "germinationTestType",
             "Germination test type",
-            GERMINATION_TEST.TEST_TYPE,
+            GERMINATION_TESTS.TEST_TYPE,
             SearchTables.GerminationTest),
         EnumField.create(
             "germinationTreatment",
             "Germination treatment",
-            GERMINATION_TEST.TREATMENT_ID,
+            GERMINATION_TESTS.TREATMENT_ID,
             SearchTables.GerminationTest),
-        TextField("landowner", "Landowner", ACCESSION.COLLECTION_SITE_LANDOWNER),
+        TextField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
         DateField(
             "latestGerminationTestDate",
             "Most recent germination test date",
-            ACCESSION.LATEST_GERMINATION_RECORDING_DATE),
+            ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         IntegerField(
             "latestViabilityPercent",
             "Most recent % viability",
-            ACCESSION.LATEST_VIABILITY_PERCENT),
-        DateField("nurseryStartDate", "Nursery start date", ACCESSION.NURSERY_START_DATE),
+            ACCESSIONS.LATEST_VIABILITY_PERCENT),
+        DateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
         TextField(
-            "primaryCollector", "Primary collector", COLLECTOR.NAME, SearchTables.PrimaryCollector),
-        EnumField.create("processingMethod", "Processing method", ACCESSION.PROCESSING_METHOD_ID),
-        TextField("processingNotes", "Notes (processing)", ACCESSION.PROCESSING_NOTES),
-        DateField("processingStartDate", "Processing start date", ACCESSION.PROCESSING_START_DATE),
-        EnumField.create("rare", "Rare", ACCESSION.SPECIES_RARE_TYPE_ID),
-        DateField("receivedDate", "Received on", ACCESSION.RECEIVED_DATE),
-        GramsField("remainingGrams", "Remaining (grams)", ACCESSION.REMAINING_GRAMS),
-        BigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSION.REMAINING_QUANTITY),
-        EnumField.create("remainingUnits", "Remaining (units)", ACCESSION.REMAINING_UNITS_ID),
-        TextField("siteLocation", "Site location", ACCESSION.COLLECTION_SITE_NAME),
-        EnumField.create("sourcePlantOrigin", "Wild/Outplant", ACCESSION.SOURCE_PLANT_ORIGIN_ID),
+            "primaryCollector",
+            "Primary collector",
+            COLLECTORS.NAME,
+            SearchTables.PrimaryCollector),
+        EnumField.create("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
+        TextField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
+        DateField("processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
+        EnumField.create("rare", "Rare", ACCESSIONS.SPECIES_RARE_TYPE_ID),
+        DateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
+        GramsField("remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
+        BigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
+        EnumField.create("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
+        TextField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
+        EnumField.create("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
         TextField("species", "Species", SPECIES.NAME, SearchTables.Species),
-        EnumField.create("state", "State", ACCESSION.STATE_ID, nullable = false),
+        EnumField.create("state", "State", ACCESSIONS.STATE_ID, nullable = false),
         EnumField.create(
-            "storageCondition", "Storage condition", ACCESSION.TARGET_STORAGE_CONDITION),
+            "storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
         TextField(
             "storageLocation",
             "Storage location",
-            STORAGE_LOCATION.NAME,
+            STORAGE_LOCATIONS.NAME,
             SearchTables.StorageLocation),
-        TextField("storageNotes", "Notes (storage)", ACCESSION.STORAGE_NOTES),
-        IntegerField("storagePackets", "Number of storage packets", ACCESSION.STORAGE_PACKETS),
-        DateField("storageStartDate", "Storing start date", ACCESSION.STORAGE_START_DATE),
+        TextField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
+        IntegerField("storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
+        DateField("storageStartDate", "Storing start date", ACCESSIONS.STORAGE_START_DATE),
         EnumField.create(
-            "targetStorageCondition", "Target %RH", ACCESSION.TARGET_STORAGE_CONDITION),
-        GramsField("totalGrams", "Total size (grams)", ACCESSION.TOTAL_GRAMS),
-        BigDecimalField("totalQuantity", "Total size (quantity)", ACCESSION.TOTAL_QUANTITY),
-        EnumField.create("totalUnits", "Total size (units)", ACCESSION.TOTAL_UNITS_ID),
+            "targetStorageCondition", "Target %RH", ACCESSIONS.TARGET_STORAGE_CONDITION),
+        GramsField("totalGrams", "Total size (grams)", ACCESSIONS.TOTAL_GRAMS),
+        BigDecimalField("totalQuantity", "Total size (quantity)", ACCESSIONS.TOTAL_QUANTITY),
+        EnumField.create("totalUnits", "Total size (units)", ACCESSIONS.TOTAL_UNITS_ID),
         IntegerField(
             "totalViabilityPercent",
             "Total estimated % viability",
-            ACCESSION.TOTAL_VIABILITY_PERCENT),
+            ACCESSIONS.TOTAL_VIABILITY_PERCENT),
         IntegerField(
-            "treesCollectedFrom", "Number of trees collected from", ACCESSION.TREES_COLLECTED_FROM),
+            "treesCollectedFrom",
+            "Number of trees collected from",
+            ACCESSIONS.TREES_COLLECTED_FROM),
         EnumField.create(
             "viabilityTestType",
             "Viability test type (accession)",
-            ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID,
+            ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID,
             SearchTables.AccessionGerminationTestType),
-        DateField("withdrawalDate", "Date of withdrawal", WITHDRAWAL.DATE, SearchTables.Withdrawal),
+        DateField(
+            "withdrawalDate", "Date of withdrawal", WITHDRAWALS.DATE, SearchTables.Withdrawal),
         TextField(
             "withdrawalDestination",
             "Destination",
-            WITHDRAWAL.DESTINATION,
+            WITHDRAWALS.DESTINATION,
             SearchTables.Withdrawal),
         GramsField(
             "withdrawalGrams",
             "Weight of seeds withdrawn (g)",
-            WITHDRAWAL.WITHDRAWN_GRAMS,
+            WITHDRAWALS.WITHDRAWN_GRAMS,
             SearchTables.Withdrawal),
         TextField(
-            "withdrawalNotes", "Notes (withdrawal)", WITHDRAWAL.NOTES, SearchTables.Withdrawal),
+            "withdrawalNotes", "Notes (withdrawal)", WITHDRAWALS.NOTES, SearchTables.Withdrawal),
         EnumField.create(
-            "withdrawalPurpose", "Purpose", WITHDRAWAL.PURPOSE_ID, SearchTables.Withdrawal),
+            "withdrawalPurpose", "Purpose", WITHDRAWALS.PURPOSE_ID, SearchTables.Withdrawal),
         GramsField(
             "withdrawalRemainingGrams",
             "Weight in grams of seeds remaining (withdrawal)",
-            WITHDRAWAL.REMAINING_GRAMS,
+            WITHDRAWALS.REMAINING_GRAMS,
             SearchTables.Withdrawal),
         GramsField(
             "withdrawalRemainingQuantity",
             "Weight or count of seeds remaining (withdrawal)",
-            WITHDRAWAL.REMAINING_GRAMS,
+            WITHDRAWALS.REMAINING_GRAMS,
             SearchTables.Withdrawal),
         EnumField.create(
             "withdrawalRemainingUnits",
             "Units of measurement of quantity remaining (withdrawal)",
-            WITHDRAWAL.REMAINING_UNITS_ID,
+            WITHDRAWALS.REMAINING_UNITS_ID,
             SearchTables.Withdrawal),
         BigDecimalField(
             "withdrawalQuantity",
             "Quantity of seeds withdrawn",
-            WITHDRAWAL.WITHDRAWN_QUANTITY,
+            WITHDRAWALS.WITHDRAWN_QUANTITY,
             SearchTables.Withdrawal),
         EnumField.create(
             "withdrawalUnits",
             "Units of measurement of quantity withdrawn",
-            WITHDRAWAL.WITHDRAWN_UNITS_ID,
+            WITHDRAWALS.WITHDRAWN_UNITS_ID,
             SearchTables.Withdrawal),
     )
   }
@@ -326,7 +332,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     override val table
       get() = SearchTables.Accession
     override val selectFields
-      get() = listOf(ACCESSION.STATE_ID)
+      get() = listOf(ACCESSIONS.STATE_ID)
     override val possibleValues = AccessionActive::class.java.enumConstants!!.map { "$it" }
     override val nullable
       get() = false
@@ -340,18 +346,18 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       } else {
         // Filter for all the states that map to a requested active value.
         val states = AccessionState.values().filter { it.toActiveEnum() in values }
-        listOf(ACCESSION.STATE_ID.`in`(states))
+        listOf(ACCESSIONS.STATE_ID.`in`(states))
       }
     }
 
     override fun computeValue(record: Record): String? {
-      return record[ACCESSION.STATE_ID]?.toActiveEnum()?.toString()
+      return record[ACCESSIONS.STATE_ID]?.toActiveEnum()?.toString()
     }
 
     override val orderByFields: List<Field<*>>
       get() =
           listOf(
-              DSL.case_(ACCESSION.STATE_ID)
+              DSL.case_(ACCESSIONS.STATE_ID)
                   .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" }))
 
     override fun toString() = fieldName

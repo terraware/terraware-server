@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.references.WITHDRAWAL
+import com.terraformation.seedbank.db.tables.references.WITHDRAWALS
 import com.terraformation.seedbank.model.SeedQuantityModel
 import com.terraformation.seedbank.model.WithdrawalModel
 import com.terraformation.seedbank.services.perClassLogger
@@ -14,9 +14,9 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
 
   fun fetchWithdrawals(accessionId: Long): List<WithdrawalModel> {
     return dslContext
-        .selectFrom(WITHDRAWAL)
-        .where(WITHDRAWAL.ACCESSION_ID.eq(accessionId))
-        .orderBy(WITHDRAWAL.DATE.desc(), WITHDRAWAL.CREATED_TIME.desc())
+        .selectFrom(WITHDRAWALS)
+        .where(WITHDRAWALS.ACCESSION_ID.eq(accessionId))
+        .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc())
         .fetch()
         .map { record ->
           WithdrawalModel(
@@ -74,11 +74,11 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
       }
     }
 
-    with(WITHDRAWAL) {
+    with(WITHDRAWALS) {
       newWithdrawals.forEach { withdrawal ->
         val newId =
             dslContext
-                .insertInto(WITHDRAWAL)
+                .insertInto(WITHDRAWALS)
                 .set(ACCESSION_ID, accessionId)
                 .set(CREATED_TIME, clock.instant())
                 .set(DATE, withdrawal.date)
@@ -106,7 +106,7 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
       if (idsToDelete.isNotEmpty()) {
         log.debug("Deleting withdrawals from accession $accessionId with IDs $idsToDelete")
         dslContext
-            .deleteFrom(WITHDRAWAL)
+            .deleteFrom(WITHDRAWALS)
             .where(ID.`in`(idsToDelete))
             .and(ACCESSION_ID.eq(accessionId))
             .execute()
@@ -120,7 +120,7 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
           log.debug("Updating withdrawal $withdrawalId for accession $accessionId")
 
           dslContext
-              .update(WITHDRAWAL)
+              .update(WITHDRAWALS)
               .set(DATE, desired.date)
               .set(DESTINATION, desired.destination)
               .set(NOTES, desired.notes)

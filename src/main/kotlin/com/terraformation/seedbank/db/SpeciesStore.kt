@@ -1,8 +1,8 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.pojos.Species
+import com.terraformation.seedbank.db.tables.pojos.SpeciesRow
 import com.terraformation.seedbank.db.tables.references.SPECIES
-import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILY
+import com.terraformation.seedbank.db.tables.references.SPECIES_FAMILIES
 import java.time.Clock
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
@@ -24,8 +24,8 @@ class SpeciesStore(
   }
 
   fun getSpeciesFamilyId(familyName: String?): Long? {
-    return support.getOrInsertId(familyName, SPECIES_FAMILY.ID, SPECIES_FAMILY.NAME) {
-      it.set(SPECIES_FAMILY.CREATED_TIME, clock.instant())
+    return support.getOrInsertId(familyName, SPECIES_FAMILIES.ID, SPECIES_FAMILIES.NAME) {
+      it.set(SPECIES_FAMILIES.CREATED_TIME, clock.instant())
     }
   }
 
@@ -34,14 +34,14 @@ class SpeciesStore(
   }
 
   fun countFamilies(asOf: TemporalAccessor): Int {
-    return support.countEarlierThan(asOf, SPECIES_FAMILY.CREATED_TIME)
+    return support.countEarlierThan(asOf, SPECIES_FAMILIES.CREATED_TIME)
   }
 
-  fun findAllSortedByName(): List<Species> {
-    return dslContext.selectFrom(SPECIES).orderBy(SPECIES.NAME).fetchInto(Species::class.java)
+  fun findAllSortedByName(): List<SpeciesRow> {
+    return dslContext.selectFrom(SPECIES).orderBy(SPECIES.NAME).fetchInto(SpeciesRow::class.java)
   }
 
-  fun createSpecies(speciesName: String): Species {
+  fun createSpecies(speciesName: String): SpeciesRow {
     return dslContext
             .insertInto(SPECIES)
             .set(SPECIES.NAME, speciesName)
@@ -49,7 +49,7 @@ class SpeciesStore(
             .set(SPECIES.MODIFIED_TIME, clock.instant())
             .returning()
             .fetchOne()!!
-        .into(Species::class.java)
+        .into(SpeciesRow::class.java)
   }
 
   /**

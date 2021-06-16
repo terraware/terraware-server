@@ -4,6 +4,7 @@ import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jooq.meta.jaxb.Strategy
 
 plugins {
   kotlin("jvm")
@@ -130,12 +131,14 @@ tasks {
 
     customizeGenerator {
       val enumGenerator = com.terraformation.seedbank.jooq.EnumGenerator()
+      val pluralStrategy = com.terraformation.seedbank.jooq.PluralPojoStrategy()
       val forcedTypeForInstant =
           org.jooq.meta.jaxb.ForcedType()
               .withName("INSTANT")
               .withIncludeTypes("(?i:TIMESTAMP\\ WITH\\ TIME\\ ZONE)")
 
       name = enumGenerator.javaClass.name
+      strategy = Strategy().withName(pluralStrategy.javaClass.name)
       database.apply {
         withName("org.jooq.meta.postgres.PostgresDatabase")
         withIncludes(".*")

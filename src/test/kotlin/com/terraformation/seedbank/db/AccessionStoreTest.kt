@@ -9,26 +9,26 @@ import com.terraformation.seedbank.api.seedbank.UpdateAccessionRequestPayload
 import com.terraformation.seedbank.api.seedbank.WithdrawalPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.sequences.ACCESSION_NUMBER_SEQ
-import com.terraformation.seedbank.db.tables.daos.AccessionDao
-import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
-import com.terraformation.seedbank.db.tables.daos.AppDeviceDao
-import com.terraformation.seedbank.db.tables.daos.BagDao
-import com.terraformation.seedbank.db.tables.daos.GeolocationDao
-import com.terraformation.seedbank.db.tables.daos.GerminationDao
-import com.terraformation.seedbank.db.tables.daos.GerminationTestDao
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotosDao
+import com.terraformation.seedbank.db.tables.daos.AccessionsDao
+import com.terraformation.seedbank.db.tables.daos.AppDevicesDao
+import com.terraformation.seedbank.db.tables.daos.BagsDao
+import com.terraformation.seedbank.db.tables.daos.GeolocationsDao
+import com.terraformation.seedbank.db.tables.daos.GerminationTestsDao
+import com.terraformation.seedbank.db.tables.daos.GerminationsDao
 import com.terraformation.seedbank.db.tables.daos.SpeciesDao
-import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
-import com.terraformation.seedbank.db.tables.pojos.Accession
-import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
-import com.terraformation.seedbank.db.tables.pojos.AccessionStateHistory
-import com.terraformation.seedbank.db.tables.pojos.Bag
-import com.terraformation.seedbank.db.tables.pojos.GerminationTest
-import com.terraformation.seedbank.db.tables.pojos.Species
-import com.terraformation.seedbank.db.tables.pojos.StorageLocation
+import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
+import com.terraformation.seedbank.db.tables.pojos.AccessionPhotosRow
+import com.terraformation.seedbank.db.tables.pojos.AccessionStateHistoryRow
+import com.terraformation.seedbank.db.tables.pojos.AccessionsRow
+import com.terraformation.seedbank.db.tables.pojos.BagsRow
+import com.terraformation.seedbank.db.tables.pojos.GerminationTestsRow
+import com.terraformation.seedbank.db.tables.pojos.SpeciesRow
+import com.terraformation.seedbank.db.tables.pojos.StorageLocationsRow
 import com.terraformation.seedbank.db.tables.records.AccessionStateHistoryRecord
-import com.terraformation.seedbank.db.tables.references.ACCESSION
-import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
-import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTOR
+import com.terraformation.seedbank.db.tables.references.ACCESSIONS
+import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
+import com.terraformation.seedbank.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.seedbank.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.seedbank.grams
 import com.terraformation.seedbank.kilograms
@@ -96,28 +96,28 @@ internal class AccessionStoreTest : DatabaseTest() {
   private val clock: Clock = mockk()
 
   private lateinit var store: AccessionStore
-  private lateinit var accessionDao: AccessionDao
-  private lateinit var accessionPhotoDao: AccessionPhotoDao
-  private lateinit var appDeviceDao: AppDeviceDao
-  private lateinit var bagDao: BagDao
-  private lateinit var geolocationDao: GeolocationDao
-  private lateinit var germinationDao: GerminationDao
-  private lateinit var germinationTestDao: GerminationTestDao
+  private lateinit var accessionsDao: AccessionsDao
+  private lateinit var accessionPhotosDao: AccessionPhotosDao
+  private lateinit var appDevicesDao: AppDevicesDao
+  private lateinit var bagsDao: BagsDao
+  private lateinit var geolocationsDao: GeolocationsDao
+  private lateinit var germinationsDao: GerminationsDao
+  private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var speciesDao: SpeciesDao
-  private lateinit var storageLocationDao: StorageLocationDao
+  private lateinit var storageLocationsDao: StorageLocationsDao
 
   @BeforeEach
   fun init() {
     val jooqConfig = dslContext.configuration()
-    accessionDao = AccessionDao(jooqConfig)
-    accessionPhotoDao = AccessionPhotoDao(jooqConfig)
-    appDeviceDao = AppDeviceDao(jooqConfig)
-    bagDao = BagDao(jooqConfig)
-    geolocationDao = GeolocationDao(jooqConfig)
-    germinationDao = GerminationDao(jooqConfig)
-    germinationTestDao = GerminationTestDao(jooqConfig)
+    accessionsDao = AccessionsDao(jooqConfig)
+    accessionPhotosDao = AccessionPhotosDao(jooqConfig)
+    appDevicesDao = AppDevicesDao(jooqConfig)
+    bagsDao = BagsDao(jooqConfig)
+    geolocationsDao = GeolocationsDao(jooqConfig)
+    germinationsDao = GerminationsDao(jooqConfig)
+    germinationTestsDao = GerminationTestsDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
-    storageLocationDao = StorageLocationDao(jooqConfig)
+    storageLocationsDao = StorageLocationsDao(jooqConfig)
 
     val support = StoreSupport(config, dslContext)
 
@@ -128,7 +128,7 @@ internal class AccessionStoreTest : DatabaseTest() {
         AccessionStore(
             dslContext,
             config,
-            accessionPhotoDao,
+            accessionPhotosDao,
             AppDeviceStore(dslContext, clock),
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
@@ -147,13 +147,13 @@ internal class AccessionStoreTest : DatabaseTest() {
     store.create(AccessionModel())
 
     assertEquals(
-        Accession(
+        AccessionsRow(
             id = 1,
             siteModuleId = config.siteModuleId,
             createdTime = clock.instant(),
             number = accessionNumbers[0],
             stateId = AccessionState.Pending),
-        accessionDao.fetchOneById(1))
+        accessionsDao.fetchOneById(1))
   }
 
   @Test
@@ -162,7 +162,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
     store.create(AccessionModel())
 
-    assertNotNull(accessionDao.fetchOneByNumber(accessionNumbers[1]))
+    assertNotNull(accessionsDao.fetchOneByNumber(accessionNumbers[1]))
   }
 
   @Test
@@ -195,8 +195,8 @@ internal class AccessionStoreTest : DatabaseTest() {
     // Second time should reuse them
     val secondAccession = store.create(payload)
 
-    val initialRow = accessionDao.fetchOneByNumber(accessionNumbers[0])!!
-    val secondRow = accessionDao.fetchOneByNumber(accessionNumbers[1])!!
+    val initialRow = accessionsDao.fetchOneByNumber(accessionNumbers[0])!!
+    val secondRow = accessionsDao.fetchOneByNumber(accessionNumbers[1])!!
 
     assertNotEquals(initialRow.number, secondRow.number, "Accession numbers")
     assertEquals(initialRow.speciesId, secondRow.speciesId, "Species")
@@ -217,8 +217,8 @@ internal class AccessionStoreTest : DatabaseTest() {
     store.create(payload)
     store.create(payload)
 
-    val initialBags = bagDao.fetchByAccessionId(1).toSet()
-    val secondBags = bagDao.fetchByAccessionId(2).toSet()
+    val initialBags = bagsDao.fetchByAccessionId(1).toSet()
+    val secondBags = bagsDao.fetchByAccessionId(2).toSet()
 
     assertNotEquals(initialBags, secondBags)
   }
@@ -226,7 +226,7 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `bags are inserted and deleted as needed`() {
     val initial = store.create(AccessionModel(bagNumbers = setOf("bag 1", "bag 2")))
-    val initialBags = bagDao.fetchByAccessionId(1)
+    val initialBags = bagsDao.fetchByAccessionId(1)
 
     // Insertion order is not defined by the API, so don't assume bag ID 1 is "bag 1".
 
@@ -238,9 +238,9 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertTrue(store.update(initial.accessionNumber!!, desired), "Update succeeded")
 
-    val updatedBags = bagDao.fetchByAccessionId(1)
+    val updatedBags = bagsDao.fetchByAccessionId(1)
 
-    assertTrue(Bag(3, 1, "bag 3") in updatedBags, "New bag inserted")
+    assertTrue(BagsRow(3, 1, "bag 3") in updatedBags, "New bag inserted")
     assertTrue(updatedBags.none { it.bagNumber == "bag 1" }, "Missing bag deleted")
     assertEquals(
         initialBags.filter { it.bagNumber == "bag 2" },
@@ -253,7 +253,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     val payload = AccessionModel(deviceInfo = AppDeviceModel(model = "model"))
     store.create(payload)
 
-    val appDevice = appDeviceDao.fetchOneById(1)
+    val appDevice = appDevicesDao.fetchOneById(1)
     assertNotNull(appDevice, "Device row should have been inserted")
     assertNull(appDevice?.appName, "App name should be null")
     assertEquals(appDevice?.model, "model")
@@ -280,7 +280,7 @@ internal class AccessionStoreTest : DatabaseTest() {
                     setOf(
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                         Geolocation(BigDecimal(3), BigDecimal(4)))))
-    val initialGeos = geolocationDao.fetchByAccessionId(1)
+    val initialGeos = geolocationsDao.fetchByAccessionId(1)
 
     // Insertion order is not defined by the API.
 
@@ -297,7 +297,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertTrue(store.update(initial.accessionNumber!!, desired), "Update succeeded")
 
-    val updatedGeos = geolocationDao.fetchByAccessionId(1)
+    val updatedGeos = geolocationsDao.fetchByAccessionId(1)
 
     assertTrue(
         updatedGeos.any { it.id == 3L && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 },
@@ -314,10 +314,10 @@ internal class AccessionStoreTest : DatabaseTest() {
     store.create(AccessionModel(germinationTestTypes = setOf(GerminationTestType.Lab)))
     val types =
         dslContext
-            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
-            .from(ACCESSION_GERMINATION_TEST_TYPE)
-            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(1))
-            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
+            .from(ACCESSION_GERMINATION_TEST_TYPES)
+            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(1))
+            .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
 
     assertEquals(listOf(GerminationTestType.Lab), types)
   }
@@ -338,10 +338,10 @@ internal class AccessionStoreTest : DatabaseTest() {
                 initialQuantity = seeds(100))
     store.update(initial.accessionNumber!!, withTest.toModel())
 
-    val updatedTests = germinationTestDao.fetchByAccessionId(1)
+    val updatedTests = germinationTestsDao.fetchByAccessionId(1)
     assertEquals(
         listOf(
-            GerminationTest(
+            GerminationTestsRow(
                 accessionId = 1,
                 id = 1,
                 remainingQuantity = BigDecimal(100),
@@ -351,7 +351,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             )),
         updatedTests)
 
-    val updatedAccession = accessionDao.fetchOneById(1)
+    val updatedAccession = accessionsDao.fetchOneById(1)
     assertNull(updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
     assertNull(updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertNull(updatedAccession?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
@@ -368,10 +368,10 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     val types =
         dslContext
-            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
-            .from(ACCESSION_GERMINATION_TEST_TYPE)
-            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(1))
-            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
+            .from(ACCESSION_GERMINATION_TEST_TYPES)
+            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(1))
+            .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
     assertEquals(setOf(GerminationTestType.Lab, GerminationTestType.Nursery), types.toSet())
   }
 
@@ -384,10 +384,10 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     val types =
         dslContext
-            .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
-            .from(ACCESSION_GERMINATION_TEST_TYPE)
-            .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(1))
-            .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+            .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
+            .from(ACCESSION_GERMINATION_TEST_TYPES)
+            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(1))
+            .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
     assertEquals(listOf(GerminationTestType.Nursery), types)
   }
 
@@ -414,10 +414,10 @@ internal class AccessionStoreTest : DatabaseTest() {
                         seedsSown = 5)))
     store.update(initial.accessionNumber!!, desired)
 
-    val updatedTests = germinationTestDao.fetchByAccessionId(1)
+    val updatedTests = germinationTestsDao.fetchByAccessionId(1)
     assertEquals(
         listOf(
-            GerminationTest(
+            GerminationTestsRow(
                 id = 1,
                 accessionId = 1,
                 testType = GerminationTestType.Lab,
@@ -535,18 +535,18 @@ internal class AccessionStoreTest : DatabaseTest() {
                                     recordingDate = localDate, seedsGerminated = 75)))))
     store.update(initial.accessionNumber!!, desired)
 
-    val germinationTests = germinationTestDao.fetchByAccessionId(1)
+    val germinationTests = germinationTestsDao.fetchByAccessionId(1)
     assertEquals(1, germinationTests.size, "Number of germination tests after update")
     assertEquals(37, germinationTests[0].totalPercentGerminated, "totalPercentGerminated")
     assertEquals(75, germinationTests[0].totalSeedsGerminated, "totalSeedsGerminated")
 
-    val germinations = germinationDao.fetchByTestId(1)
+    val germinations = germinationsDao.fetchByTestId(1)
     assertEquals(1, germinations.size, "Number of germinations after update")
     assertTrue(
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First germination preserved")
 
-    val updatedAccession = accessionDao.fetchOneById(1)
+    val updatedAccession = accessionsDao.fetchOneById(1)
     assertEquals(37, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
     assertEquals(37, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
@@ -586,14 +586,14 @@ internal class AccessionStoreTest : DatabaseTest() {
                                 GerminationModel(
                                     recordingDate = localDate, seedsGerminated = 75)))))
     store.update(initial.accessionNumber!!, desired)
-    val germinations = germinationDao.fetchByTestId(1)
+    val germinations = germinationsDao.fetchByTestId(1)
 
     assertEquals(1, germinations.size, "Number of germinations after update")
     assertTrue(
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First germination preserved")
 
-    val updatedAccession = accessionDao.fetchOneById(1)
+    val updatedAccession = accessionsDao.fetchOneById(1)
     assertEquals(75, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
     assertEquals(75, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
@@ -606,8 +606,8 @@ internal class AccessionStoreTest : DatabaseTest() {
   fun `valid storage locations are accepted and cause storage condition to be populated`() {
     val locationId = 12345678L
     val locationName = "Test Location"
-    storageLocationDao.insert(
-        StorageLocation(
+    storageLocationsDao.insert(
+        StorageLocationsRow(
             id = locationId,
             siteModuleId = config.siteModuleId,
             name = locationName,
@@ -618,7 +618,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertEquals(
         locationId,
-        accessionDao.fetchOneById(1)?.storageLocationId,
+        accessionsDao.fetchOneById(1)?.storageLocationId,
         "Existing storage location ID was used")
 
     val updated = store.fetchByNumber(initial.accessionNumber!!)!!
@@ -637,8 +637,8 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `photo filenames are returned`() {
     val initial = store.create(AccessionModel())
-    accessionPhotoDao.insert(
-        AccessionPhoto(
+    accessionPhotosDao.insert(
+        AccessionPhotosRow(
             accessionId = 1,
             filename = "photo.jpg",
             uploadedTime = Instant.now(),
@@ -848,11 +848,11 @@ internal class AccessionStoreTest : DatabaseTest() {
         dslContext
             .selectFrom(ACCESSION_STATE_HISTORY)
             .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
-            .fetchInto(AccessionStateHistory::class.java)
+            .fetchInto(AccessionStateHistoryRow::class.java)
 
     assertEquals(
         listOf(
-            AccessionStateHistory(
+            AccessionStateHistoryRow(
                 accessionId = 1,
                 newStateId = AccessionState.Pending,
                 reason = "Accession created",
@@ -876,11 +876,11 @@ internal class AccessionStoreTest : DatabaseTest() {
             .selectFrom(ACCESSION_STATE_HISTORY)
             .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(initial.id))
             .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(AccessionState.Processing))
-            .fetchInto(AccessionStateHistory::class.java)
+            .fetchInto(AccessionStateHistoryRow::class.java)
 
     assertEquals(
         listOf(
-            AccessionStateHistory(
+            AccessionStateHistoryRow(
                 accessionId = 1,
                 newStateId = AccessionState.Processing,
                 oldStateId = AccessionState.Pending,
@@ -907,25 +907,25 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     val shouldMatch =
         listOf(
-            Accession(
+            AccessionsRow(
                 number = "ProcessingTimePassed",
                 stateId = AccessionState.Processing,
                 processingStartDate = twoWeeksAgo),
-            Accession(
+            AccessionsRow(
                 number = "ProcessingToDrying",
                 stateId = AccessionState.Processing,
                 dryingStartDate = today),
-            Accession(
+            AccessionsRow(
                 number = "ProcessedToDrying",
                 stateId = AccessionState.Processed,
                 dryingStartDate = today),
-            Accession(
+            AccessionsRow(
                 number = "DryingToDried", stateId = AccessionState.Drying, dryingEndDate = today),
-            Accession(
+            AccessionsRow(
                 number = "DryingToStorage",
                 stateId = AccessionState.Drying,
                 storageStartDate = today),
-            Accession(
+            AccessionsRow(
                 number = "DriedToStorage",
                 stateId = AccessionState.Dried,
                 storageStartDate = yesterday),
@@ -933,26 +933,26 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     val shouldNotMatch =
         listOf(
-            Accession(
+            AccessionsRow(
                 number = "NoSeedCountYet",
                 stateId = AccessionState.Pending,
                 processingStartDate = twoWeeksAgo),
-            Accession(
+            AccessionsRow(
                 number = "ProcessingTimeNotUpYet",
                 stateId = AccessionState.Processing,
                 processingStartDate = yesterday),
-            Accession(
+            AccessionsRow(
                 number = "ProcessedToStorage",
                 stateId = AccessionState.Processed,
                 storageStartDate = today),
-            Accession(
+            AccessionsRow(
                 number = "DriedToStorageTomorrow",
                 stateId = AccessionState.Dried,
                 storageStartDate = tomorrow),
         )
 
     (shouldMatch + shouldNotMatch).forEach { accession ->
-      accessionDao.insert(
+      accessionsDao.insert(
           accession.copy(createdTime = clock.instant(), siteModuleId = config.siteModuleId))
     }
 
@@ -1022,9 +1022,9 @@ internal class AccessionStoreTest : DatabaseTest() {
       }
 
       dslContext
-          .update(ACCESSION)
-          .set(ACCESSION.STATE_ID, currentState)
-          .where(ACCESSION.ID.eq(accessionId))
+          .update(ACCESSIONS)
+          .set(ACCESSIONS.STATE_ID, currentState)
+          .where(ACCESSIONS.ID.eq(accessionId))
           .execute()
     }
 
@@ -1083,9 +1083,9 @@ internal class AccessionStoreTest : DatabaseTest() {
             .execute()
 
         dslContext
-            .update(ACCESSION)
-            .set(ACCESSION.STATE_ID, AccessionState.Withdrawn)
-            .where(ACCESSION.ID.eq(accession.id))
+            .update(ACCESSIONS)
+            .set(ACCESSIONS.STATE_ID, AccessionState.Withdrawn)
+            .where(ACCESSIONS.ID.eq(accession.id))
             .execute()
       }
     }
@@ -1111,11 +1111,11 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertNull(newId, "No new species ID should be returned")
     assertEquals(
-        Species(id = 1, name = "species1a", createdTime = Instant.EPOCH, modifiedTime = now),
+        SpeciesRow(id = 1, name = "species1a", createdTime = Instant.EPOCH, modifiedTime = now),
         speciesDao.fetchOneById(1),
         "Updated species")
     assertEquals(
-        Species(
+        SpeciesRow(
             id = 2, name = "species2", createdTime = Instant.EPOCH, modifiedTime = Instant.EPOCH),
         speciesDao.fetchOneById(2),
         "Unmodified species")
@@ -1464,8 +1464,8 @@ internal class AccessionStoreTest : DatabaseTest() {
       }
     }
 
-    storageLocationDao.insert(
-        StorageLocation(
+    storageLocationsDao.insert(
+        StorageLocationsRow(
             siteModuleId = config.siteModuleId,
             name = storageLocationName,
             conditionId = StorageCondition.Freezer))
@@ -1479,10 +1479,10 @@ internal class AccessionStoreTest : DatabaseTest() {
   }
 
   private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {
-    with(ACCESSION_SECONDARY_COLLECTOR) {
+    with(ACCESSION_SECONDARY_COLLECTORS) {
       return dslContext
           .select(COLLECTOR_ID)
-          .from(ACCESSION_SECONDARY_COLLECTOR)
+          .from(ACCESSION_SECONDARY_COLLECTORS)
           .where(ACCESSION_ID.eq(accessionId))
           .fetch(COLLECTOR_ID)
           .filterNotNull()

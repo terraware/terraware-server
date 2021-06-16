@@ -2,16 +2,16 @@ package com.terraformation.seedbank.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.terraformation.seedbank.db.tables.daos.DeviceDao
-import com.terraformation.seedbank.db.tables.daos.OrganizationDao
-import com.terraformation.seedbank.db.tables.daos.SiteDao
-import com.terraformation.seedbank.db.tables.daos.SiteModuleDao
-import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
-import com.terraformation.seedbank.db.tables.pojos.Device
-import com.terraformation.seedbank.db.tables.pojos.Organization
-import com.terraformation.seedbank.db.tables.pojos.Site
-import com.terraformation.seedbank.db.tables.pojos.SiteModule
-import com.terraformation.seedbank.db.tables.pojos.StorageLocation
+import com.terraformation.seedbank.db.tables.daos.DevicesDao
+import com.terraformation.seedbank.db.tables.daos.OrganizationsDao
+import com.terraformation.seedbank.db.tables.daos.SiteModulesDao
+import com.terraformation.seedbank.db.tables.daos.SitesDao
+import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
+import com.terraformation.seedbank.db.tables.pojos.DevicesRow
+import com.terraformation.seedbank.db.tables.pojos.OrganizationsRow
+import com.terraformation.seedbank.db.tables.pojos.SiteModulesRow
+import com.terraformation.seedbank.db.tables.pojos.SitesRow
+import com.terraformation.seedbank.db.tables.pojos.StorageLocationsRow
 import com.terraformation.seedbank.services.perClassLogger
 import java.io.IOException
 import java.time.Duration
@@ -26,22 +26,22 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.scheduling.TaskScheduler
 
 data class PerSiteConfig(
-    val devices: List<Device> = emptyList(),
-    @NotEmpty val organizations: List<Organization>,
-    @NotEmpty val sites: List<Site>,
-    @NotEmpty val siteModules: List<SiteModule>,
-    val storageLocations: List<StorageLocation> = emptyList(),
+    val devices: List<DevicesRow> = emptyList(),
+    @NotEmpty val organizations: List<OrganizationsRow>,
+    @NotEmpty val sites: List<SitesRow>,
+    @NotEmpty val siteModules: List<SiteModulesRow>,
+    val storageLocations: List<StorageLocationsRow> = emptyList(),
 )
 
 @ManagedBean
 class PerSiteConfigUpdater(
     private val databaseBootstrapper: DatabaseBootstrapper,
-    private val deviceDao: DeviceDao,
+    private val devicesDao: DevicesDao,
     private val dslContext: DSLContext,
-    private val organizationDao: OrganizationDao,
-    private val siteDao: SiteDao,
-    private val siteModuleDao: SiteModuleDao,
-    private val storageLocationDao: StorageLocationDao,
+    private val organizationsDao: OrganizationsDao,
+    private val sitesDao: SitesDao,
+    private val siteModulesDao: SiteModulesDao,
+    private val storageLocationsDao: StorageLocationsDao,
     private val objectMapper: ObjectMapper,
     private val serverConfig: TerrawareServerConfig,
     private val taskScheduler: TaskScheduler
@@ -91,17 +91,17 @@ class PerSiteConfigUpdater(
     perSiteConfig.storageLocations.forEach { it.enabled = it.enabled ?: true }
 
     // Need to insert and delete IDs in the right order because there are foreign key relationships.
-    insertAndUpdate(perSiteConfig.organizations, organizationDao)
-    insertAndUpdate(perSiteConfig.sites, siteDao)
-    insertAndUpdate(perSiteConfig.siteModules, siteModuleDao)
-    insertAndUpdate(perSiteConfig.devices, deviceDao)
-    insertAndUpdate(perSiteConfig.storageLocations, storageLocationDao)
+    insertAndUpdate(perSiteConfig.organizations, organizationsDao)
+    insertAndUpdate(perSiteConfig.sites, sitesDao)
+    insertAndUpdate(perSiteConfig.siteModules, siteModulesDao)
+    insertAndUpdate(perSiteConfig.devices, devicesDao)
+    insertAndUpdate(perSiteConfig.storageLocations, storageLocationsDao)
 
-    delete(perSiteConfig.devices, deviceDao) { it.enabled = false }
-    delete(perSiteConfig.storageLocations, storageLocationDao) { it.enabled = false }
-    delete(perSiteConfig.siteModules, siteModuleDao) { it.enabled = false }
-    delete(perSiteConfig.sites, siteDao) { it.enabled = false }
-    delete(perSiteConfig.organizations, organizationDao) { it.enabled = false }
+    delete(perSiteConfig.devices, devicesDao) { it.enabled = false }
+    delete(perSiteConfig.storageLocations, storageLocationsDao) { it.enabled = false }
+    delete(perSiteConfig.siteModules, siteModulesDao) { it.enabled = false }
+    delete(perSiteConfig.sites, sitesDao) { it.enabled = false }
+    delete(perSiteConfig.organizations, organizationsDao) { it.enabled = false }
 
     // API keys are tied to organizations; we may have just inserted the organization that
     // the configured API key needs to refer to, in which case we can now insert the key.

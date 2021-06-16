@@ -8,14 +8,14 @@ import com.terraformation.seedbank.db.PostgresFuzzySearchOperators
 import com.terraformation.seedbank.db.ProcessingMethod
 import com.terraformation.seedbank.db.SeedQuantityUnits
 import com.terraformation.seedbank.db.StorageCondition
-import com.terraformation.seedbank.db.tables.daos.AccessionDao
-import com.terraformation.seedbank.db.tables.daos.AccessionGerminationTestTypeDao
+import com.terraformation.seedbank.db.tables.daos.AccessionGerminationTestTypesDao
+import com.terraformation.seedbank.db.tables.daos.AccessionsDao
 import com.terraformation.seedbank.db.tables.daos.SpeciesDao
-import com.terraformation.seedbank.db.tables.daos.StorageLocationDao
-import com.terraformation.seedbank.db.tables.pojos.Accession
-import com.terraformation.seedbank.db.tables.pojos.AccessionGerminationTestType
-import com.terraformation.seedbank.db.tables.pojos.Species
-import com.terraformation.seedbank.db.tables.pojos.StorageLocation
+import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
+import com.terraformation.seedbank.db.tables.pojos.AccessionGerminationTestTypesRow
+import com.terraformation.seedbank.db.tables.pojos.AccessionsRow
+import com.terraformation.seedbank.db.tables.pojos.SpeciesRow
+import com.terraformation.seedbank.db.tables.pojos.StorageLocationsRow
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -30,8 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class SearchServiceTest : DatabaseTest() {
   @Autowired private lateinit var config: TerrawareServerConfig
-  private lateinit var accessionDao: AccessionDao
-  private lateinit var accessionGerminationTestTypeDao: AccessionGerminationTestTypeDao
+  private lateinit var accessionsDao: AccessionsDao
+  private lateinit var accessionGerminationTestTypesDao: AccessionGerminationTestTypesDao
   private lateinit var searchService: SearchService
 
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
@@ -50,8 +50,8 @@ class SearchServiceTest : DatabaseTest() {
 
   @BeforeEach
   fun init() {
-    accessionDao = AccessionDao(dslContext.configuration())
-    accessionGerminationTestTypeDao = AccessionGerminationTestTypeDao(dslContext.configuration())
+    accessionsDao = AccessionsDao(dslContext.configuration())
+    accessionGerminationTestTypesDao = AccessionGerminationTestTypesDao(dslContext.configuration())
     searchService = SearchService(dslContext, searchFields)
 
     insertSiteData()
@@ -60,12 +60,12 @@ class SearchServiceTest : DatabaseTest() {
 
     val speciesDao = SpeciesDao(dslContext.configuration())
     speciesDao.insert(
-        Species(id = 10000, name = "Kousa Dogwood", createdTime = now, modifiedTime = now))
+        SpeciesRow(id = 10000, name = "Kousa Dogwood", createdTime = now, modifiedTime = now))
     speciesDao.insert(
-        Species(id = 10001, name = "Other Dogwood", createdTime = now, modifiedTime = now))
+        SpeciesRow(id = 10001, name = "Other Dogwood", createdTime = now, modifiedTime = now))
 
-    accessionDao.insert(
-        Accession(
+    accessionsDao.insert(
+        AccessionsRow(
             id = 1000,
             number = "XYZ",
             stateId = AccessionState.Processed,
@@ -73,8 +73,8 @@ class SearchServiceTest : DatabaseTest() {
             siteModuleId = 100,
             speciesId = 10000,
             treesCollectedFrom = 1))
-    accessionDao.insert(
-        Accession(
+    accessionsDao.insert(
+        AccessionsRow(
             id = 1001,
             number = "ABCDEFG",
             stateId = AccessionState.Processing,
@@ -142,7 +142,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can do range search on integer field`() {
-    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range)
 
@@ -158,7 +158,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can do range search on integer field with no minimum`() {
-    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf(null, "3"), SearchFilterType.Range)
 
@@ -173,7 +173,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can do range search on integer field with no maximum`() {
-    accessionDao.update(accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(treesCollectedFrom = 500))
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf("2", null), SearchFilterType.Range)
 
@@ -197,11 +197,11 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `sorts enum fields by display name rather than ID`() {
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
             targetStorageCondition = StorageCondition.Freezer))
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("XYZ")!!.copy(
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("XYZ")!!.copy(
             targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
@@ -222,8 +222,8 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `uses enum display name when it differs from Kotlin name`() {
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(stateId = AccessionState.InStorage))
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(stateId = AccessionState.InStorage))
 
     val searchNode = FieldNode(stateField, listOf("In Storage"))
     val fields = listOf(stateField)
@@ -242,8 +242,8 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `search leaves out null values`() {
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
             targetStorageCondition = StorageCondition.Freezer))
 
     val fields = listOf(targetStorageConditionField)
@@ -263,17 +263,17 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can do exact search for null values`() {
-    accessionDao.insert(
-        Accession(
+    accessionsDao.insert(
+        AccessionsRow(
             createdTime = Instant.now(),
             number = "MISSING",
             siteModuleId = config.siteModuleId,
             stateId = AccessionState.Processing))
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
             targetStorageCondition = StorageCondition.Freezer))
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("XYZ")!!.copy(
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("XYZ")!!.copy(
             targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
@@ -294,15 +294,15 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can do fuzzy search for null values`() {
-    accessionDao.insert(
-        Accession(
+    accessionsDao.insert(
+        AccessionsRow(
             createdTime = Instant.now(),
             number = "MISSING",
             siteModuleId = config.siteModuleId,
             stateId = AccessionState.Processing))
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
-    accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
 
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)
@@ -322,8 +322,8 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can specify weight units when searching by grams`() {
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
             processingMethodId = ProcessingMethod.Weight,
             totalGrams = BigDecimal(1000),
             totalQuantity = BigDecimal(1),
@@ -345,8 +345,8 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `searching on grams field defaults to grams if no units explicitly specified`() {
-    accessionDao.update(
-        accessionDao.fetchOneByNumber("ABCDEFG")!!.copy(
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
             processingMethodId = ProcessingMethod.Weight,
             totalGrams = BigDecimal(1000),
             totalQuantity = BigDecimal(1),
@@ -415,10 +415,10 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `can search on enum in child table`() {
-    accessionGerminationTestTypeDao.insert(
-        AccessionGerminationTestType(1000, GerminationTestType.Lab),
-        AccessionGerminationTestType(1000, GerminationTestType.Nursery),
-        AccessionGerminationTestType(1001, GerminationTestType.Lab))
+    accessionGerminationTestTypesDao.insert(
+        AccessionGerminationTestTypesRow(1000, GerminationTestType.Lab),
+        AccessionGerminationTestTypesRow(1000, GerminationTestType.Nursery),
+        AccessionGerminationTestTypesRow(1001, GerminationTestType.Lab))
 
     val fields = listOf(viabilityTestTypeField)
     val sortOrder =
@@ -442,8 +442,8 @@ class SearchServiceTest : DatabaseTest() {
     @BeforeEach
     fun insertTreesCollectedFromExamples() {
       (10..20).forEach { value ->
-        accessionDao.insert(
-            Accession(
+        accessionsDao.insert(
+            AccessionsRow(
                 createdTime = Instant.now(),
                 number = "$value",
                 siteModuleId = config.siteModuleId,
@@ -529,8 +529,8 @@ class SearchServiceTest : DatabaseTest() {
     @BeforeEach
     fun insertReceivedDateExamples() {
       listOf(1, 2, 8).forEach { day ->
-        accessionDao.insert(
-            Accession(
+        accessionsDao.insert(
+            AccessionsRow(
                 createdTime = Instant.now(),
                 number = "JAN$day",
                 siteModuleId = config.siteModuleId,
@@ -641,7 +641,7 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `fetchValues renders null values as null, not as a string`() {
-    accessionDao.update(accessionDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
     val values = searchService.fetchValues(speciesField, NoConditionNode())
     assertEquals(listOf("Other Dogwood", null), values)
   }
@@ -715,21 +715,21 @@ class SearchServiceTest : DatabaseTest() {
 
   @Test
   fun `fetchAllValues returns values for field from reference table`() {
-    val storageLocationDao = StorageLocationDao(dslContext.configuration())
+    val storageLocationDao = StorageLocationsDao(dslContext.configuration())
     storageLocationDao.insert(
-        StorageLocation(
+        StorageLocationsRow(
             id = 1000,
             siteModuleId = 100,
             name = "Refrigerator 1",
             conditionId = StorageCondition.Refrigerator))
     storageLocationDao.insert(
-        StorageLocation(
+        StorageLocationsRow(
             id = 1001,
             siteModuleId = 100,
             name = "Freezer 1",
             conditionId = StorageCondition.Freezer))
     storageLocationDao.insert(
-        StorageLocation(
+        StorageLocationsRow(
             id = 1002,
             siteModuleId = 100,
             name = "Freezer 2",

@@ -9,9 +9,20 @@ import org.jooq.meta.TableDefinition
 import org.jooq.meta.jaxb.ForcedType
 import org.slf4j.LoggerFactory
 
-class EnumTable(private val tableName: String, includeExpressions: List<String>) {
-  // Convert "foo_bar_baz" to "FooBarBaz".
-  val enumName = tableName.replace(Regex("_(.)")) { it.groupValues[1].capitalize() }.capitalize()
+/** Converts "foo_bar_baz" to "FooBarBaz". */
+private fun pascalCase(str: String) =
+    str.replace(Regex("_(.)")) { it.groupValues[1].capitalize() }.capitalize()
+
+class EnumTable(
+    private val tableName: String,
+    includeExpressions: List<String>,
+    val enumName: String = pascalCase(tableName.trimEnd('s'))
+) {
+  constructor(
+      tableName: String,
+      includeExpression: String
+  ) : this(tableName, listOf(includeExpression))
+
   val converterName = "${enumName}Converter"
   private val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"
 
@@ -28,32 +39,35 @@ class EnumTable(private val tableName: String, includeExpressions: List<String>)
 
 /** Generates enums instead of table objects for a select set of reference tables. */
 class EnumGenerator : KotlinGenerator() {
-  @Suppress("MemberVisibilityCanBePrivate")  // Referenced by build.gradle.kts
+  @Suppress("MemberVisibilityCanBePrivate") // Referenced by build.gradle.kts
   val enumTables =
       listOf(
-          "accession_state" to
+          EnumTable(
+              "accession_states",
               listOf(
-                  "accession\\.state_id",
+                  "accessions\\.state_id",
                   ".*\\.accession_state_id",
-                  "accession_state_history\\.(old|new)_state_id"),
-          "germination_seed_type" to listOf("germination_test\\.seed_type_id"),
-          "germination_substrate" to listOf("germination_test\\.substrate_id"),
-          "germination_test_type" to
+                  "accession_state_history\\.(old|new)_state_id")),
+          EnumTable("germination_seed_types", "germination_tests\\.seed_type_id"),
+          EnumTable("germination_substrates", "germination_tests\\.substrate_id"),
+          EnumTable(
+              "germination_test_types",
               listOf(
-                  "germination_test\\.test_type",
-                  "accession_germination_test_type\\.germination_test_type_id"),
-          "germination_treatment" to listOf("germination_test\\.treatment_id"),
-          "notification_type" to listOf("notification\\.type_id"),
-          "processing_method" to listOf("accession\\.processing_method_id"),
-          "seed_quantity_units" to listOf(".*\\_units_id"),
-          "source_plant_origin" to listOf(".*\\.source_plant_origin_id"),
-          "species_endangered_type" to listOf(".*\\.species_endangered_type_id"),
-          "species_rare_type" to listOf(".*\\.species_rare_type_id"),
-          "storage_condition" to
-              listOf("accession\\.target_storage_condition", "storage_location\\.condition_id"),
-          "timeseries_type" to listOf("timeseries\\.type_id"),
-          "withdrawal_purpose" to listOf("withdrawal\\.purpose_id"))
-          .map { EnumTable(it.first, it.second) }
+                  "germination_tests\\.test_type",
+                  "accession_germination_test_types\\.germination_test_type_id")),
+          EnumTable("germination_treatments", "germination_tests\\.treatment_id"),
+          EnumTable("notification_types", "notifications\\.type_id"),
+          EnumTable("processing_methods", "accessions\\.processing_method_id"),
+          EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
+          EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
+          EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
+          EnumTable("species_rare_types", ".*\\.species_rare_type_id"),
+          EnumTable(
+              "storage_conditions",
+              listOf("accessions\\.target_storage_condition", "storage_locations\\.condition_id")),
+          EnumTable("timeseries_types", "timeseries\\.type_id"),
+          EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"),
+      )
 
   private val log = LoggerFactory.getLogger(javaClass)
 

@@ -1,8 +1,8 @@
 package com.terraformation.seedbank.api
 
 import com.terraformation.seedbank.auth.ClientIdentity
-import com.terraformation.seedbank.db.tables.daos.SiteDao
-import com.terraformation.seedbank.db.tables.pojos.Site
+import com.terraformation.seedbank.db.tables.daos.SitesDao
+import com.terraformation.seedbank.db.tables.pojos.SitesRow
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @PreAuthorize("isAuthenticated()")
 @SecurityRequirement(name = "ApiKey")
-class SiteController(private val siteDao: SiteDao) {
+class SiteController(private val sitesDao: SitesDao) {
   @GetMapping
   @Hidden
   @Operation(summary = "List all of an organization's sites")
@@ -35,7 +35,7 @@ class SiteController(private val siteDao: SiteDao) {
     // TODO: Super admins should be able to specify an organization ID
     val organizationId = clientIdentity.organizationId ?: throw NoOrganizationException()
 
-    val elements = siteDao.fetchByOrganizationId(organizationId).map { ListSitesElement(it) }
+    val elements = sitesDao.fetchByOrganizationId(organizationId).map { ListSitesElement(it) }
     return ListSitesResponse(elements)
   }
 
@@ -60,7 +60,7 @@ class SiteController(private val siteDao: SiteDao) {
       throw NoOrganizationException()
     }
 
-    val site = siteDao.fetchOneById(siteId) ?: throw NotFoundException()
+    val site = sitesDao.fetchOneById(siteId) ?: throw NotFoundException()
     if (site.organizationId != organizationId && !clientIdentity.isSuperAdmin) {
       throw WrongOrganizationException()
     }
@@ -70,7 +70,7 @@ class SiteController(private val siteDao: SiteDao) {
 }
 
 data class ListSitesElement(val id: Long, val name: String) {
-  constructor(site: Site) : this(site.id!!, site.name!!)
+  constructor(site: SitesRow) : this(site.id!!, site.name!!)
 }
 
 data class ListSitesResponse(val sites: List<ListSitesElement>)
@@ -85,7 +85,7 @@ data class GetSiteResponse(
     val timezone: String?
 ) {
   constructor(
-      record: Site
+      record: SitesRow
   ) : this(
       record.id!!,
       record.name!!,

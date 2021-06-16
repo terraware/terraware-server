@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.references.BAG
+import com.terraformation.seedbank.db.tables.references.BAGS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
@@ -8,11 +8,11 @@ import org.jooq.DSLContext
 class BagStore(private val dslContext: DSLContext) {
   fun fetchBagNumbers(accessionId: Long): Set<String> {
     return dslContext
-        .select(BAG.BAG_NUMBER)
-        .from(BAG)
-        .where(BAG.ACCESSION_ID.eq(accessionId))
-        .orderBy(BAG.BAG_NUMBER)
-        .fetch(BAG.BAG_NUMBER)
+        .select(BAGS.BAG_NUMBER)
+        .from(BAGS)
+        .where(BAGS.ACCESSION_ID.eq(accessionId))
+        .orderBy(BAGS.BAG_NUMBER)
+        .fetch(BAGS.BAG_NUMBER)
         .filterNotNull()
         .toSet()
   }
@@ -30,15 +30,15 @@ class BagStore(private val dslContext: DSLContext) {
 
       if (deletedBagNumbers.isNotEmpty()) {
         dslContext
-            .deleteFrom(BAG)
-            .where(BAG.ACCESSION_ID.eq(accessionId))
-            .and(BAG.BAG_NUMBER.`in`(deletedBagNumbers))
+            .deleteFrom(BAGS)
+            .where(BAGS.ACCESSION_ID.eq(accessionId))
+            .and(BAGS.BAG_NUMBER.`in`(deletedBagNumbers))
             .execute()
       }
 
       addedBagNumbers.forEach { bagNumber ->
         dslContext
-            .insertInto(BAG, BAG.ACCESSION_ID, BAG.BAG_NUMBER)
+            .insertInto(BAGS, BAGS.ACCESSION_ID, BAGS.BAG_NUMBER)
             .values(accessionId, bagNumber)
             .execute()
       }

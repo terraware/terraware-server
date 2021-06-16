@@ -1,8 +1,8 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPE
-import com.terraformation.seedbank.db.tables.references.GERMINATION
-import com.terraformation.seedbank.db.tables.references.GERMINATION_TEST
+import com.terraformation.seedbank.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
+import com.terraformation.seedbank.db.tables.references.GERMINATIONS
+import com.terraformation.seedbank.db.tables.references.GERMINATION_TESTS
 import com.terraformation.seedbank.model.GerminationModel
 import com.terraformation.seedbank.model.GerminationTestModel
 import com.terraformation.seedbank.model.SeedQuantityModel
@@ -13,10 +13,10 @@ import org.jooq.DSLContext
 class GerminationStore(private val dslContext: DSLContext) {
   fun fetchGerminationTestTypes(accessionId: Long): Set<GerminationTestType> {
     return dslContext
-        .select(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
-        .from(ACCESSION_GERMINATION_TEST_TYPE)
-        .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(accessionId))
-        .fetch(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID)
+        .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
+        .from(ACCESSION_GERMINATION_TEST_TYPES)
+        .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(accessionId))
+        .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
         .filterNotNull()
         .toSet()
   }
@@ -25,29 +25,29 @@ class GerminationStore(private val dslContext: DSLContext) {
     val germinationsByTestId =
         dslContext
             .select(
-                GERMINATION.ID,
-                GERMINATION.TEST_ID,
-                GERMINATION.RECORDING_DATE,
-                GERMINATION.SEEDS_GERMINATED,
+                GERMINATIONS.ID,
+                GERMINATIONS.TEST_ID,
+                GERMINATIONS.RECORDING_DATE,
+                GERMINATIONS.SEEDS_GERMINATED,
             )
-            .from(GERMINATION)
-            .join(GERMINATION_TEST)
-            .on(GERMINATION.TEST_ID.eq(GERMINATION_TEST.ID))
-            .where(GERMINATION_TEST.ACCESSION_ID.eq(accessionId))
-            .orderBy(GERMINATION.RECORDING_DATE.desc(), GERMINATION.ID.desc())
+            .from(GERMINATIONS)
+            .join(GERMINATION_TESTS)
+            .on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
+            .where(GERMINATION_TESTS.ACCESSION_ID.eq(accessionId))
+            .orderBy(GERMINATIONS.RECORDING_DATE.desc(), GERMINATIONS.ID.desc())
             .fetch { record ->
               GerminationModel(
-                  record[GERMINATION.ID]!!,
-                  record[GERMINATION.TEST_ID]!!,
-                  record[GERMINATION.RECORDING_DATE]!!,
-                  record[GERMINATION.SEEDS_GERMINATED]!!,
+                  record[GERMINATIONS.ID]!!,
+                  record[GERMINATIONS.TEST_ID]!!,
+                  record[GERMINATIONS.RECORDING_DATE]!!,
+                  record[GERMINATIONS.SEEDS_GERMINATED]!!,
               )
             }
             .groupBy { it.testId }
 
-    return with(GERMINATION_TEST) {
+    return with(GERMINATION_TESTS) {
       dslContext
-          .selectFrom(GERMINATION_TEST)
+          .selectFrom(GERMINATION_TESTS)
           .where(ACCESSION_ID.eq(accessionId))
           .orderBy(ID)
           .fetch { record ->
@@ -78,9 +78,9 @@ class GerminationStore(private val dslContext: DSLContext) {
       germinationTest: GerminationTestModel
   ): GerminationTestModel {
     val testId =
-        with(GERMINATION_TEST) {
+        with(GERMINATION_TESTS) {
           dslContext
-              .insertInto(GERMINATION_TEST)
+              .insertInto(GERMINATION_TESTS)
               .set(ACCESSION_ID, accessionId)
               .set(END_DATE, germinationTest.endDate)
               .set(NOTES, germinationTest.notes)
@@ -108,10 +108,10 @@ class GerminationStore(private val dslContext: DSLContext) {
 
   private fun insertGermination(testId: Long, germination: GerminationModel) {
     dslContext
-        .insertInto(GERMINATION)
-        .set(GERMINATION.RECORDING_DATE, germination.recordingDate)
-        .set(GERMINATION.SEEDS_GERMINATED, germination.seedsGerminated)
-        .set(GERMINATION.TEST_ID, testId)
+        .insertInto(GERMINATIONS)
+        .set(GERMINATIONS.RECORDING_DATE, germination.recordingDate)
+        .set(GERMINATIONS.SEEDS_GERMINATED, germination.seedsGerminated)
+        .set(GERMINATIONS.TEST_ID, testId)
         .execute()
   }
 
@@ -127,17 +127,17 @@ class GerminationStore(private val dslContext: DSLContext) {
 
     if (deleted.isNotEmpty()) {
       dslContext
-          .deleteFrom(ACCESSION_GERMINATION_TEST_TYPE)
-          .where(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID.eq(accessionId))
-          .and(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID.`in`(deleted))
+          .deleteFrom(ACCESSION_GERMINATION_TEST_TYPES)
+          .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(accessionId))
+          .and(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID.`in`(deleted))
           .execute()
     }
 
     added.forEach { type ->
       dslContext
-          .insertInto(ACCESSION_GERMINATION_TEST_TYPE)
-          .set(ACCESSION_GERMINATION_TEST_TYPE.ACCESSION_ID, accessionId)
-          .set(ACCESSION_GERMINATION_TEST_TYPE.GERMINATION_TEST_TYPE_ID, type)
+          .insertInto(ACCESSION_GERMINATION_TEST_TYPES)
+          .set(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID, accessionId)
+          .set(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID, type)
           .execute()
     }
   }
@@ -154,10 +154,10 @@ class GerminationStore(private val dslContext: DSLContext) {
     val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id })
 
     if (deletedTestIds.isNotEmpty()) {
-      dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.`in`(deletedTestIds)).execute()
+      dslContext.deleteFrom(GERMINATIONS).where(GERMINATIONS.TEST_ID.`in`(deletedTestIds)).execute()
       dslContext
-          .deleteFrom(GERMINATION_TEST)
-          .where(GERMINATION_TEST.ID.`in`(deletedTestIds))
+          .deleteFrom(GERMINATION_TESTS)
+          .where(GERMINATION_TESTS.ID.`in`(deletedTestIds))
           .execute()
     }
 
@@ -172,9 +172,9 @@ class GerminationStore(private val dslContext: DSLContext) {
                 ?: throw IllegalArgumentException(
                     "Germination test IDs must refer to existing tests; leave ID off to insert a new test.")
         if (!desiredTest.fieldsEqual(existingTest)) {
-          with(GERMINATION_TEST) {
+          with(GERMINATION_TESTS) {
             dslContext
-                .update(GERMINATION_TEST)
+                .update(GERMINATION_TESTS)
                 .set(END_DATE, desiredTest.endDate)
                 .set(NOTES, desiredTest.notes)
                 .set(REMAINING_GRAMS, desiredTest.remaining?.grams)
@@ -194,7 +194,7 @@ class GerminationStore(private val dslContext: DSLContext) {
         }
 
         // TODO: Smarter diff of germinations
-        dslContext.deleteFrom(GERMINATION).where(GERMINATION.TEST_ID.eq(testId)).execute()
+        dslContext.deleteFrom(GERMINATIONS).where(GERMINATIONS.TEST_ID.eq(testId)).execute()
         desiredTest.germinations?.forEach { insertGermination(testId, it) }
       }
     }

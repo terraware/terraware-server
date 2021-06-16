@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.db
 
-import com.terraformation.seedbank.db.tables.references.GEOLOCATION
+import com.terraformation.seedbank.db.tables.references.GEOLOCATIONS
 import com.terraformation.seedbank.model.Geolocation
 import java.math.BigDecimal
 import java.time.Clock
@@ -12,14 +12,14 @@ import org.jooq.impl.DSL
 class GeolocationStore(private val dslContext: DSLContext, private val clock: Clock) {
   fun fetchGeolocations(accessionId: Long): Set<Geolocation> {
     return dslContext
-        .selectFrom(GEOLOCATION)
-        .where(GEOLOCATION.ACCESSION_ID.eq(accessionId))
-        .orderBy(GEOLOCATION.LATITUDE, GEOLOCATION.LONGITUDE)
+        .selectFrom(GEOLOCATIONS)
+        .where(GEOLOCATIONS.ACCESSION_ID.eq(accessionId))
+        .orderBy(GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE)
         .fetch { record ->
           Geolocation(
-              record[GEOLOCATION.LATITUDE]!!,
-              record[GEOLOCATION.LONGITUDE]!!,
-              record[GEOLOCATION.GPS_ACCURACY]?.let { BigDecimal(it) },
+              record[GEOLOCATIONS.LATITUDE]!!,
+              record[GEOLOCATIONS.LONGITUDE]!!,
+              record[GEOLOCATIONS.GPS_ACCURACY]?.let { BigDecimal(it) },
           )
         }
         .toSet()
@@ -36,10 +36,10 @@ class GeolocationStore(private val dslContext: DSLContext, private val clock: Cl
       val deleted = existing.minus(desired)
       val added = desired.minus(existing)
 
-      with(GEOLOCATION) {
+      with(GEOLOCATIONS) {
         if (deleted.isNotEmpty()) {
           dslContext
-              .deleteFrom(GEOLOCATION)
+              .deleteFrom(GEOLOCATIONS)
               .where(ACCESSION_ID.eq(accessionId))
               .and(
                   DSL.row(LATITUDE, LONGITUDE)
@@ -50,7 +50,7 @@ class GeolocationStore(private val dslContext: DSLContext, private val clock: Cl
         added.forEach { geolocation ->
           dslContext
               .insertInto(
-                  GEOLOCATION, ACCESSION_ID, CREATED_TIME, LATITUDE, LONGITUDE, GPS_ACCURACY)
+                  GEOLOCATIONS, ACCESSION_ID, CREATED_TIME, LATITUDE, LONGITUDE, GPS_ACCURACY)
               .values(
                   accessionId,
                   clock.instant(),

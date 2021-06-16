@@ -1,7 +1,7 @@
 package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.db.tables.references.TIMESERIES
-import com.terraformation.seedbank.db.tables.references.TIMESERIES_VALUE
+import com.terraformation.seedbank.db.tables.references.TIMESERIES_VALUES
 import java.time.Clock
 import java.time.Instant
 import javax.annotation.ManagedBean
@@ -75,9 +75,9 @@ class TimeSeriesStore(
   }
 
   fun insertValue(timeseriesId: Long, value: String, createdTime: Instant = clock.instant()) {
-    with(TIMESERIES_VALUE) {
+    with(TIMESERIES_VALUES) {
       dslContext
-          .insertInto(TIMESERIES_VALUE)
+          .insertInto(TIMESERIES_VALUES)
           .set(TIMESERIES_ID, timeseriesId)
           .set(CREATED_TIME, createdTime)
           .set(VALUE, value)

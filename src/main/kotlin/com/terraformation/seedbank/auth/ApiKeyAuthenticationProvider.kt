@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.auth
 
-import com.terraformation.seedbank.db.tables.daos.ApiKeyDao
+import com.terraformation.seedbank.db.tables.daos.ApiKeysDao
 import com.terraformation.seedbank.services.perClassLogger
 import java.security.MessageDigest
 import javax.annotation.ManagedBean
@@ -10,7 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 
 @ManagedBean
-class ApiKeyAuthenticationProvider(private val apiKeyDao: ApiKeyDao) : AuthenticationProvider {
+class ApiKeyAuthenticationProvider(private val apiKeysDao: ApiKeysDao) : AuthenticationProvider {
   override fun supports(authentication: Class<*>): Boolean {
     val matches = authentication == UsernamePasswordAuthenticationToken::class.java
     if (!matches) {
@@ -22,7 +22,7 @@ class ApiKeyAuthenticationProvider(private val apiKeyDao: ApiKeyDao) : Authentic
   override fun authenticate(authentication: Authentication): Authentication? {
     if (authentication is UsernamePasswordAuthenticationToken) {
       val hashedApiKey = hashApiKey(authentication.credentials.toString())
-      val orgId = apiKeyDao.fetchOneByHash(hashedApiKey)?.organizationId ?: return null
+      val orgId = apiKeysDao.fetchOneByHash(hashedApiKey)?.organizationId ?: return null
       val controller = ControllerClientIdentity(orgId)
 
       return UsernamePasswordAuthenticationToken(

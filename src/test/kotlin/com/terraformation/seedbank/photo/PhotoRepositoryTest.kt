@@ -3,8 +3,8 @@ package com.terraformation.seedbank.photo
 import com.terraformation.seedbank.config.TerrawareServerConfig
 import com.terraformation.seedbank.db.AccessionNotFoundException
 import com.terraformation.seedbank.db.AccessionStore
-import com.terraformation.seedbank.db.tables.daos.AccessionPhotoDao
-import com.terraformation.seedbank.db.tables.pojos.AccessionPhoto
+import com.terraformation.seedbank.db.tables.daos.AccessionPhotosDao
+import com.terraformation.seedbank.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.seedbank.model.PhotoMetadata
 import io.mockk.every
 import io.mockk.justRun
@@ -31,11 +31,11 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 
 internal class PhotoRepositoryTest {
-  private val accessionPhotoDao: AccessionPhotoDao = mockk()
+  private val accessionPhotosDao: AccessionPhotosDao = mockk()
   private val accessionStore: AccessionStore = mockk()
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
-  private val repository = PhotoRepository(config, accessionPhotoDao, accessionStore, clock)
+  private val repository = PhotoRepository(config, accessionPhotosDao, accessionStore, clock)
 
   private lateinit var tempDir: Path
 
@@ -63,7 +63,7 @@ internal class PhotoRepositoryTest {
     every { config.photoDir } returns tempDir
     every { config.photoIntermediateDepth } returns 3
 
-    justRun { accessionPhotoDao.insert(any<AccessionPhoto>()) }
+    justRun { accessionPhotosDao.insert(any<AccessionPhotosRow>()) }
 
     photoPath =
         tempDir
@@ -86,7 +86,7 @@ internal class PhotoRepositoryTest {
     repository.storePhoto(accessionNumber, photoData.inputStream(), metadata)
 
     val expectedPojo =
-        AccessionPhoto(
+        AccessionPhotosRow(
             null,
             accessionId,
             filename,
@@ -101,14 +101,14 @@ internal class PhotoRepositoryTest {
     assertTrue(Files.exists(photoPath), "Photo file exists")
     assertArrayEquals(photoData, Files.readAllBytes(photoPath), "File contents")
 
-    verify { accessionPhotoDao.insert(expectedPojo) }
+    verify { accessionPhotosDao.insert(expectedPojo) }
   }
 
   @Test
   fun `storePhoto deletes file if database insert fails`() {
     val exception = DuplicateKeyException("oops")
 
-    every { accessionPhotoDao.insert(any<AccessionPhoto>()) } throws exception
+    every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
 
     assertThrows(DuplicateKeyException::class.java) {
       repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
@@ -121,7 +121,7 @@ internal class PhotoRepositoryTest {
   fun `storePhoto throws exception if accession does not exist`() {
     val exception = DuplicateKeyException("oops")
 
-    every { accessionPhotoDao.insert(any<AccessionPhoto>()) } throws exception
+    every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
 
     assertThrows(AccessionNotFoundException::class.java) {
       repository.storePhoto("nonexistent", ByteArray(0).inputStream(), metadata)
@@ -146,14 +146,14 @@ internal class PhotoRepositoryTest {
     Files.createDirectories(photoPath.parent)
     Files.createFile(photoPath)
 
-    every { accessionPhotoDao.insert(any<AccessionPhoto>()) } throws
+    every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws
         RuntimeException("Should not be called")
 
     assertThrows(FileAlreadyExistsException::class.java) {
       repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
     }
 
-    verify(exactly = 0) { accessionPhotoDao.insert(any<AccessionPhoto>()) }
+    verify(exactly = 0) { accessionPhotosDao.insert(any<AccessionPhotosRow>()) }
 
     assertTrue(Files.exists(photoPath), "Existing file should not be removed")
   }

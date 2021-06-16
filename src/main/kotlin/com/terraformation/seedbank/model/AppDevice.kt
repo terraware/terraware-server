@@ -1,6 +1,6 @@
 package com.terraformation.seedbank.model
 
-import com.terraformation.seedbank.db.tables.records.AppDeviceRecord
+import com.terraformation.seedbank.db.tables.records.AppDevicesRecord
 
 data class AppDeviceModel(
     val id: Long? = null,
@@ -14,7 +14,7 @@ data class AppDeviceModel(
     val uniqueId: String? = null
 ) {
   constructor(
-      record: AppDeviceRecord
+      record: AppDevicesRecord
   ) : this(
       record.id,
       record.appBuild,
