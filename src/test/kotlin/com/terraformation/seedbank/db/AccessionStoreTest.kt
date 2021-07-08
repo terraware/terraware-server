@@ -149,7 +149,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     assertEquals(
         AccessionsRow(
             id = 1,
-            siteModuleId = config.siteModuleId,
+            facilityId = config.facilityId,
             createdTime = clock.instant(),
             number = accessionNumbers[0],
             stateId = AccessionState.Pending),
@@ -609,7 +609,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     storageLocationsDao.insert(
         StorageLocationsRow(
             id = locationId,
-            siteModuleId = config.siteModuleId,
+            facilityId = config.facilityId,
             name = locationName,
             conditionId = StorageCondition.Freezer))
 
@@ -953,7 +953,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     (shouldMatch + shouldNotMatch).forEach { accession ->
       accessionsDao.insert(
-          accession.copy(createdTime = clock.instant(), siteModuleId = config.siteModuleId))
+          accession.copy(createdTime = clock.instant(), facilityId = config.facilityId))
     }
 
     val expected = shouldMatch.map { it.number!! }.toSortedSet()
@@ -1466,7 +1466,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     storageLocationsDao.insert(
         StorageLocationsRow(
-            siteModuleId = config.siteModuleId,
+            facilityId = config.facilityId,
             name = storageLocationName,
             conditionId = StorageCondition.Freezer))
 

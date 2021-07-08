@@ -2,9 +2,9 @@ package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.api.rhizo.DeviceConfig
 import com.terraformation.seedbank.db.tables.references.DEVICES
+import com.terraformation.seedbank.db.tables.references.FACILITIES
 import com.terraformation.seedbank.db.tables.references.ORGANIZATIONS
 import com.terraformation.seedbank.db.tables.references.SITES
-import com.terraformation.seedbank.db.tables.references.SITE_MODULES
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record1
@@ -16,7 +16,7 @@ class DeviceStore(private val dslContext: DSLContext) {
   /**
    * Returns the ID of the device named by an MQTT topic.
    *
-   * MQTT topics are assumed to follow the format `organization/site/module/device`.
+   * MQTT topics are assumed to follow the format `organization/site/facility/device`.
    *
    * @throws DeviceNotFoundException The device didn't exist.
    */
@@ -31,22 +31,22 @@ class DeviceStore(private val dslContext: DSLContext) {
     if (topicParts.size != 4) {
       return null
     }
-    val (orgName, siteName, siteModuleName, deviceName) = topicParts
+    val (orgName, siteName, facilityName, deviceName) = topicParts
 
     return dslContext
         .select(DEVICES.ID)
         .from(ORGANIZATIONS)
         .join(SITES)
         .on(ORGANIZATIONS.ID.eq(SITES.ORGANIZATION_ID))
-        .join(SITE_MODULES)
-        .on(SITES.ID.eq(SITE_MODULES.SITE_ID))
+        .join(FACILITIES)
+        .on(SITES.ID.eq(FACILITIES.SITE_ID))
         .join(DEVICES)
-        .on(SITE_MODULES.ID.eq(DEVICES.SITE_MODULE_ID))
+        .on(FACILITIES.ID.eq(DEVICES.FACILITY_ID))
         .where(ORGANIZATIONS.NAME.eq(orgName))
         .and(SITES.NAME.eq(siteName))
         .and(SITES.ENABLED.isTrue)
-        .and(SITE_MODULES.NAME.eq(siteModuleName))
-        .and(SITE_MODULES.ENABLED.isTrue)
+        .and(FACILITIES.NAME.eq(facilityName))
+        .and(FACILITIES.ENABLED.isTrue)
         .and(DEVICES.NAME.eq(deviceName))
         .and(DEVICES.ENABLED.isTrue)
   }
@@ -56,7 +56,7 @@ class DeviceStore(private val dslContext: DSLContext) {
     if (topicParts.size != 4) {
       return "Expected 4 elements in device path, not ${topicParts.size}"
     }
-    val (orgName, siteName, siteModuleName, deviceName) = topicParts
+    val (orgName, siteName, facilityName, deviceName) = topicParts
 
     val orgId =
         dslContext
@@ -73,21 +73,21 @@ class DeviceStore(private val dslContext: DSLContext) {
             .and(SITES.ORGANIZATION_ID.eq(orgId))
             .fetchOne(SITES.ID)
             ?: return "Site $siteName not found for organization $orgName"
-    val siteModuleId =
+    val facilityId =
         dslContext
-            .select(SITE_MODULES.ID)
-            .from(SITE_MODULES)
-            .where(SITE_MODULES.NAME.eq(siteModuleName))
-            .and(SITE_MODULES.SITE_ID.eq(siteId))
-            .fetchOne(SITE_MODULES.ID)
-            ?: return "Site module $siteModuleName not found for site $siteName"
+            .select(FACILITIES.ID)
+            .from(FACILITIES)
+            .where(FACILITIES.NAME.eq(facilityName))
+            .and(FACILITIES.SITE_ID.eq(siteId))
+            .fetchOne(FACILITIES.ID)
+            ?: return "Facility $facilityName not found for site $siteName"
     val deviceRecord =
         dslContext
             .selectFrom(DEVICES)
             .where(DEVICES.NAME.eq(deviceName))
-            .and(DEVICES.SITE_MODULE_ID.eq(siteModuleId))
+            .and(DEVICES.FACILITY_ID.eq(facilityId))
             .fetchOne()
-            ?: return "Device $deviceName not found for site module $siteModuleName"
+            ?: return "Device $deviceName not found for facility $facilityName"
     if (deviceRecord.enabled != true) {
       return "Device $deviceName is marked as disabled"
     }
@@ -95,11 +95,11 @@ class DeviceStore(private val dslContext: DSLContext) {
     return "Unable to determine why $topic was not found"
   }
 
-  fun fetchDeviceConfigurationForSite(siteModuleId: Long): List<DeviceConfig> {
+  fun fetchDeviceConfigurationForSite(facilityId: Long): List<DeviceConfig> {
     return with(DEVICES) {
       dslContext
           .select(
-              SITE_MODULES.NAME,
+              FACILITIES.NAME,
               ID,
               NAME,
               DEVICE_TYPE,
@@ -111,19 +111,20 @@ class DeviceStore(private val dslContext: DSLContext) {
               SETTINGS,
               POLLING_INTERVAL)
           .from(DEVICES)
-          .join(SITE_MODULES)
-          .on(DEVICES.SITE_MODULE_ID.eq(SITE_MODULES.ID))
+          .join(FACILITIES)
+          .on(DEVICES.FACILITY_ID.eq(FACILITIES.ID))
           .where(
-              SITE_MODULES.SITE_ID.eq(
-                  DSL.select(SITE_MODULES.SITE_ID)
-                      .from(SITE_MODULES)
-                      .where(SITE_MODULES.ID.eq(siteModuleId))))
+              FACILITIES.SITE_ID.eq(
+                  DSL.select(FACILITIES.SITE_ID)
+                      .from(FACILITIES)
+                      .where(FACILITIES.ID.eq(facilityId))))
           .and(DEVICES.ENABLED.isTrue)
-          .and(SITE_MODULES.ENABLED.isTrue)
+          .and(FACILITIES.ENABLED.isTrue)
           .orderBy(NAME)
           .fetch { record ->
             DeviceConfig(
-                record[SITE_MODULES.NAME]!!,
+                record[FACILITIES.NAME]!!,
+                record[FACILITIES.NAME]!!,
                 record[NAME]!!,
                 record[DEVICE_TYPE]!!,
                 record[MAKE]!!,
@@ -137,11 +138,11 @@ class DeviceStore(private val dslContext: DSLContext) {
     }
   }
 
-  fun getDeviceIdByName(siteModuleId: Long, name: String): Long? {
+  fun getDeviceIdByName(facilityId: Long, name: String): Long? {
     return dslContext
         .select(DEVICES.ID)
         .from(DEVICES)
-        .where(DEVICES.SITE_MODULE_ID.eq(siteModuleId))
+        .where(DEVICES.FACILITY_ID.eq(facilityId))
         .and(DEVICES.NAME.eq(name))
         .and(DEVICES.ENABLED.isTrue)
         .fetchOne(DEVICES.ID)

@@ -6,7 +6,7 @@ spring:
       - "classpath:db/migration/common"
 
 terraware:
-  site-module-id: 100
+  facility-id: 100
   site-config-url: "classpath:config/test.json"
   photo-dir: "/dummy-directory"
 

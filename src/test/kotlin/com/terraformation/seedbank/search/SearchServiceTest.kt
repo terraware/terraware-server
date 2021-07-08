@@ -70,7 +70,7 @@ class SearchServiceTest : DatabaseTest() {
             number = "XYZ",
             stateId = AccessionState.Processed,
             createdTime = now,
-            siteModuleId = 100,
+            facilityId = 100,
             speciesId = 10000,
             treesCollectedFrom = 1))
     accessionsDao.insert(
@@ -79,7 +79,7 @@ class SearchServiceTest : DatabaseTest() {
             number = "ABCDEFG",
             stateId = AccessionState.Processing,
             createdTime = now,
-            siteModuleId = 100,
+            facilityId = 100,
             speciesId = 10001,
             treesCollectedFrom = 2))
   }
@@ -267,7 +267,7 @@ class SearchServiceTest : DatabaseTest() {
         AccessionsRow(
             createdTime = Instant.now(),
             number = "MISSING",
-            siteModuleId = config.siteModuleId,
+            facilityId = config.facilityId,
             stateId = AccessionState.Processing))
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
@@ -298,7 +298,7 @@ class SearchServiceTest : DatabaseTest() {
         AccessionsRow(
             createdTime = Instant.now(),
             number = "MISSING",
-            siteModuleId = config.siteModuleId,
+            facilityId = config.facilityId,
             stateId = AccessionState.Processing))
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
@@ -446,7 +446,7 @@ class SearchServiceTest : DatabaseTest() {
             AccessionsRow(
                 createdTime = Instant.now(),
                 number = "$value",
-                siteModuleId = config.siteModuleId,
+                facilityId = config.facilityId,
                 stateId = AccessionState.Processing,
                 treesCollectedFrom = value))
       }
@@ -533,7 +533,7 @@ class SearchServiceTest : DatabaseTest() {
             AccessionsRow(
                 createdTime = Instant.now(),
                 number = "JAN$day",
-                siteModuleId = config.siteModuleId,
+                facilityId = config.facilityId,
                 stateId = AccessionState.Processing,
                 receivedDate = LocalDate.of(2021, 1, day)))
       }
@@ -719,19 +719,19 @@ class SearchServiceTest : DatabaseTest() {
     storageLocationDao.insert(
         StorageLocationsRow(
             id = 1000,
-            siteModuleId = 100,
+            facilityId = 100,
             name = "Refrigerator 1",
             conditionId = StorageCondition.Refrigerator))
     storageLocationDao.insert(
         StorageLocationsRow(
             id = 1001,
-            siteModuleId = 100,
+            facilityId = 100,
             name = "Freezer 1",
             conditionId = StorageCondition.Freezer))
     storageLocationDao.insert(
         StorageLocationsRow(
             id = 1002,
-            siteModuleId = 100,
+            facilityId = 100,
             name = "Freezer 2",
             conditionId = StorageCondition.Freezer))
 

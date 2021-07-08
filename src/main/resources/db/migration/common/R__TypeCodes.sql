@@ -9,6 +9,12 @@ VALUES (10, 'Pending', TRUE),
        (80, 'Nursery', FALSE)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO facility_types (id, name)
+VALUES (1, 'Seed Bank'),
+       (2, 'Desalination'),
+       (3, 'Reverse Osmosis')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO germination_seed_types (id, name)
 VALUES (1, 'Fresh'),
        (2, 'Stored')
@@ -57,12 +63,6 @@ VALUES (1, 'Seeds'),
        (4, 'Kilograms'),
        (5, 'Ounces'),
        (6, 'Pounds')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO site_module_types (id, name)
-VALUES (1, 'Seed Bank'),
-       (2, 'Desalination'),
-       (3, 'Reverse Osmosis')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO source_plant_origins (id, name)

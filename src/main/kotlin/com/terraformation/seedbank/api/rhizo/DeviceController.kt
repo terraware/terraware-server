@@ -21,17 +21,19 @@ class DeviceController(
 ) {
   @GetMapping("/all/config")
   fun listDeviceConfigs(@AuthenticationPrincipal auth: ClientIdentity): ListDeviceConfigsResponse {
-    val devices = deviceStore.fetchDeviceConfigurationForSite(config.siteModuleId)
+    val devices = deviceStore.fetchDeviceConfigurationForSite(config.facilityId)
     return ListDeviceConfigsResponse(devices)
   }
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DeviceConfig(
-    @Schema(description = "Name of site module where this device is located.", example = "garage")
+    @Schema(description = "Name of facility where this device is located.", example = "garage")
+    val facility: String,
+    @Schema(description = "Copy of facility for backward compatibility.", example = "garage")
     val siteModule: String,
     @Schema(
-        description = "Name of this device. Should be unique within the site module.",
+        description = "Name of this device. Should be unique within the facility.",
         example = "BMU-1")
     val name: String,
     @Schema(
@@ -62,11 +64,11 @@ data class DeviceConfig(
   @get:Schema(
       description =
           "Device's resource path on the server, minus organization and site names. Currently, " +
-              "this is always just the site module and device name.",
+              "this is always just the facility and device name.",
       example = "garage/BMU-1")
   @Suppress("unused")
   val serverPath: String
-    get() = "$siteModule/$name"
+    get() = "$facility/$name"
 }
 
 data class ListDeviceConfigsResponse(val devices: List<DeviceConfig>) : SuccessResponsePayload

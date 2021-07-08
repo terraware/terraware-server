@@ -2,7 +2,7 @@
   "devices": [
     {
       "id": 1001,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "deviceType": "BMU",
       "make": "sim",
       "model": "BMU",
@@ -15,7 +15,7 @@
     },
     {
       "id": 1002,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "deviceType": "BMU",
       "make": "sim",
       "model": "BMU",
@@ -28,7 +28,7 @@
     },
     {
       "id": 1004,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "deviceType": "BMU",
       "make": "sim",
       "model": "BMU",
@@ -41,7 +41,7 @@
     },
     {
       "id": 1005,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "deviceType": "router",
       "make": "sim",
       "model": "router",
@@ -54,7 +54,7 @@
     },
     {
       "id": 1006,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "name": "server",
       "deviceType": "server",
       "make": "Raspberry Pi",
@@ -64,7 +64,7 @@
     },
     {
       "id": 1007,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "deviceType": "sensor",
       "make": "Blue Maestro",
       "model": "Tempo Disc",
@@ -75,7 +75,7 @@
     },
     {
       "id": 1008,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "deviceType": "sensor",
       "make": "Blue Maestro",
       "model": "Tempo Disc",
@@ -85,7 +85,7 @@
     },
     {
       "id": 1009,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "deviceType": "sensor",
       "make": "Blue Maestro",
       "model": "Tempo Disc",
@@ -95,7 +95,7 @@
     },
     {
       "id": 1010,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "deviceType": "dryer",
       "make": "sim",
       "model": "sensor",
@@ -108,7 +108,7 @@
     },
     {
       "id": 1011,
-      "siteModuleId": 102,
+      "facilityId": 102,
       "deviceType": "dryer",
       "make": "sim",
       "model": "sensor",
@@ -135,7 +135,7 @@
       "longitude": 0
     }
   ],
-  "siteModules": [
+  "facilities": [
     {
       "id": 100,
       "siteId": 10,
@@ -158,37 +158,37 @@
   "storageLocations": [
     {
       "id": 1000,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "name": "Refrigerator 1",
       "conditionId": "Refrigerator"
     },
     {
       "id": 1001,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "name": "Refrigerator 2",
       "conditionId": "Refrigerator"
     },
     {
       "id": 1002,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "name": "Freezer 1",
       "conditionId": "Freezer"
     },
     {
       "id": 1003,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "name": "Freezer 2",
       "conditionId": "Freezer"
     },
     {
       "id": 1004,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "name": "Refrigerator 3",
       "conditionId": "Refrigerator"
     },
     {
       "id": 1005,
-      "siteModuleId": 100,
+      "facilityId": 100,
       "name": "Freezer 3",
       "conditionId": "Freezer"
     }

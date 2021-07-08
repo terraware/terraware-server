@@ -2,7 +2,7 @@ package com.terraformation.seedbank.db
 
 import com.terraformation.seedbank.api.seedbank.NotificationPayload
 import com.terraformation.seedbank.config.TerrawareServerConfig
-import com.terraformation.seedbank.db.tables.daos.SiteModulesDao
+import com.terraformation.seedbank.db.tables.daos.FacilitiesDao
 import com.terraformation.seedbank.db.tables.references.NOTIFICATIONS
 import com.terraformation.seedbank.services.perClassLogger
 import java.time.Clock
@@ -16,7 +16,7 @@ class NotificationStore(
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
-    private val siteModulesDao: SiteModulesDao
+    private val facilitiesDao: FacilitiesDao
 ) {
   private val log = perClassLogger()
 
@@ -80,7 +80,7 @@ class NotificationStore(
   }
 
   fun insertStateNotification(state: AccessionState, message: String) {
-    val siteId = siteModulesDao.fetchOneById(config.siteModuleId)!!.siteId!!
+    val siteId = facilitiesDao.fetchOneById(config.facilityId)!!.siteId!!
 
     dslContext
         .insertInto(NOTIFICATIONS)
@@ -93,7 +93,7 @@ class NotificationStore(
   }
 
   fun insertDateNotification(accessionId: Long, message: String) {
-    val siteId = siteModulesDao.fetchOneById(config.siteModuleId)!!.siteId!!
+    val siteId = facilitiesDao.fetchOneById(config.facilityId)!!.siteId!!
 
     dslContext
         .insertInto(NOTIFICATIONS)

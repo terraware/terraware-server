@@ -19,7 +19,7 @@ spring:
     banner-mode: "off"
 
 terraware:
-  site-module-id: 1
+  facility-id: 1
   site-config-url: "classpath:config/dev.json"
   photo-dir: "/tmp"
   daily-tasks:

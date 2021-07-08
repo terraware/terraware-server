@@ -7,15 +7,15 @@ import com.terraformation.seedbank.db.DatabaseTest
 import com.terraformation.seedbank.db.StorageCondition
 import com.terraformation.seedbank.db.tables.daos.AccessionsDao
 import com.terraformation.seedbank.db.tables.daos.DevicesDao
+import com.terraformation.seedbank.db.tables.daos.FacilitiesDao
 import com.terraformation.seedbank.db.tables.daos.OrganizationsDao
-import com.terraformation.seedbank.db.tables.daos.SiteModulesDao
 import com.terraformation.seedbank.db.tables.daos.SitesDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
 import com.terraformation.seedbank.db.tables.daos.TimeseriesDao
 import com.terraformation.seedbank.db.tables.pojos.AccessionsRow
 import com.terraformation.seedbank.db.tables.pojos.DevicesRow
+import com.terraformation.seedbank.db.tables.pojos.FacilitiesRow
 import com.terraformation.seedbank.db.tables.pojos.OrganizationsRow
-import com.terraformation.seedbank.db.tables.pojos.SiteModulesRow
 import com.terraformation.seedbank.db.tables.pojos.SitesRow
 import com.terraformation.seedbank.db.tables.pojos.StorageLocationsRow
 import io.mockk.every
@@ -44,7 +44,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   private lateinit var devicesDao: DevicesDao
   private lateinit var organizationsDao: OrganizationsDao
   private lateinit var sitesDao: SitesDao
-  private lateinit var siteModulesDao: SiteModulesDao
+  private lateinit var facilitiesDao: FacilitiesDao
   private lateinit var storageLocationsDao: StorageLocationsDao
   private lateinit var timeseriesDao: TimeseriesDao
   private lateinit var updater: PerSiteConfigUpdater
@@ -61,7 +61,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
     devicesDao = DevicesDao(config)
     organizationsDao = OrganizationsDao(config)
     sitesDao = SitesDao(config)
-    siteModulesDao = SiteModulesDao(config)
+    facilitiesDao = FacilitiesDao(config)
     storageLocationsDao = StorageLocationsDao(config)
     timeseriesDao = TimeseriesDao(config)
 
@@ -72,7 +72,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             dslContext,
             organizationsDao,
             sitesDao,
-            siteModulesDao,
+            facilitiesDao,
             storageLocationsDao,
             ObjectMapper().registerKotlinModule(),
             serverConfig,
@@ -114,7 +114,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
         AccessionsRow(
             createdTime = Instant.EPOCH,
             number = "1",
-            siteModuleId = 3,
+            facilityId = 3,
             stateId = AccessionState.Pending,
             storageLocationId = 5))
 
@@ -123,7 +123,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             devices = emptyList(),
             organizations = initial.organizations.map { it.copy(enabled = false) },
             sites = initial.sites.map { it.copy(enabled = false) },
-            siteModules = initial.siteModules.map { it.copy(enabled = false) },
+            facilities = initial.facilities.map { it.copy(enabled = false) },
             storageLocations = initial.storageLocations.map { it.copy(enabled = false) })
 
     updater.updateDatabase(emptyConfig)
@@ -140,7 +140,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             devices = listOf(initialConfig.devices[0].copy(name = "new device")),
             organizations = listOf(initialConfig.organizations[0].copy(name = "new org")),
             sites = listOf(initialConfig.sites[0].copy(name = "new site")),
-            siteModules = listOf(initialConfig.siteModules[0].copy(name = "new module")),
+            facilities = listOf(initialConfig.facilities[0].copy(name = "new module")),
             storageLocations =
                 listOf(initialConfig.storageLocations[0].copy(name = "new location")))
 
@@ -153,6 +153,14 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   fun `can fetch config from classpath URL`() {
     every { serverConfig.siteConfigUrl } returns
         resourceLoader.getResource("classpath:config/dev.json")
+
+    assertNotNull(updater.fetchConfig())
+  }
+
+  @Test
+  fun `config files using site module instead of facility are converted`() {
+    every { serverConfig.siteConfigUrl } returns
+        resourceLoader.getResource("classpath:config/dev-sitemodule.json")
 
     assertNotNull(updater.fetchConfig())
   }
@@ -175,11 +183,11 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             BigDecimal("1.0000000"),
             BigDecimal("2.0000000"),
             enabled = true)
-    val siteModule = SiteModulesRow(3, site.id, 1, "testModule", enabled = true)
+    val facility = FacilitiesRow(3, site.id, 1, "testModule", enabled = true)
     val device =
         DevicesRow(
             4,
-            siteModule.id,
+            facility.id,
             "testDevice",
             1,
             "type",
@@ -192,12 +200,12 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             5432,
             true)
     val storageLocation =
-        StorageLocationsRow(5, siteModule.id, "location", StorageCondition.Freezer, true)
+        StorageLocationsRow(5, facility.id, "location", StorageCondition.Freezer, true)
 
     return PerSiteConfig(
         organizations = listOf(organization),
         sites = listOf(site),
-        siteModules = listOf(siteModule),
+        facilities = listOf(facility),
         devices = listOf(device),
         storageLocations = listOf(storageLocation),
     )
@@ -224,7 +232,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   private fun assertConfigInDatabase(expected: PerSiteConfig) {
     assertRows(expected.organizations, organizationsDao)
     assertRows(expected.sites, sitesDao)
-    assertRows(expected.siteModules, siteModulesDao)
+    assertRows(expected.facilities, facilitiesDao)
     assertRows(expected.devices, devicesDao)
     assertRows(expected.storageLocations, storageLocationsDao)
   }

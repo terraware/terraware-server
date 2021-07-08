@@ -51,7 +51,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
         .insertInto(ACCESSIONS)
         .set(ACCESSIONS.ID, accessionId)
         .set(ACCESSIONS.CREATED_TIME, Instant.now())
-        .set(ACCESSIONS.SITE_MODULE_ID, config.siteModuleId)
+        .set(ACCESSIONS.FACILITY_ID, config.facilityId)
         .set(ACCESSIONS.STATE_ID, AccessionState.InStorage)
         .execute()
   }

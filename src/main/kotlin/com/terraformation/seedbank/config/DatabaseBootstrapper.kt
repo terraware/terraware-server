@@ -4,7 +4,7 @@ import com.terraformation.seedbank.auth.ApiKeyAuthenticationProvider
 import com.terraformation.seedbank.db.tables.daos.ApiKeysDao
 import com.terraformation.seedbank.db.tables.pojos.ApiKeysRow
 import com.terraformation.seedbank.db.tables.references.API_KEYS
-import com.terraformation.seedbank.db.tables.references.SITE_MODULES
+import com.terraformation.seedbank.db.tables.references.FACILITIES
 import com.terraformation.seedbank.services.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -37,12 +37,12 @@ class DatabaseBootstrapper(
 
     val organizationId =
         dslContext
-            .select(SITE_MODULES.sites().ORGANIZATION_ID)
-            .from(SITE_MODULES)
-            .where(SITE_MODULES.ID.eq(config.siteModuleId))
-            .fetchOne(SITE_MODULES.sites().ORGANIZATION_ID)
+            .select(FACILITIES.sites().ORGANIZATION_ID)
+            .from(FACILITIES)
+            .where(FACILITIES.ID.eq(config.facilityId))
+            .fetchOne(FACILITIES.sites().ORGANIZATION_ID)
     if (organizationId == null) {
-      log.error("Unable to determine organization ID for site module ${config.siteModuleId}")
+      log.error("Unable to determine organization ID for facility ${config.facilityId}")
       return
     }
 

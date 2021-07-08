@@ -19,7 +19,7 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
       name: String?,
       idField: TableField<*, Long?>,
       nameField: TableField<*, String?>,
-      siteModuleIdField: TableField<*, Long?>? = null,
+      facilityIdField: TableField<*, Long?>? = null,
       extraSetters: (InsertSetMoreStep<out Record>) -> Unit = {}
   ): Long? {
     if (name == null) {
@@ -31,7 +31,7 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
             .select(idField)
             .from(idField.table)
             .where(nameField.eq(name))
-            .apply { if (siteModuleIdField != null) and(siteModuleIdField.eq(config.siteModuleId)) }
+            .apply { if (facilityIdField != null) and(facilityIdField.eq(config.facilityId)) }
             .fetchOne(idField)
     if (existingId != null) {
       return existingId
@@ -42,7 +42,7 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
     return dslContext
         .insertInto(table)
         .set(nameField, name)
-        .apply { if (siteModuleIdField != null) set(siteModuleIdField, config.siteModuleId) }
+        .apply { if (facilityIdField != null) set(facilityIdField, config.facilityId) }
         .apply { extraSetters(this) }
         .returning(idField)
         .fetchOne()
@@ -54,7 +54,7 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
       name: String?,
       idField: TableField<*, Long?>,
       nameField: TableField<*, String?>,
-      siteModuleIdField: TableField<*, Long?>? = null
+      facilityIdField: TableField<*, Long?>? = null
   ): Long? {
     if (name == null) {
       return null
@@ -64,7 +64,7 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
         .select(idField)
         .from(idField.table)
         .where(nameField.eq(name))
-        .apply { if (siteModuleIdField != null) and(siteModuleIdField.eq(config.siteModuleId)) }
+        .apply { if (facilityIdField != null) and(facilityIdField.eq(config.facilityId)) }
         .fetchOne(idField)
         ?: throw IllegalArgumentException(
             "Unable to find ${idField.table?.name?.lowercase()} $name")

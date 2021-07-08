@@ -3,13 +3,13 @@ package com.terraformation.seedbank.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.seedbank.db.tables.daos.DevicesDao
+import com.terraformation.seedbank.db.tables.daos.FacilitiesDao
 import com.terraformation.seedbank.db.tables.daos.OrganizationsDao
-import com.terraformation.seedbank.db.tables.daos.SiteModulesDao
 import com.terraformation.seedbank.db.tables.daos.SitesDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
 import com.terraformation.seedbank.db.tables.pojos.DevicesRow
+import com.terraformation.seedbank.db.tables.pojos.FacilitiesRow
 import com.terraformation.seedbank.db.tables.pojos.OrganizationsRow
-import com.terraformation.seedbank.db.tables.pojos.SiteModulesRow
 import com.terraformation.seedbank.db.tables.pojos.SitesRow
 import com.terraformation.seedbank.db.tables.pojos.StorageLocationsRow
 import com.terraformation.seedbank.services.perClassLogger
@@ -29,7 +29,7 @@ data class PerSiteConfig(
     val devices: List<DevicesRow> = emptyList(),
     @NotEmpty val organizations: List<OrganizationsRow>,
     @NotEmpty val sites: List<SitesRow>,
-    @NotEmpty val siteModules: List<SiteModulesRow>,
+    @NotEmpty val facilities: List<FacilitiesRow>,
     val storageLocations: List<StorageLocationsRow> = emptyList(),
 )
 
@@ -40,7 +40,7 @@ class PerSiteConfigUpdater(
     private val dslContext: DSLContext,
     private val organizationsDao: OrganizationsDao,
     private val sitesDao: SitesDao,
-    private val siteModulesDao: SiteModulesDao,
+    private val facilitiesDao: FacilitiesDao,
     private val storageLocationsDao: StorageLocationsDao,
     private val objectMapper: ObjectMapper,
     private val serverConfig: TerrawareServerConfig,
@@ -74,7 +74,18 @@ class PerSiteConfigUpdater(
   fun fetchConfig(): PerSiteConfig? {
     return try {
       serverConfig.siteConfigUrl.inputStream.use { stream ->
-        objectMapper.readValue<PerSiteConfig>(stream)
+        // BACKWARD COMPATIBILITY: Allow old-style config files that use "site module" instead of
+        // "facility". Remove this once configs are updated in S3.
+        val originalContents = stream.readAllBytes().decodeToString()
+        val contents =
+            originalContents
+                .replace("\"siteModules\"", "\"facilities\"")
+                .replace("\"siteModuleId\"", "\"facilityId\"")
+        if (contents != originalContents) {
+          log.warn("Converted legacy per-site config. Please replace 'siteModule' with 'facility'.")
+        }
+
+        objectMapper.readValue<PerSiteConfig>(contents)
       }
     } catch (e: IOException) {
       log.info("Failed to fetch per-site configuration: ${e.message}")
@@ -87,19 +98,19 @@ class PerSiteConfigUpdater(
     perSiteConfig.devices.forEach { it.enabled = it.enabled ?: true }
     perSiteConfig.organizations.forEach { it.enabled = it.enabled ?: true }
     perSiteConfig.sites.forEach { it.enabled = it.enabled ?: true }
-    perSiteConfig.siteModules.forEach { it.enabled = it.enabled ?: true }
+    perSiteConfig.facilities.forEach { it.enabled = it.enabled ?: true }
     perSiteConfig.storageLocations.forEach { it.enabled = it.enabled ?: true }
 
     // Need to insert and delete IDs in the right order because there are foreign key relationships.
     insertAndUpdate(perSiteConfig.organizations, organizationsDao)
     insertAndUpdate(perSiteConfig.sites, sitesDao)
-    insertAndUpdate(perSiteConfig.siteModules, siteModulesDao)
+    insertAndUpdate(perSiteConfig.facilities, facilitiesDao)
     insertAndUpdate(perSiteConfig.devices, devicesDao)
     insertAndUpdate(perSiteConfig.storageLocations, storageLocationsDao)
 
     delete(perSiteConfig.devices, devicesDao) { it.enabled = false }
     delete(perSiteConfig.storageLocations, storageLocationsDao) { it.enabled = false }
-    delete(perSiteConfig.siteModules, siteModulesDao) { it.enabled = false }
+    delete(perSiteConfig.facilities, facilitiesDao) { it.enabled = false }
     delete(perSiteConfig.sites, sitesDao) { it.enabled = false }
     delete(perSiteConfig.organizations, organizationsDao) { it.enabled = false }
 

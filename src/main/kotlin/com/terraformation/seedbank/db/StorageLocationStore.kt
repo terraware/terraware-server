@@ -15,7 +15,7 @@ class StorageLocationStore(
       dslContext
           .select(NAME, CONDITION_ID)
           .from(STORAGE_LOCATIONS)
-          .where(SITE_MODULE_ID.eq(config.siteModuleId))
+          .where(FACILITY_ID.eq(config.facilityId))
           .orderBy(NAME)
           .fetch { it.value1()!! to it.value2()!! }
           .toMap()

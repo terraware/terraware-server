@@ -1,5 +1,5 @@
 terraware:
-  site-module-id: 100
+  facility-id: 100
   mqtt:
     enabled: false
     address: "ws://localhost:1883/"

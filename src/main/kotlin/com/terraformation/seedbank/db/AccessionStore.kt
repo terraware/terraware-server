@@ -83,7 +83,7 @@ class AccessionStore(
             )
             .from(ACCESSIONS)
             .where(ACCESSIONS.NUMBER.eq(accessionNumber))
-            .and(ACCESSIONS.SITE_MODULE_ID.eq(config.siteModuleId))
+            .and(ACCESSIONS.FACILITY_ID.eq(config.facilityId))
             .fetchOne()
             ?: return null
 
@@ -198,7 +198,7 @@ class AccessionStore(
                     .set(NURSERY_START_DATE, accession.nurseryStartDate)
                     .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
                     .set(RECEIVED_DATE, accession.receivedDate)
-                    .set(SITE_MODULE_ID, config.siteModuleId)
+                    .set(FACILITY_ID, config.facilityId)
                     .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                     .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                     .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
@@ -371,7 +371,7 @@ class AccessionStore(
                 .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(NUMBER.eq(accessionNumber))
-                .and(SITE_MODULE_ID.eq(config.siteModuleId))
+                .and(FACILITY_ID.eq(config.facilityId))
                 .execute()
           }
 
@@ -517,12 +517,12 @@ class AccessionStore(
   }
 
   private fun getCollectorId(name: String?): Long? {
-    return support.getOrInsertId(name, COLLECTORS.ID, COLLECTORS.NAME, COLLECTORS.SITE_MODULE_ID)
+    return support.getOrInsertId(name, COLLECTORS.ID, COLLECTORS.NAME, COLLECTORS.FACILITY_ID)
   }
 
   private fun getStorageLocationId(name: String?): Long? {
     return support.getId(
-        name, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.NAME, STORAGE_LOCATIONS.SITE_MODULE_ID)
+        name, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.NAME, STORAGE_LOCATIONS.FACILITY_ID)
   }
 
   /**

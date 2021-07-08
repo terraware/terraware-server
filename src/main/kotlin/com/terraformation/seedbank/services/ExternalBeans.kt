@@ -3,8 +3,8 @@ package com.terraformation.seedbank.services
 import com.terraformation.seedbank.db.tables.daos.AccessionPhotosDao
 import com.terraformation.seedbank.db.tables.daos.ApiKeysDao
 import com.terraformation.seedbank.db.tables.daos.DevicesDao
+import com.terraformation.seedbank.db.tables.daos.FacilitiesDao
 import com.terraformation.seedbank.db.tables.daos.OrganizationsDao
-import com.terraformation.seedbank.db.tables.daos.SiteModulesDao
 import com.terraformation.seedbank.db.tables.daos.SitesDao
 import com.terraformation.seedbank.db.tables.daos.SpeciesDao
 import com.terraformation.seedbank.db.tables.daos.StorageLocationsDao
@@ -29,9 +29,9 @@ class ExternalBeans(dslContext: DSLContext) {
   @Bean fun accessionPhotoDao() = AccessionPhotosDao(configuration)
   @Bean fun apiKeyDao() = ApiKeysDao(configuration)
   @Bean fun deviceDao() = DevicesDao(configuration)
+  @Bean fun facilitiesDao() = FacilitiesDao(configuration)
   @Bean fun organizationDao() = OrganizationsDao(configuration)
   @Bean fun siteDao() = SitesDao(configuration)
-  @Bean fun siteModuleDao() = SiteModulesDao(configuration)
   @Bean fun speciesDao() = SpeciesDao(configuration)
   @Bean fun storageLocationDao() = StorageLocationsDao(configuration)
   @Bean fun taskProcessedTimeDao() = TaskProcessedTimesDao(configuration)

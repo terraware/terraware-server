@@ -21,7 +21,7 @@ class TerrawareServerConfig {
   /** How often to refresh site-specific configuration, in seconds. 0 disables periodic refresh. */
   @Min(0) var siteConfigRefreshSecs: Long = 3600
 
-  @Min(1) var siteModuleId: Long = 0
+  @Min(1) var facilityId: Long = 0
 
   /**
    * Directory to use for photo storage. The server will attempt to create this directory if it

@@ -91,7 +91,7 @@ class ResourceController(
       @PathVariable
       @Schema(
           description =
-              "Path of resource, typically including organization, site, site module, device, " +
+              "Path of resource, typically including organization, site, facility, device, " +
                   "and timeseries name.",
           example = "terraformation/pac-flight/ohana/BMU-L/system_voltage")
       path: String

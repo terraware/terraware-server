@@ -59,15 +59,19 @@ class TimeseriesController(
                   "this value to control how many decimal places to display.")
       decimalPlaces: Int?,
       @RequestParam(required = false)
+      @Schema(description = "Alias for facilityId for backward compatibility.")
+      siteModuleId: Long?,
+      @RequestParam(required = false)
       @Schema(
           description =
-              "Which site module the device is in, if it isn't in the seed bank's default site " +
-                  "module. Must match the site module ID the device is associated with in the " +
-                  "per-site configuration.")
-      siteModuleId: Long?,
+              "Which facility the device is in, if it isn't in the seed bank's default facility. " +
+                  "Must match the facility ID the device is associated with in the per-site " +
+                  "configuration.")
+      facilityId: Long?,
   ): SimpleSuccessResponsePayload {
+    val effectiveFacilityId = facilityId ?: siteModuleId
     val deviceId =
-        deviceStore.getDeviceIdByName(siteModuleId ?: config.siteModuleId, device)
+        deviceStore.getDeviceIdByName(effectiveFacilityId ?: config.facilityId, device)
             ?: throw NotFoundException("Device $device does not exist")
     val timeseriesId =
         timeSeriesStore.getTimeseriesIdByName(deviceId, timeseries)
