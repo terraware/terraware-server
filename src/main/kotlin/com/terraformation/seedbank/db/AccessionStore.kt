@@ -667,7 +667,7 @@ class AccessionStore(
    * If the date part of the sequence value doesn't match the current date, this method resets the
    * sequence to the zero suffix for the current date.
    *
-   * Note that there is a bit of a race condition if multiple seedbank-server instances happen to
+   * Note that there is a bit of a race condition if multiple terraware-server instances happen to
    * allocate their first accession of a given day at the same time; they might both reset the
    * sequence. To guard against that, [create] will retry a few times if it gets a unique constraint
    * violation on the accession number.

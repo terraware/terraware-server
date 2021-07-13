@@ -1,4 +1,4 @@
-# Utility and test scripts for seedbank-server
+# Utility and test scripts for terraware-server
 
 ## Prerequisites
 

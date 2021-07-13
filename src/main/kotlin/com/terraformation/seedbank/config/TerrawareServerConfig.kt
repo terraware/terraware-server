@@ -84,7 +84,7 @@ class TerrawareServerConfig {
       var address: URI? = URI("ws://localhost:1883"),
 
       /** Client identifier to send during MQTT authentication. */
-      var clientId: String? = "seedbank-server",
+      var clientId: String? = "terraware-server",
 
       /** Password to send during MQTT authentication. */
       var password: String? = null,

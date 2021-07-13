@@ -4,7 +4,7 @@ terraware:
     enabled: false
     address: "ws://localhost:1883/"
   site-config-url: "classpath:config/dev.json"
-  photo-dir: "/tmp/seedbank-server-photos"
+  photo-dir: "/tmp/terraware-server-photos"
   use-test-clock: true
   api-key: "dummyKey"
 

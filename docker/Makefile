@@ -1,4 +1,4 @@
-IMAGE_NAME=seedbank-server
+IMAGE_NAME=terraware-server
 
 BUILD_DIR=../build/docker
 FILES=\

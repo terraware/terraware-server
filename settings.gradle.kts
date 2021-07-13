@@ -13,4 +13,4 @@ pluginManagement {
   }
 }
 
-rootProject.name = "seedbank-server"
+rootProject.name = "terraware-server"

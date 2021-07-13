@@ -10,16 +10,16 @@ services:
   postgres:
     image: "postgres:12"
     environment:
-      POSTGRES_DB: "seedbank"
-      POSTGRES_PASSWORD: "seedbank"
+      POSTGRES_DB: "terraware"
+      POSTGRES_PASSWORD: "terraware"
 
-  seedbank-server:
-    image: "seedbank-server"
+  terraware-server:
+    image: "terraware-server"
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: "jdbc:postgresql://postgres:5432/seedbank"
-      DATABASE_PASSWORD: "seedbank"
+      DATABASE_URL: "jdbc:postgresql://postgres:5432/terraware"
+      DATABASE_PASSWORD: "terraware"
       TERRAWARE_PHOTO_DIR: "/data/photos"
       TERRAWARE_USE_INTERNAL_STORAGE: "true"
     volumes:

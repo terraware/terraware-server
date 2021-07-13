@@ -1,4 +1,4 @@
-# Seed Bank Server
+# Terraware API Server
 
 This is the back end for the software suite that runs in Terraformation's modular seed banks.
 

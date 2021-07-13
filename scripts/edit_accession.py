@@ -15,7 +15,7 @@ def main():
         "--server",
         "-s",
         default="http://localhost:8080",
-        help="Base URL of seedbank-server.",
+        help="Base URL of terraware-server.",
     )
     parser.add_argument(
         "--simulate",
