@@ -1,29 +1,25 @@
 package com.terraformation.backend.customer.api
 
-import com.terraformation.backend.db.tables.daos.OrganizationsDao
-import io.swagger.v3.oas.annotations.Hidden
+import com.terraformation.backend.api.CustomerEndpoint
+import com.terraformation.backend.customer.db.OrganizationStore
 import io.swagger.v3.oas.annotations.Operation
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@CustomerEndpoint
 @RestController
 @RequestMapping("/api/v1/organization")
-@Hidden // Hide from Swagger docs while iterating on the seed bank app's API
-@PreAuthorize("isAuthenticated()")
-class OrganizationController(private val organizationsDao: OrganizationsDao) {
+class OrganizationController(private val organizationStore: OrganizationStore) {
   @GetMapping
-  @Hidden
-  @PreAuthorize("hasRole('SUPER_ADMIN')")
   @Operation(
       summary = "List all organizations",
-      description = "List all the known organizations. Client must be a super admin.",
+      description = "List all organizations the user can access.",
   )
   fun listAll(): ListOrganizationsResponse {
     val elements =
-        organizationsDao.findAll().map { record ->
-          ListOrganizationsElement(record.id!!.value, record.name!!)
+        organizationStore.fetchAll().map { model ->
+          ListOrganizationsElement(model.id.value, model.name)
         }
     return ListOrganizationsResponse(elements)
   }

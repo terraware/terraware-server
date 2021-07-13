@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.model.AppDeviceModel
+import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AppDeviceId
@@ -9,7 +11,6 @@ import com.terraformation.backend.db.BagId
 import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.GeolocationId
 import com.terraformation.backend.db.GerminationSeedType
 import com.terraformation.backend.db.GerminationSubstrate
@@ -18,7 +19,6 @@ import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
@@ -52,7 +52,6 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
 import com.terraformation.backend.seedbank.api.GerminationPayload
@@ -94,8 +93,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
+import org.springframework.security.access.AccessDeniedException
 
-internal class AccessionStoreTest : DatabaseTest() {
+internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
+  override val user = mockk<UserModel>()
+
   override val sequencesToReset
     get() =
         listOf(
@@ -154,6 +156,10 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
+
+    every { user.canCreateAccession(any()) } returns true
+    every { user.canReadAccession(any(), any()) } returns true
+    every { user.canUpdateAccession(any(), any()) } returns true
 
     store =
         AccessionStore(
@@ -1419,6 +1425,7 @@ internal class AccessionStoreTest : DatabaseTest() {
                     uniqueId = "uniqueId"),
             endangered = SpeciesEndangeredType.Unsure,
             environmentalNotes = "envNotes",
+            facilityId = facilityId.value,
             family = "family",
             fieldNotes = "fieldNotes",
             founderId = "founderId",
@@ -1550,21 +1557,45 @@ internal class AccessionStoreTest : DatabaseTest() {
     }
   }
 
+  @Test
+  fun `create does not write to database if user does not have permission`() {
+    every { user.canCreateAccession(facilityId) } returns false
+
+    assertThrows(AccessDeniedException::class.java) { store.create(facilityId, AccessionModel()) }
+  }
+
+  @Test
+  fun `fetchByNumber does not return accession if user does not have permission`() {
+    every { user.canReadAccession(any(), facilityId) } returns false
+
+    val initial = store.create(facilityId, AccessionModel())
+    assertNotNull(initial, "Should have created accession successfully")
+    assertNull(
+        store.fetchByNumber(facilityId, initial.accessionNumber!!),
+        "Should not have been able to read accession")
+  }
+
+  @Test
+  fun `update does not write to database if user does not have permission`() {
+    every { user.canUpdateAccession(any(), facilityId) } returns false
+    val initial = store.create(facilityId, AccessionModel())
+
+    assertThrows(AccessDeniedException::class.java) {
+      store.update(facilityId, initial.accessionNumber!!, initial.copy(numberOfTrees = 1))
+    }
+
+    val afterUpdate = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    assertNotNull(afterUpdate, "Should be able to read accession after updating")
+    assertNull(afterUpdate?.numberOfTrees, "Update should not have been written")
+  }
+
   @Nested
   inner class MultipleFacilities {
     private val otherFacilityId = FacilityId(500)
 
     @BeforeEach
     fun createOtherFacility() {
-      with(FACILITIES) {
-        dslContext
-            .insertInto(FACILITIES)
-            .set(ID, otherFacilityId)
-            .set(NAME, "other facility")
-            .set(SITE_ID, SiteId(10))
-            .set(TYPE_ID, FacilityType.SeedBank)
-            .execute()
-      }
+      insertFacility(otherFacilityId.value, 10)
     }
 
     @Test

@@ -1,0 +1,37 @@
+#
+# Sample config file for OAuth2 Proxy running in a development environment.
+# See KEYCLOAK.md for instructions.
+#
+
+# Edit the following two lines.
+client_secret = "YOUR_CLIENT_SECRET_HERE"
+cookie_secret = "YOUR_COOKIE_SECRET_HERE"
+
+# If you are using an existing Keycloak server or a realm name other than
+# "terraware", edit this.
+oidc_issuer_url = "http://localhost:8081/auth/realms/terraware"
+
+# If you're using a client ID other than "dev-terraware-server", edit this.
+client_id = "dev-terraware-server"
+
+
+#####
+# You shouldn't need to edit the following for a typical dev environment.
+#####
+
+cookie_secure = false
+email_domains = [
+    "*"
+]
+http_address = "0.0.0.0:4000"
+pass_access_token = true
+provider = "oidc"
+skip_provider_button = true
+upstreams = [
+    "http://localhost:3000/",
+    "http://localhost:8080/admin/",
+    "http://localhost:8080/api/",
+]
+whitelist_domains = [
+    "localhost:*"
+]

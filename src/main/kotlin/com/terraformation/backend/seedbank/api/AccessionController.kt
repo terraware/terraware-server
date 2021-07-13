@@ -9,10 +9,11 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationSeedType
 import com.terraformation.backend.db.GerminationSubstrate
 import com.terraformation.backend.db.GerminationTestId
@@ -56,11 +57,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/accession")
 @RestController
 @SeedBankAppEndpoint
-class AccessionController(
-    private val accessionStore: AccessionStore,
-    private val clock: Clock,
-    private val config: TerrawareServerConfig
-) {
+class AccessionController(private val accessionStore: AccessionStore, private val clock: Clock) {
   @ApiResponse(
       responseCode = "200",
       description =
@@ -69,7 +66,7 @@ class AccessionController(
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val facilityId = config.facilityId
+    val facilityId = payload.facilityId?.let { FacilityId(it) } ?: currentUser().defaultFacilityId()
     val updatedPayload = accessionStore.create(facilityId, payload.toModel())
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
   }
@@ -92,7 +89,7 @@ class AccessionController(
                   "have been returned if it had been saved.")
       simulate: Boolean?
   ): UpdateAccessionResponsePayload {
-    val facilityId = config.facilityId
+    val facilityId = currentUser().defaultFacilityId()
 
     try {
       val updatedModel =
@@ -112,7 +109,7 @@ class AccessionController(
   @GetMapping("/{accessionNumber}")
   @Operation(summary = "Retrieve an existing accession.")
   fun read(@PathVariable accessionNumber: String): GetAccessionResponsePayload {
-    val facilityId = config.facilityId
+    val facilityId = currentUser().defaultFacilityId()
     val accession =
         accessionStore.fetchByNumber(facilityId, accessionNumber)
             ?: throw NotFoundException("The specified accession doesn't exist.")
@@ -120,7 +117,7 @@ class AccessionController(
   }
 }
 
-// Ignore properties that are defined on AccessionFields but not accepted as input (CU-px8k25)
+// Mark all fields as write-only in the schema
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
@@ -128,6 +125,7 @@ data class CreateAccessionRequestPayload(
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
     val environmentalNotes: String? = null,
+    val facilityId: Long?,
     val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,

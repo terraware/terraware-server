@@ -1,12 +1,24 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.SpeciesFamilyId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.records.AccessionsRecord
-import com.terraformation.backend.db.tables.references.*
+import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
+import com.terraformation.backend.db.tables.references.BAGS
+import com.terraformation.backend.db.tables.references.COLLECTORS
+import com.terraformation.backend.db.tables.references.GEOLOCATIONS
+import com.terraformation.backend.db.tables.references.GERMINATIONS
+import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
+import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.SPECIES_FAMILIES
+import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tables.references.WITHDRAWALS
+import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.Table
@@ -26,6 +38,28 @@ interface SearchTable {
    * implementation can assume that the accession table is already present in the SELECT statement.
    */
   fun leftJoinWithAccession(query: SelectJoinStep<out Record>): SelectJoinStep<out Record>
+
+  /**
+   * Adds a LEFT JOIN clause to a query to connect this table to any other tables required to filter
+   * out values the user doesn't have permission to see.
+   *
+   * This is only used when querying all the values of a table; for accession searches, permissions
+   * are checked on the accession.
+   *
+   * The default no-op implementation will work for any tables that have the required information
+   * already, e.g., if a table has a facility ID column, there's no need to join with another table
+   * to get a facility ID.
+   */
+  fun joinForPermissions(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> = query
+
+  /**
+   * Returns a condition that restricts this table's values to ones the user has permission to see.
+   * If the table's values are visible to all users, returns null.
+   *
+   * This method can safely assume that [joinForPermissions] was called, so any tables added there
+   * are available for use in the condition.
+   */
+  fun conditionForPermissions(): Condition?
 
   /**
    * Returns a set of intermediate tables that need to be joined in order to connect this table to
@@ -55,6 +89,14 @@ abstract class AccessionChildTable(private val idField: TableField<*, AccessionI
       query: SelectJoinStep<out Record>
   ): SelectJoinStep<out Record> {
     return query.leftJoin(idField.table!!).on(idField.eq(ACCESSIONS.ID))
+  }
+
+  override fun joinForPermissions(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> {
+    return query.join(ACCESSIONS).on(idField.eq(ACCESSIONS.ID))
+  }
+
+  override fun conditionForPermissions(): Condition? {
+    return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 }
 
@@ -100,6 +142,10 @@ class SearchTables {
       // No-op; initial query always selects from accession
       return query
     }
+
+    override fun conditionForPermissions(): Condition {
+      return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+    }
   }
 
   object AccessionGerminationTestType :
@@ -123,20 +169,49 @@ class SearchTables {
       // We'll already be joined with germination_test
       return query.leftJoin(GERMINATIONS).on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
     }
+
+    override fun joinForPermissions(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> {
+      return query
+          .join(GERMINATION_TESTS)
+          .on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
+          .join(ACCESSIONS)
+          .on(GERMINATION_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID))
+    }
+
+    override fun conditionForPermissions(): Condition {
+      return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+    }
   }
 
   object GerminationTest : AccessionChildTable(GERMINATION_TESTS.ACCESSION_ID)
 
   object PrimaryCollector :
-      AccessionParentTable<CollectorId>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID)
+      AccessionParentTable<CollectorId>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID) {
+    override fun conditionForPermissions(): Condition {
+      return COLLECTORS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+    }
+  }
 
-  object Species : AccessionParentTable<SpeciesId>(SPECIES.ID, ACCESSIONS.SPECIES_ID)
+  object Species : AccessionParentTable<SpeciesId>(SPECIES.ID, ACCESSIONS.SPECIES_ID) {
+    override fun conditionForPermissions(): Condition? {
+      return null
+    }
+  }
 
   object SpeciesFamily :
-      AccessionParentTable<SpeciesFamilyId>(SPECIES_FAMILIES.ID, ACCESSIONS.SPECIES_FAMILY_ID)
+      AccessionParentTable<SpeciesFamilyId>(SPECIES_FAMILIES.ID, ACCESSIONS.SPECIES_FAMILY_ID) {
+    override fun conditionForPermissions(): Condition? {
+      return null
+    }
+  }
 
   object StorageLocation :
-      AccessionParentTable<StorageLocationId>(STORAGE_LOCATIONS.ID, ACCESSIONS.STORAGE_LOCATION_ID)
+      AccessionParentTable<StorageLocationId>(
+          STORAGE_LOCATIONS.ID, ACCESSIONS.STORAGE_LOCATION_ID) {
+    override fun conditionForPermissions(): Condition {
+      return STORAGE_LOCATIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+    }
+  }
 
   object Withdrawal : AccessionChildTable(WITHDRAWALS.ACCESSION_ID)
 }

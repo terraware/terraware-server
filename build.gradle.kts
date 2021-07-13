@@ -71,6 +71,7 @@ dependencies {
   implementation("org.codehaus.janino:janino:3.1.3")
   implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
   implementation("org.flywaydb:flyway-core:7.5.4")
+  implementation("org.keycloak:keycloak-admin-client:14.0.0")
   implementation(kotlin("reflect"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")

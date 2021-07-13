@@ -1,9 +1,11 @@
 package com.terraformation.backend.customer.api
 
+import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.NoOrganizationException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.WrongOrganizationException
 import com.terraformation.backend.auth.ClientIdentity
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
@@ -13,19 +15,15 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@CustomerEndpoint
 @RestController
 @RequestMapping("/api/v1/site")
-@Hidden // Hide from Swagger docs while iterating on the seed bank app's API
-@PreAuthorize("isAuthenticated()")
-@SecurityRequirement(name = "ApiKey")
 class SiteController(private val projectsDao: ProjectsDao, private val sitesDao: SitesDao) {
   @GetMapping
   @Hidden
@@ -67,11 +65,11 @@ class SiteController(private val projectsDao: ProjectsDao, private val sitesDao:
       throw NoOrganizationException()
     }
 
-    val site = sitesDao.fetchOneById(SiteId(siteId)) ?: throw NotFoundException()
-    val project = projectsDao.fetchOneById(site.projectId!!) ?: throw NotFoundException()
-    if (project.organizationId != organizationId && !clientIdentity.isSuperAdmin) {
+    if (!currentUser().canReadSite(SiteId(siteId))) {
       throw WrongOrganizationException()
     }
+
+    val site = sitesDao.fetchOneById(SiteId(siteId)) ?: throw NotFoundException()
 
     return GetSiteResponse(site)
   }

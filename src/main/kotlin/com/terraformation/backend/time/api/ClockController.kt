@@ -2,7 +2,9 @@ package com.terraformation.backend.time.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
+import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -10,8 +12,10 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import javax.servlet.http.HttpServletRequest
 import javax.validation.constraints.Min
 import org.springframework.context.annotation.Profile
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,7 +34,11 @@ class ClockController(private val clock: DatabaseBackedClock) {
       description =
           "In test environments, the clock can be advanced artificially, which will cause it to " +
               "differ from the real-world date and time.")
-  fun getCurrentTime() = GetCurrentTimeResponsePayload(clock.instant())
+  fun getCurrentTime(request: HttpServletRequest): GetCurrentTimeResponsePayload {
+    val pr = SecurityContextHolder.getContext().authentication
+    perClassLogger().info("Authentication = ${pr.name}")
+    return GetCurrentTimeResponsePayload(clock.instant())
+  }
 }
 
 @Controller

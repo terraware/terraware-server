@@ -176,14 +176,20 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   }
 
   private fun simpleConfig(): PerSiteConfig {
-    val organization = OrganizationsRow(OrganizationId(1), "test", true)
-    val project =
-        ProjectsRow(
-            ProjectId(2),
-            organization.id,
-            "testProject",
+    val organization =
+        OrganizationsRow(
+            id = OrganizationId(1),
+            name = "test",
             createdTime = Instant.EPOCH,
             modifiedTime = Instant.EPOCH)
+    val project =
+        ProjectsRow(
+            id = ProjectId(2),
+            organizationId = organization.id,
+            name = "testProject",
+            createdTime = Instant.EPOCH,
+            modifiedTime = Instant.EPOCH,
+        )
     val site =
         SitesRow(
             SiteId(2),

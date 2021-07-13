@@ -1,9 +1,13 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.ProcessingMethod
@@ -13,12 +17,18 @@ import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.GerminationTestsDao
+import com.terraformation.backend.db.tables.daos.GerminationsDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.AccessionGerminationTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
+import com.terraformation.backend.db.tables.pojos.GerminationsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
+import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -30,7 +40,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class SearchServiceTest : DatabaseTest() {
+class SearchServiceTest : DatabaseTest(), RunsAsUser {
+  override val user = mockk<UserModel>()
   private lateinit var accessionsDao: AccessionsDao
   private lateinit var accessionGerminationTestTypesDao: AccessionGerminationTestTypesDao
   private lateinit var searchService: SearchService
@@ -40,6 +51,8 @@ class SearchServiceTest : DatabaseTest() {
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
   private val accessionNumberField = searchFields["accessionNumber"]!!
   private val activeField = searchFields["active"]!!
+  private val germinationSeedsGerminatedField = searchFields["germinationSeedsGerminated"]!!
+  private val germinationSeedsSownField = searchFields["germinationSeedsSown"]!!
   private val germinationTestTypeField = searchFields["germinationTestType"]!!
   private val receivedDateField = searchFields["receivedDate"]!!
   private val speciesField = searchFields["species"]!!
@@ -56,6 +69,8 @@ class SearchServiceTest : DatabaseTest() {
     accessionsDao = AccessionsDao(dslContext.configuration())
     accessionGerminationTestTypesDao = AccessionGerminationTestTypesDao(dslContext.configuration())
     searchService = SearchService(dslContext, searchFields)
+
+    every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
     insertSiteData()
 
@@ -743,5 +758,243 @@ class SearchServiceTest : DatabaseTest() {
     val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
     val values = searchService.fetchAllValues(storageLocationField)
     assertEquals(expected, values)
+  }
+
+  @Test
+  fun `search only includes accessions at facilities the user has permission to view`() {
+    // A facility in an org the user isn't in
+    insertOrganization(2)
+    insertProject(20)
+    insertSite(200)
+    insertFacility(2000)
+
+    // A facility in a project the user isn't in (but in an org they're in)
+    insertProject(11)
+    insertSite(110)
+    insertFacility(1100)
+
+    accessionsDao.insert(
+        AccessionsRow(
+            id = AccessionId(2000),
+            number = "OtherOrg",
+            stateId = AccessionState.Processed,
+            createdTime = Instant.EPOCH,
+            facilityId = FacilityId(2000)))
+
+    accessionsDao.insert(
+        AccessionsRow(
+            id = AccessionId(1100),
+            number = "OtherProject",
+            stateId = AccessionState.Processed,
+            createdTime = Instant.EPOCH,
+            facilityId = FacilityId(1100)))
+
+    val fields = listOf(accessionNumberField)
+    val sortOrder = fields.map { SearchSortField(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG"),
+                mapOf("accessionNumber" to "XYZ"),
+            ),
+            cursor = null)
+
+    val actual = searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `search returns empty result if user has no permission to view anything`() {
+    every { user.facilityRoles } returns emptyMap()
+
+    val fields = listOf(accessionNumberField)
+    val sortOrder = fields.map { SearchSortField(it) }
+
+    val expected = SearchResults(emptyList(), cursor = null)
+
+    val actual = searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `search includes results from multiple facilities`() {
+    every { user.facilityRoles } returns
+        mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
+
+    insertProject(11)
+    insertSite(110)
+    insertFacility(1100)
+
+    accessionsDao.insert(
+        AccessionsRow(
+            id = AccessionId(1100),
+            number = "OtherProject",
+            stateId = AccessionState.Processed,
+            createdTime = Instant.EPOCH,
+            facilityId = FacilityId(1100)))
+
+    val fields = listOf(accessionNumberField)
+    val sortOrder = fields.map { SearchSortField(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("accessionNumber" to "ABCDEFG"),
+                mapOf("accessionNumber" to "OtherProject"),
+                mapOf("accessionNumber" to "XYZ"),
+            ),
+            cursor = null)
+
+    val actual = searchService.search(fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchValues only includes values from accessions the user has permission to view`() {
+    insertProject(11)
+    insertSite(110)
+    insertFacility(1100)
+
+    accessionsDao.insert(
+        AccessionsRow(
+            id = AccessionId(1100),
+            number = "OtherProject",
+            stateId = AccessionState.Processed,
+            createdTime = Instant.EPOCH,
+            facilityId = FacilityId(1100),
+            treesCollectedFrom = 3))
+
+    val expected = listOf("1", "2")
+
+    val actual = searchService.fetchValues(treesCollectedFromField, NoConditionNode())
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchValues includes values from accessions at multiple facilities`() {
+    every { user.facilityRoles } returns
+        mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
+
+    insertProject(11)
+    insertSite(110)
+    insertFacility(1100)
+
+    accessionsDao.insert(
+        AccessionsRow(
+            id = AccessionId(1100),
+            number = "OtherProject",
+            stateId = AccessionState.Processed,
+            createdTime = Instant.EPOCH,
+            facilityId = FacilityId(1100),
+            treesCollectedFrom = 3))
+
+    val expected = listOf("1", "2", "3")
+
+    val actual = searchService.fetchValues(treesCollectedFromField, NoConditionNode())
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchAllValues only includes storage locations the user has permission to view`() {
+    val storageLocationDao = StorageLocationsDao(dslContext.configuration())
+    insertProject(11)
+    insertSite(110)
+    insertFacility(1100)
+
+    storageLocationDao.insert(
+        StorageLocationsRow(
+            id = StorageLocationId(1000),
+            facilityId = FacilityId(100),
+            name = "Facility 100 fridge",
+            conditionId = StorageCondition.Refrigerator))
+    storageLocationDao.insert(
+        StorageLocationsRow(
+            id = StorageLocationId(1001),
+            facilityId = FacilityId(1100),
+            name = "Facility 1100 fridge",
+            conditionId = StorageCondition.Refrigerator))
+
+    val expected = listOf(null, "Facility 100 fridge")
+
+    val actual = searchService.fetchAllValues(storageLocationField)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchAllValues only includes accession values the user has permission to view`() {
+    insertProject(11)
+    insertSite(110)
+    insertFacility(1100)
+
+    accessionsDao.insert(
+        AccessionsRow(
+            id = AccessionId(1100),
+            number = "OtherProject",
+            stateId = AccessionState.Processed,
+            createdTime = Instant.EPOCH,
+            facilityId = FacilityId(1100),
+            treesCollectedFrom = 3))
+
+    val expected = listOf(null, "1", "2")
+
+    val actual = searchService.fetchAllValues(treesCollectedFromField)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchAllValues only includes child table values the user has permission to view`() {
+    val germinationTestsDao = GerminationTestsDao(dslContext.configuration())
+    val germinationsDao = GerminationsDao(dslContext.configuration())
+
+    val hiddenAccessionId = AccessionId(1100)
+
+    insertProject(11)
+    insertSite(110)
+    insertFacility(1100)
+
+    accessionsDao.insert(
+        AccessionsRow(
+            id = hiddenAccessionId,
+            number = "OtherProject",
+            stateId = AccessionState.Processed,
+            createdTime = Instant.EPOCH,
+            facilityId = FacilityId(1100),
+            treesCollectedFrom = 3))
+
+    listOf(1000, 1100).forEach { id ->
+      val accessionId = AccessionId(id.toLong())
+      val testId = GerminationTestId(id.toLong())
+
+      accessionGerminationTestTypesDao.insert(
+          AccessionGerminationTestTypesRow(accessionId, GerminationTestType.Lab))
+      germinationTestsDao.insert(
+          GerminationTestsRow(
+              id = testId,
+              accessionId = accessionId,
+              testType = GerminationTestType.Lab,
+              remainingQuantity = BigDecimal.ONE,
+              remainingUnitsId = SeedQuantityUnits.Grams,
+              seedsSown = id))
+      germinationsDao.insert(
+          GerminationsRow(testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = id))
+    }
+
+    assertEquals(
+        listOf(null, "1000"),
+        searchService.fetchAllValues(germinationSeedsGerminatedField),
+        "Value from germinations table (grandchild of accessions)")
+
+    assertEquals(
+        listOf(null, "1000"),
+        searchService.fetchAllValues(germinationSeedsSownField),
+        "Value from germination_tests table (child of accessions)")
   }
 }

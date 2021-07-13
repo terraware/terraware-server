@@ -1,29 +1,29 @@
 package com.terraformation.backend.auth
 
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.util.emptyEnumSet
-import java.util.EnumSet
+import java.util.*
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.User
 
-abstract class ClientIdentity(username: String, val roles: EnumSet<Role>) :
-    User(username, "", roles) {
+abstract class ClientIdentity(username: String, val authorities: Set<GrantedAuthority>) :
+    User(username, "", authorities) {
   abstract val organizationId: OrganizationId?
 
   /** True if the authenticated client is a super admin. */
   val isSuperAdmin
-    get() = Role.SUPER_ADMIN in roles
+    get() = SuperAdminAuthority in authorities
 }
 
-object AnonymousClient : ClientIdentity("ANONYMOUS", emptyEnumSet()) {
+object AnonymousClient : ClientIdentity("ANONYMOUS", emptySet()) {
   override val organizationId: OrganizationId?
     get() = null
 }
 
 class ControllerClientIdentity(override val organizationId: OrganizationId) :
-    ClientIdentity("controller", EnumSet.of(Role.API_CLIENT))
+    ClientIdentity("controller", emptySet())
 
 class LoggedInUserIdentity(
     username: String,
     override val organizationId: OrganizationId?,
-    roles: EnumSet<Role>
-) : ClientIdentity(username, roles)
+    authorities: Collection<GrantedAuthority>
+) : ClientIdentity(username, authorities.toSet())

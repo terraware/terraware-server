@@ -26,6 +26,11 @@ terraware:
     enabled: false
   mqtt:
     enabled: false
+  keycloak:
+    clientId: dummy
+    clientSecret: dummy
+    serverUrl: http://dummy
+    realm: dummy
 
 logging:
   level:

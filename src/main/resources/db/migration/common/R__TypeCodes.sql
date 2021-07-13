@@ -56,6 +56,13 @@ VALUES (1, 'Fresh'),
        (2, 'Stored')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO roles (id, name)
+VALUES (1, 'Contributor'),
+       (2, 'Manager'),
+       (3, 'Admin'),
+       (4, 'Owner')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO seed_quantity_units (id, name)
 VALUES (1, 'Seeds'),
        (2, 'Grams'),

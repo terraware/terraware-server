@@ -24,6 +24,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListDeviceConfigsResponse'
+  /api/v1/facility:
+    get:
+      tags:
+      - Customer
+      summary: List all accessible facilities
+      description: List all the facilities the current user can access.
+      operationId: listAll_2
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFacilitiesResponse'
+  /api/v1/organization:
+    get:
+      tags:
+      - Customer
+      summary: List all organizations
+      description: List all organizations the user can access.
+      operationId: listAll_1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrganizationsResponse'
   /api/v1/resources:
     post:
       tags:
@@ -743,6 +771,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StorageLocationsResponsePayload'
+  /api/v1/site/{siteId}:
+    get:
+      tags:
+      - Customer
+      operationId: getSite
+      parameters:
+      - name: siteId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Client is not associated with an organization and is not a
+            site admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSiteResponse'
+        "404":
+          description: No site with the requested ID exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSiteResponse'
 components:
   schemas:
     AccessionPayload:
@@ -1041,6 +1095,10 @@ components:
           - Unsure
         environmentalNotes:
           type: string
+          writeOnly: true
+        facilityId:
+          type: integer
+          format: int64
           writeOnly: true
         family:
           type: string
@@ -1419,6 +1477,27 @@ components:
           format: date-time
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetSiteResponse:
+      required:
+      - id
+      - latitude
+      - longitude
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        latitude:
+          type: string
+        longitude:
+          type: string
+        locale:
+          type: string
+        timezone:
+          type: string
     ListAllFieldValuesRequestPayload:
       required:
       - fields
@@ -1452,6 +1531,33 @@ components:
             $ref: '#/components/schemas/DeviceConfig'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ListFacilitiesElement:
+      required:
+      - id
+      - name
+      - role
+      - type
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        type:
+          type: integer
+          format: int32
+        role:
+          type: string
+    ListFacilitiesResponse:
+      required:
+      - facilities
+      type: object
+      properties:
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListFacilitiesElement'
     ListFieldValuesRequestPayload:
       required:
       - fields
@@ -1483,6 +1589,26 @@ components:
             $ref: '#/components/schemas/FieldValuesPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ListOrganizationsElement:
+      required:
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    ListOrganizationsResponse:
+      required:
+      - organizations
+      type: object
+      properties:
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListOrganizationsElement'
     ListPhotosResponseElement:
       required:
       - capturedTime

@@ -51,7 +51,8 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     // latitude and longitude).
     val databaseFields = fieldObjects.flatMap { it.selectFields }.toSet()
 
-    val conditions = criteria.toCondition()
+    // Filter out results the user doesn't have permission to see.
+    val conditions = criteria.toCondition().and(SearchTables.Accession.conditionForPermissions())
 
     val orderBy =
         sortOrder.flatMap { sortOrderElement ->
@@ -135,9 +136,11 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     query = joinWithSecondaryTables(query, listOf(field), criteria)
 
+    val conditions = criteria.toCondition().and(SearchTables.Accession.conditionForPermissions())
+
     val fullQuery =
         query
-            .where(criteria.toCondition())
+            .where(conditions)
             .orderBy(
                 field.orderByFields.mapIndexed { index, _ ->
                   DSL.field("field$index").asc().nullsLast()
@@ -190,10 +193,14 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
               orderByField.`as`(DSL.field("field$index"))
             }
 
+    val permsCondition = field.table.conditionForPermissions()
+
     val fullQuery =
         dslContext
             .selectDistinct(selectFields)
             .from(field.table.fromTable)
+            .let { field.table.joinForPermissions(it) }
+            .let { if (permsCondition != null) it.where(permsCondition) else it }
             .orderBy(
                 field.orderByFields.mapIndexed { index, _ ->
                   DSL.field("field$index").asc().nullsLast()

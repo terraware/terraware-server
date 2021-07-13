@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -41,6 +42,7 @@ import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class AccessionStore(
@@ -67,15 +69,32 @@ class AccessionStore(
    * number does not exist.
    */
   fun getIdByNumber(facilityId: FacilityId, accessionNumber: String): AccessionId? {
-    return dslContext
-        .select(ACCESSIONS.ID)
-        .from(ACCESSIONS)
-        .where(ACCESSIONS.NUMBER.eq(accessionNumber))
-        .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
-        .fetchOne(ACCESSIONS.ID)
+    val accessionId =
+        dslContext
+            .select(ACCESSIONS.ID)
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.NUMBER.eq(accessionNumber))
+            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
+            .fetchOne(ACCESSIONS.ID)
+            ?: return null
+
+    return if (currentUser().canReadAccession(accessionId, facilityId)) {
+      accessionId
+    } else {
+      log.warn("No permission to read accession $accessionId in facility $facilityId")
+      null
+    }
   }
 
   fun fetchByNumber(facilityId: FacilityId, accessionNumber: String): AccessionModel? {
+    return fetchByNumber(facilityId, accessionNumber, false)
+  }
+
+  private fun fetchByNumber(
+      facilityId: FacilityId,
+      accessionNumber: String,
+      skipPermissionCheck: Boolean
+  ): AccessionModel? {
     // First, fetch all the values that are either directly on the accession table or are in other
     // tables such that there is at most one value for a given accession (N:1 relation).
     val parentRow =
@@ -100,6 +119,11 @@ class AccessionStore(
 
     // Now populate all the items that there can be many of per accession.
     val accessionId = parentRow[ACCESSIONS.ID]!!
+
+    if (!skipPermissionCheck && !currentUser().canReadAccession(accessionId, facilityId)) {
+      log.warn("No permission to read accession $accessionId in facility $facilityId")
+      return null
+    }
 
     val secondaryCollectorNames = fetchSecondaryCollectorNames(accessionId)
     val bagNumbers = bagStore.fetchBagNumbers(accessionId)
@@ -128,6 +152,7 @@ class AccessionStore(
           endangered = parentRow[SPECIES_ENDANGERED_TYPE_ID],
           environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
           estimatedSeedCount = parentRow[EST_SEED_COUNT],
+          facilityId = parentRow[FACILITY_ID],
           family = parentRow[speciesFamilies().NAME],
           fieldNotes = parentRow[FIELD_NOTES],
           founderId = parentRow[FOUNDER_ID],
@@ -166,7 +191,9 @@ class AccessionStore(
           subsetCount = parentRow[SUBSET_COUNT],
           subsetWeightQuantity =
               SeedQuantityModel.of(
-                  parentRow[SUBSET_WEIGHT_QUANTITY], parentRow[SUBSET_WEIGHT_UNITS_ID]),
+                  parentRow[SUBSET_WEIGHT_QUANTITY],
+                  parentRow[SUBSET_WEIGHT_UNITS_ID],
+              ),
           targetStorageCondition = parentRow[TARGET_STORAGE_CONDITION],
           total = SeedQuantityModel.of(parentRow[TOTAL_QUANTITY], parentRow[TOTAL_UNITS_ID]),
           totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
@@ -176,6 +203,10 @@ class AccessionStore(
   }
 
   fun create(facilityId: FacilityId, accession: AccessionModel): AccessionModel {
+    if (!currentUser().canCreateAccession(facilityId)) {
+      throw AccessDeniedException("No permission to create accessions in facility $facilityId")
+    }
+
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
@@ -252,7 +283,7 @@ class AccessionStore(
           withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
         }
 
-        return fetchByNumber(facilityId, accessionNumber)!!
+        return fetchByNumber(facilityId, accessionNumber, true)!!
       } catch (ex: DuplicateKeyException) {
         log.info("Accession number $accessionNumber already existed; trying again")
         if (attemptsRemaining <= 0) {
@@ -268,6 +299,12 @@ class AccessionStore(
   fun update(facilityId: FacilityId, accessionNumber: String, updated: AccessionModel): Boolean {
     val existing = fetchByNumber(facilityId, accessionNumber) ?: return false
     val accessionId = existing.id ?: return false
+
+    if (!currentUser().canUpdateAccession(accessionId, facilityId)) {
+      throw AccessDeniedException(
+          "No permission to update accession $accessionNumber in facility $facilityId")
+    }
+
     val accession = updated.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)
 

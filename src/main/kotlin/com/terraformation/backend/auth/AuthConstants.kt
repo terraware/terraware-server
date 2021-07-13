@@ -1,13 +1,4 @@
 package com.terraformation.backend.auth
 
-import org.springframework.security.core.GrantedAuthority
-
-enum class Role : GrantedAuthority {
-  AUTHENTICATED,
-  API_CLIENT,
-  USER,
-  ORG_ADMIN,
-  SUPER_ADMIN;
-
-  override fun getAuthority() = toString()
-}
+/** Name of the HTTP header where oauth2-proxy puts the Keycloak user ID. */
+const val OAUTH2_PROXY_USER_ID_HEADER_NAME = "x-forwarded-user"

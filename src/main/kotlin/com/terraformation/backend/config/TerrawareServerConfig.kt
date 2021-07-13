@@ -77,6 +77,12 @@ class TerrawareServerConfig(
 
     /** Configures the server's communication with an MQTT broker. */
     val mqtt: MqttConfig = MqttConfig(),
+
+    /**
+     * Configures the server's communication with the Keycloak authentication server, which manages
+     * the login and registration process and is the source of truth for user identities.
+     */
+    @NotNull val keycloak: KeycloakConfig,
 ) {
   @ConstructorBinding
   class DailyTasksConfig(
@@ -113,6 +119,28 @@ class TerrawareServerConfig(
 
       /** How often to retry connecting to the MQTT broker if the connection fails. */
       val connectRetryIntervalMillis: Long = 30000,
+  )
+
+  @ConstructorBinding
+  class KeycloakConfig(
+      /**
+       * URL of the root of the Keycloak server's administrative API. Typically, this will be
+       * `https://server.domain.name/auth`.
+       */
+      @NotNull val serverUrl: URI,
+
+      /** Keycloak realm containing user information. */
+      @NotNull val realm: String,
+
+      /**
+       * Client ID that terraware-server will use for Keycloak admin API requests. Typically, you'll
+       * configure a dedicated client ID for this, enable the client's service account, and grant
+       * the service account all the roles related to user administration.
+       */
+      @NotNull val clientId: String,
+
+      /** Client secret corresponding to clientId. */
+      @NotNull val clientSecret: String,
   )
 
   companion object {

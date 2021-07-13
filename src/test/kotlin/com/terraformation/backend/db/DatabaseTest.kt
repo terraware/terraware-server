@@ -71,48 +71,66 @@ abstract class DatabaseTest {
     }
   }
 
-  /** Creates an organization, site, and facility that can be referenced by various tests. */
-  fun insertSiteData() {
-    val organizationId = OrganizationId(1)
-    val projectId = ProjectId(2)
-    val siteId = SiteId(10)
-    val facilityId = FacilityId(100)
-
+  protected fun insertOrganization(id: Long, name: String = "Organization $id") {
     with(ORGANIZATIONS) {
-      dslContext.insertInto(ORGANIZATIONS).set(ID, organizationId).set(NAME, "dev").execute()
+      dslContext
+          .insertInto(ORGANIZATIONS)
+          .set(ID, OrganizationId(id))
+          .set(NAME, name)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .execute()
     }
+  }
 
+  protected fun insertProject(
+      id: Long,
+      organizationId: Long = id / 10,
+      name: String = "Project $id"
+  ) {
     with(PROJECTS) {
       dslContext
           .insertInto(PROJECTS)
-          .set(ID, projectId)
-          .set(ORGANIZATION_ID, organizationId)
+          .set(ID, ProjectId(id))
+          .set(ORGANIZATION_ID, OrganizationId(organizationId))
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
-          .set(NAME, "project")
+          .set(NAME, name)
           .execute()
     }
+  }
 
+  protected fun insertSite(id: Long, projectId: Long = id / 10, name: String = "Site $id") {
     with(SITES) {
       dslContext
           .insertInto(SITES)
-          .set(ID, siteId)
-          .set(PROJECT_ID, projectId)
-          .set(NAME, "sim")
+          .set(ID, SiteId(id))
+          .set(PROJECT_ID, ProjectId(projectId))
+          .set(NAME, name)
           .set(LATITUDE, BigDecimal.valueOf(1))
           .set(LONGITUDE, BigDecimal.valueOf(2))
           .execute()
     }
+  }
 
+  protected fun insertFacility(id: Long, siteId: Long = id / 10, name: String = "Facility $id") {
     with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
-          .set(ID, facilityId)
-          .set(SITE_ID, siteId)
+          .set(ID, FacilityId(id))
+          .set(SITE_ID, SiteId(siteId))
           .set(TYPE_ID, FacilityType.SeedBank)
-          .set(NAME, "ohana")
+          .set(NAME, name)
           .execute()
     }
+  }
+
+  /** Creates an organization, site, and facility that can be referenced by various tests. */
+  fun insertSiteData() {
+    insertOrganization(1, "dev")
+    insertProject(2, 1, "project")
+    insertSite(10, 2, "sim")
+    insertFacility(100, 10, "ohana")
   }
 
   class DockerPostgresDataSourceInitializer :

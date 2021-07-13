@@ -3,5 +3,6 @@ __pycache__
 .gradle
 .venv
 build
+oauth2-proxy.cfg
 out
 .idea

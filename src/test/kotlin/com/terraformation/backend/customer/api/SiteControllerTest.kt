@@ -1,12 +1,14 @@
 package com.terraformation.backend.customer.api
 
+import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.api.NoOrganizationException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.WrongOrganizationException
 import com.terraformation.backend.auth.AnonymousClient
 import com.terraformation.backend.auth.ControllerClientIdentity
 import com.terraformation.backend.auth.LoggedInUserIdentity
-import com.terraformation.backend.auth.Role
+import com.terraformation.backend.auth.SuperAdminAuthority
+import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
@@ -14,11 +16,9 @@ import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
-import com.terraformation.backend.util.emptyEnumSet
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
-import java.util.EnumSet
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -26,7 +26,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class SiteControllerTest {
+class SiteControllerTest : RunsAsUser {
+  override val user = mockk<UserModel>()
   private val projectsDao = mockk<ProjectsDao>()
   private val siteDao = mockk<SitesDao>()
   private val siteController = SiteController(projectsDao, siteDao)
@@ -37,7 +38,7 @@ class SiteControllerTest {
 
   private val authentication = ControllerClientIdentity(organizationId)
   private val superAdminAuthentication =
-      LoggedInUserIdentity("superadmin", null, EnumSet.of(Role.SUPER_ADMIN))
+      LoggedInUserIdentity("superadmin", null, setOf(SuperAdminAuthority))
 
   @Nested
   @DisplayName("GET /api/v1/site")
@@ -45,7 +46,7 @@ class SiteControllerTest {
     @Test
     fun `rejects requests from clients without organizations`() {
       assertThrows(NoOrganizationException::class.java) {
-        siteController.listSites(LoggedInUserIdentity("test", null, emptyEnumSet()))
+        siteController.listSites(LoggedInUserIdentity("test", null, emptySet()))
       }
     }
 
@@ -103,6 +104,7 @@ class SiteControllerTest {
 
     @Test
     fun `accepts requests from super admin clients without organizations`() {
+      every { user.canReadSite(siteId) } returns true
       every { projectsDao.fetchOneById(projectId) } returns project
       every { siteDao.fetchOneById(siteId) } returns site
       assertDoesNotThrow { siteController.getSite(superAdminAuthentication, siteId.value) }
@@ -110,6 +112,7 @@ class SiteControllerTest {
 
     @Test
     fun `rejects requests for nonexistent sites`() {
+      every { user.canReadSite(siteId) } returns true
       every { siteDao.fetchOneById(siteId) } returns null
       assertThrows(NotFoundException::class.java) {
         siteController.getSite(authentication, siteId.value)
@@ -117,7 +120,8 @@ class SiteControllerTest {
     }
 
     @Test
-    fun `rejects requests for sites owned by another organization`() {
+    fun `rejects requests not allowed by permission manager`() {
+      every { user.canReadSite(siteId) } returns false
       every { projectsDao.fetchOneById(projectId) } returns
           ProjectsRow(id = projectId, organizationId = OrganizationId(0))
       every { siteDao.fetchOneById(siteId) } returns
@@ -129,6 +133,7 @@ class SiteControllerTest {
 
     @Test
     fun `returns site data if permitted`() {
+      every { user.canReadSite(siteId) } returns true
       every { projectsDao.fetchOneById(projectId) } returns project
       every { siteDao.fetchOneById(siteId) } returns site
 

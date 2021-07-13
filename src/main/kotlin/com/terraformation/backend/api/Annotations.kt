@@ -17,6 +17,11 @@ annotation class SeedBankAppEndpoint
 annotation class DeviceManagerAppEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "Customer")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class CustomerEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponse(
     responseCode = "404",

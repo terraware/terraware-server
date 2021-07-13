@@ -1,0 +1,17 @@
+# Example configuration that runs Keycloak in a local development environment.
+#
+# This isn't suitable for production use!
+
+version: "2"
+
+services:
+  keycloak:
+    image: "quay.io/keycloak/keycloak:15.0.0"
+    ports:
+      # Keycloak listens on port 8080 by default, but so does terraware-server,
+      # so remap it to host port 8081.
+      - "8081:8080"
+    restart: "on-failure"
+    environment:
+      - "KEYCLOAK_USER=admin"
+      - "KEYCLOAK_PASSWORD=admin"
