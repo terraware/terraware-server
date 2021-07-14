@@ -28,7 +28,7 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
       sessionManagement { sessionCreationPolicy = SessionCreationPolicy.STATELESS }
 
       // This has nothing to do with security, but Spring Security supports adding custom headers.
-      headers { addHeaderWriter(StaticHeadersWriter("Server", "Seedbank-Server/$VERSION")) }
+      headers { addHeaderWriter(StaticHeadersWriter("Server", "Terraware-Server/$VERSION")) }
     }
   }
 
