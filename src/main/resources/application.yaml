@@ -19,7 +19,7 @@ spring:
 # generating the API documentation from the command line.
 springdoc:
   packages-to-scan:
-    - "com.terraformation.seedbank.api"
+    - "com.terraformation.backend.api"
   default-produces-media-type: "application/json"
   swagger-ui:
     # Disable the demo API (pet store)

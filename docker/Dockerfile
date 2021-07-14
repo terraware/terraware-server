@@ -27,4 +27,4 @@ EXPOSE 8080
 
 USER $USER_ID
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["java", "-cp", ".:lib/*", "com.terraformation.seedbank.ApplicationKt"]
+CMD ["java", "-cp", ".:lib/*", "com.terraformation.backend.ApplicationKt"]

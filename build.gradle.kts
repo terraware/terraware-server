@@ -108,7 +108,7 @@ tasks.test {
 
 val generateVersionFile by tasks.registering {
   val generatedPath =
-      File("$buildDir/generated/kotlin/com/terraformation/seedbank/Version.kt").toPath()
+      File("$buildDir/generated/kotlin/com/terraformation/backend/Version.kt").toPath()
 
   inputs.property("version", project.version)
   outputs.file(generatedPath)
@@ -117,7 +117,7 @@ val generateVersionFile by tasks.registering {
     Files.createDirectories(generatedPath.parent)
     Files.writeString(
         generatedPath,
-        """package com.terraformation.seedbank
+        """package com.terraformation.backend
           |const val VERSION = "$version"
           |""".trimMargin())
   }
@@ -125,13 +125,13 @@ val generateVersionFile by tasks.registering {
 
 tasks {
   generateJooqClasses {
-    basePackageName = "com.terraformation.seedbank.db"
+    basePackageName = "com.terraformation.backend.db"
     excludeFlywayTable = true
     schemas = arrayOf("public")
 
     customizeGenerator {
-      val enumGenerator = com.terraformation.seedbank.jooq.EnumGenerator()
-      val pluralStrategy = com.terraformation.seedbank.jooq.PluralPojoStrategy()
+      val enumGenerator = com.terraformation.backend.jooq.EnumGenerator()
+      val pluralStrategy = com.terraformation.backend.jooq.PluralPojoStrategy()
       val forcedTypeForInstant =
           org.jooq.meta.jaxb.ForcedType()
               .withName("INSTANT")

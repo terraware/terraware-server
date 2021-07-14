@@ -59,7 +59,7 @@ By far the best Kotlin development environment is [IntelliJ IDEA](https://www.je
 6. In the popup, click "Open as Project".
 7. Dismiss the hints-and-tips popup (or read some hints and tips, if you like).
 8. On the left of the window is a folder view. Click the triangle to the left of the project folder to expand it.
-9. Keep expanding: `src`, `main`, `kotlin`, `com.terraformation.seedbank`.
+9. Keep expanding: `src`, `main`, `kotlin`, `com.terraformation.backend`.
 10. Right-click on `Application`.
 11. Select "Run 'Application'".
 
