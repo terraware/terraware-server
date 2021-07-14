@@ -12,7 +12,7 @@ import com.terraformation.backend.db.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
-import com.terraformation.backend.services.perClassLogger
+import com.terraformation.backend.log.perClassLogger
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant

@@ -1,7 +1,7 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.services.toInstant
+import com.terraformation.backend.time.toInstant
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean

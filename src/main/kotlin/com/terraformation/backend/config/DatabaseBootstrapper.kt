@@ -5,7 +5,7 @@ import com.terraformation.backend.db.tables.daos.ApiKeysDao
 import com.terraformation.backend.db.tables.pojos.ApiKeysRow
 import com.terraformation.backend.db.tables.references.API_KEYS
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.services.perClassLogger
+import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext

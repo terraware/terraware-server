@@ -1,7 +1,7 @@
 package com.terraformation.backend.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.services.perClassLogger
+import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import java.time.Instant
 import java.time.ZonedDateTime

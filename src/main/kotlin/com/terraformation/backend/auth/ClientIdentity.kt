@@ -1,6 +1,6 @@
 package com.terraformation.backend.auth
 
-import com.terraformation.backend.services.emptyEnumSet
+import com.terraformation.backend.util.emptyEnumSet
 import java.util.EnumSet
 import org.springframework.security.core.userdetails.User
 

@@ -1,7 +1,7 @@
 package com.terraformation.backend.auth
 
 import com.terraformation.backend.db.tables.daos.ApiKeysDao
-import com.terraformation.backend.services.perClassLogger
+import com.terraformation.backend.log.perClassLogger
 import java.security.MessageDigest
 import javax.annotation.ManagedBean
 import javax.xml.bind.DatatypeConverter

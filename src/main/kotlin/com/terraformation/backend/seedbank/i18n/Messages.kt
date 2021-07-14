@@ -1,0 +1,46 @@
+package com.terraformation.backend.seedbank.i18n
+
+import com.terraformation.backend.db.GerminationTestType
+import javax.annotation.ManagedBean
+
+/**
+ * Renders human-readable messages. All server-generated text that gets displayed to end users
+ * should live here rather than inline in the rest of the application. This will make it easier to
+ * localize the messages into languages other than English in future versions.
+ */
+@ManagedBean
+class Messages {
+  fun longPendingNotification(count: Int) =
+      if (count == 1)
+          "1 seed collection bag has been waiting since drop off for at least 1 week and is " +
+              "ready to be processed."
+      else
+          "$count seed collection bags have been waiting since drop off for at least 1 week and " +
+              "are ready to be processed."
+
+  fun longProcessedNotification(count: Int, weeks: Int) =
+      if (count == 1)
+          "1 accession has finished processing for at least $weeks weeks and is ready to be " +
+              "tested for %RH (or dried)."
+      else
+          "$count accessions have finished processing for at least $weeks weeks and are ready to " +
+              "be tested for %RH (or dried)."
+
+  fun driedNotification(count: Int) =
+      if (count == 1) "1 accession has passed its drying end date and is ready to be stored."
+      else "$count accessions have passed their drying end date and are ready to be stored."
+
+  fun dryingMoveDateNotification(accessionNumber: String) =
+      "$accessionNumber is scheduled to be moved from racks to dry cabinets today!"
+
+  fun germinationTestDateNotification(accessionNumber: String, testType: GerminationTestType) =
+      when (testType) {
+        GerminationTestType.Lab ->
+            "$accessionNumber is scheduled to begin a lab germination test today!"
+        GerminationTestType.Nursery ->
+            "$accessionNumber is scheduled to begin a nursery germination test today!"
+      }
+
+  fun withdrawalDateNotification(accessionNumber: String) =
+      "$accessionNumber is scheduled for a withdrawal today!"
+}

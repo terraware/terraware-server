@@ -2,10 +2,9 @@ package com.terraformation.backend.photo
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionNotFoundException
-import com.terraformation.backend.db.AccessionStore
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
-import com.terraformation.backend.model.PhotoMetadata
+import com.terraformation.backend.seedbank.db.AccessionStore
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.FileAlreadyExistsException
