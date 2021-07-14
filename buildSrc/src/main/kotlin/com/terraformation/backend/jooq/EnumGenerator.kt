@@ -66,8 +66,7 @@ class EnumGenerator : KotlinGenerator() {
               "storage_conditions",
               listOf("accessions\\.target_storage_condition", "storage_locations\\.condition_id")),
           EnumTable("timeseries_types", "timeseries\\.type_id"),
-          EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"),
-      )
+          EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"))
 
   private val log = LoggerFactory.getLogger(javaClass)
 
