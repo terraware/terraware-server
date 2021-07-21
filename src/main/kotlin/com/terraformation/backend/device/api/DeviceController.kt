@@ -1,4 +1,4 @@
-package com.terraformation.backend.api.rhizo
+package com.terraformation.backend.device.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.DeviceManagerAppEndpoint

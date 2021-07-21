@@ -1,4 +1,4 @@
-package com.terraformation.backend.seedbank.api
+package com.terraformation.backend.time.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload

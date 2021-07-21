@@ -1,4 +1,4 @@
-package com.terraformation.backend.api.rhizo
+package com.terraformation.backend.device.api
 
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.DeviceManagerAppEndpoint

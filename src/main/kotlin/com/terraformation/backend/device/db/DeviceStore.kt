@@ -1,6 +1,5 @@
 package com.terraformation.backend.device.db
 
-import com.terraformation.backend.api.rhizo.DeviceConfig
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
@@ -9,6 +8,7 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
+import com.terraformation.backend.device.api.DeviceConfig
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record1
