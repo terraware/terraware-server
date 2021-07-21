@@ -1,12 +1,13 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.tables.references.BAGS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
 class BagStore(private val dslContext: DSLContext) {
-  fun fetchBagNumbers(accessionId: Long): Set<String> {
+  fun fetchBagNumbers(accessionId: AccessionId): Set<String> {
     return dslContext
         .select(BAGS.BAG_NUMBER)
         .from(BAGS)
@@ -18,7 +19,7 @@ class BagStore(private val dslContext: DSLContext) {
   }
 
   fun updateBags(
-      accessionId: Long,
+      accessionId: AccessionId,
       existingBagNumbers: Set<String>?,
       desiredBagNumbers: Set<String>?
   ) {

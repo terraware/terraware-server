@@ -1,5 +1,7 @@
 package com.terraformation.backend.device.db
 
+import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.db.tables.references.TIMESERIES
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
@@ -14,7 +16,7 @@ class TimeSeriesStore(
     private val dslContext: DSLContext,
     private val deviceStore: DeviceStore
 ) {
-  fun getIdByMqttTopic(topic: String, name: String): Long? {
+  fun getIdByMqttTopic(topic: String, name: String): TimeseriesId? {
     val deviceIdSubquery = deviceStore.queryDeviceIdForMqttTopic(topic) ?: return null
 
     val query =
@@ -26,7 +28,10 @@ class TimeSeriesStore(
     return query.fetchOne(TIMESERIES.ID)
   }
 
-  fun getTimeseriesIdsByName(deviceId: Long, names: Collection<String>): Map<String, Long> {
+  fun getTimeseriesIdsByName(
+      deviceId: DeviceId,
+      names: Collection<String>
+  ): Map<String, TimeseriesId> {
     with(TIMESERIES) {
       return dslContext
           .select(NAME, ID)
@@ -38,7 +43,7 @@ class TimeSeriesStore(
     }
   }
 
-  fun getTimeseriesIdByName(deviceId: Long, name: String): Long? {
+  fun getTimeseriesIdByName(deviceId: DeviceId, name: String): TimeseriesId? {
     with(TIMESERIES) {
       return dslContext
           .select(ID)
@@ -55,12 +60,12 @@ class TimeSeriesStore(
    * @throws org.jooq.exception.DataAccessException
    */
   fun create(
-      deviceId: Long,
+      deviceId: DeviceId,
       name: String,
       type: TimeseriesType,
       units: String? = null,
       decimalPlaces: Int? = null
-  ): Long {
+  ): TimeseriesId {
     return with(TIMESERIES) {
       dslContext
           .insertInto(TIMESERIES)
@@ -75,7 +80,11 @@ class TimeSeriesStore(
     }
   }
 
-  fun insertValue(timeseriesId: Long, value: String, createdTime: Instant = clock.instant()) {
+  fun insertValue(
+      timeseriesId: TimeseriesId,
+      value: String,
+      createdTime: Instant = clock.instant()
+  ) {
     with(TIMESERIES_VALUES) {
       dslContext
           .insertInto(TIMESERIES_VALUES)

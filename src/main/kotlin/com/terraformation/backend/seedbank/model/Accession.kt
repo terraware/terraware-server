@@ -1,12 +1,14 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.customer.model.AppDeviceModel
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesRareType
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.WithdrawalPurpose
@@ -39,7 +41,7 @@ enum class AccessionSource {
 }
 
 data class AccessionModel(
-    val id: Long? = null,
+    val id: AccessionId? = null,
     val accessionNumber: String? = null,
     val bagNumbers: Set<String> = emptySet(),
     val collectedDate: LocalDate? = null,
@@ -78,7 +80,7 @@ data class AccessionModel(
     val source: AccessionSource? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
-    val speciesId: Long? = null,
+    val speciesId: SpeciesId? = null,
     val state: AccessionState? = null,
     val storageCondition: StorageCondition? = null,
     val storageLocation: String? = null,

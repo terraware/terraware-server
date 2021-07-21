@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.AppDeviceModel
+import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.tables.references.APP_DEVICES
 import com.terraformation.backend.util.eqOrIsNull
 import java.time.Clock
@@ -14,7 +15,7 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
    * Returns an app device ID for a given set of details about a device. If there is already a
    * device with those values, returns its existing ID, otherwise inserts a new one.
    */
-  fun getOrInsertDevice(appDevice: AppDeviceModel): Long {
+  fun getOrInsertDevice(appDevice: AppDeviceModel): AppDeviceId {
     with(APP_DEVICES) {
       val existingId =
           dslContext
@@ -57,7 +58,7 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
    * Returns the device information for a given ID. If the ID is null or doesn't exist, returns
    * null.
    */
-  fun fetchById(id: Long?): AppDeviceModel? {
+  fun fetchById(id: AppDeviceId?): AppDeviceModel? {
     return if (id != null) {
       dslContext.selectFrom(APP_DEVICES).where(APP_DEVICES.ID.eq(id)).fetchOne {
         AppDeviceModel(it)

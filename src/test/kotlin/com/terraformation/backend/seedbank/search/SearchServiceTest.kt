@@ -1,13 +1,17 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
@@ -60,27 +64,29 @@ class SearchServiceTest : DatabaseTest() {
 
     val speciesDao = SpeciesDao(dslContext.configuration())
     speciesDao.insert(
-        SpeciesRow(id = 10000, name = "Kousa Dogwood", createdTime = now, modifiedTime = now))
+        SpeciesRow(
+            id = SpeciesId(10000), name = "Kousa Dogwood", createdTime = now, modifiedTime = now))
     speciesDao.insert(
-        SpeciesRow(id = 10001, name = "Other Dogwood", createdTime = now, modifiedTime = now))
+        SpeciesRow(
+            id = SpeciesId(10001), name = "Other Dogwood", createdTime = now, modifiedTime = now))
 
     accessionsDao.insert(
         AccessionsRow(
-            id = 1000,
+            id = AccessionId(1000),
             number = "XYZ",
             stateId = AccessionState.Processed,
             createdTime = now,
-            facilityId = 100,
-            speciesId = 10000,
+            facilityId = FacilityId(100),
+            speciesId = SpeciesId(10000),
             treesCollectedFrom = 1))
     accessionsDao.insert(
         AccessionsRow(
-            id = 1001,
+            id = AccessionId(1001),
             number = "ABCDEFG",
             stateId = AccessionState.Processing,
             createdTime = now,
-            facilityId = 100,
-            speciesId = 10001,
+            facilityId = FacilityId(100),
+            speciesId = SpeciesId(10001),
             treesCollectedFrom = 2))
   }
 
@@ -416,9 +422,9 @@ class SearchServiceTest : DatabaseTest() {
   @Test
   fun `can search on enum in child table`() {
     accessionGerminationTestTypesDao.insert(
-        AccessionGerminationTestTypesRow(1000, GerminationTestType.Lab),
-        AccessionGerminationTestTypesRow(1000, GerminationTestType.Nursery),
-        AccessionGerminationTestTypesRow(1001, GerminationTestType.Lab))
+        AccessionGerminationTestTypesRow(AccessionId(1000), GerminationTestType.Lab),
+        AccessionGerminationTestTypesRow(AccessionId(1000), GerminationTestType.Nursery),
+        AccessionGerminationTestTypesRow(AccessionId(1001), GerminationTestType.Lab))
 
     val fields = listOf(viabilityTestTypeField)
     val sortOrder =
@@ -718,20 +724,20 @@ class SearchServiceTest : DatabaseTest() {
     val storageLocationDao = StorageLocationsDao(dslContext.configuration())
     storageLocationDao.insert(
         StorageLocationsRow(
-            id = 1000,
-            facilityId = 100,
+            id = StorageLocationId(1000),
+            facilityId = FacilityId(100),
             name = "Refrigerator 1",
             conditionId = StorageCondition.Refrigerator))
     storageLocationDao.insert(
         StorageLocationsRow(
-            id = 1001,
-            facilityId = 100,
+            id = StorageLocationId(1001),
+            facilityId = FacilityId(100),
             name = "Freezer 1",
             conditionId = StorageCondition.Freezer))
     storageLocationDao.insert(
         StorageLocationsRow(
-            id = 1002,
-            facilityId = 100,
+            id = StorageLocationId(1002),
+            facilityId = FacilityId(100),
             name = "Freezer 2",
             conditionId = StorageCondition.Freezer))
 

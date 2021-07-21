@@ -6,6 +6,7 @@ import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesStore
 import com.terraformation.backend.db.StorageCondition
@@ -38,7 +39,7 @@ class ValuesController(
   @GetMapping("/species")
   fun listSpecies(): ListSpeciesResponsePayload {
     return ListSpeciesResponsePayload(
-        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!, it.name!!) })
+        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!.value, it.name!!) })
   }
 
   @ApiResponses(
@@ -51,7 +52,7 @@ class ValuesController(
   ): CreateSpeciesResponsePayload {
     try {
       val species = speciesStore.createSpecies(payload.name)
-      return CreateSpeciesResponsePayload(SpeciesDetails(species.id!!, species.name!!))
+      return CreateSpeciesResponsePayload(SpeciesDetails(species.id!!.value, species.name!!))
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
     }
@@ -72,8 +73,8 @@ class ValuesController(
       @PathVariable id: Long
   ): UpdateSpeciesResponsePayload {
     try {
-      val newId = accessionStore.updateSpecies(id, payload.name)
-      return UpdateSpeciesResponsePayload(newId)
+      val newId = accessionStore.updateSpecies(SpeciesId(id), payload.name)
+      return UpdateSpeciesResponsePayload(newId?.value)
     } catch (e: SpeciesNotFoundException) {
       throw NotFoundException("Species not found.")
     }

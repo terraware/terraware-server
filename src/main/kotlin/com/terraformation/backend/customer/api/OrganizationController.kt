@@ -23,7 +23,7 @@ class OrganizationController(private val organizationsDao: OrganizationsDao) {
   fun listAll(): ListOrganizationsResponse {
     val elements =
         organizationsDao.findAll().map { record ->
-          ListOrganizationsElement(record.id!!, record.name!!)
+          ListOrganizationsElement(record.id!!.value, record.name!!)
         }
     return ListOrganizationsResponse(elements)
   }

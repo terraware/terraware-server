@@ -11,6 +11,8 @@ import com.terraformation.backend.auth.AnonymousClient
 import com.terraformation.backend.auth.ControllerClientIdentity
 import com.terraformation.backend.auth.LoggedInUserIdentity
 import com.terraformation.backend.auth.Role
+import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.util.emptyEnumSet
@@ -29,8 +31,8 @@ class SiteControllerTest {
   private val siteDao = mockk<SitesDao>()
   private val siteController = SiteController(siteDao)
 
-  private val organizationId = 1L
-  private val siteId = 123L
+  private val organizationId = OrganizationId(1L)
+  private val siteId = SiteId(123L)
 
   private val authentication = ControllerClientIdentity(organizationId)
   private val superAdminAuthentication =
@@ -55,7 +57,9 @@ class SiteControllerTest {
     @Test
     fun `returns list of sites`() {
       every { siteDao.fetchByOrganizationId(organizationId) } returns
-          listOf(SitesRow(id = 1, name = "First Site"), SitesRow(id = 2, name = "Second Site"))
+          listOf(
+              SitesRow(id = SiteId(1), name = "First Site"),
+              SitesRow(id = SiteId(2), name = "Second Site"))
 
       val expected =
           ListSitesResponse(
@@ -93,21 +97,23 @@ class SiteControllerTest {
     @Test
     fun `accepts requests from super admin clients without organizations`() {
       every { siteDao.fetchOneById(siteId) } returns site
-      assertDoesNotThrow { siteController.getSite(superAdminAuthentication, siteId) }
+      assertDoesNotThrow { siteController.getSite(superAdminAuthentication, siteId.value) }
     }
 
     @Test
     fun `rejects requests for nonexistent sites`() {
       every { siteDao.fetchOneById(siteId) } returns null
-      assertThrows(NotFoundException::class.java) { siteController.getSite(authentication, siteId) }
+      assertThrows(NotFoundException::class.java) {
+        siteController.getSite(authentication, siteId.value)
+      }
     }
 
     @Test
     fun `rejects requests for sites owned by another organization`() {
       every { siteDao.fetchOneById(siteId) } returns
-          SitesRow(id = siteId, organizationId = 0, name = "site")
+          SitesRow(id = siteId, organizationId = OrganizationId(0), name = "site")
       assertThrows(WrongOrganizationException::class.java) {
-        siteController.getSite(authentication, siteId)
+        siteController.getSite(authentication, siteId.value)
       }
     }
 
@@ -117,13 +123,13 @@ class SiteControllerTest {
 
       val expected =
           GetSiteResponse(
-              id = siteId,
+              id = siteId.value,
               name = "site",
               latitude = latitudeString,
               longitude = longitudeString,
               locale = locale,
               timezone = timezone)
-      assertEquals(expected, siteController.getSite(authentication, siteId))
+      assertEquals(expected, siteController.getSite(authentication, siteId.value))
     }
   }
 }

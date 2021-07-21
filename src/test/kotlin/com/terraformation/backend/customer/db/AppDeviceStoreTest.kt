@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.AppDeviceModel
+import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.pojos.AppDevicesRow
@@ -35,7 +36,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
   /** Returns an AppDevice with default values for all the fields. */
   fun appDevice(
-      id: Long? = null,
+      id: AppDeviceId? = null,
       appBuild: String? = "appBuild",
       appName: String? = "appName",
       brand: String? = "brand",
@@ -57,7 +58,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
             "appBuild", "appName", "brand", "model", "name", "osType", "osVersion", "uniqueId")
     val id = store.getOrInsertDevice(payload.toModel())
 
-    assertEquals(1, id, "New device ID")
+    assertEquals(AppDeviceId(1), id, "New device ID")
 
     val expected = appDevice(id)
     val actual = appDevicesDao.fetchOneById(id)!!
@@ -72,22 +73,22 @@ internal class AppDeviceStoreTest : DatabaseTest() {
             "appBuild", "appName", "brand", "model", "name", "osType", "osVersion", "uniqueId")
 
     appDevicesDao.insert(appDevice())
-    assertNotNull(appDevicesDao.fetchOneById(1))
+    assertNotNull(appDevicesDao.fetchOneById(AppDeviceId(1)))
 
     val id = store.getOrInsertDevice(payload.toModel())
-    assertEquals(1, id)
+    assertEquals(AppDeviceId(1), id)
   }
 
   @Test
   fun `getOrInsertDevice matches null values`() {
     appDevicesDao.insert(AppDevicesRow(createdTime = clock.instant()))
-    assertNotNull(appDevicesDao.fetchOneById(1))
+    assertNotNull(appDevicesDao.fetchOneById(AppDeviceId(1)))
 
     val id = store.getOrInsertDevice(AppDeviceModel())
 
     val rows = dslContext.selectFrom(APP_DEVICES).fetch()
     println(rows)
-    assertEquals(1, id)
+    assertEquals(AppDeviceId(1), id)
   }
 
   @Test
@@ -97,7 +98,7 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
   @Test
   fun `fetchById returns null for nonexistent ID`() {
-    assertNull(store.fetchById(1))
+    assertNull(store.fetchById(AppDeviceId(1)))
   }
 
   @Test
@@ -106,8 +107,16 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
     val expected =
         AppDeviceModel(
-            1, "appBuild", "appName", "brand", "model", "name", "osType", "osVersion", "uniqueId")
-    val actual = store.fetchById(1)
+            AppDeviceId(1),
+            "appBuild",
+            "appName",
+            "brand",
+            "model",
+            "name",
+            "osType",
+            "osVersion",
+            "uniqueId")
+    val actual = store.fetchById(AppDeviceId(1))
     assertEquals(expected, actual)
   }
 }

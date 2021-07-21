@@ -3,21 +3,30 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.model.AppDeviceModel
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.AppDeviceId
+import com.terraformation.backend.db.BagId
+import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.GeolocationId
 import com.terraformation.backend.db.GerminationSeedType
 import com.terraformation.backend.db.GerminationSubstrate
+import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesRareType
 import com.terraformation.backend.db.SpeciesStore
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
+import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
@@ -165,12 +174,12 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertEquals(
         AccessionsRow(
-            id = 1,
+            id = AccessionId(1),
             facilityId = config.facilityId,
             createdTime = clock.instant(),
             number = accessionNumbers[0],
             stateId = AccessionState.Pending),
-        accessionsDao.fetchOneById(1))
+        accessionsDao.fetchOneById(AccessionId(1)))
   }
 
   @Test
@@ -223,9 +232,12 @@ internal class AccessionStoreTest : DatabaseTest() {
     assertEquals(initialRow.speciesFamilyId, secondRow.speciesFamilyId, "Family")
     assertEquals(initialRow.primaryCollectorId, secondRow.primaryCollectorId, "Primary collector")
 
-    assertEquals(2, getSecondaryCollectors(1).size, "Number of secondary collectors")
+    assertEquals(2, getSecondaryCollectors(AccessionId(1)).size, "Number of secondary collectors")
 
-    assertEquals(getSecondaryCollectors(1), getSecondaryCollectors(2), "Secondary collectors")
+    assertEquals(
+        getSecondaryCollectors(AccessionId(1)),
+        getSecondaryCollectors(AccessionId(2)),
+        "Secondary collectors")
   }
 
   @Test
@@ -234,8 +246,8 @@ internal class AccessionStoreTest : DatabaseTest() {
     store.create(payload)
     store.create(payload)
 
-    val initialBags = bagsDao.fetchByAccessionId(1).toSet()
-    val secondBags = bagsDao.fetchByAccessionId(2).toSet()
+    val initialBags = bagsDao.fetchByAccessionId(AccessionId(1)).toSet()
+    val secondBags = bagsDao.fetchByAccessionId(AccessionId(2)).toSet()
 
     assertNotEquals(initialBags, secondBags)
   }
@@ -243,11 +255,11 @@ internal class AccessionStoreTest : DatabaseTest() {
   @Test
   fun `bags are inserted and deleted as needed`() {
     val initial = store.create(AccessionModel(bagNumbers = setOf("bag 1", "bag 2")))
-    val initialBags = bagsDao.fetchByAccessionId(1)
+    val initialBags = bagsDao.fetchByAccessionId(AccessionId(1))
 
     // Insertion order is not defined by the API, so don't assume bag ID 1 is "bag 1".
 
-    assertEquals(setOf(1L, 2L), initialBags.map { it.id }.toSet(), "Initial bag IDs")
+    assertEquals(setOf(BagId(1), BagId(2)), initialBags.map { it.id }.toSet(), "Initial bag IDs")
     assertEquals(
         setOf("bag 1", "bag 2"), initialBags.map { it.bagNumber }.toSet(), "Initial bag numbers")
 
@@ -255,9 +267,9 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertTrue(store.update(initial.accessionNumber!!, desired), "Update succeeded")
 
-    val updatedBags = bagsDao.fetchByAccessionId(1)
+    val updatedBags = bagsDao.fetchByAccessionId(AccessionId(1))
 
-    assertTrue(BagsRow(3, 1, "bag 3") in updatedBags, "New bag inserted")
+    assertTrue(BagsRow(BagId(3), AccessionId(1), "bag 3") in updatedBags, "New bag inserted")
     assertTrue(updatedBags.none { it.bagNumber == "bag 1" }, "Missing bag deleted")
     assertEquals(
         initialBags.filter { it.bagNumber == "bag 2" },
@@ -270,7 +282,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     val payload = AccessionModel(deviceInfo = AppDeviceModel(model = "model"))
     store.create(payload)
 
-    val appDevice = appDevicesDao.fetchOneById(1)
+    val appDevice = appDevicesDao.fetchOneById(AppDeviceId(1))
     assertNotNull(appDevice, "Device row should have been inserted")
     assertNull(appDevice?.appName, "App name should be null")
     assertEquals(appDevice?.model, "model")
@@ -297,11 +309,14 @@ internal class AccessionStoreTest : DatabaseTest() {
                     setOf(
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                         Geolocation(BigDecimal(3), BigDecimal(4)))))
-    val initialGeos = geolocationsDao.fetchByAccessionId(1)
+    val initialGeos = geolocationsDao.fetchByAccessionId(AccessionId(1))
 
     // Insertion order is not defined by the API.
 
-    assertEquals(setOf(1L, 2L), initialGeos.map { it.id }.toSet(), "Initial location IDs")
+    assertEquals(
+        setOf(GeolocationId(1), GeolocationId(2)),
+        initialGeos.map { it.id }.toSet(),
+        "Initial location IDs")
     assertEquals(
         100.0, initialGeos.mapNotNull { it.gpsAccuracy }.first(), 0.1, "Accuracy is recorded")
 
@@ -314,10 +329,12 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertTrue(store.update(initial.accessionNumber!!, desired), "Update succeeded")
 
-    val updatedGeos = geolocationsDao.fetchByAccessionId(1)
+    val updatedGeos = geolocationsDao.fetchByAccessionId(AccessionId(1))
 
     assertTrue(
-        updatedGeos.any { it.id == 3L && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 },
+        updatedGeos.any {
+          it.id == GeolocationId(3) && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6
+        },
         "New geo inserted")
     assertTrue(updatedGeos.none { it.latitude == BigDecimal(3) }, "Missing geo deleted")
     assertEquals(
@@ -333,7 +350,7 @@ internal class AccessionStoreTest : DatabaseTest() {
         dslContext
             .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
             .from(ACCESSION_GERMINATION_TEST_TYPES)
-            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(1))
+            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
             .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
 
     assertEquals(listOf(GerminationTestType.Lab), types)
@@ -355,12 +372,12 @@ internal class AccessionStoreTest : DatabaseTest() {
                 initialQuantity = seeds(100))
     store.update(initial.accessionNumber!!, withTest.toModel())
 
-    val updatedTests = germinationTestsDao.fetchByAccessionId(1)
+    val updatedTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(
         listOf(
             GerminationTestsRow(
-                accessionId = 1,
-                id = 1,
+                accessionId = AccessionId(1),
+                id = GerminationTestId(1),
                 remainingQuantity = BigDecimal(100),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 startDate = startDate,
@@ -368,7 +385,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             )),
         updatedTests)
 
-    val updatedAccession = accessionsDao.fetchOneById(1)
+    val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
     assertNull(updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
     assertNull(updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertNull(updatedAccession?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
@@ -387,7 +404,7 @@ internal class AccessionStoreTest : DatabaseTest() {
         dslContext
             .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
             .from(ACCESSION_GERMINATION_TEST_TYPES)
-            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(1))
+            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
             .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
     assertEquals(setOf(GerminationTestType.Lab, GerminationTestType.Nursery), types.toSet())
   }
@@ -403,7 +420,7 @@ internal class AccessionStoreTest : DatabaseTest() {
         dslContext
             .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
             .from(ACCESSION_GERMINATION_TEST_TYPES)
-            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(1))
+            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
             .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
     assertEquals(listOf(GerminationTestType.Nursery), types)
   }
@@ -431,12 +448,12 @@ internal class AccessionStoreTest : DatabaseTest() {
                         seedsSown = 5)))
     store.update(initial.accessionNumber!!, desired)
 
-    val updatedTests = germinationTestsDao.fetchByAccessionId(1)
+    val updatedTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(
         listOf(
             GerminationTestsRow(
-                id = 1,
-                accessionId = 1,
+                id = GerminationTestId(1),
+                accessionId = AccessionId(1),
                 testType = GerminationTestType.Lab,
                 seedTypeId = GerminationSeedType.Fresh,
                 treatmentId = GerminationTreatment.Scarify,
@@ -552,18 +569,18 @@ internal class AccessionStoreTest : DatabaseTest() {
                                     recordingDate = localDate, seedsGerminated = 75)))))
     store.update(initial.accessionNumber!!, desired)
 
-    val germinationTests = germinationTestsDao.fetchByAccessionId(1)
+    val germinationTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(1, germinationTests.size, "Number of germination tests after update")
     assertEquals(37, germinationTests[0].totalPercentGerminated, "totalPercentGerminated")
     assertEquals(75, germinationTests[0].totalSeedsGerminated, "totalSeedsGerminated")
 
-    val germinations = germinationsDao.fetchByTestId(1)
+    val germinations = germinationsDao.fetchByTestId(GerminationTestId(1))
     assertEquals(1, germinations.size, "Number of germinations after update")
     assertTrue(
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First germination preserved")
 
-    val updatedAccession = accessionsDao.fetchOneById(1)
+    val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
     assertEquals(37, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
     assertEquals(37, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
@@ -603,14 +620,14 @@ internal class AccessionStoreTest : DatabaseTest() {
                                 GerminationModel(
                                     recordingDate = localDate, seedsGerminated = 75)))))
     store.update(initial.accessionNumber!!, desired)
-    val germinations = germinationsDao.fetchByTestId(1)
+    val germinations = germinationsDao.fetchByTestId(GerminationTestId(1))
 
     assertEquals(1, germinations.size, "Number of germinations after update")
     assertTrue(
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First germination preserved")
 
-    val updatedAccession = accessionsDao.fetchOneById(1)
+    val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
     assertEquals(75, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
     assertEquals(75, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
@@ -621,7 +638,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
   @Test
   fun `valid storage locations are accepted and cause storage condition to be populated`() {
-    val locationId = 12345678L
+    val locationId = StorageLocationId(12345678)
     val locationName = "Test Location"
     storageLocationsDao.insert(
         StorageLocationsRow(
@@ -635,7 +652,7 @@ internal class AccessionStoreTest : DatabaseTest() {
 
     assertEquals(
         locationId,
-        accessionsDao.fetchOneById(1)?.storageLocationId,
+        accessionsDao.fetchOneById(AccessionId(1))?.storageLocationId,
         "Existing storage location ID was used")
 
     val updated = store.fetchByNumber(initial.accessionNumber!!)!!
@@ -656,7 +673,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     val initial = store.create(AccessionModel())
     accessionPhotosDao.insert(
         AccessionPhotosRow(
-            accessionId = 1,
+            accessionId = AccessionId(1),
             filename = "photo.jpg",
             uploadedTime = Instant.now(),
             capturedTime = Instant.now(),
@@ -773,7 +790,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     assertEquals(
         listOf(
             WithdrawalModel(
-                id = 1,
+                id = WithdrawalId(1),
                 accessionId = accession.id,
                 date = test.startDate!!,
                 purpose = WithdrawalPurpose.GerminationTesting,
@@ -870,7 +887,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     assertEquals(
         listOf(
             AccessionStateHistoryRow(
-                accessionId = 1,
+                accessionId = AccessionId(1),
                 newStateId = AccessionState.Pending,
                 reason = "Accession created",
                 updatedTime = clock.instant())),
@@ -898,7 +915,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     assertEquals(
         listOf(
             AccessionStateHistoryRow(
-                accessionId = 1,
+                accessionId = AccessionId(1),
                 newStateId = AccessionState.Processing,
                 oldStateId = AccessionState.Pending,
                 reason = "Seed count/weight has been entered",
@@ -1010,7 +1027,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     listOf(1 to 6, 1 to null, 2 to null, 2 to 5, 4 to null, 6 to null, 6 to null).forEachIndexed {
         index,
         (processingStartTime, processedStartTime) ->
-      val accessionId = (index + 1).toLong()
+      val accessionId = AccessionId((index + 1).toLong())
       val currentState =
           if (processedStartTime == null) AccessionState.Processing else AccessionState.Processed
 
@@ -1124,17 +1141,21 @@ internal class AccessionStoreTest : DatabaseTest() {
     val now = Instant.now().with(ChronoField.MILLI_OF_SECOND, 0)
     every { clock.instant() } returns now
 
-    val newId = store.updateSpecies(1, "species1a")
+    val newId = store.updateSpecies(SpeciesId(1), "species1a")
 
     assertNull(newId, "No new species ID should be returned")
     assertEquals(
-        SpeciesRow(id = 1, name = "species1a", createdTime = Instant.EPOCH, modifiedTime = now),
-        speciesDao.fetchOneById(1),
+        SpeciesRow(
+            id = SpeciesId(1), name = "species1a", createdTime = Instant.EPOCH, modifiedTime = now),
+        speciesDao.fetchOneById(SpeciesId(1)),
         "Updated species")
     assertEquals(
         SpeciesRow(
-            id = 2, name = "species2", createdTime = Instant.EPOCH, modifiedTime = Instant.EPOCH),
-        speciesDao.fetchOneById(2),
+            id = SpeciesId(2),
+            name = "species2",
+            createdTime = Instant.EPOCH,
+            modifiedTime = Instant.EPOCH),
+        speciesDao.fetchOneById(SpeciesId(2)),
         "Unmodified species")
     assertEquals(
         "species1a",
@@ -1151,11 +1172,11 @@ internal class AccessionStoreTest : DatabaseTest() {
     val accession1 = store.create(AccessionModel(species = "species1"))
     val accession2 = store.create(AccessionModel(species = "species2"))
 
-    val newId = store.updateSpecies(1, "species2")
+    val newId = store.updateSpecies(SpeciesId(1), "species2")
 
-    assertEquals(2, newId, "Existing species ID should be returned")
-    assertNull(speciesDao.fetchOneById(1), "Old species should be deleted")
-    assertEquals("species2", speciesDao.fetchOneById(2)?.name, "Unmodified species name")
+    assertEquals(SpeciesId(2), newId, "Existing species ID should be returned")
+    assertNull(speciesDao.fetchOneById(SpeciesId(1)), "Old species should be deleted")
+    assertEquals("species2", speciesDao.fetchOneById(SpeciesId(2))?.name, "Unmodified species name")
     assertEquals(
         "species2",
         store.fetchByNumber(accession1.accessionNumber!!)?.species,
@@ -1168,7 +1189,9 @@ internal class AccessionStoreTest : DatabaseTest() {
 
   @Test
   fun `updateSpecies throws exception when species does not exist`() {
-    assertThrows(SpeciesNotFoundException::class.java) { store.updateSpecies(1, "nonexistent") }
+    assertThrows(SpeciesNotFoundException::class.java) {
+      store.updateSpecies(SpeciesId(1), "nonexistent")
+    }
   }
 
   @Test
@@ -1495,7 +1518,7 @@ internal class AccessionStoreTest : DatabaseTest() {
     }
   }
 
-  private fun getSecondaryCollectors(accessionId: Long?): Set<Long> {
+  private fun getSecondaryCollectors(accessionId: AccessionId?): Set<CollectorId> {
     with(ACCESSION_SECONDARY_COLLECTORS) {
       return dslContext
           .select(COLLECTOR_ID)

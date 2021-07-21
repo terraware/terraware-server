@@ -15,13 +15,13 @@ import org.jooq.impl.DSL
 @ManagedBean
 class StoreSupport(private val config: TerrawareServerConfig, private val dslContext: DSLContext) {
 
-  fun getOrInsertId(
+  fun <T : Any> getOrInsertId(
       name: String?,
-      idField: TableField<*, Long?>,
+      idField: TableField<*, T?>,
       nameField: TableField<*, String?>,
-      facilityIdField: TableField<*, Long?>? = null,
+      facilityIdField: TableField<*, FacilityId?>? = null,
       extraSetters: (InsertSetMoreStep<out Record>) -> Unit = {}
-  ): Long? {
+  ): T? {
     if (name == null) {
       return null
     }
@@ -50,12 +50,12 @@ class StoreSupport(private val config: TerrawareServerConfig, private val dslCon
         ?: throw DataAccessException("Unable to insert new ${table.name.lowercase()} $name")
   }
 
-  fun getId(
+  fun <T> getId(
       name: String?,
-      idField: TableField<*, Long?>,
+      idField: TableField<*, T?>,
       nameField: TableField<*, String?>,
-      facilityIdField: TableField<*, Long?>? = null
-  ): Long? {
+      facilityIdField: TableField<*, FacilityId?>? = null
+  ): T? {
     if (name == null) {
       return null
     }

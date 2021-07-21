@@ -1,6 +1,7 @@
 package com.terraformation.backend.api
 
 import com.terraformation.backend.auth.ClientIdentity
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import io.swagger.v3.oas.annotations.Hidden
@@ -60,7 +61,7 @@ class SiteController(private val sitesDao: SitesDao) {
       throw NoOrganizationException()
     }
 
-    val site = sitesDao.fetchOneById(siteId) ?: throw NotFoundException()
+    val site = sitesDao.fetchOneById(SiteId(siteId)) ?: throw NotFoundException()
     if (site.organizationId != organizationId && !clientIdentity.isSuperAdmin) {
       throw WrongOrganizationException()
     }
@@ -70,7 +71,7 @@ class SiteController(private val sitesDao: SitesDao) {
 }
 
 data class ListSitesElement(val id: Long, val name: String) {
-  constructor(site: SitesRow) : this(site.id!!, site.name!!)
+  constructor(site: SitesRow) : this(site.id!!.value, site.name!!)
 }
 
 data class ListSitesResponse(val sites: List<ListSitesElement>)
@@ -87,7 +88,7 @@ data class GetSiteResponse(
   constructor(
       record: SitesRow
   ) : this(
-      record.id!!,
+      record.id!!.value,
       record.name!!,
       record.latitude!!.toPlainString(),
       record.longitude!!.toPlainString(),

@@ -1,10 +1,13 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.daos.GerminationTestsDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
@@ -35,8 +38,8 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
   private val clock: Clock = mockk()
 
-  private val accessionId = 9999L
-  private val germinationTestId = 9998L
+  private val accessionId = AccessionId(9999)
+  private val germinationTestId = GerminationTestId(9998)
 
   override val sequencesToReset: List<String>
     get() = listOf("withdrawal_id_seq")
@@ -102,7 +105,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
     val expected =
         setOf(
             WithdrawalModel(
-                id = 1,
+                id = WithdrawalId(1),
                 accessionId = accessionId,
                 date = pojos[0].date!!,
                 notes = pojos[0].notes,
@@ -113,7 +116,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
                 withdrawn = milligrams(10000),
             ),
             WithdrawalModel(
-                id = 2,
+                id = WithdrawalId(2),
                 accessionId = accessionId,
                 date = pojos[1].date!!,
                 notes = pojos[1].notes,
@@ -148,7 +151,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
     val expected =
         setOf(
             WithdrawalModel(
-                id = 1,
+                id = WithdrawalId(1),
                 accessionId = accessionId,
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
@@ -217,7 +220,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
     val expected =
         setOf(
             WithdrawalModel(
-                id = 1,
+                id = WithdrawalId(1),
                 accessionId = accessionId,
                 date = desired.date,
                 destination = desired.destination,
@@ -261,7 +264,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
       store.updateWithdrawals(
           accessionId,
           listOf(inserted),
-          listOf(inserted.copy(germinationTestId = germinationTestId + 1)))
+          listOf(inserted.copy(germinationTestId = GerminationTestId(germinationTestId.value + 1))))
     }
   }
 
@@ -279,12 +282,15 @@ internal class WithdrawalStoreTest : DatabaseTest() {
         )
     val desired =
         initial.copy(
-            id = 1L, destination = "updated dest", notes = "updated notes", withdrawn = grams(2))
+            id = WithdrawalId(1),
+            destination = "updated dest",
+            notes = "updated notes",
+            withdrawn = grams(2))
 
     val expected =
         setOf(
             WithdrawalModel(
-                id = 1,
+                id = WithdrawalId(1),
                 accessionId = accessionId,
                 date = desired.date,
                 destination = desired.destination,
@@ -316,7 +322,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
             remaining = grams(4),
             withdrawn = grams(1),
         )
-    val desired = initial.copy(id = 1L, purpose = WithdrawalPurpose.GerminationTesting)
+    val desired = initial.copy(id = WithdrawalId(1), purpose = WithdrawalPurpose.GerminationTesting)
 
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
     val afterInsert = store.fetchWithdrawals(accessionId)

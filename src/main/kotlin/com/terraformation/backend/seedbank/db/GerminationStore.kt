@@ -1,5 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.GERMINATIONS
@@ -12,7 +14,7 @@ import org.jooq.DSLContext
 
 @ManagedBean
 class GerminationStore(private val dslContext: DSLContext) {
-  fun fetchGerminationTestTypes(accessionId: Long): Set<GerminationTestType> {
+  fun fetchGerminationTestTypes(accessionId: AccessionId): Set<GerminationTestType> {
     return dslContext
         .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
         .from(ACCESSION_GERMINATION_TEST_TYPES)
@@ -22,7 +24,7 @@ class GerminationStore(private val dslContext: DSLContext) {
         .toSet()
   }
 
-  fun fetchGerminationTests(accessionId: Long): List<GerminationTestModel> {
+  fun fetchGerminationTests(accessionId: AccessionId): List<GerminationTestModel> {
     val germinationsByTestId =
         dslContext
             .select(
@@ -75,7 +77,7 @@ class GerminationStore(private val dslContext: DSLContext) {
   }
 
   fun insertGerminationTest(
-      accessionId: Long,
+      accessionId: AccessionId,
       germinationTest: GerminationTestModel
   ): GerminationTestModel {
     val testId =
@@ -107,7 +109,7 @@ class GerminationStore(private val dslContext: DSLContext) {
     return germinationTest.copy(id = testId)
   }
 
-  private fun insertGermination(testId: Long, germination: GerminationModel) {
+  private fun insertGermination(testId: GerminationTestId, germination: GerminationModel) {
     dslContext
         .insertInto(GERMINATIONS)
         .set(GERMINATIONS.RECORDING_DATE, germination.recordingDate)
@@ -117,7 +119,7 @@ class GerminationStore(private val dslContext: DSLContext) {
   }
 
   fun updateGerminationTestTypes(
-      accessionId: Long,
+      accessionId: AccessionId,
       existingTypes: Set<GerminationTestType>?,
       desiredTypes: Set<GerminationTestType>?
   ) {
@@ -144,7 +146,7 @@ class GerminationStore(private val dslContext: DSLContext) {
   }
 
   fun updateGerminationTests(
-      accessionId: Long,
+      accessionId: AccessionId,
       existingTests: List<GerminationTestModel>?,
       desiredTests: List<GerminationTestModel>?
   ) {

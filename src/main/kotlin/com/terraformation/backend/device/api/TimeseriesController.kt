@@ -5,6 +5,7 @@ import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.db.TimeSeriesStore
@@ -69,7 +70,7 @@ class TimeseriesController(
                   "configuration.")
       facilityId: Long?,
   ): SimpleSuccessResponsePayload {
-    val effectiveFacilityId = facilityId ?: siteModuleId
+    val effectiveFacilityId = (facilityId ?: siteModuleId)?.let { FacilityId(it) }
     val deviceId =
         deviceStore.getDeviceIdByName(effectiveFacilityId ?: config.facilityId, device)
             ?: throw NotFoundException("Device $device does not exist")

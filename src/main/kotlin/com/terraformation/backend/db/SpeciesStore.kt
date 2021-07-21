@@ -16,14 +16,14 @@ class SpeciesStore(
     private val support: StoreSupport
 ) {
 
-  fun getSpeciesId(speciesName: String?): Long? {
+  fun getSpeciesId(speciesName: String?): SpeciesId? {
     return support.getOrInsertId(speciesName, SPECIES.ID, SPECIES.NAME) {
       it.set(SPECIES.CREATED_TIME, clock.instant())
       it.set(SPECIES.MODIFIED_TIME, clock.instant())
     }
   }
 
-  fun getSpeciesFamilyId(familyName: String?): Long? {
+  fun getSpeciesFamilyId(familyName: String?): SpeciesFamilyId? {
     return support.getOrInsertId(familyName, SPECIES_FAMILIES.ID, SPECIES_FAMILIES.NAME) {
       it.set(SPECIES_FAMILIES.CREATED_TIME, clock.instant())
     }
@@ -58,7 +58,7 @@ class SpeciesStore(
    * @throws DuplicateKeyException The requested name was already in use.
    * @throws SpeciesNotFoundException No species with the requested ID exists.
    */
-  fun updateSpecies(speciesId: Long, name: String) {
+  fun updateSpecies(speciesId: SpeciesId, name: String) {
     val rowsUpdated =
         dslContext
             .update(SPECIES)
@@ -77,7 +77,7 @@ class SpeciesStore(
    * @throws org.springframework.dao.DataIntegrityViolationException The species is still in use.
    * @throws SpeciesNotFoundException No species with the requested ID exists.
    */
-  fun deleteSpecies(speciesId: Long) {
+  fun deleteSpecies(speciesId: SpeciesId) {
     val rowsDeleted = dslContext.deleteFrom(SPECIES).where(SPECIES.ID.eq(speciesId)).execute()
     if (rowsDeleted != 1) {
       throw SpeciesNotFoundException(speciesId)

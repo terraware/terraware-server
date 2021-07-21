@@ -1,9 +1,13 @@
 package com.terraformation.backend.seedbank.model
 
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.GerminationId
+import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.grams
 import com.terraformation.backend.milligrams
@@ -27,9 +31,9 @@ internal class AccessionModelTest {
   private val tomorrow = today.plusDays(1)
   private val yesterday = today.minusDays(1)
 
-  private var germinationId = 1L
-  private var germinationTestId = 1L
-  private var withdrawalId = 1L
+  private var germinationId = GerminationId(1)
+  private var germinationTestId = GerminationTestId(1)
+  private var withdrawalId = WithdrawalId(1)
   private var defaultState = AccessionState.Processing
 
   private fun accession(
@@ -59,7 +63,7 @@ internal class AccessionModelTest {
         dryingEndDate = dryingEndDate,
         dryingStartDate = dryingStartDate,
         germinationTests = germinationTests,
-        id = 1L,
+        id = AccessionId(1L),
         processingMethod = processingMethod,
         processingStartDate = processingStartDate,
         source = AccessionSource.Web,
@@ -74,6 +78,12 @@ internal class AccessionModelTest {
     )
   }
 
+  private fun nextGerminationTestId(): GerminationTestId {
+    val current = germinationTestId
+    germinationTestId = GerminationTestId(current.value + 1)
+    return current
+  }
+
   private fun germinationTest(
       testType: GerminationTestType = GerminationTestType.Lab,
       startDate: LocalDate? = january(1),
@@ -82,9 +92,9 @@ internal class AccessionModelTest {
       remaining: SeedQuantityModel? = null,
   ): GerminationTestModel {
     return GerminationTestModel(
-        accessionId = 1,
+        accessionId = AccessionId(1),
         germinations = germinations,
-        id = germinationTestId++,
+        id = nextGerminationTestId(),
         remaining = remaining,
         seedsSown = seedsSown,
         startDate = startDate,
@@ -92,21 +102,33 @@ internal class AccessionModelTest {
     )
   }
 
+  private fun nextGerminationId(): GerminationId {
+    val current = germinationId
+    germinationId = GerminationId(current.value + 1)
+    return current
+  }
+
   private fun germination(
       recordingDate: LocalDate = january(2),
       seedsGerminated: Int = 1
   ): GerminationModel {
     return GerminationModel(
-        id = germinationId++,
+        id = nextGerminationId(),
         testId = germinationTestId,
         recordingDate = recordingDate,
         seedsGerminated = seedsGerminated)
   }
 
+  private fun nextWithdrawalId(): WithdrawalId {
+    val current = withdrawalId
+    withdrawalId = WithdrawalId(current.value + 1)
+    return current
+  }
+
   private fun withdrawal(
       withdrawn: SeedQuantityModel = seeds(1),
       date: LocalDate = january(3),
-      germinationTestId: Long? = null,
+      germinationTestId: GerminationTestId? = null,
       purpose: WithdrawalPurpose =
           if (germinationTestId != null) WithdrawalPurpose.GerminationTesting
           else WithdrawalPurpose.Other,
@@ -114,10 +136,10 @@ internal class AccessionModelTest {
           if (withdrawn.units == SeedQuantityUnits.Seeds) seeds(10) else grams(10),
   ): WithdrawalModel {
     return WithdrawalModel(
-        accessionId = 1,
+        accessionId = AccessionId(1),
         date = date,
         germinationTestId = germinationTestId,
-        id = withdrawalId++,
+        id = nextWithdrawalId(),
         purpose = purpose,
         remaining = remaining,
         withdrawn = withdrawn,
@@ -717,10 +739,10 @@ internal class AccessionModelTest {
               withdrawals =
                   listOf(
                       WithdrawalModel(
-                          accessionId = 1,
+                          accessionId = AccessionId(1),
                           date = january(15), // different from test date
                           germinationTestId = testWithExistingWithdrawal.id,
-                          id = withdrawalId++,
+                          id = nextWithdrawalId(),
                           purpose = WithdrawalPurpose.GerminationTesting,
                           remaining = seeds(0),
                           withdrawn = seeds(testWithExistingWithdrawal.seedsSown!!),

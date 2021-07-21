@@ -14,6 +14,7 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.GerminationSeedType
 import com.terraformation.backend.db.GerminationSubstrate
+import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.ProcessingMethod
@@ -22,6 +23,7 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesRareType
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -389,7 +391,7 @@ data class AccessionPayload(
       model.source,
       model.sourcePlantOrigin,
       model.species,
-      model.speciesId,
+      model.speciesId?.value,
       model.state ?: AccessionState.Pending,
       model.storageCondition,
       model.storageLocation,
@@ -470,7 +472,7 @@ data class GerminationTestPayload(
   constructor(
       model: GerminationTestModel
   ) : this(
-      model.id,
+      model.id?.value,
       model.testType,
       model.startDate,
       model.endDate,
@@ -488,7 +490,7 @@ data class GerminationTestPayload(
   fun toModel() =
       GerminationTestModel(
           germinations = germinations?.map { it.toModel() },
-          id = id,
+          id = id?.let { GerminationTestId(it) },
           endDate = endDate,
           notes = notes,
           seedsSown = seedsSown,
@@ -563,14 +565,14 @@ data class WithdrawalPayload(
   constructor(
       model: WithdrawalModel
   ) : this(
-      model.id,
+      model.id?.value,
       model.date,
       model.purpose,
       model.destination,
       model.notes,
       model.remaining?.toPayload(),
       model.staffResponsible,
-      model.germinationTestId,
+      model.germinationTestId?.value,
       model.weightDifference?.toPayload(),
       model.withdrawn?.toPayload(),
       model.calculateEstimatedQuantity()?.toPayload(),
@@ -580,8 +582,8 @@ data class WithdrawalPayload(
       WithdrawalModel(
           date = date,
           destination = destination,
-          germinationTestId = germinationTestId,
-          id = id,
+          germinationTestId = germinationTestId?.let { GerminationTestId(it) },
+          id = id?.let { WithdrawalId(it) },
           notes = notes,
           purpose = purpose,
           remaining = remainingQuantity?.toModel(),

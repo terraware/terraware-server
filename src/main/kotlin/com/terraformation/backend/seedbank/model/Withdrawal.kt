@@ -1,18 +1,21 @@
 package com.terraformation.backend.seedbank.model
 
+import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.GerminationTestId
+import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.util.compareNullsFirst
 import java.time.LocalDate
 
 data class WithdrawalModel(
-    val id: Long? = null,
-    val accessionId: Long? = null,
+    val id: WithdrawalId? = null,
+    val accessionId: AccessionId? = null,
     val date: LocalDate,
     val purpose: WithdrawalPurpose,
     val destination: String? = null,
     val notes: String? = null,
     val staffResponsible: String? = null,
-    val germinationTestId: Long? = null,
+    val germinationTestId: GerminationTestId? = null,
     val remaining: SeedQuantityModel? = null,
     /** The user-entered withdrawal quantity. */
     val withdrawn: SeedQuantityModel? = null,
@@ -54,7 +57,7 @@ data class WithdrawalModel(
     return if (dateComparison != 0) {
       dateComparison
     } else {
-      val idComparison = id.compareNullsFirst(other.id)
+      val idComparison = id?.value.compareNullsFirst(other.id?.value)
       if (idComparison != 0) {
         idComparison
       } else {

@@ -1,9 +1,10 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.tables.records.AppDevicesRecord
 
 data class AppDeviceModel(
-    val id: Long? = null,
+    val id: AppDeviceId? = null,
     val appBuild: String? = null,
     val appName: String? = null,
     val brand: String? = null,

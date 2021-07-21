@@ -1,21 +1,24 @@
 package com.terraformation.backend.seedbank.model
 
+import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.GerminationId
 import com.terraformation.backend.db.GerminationSeedType
 import com.terraformation.backend.db.GerminationSubstrate
+import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import java.time.LocalDate
 
 data class GerminationModel(
-    val id: Long? = null,
-    val testId: Long? = null,
+    val id: GerminationId? = null,
+    val testId: GerminationTestId? = null,
     val recordingDate: LocalDate,
     val seedsGerminated: Int
 )
 
 data class GerminationTestModel(
-    val id: Long? = null,
-    val accessionId: Long? = null,
+    val id: GerminationTestId? = null,
+    val accessionId: AccessionId? = null,
     val testType: GerminationTestType,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,

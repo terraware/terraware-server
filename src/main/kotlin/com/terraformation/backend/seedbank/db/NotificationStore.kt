@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
@@ -48,7 +50,7 @@ class NotificationStore(
         }
   }
 
-  fun markRead(notificationId: Long): Boolean {
+  fun markRead(notificationId: NotificationId): Boolean {
     val rowsUpdated =
         dslContext
             .update(NOTIFICATIONS)
@@ -94,7 +96,7 @@ class NotificationStore(
         .execute()
   }
 
-  fun insertDateNotification(accessionId: Long, message: String) {
+  fun insertDateNotification(accessionId: AccessionId, message: String) {
     val siteId = facilitiesDao.fetchOneById(config.facilityId)!!.siteId!!
 
     dslContext

@@ -1,5 +1,7 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.config.FacilityIdConfigConverter
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.SITES
@@ -7,6 +9,7 @@ import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.ApplicationContextInitializer
@@ -42,7 +45,10 @@ import org.testcontainers.junit.jupiter.Testcontainers
  */
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(initializers = [DatabaseTest.DockerPostgresDataSourceInitializer::class])
+@ContextConfiguration(
+    initializers = [DatabaseTest.DockerPostgresDataSourceInitializer::class],
+    classes = [FacilityIdConfigConverter::class])
+@EnableConfigurationProperties(TerrawareServerConfig::class)
 @JooqTest
 @Testcontainers
 abstract class DatabaseTest {
@@ -65,14 +71,14 @@ abstract class DatabaseTest {
   /** Creates an organization, site, and facility that can be referenced by various tests. */
   fun insertSiteData() {
     with(ORGANIZATIONS) {
-      dslContext.insertInto(ORGANIZATIONS).set(ID, 1).set(NAME, "dev").execute()
+      dslContext.insertInto(ORGANIZATIONS).set(ID, OrganizationId(1)).set(NAME, "dev").execute()
     }
 
     with(SITES) {
       dslContext
           .insertInto(SITES)
-          .set(ID, 10)
-          .set(ORGANIZATION_ID, 1)
+          .set(ID, SiteId(10))
+          .set(ORGANIZATION_ID, OrganizationId(1))
           .set(NAME, "sim")
           .set(LATITUDE, BigDecimal.valueOf(1))
           .set(LONGITUDE, BigDecimal.valueOf(2))
@@ -82,8 +88,8 @@ abstract class DatabaseTest {
     with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
-          .set(ID, 100)
-          .set(SITE_ID, 10)
+          .set(ID, FacilityId(100))
+          .set(SITE_ID, SiteId(10))
           .set(TYPE_ID, 1)
           .set(NAME, "ohana")
           .execute()

@@ -9,65 +9,13 @@ import org.jooq.meta.TableDefinition
 import org.jooq.meta.jaxb.ForcedType
 import org.slf4j.LoggerFactory
 
-/** Converts "foo_bar_baz" to "FooBarBaz". */
-private fun pascalCase(str: String) =
-    str.replace(Regex("_(.)")) { it.groupValues[1].capitalize() }.capitalize()
-
-class EnumTable(
-    private val tableName: String,
-    includeExpressions: List<String>,
-    val enumName: String = pascalCase(tableName.trimEnd('s'))
-) {
-  constructor(
-      tableName: String,
-      includeExpression: String
-  ) : this(tableName, listOf(includeExpression))
-
-  val converterName = "${enumName}Converter"
-  private val includeExpression = "(?i:" + includeExpressions.joinToString("|") + ")"
-
-  override fun toString() = tableName
-
-  fun forcedType(targetPackage: String): ForcedType {
-    return ForcedType()
-        .withUserType("$targetPackage.$enumName")
-        .withConverter("$targetPackage.$converterName")
-        .withIncludeTypes("INTEGER")
-        .withIncludeExpression(includeExpression)
-  }
-}
-
-/** Generates enums instead of table objects for a select set of reference tables. */
-class EnumGenerator : KotlinGenerator() {
-  @Suppress("MemberVisibilityCanBePrivate") // Referenced by build.gradle.kts
-  val enumTables =
-      listOf(
-          EnumTable(
-              "accession_states",
-              listOf(
-                  "accessions\\.state_id",
-                  ".*\\.accession_state_id",
-                  "accession_state_history\\.(old|new)_state_id")),
-          EnumTable("germination_seed_types", "germination_tests\\.seed_type_id"),
-          EnumTable("germination_substrates", "germination_tests\\.substrate_id"),
-          EnumTable(
-              "germination_test_types",
-              listOf(
-                  "germination_tests\\.test_type",
-                  "accession_germination_test_types\\.germination_test_type_id")),
-          EnumTable("germination_treatments", "germination_tests\\.treatment_id"),
-          EnumTable("notification_types", "notifications\\.type_id"),
-          EnumTable("processing_methods", "accessions\\.processing_method_id"),
-          EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
-          EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
-          EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
-          EnumTable("species_rare_types", ".*\\.species_rare_type_id"),
-          EnumTable(
-              "storage_conditions",
-              listOf("accessions\\.target_storage_condition", "storage_locations\\.condition_id")),
-          EnumTable("timeseries_types", "timeseries\\.type_id"),
-          EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"))
-
+/**
+ * Generates custom database classes to supplement or replace the standard jOOQ ones.
+ *
+ * - Enums instead of table objects for a select set of reference tables.
+ * - Type-safe value classes instead of plain Int/Long for single-column primary keys.
+ */
+class TerrawareGenerator : KotlinGenerator() {
   private val log = LoggerFactory.getLogger(javaClass)
 
   override fun generateSchema(schema: SchemaDefinition) {
@@ -92,7 +40,9 @@ class EnumGenerator : KotlinGenerator() {
 
     """.trimIndent())
 
-    enumTables.forEach { printEnum(out, it, schema.database.connection) }
+    ENUM_TABLES.forEach { printEnum(out, it, schema.database.connection) }
+    ID_WRAPPERS.forEach { it.render(out) }
+
     closeJavaWriter(out)
   }
 
@@ -152,7 +102,7 @@ class EnumGenerator : KotlinGenerator() {
   }
 
   override fun generateTable(schema: SchemaDefinition, table: TableDefinition) {
-    if (enumTables.any { it.toString() == table.name }) {
+    if (ENUM_TABLES.any { it.toString() == table.name }) {
       throw IllegalArgumentException(
           "${table.name} is generated as an enum and must be excluded from the table list")
     }
@@ -160,5 +110,18 @@ class EnumGenerator : KotlinGenerator() {
     super.generateTable(schema, table)
   }
 
-  fun forcedTypes(targetPackage: String) = enumTables.map { it.forcedType(targetPackage) }
+  fun forcedTypes(targetPackage: String): List<ForcedType> {
+    val types =
+        mutableListOf(
+            ForcedType()
+                .withName("INSTANT")
+                .withIncludeTypes("(?i:TIMESTAMP\\ WITH\\ TIME\\ ZONE)"))
+
+    ENUM_TABLES.forEach { types.add(it.forcedType(targetPackage)) }
+    ID_WRAPPERS.forEach { types.add(it.forcedType(targetPackage)) }
+
+    return types
+  }
+
+  fun excludes() = ENUM_TABLES.joinToString("|") { "$it\$" }
 }

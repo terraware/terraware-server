@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
@@ -13,7 +14,7 @@ import org.jooq.DSLContext
 class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clock) {
   val log = perClassLogger()
 
-  fun fetchWithdrawals(accessionId: Long): List<WithdrawalModel> {
+  fun fetchWithdrawals(accessionId: AccessionId): List<WithdrawalModel> {
     return dslContext
         .selectFrom(WITHDRAWALS)
         .where(WITHDRAWALS.ACCESSION_ID.eq(accessionId))
@@ -35,7 +36,7 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
   }
 
   fun updateWithdrawals(
-      accessionId: Long,
+      accessionId: AccessionId,
       existingWithdrawals: Collection<WithdrawalModel>?,
       desiredWithdrawals: Collection<WithdrawalModel>?,
   ) {

@@ -8,6 +8,7 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.seedbank.db.NotificationStore
 import io.swagger.v3.oas.annotations.Operation
@@ -46,7 +47,7 @@ class NotificationController(private val notificationStore: NotificationStore) {
       @Parameter(description = "ID of notification to mark as read") @PathVariable id: String
   ): SimpleSuccessResponsePayload {
     val notificationId = id.toLongOrNull()
-    if (notificationId != null && notificationStore.markRead(notificationId)) {
+    if (notificationId != null && notificationStore.markRead(NotificationId(notificationId))) {
       return SimpleSuccessResponsePayload()
     } else {
       throw NotFoundException("Notification not found.")

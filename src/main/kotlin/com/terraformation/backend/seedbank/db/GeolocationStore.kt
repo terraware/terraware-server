@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
@@ -10,7 +11,7 @@ import org.jooq.impl.DSL
 
 @ManagedBean
 class GeolocationStore(private val dslContext: DSLContext, private val clock: Clock) {
-  fun fetchGeolocations(accessionId: Long): Set<Geolocation> {
+  fun fetchGeolocations(accessionId: AccessionId): Set<Geolocation> {
     return dslContext
         .selectFrom(GEOLOCATIONS)
         .where(GEOLOCATIONS.ACCESSION_ID.eq(accessionId))
@@ -26,7 +27,7 @@ class GeolocationStore(private val dslContext: DSLContext, private val clock: Cl
   }
 
   fun updateGeolocations(
-      accessionId: Long,
+      accessionId: AccessionId,
       existingGeolocations: Set<Geolocation>?,
       desiredGeolocations: Set<Geolocation>?
   ) {

@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.TimePeriodTask
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -61,7 +62,7 @@ class DateNotificationTask(
     }
   }
 
-  private fun insert(accessionId: Long, message: String) {
+  private fun insert(accessionId: AccessionId, message: String) {
     log.info("Generated notification: $message")
     notificationStore.insertDateNotification(accessionId, message)
   }

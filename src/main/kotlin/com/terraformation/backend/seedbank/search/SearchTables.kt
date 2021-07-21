@@ -1,5 +1,10 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.CollectorId
+import com.terraformation.backend.db.SpeciesFamilyId
+import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.records.AccessionsRecord
 import com.terraformation.backend.db.tables.references.*
 import org.jooq.Record
@@ -42,7 +47,7 @@ interface SearchTable {
  *
  * @param idField The field that contains the accession ID.
  */
-abstract class AccessionChildTable(private val idField: TableField<*, Long?>) : SearchTable {
+abstract class AccessionChildTable(private val idField: TableField<*, AccessionId?>) : SearchTable {
   override val fromTable
     get() = idField.table!!
 
@@ -123,15 +128,15 @@ class SearchTables {
   object GerminationTest : AccessionChildTable(GERMINATION_TESTS.ACCESSION_ID)
 
   object PrimaryCollector :
-      AccessionParentTable<Long>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID)
+      AccessionParentTable<CollectorId>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID)
 
-  object Species : AccessionParentTable<Long>(SPECIES.ID, ACCESSIONS.SPECIES_ID)
+  object Species : AccessionParentTable<SpeciesId>(SPECIES.ID, ACCESSIONS.SPECIES_ID)
 
   object SpeciesFamily :
-      AccessionParentTable<Long>(SPECIES_FAMILIES.ID, ACCESSIONS.SPECIES_FAMILY_ID)
+      AccessionParentTable<SpeciesFamilyId>(SPECIES_FAMILIES.ID, ACCESSIONS.SPECIES_FAMILY_ID)
 
   object StorageLocation :
-      AccessionParentTable<Long>(STORAGE_LOCATIONS.ID, ACCESSIONS.STORAGE_LOCATION_ID)
+      AccessionParentTable<StorageLocationId>(STORAGE_LOCATIONS.ID, ACCESSIONS.STORAGE_LOCATION_ID)
 
   object Withdrawal : AccessionChildTable(WITHDRAWALS.ACCESSION_ID)
 }

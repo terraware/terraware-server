@@ -5,4 +5,5 @@ class AccessionNotFoundException(val accessionNumber: String) :
 
 class DeviceNotFoundException(override val message: String) : Exception(message)
 
-class SpeciesNotFoundException(val speciesId: Long) : Exception("Species $speciesId not found")
+class SpeciesNotFoundException(val speciesId: SpeciesId) :
+    Exception("Species $speciesId not found")

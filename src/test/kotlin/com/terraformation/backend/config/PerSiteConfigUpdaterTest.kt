@@ -4,7 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
@@ -114,9 +119,9 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
         AccessionsRow(
             createdTime = Instant.EPOCH,
             number = "1",
-            facilityId = 3,
+            facilityId = FacilityId(3),
             stateId = AccessionState.Pending,
-            storageLocationId = 5))
+            storageLocationId = StorageLocationId(5)))
 
     val expected =
         PerSiteConfig(
@@ -174,19 +179,19 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   }
 
   private fun simpleConfig(): PerSiteConfig {
-    val organization = OrganizationsRow(1, "test", true)
+    val organization = OrganizationsRow(OrganizationId(1), "test", true)
     val site =
         SitesRow(
-            2,
+            SiteId(2),
             organization.id,
             "testSite",
             BigDecimal("1.0000000"),
             BigDecimal("2.0000000"),
             enabled = true)
-    val facility = FacilitiesRow(3, site.id, 1, "testModule", enabled = true)
+    val facility = FacilitiesRow(FacilityId(3), site.id, 1, "testModule", enabled = true)
     val device =
         DevicesRow(
-            4,
+            DeviceId(4),
             facility.id,
             "testDevice",
             1,
@@ -200,7 +205,8 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             5432,
             true)
     val storageLocation =
-        StorageLocationsRow(5, facility.id, "location", StorageCondition.Freezer, true)
+        StorageLocationsRow(
+            StorageLocationId(5), facility.id, "location", StorageCondition.Freezer, true)
 
     return PerSiteConfig(
         organizations = listOf(organization),

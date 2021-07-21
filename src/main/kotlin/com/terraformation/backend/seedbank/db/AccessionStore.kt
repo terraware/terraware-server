@@ -2,11 +2,15 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesStore
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
@@ -63,7 +67,7 @@ class AccessionStore(
    * Looks up the ID of an accession with the given accession number. Returns null if the accession
    * number does not exist.
    */
-  fun getIdByNumber(accessionNumber: String): Long? {
+  fun getIdByNumber(accessionNumber: String): AccessionId? {
     return dslContext
         .select(ACCESSIONS.ID)
         .from(ACCESSIONS)
@@ -427,7 +431,7 @@ class AccessionStore(
    * @return The ID of the existing species with the requested name if the name was already in use
    * or null if not.
    */
-  fun updateSpecies(speciesId: Long, name: String): Long? {
+  fun updateSpecies(speciesId: SpeciesId, name: String): SpeciesId? {
     try {
       dslContext.transaction { _ -> speciesStore.updateSpecies(speciesId, name) }
 
@@ -492,7 +496,7 @@ class AccessionStore(
     }
   }
 
-  private fun fetchSecondaryCollectorNames(accessionId: Long): Set<String> {
+  private fun fetchSecondaryCollectorNames(accessionId: AccessionId): Set<String> {
     return dslContext
         .select(COLLECTORS.NAME)
         .from(COLLECTORS)
@@ -506,7 +510,7 @@ class AccessionStore(
   }
 
   private fun insertSecondaryCollectors(
-      accessionId: Long,
+      accessionId: AccessionId,
       secondaryCollectors: Collection<String>?
   ) {
     if (secondaryCollectors != null) {
@@ -523,11 +527,11 @@ class AccessionStore(
     }
   }
 
-  private fun getCollectorId(name: String?): Long? {
+  private fun getCollectorId(name: String?): CollectorId? {
     return support.getOrInsertId(name, COLLECTORS.ID, COLLECTORS.NAME, COLLECTORS.FACILITY_ID)
   }
 
-  private fun getStorageLocationId(name: String?): Long? {
+  private fun getStorageLocationId(name: String?): StorageLocationId? {
     return support.getId(
         name, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.NAME, STORAGE_LOCATIONS.FACILITY_ID)
   }
@@ -618,7 +622,10 @@ class AccessionStore(
     return log.debugWithTiming("Accession state count query") { query.fetchOne()?.value1() ?: 0 }
   }
 
-  fun fetchDryingMoveDue(after: TemporalAccessor, until: TemporalAccessor): Map<String, Long> {
+  fun fetchDryingMoveDue(
+      after: TemporalAccessor,
+      until: TemporalAccessor
+  ): Map<String, AccessionId> {
     return with(ACCESSIONS) {
       dslContext
           .select(ID, NUMBER)
@@ -647,7 +654,10 @@ class AccessionStore(
         .toMap()
   }
 
-  fun fetchWithdrawalDue(after: TemporalAccessor, until: TemporalAccessor): Map<String, Long> {
+  fun fetchWithdrawalDue(
+      after: TemporalAccessor,
+      until: TemporalAccessor
+  ): Map<String, AccessionId> {
     return dslContext
         .selectDistinct(ACCESSIONS.ID, ACCESSIONS.NUMBER)
         .from(ACCESSIONS)

@@ -1,6 +1,7 @@
 package com.terraformation.backend.photo
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
@@ -38,7 +39,7 @@ internal class PhotoRepositoryTest {
 
   private lateinit var tempDir: Path
 
-  private val accessionId = 12345L
+  private val accessionId = AccessionId(12345L)
   private val accessionNumber = "ZYXWVUTSRQPO"
   private val capturedTime = Instant.ofEpochMilli(1000)
   private val contentType = MediaType.IMAGE_JPEG_VALUE

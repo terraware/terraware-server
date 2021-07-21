@@ -119,14 +119,14 @@ class PerSiteConfigUpdater(
     databaseBootstrapper.updateApiKey()
   }
 
-  private fun <T, I : Number> insertAndUpdate(desired: List<T>, dao: DAO<*, T, I>) {
+  private fun <T, I : Any> insertAndUpdate(desired: List<T>, dao: DAO<*, T, I>) {
     val existingIds = dao.findAll().mapNotNull { dao.getId(it) }.toSet()
 
     dao.update(desired.filter { dao.getId(it) in existingIds })
     dao.insert(desired.filter { dao.getId(it) !in existingIds })
   }
 
-  private fun <T, I : Number> delete(desired: List<T>, dao: DAO<*, T, I>, disable: (T) -> Unit) {
+  private fun <T, I : Any> delete(desired: List<T>, dao: DAO<*, T, I>, disable: (T) -> Unit) {
     val existing = dao.findAll()
     val existingById = existing.associateBy { dao.getId(it)!! }
     val existingIds = existingById.keys

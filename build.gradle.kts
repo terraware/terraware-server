@@ -130,20 +130,16 @@ tasks {
     schemas = arrayOf("public")
 
     customizeGenerator {
-      val enumGenerator = com.terraformation.backend.jooq.EnumGenerator()
+      val generator = com.terraformation.backend.jooq.TerrawareGenerator()
       val pluralStrategy = com.terraformation.backend.jooq.PluralPojoStrategy()
-      val forcedTypeForInstant =
-          org.jooq.meta.jaxb.ForcedType()
-              .withName("INSTANT")
-              .withIncludeTypes("(?i:TIMESTAMP\\ WITH\\ TIME\\ ZONE)")
 
-      name = enumGenerator.javaClass.name
+      name = generator.javaClass.name
       strategy = Strategy().withName(pluralStrategy.javaClass.name)
       database.apply {
         withName("org.jooq.meta.postgres.PostgresDatabase")
         withIncludes(".*")
-        withExcludes(enumGenerator.enumTables.joinToString("|") { "$it\$" })
-        withForcedTypes(enumGenerator.forcedTypes(basePackageName) + listOf(forcedTypeForInstant))
+        withExcludes(generator.excludes())
+        withForcedTypes(generator.forcedTypes(basePackageName))
       }
 
       generate.apply {

@@ -1,7 +1,9 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.api.rhizo.DeviceConfig
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
@@ -21,13 +23,13 @@ class DeviceStore(private val dslContext: DSLContext) {
    *
    * @throws DeviceNotFoundException The device didn't exist.
    */
-  fun getDeviceIdForMqttTopic(topic: String): Long {
+  fun getDeviceIdForMqttTopic(topic: String): DeviceId {
     val query = queryDeviceIdForMqttTopic(topic)
     return query?.fetchOne(DEVICES.ID)
         ?: throw DeviceNotFoundException(getErrorForMissingDevice(topic))
   }
 
-  fun queryDeviceIdForMqttTopic(topic: String): SelectConditionStep<Record1<Long?>>? {
+  fun queryDeviceIdForMqttTopic(topic: String): SelectConditionStep<Record1<DeviceId?>>? {
     val topicParts = topic.split('/', limit = 4)
     if (topicParts.size != 4) {
       return null
@@ -96,7 +98,7 @@ class DeviceStore(private val dslContext: DSLContext) {
     return "Unable to determine why $topic was not found"
   }
 
-  fun fetchDeviceConfigurationForSite(facilityId: Long): List<DeviceConfig> {
+  fun fetchDeviceConfigurationForSite(facilityId: FacilityId): List<DeviceConfig> {
     return with(DEVICES) {
       dslContext
           .select(
@@ -139,7 +141,7 @@ class DeviceStore(private val dslContext: DSLContext) {
     }
   }
 
-  fun getDeviceIdByName(facilityId: Long, name: String): Long? {
+  fun getDeviceIdByName(facilityId: FacilityId, name: String): DeviceId? {
     return dslContext
         .select(DEVICES.ID)
         .from(DEVICES)
