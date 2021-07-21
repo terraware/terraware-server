@@ -46,6 +46,7 @@ val ID_WRAPPERS =
             listOf("germination_tests\\.id", ".*\\.germination_test_id", "germinations\\.test_id")),
         IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
         IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
+        IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
         IdWrapper("SiteId", listOf("sites\\.id", ".*\\.site_id")),
         IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
         IdWrapper("SpeciesFamilyId", listOf("species_families\\.id", ".*\\.species_family_id")),

@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
@@ -14,6 +15,7 @@ import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
@@ -21,6 +23,7 @@ import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import io.mockk.every
@@ -28,8 +31,10 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneOffset
 import org.jooq.DAO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -48,6 +53,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   private lateinit var accessionsDao: AccessionsDao
   private lateinit var devicesDao: DevicesDao
   private lateinit var organizationsDao: OrganizationsDao
+  private lateinit var projectsDao: ProjectsDao
   private lateinit var sitesDao: SitesDao
   private lateinit var facilitiesDao: FacilitiesDao
   private lateinit var storageLocationsDao: StorageLocationsDao
@@ -65,6 +71,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
     accessionsDao = AccessionsDao(config)
     devicesDao = DevicesDao(config)
     organizationsDao = OrganizationsDao(config)
+    projectsDao = ProjectsDao(config)
     sitesDao = SitesDao(config)
     facilitiesDao = FacilitiesDao(config)
     storageLocationsDao = StorageLocationsDao(config)
@@ -72,9 +79,11 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
 
     updater =
         PerSiteConfigUpdater(
+            Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             databaseBootstrapper,
             devicesDao,
             dslContext,
+            projectsDao,
             organizationsDao,
             sitesDao,
             facilitiesDao,
@@ -82,6 +91,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             ObjectMapper().registerKotlinModule(),
             serverConfig,
             taskScheduler)
+    updater.addMixInForOrganizationId()
 
     justRun { databaseBootstrapper.updateApiKey() }
   }
@@ -127,6 +137,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
         PerSiteConfig(
             devices = emptyList(),
             organizations = initial.organizations.map { it.copy(enabled = false) },
+            projects = initial.projects.map { it.copy(disabledTime = Instant.EPOCH) },
             sites = initial.sites.map { it.copy(enabled = false) },
             facilities = initial.facilities.map { it.copy(enabled = false) },
             storageLocations = initial.storageLocations.map { it.copy(enabled = false) })
@@ -144,6 +155,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
         PerSiteConfig(
             devices = listOf(initialConfig.devices[0].copy(name = "new device")),
             organizations = listOf(initialConfig.organizations[0].copy(name = "new org")),
+            projects = listOf(initialConfig.projects[0].copy(name = "new project")),
             sites = listOf(initialConfig.sites[0].copy(name = "new site")),
             facilities = listOf(initialConfig.facilities[0].copy(name = "new module")),
             storageLocations =
@@ -180,14 +192,21 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
 
   private fun simpleConfig(): PerSiteConfig {
     val organization = OrganizationsRow(OrganizationId(1), "test", true)
+    val project =
+        ProjectsRow(
+            ProjectId(2),
+            organization.id,
+            "testProject",
+            createdTime = Instant.EPOCH,
+            modifiedTime = Instant.EPOCH)
     val site =
         SitesRow(
             SiteId(2),
-            organization.id,
             "testSite",
             BigDecimal("1.0000000"),
             BigDecimal("2.0000000"),
-            enabled = true)
+            enabled = true,
+            projectId = project.id)
     val facility = FacilitiesRow(FacilityId(3), site.id, 1, "testModule", enabled = true)
     val device =
         DevicesRow(
@@ -214,6 +233,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
         facilities = listOf(facility),
         devices = listOf(device),
         storageLocations = listOf(storageLocation),
+        projects = listOf(project),
     )
   }
 
@@ -237,6 +257,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
 
   private fun assertConfigInDatabase(expected: PerSiteConfig) {
     assertRows(expected.organizations, organizationsDao)
+    assertRows(expected.projects, projectsDao)
     assertRows(expected.sites, sitesDao)
     assertRows(expected.facilities, facilitiesDao)
     assertRows(expected.devices, devicesDao)

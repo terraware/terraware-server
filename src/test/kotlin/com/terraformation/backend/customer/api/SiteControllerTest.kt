@@ -1,19 +1,18 @@
 package com.terraformation.backend.customer.api
 
-import com.terraformation.backend.api.GetSiteResponse
-import com.terraformation.backend.api.ListSitesElement
-import com.terraformation.backend.api.ListSitesResponse
 import com.terraformation.backend.api.NoOrganizationException
 import com.terraformation.backend.api.NotFoundException
-import com.terraformation.backend.api.SiteController
 import com.terraformation.backend.api.WrongOrganizationException
 import com.terraformation.backend.auth.AnonymousClient
 import com.terraformation.backend.auth.ControllerClientIdentity
 import com.terraformation.backend.auth.LoggedInUserIdentity
 import com.terraformation.backend.auth.Role
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
+import com.terraformation.backend.db.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.util.emptyEnumSet
 import io.mockk.every
@@ -28,11 +27,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class SiteControllerTest {
+  private val projectsDao = mockk<ProjectsDao>()
   private val siteDao = mockk<SitesDao>()
-  private val siteController = SiteController(siteDao)
+  private val siteController = SiteController(projectsDao, siteDao)
 
-  private val organizationId = OrganizationId(1L)
-  private val siteId = SiteId(123L)
+  private val organizationId = OrganizationId(1)
+  private val projectId = ProjectId(2)
+  private val siteId = SiteId(123)
 
   private val authentication = ControllerClientIdentity(organizationId)
   private val superAdminAuthentication =
@@ -50,13 +51,17 @@ class SiteControllerTest {
 
     @Test
     fun `returns object with empty list if no sites defined`() {
-      every { siteDao.fetchByOrganizationId(organizationId) } returns emptyList()
+      every { projectsDao.fetchByOrganizationId(organizationId) } returns
+          listOf(ProjectsRow(id = projectId))
+      every { siteDao.fetchByProjectId(projectId) } returns emptyList()
       assertEquals(ListSitesResponse(emptyList()), siteController.listSites(authentication))
     }
 
     @Test
     fun `returns list of sites`() {
-      every { siteDao.fetchByOrganizationId(organizationId) } returns
+      every { projectsDao.fetchByOrganizationId(organizationId) } returns
+          listOf(ProjectsRow(id = projectId))
+      every { siteDao.fetchByProjectId(projectId) } returns
           listOf(
               SitesRow(id = SiteId(1), name = "First Site"),
               SitesRow(id = SiteId(2), name = "Second Site"))
@@ -80,12 +85,14 @@ class SiteControllerTest {
     private val site =
         SitesRow(
             id = siteId,
-            organizationId = organizationId,
             name = "site",
+            projectId = projectId,
             latitude = latitude,
             longitude = longitude,
             locale = locale,
             timezone = timezone)
+    private val project =
+        ProjectsRow(id = projectId, name = "project", organizationId = organizationId)
 
     @Test
     fun `rejects requests from regular clients without organizations`() {
@@ -96,6 +103,7 @@ class SiteControllerTest {
 
     @Test
     fun `accepts requests from super admin clients without organizations`() {
+      every { projectsDao.fetchOneById(projectId) } returns project
       every { siteDao.fetchOneById(siteId) } returns site
       assertDoesNotThrow { siteController.getSite(superAdminAuthentication, siteId.value) }
     }
@@ -110,8 +118,10 @@ class SiteControllerTest {
 
     @Test
     fun `rejects requests for sites owned by another organization`() {
+      every { projectsDao.fetchOneById(projectId) } returns
+          ProjectsRow(id = projectId, organizationId = OrganizationId(0))
       every { siteDao.fetchOneById(siteId) } returns
-          SitesRow(id = siteId, organizationId = OrganizationId(0), name = "site")
+          SitesRow(id = siteId, projectId = projectId, name = "site")
       assertThrows(WrongOrganizationException::class.java) {
         siteController.getSite(authentication, siteId.value)
       }
@@ -119,6 +129,7 @@ class SiteControllerTest {
 
     @Test
     fun `returns site data if permitted`() {
+      every { projectsDao.fetchOneById(projectId) } returns project
       every { siteDao.fetchOneById(siteId) } returns site
 
       val expected =

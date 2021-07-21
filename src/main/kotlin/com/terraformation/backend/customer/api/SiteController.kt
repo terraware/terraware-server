@@ -1,7 +1,11 @@
-package com.terraformation.backend.api
+package com.terraformation.backend.customer.api
 
+import com.terraformation.backend.api.NoOrganizationException
+import com.terraformation.backend.api.NotFoundException
+import com.terraformation.backend.api.WrongOrganizationException
 import com.terraformation.backend.auth.ClientIdentity
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import io.swagger.v3.oas.annotations.Hidden
@@ -22,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 @Hidden // Hide from Swagger docs while iterating on the seed bank app's API
 @PreAuthorize("isAuthenticated()")
 @SecurityRequirement(name = "ApiKey")
-class SiteController(private val sitesDao: SitesDao) {
+class SiteController(private val projectsDao: ProjectsDao, private val sitesDao: SitesDao) {
   @GetMapping
   @Hidden
   @Operation(summary = "List all of an organization's sites")
@@ -36,7 +40,9 @@ class SiteController(private val sitesDao: SitesDao) {
     // TODO: Super admins should be able to specify an organization ID
     val organizationId = clientIdentity.organizationId ?: throw NoOrganizationException()
 
-    val elements = sitesDao.fetchByOrganizationId(organizationId).map { ListSitesElement(it) }
+    val projectIds =
+        projectsDao.fetchByOrganizationId(organizationId).mapNotNull { it.id }.toTypedArray()
+    val elements = sitesDao.fetchByProjectId(*projectIds).map { ListSitesElement(it) }
     return ListSitesResponse(elements)
   }
 
@@ -62,7 +68,8 @@ class SiteController(private val sitesDao: SitesDao) {
     }
 
     val site = sitesDao.fetchOneById(SiteId(siteId)) ?: throw NotFoundException()
-    if (site.organizationId != organizationId && !clientIdentity.isSuperAdmin) {
+    val project = projectsDao.fetchOneById(site.projectId!!) ?: throw NotFoundException()
+    if (project.organizationId != organizationId && !clientIdentity.isSuperAdmin) {
       throw WrongOrganizationException()
     }
 

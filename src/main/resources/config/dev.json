@@ -126,10 +126,17 @@
       "name": "dev"
     }
   ],
+  "projects": [
+    {
+      "id": 2,
+      "name": "project",
+      "organizationId": 1
+    }
+  ],
   "sites": [
     {
       "id": 10,
-      "organizationId": 1,
+      "projectId": 2,
       "name": "sim",
       "latitude": 0,
       "longitude": 0

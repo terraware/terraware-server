@@ -37,10 +37,10 @@ class DatabaseBootstrapper(
 
     val organizationId =
         dslContext
-            .select(FACILITIES.sites().ORGANIZATION_ID)
+            .select(FACILITIES.sites().projects().ORGANIZATION_ID)
             .from(FACILITIES)
             .where(FACILITIES.ID.eq(config.facilityId))
-            .fetchOne(FACILITIES.sites().ORGANIZATION_ID)
+            .fetchOne(FACILITIES.sites().projects().ORGANIZATION_ID)
     if (organizationId == null) {
       log.error("Unable to determine organization ID for facility ${config.facilityId}")
       return

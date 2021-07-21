@@ -7,6 +7,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -39,8 +40,10 @@ class DeviceStore(private val dslContext: DSLContext) {
     return dslContext
         .select(DEVICES.ID)
         .from(ORGANIZATIONS)
+        .join(PROJECTS)
+        .on(ORGANIZATIONS.ID.eq(PROJECTS.ORGANIZATION_ID))
         .join(SITES)
-        .on(ORGANIZATIONS.ID.eq(SITES.ORGANIZATION_ID))
+        .on(PROJECTS.ID.eq(SITES.PROJECT_ID))
         .join(FACILITIES)
         .on(SITES.ID.eq(FACILITIES.SITE_ID))
         .join(DEVICES)
@@ -73,7 +76,7 @@ class DeviceStore(private val dslContext: DSLContext) {
             .select(SITES.ID)
             .from(SITES)
             .where(SITES.NAME.eq(siteName))
-            .and(SITES.ORGANIZATION_ID.eq(orgId))
+            .and(SITES.projects().ORGANIZATION_ID.eq(orgId))
             .fetchOne(SITES.ID)
             ?: return "Site $siteName not found for organization $orgName"
     val facilityId =

@@ -4,8 +4,10 @@ import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import java.math.BigDecimal
+import java.time.Instant
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -70,15 +72,31 @@ abstract class DatabaseTest {
 
   /** Creates an organization, site, and facility that can be referenced by various tests. */
   fun insertSiteData() {
+    val organizationId = OrganizationId(1)
+    val projectId = ProjectId(2)
+    val siteId = SiteId(10)
+    val facilityId = FacilityId(100)
+
     with(ORGANIZATIONS) {
-      dslContext.insertInto(ORGANIZATIONS).set(ID, OrganizationId(1)).set(NAME, "dev").execute()
+      dslContext.insertInto(ORGANIZATIONS).set(ID, organizationId).set(NAME, "dev").execute()
+    }
+
+    with(PROJECTS) {
+      dslContext
+          .insertInto(PROJECTS)
+          .set(ID, projectId)
+          .set(ORGANIZATION_ID, organizationId)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(NAME, "project")
+          .execute()
     }
 
     with(SITES) {
       dslContext
           .insertInto(SITES)
-          .set(ID, SiteId(10))
-          .set(ORGANIZATION_ID, OrganizationId(1))
+          .set(ID, siteId)
+          .set(PROJECT_ID, projectId)
           .set(NAME, "sim")
           .set(LATITUDE, BigDecimal.valueOf(1))
           .set(LONGITUDE, BigDecimal.valueOf(2))
@@ -88,8 +106,8 @@ abstract class DatabaseTest {
     with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
-          .set(ID, FacilityId(100))
-          .set(SITE_ID, SiteId(10))
+          .set(ID, facilityId)
+          .set(SITE_ID, siteId)
           .set(TYPE_ID, 1)
           .set(NAME, "ohana")
           .execute()
