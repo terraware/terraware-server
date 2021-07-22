@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.model
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -55,6 +56,7 @@ data class AccessionModel(
     val endangered: SpeciesEndangeredType? = null,
     val environmentalNotes: String? = null,
     val estimatedSeedCount: Int? = null,
+    val facilityId: FacilityId? = null,
     val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,

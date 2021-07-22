@@ -9,6 +9,7 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
@@ -25,7 +26,6 @@ import com.terraformation.backend.db.SpeciesRareType
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
-import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -56,7 +56,11 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/accession")
 @RestController
 @SeedBankAppEndpoint
-class AccessionController(private val accessionStore: AccessionStore, private val clock: Clock) {
+class AccessionController(
+    private val accessionStore: AccessionStore,
+    private val clock: Clock,
+    private val config: TerrawareServerConfig
+) {
   @ApiResponse(
       responseCode = "200",
       description =
@@ -65,7 +69,8 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val updatedPayload = accessionStore.create(payload.toModel())
+    val facilityId = config.facilityId
+    val updatedPayload = accessionStore.create(facilityId, payload.toModel())
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
   }
 
@@ -87,13 +92,14 @@ class AccessionController(private val accessionStore: AccessionStore, private va
                   "have been returned if it had been saved.")
       simulate: Boolean?
   ): UpdateAccessionResponsePayload {
-    perClassLogger().debug("Payload $payload")
+    val facilityId = config.facilityId
+
     try {
       val updatedModel =
           if (simulate == true) {
-            accessionStore.dryRun(payload.toModel(), accessionNumber)
+            accessionStore.dryRun(facilityId, payload.toModel(), accessionNumber)
           } else {
-            accessionStore.updateAndFetch(payload.toModel(), accessionNumber)
+            accessionStore.updateAndFetch(facilityId, payload.toModel(), accessionNumber)
           }
       return UpdateAccessionResponsePayload(AccessionPayload(updatedModel, clock))
     } catch (e: AccessionNotFoundException) {
@@ -106,8 +112,9 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @GetMapping("/{accessionNumber}")
   @Operation(summary = "Retrieve an existing accession.")
   fun read(@PathVariable accessionNumber: String): GetAccessionResponsePayload {
+    val facilityId = config.facilityId
     val accession =
-        accessionStore.fetchByNumber(accessionNumber)
+        accessionStore.fetchByNumber(facilityId, accessionNumber)
             ?: throw NotFoundException("The specified accession doesn't exist.")
     return GetAccessionResponsePayload(AccessionPayload(accession, clock))
   }

@@ -27,6 +27,7 @@ class SummaryController(
   @GetMapping
   @Operation(summary = "Get summary statistics about the seed bank")
   fun getSummary(): SummaryResponse {
+    val facilityId = config.facilityId
     val now = ZonedDateTime.now(clock)
     val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
     val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
@@ -42,7 +43,8 @@ class SummaryController(
     return SummaryResponse(
         activeAccessions =
             SummaryStatistic(
-                accessionStore.countActive(now), accessionStore.countActive(startOfWeek)),
+                accessionStore.countActive(facilityId, now),
+                accessionStore.countActive(facilityId, startOfWeek)),
         species =
             SummaryStatistic(
                 speciesStore.countSpecies(now), speciesStore.countSpecies(startOfWeek)),
@@ -50,12 +52,15 @@ class SummaryController(
             SummaryStatistic(
                 speciesStore.countFamilies(now), speciesStore.countFamilies(startOfWeek)),
         overduePendingAccessions =
-            accessionStore.countInState(AccessionState.Pending, sinceBefore = oneWeekAgo),
+            accessionStore.countInState(
+                facilityId, AccessionState.Pending, sinceBefore = oneWeekAgo),
         overdueProcessedAccessions =
-            accessionStore.countInState(AccessionState.Processed, sinceBefore = twoWeeksAgo),
-        overdueDriedAccessions = accessionStore.countInState(AccessionState.Dried),
+            accessionStore.countInState(
+                facilityId, AccessionState.Processed, sinceBefore = twoWeeksAgo),
+        overdueDriedAccessions = accessionStore.countInState(facilityId, AccessionState.Dried),
         recentlyWithdrawnAccessions =
-            accessionStore.countInState(AccessionState.Withdrawn, sinceAfter = startOfWeek))
+            accessionStore.countInState(
+                facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek))
   }
 }
 

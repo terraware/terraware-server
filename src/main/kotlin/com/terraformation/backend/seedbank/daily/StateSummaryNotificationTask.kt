@@ -3,6 +3,8 @@ package com.terraformation.backend.seedbank.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -22,6 +24,7 @@ class StateSummaryNotificationTask(
     private val accessionStore: AccessionStore,
     override val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val facilitiesDao: FacilitiesDao,
     override val taskProcessedTimesDao: TaskProcessedTimesDao,
     private val messages: Messages,
     private val notificationStore: NotificationStore
@@ -37,32 +40,35 @@ class StateSummaryNotificationTask(
 
       val since = ZonedDateTime.ofInstant(sinceInstant, clock.zone)
 
-      pending(since)
-      processed(2, since)
-      processed(4, since)
-      dried(since)
+      facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
+        pending(facilityId, since)
+        processed(facilityId, 2, since)
+        processed(facilityId, 4, since)
+        dried(facilityId, since)
+      }
     }
 
     return FinishedEvent()
   }
 
-  private fun pending(lastNotificationTime: ZonedDateTime) {
-    generateNotification(AccessionState.Pending, 1, lastNotificationTime) { count ->
+  private fun pending(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
+    generateNotification(facilityId, AccessionState.Pending, 1, lastNotificationTime) { count ->
       messages.longPendingNotification(count)
     }
   }
 
-  private fun processed(weeks: Int, lastNotificationTime: ZonedDateTime) {
+  private fun processed(facilityId: FacilityId, weeks: Int, lastNotificationTime: ZonedDateTime) {
     // Accessions transition from Processing to Processed after 2 weeks have elapsed, but the
     // notification should be based on the time of the transition to Processing.
-    generateNotification(AccessionState.Processed, weeks - 2, lastNotificationTime) { count ->
+    generateNotification(facilityId, AccessionState.Processed, weeks - 2, lastNotificationTime) {
+        count ->
       messages.longProcessedNotification(count, weeks)
     }
   }
 
-  private fun dried(lastNotificationTime: ZonedDateTime) {
+  private fun dried(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
     // Notification should go out the same day as the transition to Dried, so weeks is 0.
-    generateNotification(AccessionState.Dried, 0, lastNotificationTime) { count ->
+    generateNotification(facilityId, AccessionState.Dried, 0, lastNotificationTime) { count ->
       messages.driedNotification(count)
     }
   }
@@ -95,6 +101,7 @@ class StateSummaryNotificationTask(
    * from [TerrawareServerConfig.DailyTasksConfig.startTime].)
    */
   private fun generateNotification(
+      facilityId: FacilityId,
       state: AccessionState,
       weeks: Int,
       lastNotificationTime: ZonedDateTime,
@@ -113,17 +120,20 @@ class StateSummaryNotificationTask(
     // already covered by previous runs.
     val anyNew =
         accessionStore.countInState(
-            state, sinceAfter = endOfAlreadyCoveredPeriod, sinceBefore = stateChangedBefore) > 0
+            facilityId,
+            state,
+            sinceAfter = endOfAlreadyCoveredPeriod,
+            sinceBefore = stateChangedBefore) > 0
     if (!anyNew) {
       log.info("No notification needed for state $state at $weeks week(s)")
       return
     }
 
-    val count = accessionStore.countInState(state, sinceBefore = stateChangedBefore)
+    val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
 
     val message = getMessage(count)
     log.info("Generated notification: $message")
-    notificationStore.insertStateNotification(state, message)
+    notificationStore.insertStateNotification(facilityId, state, message)
   }
 
   /**

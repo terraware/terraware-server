@@ -70,9 +70,10 @@ class TimeseriesController(
                   "configuration.")
       facilityId: Long?,
   ): SimpleSuccessResponsePayload {
-    val effectiveFacilityId = (facilityId ?: siteModuleId)?.let { FacilityId(it) }
+    val effectiveFacilityId =
+        (facilityId ?: siteModuleId)?.let { FacilityId(it) } ?: config.facilityId
     val deviceId =
-        deviceStore.getDeviceIdByName(effectiveFacilityId ?: config.facilityId, device)
+        deviceStore.getDeviceIdByName(effectiveFacilityId, device)
             ?: throw NotFoundException("Device $device does not exist")
     val timeseriesId =
         timeSeriesStore.getTimeseriesIdByName(deviceId, timeseries)

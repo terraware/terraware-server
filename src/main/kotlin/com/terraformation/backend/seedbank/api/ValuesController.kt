@@ -6,6 +6,7 @@ import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesStore
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController
 @SeedBankAppEndpoint
 class ValuesController(
     private val accessionStore: AccessionStore,
+    private val config: TerrawareServerConfig,
     private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService,
     private val speciesStore: SpeciesStore,
@@ -82,8 +84,9 @@ class ValuesController(
 
   @GetMapping("/storageLocation")
   fun getStorageLocations(): StorageLocationsResponsePayload {
+    val facilityId = config.facilityId
     return StorageLocationsResponsePayload(
-        storageLocationStore.fetchStorageConditionsByLocationName().map {
+        storageLocationStore.fetchStorageConditionsByLocationName(facilityId).map {
           StorageLocationDetails(it.key, it.value)
         })
   }

@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
@@ -83,8 +84,10 @@ class NotificationStore(
     log.debug("Marked $rowsUpdated notifications as unread")
   }
 
-  fun insertStateNotification(state: AccessionState, message: String) {
-    val siteId = facilitiesDao.fetchOneById(config.facilityId)!!.siteId!!
+  fun insertStateNotification(facilityId: FacilityId, state: AccessionState, message: String) {
+    val siteId =
+        facilitiesDao.fetchOneById(facilityId)?.siteId
+            ?: throw IllegalStateException("Facility $facilityId not found")
 
     dslContext
         .insertInto(NOTIFICATIONS)
@@ -96,8 +99,10 @@ class NotificationStore(
         .execute()
   }
 
-  fun insertDateNotification(accessionId: AccessionId, message: String) {
-    val siteId = facilitiesDao.fetchOneById(config.facilityId)!!.siteId!!
+  fun insertDateNotification(facilityId: FacilityId, accessionId: AccessionId, message: String) {
+    val siteId =
+        facilitiesDao.fetchOneById(facilityId)?.siteId
+            ?: throw IllegalStateException("Facility $facilityId not found")
 
     dslContext
         .insertInto(NOTIFICATIONS)

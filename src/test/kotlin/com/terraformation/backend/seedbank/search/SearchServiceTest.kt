@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
@@ -30,13 +29,13 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
 class SearchServiceTest : DatabaseTest() {
-  @Autowired private lateinit var config: TerrawareServerConfig
   private lateinit var accessionsDao: AccessionsDao
   private lateinit var accessionGerminationTestTypesDao: AccessionGerminationTestTypesDao
   private lateinit var searchService: SearchService
+
+  private val facilityId = FacilityId(100)
 
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
   private val accessionNumberField = searchFields["accessionNumber"]!!
@@ -76,7 +75,7 @@ class SearchServiceTest : DatabaseTest() {
             number = "XYZ",
             stateId = AccessionState.Processed,
             createdTime = now,
-            facilityId = FacilityId(100),
+            facilityId = facilityId,
             speciesId = SpeciesId(10000),
             treesCollectedFrom = 1))
     accessionsDao.insert(
@@ -85,7 +84,7 @@ class SearchServiceTest : DatabaseTest() {
             number = "ABCDEFG",
             stateId = AccessionState.Processing,
             createdTime = now,
-            facilityId = FacilityId(100),
+            facilityId = facilityId,
             speciesId = SpeciesId(10001),
             treesCollectedFrom = 2))
   }
@@ -273,7 +272,7 @@ class SearchServiceTest : DatabaseTest() {
         AccessionsRow(
             createdTime = Instant.now(),
             number = "MISSING",
-            facilityId = config.facilityId,
+            facilityId = facilityId,
             stateId = AccessionState.Processing))
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
@@ -304,7 +303,7 @@ class SearchServiceTest : DatabaseTest() {
         AccessionsRow(
             createdTime = Instant.now(),
             number = "MISSING",
-            facilityId = config.facilityId,
+            facilityId = facilityId,
             stateId = AccessionState.Processing))
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
@@ -452,7 +451,7 @@ class SearchServiceTest : DatabaseTest() {
             AccessionsRow(
                 createdTime = Instant.now(),
                 number = "$value",
-                facilityId = config.facilityId,
+                facilityId = facilityId,
                 stateId = AccessionState.Processing,
                 treesCollectedFrom = value))
       }
@@ -539,7 +538,7 @@ class SearchServiceTest : DatabaseTest() {
             AccessionsRow(
                 createdTime = Instant.now(),
                 number = "JAN$day",
-                facilityId = config.facilityId,
+                facilityId = facilityId,
                 stateId = AccessionState.Processing,
                 receivedDate = LocalDate.of(2021, 1, day)))
       }

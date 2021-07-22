@@ -3,6 +3,7 @@ package com.terraformation.backend.photo
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -39,10 +40,11 @@ internal class PhotoRepositoryTest {
 
   private lateinit var tempDir: Path
 
-  private val accessionId = AccessionId(12345L)
+  private val accessionId = AccessionId(12345)
   private val accessionNumber = "ZYXWVUTSRQPO"
   private val capturedTime = Instant.ofEpochMilli(1000)
   private val contentType = MediaType.IMAGE_JPEG_VALUE
+  private val facilityId = FacilityId(100)
   private val filename = "test-photo.jpg"
   private val latitude = BigDecimal("123.456")
   private val longitude = BigDecimal("876.5432")
@@ -57,8 +59,8 @@ internal class PhotoRepositoryTest {
   fun createTemporaryDirectory() {
     tempDir = Files.createTempDirectory(javaClass.simpleName)
 
-    every { accessionStore.getIdByNumber(any()) } throws AccessionNotFoundException("boom")
-    every { accessionStore.getIdByNumber(accessionNumber) } returns accessionId
+    every { accessionStore.getIdByNumber(any(), any()) } throws AccessionNotFoundException("boom")
+    every { accessionStore.getIdByNumber(facilityId, accessionNumber) } returns accessionId
     every { clock.instant() } returns uploadedTime
     every { config.photoDir } returns tempDir
     every { config.photoIntermediateDepth } returns 3
@@ -67,6 +69,7 @@ internal class PhotoRepositoryTest {
 
     photoPath =
         tempDir
+            .resolve("$facilityId")
             .resolve("${accessionNumber[0]}")
             .resolve("${accessionNumber[1]}")
             .resolve("${accessionNumber[2]}")
@@ -83,7 +86,7 @@ internal class PhotoRepositoryTest {
   fun `storePhoto writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
 
-    repository.storePhoto(accessionNumber, photoData.inputStream(), metadata)
+    repository.storePhoto(facilityId, accessionNumber, photoData.inputStream(), metadata)
 
     val expectedPojo =
         AccessionPhotosRow(
@@ -111,7 +114,7 @@ internal class PhotoRepositoryTest {
     every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
 
     assertThrows(DuplicateKeyException::class.java) {
-      repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -124,7 +127,7 @@ internal class PhotoRepositoryTest {
     every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
 
     assertThrows(AccessionNotFoundException::class.java) {
-      repository.storePhoto("nonexistent", ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, "nonexistent", ByteArray(0).inputStream(), metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -137,7 +140,7 @@ internal class PhotoRepositoryTest {
     Files.createFile(photoPath.parent)
 
     assertThrows(IOException::class.java) {
-      repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
     }
   }
 
@@ -150,7 +153,7 @@ internal class PhotoRepositoryTest {
         RuntimeException("Should not be called")
 
     assertThrows(FileAlreadyExistsException::class.java) {
-      repository.storePhoto(accessionNumber, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
     }
 
     verify(exactly = 0) { accessionPhotosDao.insert(any<AccessionPhotosRow>()) }
@@ -165,7 +168,7 @@ internal class PhotoRepositoryTest {
     Files.createDirectories(photoPath.parent)
     Files.copy(photoData.inputStream(), photoPath)
 
-    val stream = repository.readPhoto(accessionNumber, filename)
+    val stream = repository.readPhoto(facilityId, accessionNumber, filename)
 
     assertArrayEquals(photoData, stream.readAllBytes())
   }
@@ -173,7 +176,7 @@ internal class PhotoRepositoryTest {
   @Test
   fun `readPhoto throws exception on nonexistent file`() {
     assertThrows(NoSuchFileException::class.java) {
-      repository.readPhoto(accessionNumber, filename)
+      repository.readPhoto(facilityId, accessionNumber, filename)
     }
   }
 
@@ -185,13 +188,14 @@ internal class PhotoRepositoryTest {
     Files.createDirectories(photoPath.parent)
     Files.copy(photoData.inputStream(), photoPath)
 
-    assertEquals(expectedSize.toLong(), repository.getPhotoFileSize(accessionNumber, filename))
+    assertEquals(
+        expectedSize.toLong(), repository.getPhotoFileSize(facilityId, accessionNumber, filename))
   }
 
   @Test
   fun `getPhotoFileSize throws exception on nonexistent file`() {
     assertThrows(NoSuchFileException::class.java) {
-      repository.getPhotoFileSize(accessionNumber, filename)
+      repository.getPhotoFileSize(facilityId, accessionNumber, filename)
     }
   }
 }

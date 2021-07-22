@@ -1,11 +1,11 @@
 package com.terraformation.backend.seedbank.db
 
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectorId
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
@@ -45,7 +45,6 @@ import org.springframework.dao.DuplicateKeyException
 @ManagedBean
 class AccessionStore(
     private val dslContext: DSLContext,
-    private val config: TerrawareServerConfig,
     private val accessionPhotosDao: AccessionPhotosDao,
     private val appDeviceStore: AppDeviceStore,
     private val bagStore: BagStore,
@@ -67,15 +66,16 @@ class AccessionStore(
    * Looks up the ID of an accession with the given accession number. Returns null if the accession
    * number does not exist.
    */
-  fun getIdByNumber(accessionNumber: String): AccessionId? {
+  fun getIdByNumber(facilityId: FacilityId, accessionNumber: String): AccessionId? {
     return dslContext
         .select(ACCESSIONS.ID)
         .from(ACCESSIONS)
         .where(ACCESSIONS.NUMBER.eq(accessionNumber))
+        .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .fetchOne(ACCESSIONS.ID)
   }
 
-  fun fetchByNumber(accessionNumber: String): AccessionModel? {
+  fun fetchByNumber(facilityId: FacilityId, accessionNumber: String): AccessionModel? {
     // First, fetch all the values that are either directly on the accession table or are in other
     // tables such that there is at most one value for a given accession (N:1 relation).
     val parentRow =
@@ -94,7 +94,7 @@ class AccessionStore(
             )
             .from(ACCESSIONS)
             .where(ACCESSIONS.NUMBER.eq(accessionNumber))
-            .and(ACCESSIONS.FACILITY_ID.eq(config.facilityId))
+            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
             .fetchOne()
             ?: return null
 
@@ -175,7 +175,7 @@ class AccessionStore(
     }
   }
 
-  fun create(accession: AccessionModel): AccessionModel {
+  fun create(facilityId: FacilityId, accession: AccessionModel): AccessionModel {
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
@@ -199,6 +199,7 @@ class AccessionStore(
                     .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                     .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                     .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
+                    .set(FACILITY_ID, facilityId)
                     .set(FIELD_NOTES, accession.fieldNotes)
                     .set(FOUNDER_ID, accession.founderId)
                     .set(
@@ -207,16 +208,19 @@ class AccessionStore(
                     .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
                     .set(NUMBER, accessionNumber)
                     .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                    .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
+                    .set(
+                        PRIMARY_COLLECTOR_ID,
+                        getCollectorId(facilityId, accession.primaryCollector))
                     .set(RECEIVED_DATE, accession.receivedDate)
-                    .set(FACILITY_ID, config.facilityId)
                     .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                     .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                     .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                     .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
                     .set(SPECIES_RARE_TYPE_ID, accession.rare)
                     .set(STATE_ID, AccessionState.Pending)
-                    .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
+                    .set(
+                        STORAGE_LOCATION_ID,
+                        getStorageLocationId(facilityId, accession.storageLocation))
                     .set(STORAGE_NOTES, accession.storageNotes)
                     .set(STORAGE_PACKETS, accession.storagePackets)
                     .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
@@ -238,7 +242,7 @@ class AccessionStore(
                 .execute()
           }
 
-          insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
+          insertSecondaryCollectors(facilityId, accessionId, accession.secondaryCollectors)
           bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
           geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
           germinationStore.updateGerminationTestTypes(
@@ -248,7 +252,7 @@ class AccessionStore(
           withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
         }
 
-        return fetchByNumber(accessionNumber)!!
+        return fetchByNumber(facilityId, accessionNumber)!!
       } catch (ex: DuplicateKeyException) {
         log.info("Accession number $accessionNumber already existed; trying again")
         if (attemptsRemaining <= 0) {
@@ -261,8 +265,8 @@ class AccessionStore(
     throw RuntimeException("BUG! Inserting accession failed but error was not caught.")
   }
 
-  fun update(accessionNumber: String, updated: AccessionModel): Boolean {
-    val existing = fetchByNumber(accessionNumber) ?: return false
+  fun update(facilityId: FacilityId, accessionNumber: String, updated: AccessionModel): Boolean {
+    val existing = fetchByNumber(facilityId, accessionNumber) ?: return false
     val accessionId = existing.id ?: return false
     val accession = updated.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)
@@ -282,7 +286,7 @@ class AccessionStore(
             .deleteFrom(ACCESSION_SECONDARY_COLLECTORS)
             .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
             .execute()
-        insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
+        insertSecondaryCollectors(facilityId, accessionId, accession.secondaryCollectors)
       }
 
       val existingTests: MutableList<GerminationTestModel> =
@@ -351,7 +355,7 @@ class AccessionStore(
                 .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestGerminationTestDate)
                 .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                .set(PRIMARY_COLLECTOR_ID, getCollectorId(accession.primaryCollector))
+                .set(PRIMARY_COLLECTOR_ID, getCollectorId(facilityId, accession.primaryCollector))
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
@@ -366,7 +370,9 @@ class AccessionStore(
                 .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
                 .set(SPECIES_RARE_TYPE_ID, accession.rare)
                 .set(STATE_ID, accession.state)
-                .set(STORAGE_LOCATION_ID, getStorageLocationId(accession.storageLocation))
+                .set(
+                    STORAGE_LOCATION_ID,
+                    getStorageLocationId(facilityId, accession.storageLocation))
                 .set(STORAGE_NOTES, accession.storageNotes)
                 .set(STORAGE_PACKETS, accession.storagePackets)
                 .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
@@ -382,7 +388,7 @@ class AccessionStore(
                 .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                 .where(NUMBER.eq(accessionNumber))
-                .and(FACILITY_ID.eq(config.facilityId))
+                .and(FACILITY_ID.eq(facilityId))
                 .execute()
           }
 
@@ -401,10 +407,14 @@ class AccessionStore(
    *
    * @return null if the accession didn't exist.
    */
-  fun updateAndFetch(accession: AccessionModel, accessionNumber: String): AccessionModel {
+  fun updateAndFetch(
+      facilityId: FacilityId,
+      accession: AccessionModel,
+      accessionNumber: String
+  ): AccessionModel {
     val updated =
-        if (update(accessionNumber, accession)) {
-          fetchByNumber(accessionNumber)
+        if (update(facilityId, accessionNumber, accession)) {
+          fetchByNumber(facilityId, accessionNumber)
         } else {
           null
         }
@@ -418,9 +428,14 @@ class AccessionStore(
    *
    * @throws AccessionNotFoundException if the accession doesn't exist.
    */
-  fun dryRun(accession: AccessionModel, accessionNumber: String): AccessionModel {
+  fun dryRun(
+      facilityId: FacilityId,
+      accession: AccessionModel,
+      accessionNumber: String
+  ): AccessionModel {
     val existing =
-        fetchByNumber(accessionNumber) ?: throw AccessionNotFoundException(accessionNumber)
+        fetchByNumber(facilityId, accessionNumber)
+            ?: throw AccessionNotFoundException(accessionNumber)
     return accession.withCalculatedValues(clock, existing)
   }
 
@@ -469,7 +484,7 @@ class AccessionStore(
    * Returns a list of accessions for which the scheduled date for a time-based state transition has
    * arrived or passed.
    */
-  fun fetchTimedStateTransitionCandidates(): List<AccessionModel> {
+  fun fetchTimedStateTransitionCandidates(facilityId: FacilityId): List<AccessionModel> {
     val today = LocalDate.now(clock)
     val twoWeeksAgo = today.minusDays(14)
 
@@ -480,18 +495,19 @@ class AccessionStore(
           .where(
               STATE_ID
                   .eq(AccessionState.Processing)
-                  .and(PROCESSING_START_DATE.le(twoWeeksAgo).or(DRYING_START_DATE.le(today))))
-          .or(STATE_ID.eq(AccessionState.Processed).and(DRYING_START_DATE.le(today)))
-          .or(
-              STATE_ID
-                  .eq(AccessionState.Drying)
-                  .and(STORAGE_START_DATE.le(today).or(DRYING_END_DATE.le(today))))
-          .or(STATE_ID.eq(AccessionState.Dried).and(STORAGE_START_DATE.le(today)))
+                  .and(PROCESSING_START_DATE.le(twoWeeksAgo).or(DRYING_START_DATE.le(today)))
+                  .or(STATE_ID.eq(AccessionState.Processed).and(DRYING_START_DATE.le(today)))
+                  .or(
+                      STATE_ID
+                          .eq(AccessionState.Drying)
+                          .and(STORAGE_START_DATE.le(today).or(DRYING_END_DATE.le(today))))
+                  .or(STATE_ID.eq(AccessionState.Dried).and(STORAGE_START_DATE.le(today))))
+          .and(FACILITY_ID.eq(facilityId))
           .fetch(NUMBER)
           .mapNotNull { accessionNumber ->
             // This is an N+1 query which isn't ideal but we are going to be processing these one
             // at a time anyway so optimizing this to a single SELECT wouldn't help much.
-            fetchByNumber(accessionNumber!!)
+            fetchByNumber(facilityId, accessionNumber!!)
           }
     }
   }
@@ -510,11 +526,12 @@ class AccessionStore(
   }
 
   private fun insertSecondaryCollectors(
+      facilityId: FacilityId,
       accessionId: AccessionId,
       secondaryCollectors: Collection<String>?
   ) {
     if (secondaryCollectors != null) {
-      val collectorIds = secondaryCollectors.map { name -> getCollectorId(name) }
+      val collectorIds = secondaryCollectors.map { name -> getCollectorId(facilityId, name) }
       collectorIds.forEach { collectorId ->
         dslContext
             .insertInto(
@@ -527,13 +544,18 @@ class AccessionStore(
     }
   }
 
-  private fun getCollectorId(name: String?): CollectorId? {
-    return support.getOrInsertId(name, COLLECTORS.ID, COLLECTORS.NAME, COLLECTORS.FACILITY_ID)
+  private fun getCollectorId(facilityId: FacilityId, name: String?): CollectorId? {
+    return support.getOrInsertId(
+        name, COLLECTORS.ID, COLLECTORS.NAME, COLLECTORS.FACILITY_ID, facilityId)
   }
 
-  private fun getStorageLocationId(name: String?): StorageLocationId? {
+  private fun getStorageLocationId(facilityId: FacilityId, name: String?): StorageLocationId? {
     return support.getId(
-        name, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.NAME, STORAGE_LOCATIONS.FACILITY_ID)
+        name,
+        STORAGE_LOCATIONS.ID,
+        STORAGE_LOCATIONS.NAME,
+        STORAGE_LOCATIONS.FACILITY_ID,
+        facilityId)
   }
 
   /**
@@ -545,7 +567,7 @@ class AccessionStore(
    * - [asOf] will be a fairly recent time. (The correct result will be returned even if not, but
    * the query will be inefficient.)
    */
-  fun countActive(asOf: TemporalAccessor): Int {
+  fun countActive(facilityId: FacilityId, asOf: TemporalAccessor): Int {
     val statesByActive = AccessionState.values().groupBy { it.toActiveEnum() }
 
     val query =
@@ -553,6 +575,7 @@ class AccessionStore(
             .select(DSL.count())
             .from(ACCESSIONS)
             .where(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
+            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
             .and(
                 ACCESSIONS
                     .STATE_ID
@@ -580,6 +603,7 @@ class AccessionStore(
    * @param sinceBefore Only count accessions that changed to the state at or before this time.
    */
   fun countInState(
+      facilityId: FacilityId,
       state: AccessionState,
       sinceAfter: TemporalAccessor? = null,
       sinceBefore: TemporalAccessor? = null,
@@ -595,6 +619,7 @@ class AccessionStore(
                     .on(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
                     .where(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(state))
                     .and(ACCESSIONS.STATE_ID.eq(state))
+                    .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
                     .apply {
                       if (sinceAfter != null) {
                         and(ACCESSION_STATE_HISTORY.UPDATED_TIME.ge(sinceAfter.toInstant()))
@@ -614,8 +639,13 @@ class AccessionStore(
   }
 
   /** Returns the number of accessions currently in a given state. */
-  fun countInState(state: AccessionState): Int {
-    val query = dslContext.select(DSL.count()).from(ACCESSIONS).where(ACCESSIONS.STATE_ID.eq(state))
+  fun countInState(facilityId: FacilityId, state: AccessionState): Int {
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.STATE_ID.eq(state))
+            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
 
     log.debug("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
 
@@ -623,6 +653,7 @@ class AccessionStore(
   }
 
   fun fetchDryingMoveDue(
+      facilityId: FacilityId,
       after: TemporalAccessor,
       until: TemporalAccessor
   ): Map<String, AccessionId> {
@@ -633,12 +664,14 @@ class AccessionStore(
           .where(STATE_ID.eq(AccessionState.Drying))
           .and(DRYING_MOVE_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
           .and(DRYING_MOVE_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+          .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
           .fetch { it[NUMBER]!! to it[ID]!! }
           .toMap()
     }
   }
 
   fun fetchGerminationTestDue(
+      facilityId: FacilityId,
       after: TemporalAccessor,
       until: TemporalAccessor
   ): Map<String, GerminationTestsRow> {
@@ -650,11 +683,13 @@ class AccessionStore(
         .where(ACCESSIONS.STATE_ID.`in`(AccessionState.Processing, AccessionState.Processed))
         .and(GERMINATION_TESTS.START_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
         .and(GERMINATION_TESTS.START_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+        .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .fetch { it[ACCESSIONS.NUMBER]!! to it.into(GerminationTestsRow::class.java)!! }
         .toMap()
   }
 
   fun fetchWithdrawalDue(
+      facilityId: FacilityId,
       after: TemporalAccessor,
       until: TemporalAccessor
   ): Map<String, AccessionId> {
@@ -665,6 +700,7 @@ class AccessionStore(
         .on(WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID))
         .where(WITHDRAWALS.DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
         .and(WITHDRAWALS.DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+        .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .fetch { it[ACCESSIONS.NUMBER]!! to it[ACCESSIONS.ID]!! }
         .toMap()
   }

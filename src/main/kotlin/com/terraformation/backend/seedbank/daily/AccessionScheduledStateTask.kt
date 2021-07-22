@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
+import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import java.time.Clock
@@ -11,7 +12,11 @@ import org.springframework.context.event.EventListener
 
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
-class AccessionScheduledStateTask(private val store: AccessionStore, private val clock: Clock) {
+class AccessionScheduledStateTask(
+    private val store: AccessionStore,
+    private val clock: Clock,
+    private val facilitiesDao: FacilitiesDao
+) {
   private val log = perClassLogger()
 
   /** Updates the states of any accessions that are scheduled for a time-based state transition. */
@@ -21,14 +26,16 @@ class AccessionScheduledStateTask(private val store: AccessionStore, private val
   ): FinishedEvent {
     log.info("Scanning for scheduled accession state updates")
 
-    store
-        .fetchTimedStateTransitionCandidates()
-        .filter { it.getStateTransition(it, clock) != null }
-        .forEach { model ->
-          if (model.accessionNumber != null) {
-            store.update(model.accessionNumber, model)
+    facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
+      store
+          .fetchTimedStateTransitionCandidates(facilityId)
+          .filter { it.getStateTransition(it, clock) != null }
+          .forEach { model ->
+            if (model.accessionNumber != null) {
+              store.update(facilityId, model.accessionNumber, model)
+            }
           }
-        }
+    }
 
     return FinishedEvent()
   }

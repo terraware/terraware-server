@@ -21,7 +21,8 @@ class DeviceController(
 ) {
   @GetMapping("/all/config")
   fun listDeviceConfigs(@AuthenticationPrincipal auth: ClientIdentity): ListDeviceConfigsResponse {
-    val devices = deviceStore.fetchDeviceConfigurationForSite(config.facilityId)
+    val facilityId = config.facilityId
+    val devices = deviceStore.fetchDeviceConfigurationForSite(facilityId)
     return ListDeviceConfigsResponse(devices)
   }
 }

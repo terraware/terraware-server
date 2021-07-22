@@ -1,9 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -28,10 +28,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 
 internal class WithdrawalStoreTest : DatabaseTest() {
-  @Autowired private lateinit var config: TerrawareServerConfig
   private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var store: WithdrawalStore
   private lateinit var withdrawalsDao: WithdrawalsDao
@@ -39,6 +37,7 @@ internal class WithdrawalStoreTest : DatabaseTest() {
   private val clock: Clock = mockk()
 
   private val accessionId = AccessionId(9999)
+  private val facilityId = FacilityId(100)
   private val germinationTestId = GerminationTestId(9998)
 
   override val sequencesToReset: List<String>
@@ -54,12 +53,12 @@ internal class WithdrawalStoreTest : DatabaseTest() {
 
     insertSiteData()
 
-    // Insert a minimal accession and germination test so we can use their IDs.
+    // Insert a minimal accession in a state that allows withdrawals.
     dslContext
         .insertInto(ACCESSIONS)
         .set(ACCESSIONS.ID, accessionId)
         .set(ACCESSIONS.CREATED_TIME, Instant.now())
-        .set(ACCESSIONS.FACILITY_ID, config.facilityId)
+        .set(ACCESSIONS.FACILITY_ID, facilityId)
         .set(ACCESSIONS.STATE_ID, AccessionState.InStorage)
         .execute()
   }

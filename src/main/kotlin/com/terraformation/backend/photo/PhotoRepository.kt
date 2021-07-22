@@ -2,6 +2,7 @@ package com.terraformation.backend.photo
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -29,13 +30,18 @@ class PhotoRepository(
     private val clock: Clock,
 ) {
   @Throws(IOException::class)
-  fun storePhoto(accessionNumber: String, data: InputStream, metadata: PhotoMetadata) {
+  fun storePhoto(
+      facilityId: FacilityId,
+      accessionNumber: String,
+      data: InputStream,
+      metadata: PhotoMetadata
+  ) {
     val accessionId =
-        accessionStore.getIdByNumber(accessionNumber)
+        accessionStore.getIdByNumber(facilityId, accessionNumber)
             ?: throw AccessionNotFoundException(accessionNumber)
 
-    val photoPath = getPhotoPath(accessionNumber, metadata.filename)
-    makePhotoDir(accessionNumber)
+    val photoPath = getPhotoPath(facilityId, accessionNumber, metadata.filename)
+    makePhotoDir(facilityId, accessionNumber)
 
     try {
       val size = Files.copy(data, photoPath)
@@ -64,35 +70,39 @@ class PhotoRepository(
   }
 
   @Throws(IOException::class)
-  fun readPhoto(accessionNumber: String, filename: String): InputStream {
-    val photoPath = getPhotoPath(accessionNumber, filename)
+  fun readPhoto(facilityId: FacilityId, accessionNumber: String, filename: String): InputStream {
+    val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
     return Files.newInputStream(photoPath)
   }
 
   /** Returns the photo's size in bytes. */
   @Throws(IOException::class)
-  fun getPhotoFileSize(accessionNumber: String, filename: String): Long {
-    val photoPath = getPhotoPath(accessionNumber, filename)
+  fun getPhotoFileSize(facilityId: FacilityId, accessionNumber: String, filename: String): Long {
+    val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
     return Files.size(photoPath)
   }
 
   @Throws(IOException::class)
-  private fun makePhotoDir(accessionNumber: String) {
-    val path = getAccessionPath(accessionNumber)
+  private fun makePhotoDir(facilityId: FacilityId, accessionNumber: String) {
+    val path = getAccessionPath(facilityId, accessionNumber)
 
     Files.createDirectories(path)
   }
 
-  private fun getPhotoPath(accessionNumber: String, filename: String): Path {
-    return getAccessionPath(accessionNumber).resolve(filename)
+  private fun getPhotoPath(
+      facilityId: FacilityId,
+      accessionNumber: String,
+      filename: String
+  ): Path {
+    return getAccessionPath(facilityId, accessionNumber).resolve(filename)
   }
 
-  private fun getAccessionPath(accessionNumber: String): Path {
+  private fun getAccessionPath(facilityId: FacilityId, accessionNumber: String): Path {
     if (accessionNumber.length < config.photoIntermediateDepth) {
       throw IllegalArgumentException("$accessionNumber is too short to be an accession number")
     }
 
-    var path = config.photoDir
+    var path = config.photoDir.resolve(facilityId.toString())
     for (i in 0 until config.photoIntermediateDepth) {
       val element = if (i < accessionNumber.length) accessionNumber[i] else '_'
       path = path.resolve("$element")

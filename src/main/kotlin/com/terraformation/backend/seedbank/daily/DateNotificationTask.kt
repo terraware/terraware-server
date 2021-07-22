@@ -3,6 +3,8 @@ package com.terraformation.backend.seedbank.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -21,6 +23,7 @@ class DateNotificationTask(
     private val accessionStore: AccessionStore,
     override val clock: Clock,
     private val dslContext: DSLContext,
+    private val facilitiesDao: FacilitiesDao,
     override val taskProcessedTimesDao: TaskProcessedTimesDao,
     private val messages: Messages,
     private val notificationStore: NotificationStore
@@ -35,36 +38,49 @@ class DateNotificationTask(
       log.info("Generating date update notifications for due dates since $after")
 
       dslContext.transaction { _ ->
-        moveToDryingCabinet(after, until)
-        germinationTest(after, until)
-        withdraw(after, until)
+        facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
+          moveToDryingCabinet(facilityId, after, until)
+          germinationTest(facilityId, after, until)
+          withdraw(facilityId, after, until)
+        }
       }
     }
 
     return FinishedEvent()
   }
 
-  private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
-    accessionStore.fetchDryingMoveDue(after, until).forEach { (number, id) ->
-      insert(id, messages.dryingMoveDateNotification(number))
+  private fun moveToDryingCabinet(
+      facilityId: FacilityId,
+      after: TemporalAccessor,
+      until: TemporalAccessor
+  ) {
+    accessionStore.fetchDryingMoveDue(facilityId, after, until).forEach { (number, id) ->
+      insert(facilityId, id, messages.dryingMoveDateNotification(number))
     }
   }
 
-  private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
-    accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
-      insert(test.accessionId!!, messages.germinationTestDateNotification(number, test.testType!!))
+  private fun germinationTest(
+      facilityId: FacilityId,
+      after: TemporalAccessor,
+      until: TemporalAccessor
+  ) {
+    accessionStore.fetchGerminationTestDue(facilityId, after, until).forEach { (number, test) ->
+      insert(
+          facilityId,
+          test.accessionId!!,
+          messages.germinationTestDateNotification(number, test.testType!!))
     }
   }
 
-  private fun withdraw(after: TemporalAccessor, until: TemporalAccessor) {
-    accessionStore.fetchWithdrawalDue(after, until).forEach { (number, id) ->
-      insert(id, messages.withdrawalDateNotification(number))
+  private fun withdraw(facilityId: FacilityId, after: TemporalAccessor, until: TemporalAccessor) {
+    accessionStore.fetchWithdrawalDue(facilityId, after, until).forEach { (number, id) ->
+      insert(facilityId, id, messages.withdrawalDateNotification(number))
     }
   }
 
-  private fun insert(accessionId: AccessionId, message: String) {
+  private fun insert(facilityId: FacilityId, accessionId: AccessionId, message: String) {
     log.info("Generated notification: $message")
-    notificationStore.insertDateNotification(accessionId, message)
+    notificationStore.insertDateNotification(facilityId, accessionId, message)
   }
 
   class FinishedEvent
