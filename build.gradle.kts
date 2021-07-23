@@ -8,9 +8,13 @@ import org.jooq.meta.jaxb.Strategy
 
 plugins {
   kotlin("jvm")
-  kotlin("kapt")
   kotlin("plugin.allopen")
   kotlin("plugin.spring")
+
+  // kapt is required to build the metadata for application.yaml autocomplete of our
+  // config settings, but slows the build down significantly; disable it by default.
+  // Uncomment the kapt line in the dependencies block if you enable this.
+  // kotlin("kapt")
 
   id("com.revolut.jooq-docker") version "0.3.5"
   id("com.diffplug.spotless") version "5.10.2"
@@ -47,7 +51,10 @@ dependencies {
 
   jdbc("org.postgresql:postgresql:$postgresJdbcVersion")
 
-  kapt("org.springframework.boot:spring-boot-configuration-processor")
+  // Build autocomplete metadata for our config settings in application.yaml. This
+  // requires kapt which slows the build down significantly, so is commented out.
+  // Uncomment the kotlin("kapt") line above if you enable this.
+  // kapt("org.springframework.boot:spring-boot-configuration-processor")
 
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-jooq")
