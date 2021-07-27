@@ -9,6 +9,7 @@ import com.terraformation.backend.db.BagId
 import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.GeolocationId
 import com.terraformation.backend.db.GerminationSeedType
 import com.terraformation.backend.db.GerminationSubstrate
@@ -1561,7 +1562,7 @@ internal class AccessionStoreTest : DatabaseTest() {
             .set(ID, otherFacilityId)
             .set(NAME, "other facility")
             .set(SITE_ID, SiteId(10))
-            .set(TYPE_ID, 1)
+            .set(TYPE_ID, FacilityType.SeedBank)
             .execute()
       }
     }

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
@@ -207,7 +208,8 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             BigDecimal("2.0000000"),
             enabled = true,
             projectId = project.id)
-    val facility = FacilitiesRow(FacilityId(3), site.id, 1, "testModule", enabled = true)
+    val facility =
+        FacilitiesRow(FacilityId(3), site.id, FacilityType.SeedBank, "testModule", enabled = true)
     val device =
         DevicesRow(
             DeviceId(4),

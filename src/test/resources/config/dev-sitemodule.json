@@ -33,7 +33,7 @@
     {
       "id": 100,
       "siteId": 10,
-      "typeId": 2,
+      "typeId": "Desalination",
       "name": "ohana"
     }
   ],

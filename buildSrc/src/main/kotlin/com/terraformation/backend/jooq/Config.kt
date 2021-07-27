@@ -8,6 +8,11 @@ val ENUM_TABLES =
                 "accessions\\.state_id",
                 ".*\\.accession_state_id",
                 "accession_state_history\\.(old|new)_state_id")),
+        /**
+         * The table "facilities" has a column "type_id",
+         * which is a foreign key referencing the "facility_types" table.
+         */
+        EnumTable("facility_types", "facilities\\.type_id"),
         EnumTable("germination_seed_types", "germination_tests\\.seed_type_id"),
         EnumTable("germination_substrates", "germination_tests\\.substrate_id"),
         EnumTable(
@@ -19,6 +24,11 @@ val ENUM_TABLES =
         EnumTable("notification_types", "notifications\\.type_id"),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
         EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
+        /**
+         * Since "source_plant_origin_id" is a very specific name, we can safely include any table
+         * that has a column named "source_plant_origin_id". We are guaranteed that such a column
+         * will be a foreign key reference into the "source_plant_origins" table.
+         */
         EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
         EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
         EnumTable("species_rare_types", ".*\\.species_rare_type_id"),
