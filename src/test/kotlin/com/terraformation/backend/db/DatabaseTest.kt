@@ -108,7 +108,7 @@ abstract class DatabaseTest {
           .insertInto(FACILITIES)
           .set(ID, facilityId)
           .set(SITE_ID, siteId)
-          .set(TYPE_ID, 1)
+          .set(TYPE_ID, FacilityType.SeedBank)
           .set(NAME, "ohana")
           .execute()
     }

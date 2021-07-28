@@ -2,8 +2,13 @@ package com.terraformation.backend.jooq
 
 import org.jooq.meta.jaxb.ForcedType
 
+/** Maps reference database tables into enums so that can get strong typing. */
 class EnumTable(
     private val tableName: String,
+    /**
+     * We need to identify all the tables with foreign keys that reference the above tableName.
+     * This allows the generated code for those tables to replace their raw ID value with our enum.
+     */
     includeExpressions: List<String>,
     val enumName: String = tableName.trimEnd('s').toPascalCase()
 ) {

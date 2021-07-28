@@ -146,19 +146,19 @@
     {
       "id": 100,
       "siteId": 10,
-      "typeId": 2,
+      "typeId": "Desalination",
       "name": "ohana"
     },
     {
       "id": 101,
       "siteId": 10,
-      "typeId": 3,
+      "typeId": "ReverseOsmosis",
       "name": "garage"
     },
     {
       "id": 102,
       "siteId": 10,
-      "typeId": 1,
+      "typeId": "SeedBank",
       "name": "seedbank"
     }
   ],
