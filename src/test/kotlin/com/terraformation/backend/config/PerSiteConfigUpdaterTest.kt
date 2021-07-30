@@ -32,10 +32,8 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneOffset
 import org.jooq.DAO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -80,19 +78,13 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
 
     updater =
         PerSiteConfigUpdater(
-            Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             databaseBootstrapper,
             devicesDao,
             dslContext,
-            projectsDao,
-            organizationsDao,
-            sitesDao,
-            facilitiesDao,
             storageLocationsDao,
             ObjectMapper().registerKotlinModule(),
             serverConfig,
             taskScheduler)
-    updater.addMixInForOrganizationId()
 
     justRun { databaseBootstrapper.updateApiKey() }
   }
@@ -109,7 +101,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
 
   @Test
   fun `existing rows are deleted`() {
-    val emptyConfig = PerSiteConfig(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+    val emptyConfig = PerSiteConfig(emptyList(), emptyList())
 
     updater.updateDatabase(simpleConfig())
     updater.updateDatabase(emptyConfig)
@@ -120,7 +112,7 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   @Test
   fun `parent rows are marked disabled if still referenced`() {
     val initial = simpleConfig()
-    val emptyConfig = PerSiteConfig(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+    val emptyConfig = PerSiteConfig(emptyList(), emptyList())
 
     updater.updateDatabase(initial)
 
@@ -137,10 +129,6 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
     val expected =
         PerSiteConfig(
             devices = emptyList(),
-            organizations = initial.organizations.map { it.copy(enabled = false) },
-            projects = initial.projects.map { it.copy(disabledTime = Instant.EPOCH) },
-            sites = initial.sites.map { it.copy(enabled = false) },
-            facilities = initial.facilities.map { it.copy(enabled = false) },
             storageLocations = initial.storageLocations.map { it.copy(enabled = false) })
 
     updater.updateDatabase(emptyConfig)
@@ -155,10 +143,6 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
     val newConfig =
         PerSiteConfig(
             devices = listOf(initialConfig.devices[0].copy(name = "new device")),
-            organizations = listOf(initialConfig.organizations[0].copy(name = "new org")),
-            projects = listOf(initialConfig.projects[0].copy(name = "new project")),
-            sites = listOf(initialConfig.sites[0].copy(name = "new site")),
-            facilities = listOf(initialConfig.facilities[0].copy(name = "new module")),
             storageLocations =
                 listOf(initialConfig.storageLocations[0].copy(name = "new location")))
 
@@ -210,6 +194,12 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             projectId = project.id)
     val facility =
         FacilitiesRow(FacilityId(3), site.id, FacilityType.SeedBank, "testModule", enabled = true)
+
+    organizationsDao.insert(organization)
+    projectsDao.insert(project)
+    sitesDao.insert(site)
+    facilitiesDao.insert(facility)
+
     val device =
         DevicesRow(
             DeviceId(4),
@@ -230,12 +220,8 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
             StorageLocationId(5), facility.id, "location", StorageCondition.Freezer, true)
 
     return PerSiteConfig(
-        organizations = listOf(organization),
-        sites = listOf(site),
-        facilities = listOf(facility),
         devices = listOf(device),
         storageLocations = listOf(storageLocation),
-        projects = listOf(project),
     )
   }
 
@@ -258,10 +244,6 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   }
 
   private fun assertConfigInDatabase(expected: PerSiteConfig) {
-    assertRows(expected.organizations, organizationsDao)
-    assertRows(expected.projects, projectsDao)
-    assertRows(expected.sites, sitesDao)
-    assertRows(expected.facilities, facilitiesDao)
     assertRows(expected.devices, devicesDao)
     assertRows(expected.storageLocations, storageLocationsDao)
   }

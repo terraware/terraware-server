@@ -2,31 +2,16 @@ package com.terraformation.backend.config
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.db.tables.daos.OrganizationsDao
-import com.terraformation.backend.db.tables.daos.ProjectsDao
-import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.DevicesRow
-import com.terraformation.backend.db.tables.pojos.FacilitiesRow
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
-import com.terraformation.backend.db.tables.pojos.ProjectsRow
-import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.log.perClassLogger
 import java.io.IOException
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import javax.annotation.ManagedBean
-import javax.annotation.PostConstruct
-import javax.validation.constraints.NotEmpty
 import org.jooq.DAO
 import org.jooq.DSLContext
 import org.springframework.boot.context.event.ApplicationStartedEvent
@@ -34,39 +19,23 @@ import org.springframework.context.event.EventListener
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.scheduling.TaskScheduler
 
+@JsonIgnoreProperties("organizations", "projects", "sites", "facilities")
 data class PerSiteConfig(
     val devices: List<DevicesRow> = emptyList(),
-    @NotEmpty val organizations: List<OrganizationsRow>,
-    @NotEmpty val sites: List<SitesRow>,
-    @NotEmpty val facilities: List<FacilitiesRow>,
     val storageLocations: List<StorageLocationsRow> = emptyList(),
-    val projects: List<ProjectsRow> = emptyList(),
 )
-
-// TODO: TEMPORARY FOR BACKWARD COMPATIBILITY -- remove this once config has projects
-@JsonIgnoreProperties("organizationId") abstract class SitesRowIgnoreOrganizationIdMixIn
 
 @ManagedBean
 class PerSiteConfigUpdater(
-    private val clock: Clock,
     private val databaseBootstrapper: DatabaseBootstrapper,
     private val devicesDao: DevicesDao,
     private val dslContext: DSLContext,
-    private val projectsDao: ProjectsDao,
-    private val organizationsDao: OrganizationsDao,
-    private val sitesDao: SitesDao,
-    private val facilitiesDao: FacilitiesDao,
     private val storageLocationsDao: StorageLocationsDao,
     private val objectMapper: ObjectMapper,
     private val serverConfig: TerrawareServerConfig,
     private val taskScheduler: TaskScheduler
 ) {
   private val log = perClassLogger()
-
-  @PostConstruct
-  fun addMixInForOrganizationId() {
-    objectMapper.addMixIn(SitesRow::class.java, SitesRowIgnoreOrganizationIdMixIn::class.java)
-  }
 
   @EventListener
   fun scheduleTasks(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
@@ -105,37 +74,7 @@ class PerSiteConfigUpdater(
           log.warn("Converted legacy per-site config. Please replace 'siteModule' with 'facility'.")
         }
 
-        val config = objectMapper.readValue<PerSiteConfig>(contents)
-
-        return if (config.projects.isEmpty()) {
-          // BACKWARD COMPATIBILITY: Support config files with per-site organization IDs from before
-          // we introduced projects in between sites and organizations. This works by synthesizing
-          // a project for each site.
-
-          val implicitProjects = mutableListOf<ProjectsRow>()
-          val root = objectMapper.readTree(contents) as ObjectNode
-          val sitesNode = root["sites"] as ArrayNode
-
-          val sitesWithProjectIds =
-              sitesNode.zip(config.sites) { siteNode, sitesRow ->
-                if (sitesRow.projectId == null && siteNode.has("organizationId")) {
-                  val projectId = ProjectId(sitesRow.id!!.value)
-                  if (!config.projects.any { it.id == projectId }) {
-                    val organizationId = OrganizationId(siteNode["organizationId"].asLong())
-                    implicitProjects.add(
-                        ProjectsRow(
-                            id = projectId, organizationId = organizationId, name = sitesRow.name))
-                  }
-                  sitesRow.copy(projectId = projectId)
-                } else {
-                  sitesRow
-                }
-              }
-
-          config.copy(projects = config.projects + implicitProjects, sites = sitesWithProjectIds)
-        } else {
-          config
-        }
+        return objectMapper.readValue<PerSiteConfig>(contents)
       }
     } catch (e: IOException) {
       log.info("Failed to fetch per-site configuration: ${e.message}")
@@ -146,42 +85,23 @@ class PerSiteConfigUpdater(
   fun updateDatabase(perSiteConfig: PerSiteConfig) {
     // Any entries that aren't explicitly marked as disabled in the config should be enabled.
     perSiteConfig.devices.forEach { it.enabled = it.enabled ?: true }
-    perSiteConfig.organizations.forEach { it.enabled = it.enabled ?: true }
-    perSiteConfig.sites.forEach { it.enabled = it.enabled ?: true }
-    perSiteConfig.facilities.forEach { it.enabled = it.enabled ?: true }
     perSiteConfig.storageLocations.forEach { it.enabled = it.enabled ?: true }
 
     // Need to insert and delete IDs in the right order because there are foreign key relationships.
-    insertAndUpdate(perSiteConfig.organizations, organizationsDao)
-    insertAndUpdate(perSiteConfig.projects, projectsDao) {
-      it.copy(createdTime = clock.instant(), modifiedTime = clock.instant())
-    }
-    insertAndUpdate(perSiteConfig.sites, sitesDao)
-    insertAndUpdate(perSiteConfig.facilities, facilitiesDao)
     insertAndUpdate(perSiteConfig.devices, devicesDao)
     insertAndUpdate(perSiteConfig.storageLocations, storageLocationsDao)
 
     delete(perSiteConfig.devices, devicesDao) { it.enabled = false }
     delete(perSiteConfig.storageLocations, storageLocationsDao) { it.enabled = false }
-    delete(perSiteConfig.facilities, facilitiesDao) { it.enabled = false }
-    delete(perSiteConfig.sites, sitesDao) { it.enabled = false }
-    delete(perSiteConfig.projects, projectsDao) { it.disabledTime = clock.instant() }
-    delete(perSiteConfig.organizations, organizationsDao) { it.enabled = false }
 
-    // API keys are tied to organizations; we may have just inserted the organization that
-    // the configured API key needs to refer to, in which case we can now insert the key.
     databaseBootstrapper.updateApiKey()
   }
 
-  private fun <T, I : Any> insertAndUpdate(
-      desired: List<T>,
-      dao: DAO<*, T, I>,
-      beforeInsert: (T) -> T = { it }
-  ) {
+  private fun <T, I : Any> insertAndUpdate(desired: List<T>, dao: DAO<*, T, I>) {
     val existingIds = dao.findAll().mapNotNull { dao.getId(it) }.toSet()
 
     dao.update(desired.filter { dao.getId(it) in existingIds })
-    dao.insert(desired.filter { dao.getId(it) !in existingIds }.map { beforeInsert(it) })
+    dao.insert(desired.filter { dao.getId(it) !in existingIds })
   }
 
   private fun <T, I : Any> delete(desired: List<T>, dao: DAO<*, T, I>, disable: (T) -> Unit) {
