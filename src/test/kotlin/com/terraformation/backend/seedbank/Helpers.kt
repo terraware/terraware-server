@@ -1,4 +1,4 @@
-package com.terraformation.backend
+package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.seedbank.api.SeedQuantityPayload

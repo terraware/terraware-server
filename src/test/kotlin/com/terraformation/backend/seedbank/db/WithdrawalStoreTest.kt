@@ -14,10 +14,10 @@ import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.grams
-import com.terraformation.backend.milligrams
+import com.terraformation.backend.seedbank.grams
+import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.WithdrawalModel
-import com.terraformation.backend.seeds
+import com.terraformation.backend.seedbank.seeds
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal

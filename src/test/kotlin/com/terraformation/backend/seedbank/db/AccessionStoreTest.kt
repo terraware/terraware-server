@@ -53,8 +53,6 @@ import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TES
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.grams
-import com.terraformation.backend.kilograms
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
 import com.terraformation.backend.seedbank.api.GerminationPayload
@@ -62,6 +60,8 @@ import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.SeedQuantityPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
+import com.terraformation.backend.seedbank.grams
+import com.terraformation.backend.seedbank.kilograms
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.Geolocation
@@ -69,7 +69,7 @@ import com.terraformation.backend.seedbank.model.GerminationModel
 import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
-import com.terraformation.backend.seeds
+import com.terraformation.backend.seedbank.seeds
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
