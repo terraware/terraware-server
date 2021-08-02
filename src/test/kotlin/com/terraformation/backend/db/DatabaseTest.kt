@@ -21,6 +21,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.DockerImageName
 
 /**
  * Base class for database-backed tests. Subclass this to get a fully-configured database with a
@@ -132,7 +133,9 @@ abstract class DatabaseTest {
   }
 
   companion object {
-    val postgresContainer = PostgreSQLContainer<PostgreSQLContainer<*>>("postgres:12")
+    val imageName =
+        DockerImageName.parse("postgis/postgis:12-3.1").asCompatibleSubstituteFor("postgres")
+    val postgresContainer = PostgreSQLContainer<PostgreSQLContainer<*>>(imageName)
     var started: Boolean = false
   }
 }
