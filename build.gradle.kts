@@ -147,6 +147,8 @@ tasks {
         withIncludes(".*")
         withExcludes(generator.excludes())
         withForcedTypes(generator.forcedTypes(basePackageName))
+        // Fix compiler warnings for PostGIS functions; see https://github.com/jOOQ/jOOQ/issues/8587
+        withTableValuedFunctions(false)
       }
 
       generate.apply {

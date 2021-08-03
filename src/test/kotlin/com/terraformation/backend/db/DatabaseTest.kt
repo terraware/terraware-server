@@ -133,7 +133,7 @@ abstract class DatabaseTest {
   }
 
   companion object {
-    val imageName =
+    private val imageName: DockerImageName =
         DockerImageName.parse("postgis/postgis:12-3.1").asCompatibleSubstituteFor("postgres")
     val postgresContainer = PostgreSQLContainer<PostgreSQLContainer<*>>(imageName)
     var started: Boolean = false
