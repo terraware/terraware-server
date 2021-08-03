@@ -18,7 +18,7 @@ The server does not depend on the Balena or Raspberry Pi environments and should
 
 ### Initial setup
 
-* Create a local database: `createdb seedbank`
+* Create a local database: `createdb terraware`
 * Pull the PostgreSQL Docker image so the build process can launch it: `docker pull postgres:12`
 
 ### Running the server
