@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+
+<h2 th:text="|Organization ${organization.name} (${organization.id})|">Organization (name)</h2>
+
+<h3>Users</h3>
+
+<ul>
+    <li th:each="user : ${users}">
+        <a th:href="|${prefix}/user/${user.userId}|" th:text="|${user.firstName} ${user.lastName} (${user.email})|">user@domain</a>
+        <span th:text="|(${user.role.displayName})|" th:if="!${canAddUser}">(role)</span>
+        <span th:if="${canAddUser}">
+            <form method="POST" style="display: inline;"
+                  th:action="|${prefix}/setOrganizationUserRole|">
+                <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+                <input type="hidden" name="userId" th:value="${user.userId}"/>
+                <select name="role">
+                    <option th:each="role : ${roles}" th:selected="${user.role} == ${role}"
+                            th:value="${role.id}" th:text="${role.displayName}">Role</option>
+                </select>
+                <input type="submit" value=" Update Role "/>
+            </form>
+
+            <form method="POST" style="display: inline;"
+                  th:action="|${prefix}/removeOrganizationUser|">
+                <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+                <input type="hidden" name="userId" th:value="${user.userId}"/>
+                <input type="submit" value=" Remove User from Organization "/>
+            </form>
+        </span>
+    </li>
+</ul>
+
+<form method="POST" th:action="|${prefix}/addOrganizationUser|" th:if="${canAddUser}">
+    <h4>Add User to Organization</h4>
+
+    <p>
+        User must already have an account on the system; invitations aren't implemented yet.
+    </p>
+
+    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+    <label for="email">Email Address</label>
+    <input type="email" name="email" id="email" required/>
+    <select name="role">
+        <option th:text="${role.displayName}" th:value="${role.id}" th:each="role : ${roles}">Role
+            name
+        </option>
+    </select>
+    <input type="submit" value=" Add User to Organization "/>
+</form>
+
+<h3>Projects</h3>
+
+<ul>
+    <li th:each="project : ${projects}">
+        <a th:href="|${prefix}/project/${project.id}|" th:text="${project.name}">Project</a>
+        <span th:text="|(${project.id})|"></span>
+    </li>
+</ul>
+
+<form method="POST" th:action="|${prefix}/createProject|" th:if="${canCreateProject}">
+    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+    <label for="name">Project Name</label>
+    <input type="text" name="name" id="name" required/>
+    <input type="submit" value=" Create Project "/>
+</form>
+
+</body>
+</html>

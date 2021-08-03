@@ -55,7 +55,10 @@ class SecurityConfig(private val userStore: UserStore) : WebSecurityConfigurerAd
     http {
       cors {}
       csrf { disable() }
-      authorizeRequests { authorize("/api/**", fullyAuthenticated) }
+      authorizeRequests {
+        authorize("/api/**", fullyAuthenticated)
+        authorize("/admin/**", fullyAuthenticated)
+      }
       httpBasic {}
       sessionManagement { sessionCreationPolicy = SessionCreationPolicy.STATELESS }
 

@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <title>
+        Terraware Server Placeholder Admin UI
+    </title>
+
+    <style>
+        li { margin-bottom: 1ex;}
+    </style>
+</head>
+
+<body>
+
+<span th:fragment="top">
+
+<h1>Placeholder Admin UI</h1>
+
+<p style="background-color: lightgreen;" th:if="${!#strings.isEmpty(successMessage)}"
+   th:text="${successMessage}"></p>
+<p style="background-color: red;" th:if="${!#strings.isEmpty(failureMessage)}"
+   th:text="${failureMessage}"></p>
+</span>
+
+</body>
+</html>

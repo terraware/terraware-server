@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<h2>Organizations</h2>
+
+<ul>
+    <li th:each="organization : ${organizations}">
+        <a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">
+            Org name
+        </a>
+        <span th:text="|(${organization.id})|">(15)</span>
+    </li>
+</ul>
+
+<form method="POST" action="createOrganization">
+    <input type="text" name="name" required/>
+    <input type="submit" value=" Create Organization "/>
+</form>
+
+</body>
+</html>

@@ -4,7 +4,6 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
-import com.terraformation.seedbank.services.perClassLogger
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
