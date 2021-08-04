@@ -7,6 +7,8 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.seedbank.db.AccessionStore
+import com.terraformation.backend.seedbank.db.PhotoRepository
+import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
