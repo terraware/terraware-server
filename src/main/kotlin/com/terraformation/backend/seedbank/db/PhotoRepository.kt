@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
@@ -13,6 +14,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
 import javax.annotation.ManagedBean
+import org.springframework.security.access.AccessDeniedException
 
 /**
  * Manages storage of photos including metadata. In this implementation, image files are stored on
@@ -39,6 +41,10 @@ class PhotoRepository(
     val accessionId =
         accessionStore.getIdByNumber(facilityId, accessionNumber)
             ?: throw AccessionNotFoundException(accessionNumber)
+
+    if (!currentUser().canUpdateAccession(accessionId, facilityId)) {
+      throw AccessDeniedException("No permission to update accession data")
+    }
 
     val photoPath = getPhotoPath(facilityId, accessionNumber, metadata.filename)
     makePhotoDir(facilityId, accessionNumber)
@@ -71,6 +77,14 @@ class PhotoRepository(
 
   @Throws(IOException::class)
   fun readPhoto(facilityId: FacilityId, accessionNumber: String, filename: String): InputStream {
+    val accessionId =
+        accessionStore.getIdByNumber(facilityId, accessionNumber)
+            ?: throw AccessionNotFoundException(accessionNumber)
+
+    if (!currentUser().canReadAccession(accessionId, facilityId)) {
+      throw AccessDeniedException("No permission to read accession data")
+    }
+
     val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
     return Files.newInputStream(photoPath)
   }
@@ -78,6 +92,14 @@ class PhotoRepository(
   /** Returns the photo's size in bytes. */
   @Throws(IOException::class)
   fun getPhotoFileSize(facilityId: FacilityId, accessionNumber: String, filename: String): Long {
+    val accessionId =
+        accessionStore.getIdByNumber(facilityId, accessionNumber)
+            ?: throw AccessionNotFoundException(accessionNumber)
+
+    if (!currentUser().canReadAccession(accessionId, facilityId)) {
+      throw AccessDeniedException("No permission to read accession data")
+    }
+
     val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
     return Files.size(photoPath)
   }
