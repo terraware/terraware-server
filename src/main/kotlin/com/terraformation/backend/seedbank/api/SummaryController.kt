@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.SpeciesStore
@@ -27,7 +28,7 @@ class SummaryController(
   @GetMapping
   @Operation(summary = "Get summary statistics about the seed bank")
   fun getSummary(): SummaryResponse {
-    val facilityId = config.facilityId
+    val facilityId = currentUser().defaultFacilityId()
     val now = ZonedDateTime.now(clock)
     val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
     val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)

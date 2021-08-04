@@ -12,7 +12,7 @@ import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.UnsupportedPhotoFormatException
-import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
@@ -50,7 +50,6 @@ import org.springframework.web.multipart.MultipartFile
 class PhotoController(
     private val accessionPhotosDao: AccessionPhotosDao,
     private val accessionStore: AccessionStore,
-    private val config: TerrawareServerConfig,
     private val photoRepository: PhotoRepository
 ) {
   private val log = perClassLogger()
@@ -76,7 +75,8 @@ class PhotoController(
       @RequestPart("file") file: MultipartFile,
       @RequestPart("metadata") metadata: UploadPhotoMetadataPayload
   ): SimpleSuccessResponsePayload {
-    val facilityId = config.facilityId
+    val facilityId = currentUser().defaultFacilityId()
+
     val contentType = file.contentType?.substringBefore(';')
     if (contentType != MediaType.IMAGE_JPEG_VALUE) {
       throw UnsupportedPhotoFormatException()
@@ -125,7 +125,7 @@ class PhotoController(
       @PathVariable accessionNumber: String,
       @PathVariable photoFilename: String
   ): ResponseEntity<InputStreamResource> {
-    val facilityId = config.facilityId
+    val facilityId = currentUser().defaultFacilityId()
 
     if (accessionStore.getIdByNumber(facilityId, accessionNumber) == null) {
       throw NotFoundException("Accession $accessionNumber does not exist.")
@@ -151,7 +151,7 @@ class PhotoController(
   @GetMapping
   @Operation(summary = "List all the available photos for an accession.")
   fun listPhotos(@PathVariable accessionNumber: String): ListPhotosResponsePayload {
-    val facilityId = config.facilityId
+    val facilityId = currentUser().defaultFacilityId()
     val accessionId =
         accessionStore.getIdByNumber(facilityId, accessionNumber)
             ?: throw NotFoundException("Accession $accessionNumber does not exist.")
