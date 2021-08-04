@@ -11,8 +11,8 @@ cookie_secret = "YOUR_COOKIE_SECRET_HERE"
 # "terraware", edit this.
 oidc_issuer_url = "http://localhost:8081/auth/realms/terraware"
 
-# If you're using a client ID other than "dev-terraware-server", edit this.
-client_id = "dev-terraware-server"
+# If you're using a client ID other than "localhost-oauth2-proxy", edit this.
+client_id = "localhost-oauth2-proxy"
 
 
 #####
