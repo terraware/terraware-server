@@ -1,13 +1,13 @@
-package com.terraformation.backend.photo
+package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
-import com.terraformation.backend.seedbank.db.AccessionStore
-import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.mockk.every
 import io.mockk.justRun
@@ -32,14 +32,18 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
+import org.springframework.security.access.AccessDeniedException
 
-internal class PhotoRepositoryTest {
+internal class PhotoRepositoryTest : RunsAsUser {
   private val accessionPhotosDao: AccessionPhotosDao = mockk()
   private val accessionStore: AccessionStore = mockk()
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val repository = PhotoRepository(config, accessionPhotosDao, accessionStore, clock)
 
+  override val user: UserModel = mockk()
+
+  private lateinit var photoPath: Path
   private lateinit var tempDir: Path
 
   private val accessionId = AccessionId(12345)
@@ -54,8 +58,6 @@ internal class PhotoRepositoryTest {
   private val uploadedTime = Instant.now()
   private val metadata =
       PhotoMetadata(filename, contentType, capturedTime, latitude, longitude, accuracy)
-
-  private lateinit var photoPath: Path
 
   @BeforeEach
   fun createTemporaryDirectory() {
@@ -77,6 +79,9 @@ internal class PhotoRepositoryTest {
             .resolve("${accessionNumber[2]}")
             .resolve(accessionNumber)
             .resolve(filename)
+
+    every { user.canReadAccession(any(), any()) } returns true
+    every { user.canUpdateAccession(any(), any()) } returns true
   }
 
   @AfterEach
@@ -136,6 +141,15 @@ internal class PhotoRepositoryTest {
   }
 
   @Test
+  fun `storePhoto throws exception if user does not have permission to update accession`() {
+    every { user.canUpdateAccession(accessionId, facilityId) } returns false
+
+    assertThrows(AccessDeniedException::class.java) {
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
+    }
+  }
+
+  @Test
   fun `storePhoto throws exception if directory cannot be created`() {
     // Directory creation will fail if a path element already exists and is not a directory.
     Files.createDirectories(photoPath.parent.parent)
@@ -183,6 +197,15 @@ internal class PhotoRepositoryTest {
   }
 
   @Test
+  fun `readPhoto throws exception if user does not have permission to read accession`() {
+    every { user.canReadAccession(accessionId, facilityId) } returns false
+
+    assertThrows(AccessDeniedException::class.java) {
+      repository.readPhoto(facilityId, accessionNumber, filename)
+    }
+  }
+
+  @Test
   fun `getPhotoFileSize returns size of existing photo`() {
     val expectedSize = 17
     val photoData = ByteArray(expectedSize)
@@ -197,6 +220,15 @@ internal class PhotoRepositoryTest {
   @Test
   fun `getPhotoFileSize throws exception on nonexistent file`() {
     assertThrows(NoSuchFileException::class.java) {
+      repository.getPhotoFileSize(facilityId, accessionNumber, filename)
+    }
+  }
+
+  @Test
+  fun `getPhotoFileSize throws exception if user does not have permission to read accession`() {
+    every { user.canReadAccession(accessionId, facilityId) } returns false
+
+    assertThrows(AccessDeniedException::class.java) {
       repository.getPhotoFileSize(facilityId, accessionNumber, filename)
     }
   }
