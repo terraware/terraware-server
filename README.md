@@ -21,6 +21,7 @@ The server does not depend on the Balena or Raspberry Pi environments and should
 
 * Create a local database: `createdb terraware`
 * Follow the set up instructions in [KEYCLOAK.md](KEYCLOAK.md).
+* Don't forget to launch the OAuth2 Proxy as described in [KEYCLOAK.md](KEYCLOAK.md).
 
 ### Running the server
 
