@@ -1,4 +1,4 @@
-package com.terraformation.backend.photo
+package com.terraformation.backend.seedbank.model
 
 import java.math.BigDecimal
 import java.time.Instant
