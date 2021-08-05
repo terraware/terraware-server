@@ -15,38 +15,21 @@ The server does not depend on the Balena or Raspberry Pi environments and should
 * Docker (used by the build process and by automated tests)
 * Java version 15 or higher ([AdoptOpenJDK](https://adoptopenjdk.net/) is a convenient place to get it)
 * PostgreSQL (version 12 or higher recommended)
-* [Keycloak](https://keycloak.org/), either an existing server or a local one. See [KEYCLOAK.md](KEYCLOAK.md) for setup instructions.
-* [OAuth2 Proxy](https://github.com/oauth2-proxy/oauth2-proxy). See [KEYCLOAK.md](KEYCLOAK.md) for setup instructions.
+* PostGIS (version 3.1 or higher recommended)
 
 ### Initial setup
 
 * Create a local database: `createdb terraware`
-* Pull the PostgreSQL Docker image so the build process can launch it: `docker pull postgres:12`
-* Get credentials for administrative API access to your Keycloak instance. (Terraformation employees can find instructions for this in Confluence.)
-* Launch OAuth2 Proxy as described in [KEYCLOAK.md](KEYCLOAK.md).
-
-#### Keycloak environment variables
-
-You'll need to run Keycloak to authenticate to the server, and the server needs to know how to communicate with Keycloak, which requires setting four environment variables.
-
-If you're launching the server from the command line (including using Gradle) you can set these in your shell.
-
-If you're launching the server from an IDE such as IntelliJ IDEA, you can set them in the IDE's configuration. In IntelliJ, environment variables are part of the "run configuration" for the server.
-
-| Variable | Description
-| --- | ---
-| `TERRAWARE_KEYCLOAK_SERVER_URL` | Your Keycloak server's API address. If you are running Keycloak locally, this will be `http://localhost:8081/auth`. Otherwise, it will be the URL of your Keycloak server including the path prefix for the Keycloak API, which is usually `/auth`.
-|`TERRAWARE_KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions for a local Keycloak instance in [KEYCLOAK.md](KEYCLOAK.md), this will be `terraware`.
-|`TERRAWARE_KEYCLOAK_CLIENT_ID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions for a local Keycloak instance in [KEYCLOAK.md](KEYCLOAK.md), this will be `dev-terraware-server`.
-|`TERRAWARE_KEYCLOAK_CLIENT_SECRET` | The secret associated with the client ID.
+* Follow the set up instructions in [KEYCLOAK.md](KEYCLOAK.md).
+* Don't forget to launch the OAuth2 Proxy as described in [KEYCLOAK.md](KEYCLOAK.md).
 
 ### Running the server
 
-Set the Keycloak configuration environment variables as described above.
+Mac/Linux: `./gradlew bootRun`
 
-Mac/Linux: `./gradlew run`
+Windows: `gradlew.bat bootRun`
 
-Windows: `gradlew.bat run`
+See the "Editing The Code" section below for details on how to run the server inside of IntelliJ.
 
 The server will listen on port 8080. As a demo, it will create an API client with an API key of `dummyKey`, which you can use to make API requests.
 
@@ -58,7 +41,8 @@ Fetch the details of a sample site.
 
     curl -H "Authorization: Basic $(echo -n user:dummyKey | base64)" http://localhost:8080/api/v1/site/1
 
-You can browse the API interactively at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
+### Viewing the API documentation
+Start the server via the command line or in IntelliJ and then navigate to: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
 
 ### Running the tests
 
@@ -100,15 +84,7 @@ The code should build (if you've previously built it from the command line, it w
 
 Once you've launched the application once, it will appear in the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window. You can select it there and click the Run (triangle) or Debug (beetle) button to the right of the drop-down menu. You can also launch it with keyboard shortcuts but that's beyond the scope of this quick intro.
 
-Depending on how you set the Keycloak-related environment variables in the initial setup steps above, the server might complain that it can't find some required `terraware.keycloak` properties. In that case, you can set the environment variables in the IntelliJ run configuration:
-
-1. In the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window, choose "Edit Configurations..."
-2. Select "Application" under "Spring Boot" if it's not already selected.
-3. Click the little icon at the end of the "Environment Variables" text field to pop up a dialog that shows the current set of environment variables.
-4. Add all the `TERRAWARE_KEYCLOAK` environment variables listed in the "Keycloak environment variables" section above.
-5. Click OK on the environment variable dialog and the run configurations dialog.
-
-Now IntelliJ will pass those environment variables to the server each time you run it.
+Depending on how you set the Keycloak-related environment variables in the initial setup steps above, the server might complain that it can't find some required `terraware.keycloak` properties. If that's the case revisit the 'Keycloak environment variables" section in [KEYCLOAK.md](KEYCLOAK.md).
 
 ## How to contribute
 

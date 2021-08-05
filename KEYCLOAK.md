@@ -4,17 +4,13 @@ Terraware-server currently depends on [Keycloak](https://keycloak.org/) to manag
 
 It can use an existing Keycloak server or a locally-hosted one. Either way, some initial setup is required.
 
-## Using an existing Keycloak instance that's already set up for terraware-server
+## Setting Up Keycloak
 
-If someone else has already configured a Keycloak instance for use with terraware-server development environments, you just need a few pieces of information to configure OAuth2 Proxy.
+You probably don't need to set up Keycloak if you work at Terraformation. Please check with a fellow developer. It is likely that someone else has already configured a Keycloak instance for use with terraware-server development environments. If that's the case, skip the "Running Keycloak locally" and "Configuring Keycloak" sections. You may proceed to the "Terraware-server environment variables" section.
 
-- The client ID and client secret of the Keycloak client that OAuth2 Proxy should use for authenticating users to local development environments. The client ID will often be `localhost-oauth2-proxy`.
-- The name of the Keycloak realm where Terraware users are stored. This will often be `terraware`.
-- The URL of the Keycloak server.
+If you don't have access to a Keycloak instance then proceed to "Running Keycloak locally".
 
-In this case, you don't need to set up Keycloak. Proceed to the "Running OAuth2 Proxy" section.
-
-## Running Keycloak locally
+### Running Keycloak locally
 
 The easiest way to bring up a local Keycloak server in a development environment is to use Keycloak's official Docker image. By default, the Keycloak image will use a local database inside the container, so there's no need to set up a separate database server. Obviously that's not what you'd want for production use, but for a local dev environment it's usually sufficient.
 
@@ -30,7 +26,7 @@ Log in with a username of `admin` and a password of `admin` (these are set in en
 
 Follow the instructions in the next section to configure Keycloak for terraware-server.
 
-## Configuring Keycloak
+### Configuring Keycloak
 
 These steps apply to a local instance of Keycloak, and also to an existing one that isn't yet configured for use with terraware-server.
 
@@ -64,37 +60,60 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
    10. Click the "Credentials" tab.
    11. Copy the value of the "client secret" field; you'll be using it later.
 
-## Installing OAuth2 Proxy
+### Terraware-server environment variables
 
-You'll want to install the proxy locally. There is a Docker image, and you can make it work if your local host is running Linux, but due to limitations of the networking features in Docker for Mac and Docker for Windows, it's easier to run it on the host OS.
+You'll need to run Keycloak to authenticate to terraware-server, and terraware-server needs to know how to communicate with Keycloak, which requires setting four environment variables. If you work at Terraformation then ask a fellow developer for the values of these environment variables (likely in the Terraformation 1Password Eng Infra Vault).
 
-On OS X with Homebrew, you can install it by running `brew install oauth2-proxy`.
+| Variable | Description
+| --- | ---
+|`TERRAWARE_KEYCLOAK_SERVER_URL` | Your Keycloak server's API address. If you are running Keycloak locally, this will be `http://localhost:8081/auth`. Otherwise, it will be the URL of your Keycloak server including the path prefix for the Keycloak API, which is usually `/auth`.
+|`TERRAWARE_KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions to create a local Keycloak instance then this will be `terraware`.
+|`TERRAWARE_KEYCLOAK_CLIENT_ID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
+|`TERRAWARE_KEYCLOAK_CLIENT_SECRET` | The secret associated with the client ID.
+
+If you're launching the server from the command line (including using Gradle) you can set these in your shell.
+
+If you're launching the server from an IDE such as IntelliJ IDEA, you can set them in the IDE's configuration. In IntelliJ, environment variables are part of the "run configuration" for the server. Follow the instructions below to make IntelliJ pass the environment variables to the server each time you run it.
+
+1. In the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window, choose "Edit Configurations..."
+2. Select "Application" under "Spring Boot" if it's not already selected.
+3. Click the little icon at the end of the "Environment Variables" text field to pop up a dialog that shows the current set of environment variables.
+4. Add all the `TERRAWARE_KEYCLOAK` environment variables listed in the "Keycloak environment variables" section above.
+5. Click OK on the environment variable dialog and the run configurations dialog.
+
+
+## Setting Up OAuth2 Proxy
+
+### Installation
+You'll want to install the proxy locally. There is a Docker image, and you can make it work if your local host is running Linux. However, it's easier to run the proxy on the host OS because of limitations of the networking features in Docker for Mac and Docker for Windows.
+
+On OS X with Homebrew, you can install it by running `brew install oauth2_proxy`.
 
 See [the OAuth2 Proxy install docs](https://oauth2-proxy.github.io/oauth2-proxy/docs/) for other options.
 
-In addition, you'll need to generate a cookie secret for OAuth2 Proxy to use when it generates session cookies. The cookie secret should be 32 characters long. You can generate it any way you like, for example:
-
-```shell
-base64 < /dev/random | head -c32
-```
-
-Copy the file [`oauth2-proxy.cfg.sample`](oauth2-proxy.cfg.sample) to `oauth2-proxy.cfg` and edit the following config settings:
+### Configuration
+Copy the file [`oauth2-proxy.cfg.sample`](oauth2-proxy.cfg.sample) to `oauth2-proxy.cfg` and edit the following config settings. If you work at Terraformation then ask a fellow developer where to find the setting values (they will likely be in the Terraformation 1Password Eng Infra Vault).
 
 | Setting | Description |
 | --- | ---
 | `client_secret` | The client secret for the OAuth2 Proxy client, as shown in the Keycloak admin UI.
-| `cookie_secret` | The random value you generated above.
+| `cookie_secret` |  A cookie secret for OAuth2 Proxy to use when it generates session cookies. The cookie secret should be 32 characters long.
 | `oidc_issuer_url` | The address of your realm on your Keycloak server. Typically this will look like `https://your.keycloak.server/auth/realms/terraware`. You can leave this alone if you're running Keycloak locally with a realm name of `terraware`.
 | `client_id` | The ID of the client that will be used to authenticate users to Keycloak; you can leave this alone if you're using the default one.
 
-Then run the proxy:
-
+When setting up the config, you can generate the `cookie_secret` however you like. E.g, this will work:
 ```shell
-oauth2-proxy -f oauth2-proxy.cfg
+base64 < /dev/random | head -c32
 ```
 
 The config file is set up for a typical terraware-server development environment, where the front end (as launched with `yarn start` from the front end repo) listens on HTTP port 3000 and the back end (terraware-server) listens on HTTP port 8080. The proxy itself is configured to listen on port 4000.
 
-Connect to http://localhost:4000/ and you should see a login form.
 
-Proceed to the "Keycloak environment variables" section in [README.md](README.md) to tell terraware-server how to connect to Keycloak.
+### Using the proxy
+After the configuration is done, start the proxy with:
+
+```shell
+oauth2-proxy --config oauth2-proxy.cfg
+```
+
+Connect to http://localhost:4000/ and you should see a login form.
