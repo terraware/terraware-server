@@ -4,7 +4,6 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.NoOrganizationException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.WrongOrganizationException
-import com.terraformation.backend.auth.ClientIdentity
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.daos.ProjectsDao
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -34,9 +32,9 @@ class SiteController(private val projectsDao: ProjectsDao, private val sitesDao:
           description = "Client is not associated with an organization.",
       ),
   )
-  fun listSites(@AuthenticationPrincipal clientIdentity: ClientIdentity): ListSitesResponse {
+  fun listSites(): ListSitesResponse {
     // TODO: Super admins should be able to specify an organization ID
-    val organizationId = clientIdentity.organizationId ?: throw NoOrganizationException()
+    val organizationId = currentUser().defaultOrganizationId() ?: throw NoOrganizationException()
 
     val projectIds =
         projectsDao.fetchByOrganizationId(organizationId).mapNotNull { it.id }.toTypedArray()
@@ -56,15 +54,7 @@ class SiteController(private val projectsDao: ProjectsDao, private val sitesDao:
       ),
       ApiResponse(responseCode = "404", description = "No site with the requested ID exists."),
   )
-  fun getSite(
-      @AuthenticationPrincipal clientIdentity: ClientIdentity,
-      @PathVariable siteId: Long
-  ): GetSiteResponse {
-    val organizationId = clientIdentity.organizationId
-    if (organizationId == null && !clientIdentity.isSuperAdmin) {
-      throw NoOrganizationException()
-    }
-
+  fun getSite(@PathVariable siteId: Long): GetSiteResponse {
     if (!currentUser().canReadSite(SiteId(siteId))) {
       throw WrongOrganizationException()
     }

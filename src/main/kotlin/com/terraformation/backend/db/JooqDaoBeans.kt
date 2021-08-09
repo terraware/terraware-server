@@ -2,7 +2,6 @@ package com.terraformation.backend.db
 
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.ApiKeysDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
@@ -31,7 +30,6 @@ class JooqDaoBeans(dslContext: DSLContext) {
 
   @Bean fun accessionPhotoDao() = AccessionPhotosDao(configuration)
   @Bean fun accessionsDao() = AccessionsDao(configuration)
-  @Bean fun apiKeyDao() = ApiKeysDao(configuration)
   @Bean fun deviceDao() = DevicesDao(configuration)
   @Bean fun facilitiesDao() = FacilitiesDao(configuration)
   @Bean fun organizationDao() = OrganizationsDao(configuration)

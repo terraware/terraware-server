@@ -3,7 +3,6 @@ package com.terraformation.backend.device.api
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.NotFoundException
-import com.terraformation.backend.auth.ClientIdentity
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.device.db.DeviceStore
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -45,7 +43,6 @@ class ResourceController(
   @PostMapping("/api/v1/resources", produces = [MediaType.TEXT_PLAIN_VALUE])
   @ResponseBody
   fun createResource(
-      @AuthenticationPrincipal identity: ClientIdentity,
       @RequestParam path: String,
       @RequestParam name: String,
       @RequestParam type: Int,

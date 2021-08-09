@@ -4,7 +4,7 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
-import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.device.db.DeviceStore
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/timeseries")
 @RestController
 class TimeseriesController(
-    private val config: TerrawareServerConfig,
     private val deviceStore: DeviceStore,
     private val timeSeriesStore: TimeSeriesStore,
 ) {
@@ -71,7 +70,7 @@ class TimeseriesController(
       facilityId: Long?,
   ): SimpleSuccessResponsePayload {
     val effectiveFacilityId =
-        (facilityId ?: siteModuleId)?.let { FacilityId(it) } ?: config.facilityId
+        (facilityId ?: siteModuleId)?.let { FacilityId(it) } ?: currentUser().defaultFacilityId()
     val deviceId =
         deviceStore.getDeviceIdByName(effectiveFacilityId, device)
             ?: throw NotFoundException("Device $device does not exist")
