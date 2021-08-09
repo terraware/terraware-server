@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+-
+<a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Organization name</a>
+
+<h2>API Key Created</h2>
+
+<p>
+    A new API key with ID <code th:text="${keyId}">111-222-333</code> has been created:
+</p>
+
+<textarea style="font-family: monospace;" cols="80" rows="10" th:text="${token}">big long key goes here</textarea>
+
+<p>
+    <b>Please record this key now. It will not be available again after you leave this page.</b>
+</p>
+
+</body>
+</html>

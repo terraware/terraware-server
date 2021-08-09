@@ -1,4 +1,7 @@
 terraware:
+  keycloak:
+    client-id: "dev-terraware-server"
+
   mqtt:
     enabled: false
     address: "ws://localhost:1883/"

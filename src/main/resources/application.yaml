@@ -1,3 +1,9 @@
+terraware:
+  keycloak:
+    api-client-id: "api"
+    client-id: "terraware-server"
+    realm: "terraware"
+
 spring:
   datasource:
     url: "${DATABASE_URL:jdbc:postgresql://localhost:5432/terraware}"

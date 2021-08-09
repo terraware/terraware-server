@@ -9,6 +9,7 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
+import org.springframework.boot.context.properties.bind.DefaultValue
 import org.springframework.core.io.Resource
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.validation.annotation.Validated
@@ -128,6 +129,21 @@ class TerrawareServerConfig(
 
       /** Client secret corresponding to clientId. */
       @NotNull val clientSecret: String,
+
+      /**
+       * Client ID that API clients will use to request access tokens given an offline refresh
+       * token. This should be a public client (no client secret) with `offline_access` scope.
+       */
+      @NotNull val apiClientId: String,
+
+      /** Name of Keycloak group to add API clients to on creation. */
+      @DefaultValue("/api-clients") @NotNull val apiClientGroupName: String,
+
+      /**
+       * Prefix to put at the beginning of auto-generated Keycloak usernames for API client users.
+       * The prefix will cause API client users to be grouped together in the Keycloak admin UI.
+       */
+      @DefaultValue("api-") @NotNull val apiClientUsernamePrefix: String,
   )
 
   companion object {

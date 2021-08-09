@@ -59,10 +59,62 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
       - view-users
    10. Click the "Credentials" tab.
    11. Copy the value of the "client secret" field; you'll be using it later.
+5. Create a role that will identify the synthetic Keycloak users for API clients.
+   1. Click "Roles" in the left navbar.
+   2. Click "Add Role" in the header bar of the list of roles.
+   3. Enter a role name of `api-client`. (You can use a different name if you prefer, but we'll use that name in these instructions.)
+   4. Click "Save."
+6. Create a group that grants the new role to API clients.
+   1. Click "Groups" in the left navbar.
+   2. Click "New" in the header bar of the list of groups.
+   3. Use a group name of `api-clients`. (If you choose a different name, you will have to override a configuration setting as described later.)
+   4. Click "Save."
+   5. Click the "Role Mappings" tab.
+   6. Select "api-client" in the list of available roles and click "Add selected."
+7. Create an authentication flow that only allows users with the API client role to authenticate.
+   1. Click "Authentication" in the left navbar.
+   2. Click "New" in the header bar of the list of authentication flows.
+   3. Set "Alias" to `API Client Authentication`. (You can use a different name if you prefer.)
+   4. Click "Save."
+   5. Click "Add execution" in the header bar.
+   6. Select "Username Validation".
+   7. Click "Save".
+   8. Click "Add execution" again.
+   9. Select "Password."
+   10. Click "Save."
+   11. Click the "Required" radio button on the "Password" line.
+   12. Click "Add flow" in the header bar.
+   13. Set "Alias" to `Require API Client Role`. (You can use a different name if you prefer.)
+   14. Click "Save."
+   15. Click the "Conditional" radio button on the "Require API Client Role" line.
+   16. From the "Actions" drop-down on the "Require API Client Role" line, click "Add execution."
+   17. Select "Condition - User Role."
+   18. Click "Save."
+   19. Click the "Required" radio button on the "Condition - User Role" line.
+   20. From the "Actions" drop-down on the "Condition - User Role" line, click "Config."
+   21. Set "Alias" to `api-client`.
+   22. Set "User role" to `api-client`.
+   23. Set "Negate output" to "On."
+   24. Click "Save."
+   25. Click "API Client Authentication" in the navigation links at the top of the page.
+   26. From the "Actions" drop-down on the "Require API Client Role" line, click "Add execution."
+   27. Select "Deny Access."
+   28. Click "Save."
+   29. Click the "Required" radio button on the "Deny Access" line.
+8. Create a Keycloak client that terraware-server API clients will use to request access tokens.
+   1. Click "Clients" in the left navbar.
+   2. Click "Create" in the header bar of the list of clients.
+   3. Set the client ID to `api`. Leave the other fields set to their default values.
+   4. Click "Save."
+   5. Set "Standard Flow Enabled" to "Off."
+   6. Click "Authentication Flow Overrides" to expand that section of the page.
+   7. Set "Browser Flow" to "API Client Authentication."
+   8. Set "Direct Grant Flow" to "API Client Authentication."
+   9. Click "Save."
 
 ### Terraware-server environment variables
 
-You'll need to run Keycloak to authenticate to terraware-server, and terraware-server needs to know how to communicate with Keycloak, which requires setting four environment variables. If you work at Terraformation then ask a fellow developer for the values of these environment variables (likely in the Terraformation 1Password Eng Infra Vault).
+You'll need to run Keycloak to authenticate to terraware-server, and terraware-server needs to know how to communicate with Keycloak, which requires setting four environment variables. You can also override some defaults with additional optional environment variables. If you work at Terraformation then ask a fellow developer for the values of these environment variables (likely in the Terraformation 1Password Eng Infra Vault).
 
 | Variable | Description
 | --- | ---
@@ -70,6 +122,9 @@ You'll need to run Keycloak to authenticate to terraware-server, and terraware-s
 |`TERRAWARE_KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions to create a local Keycloak instance then this will be `terraware`.
 |`TERRAWARE_KEYCLOAK_CLIENT_ID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
 |`TERRAWARE_KEYCLOAK_CLIENT_SECRET` | The secret associated with the client ID.
+|`TERRAWARE_KEYCLOAK_API_CLIENT_ID` | The Keycloak client ID that terraware-server API clients will use to generate access tokens. If you followed the instructions to create a local Keycloak instance, then this will be `api`.
+|`TERRAWARE_KEYCLOAK_API_CLIENT_GROUP_NAME` | The name of the Keycloak group to add newly-created API client users to. The default is `/api-clients`. If you chose a different group name when you were setting up Keycloak, you'll need to set this. Note that because Keycloak group names are hierarchical, the value must start with `/`.
+|`TERRAWARE_KEYCLOAK_API_CLIENT_USERNAME_PREFIX` | A prefix to put at the beginning of the Keycloak usernames of API client users. The default is `api-`. This is to make the users easy to identify in the Keycloak admin console.
 
 If you're launching the server from the command line (including using Gradle) you can set these in your shell.
 
