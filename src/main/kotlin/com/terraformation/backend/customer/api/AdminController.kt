@@ -1,6 +1,8 @@
 package com.terraformation.backend.customer.api
 
+import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
@@ -12,12 +14,15 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.log.perClassLogger
 import java.math.BigDecimal
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
-import javax.ws.rs.NotFoundException
 import org.jooq.DSLContext
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
@@ -34,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam
 @Controller
 @Validated
 class AdminController(
+    private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     private val organizationStore: OrganizationStore,
@@ -57,19 +63,39 @@ class AdminController(
   @GetMapping("/organization/{organizationId}")
   fun organization(@PathVariable("organizationId") idValue: Long, model: Model): String {
     val organizationId = OrganizationId(idValue)
-    val organization =
-        organizationStore.fetchById(organizationId)
-            ?: throw com.terraformation.backend.api.NotFoundException()
+    val organization = organizationStore.fetchById(organizationId) ?: throw NotFoundException()
     val projects = projectStore.fetchByOrganization(organizationId).sortedBy { it.name }
     val users = organizationStore.fetchUsers(listOf(organizationId)).sortedBy { it.email }
 
+    if (currentUser().canListApiKeys(organizationId)) {
+      val apiClients =
+          users.filter { it.userType == UserType.APIClient }.map {
+            it.copy(email = it.email.substringAfter(config.keycloak.apiClientUsernamePrefix))
+          }
+
+      // Thymeleaf templates only know how to render Instant in the server's time zone, so we
+      // need to format the timestamps here. In a real admin UI we'd let the client render these
+      // in the browser's time zone.
+      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm 'UTC'")
+      val createdTimes =
+          apiClients.associate {
+            it.email to ZonedDateTime.ofInstant(it.createdTime, ZoneOffset.UTC).format(formatter)
+          }
+
+      model.addAttribute("apiClients", apiClients)
+      model.addAttribute("apiClientCreatedTimes", createdTimes)
+    }
+
     model.addAttribute("canAddUser", currentUser().canAddOrganizationUser(organizationId))
+    model.addAttribute("canCreateApiKey", currentUser().canCreateApiKey(organizationId))
     model.addAttribute("canCreateProject", currentUser().canCreateProject(organizationId))
+    model.addAttribute("canDeleteApiKey", currentUser().canDeleteApiKey(organizationId))
+    model.addAttribute("canListApiKeys", currentUser().canListApiKeys(organizationId))
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("projects", projects)
     model.addAttribute("roles", Role.values())
-    model.addAttribute("users", users)
+    model.addAttribute("users", users.filter { it.userType != UserType.APIClient })
 
     return "/admin/organization"
   }
@@ -77,9 +103,7 @@ class AdminController(
   @GetMapping("/project/{projectId}")
   fun project(@PathVariable("projectId") idValue: Long, model: Model): String {
     val projectId = ProjectId(idValue)
-    val project =
-        projectStore.fetchById(projectId)
-            ?: throw com.terraformation.backend.api.NotFoundException()
+    val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
     val organization = organizationStore.fetchById(project.organizationId)
     val orgUsers =
         organizationStore.fetchUsers(listOf(project.organizationId)).sortedBy { it.email }
@@ -400,5 +424,44 @@ class AdminController(
 
     model.addAttribute("successMessage", "Facility created.")
     return site(siteIdValue, model)
+  }
+
+  @PostMapping("/createApiKey")
+  fun createApiKey(
+      @RequestParam("organizationId") organizationIdValue: Long,
+      @RequestParam("description") description: String?,
+      model: Model
+  ): String {
+    val organizationId = OrganizationId(organizationIdValue)
+    val organization = organizationStore.fetchById(organizationId)
+    val newUser = userStore.createApiClient(organizationId, description)
+
+    val token = userStore.generateOfflineToken(newUser.userId)
+
+    model.addAttribute("authId", newUser.authId)
+    model.addAttribute(
+        "keyId", newUser.email.substringAfter(config.keycloak.apiClientUsernamePrefix))
+    model.addAttribute("organization", organization)
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("token", token)
+
+    return "/admin/apiKeyAdded"
+  }
+
+  @PostMapping("/deleteApiKey")
+  fun deleteApiKey(
+      @RequestParam("organizationId") organizationIdValue: Long,
+      @RequestParam("userId") userIdValue: Long,
+      model: Model
+  ): String {
+    val userId = UserId(userIdValue)
+
+    if (userStore.deleteApiClient(userId)) {
+      model.addAttribute("successMessage", "API key deleted.")
+    } else {
+      model.addAttribute("failureMessage", "Unable to delete API key.")
+    }
+
+    return organization(organizationIdValue, model)
   }
 }

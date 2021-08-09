@@ -1,6 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="/admin/header :: head"/>
+<style>
+    table.bordered, table.bordered tr th, table.bordered tr td {
+        border: 1px solid black;
+    }
+    table.bordered td, table.bordered th {
+        padding: .25em;
+    }
+</style>
 <body>
 
 <span th:include="/admin/header :: top"/>
@@ -13,7 +21,8 @@
 
 <ul>
     <li th:each="user : ${users}">
-        <a th:href="|${prefix}/user/${user.userId}|" th:text="|${user.firstName} ${user.lastName} (${user.email})|">user@domain</a>
+        <a th:href="|${prefix}/user/${user.userId}|"
+           th:text="|${user.firstName} ${user.lastName} (${user.email})|">user@domain</a>
         <span th:text="|(${user.role.displayName})|" th:if="!${canAddUser}">(role)</span>
         <span th:if="${canAddUser}">
             <form method="POST" style="display: inline;"
@@ -70,6 +79,43 @@
     <input type="text" name="name" id="name" required/>
     <input type="submit" value=" Create Project "/>
 </form>
+
+<div th:if="${canListApiKeys}">
+
+    <h3>API Keys</h3>
+
+    <table class="bordered">
+        <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+
+        <tr th:each="client : ${apiClients}">
+            <td th:text="${client.email}">123-456-789</td>
+            <td th:text="${client.firstName}">Description</td>
+            <td th:text="${apiClientCreatedTimes[client.email]}">2021-11-22 33:44:55Z</td>
+            <td>
+                <form method="POST" th:action="|${prefix}/deleteApiKey|" th:if="${canDeleteApiKey}">
+                    <input type="hidden" name="userId" th:value="${client.userId}"/>
+                    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+                    <input type="submit" value=" Delete "/>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    <form method="POST" th:action="|${prefix}/createApiKey|" th:if="${canCreateApiKey}">
+        <h4>Create API Key</h4>
+
+        <input type="hidden" name="organizationId" th:value="${organization.id}"/>
+        <label for="apiKeyDescription">Description (optional)</label>
+        <input type="text" name="description" id="apiKeyDescription"/>
+        <input type="submit" value=" Create API Key "/>
+    </form>
+
+</div>
 
 </body>
 </html>

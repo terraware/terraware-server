@@ -83,6 +83,8 @@ class OrganizationStore(
             USERS.EMAIL,
             USERS.FIRST_NAME,
             USERS.LAST_NAME,
+            USERS.USER_TYPE_ID,
+            USERS.CREATED_TIME,
             ORGANIZATION_USERS.ORGANIZATION_ID,
             ORGANIZATION_USERS.ROLE_ID,
             PROJECT_USERS.PROJECT_ID)
@@ -100,17 +102,27 @@ class OrganizationStore(
           val firstRow = rows.first()
           val userId = firstRow[USERS.ID]
           val authId = firstRow[USERS.AUTH_ID]
+          val userType = firstRow[USERS.USER_TYPE_ID]
+          val createdTime = firstRow[USERS.CREATED_TIME]
           val email = firstRow[USERS.EMAIL]
           val orgId = firstRow[ORGANIZATION_USERS.ORGANIZATION_ID]
           val role = firstRow[ORGANIZATION_USERS.ROLE_ID]?.let { Role.of(it) }
 
-          if (userId != null && authId != null && email != null && orgId != null && role != null) {
+          if (userId != null &&
+              authId != null &&
+              userType != null &&
+              createdTime != null &&
+              email != null &&
+              orgId != null &&
+              role != null) {
             OrganizationUserModel(
                 userId,
                 authId,
                 email,
                 firstRow[USERS.FIRST_NAME],
                 firstRow[USERS.LAST_NAME],
+                userType,
+                createdTime,
                 orgId,
                 role,
                 rows.mapNotNull { it[PROJECT_USERS.PROJECT_ID] })

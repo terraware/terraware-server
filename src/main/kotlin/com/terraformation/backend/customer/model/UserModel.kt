@@ -45,7 +45,7 @@ class UserModel(
     val email: String,
     val firstName: String?,
     val lastName: String?,
-    private val userType: UserType,
+    val userType: UserType,
     private val accessionsDao: AccessionsDao,
     private val permissionStore: PermissionStore,
 ) : UserDetails, Principal {
@@ -199,6 +199,17 @@ class UserModel(
     val role = organizationRoles[organizationId]
     return role == Role.OWNER
   }
+
+  fun canCreateApiKey(organizationId: OrganizationId): Boolean {
+    return when (organizationRoles[organizationId]) {
+      Role.OWNER, Role.ADMIN -> true
+      else -> false
+    }
+  }
+
+  fun canDeleteApiKey(organizationId: OrganizationId): Boolean = canCreateApiKey(organizationId)
+
+  fun canListApiKeys(organizationId: OrganizationId): Boolean = canCreateApiKey(organizationId)
 
   /**
    * Temporary helper to get the user's facility ID.

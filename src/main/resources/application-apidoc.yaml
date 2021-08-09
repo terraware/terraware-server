@@ -24,6 +24,7 @@ terraware:
   daily-tasks:
     enabled: false
   keycloak:
+    apiClientId: dummy
     clientId: dummy
     clientSecret: dummy
     serverUrl: http://dummy

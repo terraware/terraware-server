@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration
 class KeycloakBeans {
   @Bean
   fun keycloak(config: TerrawareServerConfig): Keycloak? {
-    val keycloakConfig = config.keycloak ?: return null
+    val keycloakConfig = config.keycloak
 
     return KeycloakBuilder.builder()
         .clientId(keycloakConfig.clientId)
@@ -32,7 +32,7 @@ class KeycloakBeans {
 
   @Bean
   fun realmResource(config: TerrawareServerConfig, keycloak: Keycloak): RealmResource? {
-    val realm = config.keycloak?.realm ?: return null
+    val realm = config.keycloak.realm
     return keycloak.realm(realm)
   }
 }

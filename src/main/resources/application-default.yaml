@@ -1,4 +1,6 @@
 terraware:
+  keycloak:
+    client-id: "dev-terraware-server"
   site-config-url: "classpath:config/dev.json"
   photo-dir: "/tmp/terraware-server-photos"
   use-test-clock: true

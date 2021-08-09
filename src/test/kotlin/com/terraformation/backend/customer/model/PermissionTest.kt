@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.AccessionId
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
+import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.keycloak.admin.client.resource.RealmResource
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * Tests the permission business logic. This includes both the database interactions and the
@@ -72,8 +75,10 @@ internal class PermissionTest : DatabaseTest() {
   private lateinit var usersDao: UsersDao
   private lateinit var userStore: UserStore
 
+  @Autowired private lateinit var config: TerrawareServerConfig
+
   private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
-  private val realmResource = mockk<RealmResource>()
+  private val realmResource: RealmResource = mockk()
 
   private val userId = UserId(1234)
   private val user: UserModel by lazy { userStore.fetchById(userId)!! }
@@ -94,10 +99,22 @@ internal class PermissionTest : DatabaseTest() {
 
   @BeforeEach
   fun setUp() {
+    every { realmResource.users() } returns mockk()
+
     accessionsDao = AccessionsDao(dslContext.configuration())
     permissionStore = PermissionStore(dslContext)
     usersDao = UsersDao(dslContext.configuration())
-    userStore = UserStore(accessionsDao, clock, permissionStore, realmResource, usersDao)
+    userStore =
+        UserStore(
+            accessionsDao,
+            clock,
+            config,
+            mockk(),
+            mockk(),
+            mockk(),
+            permissionStore,
+            realmResource,
+            usersDao)
 
     organizationIds.forEach { insertOrganization(it.value) }
     projectIds.forEach { insertProject(it.value) }
