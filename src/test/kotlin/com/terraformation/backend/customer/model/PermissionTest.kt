@@ -10,6 +10,7 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
@@ -116,7 +117,7 @@ internal class PermissionTest : DatabaseTest() {
             id = userId,
             authId = "dummyAuthId",
             email = "test@domain.com",
-            superAdmin = false,
+            userTypeId = UserType.Individual,
             createdTime = Instant.EPOCH,
             modifiedTime = Instant.EPOCH))
   }
