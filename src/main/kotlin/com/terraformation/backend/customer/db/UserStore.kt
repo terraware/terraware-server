@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
@@ -105,7 +106,7 @@ class UserStore(
         usersRow.email ?: throw IllegalStateException("Email should never be null"),
         usersRow.firstName,
         usersRow.lastName,
-        usersRow.superAdmin == true,
+        usersRow.userTypeId ?: throw IllegalStateException("User type should never be null"),
         accessionsDao,
         permissionStore,
     )
@@ -118,7 +119,7 @@ class UserStore(
             email = keycloakUser.email,
             firstName = keycloakUser.firstName,
             lastName = keycloakUser.lastName,
-            superAdmin = false,
+            userTypeId = UserType.Individual,
             createdTime = clock.instant(),
             modifiedTime = clock.instant(),
         )

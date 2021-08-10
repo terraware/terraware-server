@@ -9,6 +9,7 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.log.perClassLogger
 import java.security.Principal
@@ -44,7 +45,7 @@ class UserModel(
     val email: String,
     val firstName: String?,
     val lastName: String?,
-    private val superAdmin: Boolean,
+    private val userType: UserType,
     private val accessionsDao: AccessionsDao,
     private val permissionStore: PermissionStore,
 ) : UserDetails, Principal {
@@ -192,7 +193,7 @@ class UserModel(
   }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-    return if (superAdmin) {
+    return if (userType == UserType.SuperAdmin) {
       mutableSetOf(SuperAdminAuthority)
     } else {
       mutableSetOf()

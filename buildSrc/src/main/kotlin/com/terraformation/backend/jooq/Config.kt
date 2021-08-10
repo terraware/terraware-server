@@ -38,6 +38,7 @@ val ENUM_TABLES =
             "storage_conditions",
             listOf("accessions\\.target_storage_condition", "storage_locations\\.condition_id")),
         EnumTable("timeseries_types", "timeseries\\.type_id"),
+        EnumTable("user_types", ".*\\.user_type_id"),
         EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"))
 
 val ID_WRAPPERS =
