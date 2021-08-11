@@ -123,7 +123,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `owner role grants all permissions in organization projects and sites and facilities and layers`() {
+  fun `owner role grants all permissions in organization projects, sites, facilities and layers`() {
     givenRole(OrganizationId(1), Role.OWNER)
 
     expect(
@@ -292,8 +292,7 @@ internal class PermissionTest : DatabaseTest() {
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true
-    )
+        deleteLayer = true)
 
     andNothingElse()
   }
@@ -327,8 +326,7 @@ internal class PermissionTest : DatabaseTest() {
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true
-    )
+        deleteLayer = true)
 
     andNothingElse()
   }

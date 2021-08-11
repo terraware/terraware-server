@@ -16,7 +16,10 @@ class LayerStore(
     private val clock: Clock,
 ) {
   fun createLayer(layerModel: LayerModel): LayerModel {
-    if (!currentUser().canCreateLayer(layerModel.siteId!!)) {
+    if (layerModel.siteId == null) {
+      throw IllegalStateException("SiteID should never be null")
+    }
+    if (!currentUser().canCreateLayer(layerModel.siteId)) {
       throw AccessDeniedException("No permission to create layer at site ${layerModel.siteId}")
     }
     val currTime = clock.instant()
@@ -42,7 +45,7 @@ class LayerStore(
         modifiedTime = currTime.toString())
   }
 
-  fun fetchLayer(id: LayerId, skipDeleted: Boolean = true): LayerModel? {
+  fun fetchLayer(id: LayerId, ignoreDeleted: Boolean = true): LayerModel? {
     val layer =
         dslContext
             .select(
@@ -59,7 +62,7 @@ class LayerStore(
             .where(LAYERS.ID.eq(id))
             .fetchOne()
 
-    if (layer == null || (layer[LAYERS.DELETED]!! && skipDeleted)) {
+    if (layer == null || (layer[LAYERS.DELETED]!! && ignoreDeleted)) {
       return null
     }
 
@@ -81,9 +84,13 @@ class LayerStore(
     )
   }
 
-  // Does not allow a layer to move between sites
+  // Does an overwrite of all user-set fields, which must all be defined
+  // Does not allow a layer to be moved between sites (siteId cannot be updated)
   fun updateLayer(layerModel: LayerModel): LayerModel {
-    if (!currentUser().canUpdateLayer(layerModel.siteId!!)) {
+    if (layerModel.siteId == null) {
+      throw IllegalStateException("SiteID should never be null")
+    }
+    if (!currentUser().canUpdateLayer(layerModel.siteId)) {
       throw LayerNotFoundException(layerModel.id.toString())
     }
 
@@ -127,13 +134,13 @@ class LayerStore(
 
     dslContext
         .update(LAYERS)
-        .set(LAYERS.SITE_ID, layerModel.siteId)
         .set(LAYERS.LAYER_TYPE_ID, layerModel.layerTypeId)
         .set(LAYERS.TILE_SET_NAME, layerModel.tileSetName)
         .set(LAYERS.PROPOSED, layerModel.proposed)
         .set(LAYERS.HIDDEN, layerModel.hidden)
         .set(LAYERS.MODIFIED_TIME, currTime)
         .where(LAYERS.ID.eq(layerModel.id))
+        .and(LAYERS.SITE_ID.eq(layerModel.siteId))
         .execute()
 
     // Add fields to the response that the user did not pass in.

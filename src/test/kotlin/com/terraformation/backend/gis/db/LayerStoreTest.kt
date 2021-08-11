@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.dao.DataIntegrityViolationException
@@ -32,7 +33,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   private val time2 = time1.plusSeconds(1)
 
   private val siteId = SiteId(10)
-  private val nonExistentLayerId = LayerId(404)
+  private val nonExistentLayerId = LayerId(1234567)
   private val validCreateRequestModel =
       LayerModel(
           siteId = siteId,
@@ -54,9 +55,9 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create returns model with populated layer_id, deleted, created_time,& modified_time fields`() {
+  fun `create returns model with populated layer_id, deleted, created_time, and modified_time fields`() {
     val responseModel: LayerModel = store.createLayer(validCreateRequestModel)
-    assertNotNull(responseModel.layerTypeId)
+    assertNotNull(responseModel.id)
     assertEquals(false, responseModel.deleted)
     assertEquals(time1.toString(), responseModel.createdTime)
     assertEquals(time1.toString(), responseModel.modifiedTime)
@@ -75,7 +76,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create fails with IllegalArgumentException if user passes empty string for tile_set_name`() {
+  fun `create fails with DataIntegrityViolationException if passed an empty string for tile_set_name`() {
     assertThrows(DataIntegrityViolationException::class.java) {
       store.createLayer(
           LayerModel(
@@ -88,7 +89,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `read returns layerModel with all fields populated, including ones that won't be passed in the API`() {
+  fun `read returns layerModel with all fields populated, including ones that won't be returned in the API`() {
     val layer: LayerModel = store.createLayer(validCreateRequestModel)
     val fetchedLayer: LayerModel? = store.fetchLayer(layer.id!!)
     assertNotNull(fetchedLayer)
@@ -101,6 +102,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `read does permission checks`() {
     val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    verify(inverse = true) { user.canReadLayer(any()) }
     store.fetchLayer(layer.id!!)
     verify { user.canReadLayer(layer.siteId!!) }
   }
@@ -125,7 +127,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update returns model with deleted == false and updated created_time, modified_time`() {
+  fun `update returns model with updated modified_time and deleted = false`() {
     val layer: LayerModel = store.createLayer(validCreateRequestModel)
     val updatedLayer: LayerModel =
         store.updateLayer(
@@ -137,13 +139,14 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
                 proposed = false,
                 hidden = false))
     assertEquals(false, updatedLayer.deleted)
-    assertEquals(time1.toString(), updatedLayer.createdTime)
+    assertEquals(layer.createdTime, updatedLayer.createdTime)
     assertEquals(time2.toString(), updatedLayer.modifiedTime)
   }
 
   @Test
   fun `update does permissions checks`() {
     val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    verify(inverse = true) { user.canUpdateLayer(any()) }
     store.updateLayer(validCreateRequestModel.copy(id = layer.id))
     verify { user.canUpdateLayer(layer.siteId!!) }
   }
@@ -156,7 +159,6 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows(LayerNotFoundException::class.java) {
       store.updateLayer(validCreateRequestModel.copy(id = layer.id))
     }
-    assertEquals(layer, store.fetchLayer(layer.id!!))
   }
 
   @Test
@@ -168,8 +170,8 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update fails with LayerNotFoundException if layer doesn't exist`() {
+    store.createLayer(validCreateRequestModel)
     assertThrows(LayerNotFoundException::class.java) {
-      store.createLayer(validCreateRequestModel)
       store.updateLayer(
           LayerModel(
               id = nonExistentLayerId,
@@ -197,11 +199,12 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `delete sets the "delete" field on the resource, but does not delete the row`() {
+  fun `delete sets the 'modified_time' and 'deleted' fields on the resource, but does not delete the row`() {
     val layer: LayerModel = store.createLayer(validCreateRequestModel)
     store.deleteLayer(layer.id!!)
-    val deletedLayer: LayerModel = store.fetchLayer(layer.id!!, skipDeleted = false)!!
+    val deletedLayer: LayerModel = store.fetchLayer(layer.id!!, ignoreDeleted = false)!!
     assertNotEquals(layer.modifiedTime, deletedLayer.modifiedTime)
+    assertTrue(deletedLayer.deleted!!)
     assertEquals(
         layer.copy(deleted = true, modifiedTime = deletedLayer.modifiedTime!!), deletedLayer)
   }
@@ -209,15 +212,17 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `delete does permission checks`() {
     val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    verify(inverse = true) { user.canDeleteLayer(any()) }
     store.deleteLayer(layer.id!!)
     verify { user.canDeleteLayer(layer.siteId!!) }
   }
 
   @Test
   fun `delete fails with LayerNotFoundException if user does not have permission`() {
-    every { user.canDeleteLayer(any()) } returns false
     val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    every { user.canDeleteLayer(any()) } returns false
     assertThrows(LayerNotFoundException::class.java) { store.deleteLayer(layer.id!!) }
+    // record exists, user just didn't have permission to delete it
     assertEquals(store.fetchLayer(layer.id!!), layer)
   }
 

@@ -38,7 +38,7 @@ class LayerController(private val layerStore: LayerStore) {
   }
 
   @ApiResponse(responseCode = "200")
-  @ApiResponse404
+  @ApiResponse404(description = "The specified layer doesn't exist.")
   @GetMapping("/{layerId}")
   fun read(@PathVariable layerId: String): GetLayerResponsePayload {
     val layerModel =
@@ -68,7 +68,7 @@ class LayerController(private val layerStore: LayerStore) {
   }
 
   @ApiResponse(responseCode = "200")
-  @ApiResponse404
+  @ApiResponse404(description = "The specified layer doesn't exist.")
   @DeleteMapping("/{layerId}")
   fun delete(@PathVariable layerId: String): DeleteLayerResponsePayload {
     try {
@@ -98,11 +98,11 @@ data class CreateLayerRequestPayload(
 }
 
 data class UpdateLayerRequestPayload(
-    val siteId: SiteId? = null,
-    val layerTypeId: LayerType? = null,
-    val tileSetName: String? = null,
-    val proposed: Boolean? = null,
-    val hidden: Boolean? = null,
+    val siteId: SiteId,
+    val layerTypeId: LayerType,
+    val tileSetName: String,
+    val proposed: Boolean,
+    val hidden: Boolean,
 ) {
   fun toModel(id: LayerId): LayerModel {
     return LayerModel(
