@@ -96,3 +96,19 @@ VALUES (1, 'Propagation'),
        (6, 'Other'),
        (7, 'Germination Testing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO layer_types (id, name)
+VALUES (10, 'aerial photos'),
+       (20, 'surface color map'),
+       (30, 'terrain color map'),
+       (110, 'boundaries'),
+       (120, 'plants planted'),
+       (130, 'plants existing'),
+       (140, 'irrigation'),
+       (150, 'infrastructure'),
+       (160, 'partner input'),
+       (170, 'restoration zones'),
+       (180, 'site prep'),
+       (190, 'map notes'),
+       (1000, 'testing')  -- used for unit tests, etc.; normally not displayed in UI
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
