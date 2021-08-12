@@ -116,7 +116,8 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   fun `update returns LayerModel with updated modified_time and deleted = false`() {
     val layer = store.createLayer(validCreateRequestModel)
     every { clock.instant() } returns time2
-    val updatedLayer = store.updateLayer(
+    val updatedLayer =
+        store.updateLayer(
             LayerModel(
                 id = layer.id,
                 siteId = siteId,

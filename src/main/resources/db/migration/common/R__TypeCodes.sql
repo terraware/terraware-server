@@ -109,5 +109,5 @@ VALUES (10, 'Aerial Photos'),
        (160, 'Partner Input'),
        (170, 'Restoration Zones'),
        (180, 'Site Prep'),
-       (190, 'Map notes'),
+       (190, 'Map notes')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
