@@ -97,6 +97,9 @@ class LayerStore(
             .fetchOne()
             ?: throw LayerNotFoundException(layerModel.id!!)
 
+    // Caller provided siteId must match the siteId in the database because allowing site moves
+    // would add additional permissions complexity. Plus, the caller can achieve that behavior
+    // using a combination of createLayer() and deleteLayer().
     if (layerModel.siteId != currentRow[LAYERS.SITE_ID] ||
         !currentUser().canUpdateLayer(currentRow[LAYERS.SITE_ID]!!)) {
       throw LayerNotFoundException(layerModel.id!!)
@@ -112,7 +115,6 @@ class LayerStore(
         currentRow[LAYERS.HIDDEN] == layerModel.hidden) {
 
       // All the data that the client can update is exactly the same so don't write anything.
-      // Add fields to the response that the user did not pass in.
       return layerModel.copy(
           deleted = false,
           modifiedTime = currentRow[LAYERS.MODIFIED_TIME]!!,
@@ -130,13 +132,9 @@ class LayerStore(
         .set(LAYERS.HIDDEN, layerModel.hidden)
         .set(LAYERS.MODIFIED_TIME, currTime)
         .where(LAYERS.ID.eq(layerModel.id))
-        // Do not allow the caller to update the siteId since that would add additional
-        // permissions complexity. Plus, the caller can achieve that behavior using a
-        // combination of createLayer() and deleteLayer().
         .and(LAYERS.SITE_ID.eq(layerModel.siteId))
         .execute()
 
-    // Add fields to the response that the user did not pass in.
     return layerModel.copy(
         deleted = false, createdTime = currentRow[LAYERS.CREATED_TIME]!!, modifiedTime = currTime)
   }

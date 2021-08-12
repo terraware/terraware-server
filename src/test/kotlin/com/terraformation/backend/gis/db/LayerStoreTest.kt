@@ -95,8 +95,8 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `read returns null if user doesn't have read permissions, even if they have write permissions`() {
-    every { user.canReadLayer(any()) } returns false
     val layer = store.createLayer(validCreateRequestModel)
+    every { user.canReadLayer(any()) } returns false
     assertNull(store.fetchLayer(layer.id!!))
   }
 
@@ -116,8 +116,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   fun `update returns LayerModel with updated modified_time and deleted = false`() {
     val layer = store.createLayer(validCreateRequestModel)
     every { clock.instant() } returns time2
-    val updatedLayer: LayerModel =
-        store.updateLayer(
+    val updatedLayer = store.updateLayer(
             LayerModel(
                 id = layer.id,
                 siteId = siteId,
@@ -139,9 +138,8 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update fails with LayerNotFoundException if user doesn't have update permissions`() {
-    every { user.canUpdateLayer(any()) } returns false
     val layer = store.createLayer(validCreateRequestModel)
-
+    every { user.canUpdateLayer(any()) } returns false
     assertThrows<LayerNotFoundException> {
       store.updateLayer(validCreateRequestModel.copy(id = layer.id))
     }
@@ -163,7 +161,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update fails if a record with the given layer id is found, but the site id passed in does not match the site id in the database`() {
+  fun `update fails if the given layer id is valid, but the site id passed in does not match the site id in the database`() {
     val layer = store.createLayer(validCreateRequestModel)
     assertThrows<LayerNotFoundException> {
       store.updateLayer(
@@ -181,7 +179,9 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   fun `update fails with LayerNotFoundException if layer is deleted`() {
     val layer = store.createLayer(validCreateRequestModel)
     store.deleteLayer(layer.id!!)
-    assertThrows<LayerNotFoundException> { store.updateLayer(layer) }
+    assertThrows<LayerNotFoundException> {
+      store.updateLayer(validCreateRequestModel.copy(layer.id!!))
+    }
   }
 
   @Test
@@ -194,7 +194,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `delete sets the 'modified_time' and 'deleted' fields on the resource, but does not delete the row`() {
+  fun `delete sets the 'modified_time' and 'deleted' fields on the resource, but does not delete the row in the database`() {
     val layer = store.createLayer(validCreateRequestModel)
     every { clock.instant() } returns time2
     store.deleteLayer(layer.id!!)
