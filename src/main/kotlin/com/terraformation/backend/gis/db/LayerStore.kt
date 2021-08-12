@@ -132,7 +132,6 @@ class LayerStore(
         .set(LAYERS.HIDDEN, layerModel.hidden)
         .set(LAYERS.MODIFIED_TIME, currTime)
         .where(LAYERS.ID.eq(layerModel.id))
-        .and(LAYERS.SITE_ID.eq(layerModel.siteId))
         .execute()
 
     return layerModel.copy(
@@ -153,7 +152,6 @@ class LayerStore(
         .set(LAYERS.DELETED, true)
         .set(LAYERS.MODIFIED_TIME, currTime)
         .where(LAYERS.ID.eq(layer.id))
-        .and(LAYERS.SITE_ID.eq(layer.siteId))
         .execute()
 
     return layer.copy(deleted = true, modifiedTime = currTime)
