@@ -32,11 +32,12 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   private val time2 = time1.plusSeconds(1)
 
   private val siteId = SiteId(10)
+  private val nonExistentSiteId = SiteId(200)
   private val nonExistentLayerId = LayerId(1234567)
   private val validCreateRequestModel =
       LayerModel(
           siteId = siteId,
-          layerType = LayerType.Testing,
+          layerType = LayerType.Infrastructure,
           tileSetName = "test name",
           proposed = false,
           hidden = false)
@@ -74,7 +75,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
       store.createLayer(
           LayerModel(
               siteId = siteId,
-              layerType = LayerType.Testing,
+              layerType = LayerType.Infrastructure,
               tileSetName = "",
               proposed = false,
               hidden = false))
@@ -120,13 +121,20 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
             LayerModel(
                 id = layer.id,
                 siteId = siteId,
-                layerType = LayerType.Testing,
+                layerType = LayerType.Infrastructure,
                 tileSetName = "new test name",
                 proposed = false,
                 hidden = false))
     assertEquals(false, updatedLayer.deleted)
     assertEquals(layer.createdTime, updatedLayer.createdTime)
     assertEquals(time2, updatedLayer.modifiedTime)
+  }
+
+  @Test
+  fun `update does not change modified time if updated layer is the same as current layer`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    val updatedLayer: LayerModel = store.updateLayer(validCreateRequestModel.copy(id = layer.id))
+    assertEquals(layer.modifiedTime, updatedLayer.modifiedTime)
   }
 
   @Test
@@ -140,22 +148,30 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update does not change modified time if updated layer is the same as current layer`() {
-    val layer = store.createLayer(validCreateRequestModel)
-    val updatedLayer: LayerModel = store.updateLayer(validCreateRequestModel.copy(id = layer.id))
-    assertEquals(layer.modifiedTime, updatedLayer.modifiedTime)
-  }
-
-  @Test
-  fun `update fails with LayerNotFoundException if layer doesn't exist`() {
+  fun `update fails with LayerNotFoundException if layer id doesn't exist`() {
     store.createLayer(validCreateRequestModel)
     assertThrows<LayerNotFoundException> {
       store.updateLayer(
           LayerModel(
               id = nonExistentLayerId,
               siteId = siteId,
-              layerType = LayerType.Testing,
+              layerType = LayerType.Infrastructure,
               tileSetName = "test name",
+              proposed = false,
+              hidden = false))
+    }
+  }
+
+  @Test
+  fun `update fails if a record with the given layer id is found, but the site id passed in does not match the site id in the database`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    assertThrows<LayerNotFoundException> {
+      store.updateLayer(
+          LayerModel(
+              id = layer.id,
+              siteId = nonExistentSiteId,
+              layerType = LayerType.Infrastructure,
+              tileSetName = "Test name",
               proposed = false,
               hidden = false))
     }

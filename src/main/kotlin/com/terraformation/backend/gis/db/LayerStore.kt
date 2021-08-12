@@ -79,28 +79,26 @@ class LayerStore(
   }
 
   fun updateLayer(layerModel: LayerModel): LayerModel {
-    if (!currentUser().canUpdateLayer(layerModel.siteId)) {
-      throw LayerNotFoundException(layerModel.id!!)
-    }
 
     val currentRow =
         dslContext
             .select(
+                LAYERS.SITE_ID,
                 LAYERS.LAYER_TYPE_ID,
                 LAYERS.TILE_SET_NAME,
                 LAYERS.PROPOSED,
                 LAYERS.HIDDEN,
-                LAYERS.DELETED,
                 LAYERS.CREATED_TIME,
                 LAYERS.MODIFIED_TIME,
             )
             .from(LAYERS)
             .where(LAYERS.ID.eq(layerModel.id))
-            // The line below is necessary to enforce the canUpdateLayer() permission check.
-            .and(LAYERS.SITE_ID.eq(layerModel.siteId))
+            .and(LAYERS.DELETED.isFalse)
             .fetchOne()
+            ?: throw LayerNotFoundException(layerModel.id!!)
 
-    if (currentRow == null || currentRow[LAYERS.DELETED]!!) {
+    if (layerModel.siteId != currentRow[LAYERS.SITE_ID] ||
+        !currentUser().canUpdateLayer(currentRow[LAYERS.SITE_ID]!!)) {
       throw LayerNotFoundException(layerModel.id!!)
     }
 
