@@ -75,9 +75,6 @@ class TerrawareServerConfig(
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),
 
-    /** Configures the server's communication with an MQTT broker. */
-    val mqtt: MqttConfig = MqttConfig(),
-
     /**
      * Configures the server's communication with the Keycloak authentication server, which manages
      * the login and registration process and is the source of truth for user identities.
@@ -94,31 +91,6 @@ class TerrawareServerConfig(
        * [timeZone]. Default is 8AM.
        */
       @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) val startTime: LocalTime = LocalTime.of(8, 0)
-  )
-
-  @ConstructorBinding
-  class MqttConfig(
-      /** If true, connect to an MQTT broker to publish and receive device data. */
-      val enabled: Boolean = false,
-
-      /** URI of MQTT broker. Supported schemes are "ws", "wss", and "tcp". */
-      val address: URI? = URI("ws://localhost:1883"),
-
-      /** Client identifier to send during MQTT authentication. */
-      val clientId: String? = "terraware-server",
-
-      /** Password to send during MQTT authentication. */
-      val password: String? = null,
-
-      /**
-       * Prefix to use in front of topic names. The server will automatically add "/" between this
-       * and the topic names it generates. Default is to directly use the generated topics with no
-       * prefix.
-       */
-      val topicPrefix: String? = null,
-
-      /** How often to retry connecting to the MQTT broker if the connection fails. */
-      val connectRetryIntervalMillis: Long = 30000,
   )
 
   @ConstructorBinding
@@ -145,6 +117,5 @@ class TerrawareServerConfig(
 
   companion object {
     const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"
-    const val MQTT_ENABLED_PROPERTY = "terraware.mqtt.enabled"
   }
 }

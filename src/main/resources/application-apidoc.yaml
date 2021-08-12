@@ -24,8 +24,6 @@ terraware:
   photo-dir: "/tmp"
   daily-tasks:
     enabled: false
-  mqtt:
-    enabled: false
   keycloak:
     clientId: dummy
     clientSecret: dummy

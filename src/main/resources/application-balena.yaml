@@ -2,9 +2,6 @@
 # multi-service deployment.
 
 terraware:
-  mqtt:
-    enabled: true
-    address: "ws://mosquitto:1883/"
   photo-dir: "/data/photos"
 
 logging:
