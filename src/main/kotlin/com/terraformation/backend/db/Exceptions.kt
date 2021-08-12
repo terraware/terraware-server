@@ -5,7 +5,7 @@ class AccessionNotFoundException(val accessionNumber: String) :
 
 class DeviceNotFoundException(override val message: String) : Exception(message)
 
-class LayerNotFoundException(val layerId: String) : Exception("Layer $layerId not found")
+class LayerNotFoundException(val layerId: LayerId) : Exception("Layer $layerId not found")
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     Exception("Species $speciesId not found")

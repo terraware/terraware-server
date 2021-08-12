@@ -40,9 +40,9 @@ class LayerController(private val layerStore: LayerStore) {
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @GetMapping("/{layerId}")
-  fun read(@PathVariable layerId: String): GetLayerResponsePayload {
+  fun read(@PathVariable layerId: Long): GetLayerResponsePayload {
     val layerModel =
-        layerStore.fetchLayer(LayerId(layerId.toLong()))
+        layerStore.fetchLayer(LayerId(layerId))
             ?: throw NotFoundException("The layer with id $layerId doesn't exist.")
 
     return GetLayerResponsePayload(LayerResponse(layerModel))
@@ -52,14 +52,17 @@ class LayerController(private val layerStore: LayerStore) {
       responseCode = "200",
       description = "The layer was updated successfully. Response includes a unique layer id.")
   @ApiResponse404(description = "The specified layer doesn't exist.")
-  @Operation(summary = "Update an existing layer.")
+  @Operation(
+      summary =
+          "Update an existing layer. Overwrites all fields, so they must all be defined. " +
+              "Does not allow a layer to be moved between sites (siteId cannot be updated)")
   @PutMapping("/{layerId}")
   fun update(
       @RequestBody payload: UpdateLayerRequestPayload,
-      @PathVariable layerId: String,
+      @PathVariable layerId: Long,
   ): UpdateLayerResponsePayload {
     try {
-      val updatedModel = layerStore.updateLayer(payload.toModel(id = LayerId(layerId.toLong())))
+      val updatedModel = layerStore.updateLayer(payload.toModel(id = LayerId(layerId)))
       return UpdateLayerResponsePayload(LayerResponse(updatedModel))
     } catch (e: LayerNotFoundException) {
       throw NotFoundException(
@@ -70,9 +73,9 @@ class LayerController(private val layerStore: LayerStore) {
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @DeleteMapping("/{layerId}")
-  fun delete(@PathVariable layerId: String): DeleteLayerResponsePayload {
+  fun delete(@PathVariable layerId: Long): DeleteLayerResponsePayload {
     try {
-      val layerModel = layerStore.deleteLayer(LayerId(layerId.toLong()))
+      val layerModel = layerStore.deleteLayer(LayerId(layerId))
       return DeleteLayerResponsePayload(DeleteLayerResponse(layerModel))
     } catch (e: LayerNotFoundException) {
       throw NotFoundException("The layer with id $layerId doesn't exist.")
@@ -82,7 +85,7 @@ class LayerController(private val layerStore: LayerStore) {
 
 data class CreateLayerRequestPayload(
     val siteId: SiteId,
-    val layerTypeId: LayerType,
+    val layerType: LayerType,
     val tileSetName: String,
     val proposed: Boolean,
     val hidden: Boolean,
@@ -90,7 +93,7 @@ data class CreateLayerRequestPayload(
   fun toModel(): LayerModel {
     return LayerModel(
         siteId = siteId,
-        layerTypeId = layerTypeId,
+        layerType = layerType,
         tileSetName = tileSetName,
         proposed = proposed,
         hidden = hidden)
@@ -99,7 +102,7 @@ data class CreateLayerRequestPayload(
 
 data class UpdateLayerRequestPayload(
     val siteId: SiteId,
-    val layerTypeId: LayerType,
+    val layerType: LayerType,
     val tileSetName: String,
     val proposed: Boolean,
     val hidden: Boolean,
@@ -108,7 +111,7 @@ data class UpdateLayerRequestPayload(
     return LayerModel(
         id = id,
         siteId = siteId,
-        layerTypeId = layerTypeId,
+        layerType = layerType,
         tileSetName = tileSetName,
         proposed = proposed,
         hidden = hidden)
@@ -117,9 +120,9 @@ data class UpdateLayerRequestPayload(
 
 data class LayerResponse(
     val id: LayerId,
-    val site_id: SiteId,
-    val layer_type_id: LayerType,
-    val tile_set_name: String,
+    val siteId: SiteId,
+    val layerType: LayerType,
+    val tileSetName: String,
     val proposed: Boolean,
     val hidden: Boolean,
 ) {
@@ -127,11 +130,11 @@ data class LayerResponse(
       model: LayerModel,
   ) : this(
       model.id!!,
-      model.siteId!!,
-      model.layerTypeId!!,
-      model.tileSetName!!,
-      model.proposed!!,
-      model.hidden!!,
+      model.siteId,
+      model.layerType,
+      model.tileSetName,
+      model.proposed,
+      model.hidden,
   )
 }
 
@@ -143,7 +146,7 @@ data class DeleteLayerResponse(
       model: LayerModel,
   ) : this(
       model.id!!,
-      model.siteId!!,
+      model.siteId,
   )
 }
 

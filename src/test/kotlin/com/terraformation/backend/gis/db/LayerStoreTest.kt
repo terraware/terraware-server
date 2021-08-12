@@ -10,17 +10,16 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.gis.model.LayerModel
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
@@ -37,15 +36,15 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   private val validCreateRequestModel =
       LayerModel(
           siteId = siteId,
-          layerTypeId = LayerType.Testing,
+          layerType = LayerType.Testing,
           tileSetName = "test name",
           proposed = false,
           hidden = false)
 
   @BeforeEach
   fun init() {
-    store = LayerStore(dslContext, clock)
-    every { clock.instant() } returnsMany listOf(time1, time2)
+    store = LayerStore(clock, dslContext)
+    every { clock.instant() } returns time1
     every { user.canCreateLayer(any()) } returns true
     every { user.canReadLayer(any()) } returns true
     every { user.canUpdateLayer(any()) } returns true
@@ -55,33 +54,27 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create returns model with populated layer_id, deleted, created_time, and modified_time fields`() {
-    val responseModel: LayerModel = store.createLayer(validCreateRequestModel)
-    assertNotNull(responseModel.id)
-    assertEquals(false, responseModel.deleted)
-    assertEquals(time1.toString(), responseModel.createdTime)
-    assertEquals(time1.toString(), responseModel.modifiedTime)
-  }
-
-  @Test
-  fun `create does permissions check`() {
-    store.createLayer(validCreateRequestModel)
-    verify { user.canCreateLayer(siteId) }
+  fun `create returns LayerModel with populated layer_id, deleted, created_time, and modified_time fields`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    assertNotNull(layer.id)
+    assertEquals(false, layer.deleted)
+    assertEquals(time1, layer.createdTime)
+    assertEquals(time1, layer.modifiedTime)
   }
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have permission`() {
     every { user.canCreateLayer(any()) } returns false
-    assertThrows(AccessDeniedException::class.java) { store.createLayer(validCreateRequestModel) }
+    assertThrows<AccessDeniedException> { store.createLayer(validCreateRequestModel) }
   }
 
   @Test
   fun `create fails with DataIntegrityViolationException if passed an empty string for tile_set_name`() {
-    assertThrows(DataIntegrityViolationException::class.java) {
+    assertThrows<DataIntegrityViolationException> {
       store.createLayer(
           LayerModel(
               siteId = siteId,
-              layerTypeId = LayerType.Testing,
+              layerType = LayerType.Testing,
               tileSetName = "",
               proposed = false,
               hidden = false))
@@ -89,28 +82,20 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `read returns layerModel with all fields populated, including ones that won't be returned in the API`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+  fun `read returns LayerModel with all fields populated, including ones that won't be returned in the API`() {
+    val layer = store.createLayer(validCreateRequestModel)
     val fetchedLayer: LayerModel? = store.fetchLayer(layer.id!!)
     assertNotNull(fetchedLayer)
     assertEquals(layer, fetchedLayer)
     assertNotNull(fetchedLayer!!.deleted)
-    assertEquals(time1.toString(), fetchedLayer.createdTime)
-    assertEquals(time1.toString(), fetchedLayer.modifiedTime)
+    assertEquals(time1, fetchedLayer.createdTime)
+    assertEquals(time1, fetchedLayer.modifiedTime)
   }
 
   @Test
-  fun `read does permission checks`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
-    verify(inverse = true) { user.canReadLayer(any()) }
-    store.fetchLayer(layer.id!!)
-    verify { user.canReadLayer(layer.siteId!!) }
-  }
-
-  @Test
-  fun `read returns null if user doesn't have access to the site`() {
+  fun `read returns null if user doesn't have read permissions, even if they have write permissions`() {
     every { user.canReadLayer(any()) } returns false
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
     assertNull(store.fetchLayer(layer.id!!))
   }
 
@@ -121,49 +106,42 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `read returns null if the layer is deleted`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
     store.deleteLayer(layer.id!!)
     assertNull(store.fetchLayer(layer.id!!))
   }
 
   @Test
-  fun `update returns model with updated modified_time and deleted = false`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+  fun `update returns LayerModel with updated modified_time and deleted = false`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    every { clock.instant() } returns time2
     val updatedLayer: LayerModel =
         store.updateLayer(
             LayerModel(
                 id = layer.id,
                 siteId = siteId,
-                layerTypeId = LayerType.Testing,
+                layerType = LayerType.Testing,
                 tileSetName = "new test name",
                 proposed = false,
                 hidden = false))
     assertEquals(false, updatedLayer.deleted)
     assertEquals(layer.createdTime, updatedLayer.createdTime)
-    assertEquals(time2.toString(), updatedLayer.modifiedTime)
+    assertEquals(time2, updatedLayer.modifiedTime)
   }
 
   @Test
-  fun `update does permissions checks`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
-    verify(inverse = true) { user.canUpdateLayer(any()) }
-    store.updateLayer(validCreateRequestModel.copy(id = layer.id))
-    verify { user.canUpdateLayer(layer.siteId!!) }
-  }
-
-  @Test
-  fun `update fails with LayerNotFoundException if user doesn't have access to the site`() {
+  fun `update fails with LayerNotFoundException if user doesn't have update permissions`() {
     every { user.canUpdateLayer(any()) } returns false
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
 
-    assertThrows(LayerNotFoundException::class.java) {
+    assertThrows<LayerNotFoundException> {
       store.updateLayer(validCreateRequestModel.copy(id = layer.id))
     }
   }
 
   @Test
   fun `update does not change modified time if updated layer is the same as current layer`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
     val updatedLayer: LayerModel = store.updateLayer(validCreateRequestModel.copy(id = layer.id))
     assertEquals(layer.modifiedTime, updatedLayer.modifiedTime)
   }
@@ -171,12 +149,12 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update fails with LayerNotFoundException if layer doesn't exist`() {
     store.createLayer(validCreateRequestModel)
-    assertThrows(LayerNotFoundException::class.java) {
+    assertThrows<LayerNotFoundException> {
       store.updateLayer(
           LayerModel(
               id = nonExistentLayerId,
               siteId = siteId,
-              layerTypeId = LayerType.Testing,
+              layerType = LayerType.Testing,
               tileSetName = "test name",
               proposed = false,
               hidden = false))
@@ -185,14 +163,15 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update fails with LayerNotFoundException if layer is deleted`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
     store.deleteLayer(layer.id!!)
-    assertThrows(LayerNotFoundException::class.java) { store.updateLayer(layer) }
+    assertThrows<LayerNotFoundException> { store.updateLayer(layer) }
   }
 
   @Test
   fun `delete returns deleted layer with updated deleted and modified_time fields`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
+    every { clock.instant() } returns time2
     val deletedLayer: LayerModel = store.deleteLayer(layer.id!!)
     assertNotEquals(layer.modifiedTime, deletedLayer.modifiedTime)
     assertEquals(layer.copy(deleted = true, modifiedTime = deletedLayer.modifiedTime), deletedLayer)
@@ -200,7 +179,8 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `delete sets the 'modified_time' and 'deleted' fields on the resource, but does not delete the row`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
+    every { clock.instant() } returns time2
     store.deleteLayer(layer.id!!)
     val deletedLayer: LayerModel = store.fetchLayer(layer.id!!, ignoreDeleted = false)!!
     assertNotEquals(layer.modifiedTime, deletedLayer.modifiedTime)
@@ -210,26 +190,18 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `delete does permission checks`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
-    verify(inverse = true) { user.canDeleteLayer(any()) }
-    store.deleteLayer(layer.id!!)
-    verify { user.canDeleteLayer(layer.siteId!!) }
-  }
-
-  @Test
   fun `delete fails with LayerNotFoundException if user does not have permission`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
     every { user.canDeleteLayer(any()) } returns false
-    assertThrows(LayerNotFoundException::class.java) { store.deleteLayer(layer.id!!) }
+    assertThrows<LayerNotFoundException> { store.deleteLayer(layer.id!!) }
     // record exists, user just didn't have permission to delete it
     assertEquals(store.fetchLayer(layer.id!!), layer)
   }
 
   @Test
   fun `delete fails with LayerNotFoundException if layer is already deleted`() {
-    val layer: LayerModel = store.createLayer(validCreateRequestModel)
+    val layer = store.createLayer(validCreateRequestModel)
     store.deleteLayer(layer.id!!)
-    assertThrows(LayerNotFoundException::class.java) { store.deleteLayer(layer.id!!) }
+    assertThrows<LayerNotFoundException> { store.deleteLayer(layer.id!!) }
   }
 }
