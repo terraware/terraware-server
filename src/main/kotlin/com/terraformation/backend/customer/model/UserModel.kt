@@ -41,7 +41,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  */
 class UserModel(
     val userId: UserId,
-    private val authId: String,
+    val authId: String,
     val email: String,
     val firstName: String?,
     val lastName: String?,
