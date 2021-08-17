@@ -127,7 +127,7 @@ class UserModel(
   }
 
   private fun canAccessLayer(siteId: SiteId): Boolean {
-    // Any user who has access to a site can access all its field data
+    // Any user who has access to a site can access all its layers
     return siteId in siteRoles
   }
 
@@ -145,6 +145,28 @@ class UserModel(
 
   fun canDeleteLayer(siteId: SiteId): Boolean {
     return canAccessLayer(siteId)
+  }
+
+  private fun canAccessLayerData(siteId: SiteId): Boolean {
+    // Currently, all gis data is lumped into one permission, but in the future the ability
+    // to create/update layers may be separated from CRUD operations on layer data.
+    return canAccessLayer(siteId)
+  }
+
+  fun canCreateLayerData(siteId: SiteId): Boolean {
+    return canAccessLayerData(siteId)
+  }
+
+  fun canReadLayerData(siteId: SiteId): Boolean {
+    return canAccessLayerData(siteId)
+  }
+
+  fun canUpdateLayerData(siteId: SiteId): Boolean {
+    return canAccessLayerData(siteId)
+  }
+
+  fun canDeleteLayerData(siteId: SiteId): Boolean {
+    return canAccessLayerData(siteId)
   }
 
   fun canCreateSite(projectId: ProjectId): Boolean {

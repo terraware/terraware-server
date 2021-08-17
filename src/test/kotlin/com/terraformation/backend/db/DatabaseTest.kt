@@ -3,6 +3,7 @@ package com.terraformation.backend.db
 import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
@@ -121,6 +122,33 @@ abstract class DatabaseTest {
           .set(SITE_ID, SiteId(siteId))
           .set(TYPE_ID, FacilityType.SeedBank)
           .set(NAME, name)
+          .execute()
+    }
+  }
+
+  protected fun insertLayer(
+      id: LayerId,
+      siteId: SiteId,
+      layerType: LayerType,
+      tileSetName: String,
+      proposed: Boolean = false,
+      hidden: Boolean = false,
+      deleted: Boolean = false,
+      createdTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = Instant.EPOCH
+  ) {
+    with(LAYERS) {
+      dslContext
+          .insertInto(LAYERS)
+          .set(ID, id)
+          .set(SITE_ID, siteId)
+          .set(LAYER_TYPE_ID, layerType)
+          .set(TILE_SET_NAME, tileSetName)
+          .set(PROPOSED, proposed)
+          .set(HIDDEN, hidden)
+          .set(DELETED, deleted)
+          .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_TIME, modifiedTime)
           .execute()
     }
   }

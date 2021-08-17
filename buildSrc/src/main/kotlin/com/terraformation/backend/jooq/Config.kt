@@ -31,6 +31,7 @@ val ENUM_TABLES =
         EnumTable("layer_types", ".*\\.layer_type_id"),
         EnumTable("notification_types", "notifications\\.type_id"),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
+        EnumTable("shape_types", ".*\\.shape_type_id"),
         EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
         EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
         EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
@@ -53,6 +54,7 @@ val ID_WRAPPERS =
             listOf("collectors\\.id", ".*\\.collector_id", "accessions\\.primary_collector_id")),
         IdWrapper("DeviceId", listOf("devices\\.id", ".*\\.device_id")),
         IdWrapper("FacilityId", listOf("facilities\\.id", ".*\\.facility_id")),
+        IdWrapper("FeatureId", listOf("features\\.id", ".*\\.feature_id")),
         IdWrapper("GeolocationId", listOf("geolocations\\.id", ".*\\.geolocation_id")),
         IdWrapper("GerminationId", listOf("germinations\\.id", ".*\\.germination_id")),
         IdWrapper(

@@ -13,6 +13,9 @@ open class KeycloakRequestFailedException(
     override val cause: Throwable? = null
 ) : IOException(message, cause)
 
+class FeatureNotFoundException(val featureId: FeatureId) :
+    Exception("Feature $featureId not found")
+
 /** Keycloak couldn't find a user that we expected to be able to find. */
 class KeycloakUserNotFoundException(message: String) : Exception(message)
 

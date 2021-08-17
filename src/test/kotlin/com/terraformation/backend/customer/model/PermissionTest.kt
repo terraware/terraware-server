@@ -66,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * them to some projects, then assert which specific permissions they should have on each of the
  * above objects.
  *
- * At the end of each test, call [andNothingElse] which will check that the user doesn't have any
+ * At the end of each test, call [assertNoAdditionalPermissions] which will check that the user doesn't have any
  * permissions other than the ones the test specifically said they should.
  */
 internal class PermissionTest : DatabaseTest() {
@@ -86,7 +86,6 @@ internal class PermissionTest : DatabaseTest() {
   /*
    * Test data set; see class docs for a prettier version. This takes advantage of the default
    * "parent ID is our ID divided by 10" logic of the insert functions in DatabaseTest.
-   * Items are removed from these sets by the various expect() methods.
    */
   private val organizationIds = listOf(1, 2, 3).map { OrganizationId(it.toLong()) }.toMutableSet()
   private val projectIds = listOf(10, 11, 20, 21).map { ProjectId(it.toLong()) }.toMutableSet()
@@ -144,215 +143,234 @@ internal class PermissionTest : DatabaseTest() {
   fun `owner role grants all permissions in organization projects, sites, facilities and layers`() {
     givenRole(OrganizationId(1), Role.OWNER)
 
-    expect(
+    checkOrganizationIdPermissions(
         OrganizationId(1),
         addOrganizationUser = true,
         createProject = true,
         deleteOrganization = true,
         removeOrganizationUser = true)
 
-    expect(
-        ProjectId(10),
-        ProjectId(11),
+    val projects = listOf(ProjectId(10), ProjectId(11))
+    checkProjectIdPermissions(
+        *projects.toTypedArray(),
         addProjectUser = true,
         createSite = true,
         listSites = true,
         removeProjectUser = true)
 
-    expect(
-        SiteId(100),
-        SiteId(101),
-        SiteId(110),
-        SiteId(111),
+    val sites = listOf(SiteId(100), SiteId(101), SiteId(110), SiteId(111))
+    checkSiteIdPermissions(
+        *sites.toTypedArray(),
         createFacility = true,
         listFacilities = true,
-        readSite = true)
-
-    expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
-        FacilityId(1100),
-        FacilityId(1101),
-        FacilityId(1110),
-        FacilityId(1111),
-        createAccession = true)
-
-    expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
-        AccessionId(1100),
-        AccessionId(1101),
-        AccessionId(1110),
-        AccessionId(1111),
-        readAccession = true,
-        updateAccession = true)
-
-    expect(
-        SiteId(100),
-        SiteId(101),
-        SiteId(110),
-        SiteId(111),
+        readSite = true,
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true)
+        deleteLayer = true,
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
 
-    andNothingElse()
+    val facilities =
+        listOf(
+            FacilityId(1000),
+            FacilityId(1001),
+            FacilityId(1010),
+            FacilityId(1011),
+            FacilityId(1100),
+            FacilityId(1101),
+            FacilityId(1110),
+            FacilityId(1111))
+    checkFacilityIdPermissions(*facilities.toTypedArray(), createAccession = true)
+
+    val accessions =
+        listOf(
+            AccessionId(1000),
+            AccessionId(1001),
+            AccessionId(1010),
+            AccessionId(1011),
+            AccessionId(1100),
+            AccessionId(1101),
+            AccessionId(1110),
+            AccessionId(1111))
+    checkAccessionIdPermissions(
+        *accessions.toTypedArray(), readAccession = true, updateAccession = true)
+
+    assertNoAdditionalPermissions(
+        organizationIds.minus(OrganizationId(1)),
+        projectIds.minus(projects),
+        siteIds.minus(sites),
+        facilityIds.minus(facilities),
+        accessionIds.minus(accessions))
   }
 
   @Test
   fun `owner role in empty organization grants organization-level permissions`() {
     givenRole(OrganizationId(3), Role.OWNER)
 
-    expect(
+    checkOrganizationIdPermissions(
         OrganizationId(3),
         addOrganizationUser = true,
         createProject = true,
         deleteOrganization = true,
         removeOrganizationUser = true)
 
-    andNothingElse()
+    assertNoAdditionalPermissions(
+        organizationIds.minus(OrganizationId(3)), projectIds, siteIds, facilityIds, accessionIds)
   }
 
   @Test
   fun `admin role grants all permissions except deleting organization`() {
     givenRole(OrganizationId(1), Role.ADMIN)
 
-    expect(
+    checkOrganizationIdPermissions(
         OrganizationId(1),
         addOrganizationUser = true,
         createProject = true,
         removeOrganizationUser = true)
 
-    expect(
-        ProjectId(10),
-        ProjectId(11),
+    val projects =
+        listOf(
+            ProjectId(10),
+            ProjectId(11),
+        )
+    checkProjectIdPermissions(
+        *projects.toTypedArray(),
         addProjectUser = true,
         createSite = true,
         listSites = true,
         removeProjectUser = true)
 
-    expect(
-        SiteId(100),
-        SiteId(101),
-        SiteId(110),
-        SiteId(111),
+    val sites = listOf(SiteId(100), SiteId(101), SiteId(110), SiteId(111))
+    checkSiteIdPermissions(
+        *sites.toTypedArray(),
         createFacility = true,
         listFacilities = true,
-        readSite = true)
-
-    expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
-        FacilityId(1100),
-        FacilityId(1101),
-        FacilityId(1110),
-        FacilityId(1111),
-        createAccession = true)
-
-    expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
-        AccessionId(1100),
-        AccessionId(1101),
-        AccessionId(1110),
-        AccessionId(1111),
-        readAccession = true,
-        updateAccession = true)
-
-    expect(
-        SiteId(100),
-        SiteId(101),
-        SiteId(110),
-        SiteId(111),
+        readSite = true,
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true)
+        deleteLayer = true,
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true)
 
-    andNothingElse()
+    val facilities =
+        listOf(
+            FacilityId(1000),
+            FacilityId(1001),
+            FacilityId(1010),
+            FacilityId(1011),
+            FacilityId(1100),
+            FacilityId(1101),
+            FacilityId(1110),
+            FacilityId(1111))
+    checkFacilityIdPermissions(*facilities.toTypedArray(), createAccession = true)
+
+    val accessions =
+        listOf(
+            AccessionId(1000),
+            AccessionId(1001),
+            AccessionId(1010),
+            AccessionId(1011),
+            AccessionId(1100),
+            AccessionId(1101),
+            AccessionId(1110),
+            AccessionId(1111))
+    checkAccessionIdPermissions(
+        *accessions.toTypedArray(), readAccession = true, updateAccession = true)
+
+    assertNoAdditionalPermissions(
+        organizationIds.minus(OrganizationId(1)),
+        projectIds.minus(projects),
+        siteIds.minus(sites),
+        facilityIds.minus(facilities),
+        accessionIds.minus(accessions))
   }
 
   @Test
   fun `managers have access to projects they are in`() {
     givenRole(OrganizationId(1), Role.MANAGER, ProjectId(10))
 
-    expect(ProjectId(10), addProjectUser = true, listSites = true, removeProjectUser = true)
+    checkProjectIdPermissions(
+        ProjectId(10), addProjectUser = true, listSites = true, removeProjectUser = true)
 
-    expect(SiteId(100), SiteId(101), listFacilities = true, readSite = true)
-
-    expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
-        createAccession = true)
-
-    expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
-        readAccession = true,
-        updateAccession = true)
-
-    expect(
-        SiteId(100),
-        SiteId(101),
+    val sites = listOf(SiteId(100), SiteId(101))
+    checkSiteIdPermissions(
+        *sites.toTypedArray(),
+        listFacilities = true,
+        readSite = true,
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true)
+        deleteLayer = true,
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
 
-    andNothingElse()
+    val facilities = listOf(FacilityId(1000), FacilityId(1001), FacilityId(1010), FacilityId(1011))
+    checkFacilityIdPermissions(*facilities.toTypedArray(), createAccession = true)
+
+    val accessions =
+        listOf(AccessionId(1000), AccessionId(1001), AccessionId(1010), AccessionId(1011))
+    checkAccessionIdPermissions(
+        *accessions.toTypedArray(), readAccession = true, updateAccession = true)
+
+    assertNoAdditionalPermissions(
+        organizationIds,
+        projectIds.minus(ProjectId(10)),
+        siteIds.minus(sites),
+        facilityIds.minus(facilities),
+        accessionIds.minus(accessions))
   }
 
   @Test
   fun `contributors have read access to public data and can do data entry`() {
     givenRole(OrganizationId(1), Role.CONTRIBUTOR, ProjectId(10))
 
-    expect(ProjectId(10), listSites = true)
+    checkProjectIdPermissions(ProjectId(10), listSites = true)
 
-    expect(SiteId(100), SiteId(101), listFacilities = true, readSite = true)
-
-    expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
-        createAccession = true)
-
-    expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
-        readAccession = true,
-        updateAccession = true)
-
-    expect(
-        SiteId(100),
-        SiteId(101),
+    val sites = listOf(SiteId(100), SiteId(101))
+    checkSiteIdPermissions(
+        *sites.toTypedArray(),
+        listFacilities = true,
+        readSite = true,
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true)
+        deleteLayer = true,
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
 
-    andNothingElse()
+    val facilities = listOf(FacilityId(1000), FacilityId(1001), FacilityId(1010), FacilityId(1011))
+    checkFacilityIdPermissions(*facilities.toTypedArray(), createAccession = true)
+
+    val accessions =
+        listOf(AccessionId(1000), AccessionId(1001), AccessionId(1010), AccessionId(1011))
+    checkAccessionIdPermissions(
+        *accessions.toTypedArray(), readAccession = true, updateAccession = true)
+
+    assertNoAdditionalPermissions(
+        organizationIds,
+        projectIds.minus(ProjectId(10)),
+        siteIds.minus(sites),
+        facilityIds.minus(facilities),
+        accessionIds.minus(accessions))
   }
 
   @Test
   fun `user with no organization memberships has no organization-level permissions`() {
     // No givenRole() here; user has no roles anywhere.
-    andNothingElse()
+    assertNoAdditionalPermissions(organizationIds, projectIds, siteIds, facilityIds, accessionIds)
   }
 
   @Test
@@ -393,7 +411,7 @@ internal class PermissionTest : DatabaseTest() {
     }
   }
 
-  private fun expect(
+  private fun checkOrganizationIdPermissions(
       vararg organizations: OrganizationId,
       addOrganizationUser: Boolean = false,
       createProject: Boolean = false,
@@ -417,12 +435,10 @@ internal class PermissionTest : DatabaseTest() {
           removeOrganizationUser,
           user.canRemoveOrganizationUser(organizationId),
           "Can remove user from organization $organizationId")
-
-      organizationIds.remove(organizationId)
     }
   }
 
-  private fun expect(
+  private fun checkProjectIdPermissions(
       vararg projects: ProjectId,
       addProjectUser: Boolean = false,
       createSite: Boolean = false,
@@ -439,16 +455,22 @@ internal class PermissionTest : DatabaseTest() {
           removeProjectUser,
           user.canRemoveProjectUser(projectId),
           "Can remove project $projectId user")
-
-      projectIds.remove(projectId)
     }
   }
 
-  private fun expect(
+  private fun checkSiteIdPermissions(
       vararg sites: SiteId,
       createFacility: Boolean = false,
       listFacilities: Boolean = false,
       readSite: Boolean = false,
+      createLayer: Boolean = false,
+      readLayer: Boolean = false,
+      updateLayer: Boolean = false,
+      deleteLayer: Boolean = false,
+      createLayerData: Boolean = false,
+      readLayerData: Boolean = false,
+      updateLayerData: Boolean = false,
+      deleteLayerData: Boolean = false,
   ) {
     sites.forEach { siteId ->
       assertEquals(
@@ -456,12 +478,22 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(
           listFacilities, user.canListFacilities(siteId), "Can list site $siteId facilities")
       assertEquals(readSite, user.canReadSite(siteId), "Can read site $siteId")
-
-      siteIds.remove(siteId)
+      assertEquals(createLayer, user.canCreateLayer(siteId), "Can create layer at site $siteId")
+      assertEquals(readLayer, user.canReadLayer(siteId), "Can read layer at site $siteId")
+      assertEquals(updateLayer, user.canUpdateLayer(siteId), "Can update layer at site $siteId")
+      assertEquals(deleteLayer, user.canDeleteLayer(siteId), "Can delete layer at site $siteId")
+      assertEquals(
+          createLayerData, user.canCreateLayerData(siteId), "Can create layer data at site $siteId")
+      assertEquals(
+          readLayerData, user.canReadLayerData(siteId), "Can read layer data at site $siteId")
+      assertEquals(
+          updateLayerData, user.canUpdateLayerData(siteId), "Can update layer data at site $siteId")
+      assertEquals(
+          deleteLayerData, user.canDeleteLayerData(siteId), "Can delete layer data at site $siteId")
     }
   }
 
-  private fun expect(
+  private fun checkFacilityIdPermissions(
       vararg facilities: FacilityId,
       createAccession: Boolean = false,
   ) {
@@ -470,12 +502,10 @@ internal class PermissionTest : DatabaseTest() {
           createAccession,
           user.canCreateAccession(facilityId),
           "Can create accession at facility $facilityId")
-
-      facilityIds.remove(facilityId)
     }
   }
 
-  private fun expect(
+  private fun checkAccessionIdPermissions(
       vararg accessions: AccessionId,
       readAccession: Boolean = false,
       updateAccession: Boolean = false,
@@ -487,31 +517,20 @@ internal class PermissionTest : DatabaseTest() {
           updateAccession,
           user.canUpdateAccession(accessionId),
           "Can update accession $accessionId")
-
-      accessionIds.remove(accessionId)
     }
   }
 
-  private fun expect(
-      vararg sites: SiteId,
-      createLayer: Boolean = false,
-      readLayer: Boolean = false,
-      updateLayer: Boolean = false,
-      deleteLayer: Boolean = false
+  private fun assertNoAdditionalPermissions(
+      orgs: Set<OrganizationId>,
+      projects: Set<ProjectId>,
+      sites: Set<SiteId>,
+      facilities: Set<FacilityId>,
+      accessions: Set<AccessionId>,
   ) {
-    sites.forEach { siteId ->
-      assertEquals(createLayer, user.canCreateLayer(siteId), "Can create layer at site $siteId")
-      assertEquals(readLayer, user.canReadLayer(siteId), "Can read layer at site $siteId")
-      assertEquals(updateLayer, user.canUpdateLayer(siteId), "Can update layer at site $siteId")
-      assertEquals(deleteLayer, user.canDeleteLayer(siteId), "Can delete layer at site $siteId")
-    }
-  }
-
-  private fun andNothingElse() {
-    expect(*organizationIds.toTypedArray())
-    expect(*projectIds.toTypedArray())
-    expect(*siteIds.toTypedArray())
-    expect(*facilityIds.toTypedArray())
-    expect(*accessionIds.toTypedArray())
+    checkOrganizationIdPermissions(*orgs.toTypedArray())
+    checkProjectIdPermissions(*projects.toTypedArray())
+    checkSiteIdPermissions(*sites.toTypedArray())
+    checkFacilityIdPermissions(*facilities.toTypedArray())
+    checkAccessionIdPermissions(*accessions.toTypedArray())
   }
 }
