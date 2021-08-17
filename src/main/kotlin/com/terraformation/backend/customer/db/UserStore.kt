@@ -2,6 +2,8 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.db.KeycloakRequestFailedException
+import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
@@ -13,6 +15,7 @@ import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 
 /**
  * Data accessor for user information.
@@ -40,6 +43,10 @@ class UserStore(
   /**
    * Returns the details for the user with a given Keycloak user ID. Pulls the user's information
    * from Keycloak if they don't exist in our users table yet.
+   *
+   * @throws KeycloakRequestFailedException Could not request user information from Keycloak. This
+   * implies that the user didn't exist in the users table.
+   * @throws KeycloakUserNotFoundException There is no user with that ID in the Keycloak database.
    */
   @Suppress("MemberVisibilityCanBePrivate")
   fun fetchByAuthId(authId: String): UserModel {
@@ -49,9 +56,17 @@ class UserStore(
           existingUser
         } else {
           val keycloakUser =
-              realmResource.users().get(authId)?.toRepresentation()
-                  ?: throw IllegalStateException("User ID does not exist")
-          insertKeycloakUser(keycloakUser)
+              try {
+                realmResource.users().get(authId)?.toRepresentation()
+              } catch (e: Exception) {
+                throw KeycloakRequestFailedException("Failed to request user data from Keycloak", e)
+              }
+
+          if (keycloakUser != null) {
+            insertKeycloakUser(keycloakUser)
+          } else {
+            throw KeycloakUserNotFoundException("User ID does not exist")
+          }
         }
 
     return rowToDetails(user)
@@ -62,6 +77,7 @@ class UserStore(
    * Keycloak if they don't exist in our users table yet.
    *
    * @return null if no Keycloak user has the requested email address.
+   * @throws KeycloakRequestFailedException Could not request user information from Keycloak.
    */
   fun fetchByEmail(email: String): UserModel? {
     val existingUser = usersDao.fetchByEmail(email).firstOrNull()
@@ -69,7 +85,13 @@ class UserStore(
         if (existingUser != null) {
           existingUser
         } else {
-          val keycloakUsers = realmResource.users().search(email, true)
+          val keycloakUsers =
+              try {
+                realmResource.users().search(email, true)
+              } catch (e: Exception) {
+                throw KeycloakRequestFailedException(
+                    "Failed to search for user data in Keycloak", e)
+              }
           if (keycloakUsers.isNotEmpty()) {
             insertKeycloakUser(keycloakUsers.first())
           } else {
@@ -96,17 +118,22 @@ class UserStore(
    * follows our usual method naming convention.
    */
   override fun loadUserByUsername(username: String): UserDetails {
-    return fetchByAuthId(username)
+    try {
+      return fetchByAuthId(username)
+    } catch (e: KeycloakUserNotFoundException) {
+      // Spring Security expects a specific exception to be thrown in this case.
+      throw UsernameNotFoundException(e.message, e)
+    }
   }
 
   private fun rowToDetails(usersRow: UsersRow): UserModel {
     return UserModel(
-        usersRow.id ?: throw IllegalStateException("User ID should never be null"),
-        usersRow.authId ?: throw IllegalStateException("Auth ID should never be null"),
-        usersRow.email ?: throw IllegalStateException("Email should never be null"),
+        usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
+        usersRow.authId ?: throw IllegalArgumentException("Auth ID should never be null"),
+        usersRow.email ?: throw IllegalArgumentException("Email should never be null"),
         usersRow.firstName,
         usersRow.lastName,
-        usersRow.userTypeId ?: throw IllegalStateException("User type should never be null"),
+        usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
         accessionsDao,
         permissionStore,
     )
