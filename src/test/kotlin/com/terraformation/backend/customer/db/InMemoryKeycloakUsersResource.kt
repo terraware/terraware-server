@@ -11,7 +11,8 @@ import org.keycloak.admin.client.resource.UsersResource
 import org.keycloak.representations.idm.UserRepresentation
 
 /**
- * Test double to replace the Keycloak admin client's user management class.
+ * Test version of the Keycloak Java library's class that accesses the user admin API. This runs
+ * entirely in memory rather than updating user data on a real Keycloak server.
  *
  * This is a real class rather than a simple call to [mockk] because in order to test how the
  * calling code interacts with Keycloak, we need to maintain a bit of state. There's the risk that
