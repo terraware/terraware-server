@@ -28,21 +28,6 @@ class TimeSeriesStore(
     return query.fetchOne(TIMESERIES.ID)
   }
 
-  fun getTimeseriesIdsByName(
-      deviceId: DeviceId,
-      names: Collection<String>
-  ): Map<String, TimeseriesId> {
-    with(TIMESERIES) {
-      return dslContext
-          .select(NAME, ID)
-          .from(TIMESERIES)
-          .where(DEVICE_ID.eq(deviceId))
-          .and(NAME.`in`(names))
-          .fetch()
-          .associateBy({ it.value1()!! }) { it.value2()!! }
-    }
-  }
-
   fun getTimeseriesIdByName(deviceId: DeviceId, name: String): TimeseriesId? {
     with(TIMESERIES) {
       return dslContext
