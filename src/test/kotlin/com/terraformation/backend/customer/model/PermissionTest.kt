@@ -22,6 +22,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.keycloak.admin.client.resource.RealmResource
@@ -123,7 +124,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `owner role grants all permissions in organization projects and sites and facilities`() {
+  fun `owner role grants all permissions in organization projects, sites, facilities and layers`() {
     givenRole(OrganizationId(1), Role.OWNER)
 
     expect(
@@ -172,6 +173,16 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1111),
         readAccession = true,
         updateAccession = true)
+
+    expect(
+        SiteId(100),
+        SiteId(101),
+        SiteId(110),
+        SiteId(111),
+        createLayer = true,
+        readLayer = true,
+        updateLayer = true,
+        deleteLayer = true)
 
     andNothingElse()
   }
@@ -240,6 +251,16 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         updateAccession = true)
 
+    expect(
+        SiteId(100),
+        SiteId(101),
+        SiteId(110),
+        SiteId(111),
+        createLayer = true,
+        readLayer = true,
+        updateLayer = true,
+        deleteLayer = true)
+
     andNothingElse()
   }
 
@@ -265,6 +286,14 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1011),
         readAccession = true,
         updateAccession = true)
+
+    expect(
+        SiteId(100),
+        SiteId(101),
+        createLayer = true,
+        readLayer = true,
+        updateLayer = true,
+        deleteLayer = true)
 
     andNothingElse()
   }
@@ -292,6 +321,14 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         updateAccession = true)
 
+    expect(
+        SiteId(100),
+        SiteId(101),
+        createLayer = true,
+        readLayer = true,
+        updateLayer = true,
+        deleteLayer = true)
+
     andNothingElse()
   }
 
@@ -299,6 +336,19 @@ internal class PermissionTest : DatabaseTest() {
   fun `user with no organization memberships has no organization-level permissions`() {
     // No givenRole() here; user has no roles anywhere.
     andNothingElse()
+  }
+
+  @Test
+  fun `user with no organization memberships has no default organization ID`() {
+    assertNull(userStore.fetchById(userId)!!.defaultOrganizationId())
+  }
+
+  @Test
+  fun `user with multiple organization memberships has no default organization ID`() {
+    givenRole(OrganizationId(1), Role.CONTRIBUTOR)
+    givenRole(OrganizationId(2), Role.CONTRIBUTOR)
+
+    assertNull(userStore.fetchById(userId)!!.defaultOrganizationId())
   }
 
   private fun givenRole(organizationId: OrganizationId, role: Role, vararg projects: ProjectId) {
@@ -422,6 +472,21 @@ internal class PermissionTest : DatabaseTest() {
           "Can update accession $accessionId")
 
       accessionIds.remove(accessionId)
+    }
+  }
+
+  private fun expect(
+      vararg sites: SiteId,
+      createLayer: Boolean = false,
+      readLayer: Boolean = false,
+      updateLayer: Boolean = false,
+      deleteLayer: Boolean = false
+  ) {
+    sites.forEach { siteId ->
+      assertEquals(createLayer, user.canCreateLayer(siteId), "Can create layer at site $siteId")
+      assertEquals(readLayer, user.canReadLayer(siteId), "Can read layer at site $siteId")
+      assertEquals(updateLayer, user.canUpdateLayer(siteId), "Can update layer at site $siteId")
+      assertEquals(deleteLayer, user.canDeleteLayer(siteId), "Can delete layer at site $siteId")
     }
   }
 

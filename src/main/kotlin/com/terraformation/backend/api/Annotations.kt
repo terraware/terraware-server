@@ -12,6 +12,11 @@ import org.springframework.http.MediaType
 annotation class SeedBankAppEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "GISApp")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class GISAppEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Tag(name = "DeviceManager")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class DeviceManagerAppEndpoint

@@ -27,7 +27,6 @@ data class PerSiteConfig(
 
 @ManagedBean
 class PerSiteConfigUpdater(
-    private val databaseBootstrapper: DatabaseBootstrapper,
     private val devicesDao: DevicesDao,
     private val dslContext: DSLContext,
     private val storageLocationsDao: StorageLocationsDao,
@@ -93,8 +92,6 @@ class PerSiteConfigUpdater(
 
     delete(perSiteConfig.devices, devicesDao) { it.enabled = false }
     delete(perSiteConfig.storageLocations, storageLocationsDao) { it.enabled = false }
-
-    databaseBootstrapper.updateApiKey()
   }
 
   private fun <T, I : Any> insertAndUpdate(desired: List<T>, dao: DAO<*, T, I>) {

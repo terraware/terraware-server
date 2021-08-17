@@ -126,6 +126,27 @@ class UserModel(
     return siteRoles[siteId] != null
   }
 
+  private fun canAccessLayer(siteId: SiteId): Boolean {
+    // Any user who has access to a site can access all its field data
+    return siteId in siteRoles
+  }
+
+  fun canCreateLayer(siteId: SiteId): Boolean {
+    return canAccessLayer(siteId)
+  }
+
+  fun canReadLayer(siteId: SiteId): Boolean {
+    return canAccessLayer(siteId)
+  }
+
+  fun canUpdateLayer(siteId: SiteId): Boolean {
+    return canAccessLayer(siteId)
+  }
+
+  fun canDeleteLayer(siteId: SiteId): Boolean {
+    return canAccessLayer(siteId)
+  }
+
   fun canCreateSite(projectId: ProjectId): Boolean {
     val role = projectRoles[projectId]
     return role == Role.ADMIN || role == Role.OWNER
@@ -189,6 +210,19 @@ class UserModel(
       return facilityRoles.keys.first()
     } else {
       throw IllegalStateException("User has no facilities")
+    }
+  }
+
+  /**
+   * Returns the user's organization ID if they belong to exactly one organization.
+   *
+   * TODO: Remove this once the client passes in organization IDs.
+   */
+  fun defaultOrganizationId(): OrganizationId? {
+    return if (organizationRoles.size == 1) {
+      organizationRoles.keys.first()
+    } else {
+      null
     }
   }
 
