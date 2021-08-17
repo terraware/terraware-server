@@ -28,7 +28,6 @@ import com.terraformation.backend.db.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import io.mockk.every
-import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
@@ -59,7 +58,6 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
   private lateinit var timeseriesDao: TimeseriesDao
   private lateinit var updater: PerSiteConfigUpdater
 
-  private val databaseBootstrapper: DatabaseBootstrapper = mockk()
   private val serverConfig: TerrawareServerConfig = mockk()
   private val taskScheduler: TaskScheduler = mockk()
 
@@ -78,15 +76,12 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
 
     updater =
         PerSiteConfigUpdater(
-            databaseBootstrapper,
             devicesDao,
             dslContext,
             storageLocationsDao,
             ObjectMapper().registerKotlinModule(),
             serverConfig,
             taskScheduler)
-
-    justRun { databaseBootstrapper.updateApiKey() }
   }
 
   @Test
@@ -96,7 +91,6 @@ internal class PerSiteConfigUpdaterTest : DatabaseTest() {
     updater.updateDatabase(config)
 
     assertConfigInDatabase(config)
-    verify { databaseBootstrapper.updateApiKey() }
   }
 
   @Test

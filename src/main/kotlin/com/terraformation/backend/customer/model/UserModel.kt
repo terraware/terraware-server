@@ -213,6 +213,19 @@ class UserModel(
     }
   }
 
+  /**
+   * Returns the user's organization ID if they belong to exactly one organization.
+   *
+   * TODO: Remove this once the client passes in organization IDs.
+   */
+  fun defaultOrganizationId(): OrganizationId? {
+    return if (organizationRoles.size == 1) {
+      organizationRoles.keys.first()
+    } else {
+      null
+    }
+  }
+
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return if (userType == UserType.SuperAdmin) {
       mutableSetOf(SuperAdminAuthority)

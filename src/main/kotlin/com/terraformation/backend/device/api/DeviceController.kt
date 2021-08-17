@@ -3,11 +3,9 @@ package com.terraformation.backend.device.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.auth.ClientIdentity
-import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.device.db.DeviceStore
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -15,13 +13,10 @@ import org.springframework.web.bind.annotation.RestController
 @DeviceManagerAppEndpoint
 @RestController
 @RequestMapping("/api/v1/device")
-class DeviceController(
-    private val config: TerrawareServerConfig,
-    private val deviceStore: DeviceStore,
-) {
+class DeviceController(private val deviceStore: DeviceStore) {
   @GetMapping("/all/config")
-  fun listDeviceConfigs(@AuthenticationPrincipal auth: ClientIdentity): ListDeviceConfigsResponse {
-    val facilityId = config.facilityId
+  fun listDeviceConfigs(): ListDeviceConfigsResponse {
+    val facilityId = currentUser().defaultFacilityId()
     val devices = deviceStore.fetchDeviceConfigurationForSite(facilityId)
     return ListDeviceConfigsResponse(devices)
   }

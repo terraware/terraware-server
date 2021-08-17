@@ -4,10 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.api.NoOrganizationException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.WrongOrganizationException
-import com.terraformation.backend.auth.AnonymousClient
-import com.terraformation.backend.auth.ControllerClientIdentity
-import com.terraformation.backend.auth.LoggedInUserIdentity
-import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
@@ -21,10 +17,11 @@ import io.mockk.mockk
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class SiteControllerTest : RunsAsUser {
   override val user = mockk<UserModel>()
@@ -36,18 +33,19 @@ class SiteControllerTest : RunsAsUser {
   private val projectId = ProjectId(2)
   private val siteId = SiteId(123)
 
-  private val authentication = ControllerClientIdentity(organizationId)
-  private val superAdminAuthentication =
-      LoggedInUserIdentity("superadmin", null, setOf(SuperAdminAuthority))
+  @BeforeEach
+  fun defaultToAuthenticatedUser() {
+    every { user.defaultOrganizationId() } returns organizationId
+  }
 
   @Nested
   @DisplayName("GET /api/v1/site")
   inner class ListSites {
     @Test
     fun `rejects requests from clients without organizations`() {
-      assertThrows(NoOrganizationException::class.java) {
-        siteController.listSites(LoggedInUserIdentity("test", null, emptySet()))
-      }
+      every { user.defaultOrganizationId() } returns null
+
+      assertThrows<NoOrganizationException> { siteController.listSites() }
     }
 
     @Test
@@ -55,7 +53,8 @@ class SiteControllerTest : RunsAsUser {
       every { projectsDao.fetchByOrganizationId(organizationId) } returns
           listOf(ProjectsRow(id = projectId))
       every { siteDao.fetchByProjectId(projectId) } returns emptyList()
-      assertEquals(ListSitesResponse(emptyList()), siteController.listSites(authentication))
+
+      assertEquals(ListSitesResponse(emptyList()), siteController.listSites())
     }
 
     @Test
@@ -70,7 +69,8 @@ class SiteControllerTest : RunsAsUser {
       val expected =
           ListSitesResponse(
               listOf(ListSitesElement(1, "First Site"), ListSitesElement(2, "Second Site")))
-      assertEquals(expected, siteController.listSites(authentication))
+
+      assertEquals(expected, siteController.listSites())
     }
   }
 
@@ -96,27 +96,20 @@ class SiteControllerTest : RunsAsUser {
         ProjectsRow(id = projectId, name = "project", organizationId = organizationId)
 
     @Test
-    fun `rejects requests from regular clients without organizations`() {
-      assertThrows(NoOrganizationException::class.java) {
-        siteController.getSite(AnonymousClient, 1)
-      }
-    }
-
-    @Test
     fun `accepts requests from super admin clients without organizations`() {
       every { user.canReadSite(siteId) } returns true
       every { projectsDao.fetchOneById(projectId) } returns project
       every { siteDao.fetchOneById(siteId) } returns site
-      assertDoesNotThrow { siteController.getSite(superAdminAuthentication, siteId.value) }
+
+      assertDoesNotThrow { siteController.getSite(siteId.value) }
     }
 
     @Test
     fun `rejects requests for nonexistent sites`() {
       every { user.canReadSite(siteId) } returns true
       every { siteDao.fetchOneById(siteId) } returns null
-      assertThrows(NotFoundException::class.java) {
-        siteController.getSite(authentication, siteId.value)
-      }
+
+      assertThrows<NotFoundException> { siteController.getSite(siteId.value) }
     }
 
     @Test
@@ -126,9 +119,8 @@ class SiteControllerTest : RunsAsUser {
           ProjectsRow(id = projectId, organizationId = OrganizationId(0))
       every { siteDao.fetchOneById(siteId) } returns
           SitesRow(id = siteId, projectId = projectId, name = "site")
-      assertThrows(WrongOrganizationException::class.java) {
-        siteController.getSite(authentication, siteId.value)
-      }
+
+      assertThrows<WrongOrganizationException> { siteController.getSite(siteId.value) }
     }
 
     @Test
@@ -145,7 +137,8 @@ class SiteControllerTest : RunsAsUser {
               longitude = longitudeString,
               locale = locale,
               timezone = timezone)
-      assertEquals(expected, siteController.getSite(authentication, siteId.value))
+
+      assertEquals(expected, siteController.getSite(siteId.value))
     }
   }
 }

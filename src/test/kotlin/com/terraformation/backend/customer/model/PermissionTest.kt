@@ -22,6 +22,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.keycloak.admin.client.resource.RealmResource
@@ -335,6 +336,19 @@ internal class PermissionTest : DatabaseTest() {
   fun `user with no organization memberships has no organization-level permissions`() {
     // No givenRole() here; user has no roles anywhere.
     andNothingElse()
+  }
+
+  @Test
+  fun `user with no organization memberships has no default organization ID`() {
+    assertNull(userStore.fetchById(userId)!!.defaultOrganizationId())
+  }
+
+  @Test
+  fun `user with multiple organization memberships has no default organization ID`() {
+    givenRole(OrganizationId(1), Role.CONTRIBUTOR)
+    givenRole(OrganizationId(2), Role.CONTRIBUTOR)
+
+    assertNull(userStore.fetchById(userId)!!.defaultOrganizationId())
   }
 
   private fun givenRole(organizationId: OrganizationId, role: Role, vararg projects: ProjectId) {
