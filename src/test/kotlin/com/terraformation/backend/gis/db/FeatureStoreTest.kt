@@ -61,7 +61,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     assertNotNull(featureModel.id)
     assertEquals(time1, featureModel.createdTime)
     assertEquals(time1, featureModel.modifiedTime)
-    assertEquals(validCreateRequest, featureModel.copy(id = null, createdTime = null, modifiedTime = null))
+    assertEquals(
+        validCreateRequest, featureModel.copy(id = null, createdTime = null, modifiedTime = null))
   }
 
   @Test

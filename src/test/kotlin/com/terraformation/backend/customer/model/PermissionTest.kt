@@ -66,8 +66,8 @@ import org.springframework.beans.factory.annotation.Autowired
  * them to some projects, then assert which specific permissions they should have on each of the
  * above objects.
  *
- * At the end of each test, call [assertNoAdditionalPermissions] which will check that the user doesn't have any
- * permissions other than the ones the test specifically said they should.
+ * At the end of each test, call [assertNoAdditionalPermissions] which will check that the user
+ * doesn't have any permissions other than the ones the test specifically said they should.
  */
 internal class PermissionTest : DatabaseTest() {
   private lateinit var accessionsDao: AccessionsDao
