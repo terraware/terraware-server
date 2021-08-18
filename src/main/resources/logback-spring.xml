@@ -1,10 +1,7 @@
 <!-- Logging configuration. -->
 <configuration>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-
-  <springProfile name="default">
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-  </springProfile>
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
   <springProfile name="jsonlog">
     <appender name="JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
