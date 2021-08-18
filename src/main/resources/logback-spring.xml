@@ -1,0 +1,30 @@
+<!-- Logging configuration. -->
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+  <springProfile name="default">
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+  </springProfile>
+
+  <springProfile name="jsonlog">
+    <appender name="JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+      <file>${LOG_FILE}</file>
+      <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        <fileNamePattern>${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN:-${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz}</fileNamePattern>
+        <cleanHistoryOnStart>${LOGBACK_ROLLINGPOLICY_CLEAN_HISTORY_ON_START:-false}</cleanHistoryOnStart>
+        <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-10MB}</maxFileSize>
+        <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-0}</totalSizeCap>
+        <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-7}</maxHistory>
+      </rollingPolicy>
+    </appender>
+  </springProfile>
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+
+    <springProfile name="jsonlog">
+      <appender-ref ref="JSONFILE"/>
+    </springProfile>
+  </root>
+</configuration>
