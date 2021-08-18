@@ -18,7 +18,10 @@
   </springProfile>
 
   <root level="INFO">
-    <appender-ref ref="CONSOLE"/>
+    <!-- If we aren't logging to a JSON logfile, log to the console, but don't do both. -->
+    <springProfile name="!jsonlog">
+      <appender-ref ref="CONSOLE"/>
+    </springProfile>
 
     <springProfile name="jsonlog">
       <appender-ref ref="JSONFILE"/>
