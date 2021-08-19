@@ -6,7 +6,7 @@ It can use an existing Keycloak server or a locally-hosted one. Either way, some
 
 ## Setting Up Keycloak
 
-You probably don't need to set up Keycloak if you work at Terraformation. Please check with a fellow developer. It is likely that someone else has already configured a Keycloak instance for use with terraware-server development environments. If that's the case, skip the "Running Keycloak locally" and "Configuring Keycloak" sections. You may proceed to the "Terraware-server environment variables" section.
+You probably don't need to set up Keycloak if you work at Terraformation. Please check with a fellow developer. It is likely that someone else has already configured a Keycloak instance for use with terraware-server development environments. If that's the case, skip the "Running Keycloak locally" and "Configuring Keycloak" sections. You may proceed to the "Terraware-server configuration" section.
 
 If you don't have access to a Keycloak instance then proceed to "Running Keycloak locally".
 
@@ -112,19 +112,25 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
    8. Set "Direct Grant Flow" to "API Client Authentication."
    9. Click "Save."
 
-### Terraware-server environment variables
+### Terraware-server configuration
 
-You'll need to run Keycloak to authenticate to terraware-server, and terraware-server needs to know how to communicate with Keycloak, which requires setting four environment variables. You can also override some defaults with additional optional environment variables. If you work at Terraformation then ask a fellow developer for the values of these environment variables (likely in the Terraformation 1Password Eng Infra Vault).
+You'll need to run Keycloak to authenticate to terraware-server, and terraware-server needs to know how to communicate with Keycloak, which requires supplying four configuration settings. There are also some settings that have default values you can override if needed.
 
-| Variable | Description
-| --- | ---
-|`TERRAWARE_KEYCLOAK_SERVER_URL` | Your Keycloak server's API address. If you are running Keycloak locally, this will be `http://localhost:8081/auth`. Otherwise, it will be the URL of your Keycloak server including the path prefix for the Keycloak API, which is usually `/auth`.
-|`TERRAWARE_KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions to create a local Keycloak instance then this will be `terraware`.
-|`TERRAWARE_KEYCLOAK_CLIENT_ID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
-|`TERRAWARE_KEYCLOAK_CLIENT_SECRET` | The secret associated with the client ID.
-|`TERRAWARE_KEYCLOAK_API_CLIENT_ID` | The Keycloak client ID that terraware-server API clients will use to generate access tokens. If you followed the instructions to create a local Keycloak instance, then this will be `api`.
-|`TERRAWARE_KEYCLOAK_API_CLIENT_GROUP_NAME` | The name of the Keycloak group to add newly-created API client users to. The default is `/api-clients`. If you chose a different group name when you were setting up Keycloak, you'll need to set this. Note that because Keycloak group names are hierarchical, the value must start with `/`.
-|`TERRAWARE_KEYCLOAK_API_CLIENT_USERNAME_PREFIX` | A prefix to put at the beginning of the Keycloak usernames of API client users. The default is `api-`. This is to make the users easy to identify in the Keycloak admin console.
+There are two main ways to supply these settings: in environment variables or in a profile-specific properties file. Generally, you'll use a properties file in a local development environment, and environment variables everywhere else. If for some reason you set a value both ways, the environment variable will take precedence.
+
+If you work at Terraformation then ask a fellow developer for the values of these settings (likely in the Terraformation 1Password Eng Infra Vault).
+
+| Property | Environment Variable | Description
+| --- | --- | ---
+| `terraware.keycloak.server-url` | `TERRAWARE_KEYCLOAK_SERVER_URL` | Your Keycloak server's API address. If you are running Keycloak locally, this will be `http://localhost:8081/auth`. Otherwise, it will be the URL of your Keycloak server including the path prefix for the Keycloak API, which is usually `/auth`.
+| `terraware.keycloak.realm` | `TERRAWARE_KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions to create a local Keycloak instance then this will be `terraware`.
+| `terraware.keycloak.client-id` | `TERRAWARE_KEYCLOAK_CLIENT_ID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
+| `terraware.keycloak.client-secret` | `TERRAWARE_KEYCLOAK_CLIENT_SECRET` | The secret associated with the client ID.
+| `terraware.keycloak.api-client-id` | `TERRAWARE_KEYCLOAK_API_CLIENT_ID` | The Keycloak client ID that terraware-server API clients will use to generate access tokens. If you followed the instructions to create a local Keycloak instance, then this will be `api`.
+| `terraware.keycloak.api-client-group-name` | `TERRAWARE_KEYCLOAK_API_CLIENT_GROUP_NAME` | The name of the Keycloak group to add newly-created API client users to. The default is `/api-clients`. If you chose a different group name when you were setting up Keycloak, you'll need to set this. Note that because Keycloak group names are hierarchical, the value must start with `/`.
+| `terraware.keycloak.api-client-username-prefix` | `TERRAWARE_KEYCLOAK_API_CLIENT_USERNAME_PREFIX` | A prefix to put at the beginning of the Keycloak usernames of API client users. The default is `api-`. This is to make the users easy to identify in the Keycloak admin console.
+
+#### Using environment variables
 
 If you're launching the server from the command line (including using Gradle) you can set these in your shell.
 
@@ -133,9 +139,19 @@ If you're launching the server from an IDE such as IntelliJ IDEA, you can set th
 1. In the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window, choose "Edit Configurations..."
 2. Select "Application" under "Spring Boot" if it's not already selected.
 3. Click the little icon at the end of the "Environment Variables" text field to pop up a dialog that shows the current set of environment variables.
-4. Add all the `TERRAWARE_KEYCLOAK` environment variables listed in the "Keycloak environment variables" section above.
+4. Add all the `TERRAWARE_KEYCLOAK` environment variables listed above.
 5. Click OK on the environment variable dialog and the run configurations dialog.
 
+#### Using a profile-specific properties file for local development
+
+See the "Using a profile-specific properties file for local development" section in [README.md](README.md) to learn more about this; you can also set other values that aren't related to Keycloak. The Keycloak-related part of the properties file will be structured hierarchically, for example:
+
+```yaml
+terraware:
+  keycloak:
+    server-url: http://your-server/auth
+    realm: your-realm
+```
 
 ## Setting Up OAuth2 Proxy
 

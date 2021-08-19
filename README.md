@@ -84,7 +84,41 @@ The code should build (if you've previously built it from the command line, it w
 
 Once you've launched the application once, it will appear in the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window. You can select it there and click the Run (triangle) or Debug (beetle) button to the right of the drop-down menu. You can also launch it with keyboard shortcuts but that's beyond the scope of this quick intro.
 
-Depending on how you set the Keycloak-related environment variables in the initial setup steps above, the server might complain that it can't find some required `terraware.keycloak` properties. If that's the case revisit the 'Keycloak environment variables" section in [KEYCLOAK.md](KEYCLOAK.md).
+Depending on how you set the Keycloak-related environment variables in the initial setup steps above, the server might complain that it can't find some required `terraware.keycloak` properties. If that's the case revisit the "Terraware-server configuration" section in [KEYCLOAK.md](KEYCLOAK.md).
+
+## Using a profile-specific properties file for local development
+
+If you need to change some configuration settings in your local development environment, but you don't want to fuss with environment variables, you can put the configuration in YAML files and tell the server to read them.
+
+Create a file `src/main/resources/application-dev.yaml`. This file will not be included when the code is packaged into a jar, and will be ignored by git.
+
+See the other `application.yaml` files in [`src/main/resources`](src/main/resources) for some examples, but it'll look something like this:
+
+```yaml
+terraware:
+  daily-tasks:
+    enabled: false
+```
+
+Then tell the server to use this configuration in addition to the default one.
+
+If you're running it from the command line, set the `SPRING_PROFILES_ACTIVE` environment variable to `default,dev`.
+
+If you're running it from IntelliJ, you can set the list of profiles in the run configuration:
+
+1. In the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window, choose "Edit Configurations..."
+2. Select "Application" under "Spring Boot" in the list of configurations if it's not already selected.
+3. Scroll to the "Spring Boot" section of the main part of the dialog. Expand it if needed.
+4. Set the "Active profiles:" field to `default,dev`.
+5. Click OK.
+
+### Using multiple local profiles
+
+If you have more than one set of local configuration settings and you want to easily switch between them, you can create more than one properties file. Just make sure the profile name starts with `dev` so it'll be ignored by git and excluded from the application jarfile.
+
+For example, you could create `src/main/resources/application-dev-foo.yaml` and then add `dev-foo` to the list of active profiles.
+
+You can have as many local profiles in the list as you like. If the same config setting is specified in more than one of them, the last one wins.
 
 ## How to contribute
 
