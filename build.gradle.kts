@@ -3,8 +3,10 @@ import java.nio.file.Files
 import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
+import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Strategy
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
   kotlin("jvm")
@@ -190,8 +192,13 @@ tasks.withType<KotlinCompile> {
   kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask> {
+tasks.withType<KaptGenerateStubsTask> {
   dependsOn(tasks.generateJooqClasses)
+}
+
+tasks.getByName<BootJar>("bootJar") {
+  // Don't package local development settings in the distribution.
+  exclude("application-dev*.yaml")
 }
 
 spotless {
