@@ -8,13 +8,16 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
+import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import java.io.IOException
+import java.io.InputStream
 import java.math.BigDecimal
+import java.net.SocketTimeoutException
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
@@ -30,6 +33,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
@@ -39,7 +43,9 @@ internal class PhotoRepositoryTest : RunsAsUser {
   private val accessionStore: AccessionStore = mockk()
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
-  private val repository = PhotoRepository(config, accessionPhotosDao, accessionStore, clock)
+  private val photoContentStore = LocalFileStore(config)
+  private val repository =
+      PhotoRepository(accessionPhotosDao, accessionStore, clock, config, photoContentStore)
 
   override val user: UserModel = mockk()
 
@@ -93,7 +99,8 @@ internal class PhotoRepositoryTest : RunsAsUser {
   fun `storePhoto writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
 
-    repository.storePhoto(facilityId, accessionNumber, photoData.inputStream(), metadata)
+    repository.storePhoto(
+        facilityId, accessionNumber, photoData.inputStream(), photoData.size.toLong(), metadata)
 
     val expectedPojo =
         AccessionPhotosRow(
@@ -121,7 +128,23 @@ internal class PhotoRepositoryTest : RunsAsUser {
     every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
 
     assertThrows(DuplicateKeyException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
+    }
+
+    assertFalse(Files.exists(photoPath), "File should not exist")
+  }
+
+  @Test
+  fun `storePhoto deletes file if contents can't be read from input stream`() {
+    val badStream =
+        object : InputStream() {
+          override fun read(): Int {
+            throw SocketTimeoutException()
+          }
+        }
+
+    assertThrows<SocketTimeoutException> {
+      repository.storePhoto(facilityId, accessionNumber, badStream, 1000, metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -134,7 +157,7 @@ internal class PhotoRepositoryTest : RunsAsUser {
     every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
 
     assertThrows(AccessionNotFoundException::class.java) {
-      repository.storePhoto(facilityId, "nonexistent", ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, "nonexistent", ByteArray(0).inputStream(), 0, metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -145,7 +168,7 @@ internal class PhotoRepositoryTest : RunsAsUser {
     every { user.canUpdateAccession(accessionId, facilityId) } returns false
 
     assertThrows(AccessDeniedException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
     }
   }
 
@@ -156,7 +179,7 @@ internal class PhotoRepositoryTest : RunsAsUser {
     Files.createFile(photoPath.parent)
 
     assertThrows(IOException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
     }
   }
 
@@ -169,7 +192,7 @@ internal class PhotoRepositoryTest : RunsAsUser {
         RuntimeException("Should not be called")
 
     assertThrows(FileAlreadyExistsException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), metadata)
+      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
     }
 
     verify(exactly = 0) { accessionPhotosDao.insert(any<AccessionPhotosRow>()) }

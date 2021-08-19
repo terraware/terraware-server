@@ -6,36 +6,40 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
+import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.FileAlreadyExistsException
-import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Clock
 import javax.annotation.ManagedBean
+import kotlin.io.path.Path
 import org.springframework.security.access.AccessDeniedException
 
 /**
  * Manages storage of photos including metadata. In this implementation, image files are stored on
  * the filesystem and metadata in the database.
  *
- * Each accession's photos are in a subdirectory whose name is the accession number (not the numeric
- * accession ID). The configuration settings [TerrawareServerConfig.photoDir] and
- * [TerrawareServerConfig.photoIntermediateDepth] control where that subdirectory lives.
+ * Each accession's photos are in a subdirectory whose path includes the facility ID and the
+ * accession number (not the numeric accession ID). The configuration setting
+ * [TerrawareServerConfig.photoIntermediateDepth] controls the depth of that subdirectory path.
  */
 @ManagedBean
 class PhotoRepository(
-    private val config: TerrawareServerConfig,
     private val accessionPhotosDao: AccessionPhotosDao,
     private val accessionStore: AccessionStore,
     private val clock: Clock,
+    private val config: TerrawareServerConfig,
+    private val fileStore: FileStore,
 ) {
   @Throws(IOException::class)
   fun storePhoto(
       facilityId: FacilityId,
       accessionNumber: String,
       data: InputStream,
+      size: Long,
       metadata: PhotoMetadata
   ) {
     val accessionId =
@@ -47,10 +51,9 @@ class PhotoRepository(
     }
 
     val photoPath = getPhotoPath(facilityId, accessionNumber, metadata.filename)
-    makePhotoDir(facilityId, accessionNumber)
 
     try {
-      val size = Files.copy(data, photoPath)
+      fileStore.write(photoPath, data, size)
 
       val databaseRow =
           AccessionPhotosRow(
@@ -70,7 +73,11 @@ class PhotoRepository(
       // Don't delete the existing file
       throw e
     } catch (e: Exception) {
-      Files.deleteIfExists(photoPath)
+      try {
+        fileStore.delete(photoPath)
+      } catch (ignore: NoSuchFileException) {
+        // Swallow this; file is already deleted
+      }
       throw e
     }
   }
@@ -86,7 +93,7 @@ class PhotoRepository(
     }
 
     val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
-    return Files.newInputStream(photoPath)
+    return fileStore.read(photoPath)
   }
 
   /** Returns the photo's size in bytes. */
@@ -101,16 +108,10 @@ class PhotoRepository(
     }
 
     val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
-    return Files.size(photoPath)
+    return fileStore.size(photoPath)
   }
 
-  @Throws(IOException::class)
-  private fun makePhotoDir(facilityId: FacilityId, accessionNumber: String) {
-    val path = getAccessionPath(facilityId, accessionNumber)
-
-    Files.createDirectories(path)
-  }
-
+  /** Returns the relative path of a photo. */
   private fun getPhotoPath(
       facilityId: FacilityId,
       accessionNumber: String,
@@ -119,12 +120,13 @@ class PhotoRepository(
     return getAccessionPath(facilityId, accessionNumber).resolve(filename)
   }
 
+  /** Returns the relative path of the directory that contains an accession's photos. */
   private fun getAccessionPath(facilityId: FacilityId, accessionNumber: String): Path {
     if (accessionNumber.length < config.photoIntermediateDepth) {
       throw IllegalArgumentException("$accessionNumber is too short to be an accession number")
     }
 
-    var path = config.photoDir.resolve(facilityId.toString())
+    var path = Path("$facilityId")
     for (i in 0 until config.photoIntermediateDepth) {
       val element = if (i < accessionNumber.length) accessionNumber[i] else '_'
       path = path.resolve("$element")
