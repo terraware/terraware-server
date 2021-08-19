@@ -49,14 +49,12 @@ class FeatureController(private val featureStore: FeatureStore) {
     return GetFeatureResponsePayload(FeatureResponse(model))
   }
 
-  @ApiResponse(
-      responseCode = "200",
-      description = "The feature was updated successfully. Response includes a unique feature id.")
+  @ApiResponse(responseCode = "200", description = "The feature was updated successfully.")
   @ApiResponse404(description = "The specified feature doesn't exist.")
   @Operation(
       summary =
-          "Update an existing feature. Overwrites all fields, so they must all be defined. " +
-              "Does not allow a feature to be moved between layers (layerId cannot be updated)")
+          "Update an existing feature. Overwrites all fields. Does not allow a feature " +
+              "to be moved between layers (layerId cannot be updated)")
   @PutMapping("/{featureId}")
   fun update(
       @RequestBody payload: UpdateFeatureRequestPayload,
@@ -73,6 +71,11 @@ class FeatureController(private val featureStore: FeatureStore) {
 
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified feature doesn't exist.")
+  @Operation(
+      summary =
+          "Deletes an existing feature and all records that directly or indirectly reference that" +
+              "feature. This includes but is not limited to plants, plant observations, photos, " +
+              "and thumbnails.")
   @DeleteMapping("/{featureId}")
   fun delete(@PathVariable featureId: Long): DeleteFeatureResponsePayload {
     try {

@@ -3,9 +3,11 @@ package com.terraformation.backend.gis.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
-import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.tables.daos.PhotosDao
+import com.terraformation.backend.db.tables.daos.ThumbnailDao
 import com.terraformation.backend.db.tables.references.FEATURES
-import com.terraformation.backend.db.tables.references.LAYERS
+import com.terraformation.backend.db.tables.references.PLANTS
+import com.terraformation.backend.db.tables.references.PLANT_OBSERVATIONS
 import com.terraformation.backend.gis.model.FeatureModel
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -16,24 +18,17 @@ import org.springframework.security.access.AccessDeniedException
 class FeatureStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
+    private val photosDao: PhotosDao,
+    private val thumbnailDao: ThumbnailDao,
 ) {
   fun createFeature(model: FeatureModel): FeatureModel {
-    val siteId =
-        dslContext
-            .select(LAYERS.SITE_ID)
-            .from(LAYERS)
-            .where(LAYERS.ID.eq(model.layerId))
-            .fetchOne()
-            ?.get(LAYERS.SITE_ID)
-
-    if (siteId == null || !currentUser().canCreateLayerData(siteId)) {
+    if (!currentUser().canCreateLayerData(model.layerId)) {
       throw AccessDeniedException("No permission to create feature within layer ${model.layerId}")
     }
 
     val currTime = clock.instant()
-    val featureId: FeatureId?
-    with(FEATURES) {
-      featureId =
+    val featureId =
+        with(FEATURES) {
           dslContext
               .insertInto(FEATURES)
               .set(LAYER_ID, model.layerId)
@@ -49,11 +44,11 @@ class FeatureStore(
               .returning(ID)
               .fetchOne()
               ?.get(ID)
-    }
+        }
     return model.copy(id = featureId, createdTime = currTime, modifiedTime = currTime)
   }
 
-  private fun noPermissionsCheckFetch(id: FeatureId): Pair<FeatureModel?, SiteId?> {
+  private fun noPermissionsCheckFetch(id: FeatureId): FeatureModel? {
     val record =
         dslContext
             .select(
@@ -67,49 +62,39 @@ class FeatureStore(
                 FEATURES.NOTES,
                 FEATURES.ENTERED_TIME,
                 FEATURES.CREATED_TIME,
-                FEATURES.MODIFIED_TIME,
-                LAYERS.SITE_ID)
+                FEATURES.MODIFIED_TIME)
             .from(FEATURES)
-            .join(LAYERS)
-            .on(FEATURES.LAYER_ID.eq(LAYERS.ID))
             .where(FEATURES.ID.eq(id))
             .fetchOne()
-            ?: return Pair(null, null)
+            ?: return null
 
-    val model =
-        FeatureModel(
-            id = record[FEATURES.ID],
-            layerId = record[FEATURES.LAYER_ID]!!,
-            shapeType = record[FEATURES.SHAPE_TYPE_ID]!!,
-            altitude = record[FEATURES.ALTITUDE],
-            gpsHorizAccuracy = record[FEATURES.GPS_HORIZ_ACCURACY],
-            gpsVertAccuracy = record[FEATURES.GPS_VERT_ACCURACY],
-            attrib = record[FEATURES.ATTRIB],
-            notes = record[FEATURES.NOTES],
-            enteredTime = record[FEATURES.ENTERED_TIME],
-            createdTime = record[FEATURES.CREATED_TIME],
-            modifiedTime = record[FEATURES.MODIFIED_TIME])
-
-    return Pair(model, record[LAYERS.SITE_ID])
+    return FeatureModel(
+        id = record[FEATURES.ID],
+        layerId = record[FEATURES.LAYER_ID]!!,
+        shapeType = record[FEATURES.SHAPE_TYPE_ID]!!,
+        altitude = record[FEATURES.ALTITUDE],
+        gpsHorizAccuracy = record[FEATURES.GPS_HORIZ_ACCURACY],
+        gpsVertAccuracy = record[FEATURES.GPS_VERT_ACCURACY],
+        attrib = record[FEATURES.ATTRIB],
+        notes = record[FEATURES.NOTES],
+        enteredTime = record[FEATURES.ENTERED_TIME],
+        createdTime = record[FEATURES.CREATED_TIME],
+        modifiedTime = record[FEATURES.MODIFIED_TIME])
   }
 
   fun fetchFeature(id: FeatureId): FeatureModel? {
-    val (model, siteId) = noPermissionsCheckFetch(id)
-
-    if (siteId == null || !currentUser().canReadLayerData(siteId)) {
+    if (!currentUser().canReadLayerData(id)) {
       return null
     }
-
-    return model
+    return noPermissionsCheckFetch(id)
   }
 
   fun updateFeature(newModel: FeatureModel): FeatureModel {
-    val (oldModel, siteId) = noPermissionsCheckFetch(newModel.id!!)
+    val oldModel = noPermissionsCheckFetch(newModel.id!!)
 
-    if (siteId == null ||
-        oldModel == null ||
-        !currentUser().canUpdateLayerData(siteId) ||
-        newModel.layerId != oldModel.layerId) {
+    if (oldModel == null ||
+        newModel.layerId != oldModel.layerId ||
+        !currentUser().canUpdateLayerData(newModel.layerId)) {
       // Caller cannot change the layerId. They must delete this Feature and recreate a new one
       // if they want to "move" the feature into a new layer.
       throw FeatureNotFoundException(newModel.id)
@@ -140,12 +125,19 @@ class FeatureStore(
   }
 
   fun deleteFeature(id: FeatureId): FeatureId {
-    val (model, siteId) = noPermissionsCheckFetch(id)
-
-    if (siteId == null || model == null || !currentUser().canDeleteLayerData(siteId)) {
+    if (!currentUser().canDeleteLayerData(id)) {
       throw FeatureNotFoundException(id)
     }
 
+    val photos = photosDao.fetchByFeatureId(id)
+    photos.forEach { photo ->
+      val thumbnails = thumbnailDao.fetchByPhotoId(photo.id!!)
+      thumbnailDao.delete(thumbnails)
+    }
+    photosDao.delete(photos)
+
+    dslContext.delete(PLANT_OBSERVATIONS).where(PLANT_OBSERVATIONS.FEATURE_ID.eq(id)).execute()
+    dslContext.delete(PLANTS).where(PLANTS.FEATURE_ID.eq(id)).execute()
     dslContext.delete(FEATURES).where(FEATURES.ID.eq(id)).execute()
 
     return id

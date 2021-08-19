@@ -3,6 +3,7 @@ package com.terraformation.backend.db
 import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
@@ -127,26 +128,58 @@ abstract class DatabaseTest {
   }
 
   protected fun insertLayer(
-      id: LayerId,
-      siteId: SiteId,
-      layerType: LayerType,
-      tileSetName: String,
+      id: Long,
+      siteId: Long = id / 10,
+      layerType: LayerType = LayerType.PlantsPlanted,
+      tileSetName: String = "Tile set test name",
       proposed: Boolean = false,
       hidden: Boolean = false,
       deleted: Boolean = false,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH
   ) {
+
     with(LAYERS) {
       dslContext
           .insertInto(LAYERS)
-          .set(ID, id)
-          .set(SITE_ID, siteId)
+          .set(ID, LayerId(id))
+          .set(SITE_ID, SiteId(siteId))
           .set(LAYER_TYPE_ID, layerType)
           .set(TILE_SET_NAME, tileSetName)
           .set(PROPOSED, proposed)
           .set(HIDDEN, hidden)
           .set(DELETED, deleted)
+          .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_TIME, modifiedTime)
+          .execute()
+    }
+  }
+
+  protected fun insertFeature(
+      id: Long,
+      layerId: Long = id / 10,
+      shapeType: ShapeType = ShapeType.Point,
+      altitude: Double? = null,
+      gpsHorizAccuracy: Double? = null,
+      gpsVertAccuracy: Double? = null,
+      attrib: String? = null,
+      notes: String? = null,
+      enteredTime: Instant = Instant.EPOCH,
+      createdTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = Instant.EPOCH,
+  ) {
+    with(FEATURES) {
+      dslContext
+          .insertInto(FEATURES)
+          .set(ID, FeatureId(id))
+          .set(LAYER_ID, LayerId(layerId))
+          .set(SHAPE_TYPE_ID, shapeType)
+          .set(ALTITUDE, altitude)
+          .set(GPS_HORIZ_ACCURACY, gpsHorizAccuracy)
+          .set(GPS_VERT_ACCURACY, gpsVertAccuracy)
+          .set(ATTRIB, attrib)
+          .set(NOTES, notes)
+          .set(ENTERED_TIME, enteredTime)
           .set(CREATED_TIME, createdTime)
           .set(MODIFIED_TIME, modifiedTime)
           .execute()

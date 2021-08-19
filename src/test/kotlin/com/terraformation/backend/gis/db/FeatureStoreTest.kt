@@ -9,6 +9,14 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.tables.daos.PhotosDao
+import com.terraformation.backend.db.tables.daos.PlantObservationsDao
+import com.terraformation.backend.db.tables.daos.PlantsDao
+import com.terraformation.backend.db.tables.daos.ThumbnailDao
+import com.terraformation.backend.db.tables.pojos.PhotosRow
+import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
+import com.terraformation.backend.db.tables.pojos.PlantsRow
+import com.terraformation.backend.db.tables.pojos.ThumbnailRow
 import com.terraformation.backend.gis.model.FeatureModel
 import io.mockk.every
 import io.mockk.mockk
@@ -25,26 +33,36 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockk<UserModel>()
-  private val nonExistentFeatureId = FeatureId(444)
-  private val layerId = LayerId(333)
-  private val nonExistentLayerId = LayerId(555)
+  private val nonExistentFeatureId = FeatureId(400)
+  private val layerId = LayerId(100)
+  private val nonExistentLayerId = LayerId(401)
   private val siteId = SiteId(10)
   private val validCreateRequest =
       FeatureModel(
           layerId = layerId,
           shapeType = ShapeType.Point,
-          altitude = 120000.toDouble(),
-          notes = "Great dirt up here")
+          altitude = 120000.0,
+          notes = "Great view up here")
 
   private val clock = mockk<Clock>()
   private val time1 = Instant.EPOCH
   private val time2 = time1.plusSeconds(1)
 
   private lateinit var store: FeatureStore
+  private lateinit var plantsDao: PlantsDao
+  private lateinit var plantObservationsDao: PlantObservationsDao
+  private lateinit var photosDao: PhotosDao
+  private lateinit var thumbnailDao: ThumbnailDao
 
   @BeforeEach
   fun init() {
-    store = FeatureStore(clock, dslContext)
+    val jooqConfig = dslContext.configuration()
+    plantsDao = PlantsDao(jooqConfig)
+    plantObservationsDao = PlantObservationsDao(jooqConfig)
+    photosDao = PhotosDao(jooqConfig)
+    thumbnailDao = ThumbnailDao(jooqConfig)
+
+    store = FeatureStore(clock, dslContext, photosDao, thumbnailDao)
     every { clock.instant() } returns time1
     every { user.canCreateLayerData(any()) } returns true
     every { user.canReadLayerData(any()) } returns true
@@ -52,7 +70,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteLayerData(any()) } returns true
 
     insertSiteData()
-    insertLayer(layerId, siteId, LayerType.Infrastructure, "test")
+    insertLayer(layerId.value, siteId.value, LayerType.Infrastructure)
   }
 
   @Test
@@ -87,7 +105,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `read returns null if user doesn't read permission, even if they have create permission`() {
+  fun `read returns null if user doesn't have read permission, even if they have create permission`() {
     val newFeature = store.createFeature(validCreateRequest)
     every { user.canReadLayerData(any()) } returns false
     assertNull(store.fetchFeature(newFeature.id!!))
@@ -103,11 +121,10 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   fun `update returns FeatureModel with updated modified time`() {
     val feature = store.createFeature(validCreateRequest)
     every { clock.instant() } returns time2
-    val updatedFeature = store.updateFeature(feature.copy(altitude = 789.toDouble()))
+    val updatedFeature = store.updateFeature(feature.copy(altitude = 789.0))
     assertEquals(time2, updatedFeature.modifiedTime)
     assertEquals(
-        feature.copy(altitude = 789.toDouble(), modifiedTime = updatedFeature.modifiedTime),
-        updatedFeature)
+        feature.copy(altitude = 789.0, modifiedTime = updatedFeature.modifiedTime), updatedFeature)
   }
 
   @Test
@@ -121,9 +138,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   fun `update fails with FeatureNotFoundException if user doesn't have update access`() {
     val feature = store.createFeature(validCreateRequest)
     every { user.canUpdateLayerData(any()) } returns false
-    assertThrows<FeatureNotFoundException> {
-      store.updateFeature(feature.copy(altitude = 789.toDouble()))
-    }
+    assertThrows<FeatureNotFoundException> { store.updateFeature(feature.copy(altitude = 789.0)) }
   }
 
   @Test
@@ -151,11 +166,38 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `delete removes the record and returns the delete FeatureId`() {
+  fun `delete removes the record and all associated feature data, returns the deleted FeatureId`() {
     val feature = store.createFeature(validCreateRequest)
+    plantsDao.insert(PlantsRow(featureId = feature.id, createdTime = time1, modifiedTime = time1))
+    plantObservationsDao.insert(
+        PlantObservationsRow(
+            id = 20,
+            featureId = feature.id,
+            timestamp = time1,
+            createdTime = time1,
+            modifiedTime = time1))
+    photosDao.insert(
+        PhotosRow(
+            id = 30,
+            featureId = feature.id,
+            plantObservationId = 20,
+            capturedTime = time1,
+            fileName = "myphoto",
+            contentType = "jpeg",
+            size = 1000,
+            createdTime = time1,
+            modifiedTime = time1))
+    thumbnailDao.insert(
+        ThumbnailRow(id = 40, photoId = 30, fileName = "myphoto", width = 20, height = 20))
+
     val deletedId = store.deleteFeature(feature.id!!)
+
     assertEquals(feature.id, deletedId)
     assertNull(store.fetchFeature(deletedId))
+    assert(plantsDao.fetchByFeatureId(deletedId).isEmpty())
+    assert(plantObservationsDao.fetchByFeatureId(deletedId).isEmpty())
+    assert(photosDao.fetchByFeatureId(deletedId).isEmpty())
+    assert(thumbnailDao.fetchById(40).isEmpty())
   }
 
   @Test

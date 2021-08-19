@@ -7,14 +7,14 @@ class AccessionNotFoundException(val accessionNumber: String) :
 
 class DeviceNotFoundException(override val message: String) : Exception(message)
 
+class FeatureNotFoundException(val featureId: FeatureId) :
+    Exception("Feature $featureId not found")
+
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(
     override val message: String,
     override val cause: Throwable? = null
 ) : IOException(message, cause)
-
-class FeatureNotFoundException(val featureId: FeatureId) :
-    Exception("Feature $featureId not found")
 
 /** Keycloak couldn't find a user that we expected to be able to find. */
 class KeycloakUserNotFoundException(message: String) : Exception(message)
