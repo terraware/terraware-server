@@ -5,12 +5,16 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FeatureId
+import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.FeaturesDao
+import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.log.perClassLogger
 import java.security.Principal
 import org.springframework.security.core.GrantedAuthority
@@ -47,6 +51,8 @@ class UserModel(
     val lastName: String?,
     val userType: UserType,
     private val accessionsDao: AccessionsDao,
+    private val featuresDao: FeaturesDao,
+    private val layersDao: LayersDao,
     private val permissionStore: PermissionStore,
 ) : UserDetails, Principal {
   /** The user's role in each organization they belong to. */
@@ -127,7 +133,7 @@ class UserModel(
   }
 
   private fun canAccessLayer(siteId: SiteId): Boolean {
-    // Any user who has access to a site can access all its field data
+    // Any user who has access to a site can access all its layers
     return siteId in siteRoles
   }
 
@@ -145,6 +151,33 @@ class UserModel(
 
   fun canDeleteLayer(siteId: SiteId): Boolean {
     return canAccessLayer(siteId)
+  }
+
+  // "Layer data" refers to all tables that directly or indirectly references layers.
+  // You can also think of it as all data that belongs "inside" a layer.
+  private fun canAccessLayerData(layerId: LayerId): Boolean {
+    val siteId = layersDao.fetchOneById(layerId)?.siteId ?: return false
+    // Currently, all gis data is lumped into one permission. In the future, permission
+    // to create/update layers may be separated from general access to layer data.
+    return canAccessLayer(siteId)
+  }
+
+  fun canCreateLayerData(layerId: LayerId): Boolean {
+    return canAccessLayerData(layerId)
+  }
+
+  fun canReadLayerData(featureId: FeatureId): Boolean {
+    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
+    return canAccessLayerData(layerId)
+  }
+
+  fun canUpdateLayerData(layerId: LayerId): Boolean {
+    return canAccessLayerData(layerId)
+  }
+
+  fun canDeleteLayerData(featureId: FeatureId): Boolean {
+    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
+    return canAccessLayerData(layerId)
   }
 
   fun canCreateSite(projectId: ProjectId): Boolean {

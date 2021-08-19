@@ -12,6 +12,8 @@ import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.FeaturesDao
+import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
@@ -53,6 +55,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   override val user: UserModel = mockk()
 
   private lateinit var accessionsDao: AccessionsDao
+  private lateinit var featuresDao: FeaturesDao
+  private lateinit var layersDao: LayersDao
   private lateinit var organizationsDao: OrganizationsDao
   private lateinit var organizationStore: OrganizationStore
   private lateinit var permissionStore: PermissionStore
@@ -99,6 +103,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     val configuration = dslContext.configuration()
     accessionsDao = AccessionsDao(configuration)
+    featuresDao = FeaturesDao(configuration)
+    layersDao = LayersDao(configuration)
     organizationsDao = OrganizationsDao(configuration)
     usersDao = UsersDao(configuration)
 
@@ -110,7 +116,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             accessionsDao,
             Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             config,
+            featuresDao,
             httpClient,
+            layersDao,
             ObjectMapper().registerModule(KotlinModule()),
             organizationStore,
             permissionStore,

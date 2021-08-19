@@ -48,9 +48,7 @@ class LayerController(private val layerStore: LayerStore) {
     return GetLayerResponsePayload(LayerResponse(layerModel))
   }
 
-  @ApiResponse(
-      responseCode = "200",
-      description = "The layer was updated successfully. Response includes a unique layer id.")
+  @ApiResponse(responseCode = "200", description = "The layer was updated successfully.")
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @Operation(
       summary =

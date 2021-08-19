@@ -79,7 +79,6 @@ class LayerStore(
   }
 
   fun updateLayer(layerModel: LayerModel): LayerModel {
-
     val currentRow =
         dslContext
             .select(
