@@ -53,7 +53,7 @@ interface FileStore {
    * successfully, this stream will have been completely consumed. The caller is responsible for
    * closing this.
    * @param size Size of the file contents in bytes. If this value doesn't match the number of bytes
-   * in the
+   * in the stream, the results are implementation-dependent.
    * @throws FileAlreadyExistsException The file already existed.
    * @throws IOException An error occurred while writing the file or while reading [contents].
    * Implementations should attempt to delete files that weren't written successfully, though
