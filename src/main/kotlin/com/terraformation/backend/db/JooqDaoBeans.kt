@@ -13,7 +13,6 @@ import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
-import com.terraformation.backend.db.tables.daos.ThumbnailDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import org.jooq.DSLContext
@@ -45,7 +44,6 @@ class JooqDaoBeans(dslContext: DSLContext) {
   @Bean fun speciesDao() = SpeciesDao(configuration)
   @Bean fun storageLocationDao() = StorageLocationsDao(configuration)
   @Bean fun taskProcessedTimeDao() = TaskProcessedTimesDao(configuration)
-  @Bean fun thumbnailDao() = ThumbnailDao(configuration)
   @Bean fun timeseriesDao() = TimeseriesDao(configuration)
   @Bean fun usersDao() = UsersDao(configuration)
 }
