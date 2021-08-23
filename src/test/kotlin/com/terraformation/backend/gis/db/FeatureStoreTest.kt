@@ -76,7 +76,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create returns FeatureModel with populated id, geom, createdTime and modifiedTime`() {
+  fun `create returns FeatureModel with populated id, createdTime and modifiedTime`() {
     val featureModel = store.createFeature(validCreateRequest)
     assertNotNull(featureModel.id)
     assertEquals(time1, featureModel.createdTime)
