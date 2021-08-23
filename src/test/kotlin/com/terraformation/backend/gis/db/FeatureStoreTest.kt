@@ -22,6 +22,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import net.postgis.jdbc.geometry.Point
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -42,6 +43,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
           layerId = layerId,
           shapeType = ShapeType.Point,
           altitude = 120000.0,
+          geom = Point(1.0, 2.0, 3.0),
           notes = "Great view up here")
 
   private val clock = mockk<Clock>()
@@ -74,7 +76,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create returns FeatureModel with populated id, createdTime and modifiedTime`() {
+  fun `create returns FeatureModel with populated id, geom, createdTime and modifiedTime`() {
     val featureModel = store.createFeature(validCreateRequest)
     assertNotNull(featureModel.id)
     assertEquals(time1, featureModel.createdTime)
@@ -120,11 +122,13 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update returns FeatureModel with updated modified time`() {
     val feature = store.createFeature(validCreateRequest)
+    val newGeom = Point(101.2345, -500.1)
     every { clock.instant() } returns time2
-    val updatedFeature = store.updateFeature(feature.copy(altitude = 789.0))
+    val updatedFeature = store.updateFeature(feature.copy(altitude = 789.0, geom = newGeom))
     assertEquals(time2, updatedFeature.modifiedTime)
     assertEquals(
-        feature.copy(altitude = 789.0, modifiedTime = updatedFeature.modifiedTime), updatedFeature)
+        feature.copy(altitude = 789.0, geom = newGeom, modifiedTime = updatedFeature.modifiedTime),
+        updatedFeature)
   }
 
   @Test

@@ -115,7 +115,11 @@ class TerrawareGenerator : KotlinGenerator() {
         mutableListOf(
             ForcedType()
                 .withName("INSTANT")
-                .withIncludeTypes("(?i:TIMESTAMP\\ WITH\\ TIME\\ ZONE)"))
+                .withIncludeTypes("(?i:TIMESTAMP\\ WITH\\ TIME\\ ZONE)"),
+            ForcedType()
+                .withBinding("com.terraformation.backend.db.GeometryBinding")
+                .withIncludeTypes("GEOMETRY")
+                .withUserType("net.postgis.jdbc.geometry.Geometry"))
 
     ENUM_TABLES.forEach { types.add(it.forcedType(targetPackage)) }
     ID_WRAPPERS.forEach { types.add(it.forcedType(targetPackage)) }

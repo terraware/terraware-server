@@ -34,6 +34,7 @@ class FeatureStore(
               .set(LAYER_ID, model.layerId)
               .set(SHAPE_TYPE_ID, model.shapeType)
               .set(ALTITUDE, model.altitude)
+              .set(GEOM, model.geom)
               .set(GPS_HORIZ_ACCURACY, model.gpsHorizAccuracy)
               .set(GPS_VERT_ACCURACY, model.gpsVertAccuracy)
               .set(ATTRIB, model.attrib)
@@ -56,6 +57,7 @@ class FeatureStore(
                 FEATURES.LAYER_ID,
                 FEATURES.SHAPE_TYPE_ID,
                 FEATURES.ALTITUDE,
+                FEATURES.GEOM,
                 FEATURES.GPS_HORIZ_ACCURACY,
                 FEATURES.GPS_VERT_ACCURACY,
                 FEATURES.ATTRIB,
@@ -73,6 +75,7 @@ class FeatureStore(
         layerId = record[FEATURES.LAYER_ID]!!,
         shapeType = record[FEATURES.SHAPE_TYPE_ID]!!,
         altitude = record[FEATURES.ALTITUDE],
+        geom = record[FEATURES.GEOM],
         gpsHorizAccuracy = record[FEATURES.GPS_HORIZ_ACCURACY],
         gpsVertAccuracy = record[FEATURES.GPS_VERT_ACCURACY],
         attrib = record[FEATURES.ATTRIB],
@@ -111,6 +114,7 @@ class FeatureStore(
           .update(FEATURES)
           .set(SHAPE_TYPE_ID, newModel.shapeType)
           .set(ALTITUDE, newModel.altitude)
+          .set(GEOM, newModel.geom)
           .set(GPS_HORIZ_ACCURACY, newModel.gpsHorizAccuracy)
           .set(GPS_VERT_ACCURACY, newModel.gpsVertAccuracy)
           .set(ATTRIB, newModel.attrib)
