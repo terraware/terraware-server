@@ -7,8 +7,10 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
+import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.ThumbnailId
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
@@ -35,8 +37,10 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockk<UserModel>()
   private val nonExistentFeatureId = FeatureId(400)
   private val layerId = LayerId(100)
+  private val photoId = PhotoId(30)
   private val nonExistentLayerId = LayerId(401)
   private val siteId = SiteId(10)
+  private val thumbnailId = ThumbnailId(40)
   private val validCreateRequest =
       FeatureModel(
           layerId = layerId,
@@ -178,7 +182,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             modifiedTime = time1))
     photosDao.insert(
         PhotosRow(
-            id = 30,
+            id = photoId,
             featureId = feature.id,
             plantObservationId = 20,
             capturedTime = time1,
@@ -188,7 +192,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             createdTime = time1,
             modifiedTime = time1))
     thumbnailDao.insert(
-        ThumbnailRow(id = 40, photoId = 30, fileName = "myphoto", width = 20, height = 20))
+        ThumbnailRow(
+            id = thumbnailId, photoId = photoId, fileName = "myphoto", width = 20, height = 20))
 
     val deletedId = store.deleteFeature(feature.id!!)
 
@@ -197,7 +202,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     assert(plantsDao.fetchByFeatureId(deletedId).isEmpty())
     assert(plantObservationsDao.fetchByFeatureId(deletedId).isEmpty())
     assert(photosDao.fetchByFeatureId(deletedId).isEmpty())
-    assert(thumbnailDao.fetchById(40).isEmpty())
+    assert(thumbnailDao.fetchById(thumbnailId).isEmpty())
   }
 
   @Test
