@@ -87,6 +87,7 @@ class PhotoController(
           facilityId,
           accessionNumber,
           file.inputStream,
+          file.size,
           PhotoMetadata(
               photoFilename,
               contentType,
