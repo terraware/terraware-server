@@ -125,10 +125,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val newGeom = Point(101.2345, -500.1)
     every { clock.instant() } returns time2
     val updatedFeature = store.updateFeature(feature.copy(altitude = 789.0, geom = newGeom))
-    assertEquals(time2, updatedFeature.modifiedTime)
     assertEquals(
-        feature.copy(altitude = 789.0, geom = newGeom, modifiedTime = updatedFeature.modifiedTime),
-        updatedFeature)
+        feature.copy(altitude = 789.0, geom = newGeom, modifiedTime = time2), updatedFeature)
   }
 
   @Test
