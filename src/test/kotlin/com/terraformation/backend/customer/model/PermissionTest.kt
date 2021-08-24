@@ -201,11 +201,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteLayer = true)
 
     permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
-        LayerId(1100),
-        createLayerData = true,
-        updateLayerData = true)
+        LayerId(1000), LayerId(1001), LayerId(1100), createLayerData = true, updateLayerData = true)
 
     permissions.expect(
         FeatureId(10010),
@@ -292,11 +288,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteLayer = true)
 
     permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
-        LayerId(1100),
-        createLayerData = true,
-        updateLayerData = true)
+        LayerId(1000), LayerId(1001), LayerId(1100), createLayerData = true, updateLayerData = true)
 
     permissions.expect(
         FeatureId(10010),
@@ -352,11 +344,7 @@ internal class PermissionTest : DatabaseTest() {
         updateLayer = true,
         deleteLayer = true)
 
-    permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
-        createLayerData = true,
-        updateLayerData = true)
+    permissions.expect(LayerId(1000), LayerId(1001), createLayerData = true, updateLayerData = true)
 
     permissions.expect(
         FeatureId(10010),
@@ -401,11 +389,7 @@ internal class PermissionTest : DatabaseTest() {
         updateLayer = true,
         deleteLayer = true)
 
-    permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
-        createLayerData = true,
-        updateLayerData = true)
+    permissions.expect(LayerId(1000), LayerId(1001), createLayerData = true, updateLayerData = true)
 
     permissions.expect(
         FeatureId(10010),
