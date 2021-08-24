@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
+import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
@@ -40,6 +41,7 @@ class JooqDaoBeans(dslContext: DSLContext) {
   @Bean fun layersDao() = LayersDao(configuration)
   @Bean fun organizationDao() = OrganizationsDao(configuration)
   @Bean fun photosDao() = PhotosDao(configuration)
+  @Bean fun plantsDao() = PlantsDao(configuration)
   @Bean fun projectsDao() = ProjectsDao(configuration)
   @Bean fun siteDao() = SitesDao(configuration)
   @Bean fun speciesDao() = SpeciesDao(configuration)

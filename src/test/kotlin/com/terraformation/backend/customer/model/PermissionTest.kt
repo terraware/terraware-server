@@ -213,7 +213,9 @@ internal class PermissionTest : DatabaseTest() {
         FeatureId(10010),
         FeatureId(11000),
         FeatureId(11001),
+        createLayerData = true,
         readLayerData = true,
+        updateLayerData = true,
         deleteLayerData = true)
 
     permissions.expect(
@@ -303,7 +305,9 @@ internal class PermissionTest : DatabaseTest() {
         FeatureId(10010),
         FeatureId(11000),
         FeatureId(11001),
+        createLayerData = true,
         readLayerData = true,
+        updateLayerData = true,
         deleteLayerData = true)
 
     permissions.expect(
@@ -358,7 +362,12 @@ internal class PermissionTest : DatabaseTest() {
         updateLayerData = true,
     )
 
-    permissions.expect(FeatureId(10010), readLayerData = true, deleteLayerData = true)
+    permissions.expect(
+        FeatureId(10010),
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true)
 
     permissions.expect(
         FacilityId(1000),
@@ -403,7 +412,12 @@ internal class PermissionTest : DatabaseTest() {
         updateLayerData = true,
     )
 
-    permissions.expect(FeatureId(10010), readLayerData = true, deleteLayerData = true)
+    permissions.expect(
+        FeatureId(10010),
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true)
 
     permissions.expect(
         FacilityId(1000),
@@ -608,14 +622,24 @@ internal class PermissionTest : DatabaseTest() {
     // All checks keyed on feature IDs go here
     fun expect(
         vararg features: FeatureId,
+        createLayerData: Boolean = false,
         readLayerData: Boolean = false,
+        updateLayerData: Boolean = false,
         deleteLayerData: Boolean = false,
     ) {
       features.forEach { featureId ->
         assertEquals(
+            createLayerData,
+            user.canCreateLayerData(featureId),
+            "Can create layer data associated with feature $featureId")
+        assertEquals(
             readLayerData,
             user.canReadLayerData(featureId),
             "Can read layer data associated with feature $featureId")
+        assertEquals(
+            updateLayerData,
+            user.canUpdateLayerData(featureId),
+            "Can update layer data associated with feature $featureId")
         assertEquals(
             deleteLayerData,
             user.canDeleteLayerData(featureId),

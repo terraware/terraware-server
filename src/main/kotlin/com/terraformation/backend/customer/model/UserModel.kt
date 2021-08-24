@@ -166,13 +166,27 @@ class UserModel(
     return canAccessLayerData(layerId)
   }
 
+  fun canCreateLayerData(featureId: FeatureId): Boolean {
+    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
+    return canCreateLayerData(layerId)
+  }
+
+  fun canReadLayerData(layerId: LayerId): Boolean {
+    return canAccessLayerData(layerId)
+  }
+
   fun canReadLayerData(featureId: FeatureId): Boolean {
     val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canAccessLayerData(layerId)
+    return canReadLayerData(layerId)
   }
 
   fun canUpdateLayerData(layerId: LayerId): Boolean {
     return canAccessLayerData(layerId)
+  }
+
+  fun canUpdateLayerData(featureId: FeatureId): Boolean {
+    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
+    return canUpdateLayerData(layerId)
   }
 
   fun canDeleteLayerData(featureId: FeatureId): Boolean {

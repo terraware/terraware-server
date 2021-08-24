@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping("/api/v1/gis/layer")
+@RequestMapping("/api/v1/gis/layers")
 @RestController
 @GISAppEndpoint
 class LayerController(private val layerStore: LayerStore) {
