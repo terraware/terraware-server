@@ -27,13 +27,12 @@ class FeatureStore(
     }
 
     val currTime = clock.instant()
-    val featureId =
+    val insertedRecord =
         with(FEATURES) {
           dslContext
               .insertInto(FEATURES)
               .set(LAYER_ID, model.layerId)
               .set(SHAPE_TYPE_ID, model.shapeType)
-              .set(ALTITUDE, model.altitude)
               .set(GEOM, model.geom)
               .set(GPS_HORIZ_ACCURACY, model.gpsHorizAccuracy)
               .set(GPS_VERT_ACCURACY, model.gpsVertAccuracy)
@@ -42,11 +41,15 @@ class FeatureStore(
               .set(ENTERED_TIME, model.enteredTime)
               .set(CREATED_TIME, currTime)
               .set(MODIFIED_TIME, currTime)
-              .returning(ID)
+              .returning(ID, GEOM)
               .fetchOne()
-              ?.get(ID)
         }
-    return model.copy(id = featureId, createdTime = currTime, modifiedTime = currTime)
+
+    return model.copy(
+        id = insertedRecord?.get(FEATURES.ID),
+        geom = insertedRecord?.get(FEATURES.GEOM),
+        createdTime = currTime,
+        modifiedTime = currTime)
   }
 
   private fun noPermissionsCheckFetch(id: FeatureId): FeatureModel? {
@@ -56,7 +59,6 @@ class FeatureStore(
                 FEATURES.ID,
                 FEATURES.LAYER_ID,
                 FEATURES.SHAPE_TYPE_ID,
-                FEATURES.ALTITUDE,
                 FEATURES.GEOM,
                 FEATURES.GPS_HORIZ_ACCURACY,
                 FEATURES.GPS_VERT_ACCURACY,
@@ -74,7 +76,6 @@ class FeatureStore(
         id = record[FEATURES.ID],
         layerId = record[FEATURES.LAYER_ID]!!,
         shapeType = record[FEATURES.SHAPE_TYPE_ID]!!,
-        altitude = record[FEATURES.ALTITUDE],
         geom = record[FEATURES.GEOM],
         gpsHorizAccuracy = record[FEATURES.GPS_HORIZ_ACCURACY],
         gpsVertAccuracy = record[FEATURES.GPS_VERT_ACCURACY],
@@ -113,7 +114,6 @@ class FeatureStore(
       dslContext
           .update(FEATURES)
           .set(SHAPE_TYPE_ID, newModel.shapeType)
-          .set(ALTITUDE, newModel.altitude)
           .set(GEOM, newModel.geom)
           .set(GPS_HORIZ_ACCURACY, newModel.gpsHorizAccuracy)
           .set(GPS_VERT_ACCURACY, newModel.gpsVertAccuracy)

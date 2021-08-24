@@ -7,8 +7,11 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.mercatorPoint
+import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
@@ -17,12 +20,13 @@ import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.pojos.ThumbnailRow
+import com.terraformation.backend.db.tables.references.FEATURES
+import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.gis.model.FeatureModel
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
-import net.postgis.jdbc.geometry.Point
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -42,8 +46,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
       FeatureModel(
           layerId = layerId,
           shapeType = ShapeType.Point,
-          altitude = 120000.0,
-          geom = Point(1.0, 2.0, 3.0),
+          geom = mercatorPoint(1.0, 2.0, 120000.0),
           notes = "Great view up here")
 
   private val clock = mockk<Clock>()
@@ -86,6 +89,22 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `create converts coordinates from other coordinate systems`() {
+    // GPS coordinates longitude=10, latitude=20, elevation=30 map to spherical Mercator coordinates
+    // X=1113194.9079327357, Y=2273030.926987688, Z=30
+    val gpsCoordinates = newPoint(10.0, 20.0, 30.0, SRID.LONG_LAT)
+
+    val featureModel = store.createFeature(validCreateRequest.copy(geom = gpsCoordinates))
+    val actualCoordinates = featureModel.geom!!.firstPoint
+
+    // Allow a small fuzz factor for the X and Y coordinates because they're computed using
+    // floating-point math.
+    assertEquals(1113194.9079327357, actualCoordinates.x, 0.0001, "X coordinate")
+    assertEquals(2273030.926987688, actualCoordinates.y, 0.0001, "Y coordinate")
+    assertEquals(30.0, actualCoordinates.z, "Z coordinate")
+  }
+
+  @Test
   fun `create fails with AccessDeniedException if user doesn't create permission`() {
     every { user.canCreateLayerData(any()) } returns false
     assertThrows<AccessDeniedException> { store.createFeature(validCreateRequest) }
@@ -122,11 +141,10 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update returns FeatureModel with updated modified time`() {
     val feature = store.createFeature(validCreateRequest)
-    val newGeom = Point(101.2345, -500.1)
+    val newGeom = mercatorPoint(101.2345, -500.1, 10123.45)
     every { clock.instant() } returns time2
-    val updatedFeature = store.updateFeature(feature.copy(altitude = 789.0, geom = newGeom))
-    assertEquals(
-        feature.copy(altitude = 789.0, geom = newGeom, modifiedTime = time2), updatedFeature)
+    val updatedFeature = store.updateFeature(feature.copy(geom = newGeom))
+    assertEquals(feature.copy(geom = newGeom, modifiedTime = time2), updatedFeature)
   }
 
   @Test
@@ -140,7 +158,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   fun `update fails with FeatureNotFoundException if user doesn't have update access`() {
     val feature = store.createFeature(validCreateRequest)
     every { user.canUpdateLayerData(any()) } returns false
-    assertThrows<FeatureNotFoundException> { store.updateFeature(feature.copy(altitude = 789.0)) }
+    assertThrows<FeatureNotFoundException> {
+      store.updateFeature(feature.copy(gpsHorizAccuracy = 18.0))
+    }
   }
 
   @Test
@@ -207,5 +227,27 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     every { user.canDeleteLayerData(any()) } returns false
     assertThrows<FeatureNotFoundException> { store.deleteFeature(feature.id!!) }
+  }
+
+  @Test
+  fun `feature geometry can be retrieved in alternate coordinate system`() {
+    store.createFeature(
+        validCreateRequest.copy(geom = newPoint(100000.0, 200000.0, 30.0, SRID.SPHERICAL_MERCATOR)))
+
+    val actual =
+        dslContext
+            .select(FEATURES.GEOM.transformSrid(SRID.LONG_LAT))
+            .from(FEATURES)
+            .fetchOne()
+            ?.value1()
+            ?.firstPoint!!
+
+    // select st_asewkt(st_transform('SRID=3857;POINT(100000 200000 30)', 4326));
+    // SRID=4326;POINT(0.898315284119521 1.796336212099301 30)
+
+    assertEquals(0.898315284119521, actual.x, 0.00000000001, "X coordinate")
+    assertEquals(1.796336212099301, actual.y, 0.00000000001, "Y coordinate")
+    assertEquals(30.0, actual.z, "Z coordinate")
+    assertEquals(SRID.LONG_LAT, actual.srid, "SRID")
   }
 }

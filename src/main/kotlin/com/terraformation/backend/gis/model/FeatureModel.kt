@@ -10,7 +10,6 @@ data class FeatureModel(
     val id: FeatureId? = null,
     val layerId: LayerId,
     val shapeType: ShapeType,
-    val altitude: Double? = null,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
