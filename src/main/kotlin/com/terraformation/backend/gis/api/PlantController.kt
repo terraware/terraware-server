@@ -36,15 +36,28 @@ class PlantController(private val plantStore: PlantStore) {
   }
 
   @ApiResponse(responseCode = "200")
+  @ApiResponse404(description = "The specified plant doesn't exist.")
+  @GetMapping("/{featureId}")
+  fun get(@PathVariable featureId: Long): GetPlantResponsePayload {
+    val plant =
+        plantStore.fetchPlant(FeatureId(featureId))
+            ?: throw NotFoundException("The plant with id $featureId doesn't exist.")
+    return GetPlantResponsePayload(PlantResponse(plant))
+  }
+
+  @ApiResponse(responseCode = "200")
   @Operation(
       summary =
           "Fetch a list of the plants in a layer. Can apply species, entered time, " +
               "and/or notes filters.")
-  @GetMapping
-  fun getPlantsList(@RequestBody payload: GetPlantsListPayload): PlantsListResponsePayload {
+  @GetMapping("/list/{layerId}")
+  fun getPlantsList(
+      @RequestBody payload: GetPlantsListPayload,
+      @PathVariable layerId: Long
+  ): PlantsListResponsePayload {
     val plants =
         plantStore.fetchPlantsList(
-            layerId = payload.layerId,
+            layerId = LayerId(layerId),
             speciesName = payload.speciesName,
             minEnteredTime = payload.minEnteredTime,
             maxEnteredTime = payload.maxEnteredTime,
@@ -58,24 +71,17 @@ class PlantController(private val plantStore: PlantStore) {
       summary =
           "Fetch a count of how many plants of each species exist in a layer. " +
               "Can filter based on enteredTime.")
-  @GetMapping("/summary")
-  fun getPlantSummary(@RequestBody payload: GetPlantSummaryPayload): PlantSummaryResponsePayload {
+  @GetMapping("/list/summary/{layerId}")
+  fun getPlantSummary(
+      @RequestBody payload: GetPlantSummaryPayload,
+      @PathVariable layerId: Long
+  ): PlantSummaryResponsePayload {
     val summary =
         plantStore.fetchPlantSummary(
-            payload.layerId,
+            LayerId(layerId),
             minEnteredTime = payload.minEnteredTime,
             maxEnteredTime = payload.maxEnteredTime)
     return PlantSummaryResponsePayload(summary)
-  }
-
-  @ApiResponse(responseCode = "200")
-  @ApiResponse404(description = "The specified plant doesn't exist.")
-  @GetMapping("/{featureId}")
-  fun get(@PathVariable featureId: Long): GetPlantResponsePayload {
-    val plant =
-        plantStore.fetchPlant(FeatureId(featureId))
-            ?: throw NotFoundException("The plant with id $featureId doesn't exist.")
-    return GetPlantResponsePayload(PlantResponse(plant))
   }
 
   @ApiResponse(responseCode = "200", description = "The plant was updated successfully.")
@@ -116,7 +122,6 @@ data class CreatePlantRequestPayload(
 }
 
 data class GetPlantsListPayload(
-    val layerId: LayerId,
     val speciesName: String? = null,
     val minEnteredTime: Instant? = null,
     val maxEnteredTime: Instant? = null,
@@ -124,7 +129,6 @@ data class GetPlantsListPayload(
 )
 
 data class GetPlantSummaryPayload(
-    val layerId: LayerId,
     val minEnteredTime: Instant? = null,
     val maxEnteredTime: Instant? = null
 )

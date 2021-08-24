@@ -151,6 +151,29 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchPlant returns PlantsRow with timestamps`() {
+    val plant = createPlant(validCreateRequest)
+    val readResult = store.fetchPlant(plant.featureId!!)
+    assertNotNull(readResult)
+    assertEquals(time1, readResult!!.createdTime)
+    assertEquals(time1, readResult.modifiedTime)
+    assertEquals(plant, readResult)
+  }
+
+  @Test
+  fun `fetchPlant returns null if user doesn't have read permission, even if they have create permission`() {
+    val plant = createPlant(validCreateRequest)
+    every { user.canReadLayerData(featureId = any()) } returns false
+    assertNull(store.fetchPlant(plant.featureId!!))
+  }
+
+  @Test
+  fun `fetchPlant returns null if plant doesn't exist`() {
+    createPlant(validCreateRequest)
+    assertNull(store.fetchPlant(nonExistentFeatureId))
+  }
+
+  @Test
   fun `fetchPlantList returns all plants in the layer when no filters are applied`() {
     val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
     val plantsFetched = store.fetchPlantsList(layerId)
@@ -255,29 +278,6 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchPlantSummary returns an empty map if there are no plants in the layer`() {
     assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId))
-  }
-
-  @Test
-  fun `fetchPlant returns PlantsRow with timestamps`() {
-    val plant = createPlant(validCreateRequest)
-    val readResult = store.fetchPlant(plant.featureId!!)
-    assertNotNull(readResult)
-    assertEquals(time1, readResult!!.createdTime)
-    assertEquals(time1, readResult.modifiedTime)
-    assertEquals(plant, readResult)
-  }
-
-  @Test
-  fun `fetchPlant returns null if user doesn't have read permission, even if they have create permission`() {
-    val plant = createPlant(validCreateRequest)
-    every { user.canReadLayerData(featureId = any()) } returns false
-    assertNull(store.fetchPlant(plant.featureId!!))
-  }
-
-  @Test
-  fun `fetchPlant returns null if plant doesn't exist`() {
-    createPlant(validCreateRequest)
-    assertNull(store.fetchPlant(nonExistentFeatureId))
   }
 
   @Test
