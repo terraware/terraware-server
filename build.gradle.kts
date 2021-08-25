@@ -47,6 +47,7 @@ java.targetCompatibility = JavaVersion.VERSION_15
 repositories { mavenCentral() }
 
 dependencies {
+  val awsSdkVersion: String by project
   val jacksonVersion: String by project
   val postgresJdbcVersion: String by project
   val springDocVersion: String by project
@@ -77,6 +78,8 @@ dependencies {
   implementation(kotlin("reflect"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
+  implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
+  implementation("software.amazon.awssdk:s3")
 
   implementation("org.springdoc:springdoc-openapi-kotlin:$springDocVersion")
   implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")

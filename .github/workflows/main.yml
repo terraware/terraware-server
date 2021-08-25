@@ -56,6 +56,9 @@ jobs:
     - name: Run tests
       run: ./gradlew test
 
+    - name: Generate OpenAPI docs to test that server can start up
+      run: ./gradlew generateOpenApiDocs
+
     - name: Extract Docker image layers
       if: matrix.java-version == '15'
       run: make -C docker prepare

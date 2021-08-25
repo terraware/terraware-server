@@ -34,10 +34,16 @@ class TerrawareServerConfig(
     @Min(0) val siteConfigRefreshSecs: Long = 3600,
 
     /**
-     * Directory to use for photo storage. The server will attempt to create this directory if it
-     * doesn't exist.
+     * Name of S3 bucket to use for storage of files such as photos. If not specified, files won't
+     * be stored on S3.
      */
-    @NotNull val photoDir: Path,
+    val s3BucketName: String? = null,
+
+    /**
+     * Directory to use for local photo storage. If not specified, photos won't be stored on the
+     * local filesystem. The server will attempt to create this directory if it doesn't exist.
+     */
+    val photoDir: Path? = null,
 
     /**
      * Number of levels of parent directories to create for photos. Photos are stored in a tree of
