@@ -24,9 +24,12 @@ spring:
 # and serving real requests; there are also settings in application-apidoc.yaml that are used when
 # generating the API documentation from the command line.
 springdoc:
+  # Limit the package scan to just the API classes. Otherwise the schema will include a bunch of
+  # internal data model classes we don't actually expose to clients.
   packages-to-scan:
     - "com.terraformation.backend.customer.api"
     - "com.terraformation.backend.device.api"
+    - "com.terraformation.backend.gis.api"
     - "com.terraformation.backend.seedbank.api"
     - "com.terraformation.backend.time.api"
   default-produces-media-type: "application/json"
