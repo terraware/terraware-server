@@ -70,6 +70,7 @@ dependencies {
   implementation("com.opencsv:opencsv:5.3")
   implementation("io.swagger.core.v3:swagger-annotations:2.1.7")
   implementation("javax.inject:javax.inject:1")
+  implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:2.7.1")
   implementation("org.codehaus.janino:janino:3.1.3")
   implementation("org.flywaydb:flyway-core:7.5.4")

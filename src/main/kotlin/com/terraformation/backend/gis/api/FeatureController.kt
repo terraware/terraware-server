@@ -90,7 +90,6 @@ class FeatureController(private val featureStore: FeatureStore) {
 data class CreateFeatureRequestPayload(
     val layerId: LayerId,
     val shapeType: ShapeType,
-    val altitude: Double? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
     val attrib: String? = null,
@@ -101,7 +100,6 @@ data class CreateFeatureRequestPayload(
     return FeatureModel(
         layerId = layerId,
         shapeType = shapeType,
-        altitude = altitude,
         gpsHorizAccuracy = gpsHorizAccuracy,
         gpsVertAccuracy = gpsVertAccuracy,
         attrib = attrib,
@@ -114,7 +112,6 @@ data class CreateFeatureRequestPayload(
 data class UpdateFeatureRequestPayload(
     val layerId: LayerId,
     val shapeType: ShapeType,
-    val altitude: Double? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
     val attrib: String? = null,
@@ -126,7 +123,6 @@ data class UpdateFeatureRequestPayload(
         id = id,
         layerId = layerId,
         shapeType = shapeType,
-        altitude = altitude,
         gpsHorizAccuracy = gpsHorizAccuracy,
         gpsVertAccuracy = gpsVertAccuracy,
         attrib = attrib,
@@ -140,7 +136,6 @@ data class FeatureResponse(
     val id: FeatureId,
     val layerId: LayerId,
     val shapeType: ShapeType,
-    val altitude: Double? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
     val attrib: String? = null,
@@ -153,7 +148,6 @@ data class FeatureResponse(
       model.id!!,
       model.layerId,
       model.shapeType,
-      model.altitude,
       model.gpsHorizAccuracy,
       model.gpsVertAccuracy,
       model.attrib,
