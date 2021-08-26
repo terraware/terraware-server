@@ -12,6 +12,7 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.ThumbnailId
+import com.terraformation.backend.db.asGeoJson
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.PhotosDao
@@ -254,5 +255,16 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(1.796336212099301, actual.y, 0.00000000001, "Y coordinate")
     assertEquals(30.0, actual.z, "Z coordinate")
     assertEquals(SRID.LONG_LAT, actual.srid, "SRID")
+  }
+
+  @Test
+  fun `feature geometry can be retrieved as server-rendered GeoJSON`() {
+    store.createFeature(validCreateRequest)
+
+    val expected =
+        """{"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[1,2,120000]}"""
+    val actual = dslContext.select(FEATURES.GEOM.asGeoJson()).from(FEATURES).fetchOne()?.value1()
+
+    assertEquals(expected, actual)
   }
 }
