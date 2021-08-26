@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tables.references.SITES
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import net.postgis.jdbc.geometry.Geometry
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -161,7 +162,7 @@ abstract class DatabaseTest {
       id: Long,
       layerId: Long = id / 10,
       shapeType: ShapeType = ShapeType.Point,
-      altitude: Double? = null,
+      geom: Geometry? = null,
       gpsHorizAccuracy: Double? = null,
       gpsVertAccuracy: Double? = null,
       attrib: String? = null,
@@ -176,7 +177,7 @@ abstract class DatabaseTest {
           .set(ID, FeatureId(id))
           .set(LAYER_ID, LayerId(layerId))
           .set(SHAPE_TYPE_ID, shapeType)
-          .set(ALTITUDE, altitude)
+          .set(GEOM, geom)
           .set(GPS_HORIZ_ACCURACY, gpsHorizAccuracy)
           .set(GPS_VERT_ACCURACY, gpsVertAccuracy)
           .set(ATTRIB, attrib)
