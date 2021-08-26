@@ -12,6 +12,7 @@ import com.terraformation.backend.gis.model.FeatureModel
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.exception.DataAccessException
 import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
@@ -43,11 +44,12 @@ class FeatureStore(
               .set(MODIFIED_TIME, currTime)
               .returning(ID, GEOM)
               .fetchOne()
+              ?: throw DataAccessException("Database did not return ID")
         }
 
     return model.copy(
-        id = insertedRecord?.get(FEATURES.ID),
-        geom = insertedRecord?.get(FEATURES.GEOM),
+        id = insertedRecord.get(FEATURES.ID),
+        geom = insertedRecord.get(FEATURES.GEOM),
         createdTime = currTime,
         modifiedTime = currTime)
   }
