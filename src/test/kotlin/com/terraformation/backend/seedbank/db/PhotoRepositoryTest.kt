@@ -5,15 +5,18 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
+import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
+import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.mockk.every
-import io.mockk.justRun
 import io.mockk.mockk
-import io.mockk.verify
 import java.io.IOException
 import java.io.InputStream
 import java.math.BigDecimal
@@ -38,14 +41,14 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
-internal class PhotoRepositoryTest : RunsAsUser {
-  private val accessionPhotosDao: AccessionPhotosDao = mockk()
-  private val accessionStore: AccessionStore = mockk()
+class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
+  private lateinit var accessionsDao: AccessionsDao
+  private lateinit var accessionPhotosDao: AccessionPhotosDao
+  private lateinit var accessionStore: AccessionStore
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val photoContentStore = LocalFileStore(config)
-  private val repository =
-      PhotoRepository(accessionPhotosDao, accessionStore, clock, config, photoContentStore)
+  private lateinit var repository: PhotoRepository
 
   override val user: UserModel = mockk()
 
@@ -61,21 +64,32 @@ internal class PhotoRepositoryTest : RunsAsUser {
   private val latitude = BigDecimal("123.456")
   private val longitude = BigDecimal("876.5432")
   private val accuracy = 50
-  private val uploadedTime = Instant.now()
+  private val uploadedTime = Instant.EPOCH
   private val metadata =
       PhotoMetadata(filename, contentType, capturedTime, latitude, longitude, accuracy)
 
   @BeforeEach
-  fun createTemporaryDirectory() {
+  fun setUp() {
+    accessionPhotosDao = AccessionPhotosDao(dslContext.configuration())
+    accessionsDao = AccessionsDao(dslContext.configuration())
+    accessionStore =
+        AccessionStore(
+            dslContext,
+            accessionPhotosDao,
+            mockk(),
+            mockk(),
+            mockk(),
+            mockk(),
+            mockk(),
+            mockk(),
+            clock,
+            StoreSupport(dslContext))
+
     tempDir = Files.createTempDirectory(javaClass.simpleName)
 
-    every { accessionStore.getIdByNumber(any(), any()) } throws AccessionNotFoundException("boom")
-    every { accessionStore.getIdByNumber(facilityId, accessionNumber) } returns accessionId
     every { clock.instant() } returns uploadedTime
     every { config.photoDir } returns tempDir
     every { config.photoIntermediateDepth } returns 3
-
-    justRun { accessionPhotosDao.insert(any<AccessionPhotosRow>()) }
 
     photoPath =
         tempDir
@@ -88,6 +102,18 @@ internal class PhotoRepositoryTest : RunsAsUser {
 
     every { user.canReadAccession(any(), any()) } returns true
     every { user.canUpdateAccession(any(), any()) } returns true
+
+    repository =
+        PhotoRepository(accessionPhotosDao, accessionStore, clock, config, photoContentStore)
+
+    insertSiteData()
+    accessionsDao.insert(
+        AccessionsRow(
+            id = accessionId,
+            number = accessionNumber,
+            facilityId = facilityId,
+            createdTime = clock.instant(),
+            stateId = AccessionState.Pending))
   }
 
   @AfterEach
@@ -118,14 +144,25 @@ internal class PhotoRepositoryTest : RunsAsUser {
     assertTrue(Files.exists(photoPath), "Photo file exists")
     assertArrayEquals(photoData, Files.readAllBytes(photoPath), "File contents")
 
-    verify { accessionPhotosDao.insert(expectedPojo) }
+    val actual = accessionPhotosDao.fetchByAccessionId(accessionId).first()
+    assertEquals(
+        expectedPojo,
+        actual.copy(
+            id = null,
+            latitude = actual.latitude?.stripTrailingZeros(),
+            longitude = actual.longitude?.stripTrailingZeros()))
   }
 
   @Test
   fun `storePhoto deletes file if database insert fails`() {
-    val exception = DuplicateKeyException("oops")
-
-    every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
+    accessionPhotosDao.insert(
+        AccessionPhotosRow(
+            accessionId = accessionId,
+            capturedTime = capturedTime,
+            contentType = contentType,
+            filename = filename,
+            size = 1,
+            uploadedTime = uploadedTime))
 
     assertThrows(DuplicateKeyException::class.java) {
       repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
@@ -152,10 +189,6 @@ internal class PhotoRepositoryTest : RunsAsUser {
 
   @Test
   fun `storePhoto throws exception if accession does not exist`() {
-    val exception = DuplicateKeyException("oops")
-
-    every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws exception
-
     assertThrows(AccessionNotFoundException::class.java) {
       repository.storePhoto(facilityId, "nonexistent", ByteArray(0).inputStream(), 0, metadata)
     }
@@ -188,14 +221,12 @@ internal class PhotoRepositoryTest : RunsAsUser {
     Files.createDirectories(photoPath.parent)
     Files.createFile(photoPath)
 
-    every { accessionPhotosDao.insert(any<AccessionPhotosRow>()) } throws
-        RuntimeException("Should not be called")
-
     assertThrows(FileAlreadyExistsException::class.java) {
       repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
     }
 
-    verify(exactly = 0) { accessionPhotosDao.insert(any<AccessionPhotosRow>()) }
+    val photosWritten = accessionPhotosDao.findAll()
+    assertEquals(0, photosWritten.size, "Should be 0 photos in database")
 
     assertTrue(Files.exists(photoPath), "Existing file should not be removed")
   }
@@ -223,7 +254,7 @@ internal class PhotoRepositoryTest : RunsAsUser {
   fun `readPhoto throws exception if user does not have permission to read accession`() {
     every { user.canReadAccession(accessionId, facilityId) } returns false
 
-    assertThrows(AccessDeniedException::class.java) {
+    assertThrows(AccessionNotFoundException::class.java) {
       repository.readPhoto(facilityId, accessionNumber, filename)
     }
   }
@@ -251,7 +282,7 @@ internal class PhotoRepositoryTest : RunsAsUser {
   fun `getPhotoFileSize throws exception if user does not have permission to read accession`() {
     every { user.canReadAccession(accessionId, facilityId) } returns false
 
-    assertThrows(AccessDeniedException::class.java) {
+    assertThrows(AccessionNotFoundException::class.java) {
       repository.getPhotoFileSize(facilityId, accessionNumber, filename)
     }
   }
