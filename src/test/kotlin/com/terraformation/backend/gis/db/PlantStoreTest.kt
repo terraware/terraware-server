@@ -7,6 +7,7 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PlantNotFoundException
+import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
@@ -50,6 +51,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var store: PlantStore
   private lateinit var featuresDao: FeaturesDao
+  private lateinit var postgresFuzzySearchOperators: PostgresFuzzySearchOperators
   private lateinit var layersDao: LayersDao
   private lateinit var plantsDao: PlantsDao
   private lateinit var speciesDao: SpeciesDao
@@ -59,11 +61,14 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
     val jooqConfig = dslContext.configuration()
 
     featuresDao = FeaturesDao(jooqConfig)
+    postgresFuzzySearchOperators = PostgresFuzzySearchOperators()
     layersDao = LayersDao(jooqConfig)
     plantsDao = PlantsDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
 
-    store = PlantStore(clock, dslContext, featuresDao, plantsDao, speciesDao)
+    store =
+        PlantStore(
+            clock, dslContext, featuresDao, postgresFuzzySearchOperators, plantsDao, speciesDao)
     every { clock.instant() } returns time1
     every { user.canCreateLayerData(featureId = any()) } returns true
     every { user.canReadLayerData(featureId = any()) } returns true
@@ -74,14 +79,6 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
     insertLayer(id = layerId.value, siteId = siteId.value, layerType = LayerType.PlantsPlanted)
     insertFeature(id = featureId.value, layerId = layerId.value, shapeType = ShapeType.Point)
-  }
-
-  fun createPlant(row: PlantsRow): PlantsRow {
-    return store.createPlant(row.featureId!!, row)
-  }
-
-  fun updatePlant(row: PlantsRow): PlantsRow {
-    return store.updatePlant(row.featureId!!, row)
   }
 
   fun insertSeveralPlants(
@@ -124,7 +121,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create adds a new row to Plants table, returns PlantsRow with populated timestamps`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     assertEquals(time1, plant.createdTime)
     assertEquals(time1, plant.modifiedTime)
     assertEquals(validCreateRequest.copy(createdTime = time1, modifiedTime = time1), plant)
@@ -134,7 +131,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create does not modify row passed in, returns a different row instance`() {
     val requestCopy = validCreateRequest.copy()
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     assertTrue(
         requestCopy == validCreateRequest,
         "validCreateRequest is not being modified by the plant store")
@@ -145,40 +142,42 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create ignores timestamp fields if they are set`() {
-    val plant = createPlant(validCreateRequest.copy(createdTime = time2, modifiedTime = time2))
+    val plant =
+        store.createPlant(validCreateRequest.copy(createdTime = time2, modifiedTime = time2))
     assertEquals(time1, plant.createdTime)
     assertEquals(time1, plant.modifiedTime)
   }
 
   @Test
-  fun `create throws RuntimeException if feature id arguments do not match`() {
-    assertThrows<RuntimeException> { store.createPlant(nonExistentFeatureId, validCreateRequest) }
+  fun `create throws IllegalArgumentException if feature id is null`() {
+    assertThrows<IllegalArgumentException> {
+      store.createPlant(validCreateRequest.copy(featureId = null))
+    }
   }
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
     every { user.canCreateLayerData(featureId = any()) } returns false
-    assertThrows<AccessDeniedException> { createPlant(validCreateRequest) }
+    assertThrows<AccessDeniedException> { store.createPlant(validCreateRequest) }
   }
 
   @Test
   fun `create fails with AccessDeniedException if feature doesn't exist`() {
-    every { user.canCreateLayerData(featureId = any()) } returns false
     assertThrows<AccessDeniedException> {
-      createPlant(validCreateRequest.copy(featureId = nonExistentFeatureId))
+      store.createPlant(validCreateRequest.copy(featureId = nonExistentFeatureId))
     }
   }
 
   @Test
   fun `create fails with DataIntegrityViolationException if the label is an empty string`() {
     assertThrows<DataIntegrityViolationException> {
-      createPlant(validCreateRequest.copy(label = ""))
+      store.createPlant(validCreateRequest.copy(label = ""))
     }
   }
 
   @Test
   fun `fetchPlant returns PlantsRow with timestamps`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     val readResult = store.fetchPlant(plant.featureId!!)
     assertNotNull(readResult)
     assertEquals(time1, readResult!!.createdTime)
@@ -188,14 +187,14 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchPlant returns null if user doesn't have read permission, even if they have create permission`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     every { user.canReadLayerData(featureId = any()) } returns false
     assertNull(store.fetchPlant(plant.featureId!!))
   }
 
   @Test
   fun `fetchPlant returns null if plant doesn't exist`() {
-    createPlant(validCreateRequest)
+    store.createPlant(validCreateRequest)
     assertNull(store.fetchPlant(nonExistentFeatureId))
   }
 
@@ -260,6 +259,20 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchPlantsList filters on notes using fuzzy (approximate) matching`() {
+    val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
+    val featureId = speciesIdToFeatureIds.values.flatten().first()
+    val feature = featuresDao.fetchOneById(featureId)!!
+    feature.notes = "special note to filter by"
+    featuresDao.update(feature)
+
+    // Deliberately misspell "special"
+    val plantsFetched = store.fetchPlantsList(layerId, notes = "specal")
+    assertEquals(1, plantsFetched.size)
+    assertEquals(featureId, plantsFetched.last().featureId)
+  }
+
+  @Test
   fun `fetchPlantsList returns empty list when user doesn't have read permission`() {
     insertSeveralPlants(speciesIdsToCount)
     every { user.canReadLayerData(layerId = any()) } returns false
@@ -315,10 +328,10 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update changes the row in the database, returns row with updated timestamps`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     val plannedUpdates = plant.copy(label = "test update writes to db")
     every { clock.instant() } returns time2
-    val updatedResult = updatePlant(plannedUpdates)
+    val updatedResult = store.updatePlant(plannedUpdates)
 
     assertEquals(plannedUpdates.copy(createdTime = time1, modifiedTime = time2), updatedResult)
     assertEquals(updatedResult, plantsDao.fetchOneByFeatureId(featureId))
@@ -326,10 +339,10 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update does not modify row passed in, returns a different row instance`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     val plannedUpdates = plant.copy(label = "referential equality test")
     val plannedUpdatesCopy = plannedUpdates.copy()
-    val updated = updatePlant(plannedUpdates)
+    val updated = store.updatePlant(plannedUpdates)
     assertTrue(
         plannedUpdatesCopy == plannedUpdates,
         "instance we passed as an argument is not being modified by the plant store")
@@ -340,18 +353,18 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update does not update timestamps if there's no change from the database`() {
-    val plant = createPlant(validCreateRequest)
-    val updated = updatePlant(plant)
+    val plant = store.createPlant(validCreateRequest)
+    val updated = store.updatePlant(plant)
     assertEquals(plant, updated)
   }
 
   @Test
   fun `update ignores timestamps if they are set`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     val ignoredTime = time2.plusSeconds(5)
     every { clock.instant() } returns time2
     val updatedPlant =
-        updatePlant(
+        store.updatePlant(
             plant.copy(
                 label = "update ignores timestamps",
                 createdTime = ignoredTime,
@@ -361,28 +374,30 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update fails with RuntimeException if feature id arguments do not match`() {
-    assertThrows<RuntimeException> { store.updatePlant(nonExistentFeatureId, validCreateRequest) }
+  fun `update fails with IllegalArgumentException if feature id is null`() {
+    assertThrows<IllegalArgumentException> {
+      store.updatePlant(validCreateRequest.copy(featureId = null))
+    }
   }
 
   @Test
   fun `update fails with PlantNotFoundException if user doesn't have update permission`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     every { user.canUpdateLayerData(featureId = any()) } returns false
-    assertThrows<PlantNotFoundException> { updatePlant(plant) }
+    assertThrows<PlantNotFoundException> { store.updatePlant(plant) }
   }
 
   @Test
   fun `update fails with PlantNotFoundException if plant doesn't exist`() {
-    val plant = createPlant(validCreateRequest)
+    val plant = store.createPlant(validCreateRequest)
     assertThrows<PlantNotFoundException> {
-      updatePlant(plant.copy(featureId = nonExistentFeatureId))
+      store.updatePlant(plant.copy(featureId = nonExistentFeatureId))
     }
   }
 
   @Test
   fun `update fails with DataIntegrityViolationException if the label is an empty string`() {
-    val plant = createPlant(validCreateRequest)
-    assertThrows<DataIntegrityViolationException> { updatePlant(plant.copy(label = "")) }
+    val plant = store.createPlant(validCreateRequest)
+    assertThrows<DataIntegrityViolationException> { store.updatePlant(plant.copy(label = "")) }
   }
 }

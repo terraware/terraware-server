@@ -13,16 +13,14 @@ import javax.annotation.ManagedBean
 import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
-class PlantObservStore(
+class PlantObservationsStore(
     private val clock: Clock,
     private val plantsDao: PlantsDao,
     private val observDao: PlantObservationsDao,
 ) {
-  fun create(featureId: FeatureId, row: PlantObservationsRow): PlantObservationsRow {
-    if (featureId != row.featureId) {
-      // this should never be thrown, indicates a bug in the calling code
-      throw RuntimeException("featureId in PlantObservationsRow must match featureId argument")
-    }
+  fun create(row: PlantObservationsRow): PlantObservationsRow {
+    val featureId = row.featureId ?: throw IllegalArgumentException("featureId cannot be null")
+
     if (!currentUser().canCreateLayerData(featureId)) {
       throw AccessDeniedException(
           "No permission to create a plant observation associated with featureId $featureId")
@@ -56,11 +54,8 @@ class PlantObservStore(
     return observDao.fetchByFeatureId(featureId)
   }
 
-  fun update(id: PlantObservationId, row: PlantObservationsRow): PlantObservationsRow {
-    if (id != row.id) {
-      // this should never be thrown, indicates a bug in the calling code
-      throw RuntimeException("id in PlantObservationsRow must match id argument")
-    }
+  fun update(row: PlantObservationsRow): PlantObservationsRow {
+    val id = row.id ?: throw IllegalArgumentException("Plant observation id cannot be null")
 
     val existingRow = observDao.fetchOneById(id)
 

@@ -32,7 +32,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
-internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
+internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockk<UserModel>()
   private val siteId = SiteId(10)
   private val layerId = LayerId(100)
@@ -57,7 +57,7 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
           dbh = 0.5,
       )
 
-  private lateinit var store: PlantObservStore
+  private lateinit var store: PlantObservationsStore
   private lateinit var featuresDao: FeaturesDao
   private lateinit var layersDao: LayersDao
   private lateinit var plantsDao: PlantsDao
@@ -74,7 +74,7 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
     observDao = PlantObservationsDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
 
-    store = PlantObservStore(clock, plantsDao, observDao)
+    store = PlantObservationsStore(clock, plantsDao, observDao)
     every { clock.instant() } returns time1
     every { user.canCreateLayerData(featureId = any()) } returns true
     every { user.canReadLayerData(featureId = any()) } returns true
@@ -88,17 +88,9 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
     insertPlant(featureId = featureId.value)
   }
 
-  fun createObservation(row: PlantObservationsRow): PlantObservationsRow {
-    return store.create(row.featureId!!, row)
-  }
-
-  fun updateObservation(row: PlantObservationsRow): PlantObservationsRow {
-    return store.update(row.id!!, row)
-  }
-
   @Test
   fun `create adds a new row to the Plant Observations table, returns server generated id and timestamps`() {
-    val observation = createObservation(validCreateRequest)
+    val observation = store.create(validCreateRequest)
     assertNotNull(observation.id)
     assertEquals(
         validCreateRequest.copy(id = observation.id, createdTime = time1, modifiedTime = time1),
@@ -109,7 +101,7 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create does not modify row passed in, returns a different row instance`() {
     val requestCopy = validCreateRequest.copy()
-    val response = createObservation(validCreateRequest)
+    val response = store.create(validCreateRequest)
     assertTrue(requestCopy == validCreateRequest, "store does not alter ValidCreateRequest fields")
     assertFalse(
         response === validCreateRequest, "store returns different instance of PlantObservationsRow")
@@ -118,39 +110,41 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create ignores 'created' and 'modified' timestamps if they are set`() {
     val request = validCreateRequest.copy(createdTime = clientTime, modifiedTime = clientTime)
-    val observation = createObservation(request)
+    val observation = store.create(request)
     assertEquals(time1, observation.createdTime)
     assertEquals(time1, observation.modifiedTime)
   }
 
   @Test
-  fun `create throws RuntimeException if feature id arguments do not match`() {
-    assertThrows<RuntimeException> { store.create(nonExistentFeatureId, validCreateRequest) }
+  fun `create throws IllegalArgumentException if feature id is null`() {
+    assertThrows<IllegalArgumentException> {
+      store.create(validCreateRequest.copy(featureId = null))
+    }
   }
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
     every { user.canCreateLayerData(featureId = any()) } returns false
-    assertThrows<AccessDeniedException> { createObservation(validCreateRequest) }
+    assertThrows<AccessDeniedException> { store.create(validCreateRequest) }
   }
 
   @Test
   fun `create fails with IllegalArgumentException if plant doesn't exist`() {
     assertThrows<IllegalArgumentException> {
-      createObservation(validCreateRequest.copy(featureId = nonExistentFeatureId))
+      store.create(validCreateRequest.copy(featureId = nonExistentFeatureId))
     }
   }
 
   @Test
   fun `create fails with DataIntegrityViolationException if 'pests' is an empty string`() {
     assertThrows<DataIntegrityViolationException> {
-      createObservation(validCreateRequest.copy(pests = ""))
+      store.create(validCreateRequest.copy(pests = ""))
     }
   }
 
   @Test
   fun `fetch returns PlantObservationsRow with timestamps`() {
-    val observation = createObservation(validCreateRequest)
+    val observation = store.create(validCreateRequest)
     val fetched = store.fetch(observation.id!!)
     assertNotNull(fetched)
     assertEquals(time1, fetched!!.createdTime)
@@ -160,7 +154,7 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetch returns null if user doesn't have read permission`() {
-    val observation = createObservation(validCreateRequest)
+    val observation = store.create(validCreateRequest)
     every { user.canReadLayerData(featureId = any()) } returns false
     assertNull(store.fetch(observation.id!!))
   }
@@ -173,7 +167,7 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchList returns list of PlantObservationRows`() {
     val observations = mutableListOf<PlantObservationsRow>()
-    repeat(3) { observations.add(createObservation(validCreateRequest)) }
+    repeat(3) { observations.add(store.create(validCreateRequest)) }
     val fetched = store.fetchList(featureId)
     assertEquals(observations, fetched)
   }
@@ -185,17 +179,17 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchList returns an empty list when user doesn't have read permission`() {
-    createObservation(validCreateRequest)
+    store.create(validCreateRequest)
     every { user.canReadLayerData(featureId = any()) } returns false
     assertEquals(emptyList<PlantObservationsRow>(), store.fetchList(featureId))
   }
 
   @Test
   fun `update changes the row in the database, returns row with updated timestamps`() {
-    val created = createObservation(validCreateRequest)
+    val created = store.create(validCreateRequest)
     every { clock.instant() } returns time2
     val plannedUpdate = created.copy(pests = "bugs in code")
-    val updated = updateObservation(plannedUpdate)
+    val updated = store.update(plannedUpdate)
 
     assertEquals(plannedUpdate.copy(createdTime = time1, modifiedTime = time2), updated)
     assertEquals(updated, observDao.fetchOneById(created.id!!))
@@ -203,10 +197,10 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update does not modify row passed in, returns a different row instance`() {
-    val created = createObservation(validCreateRequest)
+    val created = store.create(validCreateRequest)
     val plannedUpdate = created.copy(pests = "referential equality bugs in code")
     val plannedUpdateCopy = plannedUpdate.copy()
-    val updated = updateObservation(plannedUpdate)
+    val updated = store.update(plannedUpdate)
 
     assertTrue(
         plannedUpdateCopy == plannedUpdate,
@@ -218,63 +212,61 @@ internal class PlantObservStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update does not update timestamps if there's no change from the database`() {
-    val created = createObservation(validCreateRequest)
-    val updated = updateObservation(created)
+    val created = store.create(validCreateRequest)
+    val updated = store.update(created)
     assertEquals(created, updated)
   }
 
   @Test
   fun `update ignores created and modified timestamps if they are set`() {
-    val created = createObservation(validCreateRequest)
+    val created = store.create(validCreateRequest)
     val toUpdate = created.copy(pests = "bugs", createdTime = clientTime, modifiedTime = clientTime)
     every { clock.instant() } returns time2
-    val updated = updateObservation(toUpdate)
+    val updated = store.update(toUpdate)
     assertEquals(time1, updated.createdTime)
     assertEquals(time2, updated.modifiedTime)
   }
 
   @Test
   fun `update behavior doesn't change if feature id is null`() {
-    val created = createObservation(validCreateRequest)
-    val response1 = updateObservation(created.copy(pests = "bugs"))
-    val response2 = updateObservation(created.copy(pests = "bugs", featureId = null))
+    val created = store.create(validCreateRequest)
+    val response1 = store.update(created.copy(pests = "bugs"))
+    val response2 = store.update(created.copy(pests = "bugs", featureId = null))
     // The two records will have different ids since id != feature id
     assertEquals(response1.copy(id = null), response2.copy(id = null))
   }
 
   @Test
-  fun `update fails with RuntimeException if feature id arguments do not match`() {
-    assertThrows<RuntimeException> {
-      store.update(nonExistentPlantObservationId, validCreateRequest)
-    }
+  fun `update fails with IllegalArgumentException if plant observation id is null`() {
+    assertThrows<IllegalArgumentException> { store.update(validCreateRequest.copy(id = null)) }
   }
 
   @Test
   fun `update fails with PlantObservationNotFoundException if user doesn't have update permission`() {
-    val created = createObservation(validCreateRequest)
+    val created = store.create(validCreateRequest)
     every { user.canUpdateLayerData(featureId = any()) } returns false
-    assertThrows<PlantObservationNotFoundException> { updateObservation(created) }
+    assertThrows<PlantObservationNotFoundException> { store.update(created) }
   }
 
   @Test
   fun `update fails with PlantObservationNotFoundException if observation doesn't exist`() {
-    val created = createObservation(validCreateRequest)
+    val created = store.create(validCreateRequest)
     assertThrows<PlantObservationNotFoundException> {
-      updateObservation(created.copy(id = nonExistentPlantObservationId))
+      store.update(created.copy(id = nonExistentPlantObservationId))
     }
   }
 
   @Test
   fun `update fails with IllegalArgumentException if user supplied feature id doesn't match database`() {
-    val created = createObservation(validCreateRequest)
+    val created = store.create(validCreateRequest)
     assertThrows<IllegalArgumentException> {
-      updateObservation(created.copy(featureId = nonExistentFeatureId))
+      store.update(created.copy(featureId = nonExistentFeatureId))
     }
   }
 
   @Test
   fun `update fails with DataIntegrityViolationException if 'pests' is an empty string`() {
-    val created = createObservation(validCreateRequest)
-    assertThrows<DataIntegrityViolationException> { updateObservation(created.copy(pests = "")) }
+    val created = store.create(validCreateRequest)
+    assertThrows<DataIntegrityViolationException> { store.update(created.copy(pests = "")) }
   }
 }

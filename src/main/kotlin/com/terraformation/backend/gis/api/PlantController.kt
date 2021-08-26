@@ -33,7 +33,7 @@ class PlantController(private val plantStore: PlantStore) {
   @PostMapping
   fun create(@RequestBody payload: CreatePlantRequestPayload): CreatePlantResponsePayload {
     try {
-      val newPlant = plantStore.createPlant(payload.featureId, payload.toRow())
+      val newPlant = plantStore.createPlant(payload.toRow())
       return CreatePlantResponsePayload(PlantResponse(newPlant))
     } catch (e: FeatureNotFoundException) {
       throw NotFoundException("Cannot create Plant. Feature id ${payload.featureId} is invalid.")
@@ -68,7 +68,7 @@ class PlantController(private val plantStore: PlantStore) {
             maxEnteredTime = payload.maxEnteredTime,
             notes = payload.notes)
 
-    return PlantsListResponsePayload(plants.map { ExtendedPlantResponse(it) })
+    return PlantsListResponsePayload(plants.map { PlantListResponseElement(it) })
   }
 
   @ApiResponse(responseCode = "200")
@@ -98,8 +98,7 @@ class PlantController(private val plantStore: PlantStore) {
       @PathVariable featureId: Long
   ): UpdatePlantResponsePayload {
     try {
-      val typedId = FeatureId(featureId)
-      val updatedPlant = plantStore.updatePlant(typedId, payload.toRow(typedId))
+      val updatedPlant = plantStore.updatePlant(payload.toRow(FeatureId(featureId)))
       return UpdatePlantResponsePayload(PlantResponse(updatedPlant))
     } catch (e: PlantNotFoundException) {
       throw NotFoundException("The plant with feature id $featureId doesn't exist.")
@@ -166,7 +165,7 @@ data class PlantResponse(
   ) : this(row.featureId!!, row.label, row.speciesId, row.naturalRegen, row.datePlanted)
 }
 
-data class ExtendedPlantResponse(
+data class PlantListResponseElement(
     val featureId: FeatureId,
     val label: String? = null,
     val speciesId: SpeciesId? = null,
@@ -191,7 +190,7 @@ data class CreatePlantResponsePayload(val plant: PlantResponse) : SuccessRespons
 
 data class GetPlantResponsePayload(val plant: PlantResponse) : SuccessResponsePayload
 
-data class PlantsListResponsePayload(val list: List<ExtendedPlantResponse>) :
+data class PlantsListResponsePayload(val list: List<PlantListResponseElement>) :
     SuccessResponsePayload
 
 data class PlantSummaryResponsePayload(val summary: Map<SpeciesId, Int>) : SuccessResponsePayload

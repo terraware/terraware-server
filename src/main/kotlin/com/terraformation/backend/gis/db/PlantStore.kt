@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
+import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
@@ -11,7 +12,7 @@ import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.PLANTS
-import java.lang.RuntimeException
+import java.lang.IllegalArgumentException
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -37,14 +38,13 @@ class PlantStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val featuresDao: FeaturesDao,
+    private val postgresFuzzySearchOperators: PostgresFuzzySearchOperators,
     private val plantsDao: PlantsDao,
     private val speciesDao: SpeciesDao,
 ) {
-  fun createPlant(featureId: FeatureId, plant: PlantsRow): PlantsRow {
-    if (featureId != plant.featureId) {
-      // this should never be thrown, indicates a bug in the calling code
-      throw RuntimeException("featureId in PlantsRow must match featureId argument")
-    }
+  fun createPlant(plant: PlantsRow): PlantsRow {
+    val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
+
     if (!currentUser().canCreateLayerData(featureId) ||
         featuresDao.fetchOneById(featureId) == null) {
       throw AccessDeniedException(
@@ -89,7 +89,7 @@ class PlantStore(
       conditions = conditions.and(FEATURES.ENTERED_TIME.lessOrEqual(maxEnteredTime))
     }
     if (notes != null) {
-      conditions = conditions.and(FEATURES.NOTES.eq(notes))
+      conditions = conditions.and(postgresFuzzySearchOperators.likeFuzzy(FEATURES.NOTES, notes))
     }
 
     val records =
@@ -152,11 +152,8 @@ class PlantStore(
     return summaryMap
   }
 
-  fun updatePlant(featureId: FeatureId, plant: PlantsRow): PlantsRow {
-    if (featureId != plant.featureId) {
-      // this should never be thrown, indicates a bug in the calling code
-      throw RuntimeException("featureId in PlantsRow must match featureId argument")
-    }
+  fun updatePlant(plant: PlantsRow): PlantsRow {
+    val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
     if (!currentUser().canUpdateLayerData(featureId)) {
       throw PlantNotFoundException(featureId)

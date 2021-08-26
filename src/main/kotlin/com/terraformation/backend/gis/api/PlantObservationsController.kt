@@ -9,8 +9,9 @@ import com.terraformation.backend.db.HealthState
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.PlantObservationNotFoundException
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
-import com.terraformation.backend.gis.db.PlantObservStore
+import com.terraformation.backend.gis.db.PlantObservationsStore
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/gis/plant_observations")
 @RestController
 @GISAppEndpoint
-class PlantObservController(private val observStore: PlantObservStore) {
+class PlantObservationsController(private val observStore: PlantObservationsStore) {
   @ApiResponse(
       responseCode = "200", description = "The plant observation was created successfully.")
   @Operation(
@@ -33,7 +34,7 @@ class PlantObservController(private val observStore: PlantObservStore) {
               "Plant observations can only be deleted as part of a feature deletion.")
   @PostMapping
   fun create(@RequestBody payload: CreateObservRequestPayload): CreateObservResponsePayload {
-    val newObservation = observStore.create(payload.featureId, payload.toRow())
+    val newObservation = observStore.create(payload.toRow())
     return CreateObservResponsePayload(ObservResponse(newObservation))
   }
 
@@ -68,76 +69,78 @@ class PlantObservController(private val observStore: PlantObservStore) {
       @RequestBody payload: UpdateObservRequestPayload,
       @PathVariable plantObservationId: Long
   ): UpdateObservResponsePayload {
-    val id = PlantObservationId(plantObservationId)
     try {
-      val updated = observStore.update(id, payload.toRow(id))
+      val updated = observStore.update(payload.toRow(PlantObservationId(plantObservationId)))
       return UpdateObservResponsePayload(ObservResponse(updated))
     } catch (e: PlantObservationNotFoundException) {
-      throw NotFoundException("The plant observation with id $id doesn't exist.")
+      throw NotFoundException("The plant observation with id $plantObservationId doesn't exist.")
     }
   }
 
-  // To delete a plant observation,
-  // the caller must delete the entire feature through the Features API
+  // To delete a plant observation, the caller must delete the entire feature
+  // through the Features API
 }
 
+@Schema(description = "height and diameterAtBreastHeight must be in meters")
 data class CreateObservRequestPayload(
     val featureId: FeatureId,
     val timestamp: Instant,
-    val healthStateId: HealthState? = null,
+    val healthState: HealthState? = null,
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    val heightInMeters: Double? = null,
-    val diameterAtBreastHeightInMeters: Double? = null,
+    val height: Double? = null,
+    val diameterAtBreastHeight: Double? = null,
 ) {
   fun toRow(): PlantObservationsRow {
     return PlantObservationsRow(
         featureId = featureId,
         timestamp = timestamp,
-        healthStateId = healthStateId,
+        healthStateId = healthState,
         flowers = flowers,
         seeds = seeds,
         pests = pests,
-        height = heightInMeters,
-        dbh = diameterAtBreastHeightInMeters,
+        height = height,
+        dbh = diameterAtBreastHeight,
     )
   }
 }
 
+@Schema(description = "height and diameterAtBreastHeight must be in meters")
 data class UpdateObservRequestPayload(
     val timestamp: Instant,
-    val healthStateId: HealthState? = null,
+    val healthState: HealthState? = null,
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    val heightInMeters: Double? = null,
-    val diameterAtBreastHeightInMeters: Double? = null,
+    val height: Double? = null,
+    val diameterAtBreastHeight: Double? = null,
 ) {
   fun toRow(id: PlantObservationId): PlantObservationsRow {
     return PlantObservationsRow(
         id = id,
         timestamp = timestamp,
-        healthStateId = healthStateId,
+        healthStateId = healthState,
         flowers = flowers,
         seeds = seeds,
         pests = pests,
-        height = heightInMeters,
-        dbh = diameterAtBreastHeightInMeters,
+        height = height,
+        dbh = diameterAtBreastHeight,
     )
   }
 }
 
+@Schema(description = "height and diameterAtBreastHeight are measured in meters")
 data class ObservResponse(
     val id: PlantObservationId,
     val featureId: FeatureId,
     val timestamp: Instant,
-    val healthStateId: HealthState? = null,
+    val healthState: HealthState? = null,
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    val heightInMeters: Double? = null,
-    val diameterAtBreastHeightInMeters: Double? = null,
+    val height: Double? = null,
+    val diameterAtBreastHeight: Double? = null,
 ) {
   constructor(
       row: PlantObservationsRow

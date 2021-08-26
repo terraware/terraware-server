@@ -43,7 +43,7 @@ class JooqDaoBeans(dslContext: DSLContext) {
   @Bean fun organizationDao() = OrganizationsDao(configuration)
   @Bean fun photosDao() = PhotosDao(configuration)
   @Bean fun plantsDao() = PlantsDao(configuration)
-  @Bean fun PlantObservationsDao() = PlantObservationsDao(configuration)
+  @Bean fun plantObservationsDao() = PlantObservationsDao(configuration)
   @Bean fun projectsDao() = ProjectsDao(configuration)
   @Bean fun siteDao() = SitesDao(configuration)
   @Bean fun speciesDao() = SpeciesDao(configuration)
