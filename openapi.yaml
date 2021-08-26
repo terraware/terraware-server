@@ -1278,6 +1278,36 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SearchNodePayload'
+    CRS:
+      required:
+      - properties
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - name
+        properties:
+          $ref: '#/components/schemas/CRSProperties'
+      description: "Coordinate reference system used for X and Y coordinates in this\
+        \ geometry. By default, coordinates are in WGS 84, with longitude and latitude\
+        \ in degrees. In that case, this element is not present. Otherwise, it specifies\
+        \ which coordinate system to use."
+    CRSProperties:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Name of the coordinate reference system. This must be in the\
+            \ form EPSG:nnnn where nnnn is the numeric identifier of a coordinate\
+            \ system in the EPSG dataset. A common one is 3857, the Web Mercator projection\
+            \ used by many mapping tools."
+          example: EPSG:3857
+          externalDocs:
+            url: https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset
     CreateAccessionRequestPayload:
       type: object
       properties:
@@ -1400,6 +1430,8 @@ components:
           - Polylinez
           - Polygonz
           - Pultipointz
+        geom:
+          $ref: '#/components/schemas/Geometry'
         gpsHorizAccuracy:
           type: number
           format: double
@@ -1676,6 +1708,8 @@ components:
           - Polylinez
           - Polygonz
           - Pultipointz
+        geom:
+          $ref: '#/components/schemas/Geometry'
         gpsHorizAccuracy:
           type: number
           format: double
@@ -1749,6 +1783,47 @@ components:
           type: number
         accuracy:
           type: number
+    Geometry:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - Point
+          - LineString
+          - Polygon
+          - MultiPoint
+          - MultiLineString
+          - MultiPolygon
+          - GeometryCollection
+        crs:
+          $ref: '#/components/schemas/CRS'
+      discriminator:
+        propertyName: type
+        mapping:
+          GeometryCollection: '#/components/schemas/GeometryCollection'
+          LineString: '#/components/schemas/LineString'
+          MultiLineString: '#/components/schemas/MultiLineString'
+          MultiPoint: '#/components/schemas/MultiPoint'
+          MultiPolygon: '#/components/schemas/MultiPolygon'
+          Point: '#/components/schemas/Point'
+          Polygon: '#/components/schemas/Polygon'
+    GeometryCollection:
+      required:
+      - geometries
+      type: object
+      externalDocs:
+        url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.8
+      allOf:
+      - $ref: '#/components/schemas/Geometry'
+      - type: object
+        properties:
+          geometries:
+            type: array
+            items:
+              $ref: '#/components/schemas/Geometry'
     GerminationPayload:
       required:
       - recordingDate
@@ -1925,6 +2000,34 @@ components:
           type: boolean
         hidden:
           type: boolean
+    LineString:
+      required:
+      - coordinates
+      type: object
+      externalDocs:
+        url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.4
+      allOf:
+      - $ref: '#/components/schemas/Geometry'
+      - type: object
+        properties:
+          coordinates:
+            minItems: 2
+            type: array
+            items:
+              maxItems: 3
+              minItems: 3
+              type: array
+              description: "A single position. In the terraware-server API, positions\
+                \ must always include 3 dimensions. The X and Y dimensions use the\
+                \ coordinate system specified by the crs field, and the Z dimension\
+                \ is in meters."
+              example:
+              - 120
+              - -9.53
+              - 16
+              items:
+                type: number
+                format: double
     ListAllFieldValuesRequestPayload:
       required:
       - fields
@@ -2083,6 +2186,100 @@ components:
             $ref: '#/components/schemas/SpeciesDetails'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    MultiLineString:
+      required:
+      - coordinates
+      type: object
+      externalDocs:
+        url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.5
+      allOf:
+      - $ref: '#/components/schemas/Geometry'
+      - type: object
+        properties:
+          coordinates:
+            type: array
+            items:
+              minItems: 2
+              type: array
+              items:
+                maxItems: 3
+                minItems: 3
+                type: array
+                description: "A single position. In the terraware-server API, positions\
+                  \ must always include 3 dimensions. The X and Y dimensions use the\
+                  \ coordinate system specified by the crs field, and the Z dimension\
+                  \ is in meters."
+                example:
+                - 120
+                - -9.53
+                - 16
+                items:
+                  type: number
+                  format: double
+    MultiPoint:
+      required:
+      - coordinates
+      type: object
+      externalDocs:
+        url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.3
+      allOf:
+      - $ref: '#/components/schemas/Geometry'
+      - type: object
+        properties:
+          coordinates:
+            type: array
+            items:
+              maxItems: 3
+              minItems: 3
+              type: array
+              description: "A single position. In the terraware-server API, positions\
+                \ must always include 3 dimensions. The X and Y dimensions use the\
+                \ coordinate system specified by the crs field, and the Z dimension\
+                \ is in meters."
+              example:
+              - 120
+              - -9.53
+              - 16
+              items:
+                type: number
+                format: double
+    MultiPolygon:
+      required:
+      - coordinates
+      type: object
+      externalDocs:
+        url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.7
+      allOf:
+      - $ref: '#/components/schemas/Geometry'
+      - type: object
+        properties:
+          coordinates:
+            type: array
+            items:
+              type: array
+              items:
+                minItems: 4
+                type: array
+                description: "A LineString with four or more positions. The first\
+                  \ and last positions are equivalent, and they MUST contain identical\
+                  \ values."
+                externalDocs:
+                  url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6
+                items:
+                  maxItems: 3
+                  minItems: 3
+                  type: array
+                  description: "A single position. In the terraware-server API, positions\
+                    \ must always include 3 dimensions. The X and Y dimensions use\
+                    \ the coordinate system specified by the crs field, and the Z\
+                    \ dimension is in meters."
+                  example:
+                  - 120
+                  - -9.53
+                  - 16
+                  items:
+                    type: number
+                    format: double
     NotNodePayload:
       required:
       - child
@@ -2159,6 +2356,64 @@ components:
         \ this will require x OR y OR z."
       allOf:
       - $ref: '#/components/schemas/SearchNodePayload'
+    Point:
+      required:
+      - coordinates
+      type: object
+      externalDocs:
+        url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.2
+      allOf:
+      - $ref: '#/components/schemas/Geometry'
+      - type: object
+        properties:
+          coordinates:
+            maxItems: 3
+            minItems: 3
+            type: array
+            description: "A single position. In the terraware-server API, positions\
+              \ must always include 3 dimensions. The X and Y dimensions use the coordinate\
+              \ system specified by the crs field, and the Z dimension is in meters."
+            example:
+            - 120
+            - -9.53
+            - 16
+            items:
+              type: number
+              format: double
+    Polygon:
+      required:
+      - coordinates
+      type: object
+      externalDocs:
+        url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6
+      allOf:
+      - $ref: '#/components/schemas/Geometry'
+      - type: object
+        properties:
+          coordinates:
+            type: array
+            items:
+              minItems: 4
+              type: array
+              description: "A LineString with four or more positions. The first and\
+                \ last positions are equivalent, and they MUST contain identical values."
+              externalDocs:
+                url: https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.6
+              items:
+                maxItems: 3
+                minItems: 3
+                type: array
+                description: "A single position. In the terraware-server API, positions\
+                  \ must always include 3 dimensions. The X and Y dimensions use the\
+                  \ coordinate system specified by the crs field, and the Z dimension\
+                  \ is in meters."
+                example:
+                - 120
+                - -9.53
+                - 16
+                items:
+                  type: number
+                  format: double
     SearchField:
       type: string
       enum:
@@ -2675,6 +2930,8 @@ components:
           - Polylinez
           - Polygonz
           - Pultipointz
+        geom:
+          $ref: '#/components/schemas/Geometry'
         gpsHorizAccuracy:
           type: number
           format: double

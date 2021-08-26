@@ -13,6 +13,7 @@ import com.terraformation.backend.gis.model.FeatureModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
+import net.postgis.jdbc.geometry.Geometry
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -90,6 +91,7 @@ class FeatureController(private val featureStore: FeatureStore) {
 data class CreateFeatureRequestPayload(
     val layerId: LayerId,
     val shapeType: ShapeType,
+    val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
     val attrib: String? = null,
@@ -100,6 +102,7 @@ data class CreateFeatureRequestPayload(
     return FeatureModel(
         layerId = layerId,
         shapeType = shapeType,
+        geom = geom,
         gpsHorizAccuracy = gpsHorizAccuracy,
         gpsVertAccuracy = gpsVertAccuracy,
         attrib = attrib,
@@ -112,6 +115,7 @@ data class CreateFeatureRequestPayload(
 data class UpdateFeatureRequestPayload(
     val layerId: LayerId,
     val shapeType: ShapeType,
+    val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
     val attrib: String? = null,
@@ -123,6 +127,7 @@ data class UpdateFeatureRequestPayload(
         id = id,
         layerId = layerId,
         shapeType = shapeType,
+        geom = geom,
         gpsHorizAccuracy = gpsHorizAccuracy,
         gpsVertAccuracy = gpsVertAccuracy,
         attrib = attrib,
@@ -136,6 +141,7 @@ data class FeatureResponse(
     val id: FeatureId,
     val layerId: LayerId,
     val shapeType: ShapeType,
+    val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
     val attrib: String? = null,
@@ -148,6 +154,7 @@ data class FeatureResponse(
       model.id!!,
       model.layerId,
       model.shapeType,
+      model.geom,
       model.gpsHorizAccuracy,
       model.gpsVertAccuracy,
       model.attrib,
