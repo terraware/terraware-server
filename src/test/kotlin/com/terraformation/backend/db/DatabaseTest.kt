@@ -161,7 +161,6 @@ abstract class DatabaseTest {
       layerId: Long = id / 10,
       shapeType: ShapeType = ShapeType.Point,
       geom: Geometry? = null,
-      altitude: Double? = null,
       gpsHorizAccuracy: Double? = null,
       gpsVertAccuracy: Double? = null,
       attrib: String? = null,
