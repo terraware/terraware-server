@@ -8,6 +8,7 @@ import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PhotoId
+import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.ThumbnailId
@@ -35,11 +36,12 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockk<UserModel>()
-  private val nonExistentFeatureId = FeatureId(400)
-  private val layerId = LayerId(100)
-  private val photoId = PhotoId(30)
-  private val nonExistentLayerId = LayerId(401)
   private val siteId = SiteId(10)
+  private val layerId = LayerId(100)
+  private val nonExistentLayerId = LayerId(401)
+  private val nonExistentFeatureId = FeatureId(400)
+  private val photoId = PhotoId(30)
+  private val plantObservationId = PlantObservationId(20)
   private val thumbnailId = ThumbnailId(40)
   private val validCreateRequest =
       FeatureModel(
@@ -175,7 +177,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     plantsDao.insert(PlantsRow(featureId = feature.id, createdTime = time1, modifiedTime = time1))
     plantObservationsDao.insert(
         PlantObservationsRow(
-            id = 20,
+            id = plantObservationId,
             featureId = feature.id,
             timestamp = time1,
             createdTime = time1,
@@ -184,7 +186,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
         PhotosRow(
             id = photoId,
             featureId = feature.id,
-            plantObservationId = 20,
+            plantObservationId = plantObservationId,
             capturedTime = time1,
             fileName = "myphoto",
             contentType = "jpeg",

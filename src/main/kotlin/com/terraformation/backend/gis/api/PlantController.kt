@@ -5,6 +5,7 @@ import com.terraformation.backend.api.GISAppEndpoint
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.FeatureId
+import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
 import com.terraformation.backend.db.SpeciesId
@@ -31,8 +32,12 @@ class PlantController(private val plantStore: PlantStore) {
   @Operation(summary = "Creates a new plant. Use the Features API to delete the plant.")
   @PostMapping
   fun create(@RequestBody payload: CreatePlantRequestPayload): CreatePlantResponsePayload {
-    val newPlant = plantStore.createPlant(payload.featureId, payload.toRow())
-    return CreatePlantResponsePayload(PlantResponse(newPlant))
+    try {
+      val newPlant = plantStore.createPlant(payload.featureId, payload.toRow())
+      return CreatePlantResponsePayload(PlantResponse(newPlant))
+    } catch (e: FeatureNotFoundException) {
+      throw NotFoundException("Cannot create Plant. Feature id ${payload.featureId} is invalid.")
+    }
   }
 
   @ApiResponse(responseCode = "200")
@@ -63,7 +68,7 @@ class PlantController(private val plantStore: PlantStore) {
             maxEnteredTime = payload.maxEnteredTime,
             notes = payload.notes)
 
-    return PlantsListResponsePayload(plants.map { PlantListResponse(it) })
+    return PlantsListResponsePayload(plants.map { ExtendedPlantResponse(it) })
   }
 
   @ApiResponse(responseCode = "200")
@@ -161,7 +166,7 @@ data class PlantResponse(
   ) : this(row.featureId!!, row.label, row.speciesId, row.naturalRegen, row.datePlanted)
 }
 
-data class PlantListResponse(
+data class ExtendedPlantResponse(
     val featureId: FeatureId,
     val label: String? = null,
     val speciesId: SpeciesId? = null,
@@ -184,10 +189,11 @@ data class PlantListResponse(
 
 data class CreatePlantResponsePayload(val plant: PlantResponse) : SuccessResponsePayload
 
-data class PlantsListResponsePayload(val list: List<PlantListResponse>) : SuccessResponsePayload
+data class GetPlantResponsePayload(val plant: PlantResponse) : SuccessResponsePayload
+
+data class PlantsListResponsePayload(val list: List<ExtendedPlantResponse>) :
+    SuccessResponsePayload
 
 data class PlantSummaryResponsePayload(val summary: Map<SpeciesId, Int>) : SuccessResponsePayload
-
-data class GetPlantResponsePayload(val plant: PlantResponse) : SuccessResponsePayload
 
 data class UpdatePlantResponsePayload(val plant: PlantResponse) : SuccessResponsePayload

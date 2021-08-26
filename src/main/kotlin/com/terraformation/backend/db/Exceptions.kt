@@ -21,7 +21,11 @@ class KeycloakUserNotFoundException(message: String) : Exception(message)
 
 class LayerNotFoundException(val layerId: LayerId) : Exception("Layer $layerId not found")
 
-class PlantNotFoundException(val featureId: FeatureId) : Exception("Plant $featureId not found")
+class PlantNotFoundException(val featureId: FeatureId) :
+    Exception("Plant with feature id $featureId not found")
+
+class PlantObservationNotFoundException(val id: PlantObservationId) :
+    Exception("Plant observation $id not found")
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     Exception("Species $speciesId not found")

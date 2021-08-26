@@ -122,3 +122,11 @@ VALUES (1, 'Point'),
        (15, 'Polygonz'),
        (18, 'Pultipointz')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO health_states (id, name)
+VALUES (1, 'Good'),
+       (2, 'Moderate'),
+       (3, 'Poor'),
+       (4, 'Dead')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+

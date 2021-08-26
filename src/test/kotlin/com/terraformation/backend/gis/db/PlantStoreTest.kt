@@ -18,13 +18,14 @@ import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import io.mockk.every
 import io.mockk.mockk
-import java.lang.IllegalArgumentException
 import java.time.Clock
 import java.time.Instant
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -62,7 +63,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
     plantsDao = PlantsDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
 
-    store = PlantStore(clock, dslContext, plantsDao, speciesDao)
+    store = PlantStore(clock, dslContext, featuresDao, plantsDao, speciesDao)
     every { clock.instant() } returns time1
     every { user.canCreateLayerData(featureId = any()) } returns true
     every { user.canReadLayerData(featureId = any()) } returns true
@@ -124,23 +125,48 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create adds a new row to Plants table, returns PlantsRow with populated timestamps`() {
     val plant = createPlant(validCreateRequest)
-    assertEquals(plant.createdTime, time1)
-    assertEquals(plant.modifiedTime, time1)
+    assertEquals(time1, plant.createdTime)
+    assertEquals(time1, plant.modifiedTime)
     assertEquals(validCreateRequest.copy(createdTime = time1, modifiedTime = time1), plant)
     assertEquals(plant, plantsDao.fetchOneByFeatureId(validCreateRequest.featureId!!))
   }
 
   @Test
-  fun `create throws IllegalArgumentException if feature id arguments do not match`() {
-    assertThrows<IllegalArgumentException> {
-      store.createPlant(nonExistentFeatureId, validCreateRequest)
-    }
+  fun `create does not modify row passed in, returns a different row instance`() {
+    val requestCopy = validCreateRequest.copy()
+    val plant = createPlant(validCreateRequest)
+    assertTrue(
+        requestCopy == validCreateRequest,
+        "validCreateRequest is not being modified by the plant store")
+    assertFalse(
+        validCreateRequest === plant,
+        "the plant store does not return back the same instance it received")
+  }
+
+  @Test
+  fun `create ignores timestamp fields if they are set`() {
+    val plant = createPlant(validCreateRequest.copy(createdTime = time2, modifiedTime = time2))
+    assertEquals(time1, plant.createdTime)
+    assertEquals(time1, plant.modifiedTime)
+  }
+
+  @Test
+  fun `create throws RuntimeException if feature id arguments do not match`() {
+    assertThrows<RuntimeException> { store.createPlant(nonExistentFeatureId, validCreateRequest) }
   }
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
     every { user.canCreateLayerData(featureId = any()) } returns false
     assertThrows<AccessDeniedException> { createPlant(validCreateRequest) }
+  }
+
+  @Test
+  fun `create fails with AccessDeniedException if feature doesn't exist`() {
+    every { user.canCreateLayerData(featureId = any()) } returns false
+    assertThrows<AccessDeniedException> {
+      createPlant(validCreateRequest.copy(featureId = nonExistentFeatureId))
+    }
   }
 
   @Test
@@ -186,6 +212,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchPlantList filters on species id when it is provided`() {
     val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
     val speciesIdFilter = speciesIdToFeatureIds.keys.elementAt(0)
+    // For testing simplicity, insertSeveralPlants makes species name and id the same
     val plantsFetched = store.fetchPlantsList(layerId, speciesName = speciesIdFilter.toString())
     val expectedFeatureIds =
         speciesIdToFeatureIds.filter { it.key == speciesIdFilter }.values.flatten()
@@ -209,6 +236,9 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         emptyList<FetchPlantListResult>(), store.fetchPlantsList(layerId, minEnteredTime = time2))
+    assertEquals(
+        emptyList<FetchPlantListResult>(),
+        store.fetchPlantsList(layerId, maxEnteredTime = time1.minusSeconds(1)))
   }
 
   @Test
@@ -257,6 +287,9 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
     insertSeveralPlants(speciesIdsToCount, enteredTime = time1)
     assertEquals(
         emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId, minEnteredTime = time2))
+    assertEquals(
+        emptyMap<SpeciesId, Int>(),
+        store.fetchPlantSummary(layerId, maxEnteredTime = time1.minusSeconds(1)))
     assertEquals(speciesIdsToCount, store.fetchPlantSummary(layerId, maxEnteredTime = time1))
     assertEquals(
         speciesIdsToCount,
@@ -281,6 +314,58 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `update changes the row in the database, returns row with updated timestamps`() {
+    val plant = createPlant(validCreateRequest)
+    val plannedUpdates = plant.copy(label = "test update writes to db")
+    every { clock.instant() } returns time2
+    val updatedResult = updatePlant(plannedUpdates)
+
+    assertEquals(plannedUpdates.copy(createdTime = time1, modifiedTime = time2), updatedResult)
+    assertEquals(updatedResult, plantsDao.fetchOneByFeatureId(featureId))
+  }
+
+  @Test
+  fun `update does not modify row passed in, returns a different row instance`() {
+    val plant = createPlant(validCreateRequest)
+    val plannedUpdates = plant.copy(label = "referential equality test")
+    val plannedUpdatesCopy = plannedUpdates.copy()
+    val updated = updatePlant(plannedUpdates)
+    assertTrue(
+        plannedUpdatesCopy == plannedUpdates,
+        "instance we passed as an argument is not being modified by the plant store")
+    assertFalse(
+        updated === plannedUpdates,
+        "the plant store does not return back the same instance it received")
+  }
+
+  @Test
+  fun `update does not update timestamps if there's no change from the database`() {
+    val plant = createPlant(validCreateRequest)
+    val updated = updatePlant(plant)
+    assertEquals(plant, updated)
+  }
+
+  @Test
+  fun `update ignores timestamps if they are set`() {
+    val plant = createPlant(validCreateRequest)
+    val ignoredTime = time2.plusSeconds(5)
+    every { clock.instant() } returns time2
+    val updatedPlant =
+        updatePlant(
+            plant.copy(
+                label = "update ignores timestamps",
+                createdTime = ignoredTime,
+                modifiedTime = ignoredTime))
+    assertEquals(time1, updatedPlant.createdTime)
+    assertEquals(time2, updatedPlant.modifiedTime)
+  }
+
+  @Test
+  fun `update fails with RuntimeException if feature id arguments do not match`() {
+    assertThrows<RuntimeException> { store.updatePlant(nonExistentFeatureId, validCreateRequest) }
+  }
+
+  @Test
   fun `update fails with PlantNotFoundException if user doesn't have update permission`() {
     val plant = createPlant(validCreateRequest)
     every { user.canUpdateLayerData(featureId = any()) } returns false
@@ -288,7 +373,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update fails with PlantNotFoundException if feature id doesn't exist`() {
+  fun `update fails with PlantNotFoundException if plant doesn't exist`() {
     val plant = createPlant(validCreateRequest)
     assertThrows<PlantNotFoundException> {
       updatePlant(plant.copy(featureId = nonExistentFeatureId))

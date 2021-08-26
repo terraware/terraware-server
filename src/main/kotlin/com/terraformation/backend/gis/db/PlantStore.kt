@@ -5,11 +5,13 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
 import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.PLANTS
+import java.lang.RuntimeException
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -34,26 +36,25 @@ data class FetchPlantListResult(
 class PlantStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
+    private val featuresDao: FeaturesDao,
     private val plantsDao: PlantsDao,
     private val speciesDao: SpeciesDao,
 ) {
   fun createPlant(featureId: FeatureId, plant: PlantsRow): PlantsRow {
     if (featureId != plant.featureId) {
-      throw IllegalArgumentException("featureId in PlantsRow must match featureId argument")
+      // this should never be thrown, indicates a bug in the calling code
+      throw RuntimeException("featureId in PlantsRow must match featureId argument")
     }
-    if (!currentUser().canCreateLayerData(featureId)) {
+    if (!currentUser().canCreateLayerData(featureId) ||
+        featuresDao.fetchOneById(featureId) == null) {
       throw AccessDeniedException(
-          "No permission to create a plant associated with featureId $featureId",
-      )
+          "No permission to create a plant associated with featureId $featureId")
     }
 
     val currTime = clock.instant()
-    plant.createdTime = currTime
-    plant.modifiedTime = currTime
-
-    plantsDao.insert(plant)
-
-    return plant
+    val result = plant.copy(createdTime = currTime, modifiedTime = currTime)
+    plantsDao.insert(result)
+    return result
   }
 
   fun fetchPlant(featureId: FeatureId): PlantsRow? {
@@ -153,7 +154,8 @@ class PlantStore(
 
   fun updatePlant(featureId: FeatureId, plant: PlantsRow): PlantsRow {
     if (featureId != plant.featureId) {
-      throw IllegalArgumentException("featureId in PlantsRow must match featureId argument")
+      // this should never be thrown, indicates a bug in the calling code
+      throw RuntimeException("featureId in PlantsRow must match featureId argument")
     }
 
     if (!currentUser().canUpdateLayerData(featureId)) {
@@ -168,10 +170,8 @@ class PlantStore(
       return existingPlant
     }
 
-    plant.createdTime = existingPlant.createdTime
-    plant.modifiedTime = clock.instant()
-
-    plantsDao.update(plant)
-    return plant
+    val result = plant.copy(createdTime = existingPlant.createdTime, modifiedTime = clock.instant())
+    plantsDao.update(result)
+    return result
   }
 }

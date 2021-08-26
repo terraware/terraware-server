@@ -23,7 +23,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
             description = "Local server API for seed banks",
             license = License(name = "MIT"),
         ),
-    tags = [Tag(name = "SeedBankApp"), Tag(name = "DeviceManager")])
+    tags = [Tag(name = "SeedBankApp"), Tag(name = "DeviceManager"), Tag(name = "GISApp")])
 @SecurityScheme(
     name = "ApiKey",
     type = SecuritySchemeType.HTTP,
