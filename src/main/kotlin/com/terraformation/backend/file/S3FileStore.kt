@@ -4,6 +4,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
+import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystemException
 import java.nio.file.NoSuchFileException
@@ -34,43 +35,43 @@ class S3FileStore(config: TerrawareServerConfig) : FileStore {
       config.s3BucketName
           ?: throw IllegalArgumentException("No S3 bucket name found in configuration")
 
-  override fun delete(path: Path) {
+  override fun delete(url: URI) {
     // Test whether the file exists; S3's delete endpoint doesn't return "not found" responses.
-    size(path)
+    size(url)
 
-    val s3Key = toS3Key(path)
+    val s3Key = toS3Key(url)
 
     log.info("Deleting $s3Key from $bucketName")
 
     val request = DeleteObjectRequest.builder().bucket(bucketName).key(s3Key).build()
 
-    mapExceptions(path) {
+    mapExceptions(url) {
       val response = s3Client.deleteObject(request)
       log.info(
           "Response: delete marker = ${response.deleteMarker()}, version = ${response.versionId()}")
     }
   }
 
-  override fun read(path: Path): SizedInputStream {
-    val request = GetObjectRequest.builder().bucket(bucketName).key(toS3Key(path)).build()
+  override fun read(url: URI): SizedInputStream {
+    val request = GetObjectRequest.builder().bucket(bucketName).key(toS3Key(url)).build()
 
-    return mapExceptions(path) {
+    return mapExceptions(url) {
       val responseInputStream = s3Client.getObject(request)
       SizedInputStream(responseInputStream, responseInputStream.response().contentLength())
     }
   }
 
-  override fun size(path: Path): Long {
-    val request = HeadObjectRequest.builder().bucket(bucketName).key(toS3Key(path)).build()
+  override fun size(url: URI): Long {
+    val request = HeadObjectRequest.builder().bucket(bucketName).key(toS3Key(url)).build()
 
-    return mapExceptions(path) {
+    return mapExceptions(url) {
       val response = s3Client.headObject(request)
       response.contentLength()
     }
   }
 
-  override fun write(path: Path, contents: InputStream, size: Long) {
-    val s3Key = toS3Key(path)
+  override fun write(url: URI, contents: InputStream, size: Long) {
+    val s3Key = toS3Key(url)
 
     // Check whether the file already exists so that we can avoid overwriting it. There is a race
     // condition here if the same path is written twice in parallel. S3 does not support atomic
@@ -78,7 +79,7 @@ class S3FileStore(config: TerrawareServerConfig) : FileStore {
     // kind of synchronization mechanism like grabbing locks. We expect the race to be too rare to
     // justify the cost of such a mechanism.
     try {
-      size(path)
+      size(url)
       throw FileAlreadyExistsException(s3Key)
     } catch (e: NoSuchFileException) {
       // This is the happy path; we expect the file to not exist yet.
@@ -88,31 +89,40 @@ class S3FileStore(config: TerrawareServerConfig) : FileStore {
 
     val request = PutObjectRequest.builder().bucket(bucketName).key(s3Key).build()
 
-    mapExceptions(path) {
+    mapExceptions(url) {
       log.debugWithTiming("Wrote $size bytes to S3") {
         s3Client.putObject(request, RequestBody.fromInputStream(contents, size))
       }
     }
   }
 
-  /**
-   * Returns an S3 key for a path. S3 keys always use `/` as the path separator and are always
-   * relative (never start with `/`).
-   */
-  private fun toS3Key(path: Path): String {
+  override fun canAccept(url: URI): Boolean {
+    return url.scheme == "s3" && url.host == bucketName && url.path.length > 1 && url.path[0] == '/'
+  }
+
+  override fun getUrl(path: Path): URI {
     val relativePath = if (path.isAbsolute) path.relativeTo(path.root) else path
-    return relativePath.invariantSeparatorsPathString
+    return URI("s3://$bucketName/${relativePath.invariantSeparatorsPathString}")
+  }
+
+  /** Returns an S3 key for a URL. */
+  private fun toS3Key(url: URI): String {
+    if (!canAccept(url)) {
+      throw InvalidStorageLocationException(url)
+    }
+
+    return url.path.substring(1)
   }
 
   /**
    * Runs a block of code and translates AWS-specific exceptions to more generic equivalents so
    * calling code doesn't have to be aware of which kind of photo content store it's using.
    */
-  private fun <T> mapExceptions(relativePath: Path, func: () -> T): T {
+  private fun <T> mapExceptions(url: URI, func: () -> T): T {
     return try {
       func()
     } catch (e: NoSuchKeyException) {
-      throw NoSuchFileException(toS3Key(relativePath))
+      throw NoSuchFileException(toS3Key(url))
     } catch (e: NoSuchBucketException) {
       log.error("S3 bucket $bucketName not found")
       throw FileSystemException("Cannot access S3 bucket")

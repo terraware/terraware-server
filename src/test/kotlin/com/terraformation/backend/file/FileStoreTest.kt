@@ -1,13 +1,14 @@
 package com.terraformation.backend.file
 
+import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
-import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -18,30 +19,37 @@ import org.junit.jupiter.api.assertThrows
 abstract class FileStoreTest {
   protected abstract var store: FileStore
 
+  private val badUrl = URI("bogus://invalid/uri")
+
   @Test
   fun `delete removes file`() {
-    val path = makePath()
+    val url = makeUrl()
 
-    createFile(path)
+    createFile(url)
 
-    store.delete(path)
+    store.delete(url)
 
-    assertFalse(fileExists(path), "File should not exist")
+    assertFalse(fileExists(url), "File should not exist")
   }
 
   @Test
   fun `delete throws exception if file does not exist`() {
-    assertThrows<NoSuchFileException> { store.delete(makePath()) }
+    assertThrows<NoSuchFileException> { store.delete(makeUrl()) }
+  }
+
+  @Test
+  fun `delete throws exception if URL is invalid`() {
+    assertThrows<InvalidStorageLocationException> { store.delete(badUrl) }
   }
 
   @Test
   fun `read returns file contents`() {
-    val path = makePath()
+    val url = makeUrl()
     val contents = Random.nextBytes(100)
 
-    createFile(path, contents)
+    createFile(url, contents)
 
-    val readResult = store.read(path)
+    val readResult = store.read(url)
 
     assertEquals(contents.size.toLong(), readResult.size, "Size should be correct")
     assertArrayEquals(contents, readResult.readAllBytes(), "Content should be identical")
@@ -49,55 +57,81 @@ abstract class FileStoreTest {
 
   @Test
   fun `read throws exception if file does not exist`() {
-    assertThrows<NoSuchFileException> { store.read(makePath()) }
+    assertThrows<NoSuchFileException> { store.read(makeUrl()) }
+  }
+
+  @Test
+  fun `read throws exception if URL is invalid`() {
+    assertThrows<InvalidStorageLocationException> { store.read(badUrl) }
   }
 
   @Test
   fun `size returns file size`() {
-    val path = makePath()
+    val url = makeUrl()
     val contents = Random.nextBytes(101)
 
-    createFile(path, contents)
+    createFile(url, contents)
 
-    val sizeResult = store.size(path)
+    val sizeResult = store.size(url)
 
     assertEquals(contents.size.toLong(), sizeResult)
   }
 
   @Test
   fun `size throws exception if file does not exist`() {
-    assertThrows<NoSuchFileException> { store.size(makePath()) }
+    assertThrows<NoSuchFileException> { store.size(makeUrl()) }
+  }
+
+  @Test
+  fun `size throws exception if URL is invalid`() {
+    assertThrows<InvalidStorageLocationException> { store.size(badUrl) }
   }
 
   @Test
   fun `store creates new file`() {
-    val path = makePath()
+    val url = makeUrl()
     val bytesToWrite = Random.nextBytes(100)
 
-    store.write(path, bytesToWrite.inputStream(), bytesToWrite.size.toLong())
+    store.write(url, bytesToWrite.inputStream(), bytesToWrite.size.toLong())
 
-    val bytesWritten = readFile(path)
+    val bytesWritten = readFile(url)
     assertArrayEquals(bytesToWrite, bytesWritten)
   }
 
   @Test
   fun `store throws exception if file already exists`() {
-    val path = makePath()
+    val url = makeUrl()
 
-    createFile(path)
+    createFile(url)
 
     assertThrows<FileAlreadyExistsException> {
-      store.write(path, Random.nextBytes(1).inputStream(), 1)
+      store.write(url, Random.nextBytes(1).inputStream(), 1)
     }
   }
 
-  protected open fun makePath(): Path {
-    return Path("${Random.nextInt()}")
+  @Test
+  fun `store throws exception if URL is invalid`() {
+    assertThrows<InvalidStorageLocationException> {
+      store.write(badUrl, Random.nextBytes(1).inputStream(), 1)
+    }
   }
 
-  protected abstract fun createFile(path: Path, content: ByteArray = Random.nextBytes(1))
+  @Test
+  fun `canAccept does not accept bogus URLs`() {
+    assertFalse(store.canAccept(URI("unacceptable://bogus/path/here")))
+  }
 
-  protected abstract fun fileExists(path: Path): Boolean
+  @Test
+  fun `canAccept accepts its own URLs`() {
+    val url = store.getUrl(Path("foo/bar"))
+    assertTrue(store.canAccept(url))
+  }
 
-  protected abstract fun readFile(path: Path): ByteArray
+  protected abstract fun makeUrl(): URI
+
+  protected abstract fun createFile(url: URI, content: ByteArray = Random.nextBytes(1))
+
+  protected abstract fun fileExists(url: URI): Boolean
+
+  protected abstract fun readFile(url: URI): ByteArray
 }

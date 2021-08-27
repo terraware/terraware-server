@@ -10,6 +10,7 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import java.io.IOException
 import java.io.InputStream
+import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
@@ -50,10 +51,10 @@ class PhotoRepository(
       throw AccessDeniedException("No permission to update accession data")
     }
 
-    val photoPath = getPhotoPath(facilityId, accessionNumber, metadata.filename)
+    val photoUrl = getPhotoUrl(facilityId, accessionNumber, metadata.filename)
 
     try {
-      fileStore.write(photoPath, data, size)
+      fileStore.write(photoUrl, data, size)
 
       val databaseRow =
           AccessionPhotosRow(
@@ -74,7 +75,7 @@ class PhotoRepository(
       throw e
     } catch (e: Exception) {
       try {
-        fileStore.delete(photoPath)
+        fileStore.delete(photoUrl)
       } catch (ignore: NoSuchFileException) {
         // Swallow this; file is already deleted
       }
@@ -92,8 +93,8 @@ class PhotoRepository(
       throw AccessDeniedException("No permission to read accession data")
     }
 
-    val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
-    return fileStore.read(photoPath)
+    val photoUrl = getPhotoUrl(facilityId, accessionNumber, filename)
+    return fileStore.read(photoUrl)
   }
 
   /** Returns the photo's size in bytes. */
@@ -107,17 +108,13 @@ class PhotoRepository(
       throw AccessDeniedException("No permission to read accession data")
     }
 
-    val photoPath = getPhotoPath(facilityId, accessionNumber, filename)
-    return fileStore.size(photoPath)
+    val photoUrl = getPhotoUrl(facilityId, accessionNumber, filename)
+    return fileStore.size(photoUrl)
   }
 
-  /** Returns the relative path of a photo. */
-  private fun getPhotoPath(
-      facilityId: FacilityId,
-      accessionNumber: String,
-      filename: String
-  ): Path {
-    return getAccessionPath(facilityId, accessionNumber).resolve(filename)
+  /** Returns the URL of a photo on the file store. */
+  private fun getPhotoUrl(facilityId: FacilityId, accessionNumber: String, filename: String): URI {
+    return fileStore.getUrl(getAccessionPath(facilityId, accessionNumber).resolve(filename))
   }
 
   /** Returns the relative path of the directory that contains an accession's photos. */

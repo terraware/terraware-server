@@ -4,9 +4,9 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.log.perClassLogger
 import io.mockk.every
 import io.mockk.mockk
+import java.net.URI
 import java.nio.file.NoSuchFileException
-import java.nio.file.Path
-import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.random.Random
 import org.junit.Assume.assumeNoException
 import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.AfterEach
@@ -69,42 +69,38 @@ internal class S3FileStoreTest : FileStoreTest() {
     }
   }
 
-  override fun makePath(): Path {
-    val path = super.makePath()
-    keysCreated.add(path.invariantSeparatorsPathString)
-    return path
+  override fun makeUrl(): URI {
+    val url = URI("s3://$bucketName/${Random.nextInt()}")
+    keysCreated.add(url.path.substring(1))
+    return url
   }
 
-  override fun createFile(path: Path, content: ByteArray) {
+  override fun createFile(url: URI, content: ByteArray) {
     s3Client.putObject(
-        PutObjectRequest.builder()
-            .bucket(bucketName)
-            .key(path.invariantSeparatorsPathString)
-            .build(),
+        PutObjectRequest.builder().bucket(bucketName).key(url.path.substring(1)).build(),
         RequestBody.fromBytes(content))
   }
 
-  override fun fileExists(path: Path): Boolean {
+  override fun fileExists(url: URI): Boolean {
     return try {
-      readFile(path)
+      readFile(url)
       true
     } catch (e: NoSuchFileException) {
       false
     }
   }
 
-  override fun readFile(path: Path): ByteArray {
+  override fun readFile(url: URI): ByteArray {
+    val key = url.path.substring(1)
+
     return try {
       s3Client
           .getObject(
-              GetObjectRequest.builder()
-                  .bucket(bucketName)
-                  .key(path.invariantSeparatorsPathString)
-                  .build(),
+              GetObjectRequest.builder().bucket(bucketName).key(key).build(),
               ResponseTransformer.toBytes())
           .asByteArray()
     } catch (e: NoSuchKeyException) {
-      throw NoSuchFileException(path.invariantSeparatorsPathString)
+      throw NoSuchFileException(key)
     }
   }
 }
