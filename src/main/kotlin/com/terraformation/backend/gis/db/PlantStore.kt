@@ -2,10 +2,11 @@ package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FeatureId
+import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
-import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.UsesFuzzySearchOperators
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
@@ -38,10 +39,11 @@ class PlantStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val featuresDao: FeaturesDao,
-    private val postgresFuzzySearchOperators: PostgresFuzzySearchOperators,
+    override val fuzzySearchOperators: FuzzySearchOperators,
     private val plantsDao: PlantsDao,
     private val speciesDao: SpeciesDao,
-) {
+) : UsesFuzzySearchOperators {
+
   fun createPlant(plant: PlantsRow): PlantsRow {
     val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
@@ -89,7 +91,7 @@ class PlantStore(
       conditions = conditions.and(FEATURES.ENTERED_TIME.lessOrEqual(maxEnteredTime))
     }
     if (notes != null) {
-      conditions = conditions.and(postgresFuzzySearchOperators.likeFuzzy(FEATURES.NOTES, notes))
+      conditions = conditions.and(FEATURES.NOTES.likeFuzzy(notes))
     }
 
     val records =

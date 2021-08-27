@@ -81,7 +81,6 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
   // through the Features API
 }
 
-@Schema(description = "height and diameterAtBreastHeight must be in meters")
 data class CreateObservRequestPayload(
     val featureId: FeatureId,
     val timestamp: Instant,
@@ -89,7 +88,8 @@ data class CreateObservRequestPayload(
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    val height: Double? = null,
+    @Schema(description = "Height in meters") val height: Double? = null,
+    @Schema(description = "Diameter at breast height in meters")
     val diameterAtBreastHeight: Double? = null,
 ) {
   fun toRow(): PlantObservationsRow {
@@ -106,14 +106,14 @@ data class CreateObservRequestPayload(
   }
 }
 
-@Schema(description = "height and diameterAtBreastHeight must be in meters")
 data class UpdateObservRequestPayload(
     val timestamp: Instant,
     val healthState: HealthState? = null,
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    val height: Double? = null,
+    @Schema(description = "Height in meters") val height: Double? = null,
+    @Schema(description = "Diameter at breast height in meters")
     val diameterAtBreastHeight: Double? = null,
 ) {
   fun toRow(id: PlantObservationId): PlantObservationsRow {
@@ -130,7 +130,6 @@ data class UpdateObservRequestPayload(
   }
 }
 
-@Schema(description = "height and diameterAtBreastHeight are measured in meters")
 data class ObservResponse(
     val id: PlantObservationId,
     val featureId: FeatureId,
@@ -139,7 +138,8 @@ data class ObservResponse(
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    val height: Double? = null,
+    @Schema(description = "Height in meters") val height: Double? = null,
+    @Schema(description = "Diameter at breast height in meters")
     val diameterAtBreastHeight: Double? = null,
 ) {
   constructor(
