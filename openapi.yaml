@@ -11,6 +11,7 @@ servers:
 tags:
 - name: SeedBankApp
 - name: DeviceManager
+- name: GISApp
 paths:
   /api/v1/device/all/config:
     get:
@@ -38,6 +39,212 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListFacilitiesResponse'
+  /api/v1/gis/feature:
+    post:
+      tags:
+      - GISApp
+      summary: Create a new feature.
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeatureRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: "The feature was created successfully. Response includes fields\
+            \ populated by the server, including the feature id."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateFeatureResponsePayload'
+  /api/v1/gis/feature/{featureId}:
+    get:
+      tags:
+      - GISApp
+      operationId: read_2
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFeatureResponsePayload'
+        "404":
+          description: The specified feature doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - GISApp
+      summary: Update an existing feature. Overwrites all fields. Does not allow a
+        feature to be moved between layers (layerId cannot be updated)
+      operationId: update_2
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeatureRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The feature was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateFeatureResponsePayload'
+        "404":
+          description: The specified feature doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    delete:
+      tags:
+      - GISApp
+      summary: "Deletes an existing feature and all records that directly or indirectly\
+        \ reference thatfeature. This includes but is not limited to plants, plant\
+        \ observations, photos, and thumbnails."
+      operationId: delete_1
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteFeatureResponsePayload'
+        "404":
+          description: The specified feature doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/gis/layer:
+    post:
+      tags:
+      - GISApp
+      summary: Create a new layer.
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLayerRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: "The layer was created successfully. Response includes fields\
+            \ populated by the server, including the layer id."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateLayerResponsePayload'
+  /api/v1/gis/layer/{layerId}:
+    get:
+      tags:
+      - GISApp
+      operationId: read_1
+      parameters:
+      - name: layerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLayerResponsePayload'
+        "404":
+          description: The specified layer doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - GISApp
+      summary: "Update an existing layer. Overwrites all fields, so they must all\
+        \ be defined. Does not allow a layer to be moved between sites (siteId cannot\
+        \ be updated)"
+      operationId: update_1
+      parameters:
+      - name: layerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLayerRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The layer was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateLayerResponsePayload'
+        "404":
+          description: The specified layer doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    delete:
+      tags:
+      - GISApp
+      operationId: delete
+      parameters:
+      - name: layerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteLayerResponsePayload'
+        "404":
+          description: The specified layer doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/organization:
     get:
       tags:
@@ -1173,6 +1380,92 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateFeatureRequestPayload:
+      required:
+      - layerId
+      - shapeType
+      type: object
+      properties:
+        layerId:
+          type: integer
+          format: int64
+        shapeType:
+          type: string
+          enum:
+          - Point
+          - Polyline
+          - Polygon
+          - Multipoint
+          - Pointz
+          - Polylinez
+          - Polygonz
+          - Pultipointz
+        gpsHorizAccuracy:
+          type: number
+          format: double
+        gpsVertAccuracy:
+          type: number
+          format: double
+        attrib:
+          type: string
+        notes:
+          type: string
+        enteredTime:
+          type: string
+          format: date-time
+    CreateFeatureResponsePayload:
+      required:
+      - feature
+      - status
+      type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    CreateLayerRequestPayload:
+      required:
+      - hidden
+      - layerType
+      - proposed
+      - siteId
+      - tileSetName
+      type: object
+      properties:
+        siteId:
+          type: integer
+          format: int64
+        layerType:
+          type: string
+          enum:
+          - Aerial Photos
+          - Surface Color Map
+          - Terrain Color Map
+          - Boundaries
+          - Plants Planted
+          - Plants Existing
+          - Irrigation
+          - Infrastructure
+          - Partner Input
+          - Restoration Zones
+          - Site Prep
+          - Map notes
+        tileSetName:
+          type: string
+        proposed:
+          type: boolean
+        hidden:
+          type: boolean
+    CreateLayerResponsePayload:
+      required:
+      - layer
+      - status
+      type: object
+      properties:
+        layer:
+          $ref: '#/components/schemas/LayerResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     CreateSpeciesRequestPayload:
       required:
       - name
@@ -1188,6 +1481,46 @@ components:
       properties:
         details:
           $ref: '#/components/schemas/SpeciesDetails'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    DeleteFeatureResponse:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+    DeleteFeatureResponsePayload:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/DeleteFeatureResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    DeleteLayerResponse:
+      required:
+      - id
+      - siteId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        siteId:
+          type: integer
+          format: int64
+    DeleteLayerResponsePayload:
+      required:
+      - layer
+      - status
+      type: object
+      properties:
+        layer:
+          $ref: '#/components/schemas/DeleteLayerResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     DeviceConfig:
@@ -1319,6 +1652,43 @@ components:
           - $ref: '#/components/schemas/FieldNodePayload'
           - $ref: '#/components/schemas/NotNodePayload'
           - $ref: '#/components/schemas/OrNodePayload'
+    FeatureResponse:
+      required:
+      - id
+      - layerId
+      - shapeType
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        layerId:
+          type: integer
+          format: int64
+        shapeType:
+          type: string
+          enum:
+          - Point
+          - Polyline
+          - Polygon
+          - Multipoint
+          - Pointz
+          - Polylinez
+          - Polygonz
+          - Pultipointz
+        gpsHorizAccuracy:
+          type: number
+          format: double
+        gpsVertAccuracy:
+          type: number
+          format: double
+        attrib:
+          type: string
+        notes:
+          type: string
+        enteredTime:
+          type: string
+          format: date-time
     FieldNodePayload:
       required:
       - field
@@ -1477,6 +1847,26 @@ components:
           format: date-time
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetFeatureResponsePayload:
+      required:
+      - feature
+      - status
+      type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetLayerResponsePayload:
+      required:
+      - layer
+      - status
+      type: object
+      properties:
+        layer:
+          $ref: '#/components/schemas/LayerResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetSiteResponse:
       required:
       - id
@@ -1498,6 +1888,43 @@ components:
           type: string
         timezone:
           type: string
+    LayerResponse:
+      required:
+      - hidden
+      - id
+      - layerType
+      - proposed
+      - siteId
+      - tileSetName
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        siteId:
+          type: integer
+          format: int64
+        layerType:
+          type: string
+          enum:
+          - Aerial Photos
+          - Surface Color Map
+          - Terrain Color Map
+          - Boundaries
+          - Plants Planted
+          - Plants Existing
+          - Irrigation
+          - Infrastructure
+          - Partner Input
+          - Restoration Zones
+          - Site Prep
+          - Map notes
+        tileSetName:
+          type: string
+        proposed:
+          type: boolean
+        hidden:
+          type: boolean
     ListAllFieldValuesRequestPayload:
       required:
       - fields
@@ -2228,6 +2655,92 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    UpdateFeatureRequestPayload:
+      required:
+      - layerId
+      - shapeType
+      type: object
+      properties:
+        layerId:
+          type: integer
+          format: int64
+        shapeType:
+          type: string
+          enum:
+          - Point
+          - Polyline
+          - Polygon
+          - Multipoint
+          - Pointz
+          - Polylinez
+          - Polygonz
+          - Pultipointz
+        gpsHorizAccuracy:
+          type: number
+          format: double
+        gpsVertAccuracy:
+          type: number
+          format: double
+        attrib:
+          type: string
+        notes:
+          type: string
+        enteredTime:
+          type: string
+          format: date-time
+    UpdateFeatureResponsePayload:
+      required:
+      - feature
+      - status
+      type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    UpdateLayerRequestPayload:
+      required:
+      - hidden
+      - layerType
+      - proposed
+      - siteId
+      - tileSetName
+      type: object
+      properties:
+        siteId:
+          type: integer
+          format: int64
+        layerType:
+          type: string
+          enum:
+          - Aerial Photos
+          - Surface Color Map
+          - Terrain Color Map
+          - Boundaries
+          - Plants Planted
+          - Plants Existing
+          - Irrigation
+          - Infrastructure
+          - Partner Input
+          - Restoration Zones
+          - Site Prep
+          - Map notes
+        tileSetName:
+          type: string
+        proposed:
+          type: boolean
+        hidden:
+          type: boolean
+    UpdateLayerResponsePayload:
+      required:
+      - layer
+      - status
+      type: object
+      properties:
+        layer:
+          $ref: '#/components/schemas/LayerResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     UpdateSpeciesResponsePayload:
       required:
       - status
@@ -2322,9 +2835,3 @@ components:
             \ and is ignored on input."
           allOf:
           - $ref: '#/components/schemas/SeedQuantityPayload'
-  securitySchemes:
-    ApiKey:
-      type: http
-      description: Key-based authentication for non-browser-based clients. Username
-        is currently ignored; password should be the API key.
-      scheme: basic
