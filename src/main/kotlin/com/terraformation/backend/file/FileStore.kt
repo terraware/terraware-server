@@ -2,6 +2,7 @@ package com.terraformation.backend.file
 
 import java.io.IOException
 import java.io.InputStream
+import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
@@ -24,8 +25,10 @@ interface FileStore {
    * @throws NoSuchFileException The file did not exist.
    * @throws IOException An error occurred while deleting the file. The file may or may not have
    * actually been removed.
+   * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
+   * file store.
    */
-  fun delete(path: Path)
+  fun delete(url: URI)
 
   /**
    * Reads a file from the storage system. The returned stream is not guaranteed to be non-blocking.
@@ -33,8 +36,10 @@ interface FileStore {
    * @return An input stream that includes the file size. The caller is responsible for closing it.
    * @throws NoSuchFileException The file does not exist.
    * @throws IOException An error occurred while opening the file.
+   * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
+   * file store.
    */
-  fun read(path: Path): SizedInputStream
+  fun read(url: URI): SizedInputStream
 
   /**
    * Returns the size of a file. Note that [read] returns the size alongside the file contents, so
@@ -42,8 +47,10 @@ interface FileStore {
    *
    * @throws NoSuchFileException The file does not exist.
    * @throws IOException An error occurred while fetching the file's size.
+   * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
+   * file store.
    */
-  fun size(path: Path): Long
+  fun size(url: URI): Long
 
   /**
    * Writes a file to the storage system. Does not overwrite existing data. If you need to overwrite
@@ -58,6 +65,14 @@ interface FileStore {
    * @throws IOException An error occurred while writing the file or while reading [contents].
    * Implementations should attempt to delete files that weren't written successfully, though
    * depending on the nature of the error, it may be impossible to do so.
+   * @throws InvalidStorageLocationException The URL referred to a file that isn't managed by this
+   * file store.
    */
-  fun write(path: Path, contents: InputStream, size: Long)
+  fun write(url: URI, contents: InputStream, size: Long)
+
+  /** Returns true if this file store can accept a URI. */
+  fun canAccept(url: URI): Boolean
+
+  /** Returns the URL of a file with a given relative path on this file store. */
+  fun getUrl(path: Path): URI
 }

@@ -2,10 +2,8 @@ package com.terraformation.backend
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.info.License
-import io.swagger.v3.oas.annotations.security.SecurityScheme
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -24,13 +22,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
             license = License(name = "MIT"),
         ),
     tags = [Tag(name = "SeedBankApp"), Tag(name = "DeviceManager"), Tag(name = "GISApp")])
-@SecurityScheme(
-    name = "ApiKey",
-    type = SecuritySchemeType.HTTP,
-    scheme = "basic",
-    description =
-        "Key-based authentication for non-browser-based clients. Username is currently ignored; password should be the API key.",
-)
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @SpringBootApplication
 class Application
