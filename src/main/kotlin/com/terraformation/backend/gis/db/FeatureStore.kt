@@ -131,7 +131,7 @@ class FeatureStore(
   }
 
   fun deleteFeature(id: FeatureId): FeatureId {
-    if (!currentUser().canDeleteLayerData(id)) {
+    if (!currentUser().canDeleteLayerData(id) || noPermissionsCheckFetch(id) == null) {
       throw FeatureNotFoundException(id)
     }
 

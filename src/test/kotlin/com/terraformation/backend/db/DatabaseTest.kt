@@ -6,10 +6,12 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import net.postgis.jdbc.geometry.Geometry
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
@@ -181,6 +183,29 @@ abstract class DatabaseTest {
           .set(ATTRIB, attrib)
           .set(NOTES, notes)
           .set(ENTERED_TIME, enteredTime)
+          .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_TIME, modifiedTime)
+          .execute()
+    }
+  }
+
+  protected fun insertPlant(
+      featureId: Long,
+      label: String? = null,
+      speciesId: SpeciesId? = null,
+      naturalRegen: Boolean? = null,
+      datePlanted: LocalDate? = null,
+      createdTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = Instant.EPOCH,
+  ) {
+    with(PLANTS) {
+      dslContext
+          .insertInto(PLANTS)
+          .set(FEATURE_ID, FeatureId(featureId))
+          .set(LABEL, label)
+          .set(SPECIES_ID, speciesId)
+          .set(NATURAL_REGEN, naturalRegen)
+          .set(DATE_PLANTED, datePlanted)
           .set(CREATED_TIME, createdTime)
           .set(MODIFIED_TIME, modifiedTime)
           .execute()

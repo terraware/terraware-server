@@ -8,6 +8,7 @@ import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PhotoId
+import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
@@ -41,11 +42,12 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockk<UserModel>()
-  private val nonExistentFeatureId = FeatureId(400)
-  private val layerId = LayerId(100)
-  private val photoId = PhotoId(30)
-  private val nonExistentLayerId = LayerId(401)
   private val siteId = SiteId(10)
+  private val layerId = LayerId(100)
+  private val nonExistentLayerId = LayerId(401)
+  private val nonExistentFeatureId = FeatureId(400)
+  private val photoId = PhotoId(30)
+  private val plantObservationId = PlantObservationId(20)
   private val thumbnailId = ThumbnailId(40)
   private val validCreateRequest =
       FeatureModel(
@@ -74,9 +76,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
     store = FeatureStore(clock, dslContext, photosDao, thumbnailDao)
     every { clock.instant() } returns time1
-    every { user.canCreateLayerData(any()) } returns true
-    every { user.canReadLayerData(any()) } returns true
-    every { user.canUpdateLayerData(any()) } returns true
+    every { user.canCreateLayerData(layerId = any()) } returns true
+    every { user.canReadLayerData(featureId = any()) } returns true
+    every { user.canUpdateLayerData(layerId = any()) } returns true
     every { user.canDeleteLayerData(any()) } returns true
 
     insertSiteData()
@@ -110,8 +112,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create fails with AccessDeniedException if user doesn't create permission`() {
-    every { user.canCreateLayerData(any()) } returns false
+  fun `create fails with AccessDeniedException if user doesn't have create permission`() {
+    every { user.canCreateLayerData(layerId = any()) } returns false
     assertThrows<AccessDeniedException> { store.createFeature(validCreateRequest) }
   }
 
@@ -133,7 +135,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `read returns null if user doesn't have read permission, even if they have create permission`() {
     val newFeature = store.createFeature(validCreateRequest)
-    every { user.canReadLayerData(any()) } returns false
+    every { user.canReadLayerData(featureId = any()) } returns false
     assertNull(store.fetchFeature(newFeature.id!!))
   }
 
@@ -162,7 +164,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update fails with FeatureNotFoundException if user doesn't have update access`() {
     val feature = store.createFeature(validCreateRequest)
-    every { user.canUpdateLayerData(any()) } returns false
+    every { user.canUpdateLayerData(layerId = any()) } returns false
     assertThrows<FeatureNotFoundException> {
       store.updateFeature(feature.copy(gpsHorizAccuracy = 18.0))
     }
@@ -198,7 +200,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     plantsDao.insert(PlantsRow(featureId = feature.id, createdTime = time1, modifiedTime = time1))
     plantObservationsDao.insert(
         PlantObservationsRow(
-            id = 20,
+            id = plantObservationId,
             featureId = feature.id,
             timestamp = time1,
             createdTime = time1,
@@ -207,7 +209,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
         PhotosRow(
             id = photoId,
             featureId = feature.id,
-            plantObservationId = 20,
+            plantObservationId = plantObservationId,
             capturedTime = time1,
             fileName = "myphoto",
             contentType = "jpeg",
@@ -233,6 +235,12 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     every { user.canDeleteLayerData(any()) } returns false
     assertThrows<FeatureNotFoundException> { store.deleteFeature(feature.id!!) }
+  }
+
+  @Test
+  fun `delete throws a FeatureNotFoundException if the feature doesn't exist`() {
+    store.createFeature(validCreateRequest)
+    assertThrows<FeatureNotFoundException> { store.deleteFeature(nonExistentFeatureId) }
   }
 
   @Test

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping("/api/v1/gis/feature")
+@RequestMapping("/api/v1/gis/features")
 @RestController
 @GISAppEndpoint
 class FeatureController(private val featureStore: FeatureStore) {
@@ -80,7 +80,7 @@ class FeatureController(private val featureStore: FeatureStore) {
   fun delete(@PathVariable featureId: Long): DeleteFeatureResponsePayload {
     try {
       featureStore.deleteFeature(FeatureId(featureId))
-      return DeleteFeatureResponsePayload(DeleteFeatureResponse(FeatureId(featureId)))
+      return DeleteFeatureResponsePayload(FeatureId(featureId))
     } catch (e: FeatureNotFoundException) {
       throw NotFoundException("The feature with id $featureId doesn't exist.")
     }
@@ -155,14 +155,10 @@ data class FeatureResponse(
       model.enteredTime)
 }
 
-data class DeleteFeatureResponse(
-    val id: FeatureId,
-)
-
 data class CreateFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
 
 data class GetFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
 
 data class UpdateFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
 
-data class DeleteFeatureResponsePayload(val id: DeleteFeatureResponse) : SuccessResponsePayload
+data class DeleteFeatureResponsePayload(val id: FeatureId) : SuccessResponsePayload

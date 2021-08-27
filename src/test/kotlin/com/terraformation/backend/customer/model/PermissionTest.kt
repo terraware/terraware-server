@@ -177,7 +177,8 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createProject = true,
         deleteOrganization = true,
-        removeOrganizationUser = true)
+        removeOrganizationUser = true,
+    )
 
     permissions.expect(
         ProjectId(10),
@@ -185,7 +186,8 @@ internal class PermissionTest : DatabaseTest() {
         addProjectUser = true,
         createSite = true,
         listSites = true,
-        removeProjectUser = true)
+        removeProjectUser = true,
+    )
 
     permissions.expect(
         SiteId(100),
@@ -213,8 +215,11 @@ internal class PermissionTest : DatabaseTest() {
         FeatureId(10010),
         FeatureId(11000),
         FeatureId(11001),
+        createLayerData = true,
         readLayerData = true,
-        deleteLayerData = true)
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
 
     permissions.expect(
         FacilityId(1000),
@@ -225,7 +230,8 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1101),
         FacilityId(1110),
         FacilityId(1111),
-        createAccession = true)
+        createAccession = true,
+    )
 
     permissions.expect(
         AccessionId(1000),
@@ -237,7 +243,8 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1110),
         AccessionId(1111),
         readAccession = true,
-        updateAccession = true)
+        updateAccession = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -253,7 +260,8 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createProject = true,
         deleteOrganization = true,
-        removeOrganizationUser = true)
+        removeOrganizationUser = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -268,7 +276,8 @@ internal class PermissionTest : DatabaseTest() {
         OrganizationId(1),
         addOrganizationUser = true,
         createProject = true,
-        removeOrganizationUser = true)
+        removeOrganizationUser = true,
+    )
 
     permissions.expect(
         ProjectId(10),
@@ -276,7 +285,8 @@ internal class PermissionTest : DatabaseTest() {
         addProjectUser = true,
         createSite = true,
         listSites = true,
-        removeProjectUser = true)
+        removeProjectUser = true,
+    )
 
     permissions.expect(
         SiteId(100),
@@ -289,7 +299,8 @@ internal class PermissionTest : DatabaseTest() {
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true)
+        deleteLayer = true,
+    )
 
     permissions.expect(
         LayerId(1000),
@@ -303,8 +314,11 @@ internal class PermissionTest : DatabaseTest() {
         FeatureId(10010),
         FeatureId(11000),
         FeatureId(11001),
+        createLayerData = true,
         readLayerData = true,
-        deleteLayerData = true)
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
 
     permissions.expect(
         FacilityId(1000),
@@ -315,7 +329,8 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1101),
         FacilityId(1110),
         FacilityId(1111),
-        createAccession = true)
+        createAccession = true,
+    )
 
     permissions.expect(
         AccessionId(1000),
@@ -327,7 +342,8 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1110),
         AccessionId(1111),
         readAccession = true,
-        updateAccession = true)
+        updateAccession = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -339,7 +355,11 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
-        ProjectId(10), addProjectUser = true, listSites = true, removeProjectUser = true)
+        ProjectId(10),
+        addProjectUser = true,
+        listSites = true,
+        removeProjectUser = true,
+    )
 
     permissions.expect(
         SiteId(100),
@@ -349,7 +369,8 @@ internal class PermissionTest : DatabaseTest() {
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true)
+        deleteLayer = true,
+    )
 
     permissions.expect(
         LayerId(1000),
@@ -358,14 +379,21 @@ internal class PermissionTest : DatabaseTest() {
         updateLayerData = true,
     )
 
-    permissions.expect(FeatureId(10010), readLayerData = true, deleteLayerData = true)
+    permissions.expect(
+        FeatureId(10010),
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
 
     permissions.expect(
         FacilityId(1000),
         FacilityId(1001),
         FacilityId(1010),
         FacilityId(1011),
-        createAccession = true)
+        createAccession = true,
+    )
 
     permissions.expect(
         AccessionId(1000),
@@ -373,7 +401,8 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1010),
         AccessionId(1011),
         readAccession = true,
-        updateAccession = true)
+        updateAccession = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -394,7 +423,8 @@ internal class PermissionTest : DatabaseTest() {
         createLayer = true,
         readLayer = true,
         updateLayer = true,
-        deleteLayer = true)
+        deleteLayer = true,
+    )
 
     permissions.expect(
         LayerId(1000),
@@ -403,14 +433,21 @@ internal class PermissionTest : DatabaseTest() {
         updateLayerData = true,
     )
 
-    permissions.expect(FeatureId(10010), readLayerData = true, deleteLayerData = true)
+    permissions.expect(
+        FeatureId(10010),
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
 
     permissions.expect(
         FacilityId(1000),
         FacilityId(1001),
         FacilityId(1010),
         FacilityId(1011),
-        createAccession = true)
+        createAccession = true,
+    )
 
     permissions.expect(
         AccessionId(1000),
@@ -418,7 +455,8 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1010),
         AccessionId(1011),
         readAccession = true,
-        updateAccession = true)
+        updateAccession = true,
+    )
 
     permissions.andNothingElse()
   }
@@ -608,14 +646,24 @@ internal class PermissionTest : DatabaseTest() {
     // All checks keyed on feature IDs go here
     fun expect(
         vararg features: FeatureId,
+        createLayerData: Boolean = false,
         readLayerData: Boolean = false,
+        updateLayerData: Boolean = false,
         deleteLayerData: Boolean = false,
     ) {
       features.forEach { featureId ->
         assertEquals(
+            createLayerData,
+            user.canCreateLayerData(featureId),
+            "Can create layer data associated with feature $featureId")
+        assertEquals(
             readLayerData,
             user.canReadLayerData(featureId),
             "Can read layer data associated with feature $featureId")
+        assertEquals(
+            updateLayerData,
+            user.canUpdateLayerData(featureId),
+            "Can update layer data associated with feature $featureId")
         assertEquals(
             deleteLayerData,
             user.canDeleteLayerData(featureId),
