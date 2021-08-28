@@ -16,6 +16,7 @@ import com.terraformation.backend.db.ThumbnailId
 import com.terraformation.backend.db.asGeoJson
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.newPoint
+import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
@@ -61,6 +62,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val time2 = time1.plusSeconds(1)
 
   private lateinit var store: FeatureStore
+  private lateinit var featuresDao: FeaturesDao
   private lateinit var plantsDao: PlantsDao
   private lateinit var plantObservationsDao: PlantObservationsDao
   private lateinit var photosDao: PhotosDao
@@ -69,6 +71,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun init() {
     val jooqConfig = dslContext.configuration()
+    featuresDao = FeaturesDao(jooqConfig)
     plantsDao = PlantsDao(jooqConfig)
     plantObservationsDao = PlantObservationsDao(jooqConfig)
     photosDao = PhotosDao(jooqConfig)
@@ -78,6 +81,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     every { clock.instant() } returns time1
     every { user.canCreateLayerData(layerId = any()) } returns true
     every { user.canReadLayerData(featureId = any()) } returns true
+    every { user.canReadLayerData(layerId = any()) } returns true
     every { user.canUpdateLayerData(layerId = any()) } returns true
     every { user.canDeleteLayerData(any()) } returns true
 
@@ -86,13 +90,13 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create returns FeatureModel with populated id, createdTime and modifiedTime`() {
+  fun `create adds new row to database and returns populated FeatureModel`() {
     val featureModel = store.createFeature(validCreateRequest)
     assertNotNull(featureModel.id)
-    assertEquals(time1, featureModel.createdTime)
-    assertEquals(time1, featureModel.modifiedTime)
     assertEquals(
-        validCreateRequest, featureModel.copy(id = null, createdTime = null, modifiedTime = null))
+        validCreateRequest.copy(createdTime = time1, modifiedTime = time1),
+        featureModel.copy(id = null))
+    assertNotNull(featuresDao.fetchOneById(featureModel.id!!))
   }
 
   @Test
@@ -146,12 +150,70 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update returns FeatureModel with updated modified time`() {
+  fun `list returns all features (sorted by id) that are associated with a layer`() {
+    val featureIds = mutableListOf<FeatureId>()
+    repeat(5) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+
+    val otherLayerId = LayerId(200)
+    insertLayer(otherLayerId.value, siteId.value, LayerType.Infrastructure)
+    store.createFeature(validCreateRequest.copy(layerId = otherLayerId))
+
+    val listResult = store.listFeatures(layerId)
+    assertEquals(5, listResult.size)
+    assertEquals(featureIds.sortedBy { it.value }, listResult.map { it.id })
+  }
+
+  @Test
+  fun `list returns empty list if there are no features in the layer`() {
+    assertEquals(emptyList<FeatureModel>(), store.listFeatures(layerId))
+  }
+
+  @Test
+  fun `list limits number of results when limit is provided`() {
+    val featureIds = mutableListOf<FeatureId>()
+    repeat(10) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+    val listResult = store.listFeatures(layerId, limit = 4)
+    assertEquals(featureIds.sortedBy { it.value }.subList(0, 4), listResult.map { it.id })
+  }
+
+  @Test
+  fun `list skips results when skip is provided`() {
+    val featureIds = mutableListOf<FeatureId>()
+    repeat(15) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+
+    val listResult = store.listFeatures(layerId, skip = 5)
+    assertEquals(featureIds.sortedBy { it.value }.subList(5, 15), listResult.map { it.id })
+  }
+
+  @Test
+  fun `list applies limit and skip when they are provided`() {
+    val featureIds = mutableListOf<FeatureId>()
+    repeat(15) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+
+    val listResult = store.listFeatures(layerId, limit = 5, skip = 5)
+    assertEquals(featureIds.sortedBy { it.value }.subList(5, 10), listResult.map { it.id })
+  }
+
+  @Test
+  fun `list returns empty list if user does not have read permissions`() {
+    store.createFeature(validCreateRequest)
+    every { user.canReadLayerData(layerId = any()) } returns false
+    assertEquals(emptyList<FeatureModel>(), store.listFeatures(layerId))
+  }
+
+  @Test
+  fun `list returns empty list if layer id is invalid`() {
+    assertEquals(emptyList<FeatureModel>(), store.listFeatures(nonExistentLayerId))
+  }
+
+  @Test
+  fun `update modifies database, returns FeatureModel with updated modified time`() {
     val feature = store.createFeature(validCreateRequest)
     val newGeom = mercatorPoint(101.2345, -500.1, 10123.45)
     every { clock.instant() } returns time2
     val updatedFeature = store.updateFeature(feature.copy(geom = newGeom))
     assertEquals(feature.copy(geom = newGeom, modifiedTime = time2), updatedFeature)
+    assertEquals(newGeom, featuresDao.fetchOneById(feature.id!!)?.geom)
   }
 
   @Test

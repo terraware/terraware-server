@@ -49,6 +49,21 @@ class FeatureController(private val featureStore: FeatureStore) {
     return GetFeatureResponsePayload(FeatureResponse(model))
   }
 
+  @ApiResponse(responseCode = "200")
+  @Operation(
+      summary =
+          "List all features associated with a layer. Can limit number of results " +
+              "and/or skip results.")
+  @GetMapping("/list/{layerId}")
+  fun list(
+      @RequestBody payload: ListFeaturesRequestPayload,
+      @PathVariable layerId: Long
+  ): ListFeaturesResponsePayload {
+    val features =
+        featureStore.listFeatures(LayerId(layerId), skip = payload.skip, limit = payload.limit)
+    return ListFeaturesResponsePayload(features.map { FeatureResponse(it) })
+  }
+
   @ApiResponse(responseCode = "200", description = "The feature was updated successfully.")
   @ApiResponse404(description = "The specified feature doesn't exist.")
   @Operation(
@@ -109,6 +124,11 @@ data class CreateFeatureRequestPayload(
   }
 }
 
+data class ListFeaturesRequestPayload(
+    val skip: Int? = null,
+    val limit: Int? = null,
+)
+
 data class UpdateFeatureRequestPayload(
     val layerId: LayerId,
     val shapeType: ShapeType,
@@ -158,6 +178,8 @@ data class FeatureResponse(
 data class CreateFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
 
 data class GetFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
+
+data class ListFeaturesResponsePayload(val list: List<FeatureResponse>) : SuccessResponsePayload
 
 data class UpdateFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
 

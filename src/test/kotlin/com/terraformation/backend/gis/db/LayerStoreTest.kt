@@ -7,6 +7,7 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerNotFoundException
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.gis.model.LayerModel
 import io.mockk.every
 import io.mockk.mockk
@@ -26,6 +27,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockk<UserModel>()
   private lateinit var store: LayerStore
+  private lateinit var layersDao: LayersDao
 
   private val clock = mockk<Clock>()
   private val time1 = Instant.EPOCH
@@ -44,6 +46,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun init() {
+    layersDao = LayersDao(dslContext.configuration())
     store = LayerStore(clock, dslContext)
     every { clock.instant() } returns time1
     every { user.canCreateLayer(any()) } returns true
@@ -55,12 +58,13 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create returns LayerModel with populated layer_id, deleted, created_time, and modified_time fields`() {
+  fun `create adds new row to the database and returns populated LayerModel`() {
     val layer = store.createLayer(validCreateRequestModel)
     assertNotNull(layer.id)
     assertEquals(false, layer.deleted)
     assertEquals(time1, layer.createdTime)
     assertEquals(time1, layer.modifiedTime)
+    assertNotNull(layersDao.fetchOneById(layer.id!!))
   }
 
   @Test
@@ -131,9 +135,56 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `list returns all layers associated with a site id`() {
+    val layerIds = mutableListOf<LayerId>()
+    repeat(3) { layerIds.add(store.createLayer(validCreateRequestModel).id!!) }
+
+    val otherSite = SiteId(20)
+    insertSite(id = otherSite.value, projectId = 2)
+    store.createLayer(validCreateRequestModel.copy(siteId = otherSite))
+
+    val listResult = store.listLayers(siteId)
+    assertEquals(3, listResult.size)
+    assertEquals(layerIds, listResult.map { it.id })
+  }
+
+  @Test
+  fun `list returns empty list when there are no layers associated with the site`() {
+    assertEquals(emptyList<LayerId>(), store.listLayers(siteId))
+  }
+
+  @Test
+  fun `list does not return deleted layers`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    store.deleteLayer(layer.id!!)
+    assertEquals(emptyList<LayerId>(), store.listLayers(siteId))
+  }
+
+  @Test
+  fun `list returns empty list if user doesn't have read permissions`() {
+    every { user.canReadLayer(any()) } returns false
+    repeat(3) { store.createLayer(validCreateRequestModel) }
+    assertEquals(emptyList<LayerId>(), store.listLayers(siteId))
+  }
+
+  @Test
+  fun `list returns empty list if site id is invalid`() {
+    store.createLayer(validCreateRequestModel)
+    assertEquals(emptyList<LayerId>(), store.listLayers(nonExistentSiteId))
+  }
+
+  @Test
+  fun `update modifies database`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    val newTileSetName = "update modifies db test"
+    store.updateLayer(layer.copy(tileSetName = newTileSetName))
+    assertEquals(newTileSetName, layersDao.fetchOneById(layer.id!!)?.tileSetName)
+  }
+
+  @Test
   fun `update does not change modified time if updated layer is the same as current layer`() {
     val layer = store.createLayer(validCreateRequestModel)
-    val updatedLayer: LayerModel = store.updateLayer(validCreateRequestModel.copy(id = layer.id))
+    val updatedLayer = store.updateLayer(validCreateRequestModel.copy(id = layer.id))
     assertEquals(layer.modifiedTime, updatedLayer.modifiedTime)
   }
 
