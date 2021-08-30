@@ -3,6 +3,7 @@ package com.terraformation.backend.gis.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerNotFoundException
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.gis.model.LayerModel
 import java.time.Clock
@@ -76,6 +77,46 @@ class LayerStore(
         createdTime = layer[LAYERS.CREATED_TIME],
         modifiedTime = layer[LAYERS.MODIFIED_TIME],
     )
+  }
+
+  fun listLayers(siteId: SiteId): List<LayerModel> {
+    if (!currentUser().canReadLayer(siteId)) {
+      return emptyList()
+    }
+
+    with(LAYERS) {
+      val records =
+          dslContext
+              .select(
+                  ID,
+                  SITE_ID,
+                  LAYER_TYPE_ID,
+                  TILE_SET_NAME,
+                  PROPOSED,
+                  HIDDEN,
+                  DELETED,
+                  CREATED_TIME,
+                  MODIFIED_TIME,
+              )
+              .from(LAYERS)
+              .where(SITE_ID.eq(siteId))
+              .and(DELETED.isFalse)
+              .fetch()
+
+      return records.map { record ->
+        LayerModel(
+            id = record[ID],
+            siteId = record[SITE_ID]!!,
+            layerType = record[LAYER_TYPE_ID]!!,
+            tileSetName = record[TILE_SET_NAME]!!,
+            proposed = record[LAYERS.PROPOSED]!!,
+            hidden = record[LAYERS.HIDDEN]!!,
+            deleted = record[LAYERS.DELETED],
+            createdTime = record[LAYERS.CREATED_TIME],
+            modifiedTime = record[LAYERS.MODIFIED_TIME],
+        )
+      }
+    }
   }
 
   fun updateLayer(layerModel: LayerModel): LayerModel {

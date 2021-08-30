@@ -48,6 +48,13 @@ class LayerController(private val layerStore: LayerStore) {
     return GetLayerResponsePayload(LayerResponse(layerModel))
   }
 
+  @ApiResponse(responseCode = "200")
+  @GetMapping("/list/{siteId}")
+  fun list(@PathVariable siteId: Long): ListLayersResponsePayload {
+    val layers = layerStore.listLayers(SiteId(siteId))
+    return ListLayersResponsePayload(layers.map { LayerResponse(it) })
+  }
+
   @ApiResponse(responseCode = "200", description = "The layer was updated successfully.")
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @Operation(
@@ -150,8 +157,10 @@ data class DeleteLayerResponse(
 
 data class CreateLayerResponsePayload(val layer: LayerResponse) : SuccessResponsePayload
 
-data class UpdateLayerResponsePayload(val layer: LayerResponse) : SuccessResponsePayload
-
 data class GetLayerResponsePayload(val layer: LayerResponse) : SuccessResponsePayload
+
+data class ListLayersResponsePayload(val layers: List<LayerResponse>) : SuccessResponsePayload
+
+data class UpdateLayerResponsePayload(val layer: LayerResponse) : SuccessResponsePayload
 
 data class DeleteLayerResponsePayload(val layer: DeleteLayerResponse) : SuccessResponsePayload

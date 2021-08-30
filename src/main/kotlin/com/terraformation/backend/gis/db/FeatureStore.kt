@@ -3,6 +3,7 @@ package com.terraformation.backend.gis.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
+import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.ThumbnailDao
 import com.terraformation.backend.db.tables.references.FEATURES
@@ -93,6 +94,50 @@ class FeatureStore(
       return null
     }
     return noPermissionsCheckFetch(id)
+  }
+
+  fun listFeatures(id: LayerId, skip: Int? = null, limit: Int? = null): List<FeatureModel> {
+    if (!currentUser().canReadLayerData(id)) {
+      return emptyList()
+    }
+
+    with(FEATURES) {
+      val records =
+          dslContext
+              .select(
+                  ID,
+                  LAYER_ID,
+                  SHAPE_TYPE_ID,
+                  GEOM,
+                  GPS_HORIZ_ACCURACY,
+                  GPS_VERT_ACCURACY,
+                  ATTRIB,
+                  NOTES,
+                  ENTERED_TIME,
+                  CREATED_TIME,
+                  MODIFIED_TIME)
+              .from(FEATURES)
+              .where(LAYER_ID.eq(id))
+              .orderBy(ID)
+              .limit(limit)
+              .offset(skip)
+              .fetch()
+
+      return records.map { record ->
+        FeatureModel(
+            id = record[ID],
+            layerId = record[LAYER_ID]!!,
+            shapeType = record[SHAPE_TYPE_ID]!!,
+            geom = record[GEOM],
+            gpsHorizAccuracy = record[GPS_HORIZ_ACCURACY],
+            gpsVertAccuracy = record[GPS_VERT_ACCURACY],
+            attrib = record[ATTRIB],
+            notes = record[NOTES],
+            enteredTime = record[ENTERED_TIME],
+            createdTime = record[CREATED_TIME],
+            modifiedTime = record[MODIFIED_TIME])
+      }
+    }
   }
 
   fun updateFeature(newModel: FeatureModel): FeatureModel {
