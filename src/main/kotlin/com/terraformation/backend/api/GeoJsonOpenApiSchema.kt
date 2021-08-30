@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema
  * classes are converted to and from JSON by our custom serializer but are implemented in such a way
  * that the OpenAPI schema generator can't turn them into usable parts of our schema document.
  *
- * This is invoked by [OpenApiConfig] which does some additional
+ * This is invoked by [OpenApiConfig] which does some additional postprocessing on the schema.
  */
 abstract class GeoJsonOpenApiSchema {
   @Suppress("unused")
