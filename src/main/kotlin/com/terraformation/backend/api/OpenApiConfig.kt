@@ -44,6 +44,25 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
     config.replaceWithSchema(SearchField::class.java, schema)
     config.replaceWithClass(
         net.postgis.jdbc.geometry.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.GeometryCollection::class.java,
+        GeoJsonOpenApiSchema.GeometryCollection::class.java)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.LineString::class.java,
+        GeoJsonOpenApiSchema.LineString::class.java)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.MultiLineString::class.java,
+        GeoJsonOpenApiSchema.MultiLineString::class.java)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.MultiPoint::class.java,
+        GeoJsonOpenApiSchema.MultiPoint::class.java)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.MultiPolygon::class.java,
+        GeoJsonOpenApiSchema.MultiPolygon::class.java)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.Point::class.java, GeoJsonOpenApiSchema.Point::class.java)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.Polygon::class.java, GeoJsonOpenApiSchema.Polygon::class.java)
   }
 
   override fun customise(openApi: OpenAPI) {

@@ -18,13 +18,17 @@ import net.postgis.jdbc.geometry.Polygon
 /** Deserializes GeoJSON strings into PostGIS [Geometry] objects of the appropriate types. */
 class GeometryDeserializer : JsonDeserializer<Geometry>() {
   override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): Geometry {
-    return readGeometry(jp, jp.readValueAsTree())
+    return readGeometry(jp, jp.readValueAsTree(), null)
   }
 
-  private fun readGeometry(jp: JsonParser, tree: JsonNode): Geometry {
+  private fun readGeometry(jp: JsonParser, tree: JsonNode, expectedType: String?): Geometry {
     val type =
         tree.findValuesAsText("type").getOrNull(0)
             ?: throw JsonParseException(jp, "Missing geometry type", jp.currentLocation)
+
+    if (expectedType != null && expectedType != type) {
+      throw JsonParseException(jp, "Expected type $expectedType, was $type")
+    }
 
     val value =
         if (type == "GeometryCollection") {
@@ -117,7 +121,7 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
       throw JsonParseException(jp, "Geometries list is not an array", jp.currentLocation)
     }
 
-    return GeometryCollection(tree.map { readGeometry(jp, it) }.toTypedArray())
+    return GeometryCollection(tree.map { readGeometry(jp, it, null) }.toTypedArray())
   }
 
   private fun readSrid(jp: JsonParser, tree: JsonNode): Int {
@@ -129,5 +133,30 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
     }
 
     return crsName.split(":")[1].toInt()
+  }
+
+  inner class SubclassDeserializer<T : Geometry>(private val subclass: Class<T>) :
+      JsonDeserializer<T>() {
+    private val expectedType = subclass.simpleName
+
+    override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): T {
+      val geom = readGeometry(jp, jp.readValueAsTree(), expectedType)
+
+      if (subclass.isInstance(geom)) {
+        @Suppress("UNCHECKED_CAST") return geom as T
+      } else {
+        throw JsonParseException(
+            jp,
+            "Expected geometry type ${subclass.simpleName}, was ${geom.typeString}",
+            jp.currentLocation)
+      }
+    }
+  }
+
+  /** Returns a deserializer for a specific geometry type. */
+  inline fun <reified T : Geometry> forSubclass(
+      subclass: Class<T> = T::class.java
+  ): JsonDeserializer<T> {
+    return SubclassDeserializer(subclass)
   }
 }

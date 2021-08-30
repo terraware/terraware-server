@@ -1,13 +1,16 @@
 package com.terraformation.backend.db
 
 import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.util.stream.Stream
 import net.postgis.jdbc.geometry.Geometry
 import net.postgis.jdbc.geometry.GeometryBuilder
+import net.postgis.jdbc.geometry.Point
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -22,20 +25,45 @@ internal class GeometrySerializerTest {
   fun `parses all geometry types correctly`(name: String, json: String, expected: String) {
     val geometry = objectMapper.readValue<Geometry>(json)
     val wkt = geometry.toString()
-    assertEquals(expected, wkt)
+    assertEquals(expected, wkt, name)
   }
 
   @ParameterizedTest(name = "{index}: {0}")
   @MethodSource("successCases")
   fun `renders all geometry types correctly`(name: String, expected: String, wkt: String) {
     val geometry = GeometryBuilder.geomFromString(wkt)
-    assertEquals(expected, objectMapper.writeValueAsString(geometry), wkt)
+    assertEquals(expected, objectMapper.writeValueAsString(geometry), "$name: $wkt")
   }
 
   @ParameterizedTest(name = "{index}: {0}")
   @MethodSource("malformedCases")
   fun `detects malformed GeoJSON input`(name: String, json: String) {
-    assertThrows<JsonParseException> { objectMapper.readValue<Geometry>(json) }
+    assertThrows<JsonParseException>(name) { objectMapper.readValue<Geometry>(json) }
+  }
+
+  @Test
+  fun `parses specific geometry type`() {
+    val json = """{"point":{"type":"Point","coordinates":[1.1,2.2,3.3]}}"""
+    val expected = PointPayload(Point(1.1, 2.2, 3.3).apply { srid = SRID.LONG_LAT })
+    val actual = objectMapper.readValue<PointPayload>(json)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `rejects incorrect geometry type`() {
+    val json = """{"point":{"type":"LineString","coordinates":[[1.1,2.2,3.3],[4,5,6]]}}"""
+
+    assertThrows<JsonProcessingException> { objectMapper.readValue<PointPayload>(json) }
+  }
+
+  @Test
+  fun `renders specific geometry type`() {
+    val payload = PointPayload(Point(1.1, 2.2, 3.3).apply { srid = SRID.LONG_LAT })
+    val expected = """{"point":{"type":"Point","coordinates":[1.1,2.2,3.3]}}"""
+    val actual = objectMapper.writeValueAsString(payload)
+
+    assertEquals(expected, actual)
   }
 
   companion object {
@@ -115,4 +143,6 @@ internal class GeometrySerializerTest {
           arguments("GeometryCollection with no geometries", """{"type":"GeometryCollection"}"""))
     }
   }
+
+  data class PointPayload(val point: Point)
 }
