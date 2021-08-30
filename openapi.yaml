@@ -2568,8 +2568,14 @@ components:
           format: date-time
         latitude:
           type: number
+          description: Use location field instead.
+          deprecated: true
         longitude:
           type: number
+          description: Use location field instead.
+          deprecated: true
+        location:
+          $ref: '#/components/schemas/Point'
         gpsAccuracy:
           type: integer
           description: GPS accuracy in meters.
@@ -3611,8 +3617,14 @@ components:
           format: date-time
         latitude:
           type: number
+          description: Use location field instead.
+          deprecated: true
         longitude:
           type: number
+          description: Use location field instead.
+          deprecated: true
+        location:
+          $ref: '#/components/schemas/Point'
         gpsAccuracy:
           type: integer
           description: GPS accuracy in meters.

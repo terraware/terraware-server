@@ -14,6 +14,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.UnsupportedPhotoFormatException
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.log.perClassLogger
@@ -30,6 +31,7 @@ import java.math.BigDecimal
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Instant
+import net.postgis.jdbc.geometry.Point
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -82,6 +84,14 @@ class PhotoController(
       throw UnsupportedPhotoFormatException()
     }
 
+    val location =
+        metadata.location
+            ?: metadata.longitude?.let { longitude ->
+              metadata.latitude?.let { latitude ->
+                Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
+              }
+            }
+
     try {
       photoRepository.storePhoto(
           facilityId,
@@ -92,8 +102,8 @@ class PhotoController(
               photoFilename,
               contentType,
               metadata.capturedTime,
-              metadata.latitude,
-              metadata.longitude,
+              location?.y?.toBigDecimal(),
+              location?.x?.toBigDecimal(),
               metadata.gpsAccuracy))
     } catch (e: AccessionNotFoundException) {
       throw NotFoundException("Accession $accessionNumber does not exist.")
@@ -166,8 +176,11 @@ class PhotoController(
 @JsonDeserialize
 data class UploadPhotoMetadataPayload(
     val capturedTime: Instant,
+    @Schema(deprecated = true, description = "Use location field instead.")
     val latitude: BigDecimal?,
+    @Schema(deprecated = true, description = "Use location field instead.")
     val longitude: BigDecimal?,
+    val location: Point?,
     @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
 )
 
@@ -176,8 +189,11 @@ data class ListPhotosResponseElement(
     val filename: String,
     val size: Int,
     val capturedTime: Instant,
+    @Schema(deprecated = true, description = "Use location field instead.")
     val latitude: BigDecimal?,
+    @Schema(deprecated = true, description = "Use location field instead.")
     val longitude: BigDecimal?,
+    val location: Point?,
     @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
 ) {
   constructor(
@@ -188,6 +204,11 @@ data class ListPhotosResponseElement(
       pojo.capturedTime!!,
       pojo.latitude,
       pojo.longitude,
+      pojo.longitude?.let { longitude ->
+        pojo.latitude?.let { latitude ->
+          Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
+        }
+      },
       pojo.gpsAccuracy)
 }
 
