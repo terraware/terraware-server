@@ -2562,17 +2562,19 @@ components:
           type: string
         size:
           type: integer
-          format: int32
+          format: int64
         capturedTime:
           type: string
           format: date-time
         latitude:
           type: number
           description: Use location field instead.
+          format: double
           deprecated: true
         longitude:
           type: number
           description: Use location field instead.
+          format: double
           deprecated: true
         location:
           $ref: '#/components/schemas/Point'

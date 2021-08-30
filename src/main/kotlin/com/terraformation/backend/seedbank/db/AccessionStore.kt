@@ -15,6 +15,7 @@ import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
+import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
@@ -52,6 +53,7 @@ class AccessionStore(
     private val bagStore: BagStore,
     private val geolocationStore: GeolocationStore,
     private val germinationStore: GerminationStore,
+    private val photosDao: PhotosDao,
     private val speciesStore: SpeciesStore,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
@@ -131,8 +133,8 @@ class AccessionStore(
     val geolocations = geolocationStore.fetchGeolocations(accessionId)
     val germinationTestTypes = germinationStore.fetchGerminationTestTypes(accessionId)
     val germinationTests = germinationStore.fetchGerminationTests(accessionId)
-    val photoFilenames =
-        accessionPhotosDao.fetchByAccessionId(accessionId).mapNotNull { it.filename }
+    val photoIds = accessionPhotosDao.fetchByAccessionId(accessionId).mapNotNull { it.photoId }
+    val photoFilenames = photosDao.fetchById(*photoIds.toTypedArray()).mapNotNull { it.fileName }
     val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
 
     val source = if (deviceInfo != null) AccessionSource.SeedCollectorApp else AccessionSource.Web

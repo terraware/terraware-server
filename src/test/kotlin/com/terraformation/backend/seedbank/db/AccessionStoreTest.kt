@@ -38,6 +38,7 @@ import com.terraformation.backend.db.tables.daos.BagsDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
 import com.terraformation.backend.db.tables.daos.GerminationTestsDao
 import com.terraformation.backend.db.tables.daos.GerminationsDao
+import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
@@ -45,6 +46,7 @@ import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
+import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
@@ -134,6 +136,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var geolocationsDao: GeolocationsDao
   private lateinit var germinationsDao: GerminationsDao
   private lateinit var germinationTestsDao: GerminationTestsDao
+  private lateinit var photosDao: PhotosDao
   private lateinit var speciesDao: SpeciesDao
   private lateinit var storageLocationsDao: StorageLocationsDao
 
@@ -149,6 +152,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     geolocationsDao = GeolocationsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
     germinationTestsDao = GerminationTestsDao(jooqConfig)
+    photosDao = PhotosDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
     storageLocationsDao = StorageLocationsDao(jooqConfig)
 
@@ -169,6 +173,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
+            photosDao,
             SpeciesStore(clock, dslContext, support),
             WithdrawalStore(dslContext, clock),
             clock,
@@ -685,14 +690,20 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `photo filenames are returned`() {
     val initial = store.create(facilityId, AccessionModel())
-    accessionPhotosDao.insert(
-        AccessionPhotosRow(
-            accessionId = AccessionId(1),
-            filename = "photo.jpg",
-            uploadedTime = Instant.now(),
+    val photosRow =
+        PhotosRow(
+            fileName = "photo.jpg",
+            createdTime = Instant.now(),
             capturedTime = Instant.now(),
             contentType = MediaType.IMAGE_JPEG_VALUE,
-            size = 123))
+            modifiedTime = Instant.now(),
+            size = 123,
+            storageUrl = "file:///photo.jpg",
+        )
+    photosDao.insert(photosRow)
+
+    accessionPhotosDao.insert(
+        AccessionPhotosRow(accessionId = AccessionId(1), photoId = photosRow.id))
 
     val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)
 

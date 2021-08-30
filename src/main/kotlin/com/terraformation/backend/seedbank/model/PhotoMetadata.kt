@@ -1,13 +1,13 @@
 package com.terraformation.backend.seedbank.model
 
-import java.math.BigDecimal
 import java.time.Instant
+import net.postgis.jdbc.geometry.Point
 
 data class PhotoMetadata(
     val filename: String,
     val contentType: String,
     val capturedTime: Instant,
-    val latitude: BigDecimal?,
-    val longitude: BigDecimal?,
-    val gpsAccuracy: Int?
+    val size: Long,
+    val location: Point?,
+    val gpsAccuracy: Int?,
 )

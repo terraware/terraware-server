@@ -4,12 +4,16 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
+import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.ThumbnailDao
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PLANT_OBSERVATIONS
+import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.gis.model.FeatureModel
+import com.terraformation.backend.log.perClassLogger
+import java.net.URI
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -20,9 +24,13 @@ import org.springframework.security.access.AccessDeniedException
 class FeatureStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
+    private val featurePhotosDao: FeaturePhotosDao,
+    private val fileStore: FileStore,
     private val photosDao: PhotosDao,
     private val thumbnailDao: ThumbnailDao,
 ) {
+  private val log = perClassLogger()
+
   fun createFeature(model: FeatureModel): FeatureModel {
     if (!currentUser().canCreateLayerData(model.layerId)) {
       throw AccessDeniedException("No permission to create feature within layer ${model.layerId}")
@@ -180,16 +188,31 @@ class FeatureStore(
       throw FeatureNotFoundException(id)
     }
 
-    val photos = photosDao.fetchByFeatureId(id)
-    photos.forEach { photo ->
-      val thumbnails = thumbnailDao.fetchByPhotoId(photo.id!!)
-      thumbnailDao.delete(thumbnails)
-    }
-    photosDao.delete(photos)
+    val featurePhotos = featurePhotosDao.fetchByFeatureId(id)
+    val photos = photosDao.fetchById(*featurePhotos.mapNotNull { it.photoId }.toTypedArray())
 
-    dslContext.delete(PLANT_OBSERVATIONS).where(PLANT_OBSERVATIONS.FEATURE_ID.eq(id)).execute()
-    dslContext.delete(PLANTS).where(PLANTS.FEATURE_ID.eq(id)).execute()
-    dslContext.delete(FEATURES).where(FEATURES.ID.eq(id)).execute()
+    dslContext.transaction { _ ->
+      photos.forEach { photo ->
+        val thumbnails = thumbnailDao.fetchByPhotoId(photo.id!!)
+        thumbnailDao.delete(thumbnails)
+      }
+      featurePhotosDao.delete(featurePhotos)
+      photosDao.deleteById(featurePhotos.mapNotNull { it.photoId })
+
+      dslContext.delete(PLANT_OBSERVATIONS).where(PLANT_OBSERVATIONS.FEATURE_ID.eq(id)).execute()
+      dslContext.delete(PLANTS).where(PLANTS.FEATURE_ID.eq(id)).execute()
+      dslContext.delete(FEATURES).where(FEATURES.ID.eq(id)).execute()
+    }
+
+    photos.mapNotNull { it.storageUrl }.map { URI(it) }.forEach { url ->
+      try {
+        fileStore.delete(url)
+      } catch (e: Exception) {
+        log.warn("Unable to delete photo $url from file store", e)
+      }
+    }
+
+    // TODO: Delete thumbnails from file storage
 
     return id
   }

@@ -16,20 +16,27 @@ import com.terraformation.backend.db.ThumbnailId
 import com.terraformation.backend.db.asGeoJson
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.newPoint
+import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.ThumbnailDao
+import com.terraformation.backend.db.tables.pojos.FeaturePhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.pojos.ThumbnailRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.transformSrid
+import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.gis.model.FeatureModel
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.verify
+import java.net.URI
+import java.nio.file.NoSuchFileException
 import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -61,7 +68,10 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val time1 = Instant.EPOCH
   private val time2 = time1.plusSeconds(1)
 
+  private val fileStore: LocalFileStore = mockk()
+
   private lateinit var store: FeatureStore
+  private lateinit var featurePhotosDao: FeaturePhotosDao
   private lateinit var featuresDao: FeaturesDao
   private lateinit var plantsDao: PlantsDao
   private lateinit var plantObservationsDao: PlantObservationsDao
@@ -71,13 +81,15 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun init() {
     val jooqConfig = dslContext.configuration()
+    featurePhotosDao = FeaturePhotosDao(jooqConfig)
     featuresDao = FeaturesDao(jooqConfig)
     plantsDao = PlantsDao(jooqConfig)
     plantObservationsDao = PlantObservationsDao(jooqConfig)
     photosDao = PhotosDao(jooqConfig)
     thumbnailDao = ThumbnailDao(jooqConfig)
 
-    store = FeatureStore(clock, dslContext, photosDao, thumbnailDao)
+    store = FeatureStore(clock, dslContext, featurePhotosDao, fileStore, photosDao, thumbnailDao)
+
     every { clock.instant() } returns time1
     every { user.canCreateLayerData(layerId = any()) } returns true
     every { user.canReadLayerData(featureId = any()) } returns true
@@ -255,6 +267,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `delete removes the record and all associated feature data, returns the deleted FeatureId`() {
     val feature = store.createFeature(validCreateRequest)
+    val storageUrl = URI("file:///foo")
+
     plantsDao.insert(PlantsRow(featureId = feature.id, createdTime = time1, modifiedTime = time1))
     plantObservationsDao.insert(
         PlantObservationsRow(
@@ -266,17 +280,21 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     photosDao.insert(
         PhotosRow(
             id = photoId,
-            featureId = feature.id,
-            plantObservationId = plantObservationId,
             capturedTime = time1,
             fileName = "myphoto",
+            storageUrl = "$storageUrl",
             contentType = "jpeg",
             size = 1000,
             createdTime = time1,
             modifiedTime = time1))
+    featurePhotosDao.insert(
+        FeaturePhotosRow(
+            featureId = feature.id, photoId = photoId, plantObservationId = plantObservationId))
     thumbnailDao.insert(
         ThumbnailRow(
             id = thumbnailId, photoId = photoId, fileName = "myphoto", width = 20, height = 20))
+
+    justRun { fileStore.delete(storageUrl) }
 
     val deletedId = store.deleteFeature(feature.id!!)
 
@@ -284,8 +302,45 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     assertNull(store.fetchFeature(deletedId))
     assert(plantsDao.fetchByFeatureId(deletedId).isEmpty())
     assert(plantObservationsDao.fetchByFeatureId(deletedId).isEmpty())
-    assert(photosDao.fetchByFeatureId(deletedId).isEmpty())
+    assert(featurePhotosDao.fetchByFeatureId(deletedId).isEmpty())
+    assert(photosDao.fetchById(photoId).isEmpty())
     assert(thumbnailDao.fetchById(thumbnailId).isEmpty())
+
+    verify { fileStore.delete(storageUrl) }
+  }
+
+  @Test
+  fun `delete returns success if photo file could not be removed from file store`() {
+    val feature = store.createFeature(validCreateRequest)
+    val storageUrl = URI("file:///foo")
+
+    plantsDao.insert(PlantsRow(featureId = feature.id, createdTime = time1, modifiedTime = time1))
+    plantObservationsDao.insert(
+        PlantObservationsRow(
+            id = plantObservationId,
+            featureId = feature.id,
+            timestamp = time1,
+            createdTime = time1,
+            modifiedTime = time1))
+    photosDao.insert(
+        PhotosRow(
+            id = photoId,
+            capturedTime = time1,
+            fileName = "myphoto",
+            storageUrl = "$storageUrl",
+            contentType = "jpeg",
+            size = 1000,
+            createdTime = time1,
+            modifiedTime = time1))
+    featurePhotosDao.insert(
+        FeaturePhotosRow(
+            featureId = feature.id, photoId = photoId, plantObservationId = plantObservationId))
+
+    every { fileStore.delete(storageUrl) } throws NoSuchFileException("Nope")
+
+    val deletedId = store.deleteFeature(feature.id!!)
+
+    assertEquals(feature.id, deletedId)
   }
 
   @Test

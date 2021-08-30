@@ -72,6 +72,7 @@ dependencies {
   implementation("javax.inject:javax.inject:1")
   implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:2.7.1")
+  implementation("org.apache.tika:tika-core:2.1.0")
   implementation("org.codehaus.janino:janino:3.1.3")
   implementation("org.flywaydb:flyway-core:7.5.4")
   implementation("org.keycloak:keycloak-admin-client:14.0.0")

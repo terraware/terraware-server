@@ -118,7 +118,7 @@ abstract class FileStoreTest {
 
   @Test
   fun `canAccept does not accept bogus URLs`() {
-    assertFalse(store.canAccept(URI("unacceptable://bogus/path/here")))
+    assertFalse(store.canAccept(badUrl))
   }
 
   @Test

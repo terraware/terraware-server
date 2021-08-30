@@ -15,8 +15,6 @@ import com.terraformation.backend.api.UnsupportedPhotoFormatException
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
-import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
@@ -50,9 +48,8 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @SeedBankAppEndpoint
 class PhotoController(
-    private val accessionPhotosDao: AccessionPhotosDao,
     private val accessionStore: AccessionStore,
-    private val photoRepository: PhotoRepository
+    private val photoRepository: PhotoRepository,
 ) {
   private val log = perClassLogger()
 
@@ -102,8 +99,8 @@ class PhotoController(
               photoFilename,
               contentType,
               metadata.capturedTime,
-              location?.y?.toBigDecimal(),
-              location?.x?.toBigDecimal(),
+              file.size,
+              location,
               metadata.gpsAccuracy))
     } catch (e: AccessionNotFoundException) {
       throw NotFoundException("Accession $accessionNumber does not exist.")
@@ -163,12 +160,16 @@ class PhotoController(
   @Operation(summary = "List all the available photos for an accession.")
   fun listPhotos(@PathVariable accessionNumber: String): ListPhotosResponsePayload {
     val facilityId = currentUser().defaultFacilityId()
-    val accessionId =
-        accessionStore.getIdByNumber(facilityId, accessionNumber)
-            ?: throw NotFoundException("Accession $accessionNumber does not exist.")
+    val photos =
+        try {
+          photoRepository.listPhotos(facilityId, accessionNumber)
+        } catch (e: AccessionNotFoundException) {
+          throw NotFoundException("Accession $accessionNumber does not exist.")
+        }
 
-    return ListPhotosResponsePayload(
-        accessionPhotosDao.fetchByAccessionId(accessionId).map { ListPhotosResponseElement(it) })
+    val elements = photos.map { ListPhotosResponseElement(it) }
+
+    return ListPhotosResponsePayload(elements)
   }
 }
 
@@ -187,29 +188,23 @@ data class UploadPhotoMetadataPayload(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ListPhotosResponseElement(
     val filename: String,
-    val size: Int,
+    val size: Long,
     val capturedTime: Instant,
-    @Schema(deprecated = true, description = "Use location field instead.")
-    val latitude: BigDecimal?,
-    @Schema(deprecated = true, description = "Use location field instead.")
-    val longitude: BigDecimal?,
+    @Schema(deprecated = true, description = "Use location field instead.") val latitude: Double?,
+    @Schema(deprecated = true, description = "Use location field instead.") val longitude: Double?,
     val location: Point?,
     @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
 ) {
   constructor(
-      pojo: AccessionPhotosRow
+      metadata: PhotoMetadata
   ) : this(
-      pojo.filename!!,
-      pojo.size!!,
-      pojo.capturedTime!!,
-      pojo.latitude,
-      pojo.longitude,
-      pojo.longitude?.let { longitude ->
-        pojo.latitude?.let { latitude ->
-          Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
-        }
-      },
-      pojo.gpsAccuracy)
+      metadata.filename,
+      metadata.size,
+      metadata.capturedTime,
+      metadata.location?.y,
+      metadata.location?.x,
+      metadata.location,
+      metadata.gpsAccuracy)
 }
 
 data class ListPhotosResponsePayload(val photos: List<ListPhotosResponseElement>) :
