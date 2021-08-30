@@ -33,28 +33,30 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
           "Creates a new plant observation. Feature id must reference an existing Plant. " +
               "Plant observations can only be deleted as part of a feature deletion.")
   @PostMapping
-  fun create(@RequestBody payload: CreateObservRequestPayload): CreateObservResponsePayload {
+  fun create(
+      @RequestBody payload: CreateObservationRequestPayload
+  ): CreateObservationResponsePayload {
     val newObservation = observStore.create(payload.toRow())
-    return CreateObservResponsePayload(ObservResponse(newObservation))
+    return CreateObservationResponsePayload(ObservationResponse(newObservation))
   }
 
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified plant observation doesn't exist.")
   @GetMapping("/{plantObservationId}")
-  fun get(@PathVariable plantObservationId: Long): GetObservResponsePayload {
+  fun get(@PathVariable plantObservationId: Long): GetObservationResponsePayload {
     val id = PlantObservationId(plantObservationId)
     val observation =
         observStore.fetch(id)
             ?: throw NotFoundException("The plant observation with id $id doesn't exist.")
-    return GetObservResponsePayload(ObservResponse(observation))
+    return GetObservationResponsePayload(ObservationResponse(observation))
   }
 
   @ApiResponse(responseCode = "200")
   @Operation(summary = "Fetch a list of the plant observations associated with a plant.")
   @GetMapping("/list/{featureId}")
-  fun getList(@PathVariable featureId: Long): GetObservListResponsePayload {
+  fun getList(@PathVariable featureId: Long): ListObservationsResponsePayload {
     val list = observStore.fetchList(FeatureId(featureId))
-    return GetObservListResponsePayload(list.map { ObservResponse(it) })
+    return ListObservationsResponsePayload(list.map { ObservationResponse(it) })
   }
 
   @ApiResponse(
@@ -66,12 +68,12 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
               "Overwrites all other fields.")
   @PutMapping("/{plantObservationId}")
   fun update(
-      @RequestBody payload: UpdateObservRequestPayload,
+      @RequestBody payload: UpdateObservationRequestPayload,
       @PathVariable plantObservationId: Long
-  ): UpdateObservResponsePayload {
+  ): UpdateObservationResponsePayload {
     try {
       val updated = observStore.update(payload.toRow(PlantObservationId(plantObservationId)))
-      return UpdateObservResponsePayload(ObservResponse(updated))
+      return UpdateObservationResponsePayload(ObservationResponse(updated))
     } catch (e: PlantObservationNotFoundException) {
       throw NotFoundException("The plant observation with id $plantObservationId doesn't exist.")
     }
@@ -81,7 +83,7 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
   // through the Features API
 }
 
-data class CreateObservRequestPayload(
+data class CreateObservationRequestPayload(
     val featureId: FeatureId,
     val timestamp: Instant,
     val healthState: HealthState? = null,
@@ -106,7 +108,7 @@ data class CreateObservRequestPayload(
   }
 }
 
-data class UpdateObservRequestPayload(
+data class UpdateObservationRequestPayload(
     val timestamp: Instant,
     val healthState: HealthState? = null,
     val flowers: Boolean? = null,
@@ -130,7 +132,7 @@ data class UpdateObservRequestPayload(
   }
 }
 
-data class ObservResponse(
+data class ObservationResponse(
     val id: PlantObservationId,
     val featureId: FeatureId,
     val timestamp: Instant,
@@ -156,10 +158,11 @@ data class ObservResponse(
       row.dbh)
 }
 
-data class CreateObservResponsePayload(val resp: ObservResponse) : SuccessResponsePayload
+data class CreateObservationResponsePayload(val resp: ObservationResponse) : SuccessResponsePayload
 
-data class GetObservListResponsePayload(val list: List<ObservResponse>) : SuccessResponsePayload
+data class ListObservationsResponsePayload(val list: List<ObservationResponse>) :
+    SuccessResponsePayload
 
-data class GetObservResponsePayload(val resp: ObservResponse) : SuccessResponsePayload
+data class GetObservationResponsePayload(val resp: ObservationResponse) : SuccessResponsePayload
 
-data class UpdateObservResponsePayload(val resp: ObservResponse) : SuccessResponsePayload
+data class UpdateObservationResponsePayload(val resp: ObservationResponse) : SuccessResponsePayload

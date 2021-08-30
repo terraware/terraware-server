@@ -57,9 +57,9 @@ class PlantController(private val plantStore: PlantStore) {
               "and/or notes filters.")
   @GetMapping("/list/{layerId}")
   fun getPlantsList(
-      @RequestBody payload: GetPlantsListPayload,
+      @RequestBody payload: ListPlantsRequestPayload,
       @PathVariable layerId: Long
-  ): PlantsListResponsePayload {
+  ): ListPlantsResponsePayload {
     val plants =
         plantStore.fetchPlantsList(
             layerId = LayerId(layerId),
@@ -68,7 +68,7 @@ class PlantController(private val plantStore: PlantStore) {
             maxEnteredTime = payload.maxEnteredTime,
             notes = payload.notes)
 
-    return PlantsListResponsePayload(plants.map { PlantListResponseElement(it) })
+    return ListPlantsResponsePayload(plants.map { ListPlantsResponseElement(it) })
   }
 
   @ApiResponse(responseCode = "200")
@@ -125,7 +125,7 @@ data class CreatePlantRequestPayload(
   }
 }
 
-data class GetPlantsListPayload(
+data class ListPlantsRequestPayload(
     val speciesName: String? = null,
     val minEnteredTime: Instant? = null,
     val maxEnteredTime: Instant? = null,
@@ -165,7 +165,7 @@ data class PlantResponse(
   ) : this(row.featureId!!, row.label, row.speciesId, row.naturalRegen, row.datePlanted)
 }
 
-data class PlantListResponseElement(
+data class ListPlantsResponseElement(
     val featureId: FeatureId,
     val label: String? = null,
     val speciesId: SpeciesId? = null,
@@ -190,7 +190,7 @@ data class CreatePlantResponsePayload(val plant: PlantResponse) : SuccessRespons
 
 data class GetPlantResponsePayload(val plant: PlantResponse) : SuccessResponsePayload
 
-data class PlantsListResponsePayload(val list: List<PlantListResponseElement>) :
+data class ListPlantsResponsePayload(val list: List<ListPlantsResponseElement>) :
     SuccessResponsePayload
 
 data class PlantSummaryResponsePayload(val summary: Map<SpeciesId, Int>) : SuccessResponsePayload

@@ -39,12 +39,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListFacilitiesResponse'
-  /api/v1/gis/feature:
+  /api/v1/gis/features:
     post:
       tags:
       - GISApp
       summary: Create a new feature.
-      operationId: create_2
+      operationId: create_4
       requestBody:
         content:
           application/json:
@@ -59,7 +59,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateFeatureResponsePayload'
-  /api/v1/gis/feature/{featureId}:
+  /api/v1/gis/features/list/{layerId}:
+    get:
+      tags:
+      - GISApp
+      summary: List all features associated with a layer.
+      operationId: list_1
+      parameters:
+      - name: payload
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/ListFeaturesRequestPayload'
+      - name: layerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFeaturesResponsePayload'
+  /api/v1/gis/features/{featureId}:
     get:
       tags:
       - GISApp
@@ -89,7 +114,7 @@ paths:
       - GISApp
       summary: Update an existing feature. Overwrites all fields. Does not allow a
         feature to be moved between layers (layerId cannot be updated)
-      operationId: update_2
+      operationId: update_4
       parameters:
       - name: featureId
         in: path
@@ -143,12 +168,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/gis/layer:
+  /api/v1/gis/layers:
     post:
       tags:
       - GISApp
       summary: Create a new layer.
-      operationId: create_1
+      operationId: create_3
       requestBody:
         content:
           application/json:
@@ -163,7 +188,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateLayerResponsePayload'
-  /api/v1/gis/layer/{layerId}:
+  /api/v1/gis/layers/list/{siteId}:
+    get:
+      tags:
+      - GISApp
+      operationId: list
+      parameters:
+      - name: siteId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListLayersResponsePayload'
+  /api/v1/gis/layers/{layerId}:
     get:
       tags:
       - GISApp
@@ -194,7 +238,7 @@ paths:
       summary: "Update an existing layer. Overwrites all fields, so they must all\
         \ be defined. Does not allow a layer to be moved between sites (siteId cannot\
         \ be updated)"
-      operationId: update_1
+      operationId: update_3
       parameters:
       - name: layerId
         in: path
@@ -241,6 +285,230 @@ paths:
                 $ref: '#/components/schemas/DeleteLayerResponsePayload'
         "404":
           description: The specified layer doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/gis/plant_observations:
+    post:
+      tags:
+      - GISApp
+      summary: Creates a new plant observation. Feature id must reference an existing
+        Plant. Plant observations can only be deleted as part of a feature deletion.
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateObservationRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The plant observation was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateObservationResponsePayload'
+  /api/v1/gis/plant_observations/list/{featureId}:
+    get:
+      tags:
+      - GISApp
+      summary: Fetch a list of the plant observations associated with a plant.
+      operationId: getList
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListObservationsResponsePayload'
+  /api/v1/gis/plant_observations/{plantObservationId}:
+    get:
+      tags:
+      - GISApp
+      operationId: get_1
+      parameters:
+      - name: plantObservationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetObservationResponsePayload'
+        "404":
+          description: The specified plant observation doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - GISApp
+      summary: Update an existing plant observation. Cannot update the feature id.
+        Overwrites all other fields.
+      operationId: update_2
+      parameters:
+      - name: plantObservationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateObservationRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The plant observation was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateObservationResponsePayload'
+        "404":
+          description: The specified plant observation doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/gis/plants:
+    post:
+      tags:
+      - GISApp
+      summary: Creates a new plant. Use the Features API to delete the plant.
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlantRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The plant was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePlantResponsePayload'
+  /api/v1/gis/plants/list/summary/{layerId}:
+    get:
+      tags:
+      - GISApp
+      summary: Fetch a count of how many plants of each species exist in a layer.
+        Can filter based on enteredTime.
+      operationId: getPlantSummary
+      parameters:
+      - name: payload
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/GetPlantSummaryPayload'
+      - name: layerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlantSummaryResponsePayload'
+  /api/v1/gis/plants/list/{layerId}:
+    get:
+      tags:
+      - GISApp
+      summary: "Fetch a list of the plants in a layer. Can apply species, entered\
+        \ time, and/or notes filters."
+      operationId: getPlantsList
+      parameters:
+      - name: payload
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/ListPlantsRequestPayload'
+      - name: layerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPlantsResponsePayload'
+  /api/v1/gis/plants/{featureId}:
+    get:
+      tags:
+      - GISApp
+      operationId: get
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPlantResponsePayload'
+        "404":
+          description: The specified plant doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - GISApp
+      summary: Update an existing plant. Overwrites all fields.
+      operationId: update_1
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlantRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The plant was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePlantResponsePayload'
+        "404":
+          description: The specified plant doesn't exist.
           content:
             application/json:
               schema:
@@ -1498,6 +1766,77 @@ components:
           $ref: '#/components/schemas/LayerResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateObservationRequestPayload:
+      required:
+      - featureId
+      - timestamp
+      type: object
+      properties:
+        featureId:
+          type: integer
+          format: int64
+        timestamp:
+          type: string
+          format: date-time
+        healthState:
+          type: string
+          enum:
+          - Good
+          - Moderate
+          - Poor
+          - Dead
+        flowers:
+          type: boolean
+        seeds:
+          type: boolean
+        pests:
+          type: string
+        height:
+          type: number
+          description: Height in meters
+          format: double
+        diameterAtBreastHeight:
+          type: number
+          description: Diameter at breast height in meters
+          format: double
+    CreateObservationResponsePayload:
+      required:
+      - resp
+      - status
+      type: object
+      properties:
+        resp:
+          $ref: '#/components/schemas/ObservationResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    CreatePlantRequestPayload:
+      required:
+      - featureId
+      type: object
+      properties:
+        featureId:
+          type: integer
+          format: int64
+        label:
+          type: string
+        speciesId:
+          type: integer
+          format: int64
+        naturalRegen:
+          type: boolean
+        datePlanted:
+          type: string
+          format: date
+    CreatePlantResponsePayload:
+      required:
+      - plant
+      - status
+      type: object
+      properties:
+        plant:
+          $ref: '#/components/schemas/PlantResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     CreateSpeciesRequestPayload:
       required:
       - name
@@ -1515,14 +1854,6 @@ components:
           $ref: '#/components/schemas/SpeciesDetails'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    DeleteFeatureResponse:
-      required:
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
     DeleteFeatureResponsePayload:
       required:
       - id
@@ -1530,7 +1861,8 @@ components:
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/DeleteFeatureResponse'
+          type: integer
+          format: int64
         status:
           $ref: '#/components/schemas/SuccessOrError'
     DeleteLayerResponse:
@@ -1942,6 +2274,35 @@ components:
           $ref: '#/components/schemas/LayerResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetObservationResponsePayload:
+      required:
+      - resp
+      - status
+      type: object
+      properties:
+        resp:
+          $ref: '#/components/schemas/ObservationResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetPlantResponsePayload:
+      required:
+      - plant
+      - status
+      type: object
+      properties:
+        plant:
+          $ref: '#/components/schemas/PlantResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetPlantSummaryPayload:
+      type: object
+      properties:
+        minEnteredTime:
+          type: string
+          format: date-time
+        maxEnteredTime:
+          type: string
+          format: date-time
     GetSiteResponse:
       required:
       - id
@@ -2088,6 +2449,33 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ListFacilitiesElement'
+    ListFeaturesRequestPayload:
+      type: object
+      properties:
+        skip:
+          type: integer
+          description: Number of entries to skip in search results. Used in conjunction
+            with limit to paginate through large results. Default is 0 (don't skip
+            any results).
+          format: int32
+        limit:
+          type: integer
+          description: Maximum number of entries to return. Used in conjunction with
+            skip to paginate through large results. The system may impose a cap on
+            this value.
+          format: int32
+    ListFeaturesResponsePayload:
+      required:
+      - features
+      - status
+      type: object
+      properties:
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ListFieldValuesRequestPayload:
       required:
       - fields
@@ -2117,6 +2505,30 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/FieldValuesPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListLayersResponsePayload:
+      required:
+      - layers
+      - status
+      type: object
+      properties:
+        layers:
+          type: array
+          items:
+            $ref: '#/components/schemas/LayerResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListObservationsResponsePayload:
+      required:
+      - list
+      - status
+      type: object
+      properties:
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObservationResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListOrganizationsElement:
@@ -2172,6 +2584,54 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ListPhotosResponseElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListPlantsRequestPayload:
+      type: object
+      properties:
+        speciesName:
+          type: string
+        minEnteredTime:
+          type: string
+          format: date-time
+        maxEnteredTime:
+          type: string
+          format: date-time
+        notes:
+          type: string
+    ListPlantsResponseElement:
+      required:
+      - featureId
+      type: object
+      properties:
+        featureId:
+          type: integer
+          format: int64
+        label:
+          type: string
+        speciesId:
+          type: integer
+          format: int64
+        naturalRegen:
+          type: boolean
+        datePlanted:
+          type: string
+          format: date
+        notes:
+          type: string
+        enteredTime:
+          type: string
+          format: date-time
+    ListPlantsResponsePayload:
+      required:
+      - list
+      - status
+      type: object
+      properties:
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListPlantsResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListSpeciesResponsePayload:
@@ -2349,6 +2809,43 @@ components:
           - In Storage
           - Withdrawn
           - Nursery
+    ObservationResponse:
+      required:
+      - featureId
+      - id
+      - timestamp
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        featureId:
+          type: integer
+          format: int64
+        timestamp:
+          type: string
+          format: date-time
+        healthState:
+          type: string
+          enum:
+          - Good
+          - Moderate
+          - Poor
+          - Dead
+        flowers:
+          type: boolean
+        seeds:
+          type: boolean
+        pests:
+          type: string
+        height:
+          type: number
+          description: Height in meters
+          format: double
+        diameterAtBreastHeight:
+          type: number
+          description: Diameter at breast height in meters
+          format: double
     OrNodePayload:
       type: object
       description: "Search criterion that matches results that meet any of a set of\
@@ -2356,6 +2853,37 @@ components:
         \ this will require x OR y OR z."
       allOf:
       - $ref: '#/components/schemas/SearchNodePayload'
+    PlantResponse:
+      required:
+      - featureId
+      type: object
+      properties:
+        featureId:
+          type: integer
+          format: int64
+        label:
+          type: string
+        speciesId:
+          type: integer
+          format: int64
+        naturalRegen:
+          type: boolean
+        datePlanted:
+          type: string
+          format: date
+    PlantSummaryResponsePayload:
+      required:
+      - status
+      - summary
+      type: object
+      properties:
+        summary:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     Point:
       required:
       - coordinates
@@ -2996,6 +3524,68 @@ components:
       properties:
         layer:
           $ref: '#/components/schemas/LayerResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    UpdateObservationRequestPayload:
+      required:
+      - timestamp
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        healthState:
+          type: string
+          enum:
+          - Good
+          - Moderate
+          - Poor
+          - Dead
+        flowers:
+          type: boolean
+        seeds:
+          type: boolean
+        pests:
+          type: string
+        height:
+          type: number
+          description: Height in meters
+          format: double
+        diameterAtBreastHeight:
+          type: number
+          description: Diameter at breast height in meters
+          format: double
+    UpdateObservationResponsePayload:
+      required:
+      - resp
+      - status
+      type: object
+      properties:
+        resp:
+          $ref: '#/components/schemas/ObservationResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    UpdatePlantRequestPayload:
+      type: object
+      properties:
+        label:
+          type: string
+        speciesId:
+          type: integer
+          format: int64
+        naturalRegen:
+          type: boolean
+        datePlanted:
+          type: string
+          format: date
+    UpdatePlantResponsePayload:
+      required:
+      - plant
+      - status
+      type: object
+      properties:
+        plant:
+          $ref: '#/components/schemas/PlantResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     UpdateSpeciesResponsePayload:
