@@ -103,17 +103,17 @@ class LayerStore(
               .and(DELETED.isFalse)
               .fetch()
 
-      return records.map {
+      return records.map { record ->
         LayerModel(
-            id = it.get(ID),
-            siteId = it.get(SITE_ID)!!,
-            layerType = it.get(LAYER_TYPE_ID)!!,
-            tileSetName = it.get(TILE_SET_NAME)!!,
-            proposed = it.get(LAYERS.PROPOSED)!!,
-            hidden = it.get(LAYERS.HIDDEN)!!,
-            deleted = it.get(LAYERS.DELETED),
-            createdTime = it.get(LAYERS.CREATED_TIME),
-            modifiedTime = it.get(LAYERS.MODIFIED_TIME),
+            id = record[ID],
+            siteId = record[SITE_ID]!!,
+            layerType = record[LAYER_TYPE_ID]!!,
+            tileSetName = record[TILE_SET_NAME]!!,
+            proposed = record[LAYERS.PROPOSED]!!,
+            hidden = record[LAYERS.HIDDEN]!!,
+            deleted = record[LAYERS.DELETED],
+            createdTime = record[LAYERS.CREATED_TIME],
+            modifiedTime = record[LAYERS.MODIFIED_TIME],
         )
       }
     }

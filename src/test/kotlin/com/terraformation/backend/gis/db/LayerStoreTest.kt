@@ -136,8 +136,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `list returns all layers associated with a site id`() {
-    val layerIds = mutableListOf<LayerId>()
-    repeat(3) { layerIds.add(store.createLayer(validCreateRequestModel).id!!) }
+    val layerIds = (1..3).map { store.createLayer(validCreateRequestModel).id!! }
 
     val otherSite = SiteId(20)
     insertSite(id = otherSite.value, projectId = 2)

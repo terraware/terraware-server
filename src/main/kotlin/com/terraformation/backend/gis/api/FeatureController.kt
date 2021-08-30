@@ -11,6 +11,7 @@ import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.gis.db.FeatureStore
 import com.terraformation.backend.gis.model.FeatureModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -50,10 +51,7 @@ class FeatureController(private val featureStore: FeatureStore) {
   }
 
   @ApiResponse(responseCode = "200")
-  @Operation(
-      summary =
-          "List all features associated with a layer. Can limit number of results " +
-              "and/or skip results.")
+  @Operation(summary = "List all features associated with a layer.")
   @GetMapping("/list/{layerId}")
   fun list(
       @RequestBody payload: ListFeaturesRequestPayload,
@@ -125,7 +123,15 @@ data class CreateFeatureRequestPayload(
 }
 
 data class ListFeaturesRequestPayload(
+    @Schema(
+        description =
+            "Number of entries to skip in search results. Used in conjunction with limit to " +
+                "paginate through large results. Default is 0 (don't skip any results).")
     val skip: Int? = null,
+    @Schema(
+        description =
+            "Maximum number of entries to return. Used in conjunction with skip to paginate " +
+                "through large results. The system may impose a cap on this value.")
     val limit: Int? = null,
 )
 
@@ -179,7 +185,8 @@ data class CreateFeatureResponsePayload(val feature: FeatureResponse) : SuccessR
 
 data class GetFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
 
-data class ListFeaturesResponsePayload(val list: List<FeatureResponse>) : SuccessResponsePayload
+data class ListFeaturesResponsePayload(val features: List<FeatureResponse>) :
+    SuccessResponsePayload
 
 data class UpdateFeatureResponsePayload(val feature: FeatureResponse) : SuccessResponsePayload
 

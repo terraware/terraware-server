@@ -151,8 +151,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `list returns all features (sorted by id) that are associated with a layer`() {
-    val featureIds = mutableListOf<FeatureId>()
-    repeat(5) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+    val featureIds = (1..5).map { store.createFeature(validCreateRequest).id!! }
 
     val otherLayerId = LayerId(200)
     insertLayer(otherLayerId.value, siteId.value, LayerType.Infrastructure)
@@ -170,16 +169,14 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `list limits number of results when limit is provided`() {
-    val featureIds = mutableListOf<FeatureId>()
-    repeat(10) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+    val featureIds = (1..10).map { store.createFeature(validCreateRequest).id!! }
     val listResult = store.listFeatures(layerId, limit = 4)
     assertEquals(featureIds.sortedBy { it.value }.subList(0, 4), listResult.map { it.id })
   }
 
   @Test
   fun `list skips results when skip is provided`() {
-    val featureIds = mutableListOf<FeatureId>()
-    repeat(15) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+    val featureIds = (1..15).map { store.createFeature(validCreateRequest).id!! }
 
     val listResult = store.listFeatures(layerId, skip = 5)
     assertEquals(featureIds.sortedBy { it.value }.subList(5, 15), listResult.map { it.id })
@@ -187,8 +184,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `list applies limit and skip when they are provided`() {
-    val featureIds = mutableListOf<FeatureId>()
-    repeat(15) { featureIds.add(store.createFeature(validCreateRequest).id!!) }
+    val featureIds = (1..15).map { store.createFeature(validCreateRequest).id!! }
 
     val listResult = store.listFeatures(layerId, limit = 5, skip = 5)
     assertEquals(featureIds.sortedBy { it.value }.subList(5, 10), listResult.map { it.id })

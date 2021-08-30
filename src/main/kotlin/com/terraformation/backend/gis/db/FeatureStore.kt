@@ -123,19 +123,19 @@ class FeatureStore(
               .offset(skip)
               .fetch()
 
-      return records.map {
+      return records.map { record ->
         FeatureModel(
-            id = it.get(ID),
-            layerId = it.get(LAYER_ID)!!,
-            shapeType = it.get(SHAPE_TYPE_ID)!!,
-            geom = it.get(GEOM),
-            gpsHorizAccuracy = it.get(GPS_HORIZ_ACCURACY),
-            gpsVertAccuracy = it.get(GPS_VERT_ACCURACY),
-            attrib = it.get(ATTRIB),
-            notes = it.get(NOTES),
-            enteredTime = it.get(ENTERED_TIME),
-            createdTime = it.get(CREATED_TIME),
-            modifiedTime = it.get(MODIFIED_TIME))
+            id = record[ID],
+            layerId = record[LAYER_ID]!!,
+            shapeType = record[SHAPE_TYPE_ID]!!,
+            geom = record[GEOM],
+            gpsHorizAccuracy = record[GPS_HORIZ_ACCURACY],
+            gpsVertAccuracy = record[GPS_VERT_ACCURACY],
+            attrib = record[ATTRIB],
+            notes = record[NOTES],
+            enteredTime = record[ENTERED_TIME],
+            createdTime = record[CREATED_TIME],
+            modifiedTime = record[MODIFIED_TIME])
       }
     }
   }

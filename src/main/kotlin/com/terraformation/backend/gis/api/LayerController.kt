@@ -159,7 +159,7 @@ data class CreateLayerResponsePayload(val layer: LayerResponse) : SuccessRespons
 
 data class GetLayerResponsePayload(val layer: LayerResponse) : SuccessResponsePayload
 
-data class ListLayersResponsePayload(val list: List<LayerResponse>) : SuccessResponsePayload
+data class ListLayersResponsePayload(val layers: List<LayerResponse>) : SuccessResponsePayload
 
 data class UpdateLayerResponsePayload(val layer: LayerResponse) : SuccessResponsePayload
 
