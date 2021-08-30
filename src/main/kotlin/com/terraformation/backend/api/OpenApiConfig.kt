@@ -24,14 +24,15 @@ import org.springdoc.core.customizers.OpenApiCustomiser
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
- * Customizes generation of Swagger API documentation.
+ * Customizes generation of OpenAPI documentation.
  *
  * - SearchField is represented as an enum based on the list of field names in [SearchFields].
  * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
  * so that the JSON/YAML documentation can be usefully diffed between code versions.
+ * - PostGIS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  */
 @ManagedBean
-class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser {
+class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser {
   @Autowired(required = false) var dslContext: DSLContext? = null
 
   init {
@@ -41,6 +42,8 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
     schema.`$ref` = "#/components/schemas/SearchField"
 
     config.replaceWithSchema(SearchField::class.java, schema)
+    config.replaceWithClass(
+        net.postgis.jdbc.geometry.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
   }
 
   override fun customise(openApi: OpenAPI) {
@@ -49,6 +52,7 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
     sortResponseCodes(openApi)
     sortSchemas(openApi)
     addDescriptionsToRefs(openApi)
+    useRefForGeometry(openApi)
   }
 
   private fun renderSearchFieldAsEnum(openApi: OpenAPI) {
@@ -112,6 +116,48 @@ class SwaggerConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
             composedSchema.description = propertyAnnotation.description
             classSchema.properties[propertyName] = composedSchema
           }
+        }
+      }
+    }
+  }
+
+  /**
+   * Uses a reference to the abstract Geometry class rather than a list of its subclasses.
+   *
+   * For some reason, the default behavior of the OpenAPI schema generator is to render Geometry
+   * properties like
+   *
+   * ```
+   * geom:
+   *   oneOf:
+   *   - $ref: '#/components/schemas/GeometryCollection'
+   *   - $ref: '#/components/schemas/LineString'
+   *   - $ref: '#/components/schemas/MultiLineString'
+   *   - $ref: '#/components/schemas/MultiPoint'
+   *   - $ref: '#/components/schemas/MultiPolygon'
+   *   - $ref: '#/components/schemas/Point'
+   *   - $ref: '#/components/schemas/Polygon'
+   * ```
+   *
+   * But in GeometryCollection, it refers to the superclass:
+   *
+   * ```
+   * properties:
+   *   geometries:
+   *     type: array
+   *     items:
+   *       $ref: '#/components/schemas/Geometry'
+   * ```
+   *
+   * This method updates the schema definitions to always use the latter style.
+   */
+  private fun useRefForGeometry(openApi: OpenAPI) {
+    openApi.components?.schemas?.values?.forEach { schema ->
+      schema.properties?.values?.forEach { property ->
+        if (property is ComposedSchema &&
+            property.oneOf?.any { it.`$ref` == "#/components/schemas/Polygon" } == true) {
+          property.`$ref` = "#/components/schemas/Geometry"
+          property.oneOf = null
         }
       }
     }
