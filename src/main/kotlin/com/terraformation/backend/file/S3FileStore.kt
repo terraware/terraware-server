@@ -23,7 +23,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
-@ConditionalOnProperty("terraware.photo-bucket-name", havingValue = "")
+@ConditionalOnProperty("terraware.s3BucketName", havingValue = "")
 @ManagedBean
 @Priority(1) // If both S3 and filesystem storage are configured, prefer S3.
 class S3FileStore(config: TerrawareServerConfig) : FileStore {
