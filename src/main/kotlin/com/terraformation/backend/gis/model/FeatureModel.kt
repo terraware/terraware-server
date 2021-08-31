@@ -2,14 +2,12 @@ package com.terraformation.backend.gis.model
 
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
-import com.terraformation.backend.db.ShapeType
 import java.time.Instant
 import net.postgis.jdbc.geometry.Geometry
 
 data class FeatureModel(
     val id: FeatureId? = null,
     val layerId: LayerId,
-    val shapeType: ShapeType,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,

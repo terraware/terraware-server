@@ -112,17 +112,6 @@ VALUES (10, 'Aerial Photos'),
        (190, 'Map notes')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO shape_types (id, name)
-VALUES (1, 'Point'),
-       (3, 'Polyline'),
-       (5, 'Polygon'),
-       (8, 'Multipoint'),
-       (11, 'Pointz'),
-       (13, 'Polylinez'),
-       (15, 'Polygonz'),
-       (18, 'Pultipointz')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO health_states (id, name)
 VALUES (1, 'Good'),
        (2, 'Moderate'),

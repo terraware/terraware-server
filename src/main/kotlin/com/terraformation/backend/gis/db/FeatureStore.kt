@@ -42,7 +42,6 @@ class FeatureStore(
           dslContext
               .insertInto(FEATURES)
               .set(LAYER_ID, model.layerId)
-              .set(SHAPE_TYPE_ID, model.shapeType)
               .set(GEOM, model.geom)
               .set(GPS_HORIZ_ACCURACY, model.gpsHorizAccuracy)
               .set(GPS_VERT_ACCURACY, model.gpsVertAccuracy)
@@ -69,7 +68,6 @@ class FeatureStore(
             .select(
                 FEATURES.ID,
                 FEATURES.LAYER_ID,
-                FEATURES.SHAPE_TYPE_ID,
                 FEATURES.GEOM,
                 FEATURES.GPS_HORIZ_ACCURACY,
                 FEATURES.GPS_VERT_ACCURACY,
@@ -86,7 +84,6 @@ class FeatureStore(
     return FeatureModel(
         id = record[FEATURES.ID],
         layerId = record[FEATURES.LAYER_ID]!!,
-        shapeType = record[FEATURES.SHAPE_TYPE_ID]!!,
         geom = record[FEATURES.GEOM],
         gpsHorizAccuracy = record[FEATURES.GPS_HORIZ_ACCURACY],
         gpsVertAccuracy = record[FEATURES.GPS_VERT_ACCURACY],
@@ -115,7 +112,6 @@ class FeatureStore(
               .select(
                   ID,
                   LAYER_ID,
-                  SHAPE_TYPE_ID,
                   GEOM,
                   GPS_HORIZ_ACCURACY,
                   GPS_VERT_ACCURACY,
@@ -135,7 +131,6 @@ class FeatureStore(
         FeatureModel(
             id = record[ID],
             layerId = record[LAYER_ID]!!,
-            shapeType = record[SHAPE_TYPE_ID]!!,
             geom = record[GEOM],
             gpsHorizAccuracy = record[GPS_HORIZ_ACCURACY],
             gpsVertAccuracy = record[GPS_VERT_ACCURACY],
@@ -168,7 +163,6 @@ class FeatureStore(
     with(FEATURES) {
       dslContext
           .update(FEATURES)
-          .set(SHAPE_TYPE_ID, newModel.shapeType)
           .set(GEOM, newModel.geom)
           .set(GPS_HORIZ_ACCURACY, newModel.gpsHorizAccuracy)
           .set(GPS_VERT_ACCURACY, newModel.gpsVertAccuracy)

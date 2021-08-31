@@ -8,7 +8,6 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PlantNotFoundException
 import com.terraformation.backend.db.PostgresFuzzySearchOperators
-import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.daos.FeaturesDao
@@ -78,7 +77,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
     insertSiteData()
     insertLayer(id = layerId.value, siteId = siteId.value, layerType = LayerType.PlantsPlanted)
-    insertFeature(id = featureId.value, layerId = layerId.value, shapeType = ShapeType.Point)
+    insertFeature(id = featureId.value, layerId = layerId.value)
   }
 
   fun insertSeveralPlants(

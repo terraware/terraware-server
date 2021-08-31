@@ -32,7 +32,6 @@ val ENUM_TABLES =
         EnumTable("notification_types", "notifications\\.type_id"),
         EnumTable("health_states", listOf("health_states\\.id", ".*\\.health_state_id")),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
-        EnumTable("shape_types", ".*\\.shape_type_id"),
         EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
         EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
         EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
