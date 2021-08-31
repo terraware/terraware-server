@@ -184,7 +184,7 @@ tasks {
 jooq {
   image {
     repository = "postgis/postgis"
-    tag = "12-3.1"
+    tag = "12-3.0"
   }
 }
 

@@ -4,7 +4,9 @@
 UPDATE features
 SET geom = st_transform(
         st_setsrid(
-                st_force3d(geom, COALESCE(altitude, 0)),
+                st_translate(
+                        st_force3d(geom),
+                        0, 0, COALESCE(altitude, 0)),
                 CASE
                     WHEN st_srid(geom) = 0
                         THEN 3857
