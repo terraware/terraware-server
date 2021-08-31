@@ -1681,23 +1681,11 @@ components:
     CreateFeatureRequestPayload:
       required:
       - layerId
-      - shapeType
       type: object
       properties:
         layerId:
           type: integer
           format: int64
-        shapeType:
-          type: string
-          enum:
-          - Point
-          - Polyline
-          - Polygon
-          - Multipoint
-          - Pointz
-          - Polylinez
-          - Polygonz
-          - Pultipointz
         geom:
           $ref: '#/components/schemas/Geometry'
         gpsHorizAccuracy:
@@ -2020,7 +2008,6 @@ components:
       required:
       - id
       - layerId
-      - shapeType
       type: object
       properties:
         id:
@@ -2029,17 +2016,6 @@ components:
         layerId:
           type: integer
           format: int64
-        shapeType:
-          type: string
-          enum:
-          - Point
-          - Polyline
-          - Polygon
-          - Multipoint
-          - Pointz
-          - Polylinez
-          - Polygonz
-          - Pultipointz
         geom:
           $ref: '#/components/schemas/Geometry'
         gpsHorizAccuracy:
@@ -3449,23 +3425,11 @@ components:
     UpdateFeatureRequestPayload:
       required:
       - layerId
-      - shapeType
       type: object
       properties:
         layerId:
           type: integer
           format: int64
-        shapeType:
-          type: string
-          enum:
-          - Point
-          - Polyline
-          - Polygon
-          - Multipoint
-          - Pointz
-          - Polylinez
-          - Polygonz
-          - Pultipointz
         geom:
           $ref: '#/components/schemas/Geometry'
         gpsHorizAccuracy:
