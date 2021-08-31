@@ -10,11 +10,11 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.COLLECTORS
+import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.SPECIES
-import com.terraformation.backend.db.tables.references.SPECIES_FAMILIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.seedbank.model.AccessionActive
@@ -138,7 +138,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         EnumField.create("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
         IntegerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
-        TextField("family", "Family", SPECIES_FAMILIES.NAME, SearchTables.SpeciesFamily),
+        TextField("family", "Family", FAMILIES.SCIENTIFIC_NAME, SearchTables.Family),
         GeolocationField(
             "geolocation",
             "Geolocation",
@@ -213,14 +213,14 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         EnumField.create("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
         TextField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
         DateField("processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
-        EnumField.create("rare", "Rare", ACCESSIONS.SPECIES_RARE_TYPE_ID),
+        EnumField.create("rare", "Rare", ACCESSIONS.RARE_TYPE_ID),
         DateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
         GramsField("remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
         BigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
         EnumField.create("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
         TextField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
         EnumField.create("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
-        TextField("species", "Species", SPECIES.NAME, SearchTables.Species),
+        TextField("species", "Species", SPECIES.SCIENTIFIC_NAME, SearchTables.Species),
         EnumField.create("state", "State", ACCESSIONS.STATE_ID, nullable = false),
         EnumField.create(
             "storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),

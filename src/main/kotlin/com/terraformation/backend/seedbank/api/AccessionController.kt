@@ -20,10 +20,10 @@ import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.ProcessingMethod
+import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
-import com.terraformation.backend.db.SpeciesRareType
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
@@ -134,7 +134,7 @@ data class CreateAccessionRequestPayload(
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
     val primaryCollector: String? = null,
-    val rare: SpeciesRareType? = null,
+    val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     val secondaryCollectors: Set<String>? = null,
     val siteLocation: String? = null,
@@ -197,7 +197,7 @@ data class UpdateAccessionRequestPayload(
     val processingNotes: String? = null,
     val processingStaffResponsible: String? = null,
     val processingStartDate: LocalDate? = null,
-    val rare: SpeciesRareType? = null,
+    val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     val secondaryCollectors: Set<String>? = null,
     val siteLocation: String? = null,
@@ -302,7 +302,7 @@ data class AccessionPayload(
     val processingNotes: String?,
     val processingStaffResponsible: String?,
     val processingStartDate: LocalDate?,
-    val rare: SpeciesRareType?,
+    val rare: RareType?,
     val receivedDate: LocalDate?,
     @Schema(
         description =

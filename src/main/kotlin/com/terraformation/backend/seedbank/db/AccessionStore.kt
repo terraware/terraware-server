@@ -104,8 +104,8 @@ class AccessionStore(
             .select(
                 ACCESSIONS.asterisk(),
                 ACCESSIONS.collectors().NAME,
-                ACCESSIONS.species().NAME,
-                ACCESSIONS.speciesFamilies().NAME,
+                ACCESSIONS.species().SCIENTIFIC_NAME,
+                ACCESSIONS.families().SCIENTIFIC_NAME,
                 ACCESSIONS.STATE_ID,
                 ACCESSIONS.storageLocations().NAME,
                 ACCESSIONS.storageLocations().CONDITION_ID,
@@ -155,7 +155,7 @@ class AccessionStore(
           environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
           estimatedSeedCount = parentRow[EST_SEED_COUNT],
           facilityId = parentRow[FACILITY_ID],
-          family = parentRow[speciesFamilies().NAME],
+          family = parentRow[families().SCIENTIFIC_NAME],
           fieldNotes = parentRow[FIELD_NOTES],
           founderId = parentRow[FOUNDER_ID],
           geolocations = geolocations,
@@ -173,7 +173,7 @@ class AccessionStore(
           processingNotes = parentRow[PROCESSING_NOTES],
           processingStaffResponsible = parentRow[PROCESSING_STAFF_RESPONSIBLE],
           processingStartDate = parentRow[PROCESSING_START_DATE],
-          rare = parentRow[SPECIES_RARE_TYPE_ID],
+          rare = parentRow[RARE_TYPE_ID],
           receivedDate = parentRow[RECEIVED_DATE],
           remaining =
               SeedQuantityModel.of(parentRow[REMAINING_QUANTITY], parentRow[REMAINING_UNITS_ID]),
@@ -181,7 +181,7 @@ class AccessionStore(
           siteLocation = parentRow[COLLECTION_SITE_NAME],
           source = source,
           sourcePlantOrigin = parentRow[SOURCE_PLANT_ORIGIN_ID],
-          species = parentRow[species().NAME],
+          species = parentRow[species().SCIENTIFIC_NAME],
           speciesId = parentRow[SPECIES_ID],
           state = parentRow[STATE_ID]!!,
           storageCondition = parentRow[storageLocations().CONDITION_ID],
@@ -233,6 +233,7 @@ class AccessionStore(
                     .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                     .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                     .set(FACILITY_ID, facilityId)
+                    .set(FAMILY_ID, speciesStore.getFamilyId(accession.family))
                     .set(FIELD_NOTES, accession.fieldNotes)
                     .set(FOUNDER_ID, accession.founderId)
                     .set(
@@ -244,12 +245,11 @@ class AccessionStore(
                     .set(
                         PRIMARY_COLLECTOR_ID,
                         getCollectorId(facilityId, accession.primaryCollector))
+                    .set(RARE_TYPE_ID, accession.rare)
                     .set(RECEIVED_DATE, accession.receivedDate)
                     .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                     .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
-                    .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                     .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
-                    .set(SPECIES_RARE_TYPE_ID, accession.rare)
                     .set(STATE_ID, AccessionState.Pending)
                     .set(
                         STORAGE_LOCATION_ID,
@@ -389,6 +389,7 @@ class AccessionStore(
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
+                .set(FAMILY_ID, speciesStore.getFamilyId(accession.family))
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
                 .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestGerminationTestDate)
@@ -399,15 +400,14 @@ class AccessionStore(
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
                 .set(PROCESSING_START_DATE, accession.processingStartDate)
+                .set(RARE_TYPE_ID, accession.rare)
                 .set(RECEIVED_DATE, accession.receivedDate)
                 .set(REMAINING_GRAMS, accession.remaining?.grams)
                 .set(REMAINING_QUANTITY, accession.remaining?.quantity)
                 .set(REMAINING_UNITS_ID, accession.remaining?.units)
                 .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                 .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
-                .set(SPECIES_FAMILY_ID, speciesStore.getSpeciesFamilyId(accession.family))
                 .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
-                .set(SPECIES_RARE_TYPE_ID, accession.rare)
                 .set(STATE_ID, accession.state)
                 .set(
                     STORAGE_LOCATION_ID,

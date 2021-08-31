@@ -1,8 +1,8 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
+import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.SPECIES
-import com.terraformation.backend.db.tables.references.SPECIES_FAMILIES
 import java.time.Clock
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
@@ -17,15 +17,16 @@ class SpeciesStore(
 ) {
 
   fun getSpeciesId(speciesName: String?): SpeciesId? {
-    return support.getOrInsertId(speciesName, SPECIES.ID, SPECIES.NAME) {
+    return support.getOrInsertId(speciesName, SPECIES.ID, SPECIES.SCIENTIFIC_NAME) {
       it.set(SPECIES.CREATED_TIME, clock.instant())
       it.set(SPECIES.MODIFIED_TIME, clock.instant())
     }
   }
 
-  fun getSpeciesFamilyId(familyName: String?): SpeciesFamilyId? {
-    return support.getOrInsertId(familyName, SPECIES_FAMILIES.ID, SPECIES_FAMILIES.NAME) {
-      it.set(SPECIES_FAMILIES.CREATED_TIME, clock.instant())
+  fun getFamilyId(familyName: String?): FamilyId? {
+    return support.getOrInsertId(familyName, FAMILIES.ID, FAMILIES.SCIENTIFIC_NAME) {
+      it.set(FAMILIES.CREATED_TIME, clock.instant())
+      it.set(FAMILIES.MODIFIED_TIME, clock.instant())
     }
   }
 
@@ -34,17 +35,20 @@ class SpeciesStore(
   }
 
   fun countFamilies(asOf: TemporalAccessor): Int {
-    return support.countEarlierThan(asOf, SPECIES_FAMILIES.CREATED_TIME)
+    return support.countEarlierThan(asOf, FAMILIES.CREATED_TIME)
   }
 
   fun findAllSortedByName(): List<SpeciesRow> {
-    return dslContext.selectFrom(SPECIES).orderBy(SPECIES.NAME).fetchInto(SpeciesRow::class.java)
+    return dslContext
+        .selectFrom(SPECIES)
+        .orderBy(SPECIES.SCIENTIFIC_NAME)
+        .fetchInto(SpeciesRow::class.java)
   }
 
   fun createSpecies(speciesName: String): SpeciesRow {
     return dslContext
             .insertInto(SPECIES)
-            .set(SPECIES.NAME, speciesName)
+            .set(SPECIES.SCIENTIFIC_NAME, speciesName)
             .set(SPECIES.CREATED_TIME, clock.instant())
             .set(SPECIES.MODIFIED_TIME, clock.instant())
             .returning()
@@ -62,7 +66,7 @@ class SpeciesStore(
     val rowsUpdated =
         dslContext
             .update(SPECIES)
-            .set(SPECIES.NAME, name)
+            .set(SPECIES.SCIENTIFIC_NAME, name)
             .set(SPECIES.MODIFIED_TIME, clock.instant())
             .where(SPECIES.ID.eq(speciesId))
             .execute()

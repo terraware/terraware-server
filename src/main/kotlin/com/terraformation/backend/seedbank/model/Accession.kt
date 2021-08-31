@@ -6,11 +6,11 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.ProcessingMethod
+import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesRareType
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.WithdrawalPurpose
 import java.math.BigDecimal
@@ -74,7 +74,7 @@ data class AccessionModel(
     val processingNotes: String? = null,
     val processingStaffResponsible: String? = null,
     val processingStartDate: LocalDate? = null,
-    val rare: SpeciesRareType? = null,
+    val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
     val secondaryCollectors: Set<String> = emptySet(),

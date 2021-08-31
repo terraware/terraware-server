@@ -79,10 +79,16 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val speciesDao = SpeciesDao(dslContext.configuration())
     speciesDao.insert(
         SpeciesRow(
-            id = SpeciesId(10000), name = "Kousa Dogwood", createdTime = now, modifiedTime = now))
+            id = SpeciesId(10000),
+            scientificName = "Kousa Dogwood",
+            createdTime = now,
+            modifiedTime = now))
     speciesDao.insert(
         SpeciesRow(
-            id = SpeciesId(10001), name = "Other Dogwood", createdTime = now, modifiedTime = now))
+            id = SpeciesId(10001),
+            scientificName = "Other Dogwood",
+            createdTime = now,
+            modifiedTime = now))
 
     accessionsDao.insert(
         AccessionsRow(

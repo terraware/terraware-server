@@ -18,12 +18,12 @@ import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.ProcessingMethod
+import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.SpeciesRareType
 import com.terraformation.backend.db.SpeciesStore
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
@@ -108,9 +108,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             "app_device_id_seq",
             "bag_id_seq",
             "collection_event_id_seq",
+            "family_id_seq",
             "germination_test_id_seq",
             "species_id_seq",
-            "species_family_id_seq",
             "withdrawal_id_seq",
         )
 
@@ -244,7 +244,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
     assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
-    assertEquals(initialRow.speciesFamilyId, secondRow.speciesFamilyId, "Family")
+    assertEquals(initialRow.familyId, secondRow.familyId, "Family")
     assertEquals(initialRow.primaryCollectorId, secondRow.primaryCollectorId, "Primary collector")
 
     assertEquals(2, getSecondaryCollectors(AccessionId(1)).size, "Number of secondary collectors")
@@ -1186,13 +1186,16 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertNull(newId, "No new species ID should be returned")
     assertEquals(
         SpeciesRow(
-            id = SpeciesId(1), name = "species1a", createdTime = Instant.EPOCH, modifiedTime = now),
+            id = SpeciesId(1),
+            scientificName = "species1a",
+            createdTime = Instant.EPOCH,
+            modifiedTime = now),
         speciesDao.fetchOneById(SpeciesId(1)),
         "Updated species")
     assertEquals(
         SpeciesRow(
             id = SpeciesId(2),
-            name = "species2",
+            scientificName = "species2",
             createdTime = Instant.EPOCH,
             modifiedTime = Instant.EPOCH),
         speciesDao.fetchOneById(SpeciesId(2)),
@@ -1216,7 +1219,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(SpeciesId(2), newId, "Existing species ID should be returned")
     assertNull(speciesDao.fetchOneById(SpeciesId(1)), "Old species should be deleted")
-    assertEquals("species2", speciesDao.fetchOneById(SpeciesId(2))?.name, "Unmodified species name")
+    assertEquals(
+        "species2",
+        speciesDao.fetchOneById(SpeciesId(2))?.scientificName,
+        "Unmodified species name")
     assertEquals(
         "species2",
         store.fetchByNumber(facilityId, accession1.accessionNumber!!)?.species,
@@ -1450,7 +1456,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             landowner = "landowner",
             numberOfTrees = 10,
             primaryCollector = "primaryCollector",
-            rare = SpeciesRareType.Yes,
+            rare = RareType.Yes,
             receivedDate = today,
             secondaryCollectors = setOf("second1", "second2"),
             siteLocation = "siteLocation",
@@ -1514,7 +1520,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             processingNotes = "processingNotes",
             processingStaffResponsible = "procStaff",
             processingStartDate = today,
-            rare = SpeciesRareType.Yes,
+            rare = RareType.Yes,
             receivedDate = today,
             secondaryCollectors = setOf("second1", "second2"),
             siteLocation = "siteLocation",
