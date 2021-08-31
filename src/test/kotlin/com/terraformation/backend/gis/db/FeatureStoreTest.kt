@@ -10,7 +10,6 @@ import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.ThumbnailId
 import com.terraformation.backend.db.asGeoJson
@@ -59,10 +58,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val thumbnailId = ThumbnailId(40)
   private val validCreateRequest =
       FeatureModel(
-          layerId = layerId,
-          shapeType = ShapeType.Point,
-          geom = mercatorPoint(1.0, 2.0, 120000.0),
-          notes = "Great view up here")
+          layerId = layerId, geom = mercatorPoint(1.0, 2.0, 120000.0), notes = "Great view up here")
 
   private val clock = mockk<Clock>()
   private val time1 = Instant.EPOCH

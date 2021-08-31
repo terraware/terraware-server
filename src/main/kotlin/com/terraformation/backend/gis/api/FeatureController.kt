@@ -7,7 +7,6 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
-import com.terraformation.backend.db.ShapeType
 import com.terraformation.backend.gis.db.FeatureStore
 import com.terraformation.backend.gis.model.FeatureModel
 import io.swagger.v3.oas.annotations.Operation
@@ -103,7 +102,6 @@ class FeatureController(private val featureStore: FeatureStore) {
 
 data class CreateFeatureRequestPayload(
     val layerId: LayerId,
-    val shapeType: ShapeType,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
@@ -114,7 +112,6 @@ data class CreateFeatureRequestPayload(
   fun toModel(): FeatureModel {
     return FeatureModel(
         layerId = layerId,
-        shapeType = shapeType,
         geom = geom,
         gpsHorizAccuracy = gpsHorizAccuracy,
         gpsVertAccuracy = gpsVertAccuracy,
@@ -140,7 +137,6 @@ data class ListFeaturesRequestPayload(
 
 data class UpdateFeatureRequestPayload(
     val layerId: LayerId,
-    val shapeType: ShapeType,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
@@ -152,7 +148,6 @@ data class UpdateFeatureRequestPayload(
     return FeatureModel(
         id = id,
         layerId = layerId,
-        shapeType = shapeType,
         geom = geom,
         gpsHorizAccuracy = gpsHorizAccuracy,
         gpsVertAccuracy = gpsVertAccuracy,
@@ -166,7 +161,6 @@ data class UpdateFeatureRequestPayload(
 data class FeatureResponse(
     val id: FeatureId,
     val layerId: LayerId,
-    val shapeType: ShapeType,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
@@ -179,7 +173,6 @@ data class FeatureResponse(
   ) : this(
       model.id!!,
       model.layerId,
-      model.shapeType,
       model.geom,
       model.gpsHorizAccuracy,
       model.gpsVertAccuracy,

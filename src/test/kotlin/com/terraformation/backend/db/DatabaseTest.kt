@@ -161,7 +161,6 @@ abstract class DatabaseTest {
   protected fun insertFeature(
       id: Long,
       layerId: Long = id / 10,
-      shapeType: ShapeType = ShapeType.Point,
       geom: Geometry? = null,
       gpsHorizAccuracy: Double? = null,
       gpsVertAccuracy: Double? = null,
@@ -176,7 +175,6 @@ abstract class DatabaseTest {
           .insertInto(FEATURES)
           .set(ID, FeatureId(id))
           .set(LAYER_ID, LayerId(layerId))
-          .set(SHAPE_TYPE_ID, shapeType)
           .set(GEOM, geom)
           .set(GPS_HORIZ_ACCURACY, gpsHorizAccuracy)
           .set(GPS_VERT_ACCURACY, gpsVertAccuracy)
