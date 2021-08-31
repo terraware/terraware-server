@@ -3,7 +3,7 @@ package com.terraformation.backend.seedbank.search
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.CollectorId
-import com.terraformation.backend.db.SpeciesFamilyId
+import com.terraformation.backend.db.FamilyId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.records.AccessionsRecord
@@ -11,11 +11,11 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.COLLECTORS
+import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.SPECIES
-import com.terraformation.backend.db.tables.references.SPECIES_FAMILIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import org.jooq.Condition
@@ -198,8 +198,7 @@ class SearchTables {
     }
   }
 
-  object SpeciesFamily :
-      AccessionParentTable<SpeciesFamilyId>(SPECIES_FAMILIES.ID, ACCESSIONS.SPECIES_FAMILY_ID) {
+  object Family : AccessionParentTable<FamilyId>(FAMILIES.ID, ACCESSIONS.FAMILY_ID) {
     override fun conditionForPermissions(): Condition? {
       return null
     }

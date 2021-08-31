@@ -93,7 +93,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = time1,
               modifiedTime = time1,
               // Make the speciesName the same as the species id to simplify testing
-              name = currSpeciesId.toString()))
+              scientificName = currSpeciesId.toString()))
 
       val featureIds = mutableListOf<FeatureId>()
 

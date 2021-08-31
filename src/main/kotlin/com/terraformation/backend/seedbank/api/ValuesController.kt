@@ -40,7 +40,9 @@ class ValuesController(
   @GetMapping("/species")
   fun listSpecies(): ListSpeciesResponsePayload {
     return ListSpeciesResponsePayload(
-        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!.value, it.name!!) })
+        speciesStore.findAllSortedByName().map {
+          SpeciesDetails(it.id!!.value, it.scientificName!!)
+        })
   }
 
   @ApiResponses(
@@ -53,7 +55,8 @@ class ValuesController(
   ): CreateSpeciesResponsePayload {
     try {
       val species = speciesStore.createSpecies(payload.name)
-      return CreateSpeciesResponsePayload(SpeciesDetails(species.id!!.value, species.name!!))
+      return CreateSpeciesResponsePayload(
+          SpeciesDetails(species.id!!.value, species.scientificName!!))
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
     }
