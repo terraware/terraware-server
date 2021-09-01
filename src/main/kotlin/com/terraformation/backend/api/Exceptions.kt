@@ -26,6 +26,9 @@ class NotAuthenticatedException(message: String = "Client is not authenticated")
 class NotFoundException(message: String = "Resource not found") :
     ClientFacingException(HttpStatus.NOT_FOUND, message)
 
+class ResourceInUseException(message: String = "The resource is currently in use") :
+    ClientFacingException(HttpStatus.CONFLICT, message)
+
 class UnsupportedPhotoFormatException(message: String = "Photos must be of type image/jpeg") :
     ClientFacingException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, message)
 

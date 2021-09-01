@@ -9,12 +9,13 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.SpeciesStore
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import com.terraformation.backend.seedbank.search.SearchField
 import com.terraformation.backend.seedbank.search.SearchService
+import com.terraformation.backend.species.db.SpeciesStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -37,26 +38,26 @@ class ValuesController(
     private val searchService: SearchService,
     private val speciesStore: SpeciesStore,
 ) {
+  @Operation(deprecated = true, description = "Use /api/v1/species instead.")
   @GetMapping("/species")
   fun listSpecies(): ListSpeciesResponsePayload {
     return ListSpeciesResponsePayload(
-        speciesStore.findAllSortedByName().map {
-          SpeciesDetails(it.id!!.value, it.scientificName!!)
-        })
+        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!.value, it.name!!) })
   }
 
   @ApiResponses(
       ApiResponse(responseCode = "200", description = "Species created."),
       ApiResponse(
           responseCode = "409", description = "A species with the requested name already exists."))
+  @Operation(deprecated = true, description = "Use /api/v1/species instead.")
   @PostMapping("/species")
   fun createSpecies(
       @RequestBody payload: CreateSpeciesRequestPayload
   ): CreateSpeciesResponsePayload {
     try {
-      val species = speciesStore.createSpecies(payload.name)
-      return CreateSpeciesResponsePayload(
-          SpeciesDetails(species.id!!.value, species.scientificName!!))
+      val row = SpeciesRow(name = payload.name)
+      val speciesId = speciesStore.createSpecies(row)
+      return CreateSpeciesResponsePayload(SpeciesDetails(speciesId.value, payload.name))
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
     }

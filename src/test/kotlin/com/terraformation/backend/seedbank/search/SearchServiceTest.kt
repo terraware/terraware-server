@@ -80,13 +80,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     speciesDao.insert(
         SpeciesRow(
             id = SpeciesId(10000),
-            scientificName = "Kousa Dogwood",
+            name = "Kousa Dogwood",
+            isScientific = false,
             createdTime = now,
             modifiedTime = now))
     speciesDao.insert(
         SpeciesRow(
             id = SpeciesId(10001),
-            scientificName = "Other Dogwood",
+            name = "Other Dogwood",
+            isScientific = false,
             createdTime = now,
             modifiedTime = now))
 

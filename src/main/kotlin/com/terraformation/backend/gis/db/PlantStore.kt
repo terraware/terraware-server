@@ -81,7 +81,7 @@ class PlantStore(
     var conditions: Condition = trueCondition()
 
     if (speciesName != null) {
-      val speciesId = speciesDao.fetchOneByScientificName(speciesName)?.id ?: return emptyList()
+      val speciesId = speciesDao.fetchOneByName(speciesName)?.id ?: return emptyList()
       conditions = conditions.and(PLANTS.SPECIES_ID.eq(speciesId))
     }
     if (minEnteredTime != null) {

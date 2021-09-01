@@ -24,7 +24,6 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.SpeciesStore
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
@@ -35,11 +34,14 @@ import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.daos.BagsDao
+import com.terraformation.backend.db.tables.daos.FamiliesDao
+import com.terraformation.backend.db.tables.daos.FamilyNamesDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
 import com.terraformation.backend.db.tables.daos.GerminationTestsDao
 import com.terraformation.backend.db.tables.daos.GerminationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
+import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
@@ -71,6 +73,7 @@ import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
+import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -92,6 +95,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
@@ -133,11 +137,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var accessionPhotosDao: AccessionPhotosDao
   private lateinit var appDevicesDao: AppDevicesDao
   private lateinit var bagsDao: BagsDao
+  private lateinit var familiesDao: FamiliesDao
+  private lateinit var familyNamesDao: FamilyNamesDao
   private lateinit var geolocationsDao: GeolocationsDao
   private lateinit var germinationsDao: GerminationsDao
   private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var photosDao: PhotosDao
   private lateinit var speciesDao: SpeciesDao
+  private lateinit var speciesNamesDao: SpeciesNamesDao
   private lateinit var storageLocationsDao: StorageLocationsDao
 
   private val facilityId = FacilityId(100)
@@ -149,21 +156,32 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     accessionPhotosDao = AccessionPhotosDao(jooqConfig)
     appDevicesDao = AppDevicesDao(jooqConfig)
     bagsDao = BagsDao(jooqConfig)
+    familiesDao = FamiliesDao(jooqConfig)
+    familyNamesDao = FamilyNamesDao(jooqConfig)
     geolocationsDao = GeolocationsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
     germinationTestsDao = GerminationTestsDao(jooqConfig)
     photosDao = PhotosDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
+    speciesNamesDao = SpeciesNamesDao(jooqConfig)
     storageLocationsDao = StorageLocationsDao(jooqConfig)
 
     val support = StoreSupport(dslContext)
+
+    val speciesStore =
+        SpeciesStore(
+            clock, dslContext, familiesDao, familyNamesDao, speciesDao, speciesNamesDao, support)
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
 
     every { user.canCreateAccession(any()) } returns true
+    every { user.canCreateFamily() } returns true
+    every { user.canCreateSpecies() } returns true
+    every { user.canDeleteSpecies(any()) } returns true
     every { user.canReadAccession(any(), any()) } returns true
     every { user.canUpdateAccession(any(), any()) } returns true
+    every { user.canUpdateSpecies(any()) } returns true
 
     store =
         AccessionStore(
@@ -174,7 +192,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
             photosDao,
-            SpeciesStore(clock, dslContext, support),
+            speciesStore,
             WithdrawalStore(dslContext, clock),
             clock,
             support,
@@ -220,6 +238,30 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000001000).execute()
     val inserted = store.create(facilityId, AccessionModel())
     assertEquals(inserted.accessionNumber, "197001011000")
+  }
+
+  @Test
+  fun `create with new family throws exception if user has no permission to create families`() {
+    every { user.canCreateFamily() } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.create(facilityId, AccessionModel(family = "newFamily"))
+    }
+
+    assertEquals(
+        emptyList<AccessionsRow>(), accessionsDao.findAll(), "Should not have inserted accession")
+  }
+
+  @Test
+  fun `create with new species throws exception if user has no permission to create species`() {
+    every { user.canCreateSpecies() } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.create(facilityId, AccessionModel(species = "newSpecies"))
+    }
+
+    assertEquals(
+        emptyList<AccessionsRow>(), accessionsDao.findAll(), "Should not have inserted accession")
   }
 
   @Test
@@ -1187,7 +1229,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         SpeciesRow(
             id = SpeciesId(1),
-            scientificName = "species1a",
+            name = "species1a",
+            isScientific = false,
             createdTime = Instant.EPOCH,
             modifiedTime = now),
         speciesDao.fetchOneById(SpeciesId(1)),
@@ -1195,7 +1238,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         SpeciesRow(
             id = SpeciesId(2),
-            scientificName = "species2",
+            name = "species2",
+            isScientific = false,
             createdTime = Instant.EPOCH,
             modifiedTime = Instant.EPOCH),
         speciesDao.fetchOneById(SpeciesId(2)),
@@ -1219,10 +1263,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(SpeciesId(2), newId, "Existing species ID should be returned")
     assertNull(speciesDao.fetchOneById(SpeciesId(1)), "Old species should be deleted")
-    assertEquals(
-        "species2",
-        speciesDao.fetchOneById(SpeciesId(2))?.scientificName,
-        "Unmodified species name")
+    assertEquals("species2", speciesDao.fetchOneById(SpeciesId(2))?.name, "Unmodified species name")
     assertEquals(
         "species2",
         store.fetchByNumber(facilityId, accession1.accessionNumber!!)?.species,
@@ -1238,6 +1279,15 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows(SpeciesNotFoundException::class.java) {
       store.updateSpecies(SpeciesId(1), "nonexistent")
     }
+  }
+
+  @Test
+  fun `updateSpecies throws exception when user has no permission to update species`() {
+    store.create(facilityId, AccessionModel(species = "species1"))
+
+    every { user.canUpdateSpecies(any()) } returns false
+
+    assertThrows<AccessDeniedException> { store.updateSpecies(SpeciesId(1), "nonexistent") }
   }
 
   @Test

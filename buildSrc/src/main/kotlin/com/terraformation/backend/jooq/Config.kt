@@ -1,16 +1,16 @@
 package com.terraformation.backend.jooq
 
 /**
- * See the definition of EnumTable for general information. There are roughly two ways to
- * specify items in the includeExpression list. Both require use of regex.
+ * See the definition of EnumTable for general information. There are roughly two ways to specify
+ * items in the includeExpression list. Both require use of regex.
  *
- * 1. By naming specific tables. E.g. The table "facilities" has a column "type_id",
- *    which is a foreign key referencing the "facility_types" table.
- * 2. With a regular expression that may match multiple tables. E.g. Since
- *    "source_plant_origin_id" is a very specific name, we can safely include any table
- *    that has a column named "source_plant_origin_id". We are guaranteed that such a column
- *    will be a foreign key reference into the "source_plant_origins" table.
-*/
+ * 1. By naming specific tables. E.g. The table "facilities" has a column "type_id", which is a
+ * foreign key referencing the "facility_types" table.
+ * 2. With a regular expression that may match multiple tables. E.g. Since "source_plant_origin_id"
+ * is a very specific name, we can safely include any table that has a column named
+ * "source_plant_origin_id". We are guaranteed that such a column will be a foreign key reference
+ * into the "source_plant_origins" table.
+ */
 val ENUM_TABLES =
     listOf(
         EnumTable(
@@ -31,6 +31,7 @@ val ENUM_TABLES =
         EnumTable("layer_types", ".*\\.layer_type_id"),
         EnumTable("notification_types", "notifications\\.type_id"),
         EnumTable("health_states", listOf("health_states\\.id", ".*\\.health_state_id")),
+        EnumTable("plant_forms", listOf("plant_forms\\.id", ".*\\.plant_form_id")),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
         EnumTable("rare_types", ".*\\.rare_type_id"),
         EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
@@ -54,6 +55,7 @@ val ID_WRAPPERS =
         IdWrapper("DeviceId", listOf("devices\\.id", ".*\\.device_id")),
         IdWrapper("FacilityId", listOf("facilities\\.id", ".*\\.facility_id")),
         IdWrapper("FamilyId", listOf("families\\.id", ".*\\.family_id")),
+        IdWrapper("FamilyNameId", listOf("family_names\\.id")),
         IdWrapper("FeatureId", listOf("features\\.id", ".*\\.feature_id")),
         IdWrapper("GeolocationId", listOf("geolocations\\.id", ".*\\.geolocation_id")),
         IdWrapper("GerminationId", listOf("germinations\\.id", ".*\\.germination_id")),
@@ -64,10 +66,12 @@ val ID_WRAPPERS =
         IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
         IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
         IdWrapper("PhotoId", listOf("photos\\.id", ".*\\.photo_id")),
-        IdWrapper("PlantObservationId", listOf("plant_observations\\.id", ".*\\.plant_observation_id")),
+        IdWrapper(
+            "PlantObservationId", listOf("plant_observations\\.id", ".*\\.plant_observation_id")),
         IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
         IdWrapper("SiteId", listOf("sites\\.id", ".*\\.site_id")),
         IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
+        IdWrapper("SpeciesNameId", listOf("species_names\\.id")),
         IdWrapper(
             "StorageLocationId", listOf("storage_locations\\.id", ".*\\.storage_location_id")),
         IdWrapper("ThumbnailId", listOf("thumbnail\\.id")),

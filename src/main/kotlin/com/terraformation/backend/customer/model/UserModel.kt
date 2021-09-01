@@ -10,6 +10,7 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
@@ -257,6 +258,20 @@ class UserModel(
   fun canDeleteApiKey(organizationId: OrganizationId): Boolean = canCreateApiKey(organizationId)
 
   fun canListApiKeys(organizationId: OrganizationId): Boolean = canCreateApiKey(organizationId)
+
+  fun canCreateSpecies(): Boolean {
+    return organizationRoles.values.any {
+      it == Role.OWNER || it == Role.ADMIN || it == Role.MANAGER
+    }
+  }
+
+  fun canDeleteSpecies(@Suppress("UNUSED_PARAMETER") speciesId: SpeciesId): Boolean =
+      canCreateSpecies()
+
+  fun canUpdateSpecies(@Suppress("UNUSED_PARAMETER") speciesId: SpeciesId): Boolean =
+      canCreateSpecies()
+
+  fun canCreateFamily(): Boolean = canCreateSpecies()
 
   /**
    * Temporary helper to get the user's facility ID.

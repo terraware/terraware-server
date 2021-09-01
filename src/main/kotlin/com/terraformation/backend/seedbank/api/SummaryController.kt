@@ -4,8 +4,8 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.SpeciesStore
 import com.terraformation.backend.seedbank.db.AccessionStore
+import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.atMostRecent
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
