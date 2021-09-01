@@ -4,6 +4,8 @@ import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.tables.daos.FamiliesDao
+import com.terraformation.backend.db.tables.daos.FamilyNamesDao
 import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
@@ -14,6 +16,7 @@ import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
+import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.backend.db.tables.daos.ThumbnailDao
@@ -39,6 +42,8 @@ class JooqDaoBeans(dslContext: DSLContext) {
   @Bean fun accessionsDao() = AccessionsDao(configuration)
   @Bean fun deviceDao() = DevicesDao(configuration)
   @Bean fun facilitiesDao() = FacilitiesDao(configuration)
+  @Bean fun familiesDao() = FamiliesDao(configuration)
+  @Bean fun familyNamesDao() = FamilyNamesDao(configuration)
   @Bean fun featurePhotosDao() = FeaturePhotosDao(configuration)
   @Bean fun featuresDao() = FeaturesDao(configuration)
   @Bean fun layersDao() = LayersDao(configuration)
@@ -49,6 +54,7 @@ class JooqDaoBeans(dslContext: DSLContext) {
   @Bean fun projectsDao() = ProjectsDao(configuration)
   @Bean fun siteDao() = SitesDao(configuration)
   @Bean fun speciesDao() = SpeciesDao(configuration)
+  @Bean fun speciesNamesDao() = SpeciesNamesDao(configuration)
   @Bean fun storageLocationDao() = StorageLocationsDao(configuration)
   @Bean fun taskProcessedTimeDao() = TaskProcessedTimesDao(configuration)
   @Bean fun thumbnailDao() = ThumbnailDao(configuration)

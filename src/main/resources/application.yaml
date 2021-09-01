@@ -31,6 +31,7 @@ springdoc:
     - "com.terraformation.backend.device.api"
     - "com.terraformation.backend.gis.api"
     - "com.terraformation.backend.seedbank.api"
+    - "com.terraformation.backend.species.api"
     - "com.terraformation.backend.time.api"
   default-produces-media-type: "application/json"
   swagger-ui:

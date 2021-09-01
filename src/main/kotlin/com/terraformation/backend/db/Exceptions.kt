@@ -29,3 +29,6 @@ class PlantObservationNotFoundException(val id: PlantObservationId) :
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     Exception("Species $speciesId not found")
+
+class SpeciesNameNotFoundException(val speciesNameId: SpeciesNameId) :
+    RuntimeException("Species name $speciesNameId not found")

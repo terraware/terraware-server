@@ -10,13 +10,13 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.SpeciesStore
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
+import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
@@ -32,6 +32,7 @@ import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.toActiveEnum
+import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.LocalDate
@@ -104,8 +105,8 @@ class AccessionStore(
             .select(
                 ACCESSIONS.asterisk(),
                 ACCESSIONS.collectors().NAME,
-                ACCESSIONS.species().SCIENTIFIC_NAME,
-                ACCESSIONS.families().SCIENTIFIC_NAME,
+                ACCESSIONS.species().NAME,
+                ACCESSIONS.families().NAME,
                 ACCESSIONS.STATE_ID,
                 ACCESSIONS.storageLocations().NAME,
                 ACCESSIONS.storageLocations().CONDITION_ID,
@@ -155,7 +156,7 @@ class AccessionStore(
           environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
           estimatedSeedCount = parentRow[EST_SEED_COUNT],
           facilityId = parentRow[FACILITY_ID],
-          family = parentRow[families().SCIENTIFIC_NAME],
+          family = parentRow[families().NAME],
           fieldNotes = parentRow[FIELD_NOTES],
           founderId = parentRow[FOUNDER_ID],
           geolocations = geolocations,
@@ -181,7 +182,7 @@ class AccessionStore(
           siteLocation = parentRow[COLLECTION_SITE_NAME],
           source = source,
           sourcePlantOrigin = parentRow[SOURCE_PLANT_ORIGIN_ID],
-          species = parentRow[species().SCIENTIFIC_NAME],
+          species = parentRow[species().NAME],
           speciesId = parentRow[SPECIES_ID],
           state = parentRow[STATE_ID]!!,
           storageCondition = parentRow[storageLocations().CONDITION_ID],
@@ -218,6 +219,9 @@ class AccessionStore(
         dslContext.transaction { _ ->
           val appDeviceId =
               accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
+          val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
+          val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
+          val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
 
           val accessionId =
               with(ACCESSIONS) {
@@ -233,7 +237,7 @@ class AccessionStore(
                     .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                     .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                     .set(FACILITY_ID, facilityId)
-                    .set(FAMILY_ID, speciesStore.getFamilyId(accession.family))
+                    .set(FAMILY_ID, familyId)
                     .set(FIELD_NOTES, accession.fieldNotes)
                     .set(FOUNDER_ID, accession.founderId)
                     .set(
@@ -242,14 +246,12 @@ class AccessionStore(
                     .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
                     .set(NUMBER, accessionNumber)
                     .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                    .set(
-                        PRIMARY_COLLECTOR_ID,
-                        getCollectorId(facilityId, accession.primaryCollector))
+                    .set(PRIMARY_COLLECTOR_ID, collectorId)
                     .set(RARE_TYPE_ID, accession.rare)
                     .set(RECEIVED_DATE, accession.receivedDate)
                     .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                     .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
-                    .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
+                    .set(SPECIES_ID, speciesId)
                     .set(STATE_ID, AccessionState.Pending)
                     .set(
                         STORAGE_LOCATION_ID,
@@ -374,6 +376,10 @@ class AccessionStore(
         }
       }
 
+      val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
+      val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
+      val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
+
       val rowsUpdated =
           with(ACCESSIONS) {
             dslContext
@@ -389,13 +395,13 @@ class AccessionStore(
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
-                .set(FAMILY_ID, speciesStore.getFamilyId(accession.family))
+                .set(FAMILY_ID, familyId)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
                 .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestGerminationTestDate)
                 .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                .set(PRIMARY_COLLECTOR_ID, getCollectorId(facilityId, accession.primaryCollector))
+                .set(PRIMARY_COLLECTOR_ID, collectorId)
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
@@ -407,7 +413,7 @@ class AccessionStore(
                 .set(REMAINING_UNITS_ID, accession.remaining?.units)
                 .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                 .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
-                .set(SPECIES_ID, speciesStore.getSpeciesId(accession.species))
+                .set(SPECIES_ID, speciesId)
                 .set(STATE_ID, accession.state)
                 .set(
                     STORAGE_LOCATION_ID,
@@ -487,13 +493,15 @@ class AccessionStore(
    */
   fun updateSpecies(speciesId: SpeciesId, name: String): SpeciesId? {
     try {
-      dslContext.transaction { _ -> speciesStore.updateSpecies(speciesId, name) }
+      dslContext.transaction { _ ->
+        speciesStore.updateSpecies(SpeciesRow(id = speciesId, isScientific = false, name = name))
+      }
 
       log.info("Renamed species $speciesId to $name")
 
       return null
     } catch (e: DuplicateKeyException) {
-      val existingSpeciesId = speciesStore.getSpeciesId(name)!!
+      val existingSpeciesId = speciesStore.getSpeciesId(name)
 
       dslContext.transaction { _ ->
         val rowsUpdated =
@@ -583,9 +591,21 @@ class AccessionStore(
     }
   }
 
-  private fun getCollectorId(facilityId: FacilityId, name: String?): CollectorId? {
-    return support.getOrInsertId(
-        name, COLLECTORS.ID, COLLECTORS.NAME, COLLECTORS.FACILITY_ID, facilityId)
+  private fun getCollectorId(facilityId: FacilityId, name: String): CollectorId {
+    return dslContext
+        .select(COLLECTORS.ID)
+        .from(COLLECTORS.ID.table)
+        .where(COLLECTORS.NAME.eq(name))
+        .and(COLLECTORS.FACILITY_ID.eq(facilityId))
+        .fetchOne(COLLECTORS.ID)
+        ?: (dslContext
+            .insertInto(COLLECTORS)
+            .set(COLLECTORS.NAME, name)
+            .set(COLLECTORS.FACILITY_ID, facilityId)
+            .returning(COLLECTORS.ID)
+            .fetchOne()
+            ?.get(COLLECTORS.ID)
+            ?: throw DataAccessException("Unable to insert new collector $name"))
   }
 
   private fun getStorageLocationId(facilityId: FacilityId, name: String?): StorageLocationId? {

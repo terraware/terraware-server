@@ -138,7 +138,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         EnumField.create("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
         IntegerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
-        TextField("family", "Family", FAMILIES.SCIENTIFIC_NAME, SearchTables.Family),
+        TextField("family", "Family", FAMILIES.NAME, SearchTables.Family),
         GeolocationField(
             "geolocation",
             "Geolocation",
@@ -220,7 +220,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         EnumField.create("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
         TextField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
         EnumField.create("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
-        TextField("species", "Species", SPECIES.SCIENTIFIC_NAME, SearchTables.Species),
+        TextField("species", "Species", SPECIES.NAME, SearchTables.Species),
         EnumField.create("state", "State", ACCESSIONS.STATE_ID, nullable = false),
         EnumField.create(
             "storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
