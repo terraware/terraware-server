@@ -1,17 +1,18 @@
 package com.terraformation.backend.seedbank.api
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import com.terraformation.backend.seedbank.search.SearchField
 import com.terraformation.backend.seedbank.search.SearchService
@@ -33,9 +34,9 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class ValuesController(
-    private val accessionStore: AccessionStore,
     private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService,
+    private val speciesDao: SpeciesDao,
     private val speciesStore: SpeciesStore,
 ) {
   @Operation(deprecated = true, description = "Use /api/v1/species instead.")
@@ -63,23 +64,19 @@ class ValuesController(
     }
   }
 
-  @ApiResponse(
-      responseCode = "200", description = "Species updated or merged with an existing species.")
+  @ApiResponseSimpleSuccess
   @ApiResponse404
-  @Operation(
-      summary = "Updates an existing species.",
-      description =
-          "If the species is being renamed and the species name in the payload already exists, " +
-              "the existing species replaces the one in the request (thus merging the requested " +
-              "species into the one that already had the name) and its ID is returned.")
+  @Operation(deprecated = true, description = "Use /api/v1/species instead.")
   @PostMapping("/species/{id}")
   fun updateSpecies(
       @RequestBody payload: CreateSpeciesRequestPayload,
       @PathVariable id: SpeciesId
-  ): UpdateSpeciesResponsePayload {
+  ): SimpleSuccessResponsePayload {
     try {
-      val newId = accessionStore.updateSpecies(id, payload.name)
-      return UpdateSpeciesResponsePayload(newId)
+      val existingSpecies =
+          speciesDao.fetchOneById(id) ?: throw NotFoundException("Species not found.")
+      speciesStore.updateSpecies(existingSpecies.copy(name = payload.name))
+      return SimpleSuccessResponsePayload()
     } catch (e: SpeciesNotFoundException) {
       throw NotFoundException("Species not found.")
     }
@@ -139,15 +136,6 @@ data class ListSpeciesResponsePayload(val values: List<SpeciesDetails>) : Succes
 data class CreateSpeciesRequestPayload(val name: String)
 
 data class CreateSpeciesResponsePayload(val details: SpeciesDetails) : SuccessResponsePayload
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class UpdateSpeciesResponsePayload(
-    @Schema(
-        description =
-            "If the requested species name already existed, the ID of the existing species. " +
-                "Will not be present if the requested species name did not already exist.")
-    val mergedWithSpeciesId: SpeciesId?
-) : SuccessResponsePayload
 
 data class StorageLocationsResponsePayload(val locations: List<StorageLocationDetails>) :
     SuccessResponsePayload
