@@ -23,6 +23,7 @@ class IdWrapper(
   fun render(out: JavaWriter) {
     out.println("""
       class $className @JsonCreator constructor(@get:JsonValue val value: Long) {
+        constructor(value: String) : this(value.toLong())
         override fun equals(other: Any?): Boolean = other is $className && other.value == value
         override fun hashCode(): Int = value.hashCode()
         override fun toString(): String = value.toString()

@@ -68,7 +68,9 @@ class SiteControllerTest : RunsAsUser {
 
       val expected =
           ListSitesResponse(
-              listOf(ListSitesElement(1, "First Site"), ListSitesElement(2, "Second Site")))
+              listOf(
+                  ListSitesElement(SiteId(1), "First Site"),
+                  ListSitesElement(SiteId(2), "Second Site")))
 
       assertEquals(expected, siteController.listSites())
     }
@@ -101,7 +103,7 @@ class SiteControllerTest : RunsAsUser {
       every { projectsDao.fetchOneById(projectId) } returns project
       every { siteDao.fetchOneById(siteId) } returns site
 
-      assertDoesNotThrow { siteController.getSite(siteId.value) }
+      assertDoesNotThrow { siteController.getSite(siteId) }
     }
 
     @Test
@@ -109,7 +111,7 @@ class SiteControllerTest : RunsAsUser {
       every { user.canReadSite(siteId) } returns true
       every { siteDao.fetchOneById(siteId) } returns null
 
-      assertThrows<NotFoundException> { siteController.getSite(siteId.value) }
+      assertThrows<NotFoundException> { siteController.getSite(siteId) }
     }
 
     @Test
@@ -120,7 +122,7 @@ class SiteControllerTest : RunsAsUser {
       every { siteDao.fetchOneById(siteId) } returns
           SitesRow(id = siteId, projectId = projectId, name = "site")
 
-      assertThrows<WrongOrganizationException> { siteController.getSite(siteId.value) }
+      assertThrows<WrongOrganizationException> { siteController.getSite(siteId) }
     }
 
     @Test
@@ -131,14 +133,14 @@ class SiteControllerTest : RunsAsUser {
 
       val expected =
           GetSiteResponse(
-              id = siteId.value,
+              id = siteId,
               name = "site",
               latitude = latitudeString,
               longitude = longitudeString,
               locale = locale,
               timezone = timezone)
 
-      assertEquals(expected, siteController.getSite(siteId.value))
+      assertEquals(expected, siteController.getSite(siteId))
     }
   }
 }

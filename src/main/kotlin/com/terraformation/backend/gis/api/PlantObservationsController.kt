@@ -43,19 +43,19 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified plant observation doesn't exist.")
   @GetMapping("/{plantObservationId}")
-  fun get(@PathVariable plantObservationId: Long): GetObservationResponsePayload {
-    val id = PlantObservationId(plantObservationId)
+  fun get(@PathVariable plantObservationId: PlantObservationId): GetObservationResponsePayload {
     val observation =
-        observStore.fetch(id)
-            ?: throw NotFoundException("The plant observation with id $id doesn't exist.")
+        observStore.fetch(plantObservationId)
+            ?: throw NotFoundException(
+                "The plant observation with id $plantObservationId doesn't exist.")
     return GetObservationResponsePayload(ObservationResponse(observation))
   }
 
   @ApiResponse(responseCode = "200")
   @Operation(summary = "Fetch a list of the plant observations associated with a plant.")
   @GetMapping("/list/{featureId}")
-  fun getList(@PathVariable featureId: Long): ListObservationsResponsePayload {
-    val list = observStore.fetchList(FeatureId(featureId))
+  fun getList(@PathVariable featureId: FeatureId): ListObservationsResponsePayload {
+    val list = observStore.fetchList(featureId)
     return ListObservationsResponsePayload(list.map { ObservationResponse(it) })
   }
 
@@ -69,10 +69,10 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
   @PutMapping("/{plantObservationId}")
   fun update(
       @RequestBody payload: UpdateObservationRequestPayload,
-      @PathVariable plantObservationId: Long
+      @PathVariable plantObservationId: PlantObservationId
   ): UpdateObservationResponsePayload {
     try {
-      val updated = observStore.update(payload.toRow(PlantObservationId(plantObservationId)))
+      val updated = observStore.update(payload.toRow(plantObservationId))
       return UpdateObservationResponsePayload(ObservationResponse(updated))
     } catch (e: PlantObservationNotFoundException) {
       throw NotFoundException("The plant observation with id $plantObservationId doesn't exist.")

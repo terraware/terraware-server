@@ -61,8 +61,7 @@ class AdminController(
   }
 
   @GetMapping("/organization/{organizationId}")
-  fun organization(@PathVariable("organizationId") idValue: Long, model: Model): String {
-    val organizationId = OrganizationId(idValue)
+  fun organization(@PathVariable organizationId: OrganizationId, model: Model): String {
     val organization = organizationStore.fetchById(organizationId) ?: throw NotFoundException()
     val projects = projectStore.fetchByOrganization(organizationId).sortedBy { it.name }
     val users = organizationStore.fetchUsers(listOf(organizationId)).sortedBy { it.email }
@@ -101,8 +100,7 @@ class AdminController(
   }
 
   @GetMapping("/project/{projectId}")
-  fun project(@PathVariable("projectId") idValue: Long, model: Model): String {
-    val projectId = ProjectId(idValue)
+  fun project(@PathVariable projectId: ProjectId, model: Model): String {
     val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
     val organization = organizationStore.fetchById(project.organizationId)
     val orgUsers =
@@ -123,8 +121,7 @@ class AdminController(
   }
 
   @GetMapping("/site/{siteId}")
-  fun site(@PathVariable("siteId") idValue: Long, model: Model): String {
-    val siteId = SiteId(idValue)
+  fun site(@PathVariable siteId: SiteId, model: Model): String {
     val site = siteStore.fetchById(siteId) ?: throw NotFoundException()
     val projectId = site.projectId
     val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
@@ -143,8 +140,7 @@ class AdminController(
   }
 
   @GetMapping("/user/{userId}")
-  fun user(@PathVariable("userId") idValue: Long, model: Model): String {
-    val userId = UserId(idValue)
+  fun user(@PathVariable userId: UserId, model: Model): String {
     val user = userStore.fetchById(userId)
     val organizations = organizationStore.fetchAll() // TODO: Only ones where currentUser is admin?
     val projects = projectStore.fetchAll().groupBy { it.organizationId }
@@ -160,15 +156,14 @@ class AdminController(
 
   @PostMapping("/setUserMemberships")
   fun setUserMemberships(
-      @RequestParam("userId") userIdValue: Long,
-      @RequestParam("organizationId", required = false) organizationIdValues: List<Long>?,
+      @RequestParam("userId") userId: UserId,
+      @RequestParam("organizationId", required = false) organizationIdList: List<OrganizationId>?,
       @RequestParam("role", required = false) roleValues: List<String>?,
-      @RequestParam("projectId", required = false) projectIdValues: List<Long>?,
+      @RequestParam("projectId", required = false) projectIdList: List<ProjectId>?,
       model: Model
   ): String {
-    val organizationIds = organizationIdValues?.map { OrganizationId(it) }?.toSet() ?: emptySet()
-    val projectIds = projectIdValues?.map { ProjectId(it) }?.toSet() ?: emptySet()
-    val userId = UserId(userIdValue)
+    val organizationIds = organizationIdList?.toSet() ?: emptySet()
+    val projectIds = projectIdList?.toSet() ?: emptySet()
 
     // Roles are of the form orgId:roleId
     val roles =
@@ -228,11 +223,11 @@ class AdminController(
 
     model.addAttribute("successMessage", "User memberships updated.")
 
-    return user(userIdValue, model)
+    return user(userId, model)
   }
 
   @PostMapping("/createOrganization")
-  fun createOrganization(@NotBlank @RequestParam name: String, model: Model): String {
+  fun createOrganization(@NotBlank @RequestParam("name") name: String, model: Model): String {
     try {
       val org = organizationStore.createWithAdmin(name)
       model.addAttribute("successMessage", "Created organization ${org.id}")
@@ -246,23 +241,22 @@ class AdminController(
 
   @PostMapping("/addOrganizationUser")
   fun addOrganizationUser(
-      @RequestParam("organizationId") organizationIdValue: Long,
+      @RequestParam("organizationId") organizationId: OrganizationId,
       @NotBlank @RequestParam("email") email: String,
       @RequestParam("role") roleId: Int,
       model: Model
   ): String {
-    val organizationId = OrganizationId(organizationIdValue)
     val role = Role.of(roleId)
 
     if (role == null) {
       model.addAttribute("failureMessage", "Invalid role selected.")
-      return organization(organizationIdValue, model)
+      return organization(organizationId, model)
     }
 
     val userDetails = userStore.fetchByEmail(email)
     if (userDetails == null) {
       model.addAttribute("failureMessage", "User $email not found.")
-      return organization(organizationIdValue, model)
+      return organization(organizationId, model)
     }
 
     try {
@@ -274,18 +268,15 @@ class AdminController(
       model.addAttribute("failureMessage", "$email was already a member of the organization.")
     }
 
-    return organization(organizationIdValue, model)
+    return organization(organizationId, model)
   }
 
   @PostMapping("/removeOrganizationUser")
   fun removeOrganizationUser(
-      @RequestParam("organizationId") organizationIdValue: Long,
-      @RequestParam("userId") userIdValue: Long,
+      @RequestParam("organizationId") organizationId: OrganizationId,
+      @RequestParam("userId") userId: UserId,
       model: Model
   ): String {
-    val organizationId = OrganizationId(organizationIdValue)
-    val userId = UserId(userIdValue)
-
     try {
       if (organizationStore.removeUser(organizationId, userId)) {
         model.addAttribute("successMessage", "User removed from organization.")
@@ -296,23 +287,21 @@ class AdminController(
       model.addAttribute("failureMessage", "No permission to remove users from this organization.")
     }
 
-    return organization(organizationIdValue, model)
+    return organization(organizationId, model)
   }
 
   @PostMapping("/setOrganizationUserRole")
   fun setOrganizationUserRole(
-      @RequestParam("organizationId") organizationIdValue: Long,
-      @RequestParam("userId") userIdValue: Long,
+      @RequestParam("organizationId") organizationId: OrganizationId,
+      @RequestParam("userId") userId: UserId,
       @RequestParam("role") roleId: Int,
       model: Model
   ): String {
-    val organizationId = OrganizationId(organizationIdValue)
     val role = Role.of(roleId)
-    val userId = UserId(userIdValue)
 
     if (role == null) {
       model.addAttribute("failureMessage", "Invalid role selected.")
-      return organization(organizationIdValue, model)
+      return organization(organizationId, model)
     }
 
     try {
@@ -325,17 +314,15 @@ class AdminController(
       model.addAttribute("failureMessage", "No permission to set user roles for this organization.")
     }
 
-    return organization(organizationIdValue, model)
+    return organization(organizationId, model)
   }
 
   @PostMapping("/createProject")
   fun createProject(
-      @RequestParam("organizationId") organizationIdValue: Long,
+      @RequestParam("organizationId") organizationId: OrganizationId,
       @NotBlank @RequestParam("name") name: String,
       model: Model
   ): String {
-    val organizationId = OrganizationId(organizationIdValue)
-
     try {
       projectStore.create(organizationId, name)
       model.addAttribute("successMessage", "Project created.")
@@ -343,18 +330,15 @@ class AdminController(
       model.addAttribute("failureMessage", "No permission to create projects in this organization.")
     }
 
-    return organization(organizationIdValue, model)
+    return organization(organizationId, model)
   }
 
   @PostMapping("/removeProjectUser")
   fun removeProjectUser(
-      @RequestParam("projectId") projectIdValue: Long,
-      @RequestParam("userId") userIdValue: Long,
+      @RequestParam("projectId") projectId: ProjectId,
+      @RequestParam("userId") userId: UserId,
       model: Model
   ): String {
-    val projectId = ProjectId(projectIdValue)
-    val userId = UserId(userIdValue)
-
     try {
       if (projectStore.removeUser(projectId, userId)) {
         model.addAttribute("successMessage", "User removed from project.")
@@ -365,18 +349,15 @@ class AdminController(
       model.addAttribute("failureMessage", "No permission to remove users from this project.")
     }
 
-    return project(projectIdValue, model)
+    return project(projectId, model)
   }
 
   @PostMapping("/addProjectUser")
   fun addProjectUser(
-      @RequestParam("projectId") projectIdValue: Long,
-      @RequestParam("userId") userIdValue: Long,
+      @RequestParam("projectId") projectId: ProjectId,
+      @RequestParam("userId") userId: UserId,
       model: Model
   ): String {
-    val projectId = ProjectId(projectIdValue)
-    val userId = UserId(userIdValue)
-
     try {
       projectStore.addUser(projectId, userId)
       model.addAttribute("successMessage", "User added to project.")
@@ -386,53 +367,49 @@ class AdminController(
       model.addAttribute("failureMessage", "User is already in this project.")
     }
 
-    return project(projectIdValue, model)
+    return project(projectId, model)
   }
 
   @PostMapping("/createSite")
   fun createSite(
-      @RequestParam("projectId") projectIdValue: Long,
+      @RequestParam("projectId") projectId: ProjectId,
       @NotBlank @RequestParam("name") name: String,
       @Min(-180L) @Max(180L) @RequestParam("latitude") latitude: BigDecimal,
       @Min(-180L) @Max(180L) @RequestParam("longitude") longitude: BigDecimal,
       model: Model
   ): String {
-    val projectId = ProjectId(projectIdValue)
-
     siteStore.create(projectId, name, latitude, longitude)
 
     model.addAttribute("successMessage", "Site created.")
-    return project(projectIdValue, model)
+    return project(projectId, model)
   }
 
   @PostMapping("/createFacility")
   fun createFacility(
-      @RequestParam("siteId") siteIdValue: Long,
+      @RequestParam("siteId") siteId: SiteId,
       @NotBlank @RequestParam("name") name: String,
       @RequestParam("type") typeId: Int,
       model: Model
   ): String {
-    val siteId = SiteId(siteIdValue)
     val type = FacilityType.forId(typeId)
 
     if (type == null) {
       model.addAttribute("failureMessage", "Unknown facility type.")
-      return site(siteIdValue, model)
+      return site(siteId, model)
     }
 
     facilityStore.create(siteId, name, type)
 
     model.addAttribute("successMessage", "Facility created.")
-    return site(siteIdValue, model)
+    return site(siteId, model)
   }
 
   @PostMapping("/createApiKey")
   fun createApiKey(
-      @RequestParam("organizationId") organizationIdValue: Long,
+      @RequestParam("organizationId") organizationId: OrganizationId,
       @RequestParam("description") description: String?,
       model: Model
   ): String {
-    val organizationId = OrganizationId(organizationIdValue)
     val organization = organizationStore.fetchById(organizationId)
     val newUser = userStore.createApiClient(organizationId, description)
 
@@ -450,18 +427,16 @@ class AdminController(
 
   @PostMapping("/deleteApiKey")
   fun deleteApiKey(
-      @RequestParam("organizationId") organizationIdValue: Long,
-      @RequestParam("userId") userIdValue: Long,
+      @RequestParam("organizationId") organizationId: OrganizationId,
+      @RequestParam("userId") userId: UserId,
       model: Model
   ): String {
-    val userId = UserId(userIdValue)
-
     if (userStore.deleteApiClient(userId)) {
       model.addAttribute("successMessage", "API key deleted.")
     } else {
       model.addAttribute("failureMessage", "Unable to delete API key.")
     }
 
-    return organization(organizationIdValue, model)
+    return organization(organizationId, model)
   }
 }

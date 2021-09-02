@@ -68,7 +68,7 @@ dependencies {
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
   implementation("com.opencsv:opencsv:5.3")
-  implementation("io.swagger.core.v3:swagger-annotations:2.1.7")
+  implementation("io.swagger.core.v3:swagger-annotations:2.1.10")
   implementation("javax.inject:javax.inject:1")
   implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:2.7.1")

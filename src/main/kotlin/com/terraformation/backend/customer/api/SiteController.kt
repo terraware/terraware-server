@@ -54,26 +54,26 @@ class SiteController(private val projectsDao: ProjectsDao, private val sitesDao:
       ),
       ApiResponse(responseCode = "404", description = "No site with the requested ID exists."),
   )
-  fun getSite(@PathVariable siteId: Long): GetSiteResponse {
-    if (!currentUser().canReadSite(SiteId(siteId))) {
+  fun getSite(@PathVariable siteId: SiteId): GetSiteResponse {
+    if (!currentUser().canReadSite(siteId)) {
       throw WrongOrganizationException()
     }
 
-    val site = sitesDao.fetchOneById(SiteId(siteId)) ?: throw NotFoundException()
+    val site = sitesDao.fetchOneById(siteId) ?: throw NotFoundException()
 
     return GetSiteResponse(site)
   }
 }
 
-data class ListSitesElement(val id: Long, val name: String) {
-  constructor(site: SitesRow) : this(site.id!!.value, site.name!!)
+data class ListSitesElement(val id: SiteId, val name: String) {
+  constructor(site: SitesRow) : this(site.id!!, site.name!!)
 }
 
 data class ListSitesResponse(val sites: List<ListSitesElement>)
 
 @Schema(requiredProperties = ["id"])
 data class GetSiteResponse(
-    val id: Long,
+    val id: SiteId,
     val name: String,
     val latitude: String,
     val longitude: String,
@@ -83,7 +83,7 @@ data class GetSiteResponse(
   constructor(
       record: SitesRow
   ) : this(
-      record.id!!.value,
+      record.id!!,
       record.name!!,
       record.latitude!!.toPlainString(),
       record.longitude!!.toPlainString(),

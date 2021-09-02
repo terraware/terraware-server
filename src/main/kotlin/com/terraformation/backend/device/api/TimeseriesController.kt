@@ -60,17 +60,16 @@ class TimeseriesController(
       decimalPlaces: Int?,
       @RequestParam(required = false)
       @Schema(description = "Alias for facilityId for backward compatibility.")
-      siteModuleId: Long?,
+      siteModuleId: FacilityId?,
       @RequestParam(required = false)
       @Schema(
           description =
               "Which facility the device is in, if it isn't in the seed bank's default facility. " +
                   "Must match the facility ID the device is associated with in the per-site " +
                   "configuration.")
-      facilityId: Long?,
+      facilityId: FacilityId?,
   ): SimpleSuccessResponsePayload {
-    val effectiveFacilityId =
-        (facilityId ?: siteModuleId)?.let { FacilityId(it) } ?: currentUser().defaultFacilityId()
+    val effectiveFacilityId = facilityId ?: siteModuleId ?: currentUser().defaultFacilityId()
     val deviceId =
         deviceStore.getDeviceIdByName(effectiveFacilityId, device)
             ?: throw NotFoundException("Device $device does not exist")

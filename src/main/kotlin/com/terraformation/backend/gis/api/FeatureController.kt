@@ -42,9 +42,9 @@ class FeatureController(private val featureStore: FeatureStore) {
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified feature doesn't exist.")
   @GetMapping("/{featureId}")
-  fun read(@PathVariable featureId: Long): GetFeatureResponsePayload {
+  fun read(@PathVariable featureId: FeatureId): GetFeatureResponsePayload {
     val model =
-        featureStore.fetchFeature(FeatureId(featureId))
+        featureStore.fetchFeature(featureId)
             ?: throw NotFoundException("The feature with id $featureId doesn't exist.")
 
     return GetFeatureResponsePayload(FeatureResponse(model))
@@ -55,10 +55,9 @@ class FeatureController(private val featureStore: FeatureStore) {
   @GetMapping("/list/{layerId}")
   fun list(
       @RequestBody payload: ListFeaturesRequestPayload,
-      @PathVariable layerId: Long
+      @PathVariable layerId: LayerId
   ): ListFeaturesResponsePayload {
-    val features =
-        featureStore.listFeatures(LayerId(layerId), skip = payload.skip, limit = payload.limit)
+    val features = featureStore.listFeatures(layerId, skip = payload.skip, limit = payload.limit)
     return ListFeaturesResponsePayload(features.map { FeatureResponse(it) })
   }
 
@@ -71,10 +70,10 @@ class FeatureController(private val featureStore: FeatureStore) {
   @PutMapping("/{featureId}")
   fun update(
       @RequestBody payload: UpdateFeatureRequestPayload,
-      @PathVariable featureId: Long,
+      @PathVariable featureId: FeatureId,
   ): UpdateFeatureResponsePayload {
     try {
-      val updatedModel = featureStore.updateFeature(payload.toModel(FeatureId(featureId)))
+      val updatedModel = featureStore.updateFeature(payload.toModel(featureId))
       return UpdateFeatureResponsePayload(FeatureResponse(updatedModel))
     } catch (e: FeatureNotFoundException) {
       throw NotFoundException(
@@ -90,10 +89,10 @@ class FeatureController(private val featureStore: FeatureStore) {
               "feature. This includes but is not limited to plants, plant observations, photos, " +
               "and thumbnails.")
   @DeleteMapping("/{featureId}")
-  fun delete(@PathVariable featureId: Long): DeleteFeatureResponsePayload {
+  fun delete(@PathVariable featureId: FeatureId): DeleteFeatureResponsePayload {
     try {
-      featureStore.deleteFeature(FeatureId(featureId))
-      return DeleteFeatureResponsePayload(FeatureId(featureId))
+      featureStore.deleteFeature(featureId)
+      return DeleteFeatureResponsePayload(featureId)
     } catch (e: FeatureNotFoundException) {
       throw NotFoundException("The feature with id $featureId doesn't exist.")
     }
