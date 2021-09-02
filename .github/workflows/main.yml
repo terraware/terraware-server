@@ -50,14 +50,18 @@ jobs:
     - name: Compile main
       run: ./gradlew classes
 
+    - name: Generate OpenAPI docs to test that server can start up
+      run: ./gradlew generateOpenApiDocs
+
+    - name: Verify that OpenAPI docs are up to date in repo
+      # This will exit with code 1 if the file is modified.
+      run: git diff --exit-code openapi.yaml
+
     - name: Compile tests
       run: ./gradlew testClasses
 
     - name: Run tests
       run: ./gradlew test
-
-    - name: Generate OpenAPI docs to test that server can start up
-      run: ./gradlew generateOpenApiDocs
 
     - name: Extract Docker image layers
       if: matrix.java-version == '15'
