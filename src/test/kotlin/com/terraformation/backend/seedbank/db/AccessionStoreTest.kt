@@ -1492,7 +1492,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                     uniqueId = "uniqueId"),
             endangered = SpeciesEndangeredType.Unsure,
             environmentalNotes = "envNotes",
-            facilityId = facilityId.value,
+            facilityId = facilityId,
             family = "family",
             fieldNotes = "fieldNotes",
             founderId = "founderId",

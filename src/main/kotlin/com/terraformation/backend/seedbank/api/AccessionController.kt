@@ -3,8 +3,6 @@ package com.terraformation.backend.seedbank.api
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
@@ -24,6 +22,7 @@ import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
@@ -66,7 +65,7 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val facilityId = payload.facilityId?.let { FacilityId(it) } ?: currentUser().defaultFacilityId()
+    val facilityId = payload.facilityId ?: currentUser().defaultFacilityId()
     val updatedPayload = accessionStore.create(facilityId, payload.toModel())
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
   }
@@ -125,7 +124,7 @@ data class CreateAccessionRequestPayload(
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
     val environmentalNotes: String? = null,
-    val facilityId: Long?,
+    val facilityId: FacilityId?,
     val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,
@@ -318,7 +317,7 @@ data class AccessionPayload(
     val source: AccessionSource?,
     val sourcePlantOrigin: SourcePlantOrigin?,
     val species: String?,
-    @Schema(description = "Server-generated unique ID of the species.") val speciesId: Long?,
+    @Schema(description = "Server-generated unique ID of the species.") val speciesId: SpeciesId?,
     @Schema(
         description =
             "Server-calculated accession state. Can change due to modifications to accession data " +
@@ -396,7 +395,7 @@ data class AccessionPayload(
       model.source,
       model.sourcePlantOrigin,
       model.species,
-      model.speciesId?.value,
+      model.speciesId,
       model.state ?: AccessionState.Pending,
       model.storageCondition,
       model.storageLocation,
@@ -451,8 +450,7 @@ data class GerminationTestPayload(
         description =
             "Server-assigned unique ID of this germination test. Null when creating a new test.",
         type = "string")
-    @JsonSerialize(using = ToStringSerializer::class)
-    val id: Long? = null,
+    val id: GerminationTestId? = null,
     @Schema(
         description = "Which type of test is described. At most one of each test type is allowed.")
     val testType: GerminationTestType,
@@ -477,7 +475,7 @@ data class GerminationTestPayload(
   constructor(
       model: GerminationTestModel
   ) : this(
-      model.id?.value,
+      model.id,
       model.testType,
       model.startDate,
       model.endDate,
@@ -495,7 +493,7 @@ data class GerminationTestPayload(
   fun toModel() =
       GerminationTestModel(
           germinations = germinations?.map { it.toModel() },
-          id = id?.let { GerminationTestId(it) },
+          id = id,
           endDate = endDate,
           notes = notes,
           seedsSown = seedsSown,
@@ -524,7 +522,7 @@ data class WithdrawalPayload(
         description =
             "Server-assigned unique ID of this withdrawal, its ID. Omit when creating a new " +
                 "withdrawal.")
-    val id: Long? = null,
+    val id: WithdrawalId? = null,
     val date: LocalDate,
     val purpose: WithdrawalPurpose,
     val destination: String? = null,
@@ -540,7 +538,7 @@ data class WithdrawalPayload(
         description =
             "If this withdrawal is of type \"Germination Testing\", the ID of the test it is " +
                 "associated with. This is always set by the server and cannot be modified.")
-    val germinationTestId: Long? = null,
+    val germinationTestId: GerminationTestId? = null,
     @Schema(
         description =
             "For weight-based accessions, the difference between the weight remaining before " +
@@ -570,14 +568,14 @@ data class WithdrawalPayload(
   constructor(
       model: WithdrawalModel
   ) : this(
-      model.id?.value,
+      model.id,
       model.date,
       model.purpose,
       model.destination,
       model.notes,
       model.remaining?.toPayload(),
       model.staffResponsible,
-      model.germinationTestId?.value,
+      model.germinationTestId,
       model.weightDifference?.toPayload(),
       model.withdrawn?.toPayload(),
       model.calculateEstimatedQuantity()?.toPayload(),
@@ -587,8 +585,8 @@ data class WithdrawalPayload(
       WithdrawalModel(
           date = date,
           destination = destination,
-          germinationTestId = germinationTestId?.let { GerminationTestId(it) },
-          id = id?.let { WithdrawalId(it) },
+          germinationTestId = germinationTestId,
+          id = id,
           notes = notes,
           purpose = purpose,
           remaining = remainingQuantity?.toModel(),

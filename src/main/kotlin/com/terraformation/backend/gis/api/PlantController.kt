@@ -43,9 +43,9 @@ class PlantController(private val plantStore: PlantStore) {
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified plant doesn't exist.")
   @GetMapping("/{featureId}")
-  fun get(@PathVariable featureId: Long): GetPlantResponsePayload {
+  fun get(@PathVariable featureId: FeatureId): GetPlantResponsePayload {
     val plant =
-        plantStore.fetchPlant(FeatureId(featureId))
+        plantStore.fetchPlant(featureId)
             ?: throw NotFoundException("The plant with id $featureId doesn't exist.")
     return GetPlantResponsePayload(PlantResponse(plant))
   }
@@ -58,11 +58,11 @@ class PlantController(private val plantStore: PlantStore) {
   @GetMapping("/list/{layerId}")
   fun getPlantsList(
       @RequestBody payload: ListPlantsRequestPayload,
-      @PathVariable layerId: Long
+      @PathVariable layerId: LayerId
   ): ListPlantsResponsePayload {
     val plants =
         plantStore.fetchPlantsList(
-            layerId = LayerId(layerId),
+            layerId = layerId,
             speciesName = payload.speciesName,
             minEnteredTime = payload.minEnteredTime,
             maxEnteredTime = payload.maxEnteredTime,
@@ -79,11 +79,11 @@ class PlantController(private val plantStore: PlantStore) {
   @GetMapping("/list/summary/{layerId}")
   fun getPlantSummary(
       @RequestBody payload: GetPlantSummaryPayload,
-      @PathVariable layerId: Long
+      @PathVariable layerId: LayerId
   ): PlantSummaryResponsePayload {
     val summary =
         plantStore.fetchPlantSummary(
-            LayerId(layerId),
+            layerId,
             minEnteredTime = payload.minEnteredTime,
             maxEnteredTime = payload.maxEnteredTime)
     return PlantSummaryResponsePayload(summary)
@@ -95,10 +95,10 @@ class PlantController(private val plantStore: PlantStore) {
   @PutMapping("/{featureId}")
   fun update(
       @RequestBody payload: UpdatePlantRequestPayload,
-      @PathVariable featureId: Long
+      @PathVariable featureId: FeatureId
   ): UpdatePlantResponsePayload {
     try {
-      val updatedPlant = plantStore.updatePlant(payload.toRow(FeatureId(featureId)))
+      val updatedPlant = plantStore.updatePlant(payload.toRow(featureId))
       return UpdatePlantResponsePayload(PlantResponse(updatedPlant))
     } catch (e: PlantNotFoundException) {
       throw NotFoundException("The plant with feature id $featureId doesn't exist.")

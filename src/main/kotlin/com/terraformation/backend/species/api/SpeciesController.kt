@@ -84,9 +84,9 @@ class SpeciesController(
   @ApiResponse404
   @GetMapping("/{speciesId}")
   @Operation(summary = "Gets information about a single species.")
-  fun speciesRead(@PathVariable speciesId: Long): SpeciesGetResponsePayload {
+  fun speciesRead(@PathVariable speciesId: SpeciesId): SpeciesGetResponsePayload {
     val row =
-        speciesDao.fetchOneById(SpeciesId(speciesId))
+        speciesDao.fetchOneById(speciesId)
             ?: throw NotFoundException("Species $speciesId not found.")
     return SpeciesGetResponsePayload(SpeciesResponseElement(row))
   }
@@ -97,10 +97,10 @@ class SpeciesController(
   @Operation(summary = "Updates an existing species.")
   @PutMapping("/{speciesId}")
   fun speciesUpdate(
-      @PathVariable speciesId: Long,
+      @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesStore.updateSpecies(payload.toRow(SpeciesId(speciesId)))
+    speciesStore.updateSpecies(payload.toRow(speciesId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -112,9 +112,9 @@ class SpeciesController(
   @ApiResponse404
   @DeleteMapping("/{speciesId}")
   @Operation(summary = "Delete an existing species.")
-  fun speciesDelete(@PathVariable speciesId: Long): SimpleSuccessResponsePayload {
+  fun speciesDelete(@PathVariable speciesId: SpeciesId): SimpleSuccessResponsePayload {
     try {
-      speciesStore.deleteSpecies(SpeciesId(speciesId))
+      speciesStore.deleteSpecies(speciesId)
       return SimpleSuccessResponsePayload()
     } catch (e: DataIntegrityViolationException) {
       throw ResourceInUseException("Species $speciesId is currently in use.")
@@ -151,9 +151,9 @@ class SpeciesController(
   @ApiResponse(responseCode = "200", description = "Species names retrieved.")
   @ApiResponse404("The species does not exist.")
   @GetMapping("/{speciesId}/names")
-  fun speciesNamesList(@PathVariable speciesId: Long): SpeciesNamesListResponsePayload {
+  fun speciesNamesList(@PathVariable speciesId: SpeciesId): SpeciesNamesListResponsePayload {
     try {
-      val names = speciesStore.listAllSpeciesNames(SpeciesId(speciesId))
+      val names = speciesStore.listAllSpeciesNames(speciesId)
       return SpeciesNamesListResponsePayload(names.map { SpeciesNamesResponseElement(it) })
     } catch (e: SpeciesNotFoundException) {
       throw NotFoundException("The species does not exist.")
@@ -164,9 +164,9 @@ class SpeciesController(
   @ApiResponse404
   @GetMapping("/names/{speciesNameId}")
   @Operation(description = "Gets information about a single species name.")
-  fun speciesNameGet(@PathVariable speciesNameId: Long): SpeciesNameGetResponsePayload {
+  fun speciesNameGet(@PathVariable speciesNameId: SpeciesNameId): SpeciesNameGetResponsePayload {
     val row =
-        speciesNamesDao.fetchOneById(SpeciesNameId(speciesNameId))
+        speciesNamesDao.fetchOneById(speciesNameId)
             ?: throw NotFoundException("Species name not found")
     return SpeciesNameGetResponsePayload(SpeciesNamesResponseElement(row))
   }
@@ -178,18 +178,18 @@ class SpeciesController(
   @ApiResponse404
   @DeleteMapping("/names/{speciesNameId}")
   @Operation(description = "Deletes one of the secondary names of a species.")
-  fun speciesNameDelete(@PathVariable speciesNameId: Long): SimpleSuccessResponsePayload {
-    speciesStore.deleteSpeciesName(SpeciesNameId(speciesNameId))
+  fun speciesNameDelete(@PathVariable speciesNameId: SpeciesNameId): SimpleSuccessResponsePayload {
+    speciesStore.deleteSpeciesName(speciesNameId)
     return SimpleSuccessResponsePayload()
   }
 
   @Operation(description = "Updates one of the names of a species.")
   @PutMapping("/names/{speciesNameId}")
   fun speciesNameUpdate(
-      @PathVariable speciesNameId: Long,
+      @PathVariable speciesNameId: SpeciesNameId,
       @RequestBody payload: SpeciesNameRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesStore.updateSpeciesName(payload.toRow().copy(id = SpeciesNameId(speciesNameId)))
+    speciesStore.updateSpeciesName(payload.toRow().copy(id = speciesNameId))
     return SimpleSuccessResponsePayload()
   }
 }

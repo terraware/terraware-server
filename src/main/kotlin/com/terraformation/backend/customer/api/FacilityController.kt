@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.db.FacilityId
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -28,13 +29,18 @@ class FacilityController(private val facilityStore: FacilityStore) {
               facilityRoles[facility.id]
                   ?: throw IllegalStateException(
                       "BUG! No role for facility that was selected based on the presence of a role")
-          ListFacilitiesElement(facility.id.value, facility.name, facility.type.id, role.name)
+          ListFacilitiesElement(facility.id, facility.name, facility.type.id, role.name)
         }
 
     return ListFacilitiesResponse(elements)
   }
 }
 
-data class ListFacilitiesElement(val id: Long, val name: String, val type: Int, val role: String)
+data class ListFacilitiesElement(
+    val id: FacilityId,
+    val name: String,
+    val type: Int,
+    val role: String
+)
 
 data class ListFacilitiesResponse(val facilities: List<ListFacilitiesElement>)

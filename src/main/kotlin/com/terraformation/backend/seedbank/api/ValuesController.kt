@@ -42,7 +42,7 @@ class ValuesController(
   @GetMapping("/species")
   fun listSpecies(): ListSpeciesResponsePayload {
     return ListSpeciesResponsePayload(
-        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!.value, it.name!!) })
+        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!, it.name!!) })
   }
 
   @ApiResponses(
@@ -57,7 +57,7 @@ class ValuesController(
     try {
       val row = SpeciesRow(name = payload.name)
       val speciesId = speciesStore.createSpecies(row)
-      return CreateSpeciesResponsePayload(SpeciesDetails(speciesId.value, payload.name))
+      return CreateSpeciesResponsePayload(SpeciesDetails(speciesId, payload.name))
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
     }
@@ -75,11 +75,11 @@ class ValuesController(
   @PostMapping("/species/{id}")
   fun updateSpecies(
       @RequestBody payload: CreateSpeciesRequestPayload,
-      @PathVariable id: Long
+      @PathVariable id: SpeciesId
   ): UpdateSpeciesResponsePayload {
     try {
-      val newId = accessionStore.updateSpecies(SpeciesId(id), payload.name)
-      return UpdateSpeciesResponsePayload(newId?.value)
+      val newId = accessionStore.updateSpecies(id, payload.name)
+      return UpdateSpeciesResponsePayload(newId)
     } catch (e: SpeciesNotFoundException) {
       throw NotFoundException("Species not found.")
     }
@@ -132,7 +132,7 @@ class ValuesController(
   }
 }
 
-data class SpeciesDetails(val id: Long, val name: String)
+data class SpeciesDetails(val id: SpeciesId, val name: String)
 
 data class ListSpeciesResponsePayload(val values: List<SpeciesDetails>) : SuccessResponsePayload
 
@@ -146,7 +146,7 @@ data class UpdateSpeciesResponsePayload(
         description =
             "If the requested species name already existed, the ID of the existing species. " +
                 "Will not be present if the requested species name did not already exist.")
-    val mergedWithSpeciesId: Long?
+    val mergedWithSpeciesId: SpeciesId?
 ) : SuccessResponsePayload
 
 data class StorageLocationsResponsePayload(val locations: List<StorageLocationDetails>) :

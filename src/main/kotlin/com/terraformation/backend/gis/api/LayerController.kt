@@ -40,9 +40,9 @@ class LayerController(private val layerStore: LayerStore) {
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @GetMapping("/{layerId}")
-  fun read(@PathVariable layerId: Long): GetLayerResponsePayload {
+  fun read(@PathVariable layerId: LayerId): GetLayerResponsePayload {
     val layerModel =
-        layerStore.fetchLayer(LayerId(layerId))
+        layerStore.fetchLayer(layerId)
             ?: throw NotFoundException("The layer with id $layerId doesn't exist.")
 
     return GetLayerResponsePayload(LayerResponse(layerModel))
@@ -50,8 +50,8 @@ class LayerController(private val layerStore: LayerStore) {
 
   @ApiResponse(responseCode = "200")
   @GetMapping("/list/{siteId}")
-  fun list(@PathVariable siteId: Long): ListLayersResponsePayload {
-    val layers = layerStore.listLayers(SiteId(siteId))
+  fun list(@PathVariable siteId: SiteId): ListLayersResponsePayload {
+    val layers = layerStore.listLayers(siteId)
     return ListLayersResponsePayload(layers.map { LayerResponse(it) })
   }
 
@@ -64,10 +64,10 @@ class LayerController(private val layerStore: LayerStore) {
   @PutMapping("/{layerId}")
   fun update(
       @RequestBody payload: UpdateLayerRequestPayload,
-      @PathVariable layerId: Long,
+      @PathVariable layerId: LayerId,
   ): UpdateLayerResponsePayload {
     try {
-      val updatedModel = layerStore.updateLayer(payload.toModel(id = LayerId(layerId)))
+      val updatedModel = layerStore.updateLayer(payload.toModel(id = layerId))
       return UpdateLayerResponsePayload(LayerResponse(updatedModel))
     } catch (e: LayerNotFoundException) {
       throw NotFoundException(
@@ -78,9 +78,9 @@ class LayerController(private val layerStore: LayerStore) {
   @ApiResponse(responseCode = "200")
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @DeleteMapping("/{layerId}")
-  fun delete(@PathVariable layerId: Long): DeleteLayerResponsePayload {
+  fun delete(@PathVariable layerId: LayerId): DeleteLayerResponsePayload {
     try {
-      val layerModel = layerStore.deleteLayer(LayerId(layerId))
+      val layerModel = layerStore.deleteLayer(layerId)
       return DeleteLayerResponsePayload(DeleteLayerResponse(layerModel))
     } catch (e: LayerNotFoundException) {
       throw NotFoundException("The layer with id $layerId doesn't exist.")

@@ -781,6 +781,9 @@ paths:
         content:
           multipart/form-data:
             schema:
+              required:
+              - file
+              - metadata
               type: object
               properties:
                 file:
