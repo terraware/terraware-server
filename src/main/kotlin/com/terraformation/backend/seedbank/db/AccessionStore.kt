@@ -8,15 +8,12 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SeedQuantityUnits
-import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
-import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
@@ -482,49 +479,6 @@ class AccessionStore(
         fetchByNumber(facilityId, accessionNumber)
             ?: throw AccessionNotFoundException(accessionNumber)
     return accession.withCalculatedValues(clock, existing)
-  }
-
-  /**
-   * Updates information about a species. If the new species name is already in use, updates any
-   * existing accessions that use the old name to use the existing species ID for the new name.
-   *
-   * @return The ID of the existing species with the requested name if the name was already in use
-   * or null if not.
-   */
-  fun updateSpecies(speciesId: SpeciesId, name: String): SpeciesId? {
-    try {
-      dslContext.transaction { _ ->
-        speciesStore.updateSpecies(SpeciesRow(id = speciesId, isScientific = false, name = name))
-      }
-
-      log.info("Renamed species $speciesId to $name")
-
-      return null
-    } catch (e: DuplicateKeyException) {
-      val existingSpeciesId = speciesStore.getSpeciesId(name)
-
-      dslContext.transaction { _ ->
-        val rowsUpdated =
-            dslContext
-                .update(ACCESSIONS)
-                .set(ACCESSIONS.SPECIES_ID, existingSpeciesId)
-                .where(ACCESSIONS.SPECIES_ID.eq(speciesId))
-                .execute()
-        speciesStore.deleteSpecies(speciesId)
-
-        log.info(
-            "Updated $rowsUpdated accession(s) to change species ID $speciesId to " +
-                "$existingSpeciesId with name $name")
-      }
-
-      return existingSpeciesId
-    } catch (e: DataAccessException) {
-      if (e.cause is SpeciesNotFoundException) {
-        throw e.cause!!
-      } else {
-        throw e
-      }
-    }
   }
 
   /**

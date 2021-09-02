@@ -1361,11 +1361,7 @@ paths:
     post:
       tags:
       - SeedBankApp
-      summary: Updates an existing species.
-      description: "If the species is being renamed and the species name in the payload\
-        \ already exists, the existing species replaces the one in the request (thus\
-        \ merging the requested species into the one that already had the name) and\
-        \ its ID is returned."
+      description: Use /api/v1/species instead.
       operationId: updateSpecies
       parameters:
       - name: id
@@ -1382,17 +1378,18 @@ paths:
         required: true
       responses:
         "200":
-          description: Species updated or merged with an existing species.
+          description: The requested operation succeeded.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateSpeciesResponsePayload'
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
         "404":
           description: The requested resource was not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+      deprecated: true
   /api/v1/seedbank/values/storageLocation:
     get:
       tags:
@@ -4269,19 +4266,6 @@ components:
       properties:
         plant:
           $ref: '#/components/schemas/PlantResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    UpdateSpeciesResponsePayload:
-      required:
-      - status
-      type: object
-      properties:
-        mergedWithSpeciesId:
-          type: integer
-          description: "If the requested species name already existed, the ID of the\
-            \ existing species. Will not be present if the requested species name\
-            \ did not already exist."
-          format: int64
         status:
           $ref: '#/components/schemas/SuccessOrError'
     UploadPhotoMetadataPayload:

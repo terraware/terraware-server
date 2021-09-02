@@ -22,8 +22,6 @@ import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
-import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
@@ -49,7 +47,6 @@ import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
-import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.tables.references.ACCESSIONS
@@ -81,7 +78,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
@@ -1213,81 +1209,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           store.countActive(facilityId, Instant.ofEpochMilli(asOf.toLong())),
           "Count as of time $asOf")
     }
-  }
-
-  @Test
-  fun `updateSpecies renames species when there is no name collision`() {
-    val accession1 = store.create(facilityId, AccessionModel(species = "species1"))
-    val accession2 = store.create(facilityId, AccessionModel(species = "species2"))
-
-    val now = Instant.now().with(ChronoField.MILLI_OF_SECOND, 0)
-    every { clock.instant() } returns now
-
-    val newId = store.updateSpecies(SpeciesId(1), "species1a")
-
-    assertNull(newId, "No new species ID should be returned")
-    assertEquals(
-        SpeciesRow(
-            id = SpeciesId(1),
-            name = "species1a",
-            isScientific = false,
-            createdTime = Instant.EPOCH,
-            modifiedTime = now),
-        speciesDao.fetchOneById(SpeciesId(1)),
-        "Updated species")
-    assertEquals(
-        SpeciesRow(
-            id = SpeciesId(2),
-            name = "species2",
-            isScientific = false,
-            createdTime = Instant.EPOCH,
-            modifiedTime = Instant.EPOCH),
-        speciesDao.fetchOneById(SpeciesId(2)),
-        "Unmodified species")
-    assertEquals(
-        "species1a",
-        store.fetchByNumber(facilityId, accession1.accessionNumber!!)?.species,
-        "Updated species name on accession")
-    assertEquals(
-        "species2",
-        store.fetchByNumber(facilityId, accession2.accessionNumber!!)?.species,
-        "Unmodified species name on accession")
-  }
-
-  @Test
-  fun `updateSpecies merges species when there is a name collision`() {
-    val accession1 = store.create(facilityId, AccessionModel(species = "species1"))
-    val accession2 = store.create(facilityId, AccessionModel(species = "species2"))
-
-    val newId = store.updateSpecies(SpeciesId(1), "species2")
-
-    assertEquals(SpeciesId(2), newId, "Existing species ID should be returned")
-    assertNull(speciesDao.fetchOneById(SpeciesId(1)), "Old species should be deleted")
-    assertEquals("species2", speciesDao.fetchOneById(SpeciesId(2))?.name, "Unmodified species name")
-    assertEquals(
-        "species2",
-        store.fetchByNumber(facilityId, accession1.accessionNumber!!)?.species,
-        "Updated species name on accession")
-    assertEquals(
-        "species2",
-        store.fetchByNumber(facilityId, accession2.accessionNumber!!)?.species,
-        "Unmodified species name on accession")
-  }
-
-  @Test
-  fun `updateSpecies throws exception when species does not exist`() {
-    assertThrows(SpeciesNotFoundException::class.java) {
-      store.updateSpecies(SpeciesId(1), "nonexistent")
-    }
-  }
-
-  @Test
-  fun `updateSpecies throws exception when user has no permission to update species`() {
-    store.create(facilityId, AccessionModel(species = "species1"))
-
-    every { user.canUpdateSpecies(any()) } returns false
-
-    assertThrows<AccessDeniedException> { store.updateSpecies(SpeciesId(1), "nonexistent") }
   }
 
   @Test
