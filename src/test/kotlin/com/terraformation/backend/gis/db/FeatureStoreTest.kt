@@ -8,6 +8,7 @@ import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PhotoId
+import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
@@ -28,7 +29,9 @@ import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.pojos.ThumbnailRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.transformSrid
-import com.terraformation.backend.file.LocalFileStore
+import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.PathGenerator
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.gis.model.FeatureModel
 import io.mockk.every
 import io.mockk.justRun
@@ -38,13 +41,17 @@ import java.net.URI
 import java.nio.file.NoSuchFileException
 import java.time.Clock
 import java.time.Instant
+import kotlin.io.path.Path
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
@@ -56,6 +63,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val photoId = PhotoId(30)
   private val plantObservationId = PlantObservationId(20)
   private val thumbnailId = ThumbnailId(40)
+  private val storageUrl = URI("file:///x")
   private val validCreateRequest =
       FeatureModel(
           layerId = layerId, geom = mercatorPoint(1.0, 2.0, 120000.0), notes = "Great view up here")
@@ -64,7 +72,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val time1 = Instant.EPOCH
   private val time2 = time1.plusSeconds(1)
 
-  private val fileStore: LocalFileStore = mockk()
+  private val fileStore: FileStore = mockk()
+  private val pathGenerator: PathGenerator = mockk()
 
   private lateinit var store: FeatureStore
   private lateinit var featurePhotosDao: FeaturePhotosDao
@@ -84,12 +93,18 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     photosDao = PhotosDao(jooqConfig)
     thumbnailDao = ThumbnailDao(jooqConfig)
 
-    store = FeatureStore(clock, dslContext, featurePhotosDao, fileStore, photosDao, thumbnailDao)
+    store =
+        FeatureStore(
+            clock, dslContext, featurePhotosDao, fileStore, pathGenerator, photosDao, thumbnailDao)
 
     every { clock.instant() } returns time1
+    every { fileStore.getUrl(any()) } returns storageUrl
+    every { pathGenerator.generatePath(any(), any(), any()) } returns Path("x")
+    every { user.canCreateLayerData(featureId = any()) } returns true
     every { user.canCreateLayerData(layerId = any()) } returns true
     every { user.canReadLayerData(featureId = any()) } returns true
     every { user.canReadLayerData(layerId = any()) } returns true
+    every { user.canUpdateLayerData(featureId = any()) } returns true
     every { user.canUpdateLayerData(layerId = any()) } returns true
     every { user.canDeleteLayerData(any()) } returns true
 
@@ -383,5 +398,194 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val actual = dslContext.select(FEATURES.GEOM.asGeoJson()).from(FEATURES).fetchOne()?.value1()
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `createPhoto writes file and database rows`() {
+    val photoData = byteArrayOf(1, 2, 3, 4, 5)
+    val inputStream = photoData.inputStream()
+    val photosRow =
+        PhotosRow(
+            capturedTime = Instant.EPOCH,
+            contentType = MediaType.IMAGE_JPEG_VALUE,
+            fileName = "foo.jpg",
+            heading = 1.0,
+            gpsHorizAccuracy = 3.0,
+            gpsVertAccuracy = 4.0,
+            location = mercatorPoint(-1.0, -2.0, -3.0),
+            orientation = 2.1,
+            size = photoData.size.toLong(),
+        )
+
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+
+    justRun { fileStore.write(any(), any(), any()) }
+
+    val photoId = store.createPhoto(featureId, photosRow, inputStream)
+
+    verify { fileStore.write(storageUrl, inputStream, photoData.size.toLong()) }
+
+    val featurePhotosRow = featurePhotosDao.fetchByFeatureId(featureId)[0]
+    val actualPhotosRow = photosDao.fetchOneById(featurePhotosRow.photoId!!)
+
+    assertEquals(
+        photosRow.copy(
+            id = photoId, createdTime = null, modifiedTime = null, storageUrl = "$storageUrl"),
+        actualPhotosRow?.copy(createdTime = null, modifiedTime = null))
+  }
+
+  @Test
+  fun `createPhoto throws exception if user has no permission to create layer data`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+
+    every { user.canCreateLayerData(featureId) } returns false
+
+    assertThrows<FeatureNotFoundException> {
+      store.createPhoto(
+          featureId,
+          PhotosRow(contentType = MediaType.IMAGE_JPEG_VALUE, size = 1),
+          byteArrayOf(1).inputStream())
+    }
+  }
+
+  @Test
+  fun `deletePhoto deletes file and database rows`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+    val storageUrl = URI(photosRow.storageUrl!!)
+
+    justRun { fileStore.delete(any()) }
+
+    store.deletePhoto(featureId, photosRow.id!!)
+
+    assertEquals(emptyList<PhotosRow>(), photosDao.findAll())
+    assertEquals(emptyList<FeaturePhotosRow>(), featurePhotosDao.findAll())
+
+    verify { fileStore.delete(storageUrl) }
+  }
+
+  @Test
+  fun `deletePhoto throws exception if user has no permission to delete layer data`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+
+    every { user.canDeleteLayerData(featureId) } returns false
+
+    assertThrows<AccessDeniedException> { store.deletePhoto(featureId, photosRow.id!!) }
+  }
+
+  @Test
+  fun `getPhotoData returns photo data`() {
+    val data = byteArrayOf(1, 2, 3)
+    val inputStream = data.inputStream()
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+
+    val sizedInputStream = SizedInputStream(inputStream, data.size.toLong())
+    every { fileStore.read(URI(photosRow.storageUrl!!)) } returns sizedInputStream
+
+    val actualStream = store.getPhotoData(featureId, photosRow.id!!)
+
+    assertSame(sizedInputStream, actualStream)
+  }
+
+  @Test
+  fun `getPhotoData throws exception if user has no permission to read layer data`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+
+    every { user.canReadLayerData(featureId) } returns false
+
+    assertThrows<PhotoNotFoundException> { store.getPhotoData(featureId, photosRow.id!!) }
+  }
+
+  @Test
+  fun `getPhotoData throws exception if photo does not exist on feature`() {
+    val feature1 = store.createFeature(validCreateRequest)
+    val feature2 = store.createFeature(validCreateRequest)
+    val photosRow = insertFeaturePhoto(feature1.id!!)
+
+    assertThrows<PhotoNotFoundException> { store.getPhotoData(feature2.id!!, photosRow.id!!) }
+  }
+
+  @Test
+  fun `getPhotoMetadata returns photo metadata`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+
+    val actualRow = store.getPhotoMetadata(featureId, photosRow.id!!)
+
+    assertEquals(photosRow, actualRow)
+  }
+
+  @Test
+  fun `getPhotoMetadata throws exception if user has no permission to read layer data`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+
+    every { user.canReadLayerData(featureId) } returns false
+
+    assertThrows<PhotoNotFoundException> { store.getPhotoMetadata(featureId, photosRow.id!!) }
+  }
+
+  @Test
+  fun `getPhotoMetadata throws exception if photo does not exist on feature`() {
+    val feature1 = store.createFeature(validCreateRequest)
+    val feature2 = store.createFeature(validCreateRequest)
+    val photosRow = insertFeaturePhoto(feature1.id!!)
+
+    assertThrows<PhotoNotFoundException> { store.getPhotoMetadata(feature2.id!!, photosRow.id!!) }
+  }
+
+  @Test
+  fun `listPhotos returns list of feature photos`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow1 = insertFeaturePhoto(featureId)
+    val photosRow2 = insertFeaturePhoto(featureId)
+
+    val actual = store.listPhotos(featureId)
+
+    assertEquals(setOf(photosRow1, photosRow2), actual.toSet())
+  }
+
+  @Test
+  fun `listPhotos throws exception if user has no permission to read layer data`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+
+    every { user.canReadLayerData(featureId) } returns false
+
+    assertThrows<FeatureNotFoundException> { store.listPhotos(featureId) }
+  }
+
+  @Test
+  fun `listPhotos throws exception if feature does not exist`() {
+    assertThrows<FeatureNotFoundException> { store.listPhotos(FeatureId(1)) }
+  }
+
+  private fun insertFeaturePhoto(featureId: FeatureId): PhotosRow {
+    val photosRow =
+        PhotosRow(
+            capturedTime = Instant.EPOCH,
+            createdTime = Instant.EPOCH,
+            contentType = MediaType.IMAGE_JPEG_VALUE,
+            fileName = "foo",
+            modifiedTime = Instant.EPOCH,
+            size = 1,
+            storageUrl = "file:///${Random.nextLong()}",
+        )
+
+    photosDao.insert(photosRow)
+    featurePhotosDao.insert(FeaturePhotosRow(featureId = featureId, photoId = photosRow.id))
+    return photosRow
   }
 }
