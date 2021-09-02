@@ -4,16 +4,28 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
+import com.terraformation.backend.db.PhotoId
+import com.terraformation.backend.db.PhotoNotFoundException
+import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.ThumbnailDao
+import com.terraformation.backend.db.tables.pojos.FeaturePhotosRow
+import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.references.FEATURES
+import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
+import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PLANT_OBSERVATIONS
 import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.PathGenerator
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.gis.model.FeatureModel
 import com.terraformation.backend.log.perClassLogger
+import java.io.InputStream
 import java.net.URI
+import java.nio.file.FileAlreadyExistsException
+import java.nio.file.NoSuchFileException
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -26,6 +38,7 @@ class FeatureStore(
     private val dslContext: DSLContext,
     private val featurePhotosDao: FeaturePhotosDao,
     private val fileStore: FileStore,
+    private val pathGenerator: PathGenerator,
     private val photosDao: PhotosDao,
     private val thumbnailDao: ThumbnailDao,
 ) {
@@ -185,29 +198,130 @@ class FeatureStore(
     val featurePhotos = featurePhotosDao.fetchByFeatureId(id)
     val photos = photosDao.fetchById(*featurePhotos.mapNotNull { it.photoId }.toTypedArray())
 
-    dslContext.transaction { _ ->
-      photos.forEach { photo ->
-        val thumbnails = thumbnailDao.fetchByPhotoId(photo.id!!)
-        thumbnailDao.delete(thumbnails)
-      }
-      featurePhotosDao.delete(featurePhotos)
-      photosDao.deleteById(featurePhotos.mapNotNull { it.photoId })
+    photos.forEach { photo -> deletePhoto(id, photo.id!!) }
 
+    dslContext.transaction { _ ->
       dslContext.delete(PLANT_OBSERVATIONS).where(PLANT_OBSERVATIONS.FEATURE_ID.eq(id)).execute()
       dslContext.delete(PLANTS).where(PLANTS.FEATURE_ID.eq(id)).execute()
       dslContext.delete(FEATURES).where(FEATURES.ID.eq(id)).execute()
     }
 
-    photos.mapNotNull { it.storageUrl }.map { URI(it) }.forEach { url ->
-      try {
-        fileStore.delete(url)
-      } catch (e: Exception) {
-        log.warn("Unable to delete photo $url from file store", e)
+    return id
+  }
+
+  fun createPhoto(
+      featureId: FeatureId,
+      photosRow: PhotosRow,
+      data: InputStream,
+      plantObservationId: PlantObservationId? = null
+  ): PhotoId {
+    val contentType =
+        photosRow.contentType ?: throw IllegalArgumentException("No content type specified")
+    val size = photosRow.size ?: throw IllegalArgumentException("No file size specified")
+
+    if (!currentUser().canCreateLayerData(featureId) ||
+        noPermissionsCheckFetch(featureId) == null) {
+      throw FeatureNotFoundException(featureId)
+    }
+
+    val createdTime = clock.instant()
+    val path = pathGenerator.generatePath(createdTime, "feature", contentType)
+    val photoUrl = fileStore.getUrl(path)
+
+    try {
+      fileStore.write(photoUrl, data, size)
+
+      return dslContext.transactionResult { _ ->
+        val sanitizedRow =
+            photosRow.copy(
+                createdTime = createdTime,
+                id = null,
+                modifiedTime = createdTime,
+                storageUrl = "$photoUrl")
+
+        photosDao.insert(sanitizedRow)
+
+        featurePhotosDao.insert(
+            FeaturePhotosRow(
+                featureId = featureId,
+                photoId = sanitizedRow.id,
+                plantObservationId = plantObservationId))
+
+        log.info("Stored $photoUrl for feature $featureId")
+
+        sanitizedRow.id!!
       }
+    } catch (e: FileAlreadyExistsException) {
+      log.error("File $photoUrl already exists but should be unique")
+      throw e
+    } catch (e: Exception) {
+      try {
+        fileStore.delete(photoUrl)
+      } catch (ignore: NoSuchFileException) {
+        // Swallow this; file is already deleted
+      }
+      throw e
+    }
+  }
+
+  fun listPhotos(featureId: FeatureId): List<PhotosRow> {
+    if (!currentUser().canReadLayerData(featureId) || noPermissionsCheckFetch(featureId) == null) {
+      throw FeatureNotFoundException(featureId)
+    }
+
+    return dslContext
+        .select(PHOTOS.asterisk())
+        .from(PHOTOS)
+        .join(FEATURE_PHOTOS)
+        .on(PHOTOS.ID.eq(FEATURE_PHOTOS.PHOTO_ID))
+        .where(FEATURE_PHOTOS.FEATURE_ID.eq(featureId))
+        .and(FEATURE_PHOTOS.PLANT_OBSERVATION_ID.isNull)
+        .fetchInto(PhotosRow::class.java)
+  }
+
+  fun getPhotoMetadata(featureId: FeatureId, photoId: PhotoId): PhotosRow {
+    val featurePhoto =
+        featurePhotosDao.fetchByPhotoId(photoId).firstOrNull()
+            ?: throw PhotoNotFoundException(photoId)
+
+    if (featurePhoto.featureId != featureId || !currentUser().canReadLayerData(featureId)) {
+      throw PhotoNotFoundException(photoId)
+    }
+
+    return photosDao.fetchOneById(photoId) ?: throw PhotoNotFoundException(photoId)
+  }
+
+  fun getPhotoData(featureId: FeatureId, photoId: PhotoId): SizedInputStream {
+    val photosRow = getPhotoMetadata(featureId, photoId)
+
+    return fileStore.read(URI(photosRow.storageUrl!!))
+  }
+
+  fun deletePhoto(featureId: FeatureId, photoId: PhotoId) {
+    val photosRow = getPhotoMetadata(featureId, photoId)
+
+    if (!currentUser().canDeleteLayerData(featureId)) {
+      throw AccessDeniedException("No permission to delete feature photos.")
+    }
+
+    val thumbnails = thumbnailDao.fetchByPhotoId(photoId)
+    val url = URI(photosRow.storageUrl!!)
+
+    dslContext.transaction { _ ->
+      if (thumbnails.isNotEmpty()) {
+        thumbnailDao.delete(thumbnails)
+      }
+
+      featurePhotosDao.deleteById(photoId)
+      photosDao.deleteById(photoId)
+    }
+
+    try {
+      fileStore.delete(url)
+    } catch (e: Exception) {
+      log.error("Unable to delete photo $url from file storage", e)
     }
 
     // TODO: Delete thumbnails from file storage
-
-    return id
   }
 }

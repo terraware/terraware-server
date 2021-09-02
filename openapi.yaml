@@ -168,6 +168,158 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/gis/features/{featureId}/photos:
+    get:
+      tags:
+      - GISApp
+      operationId: listFeaturePhotos
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFeaturePhotosResponsePayload'
+    post:
+      tags:
+      - GISApp
+      summary: Uploads a new photo of a feature.
+      operationId: createFeaturePhoto
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              - metadata
+              type: object
+              properties:
+                metadata:
+                  $ref: '#/components/schemas/CreateFeaturePhotoRequestPayload'
+                file:
+                  type: string
+                  format: binary
+            encoding:
+              file:
+                contentType: image/jpeg
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateFeaturePhotoResponsePayload'
+  /api/v1/gis/features/{featureId}/photos/{photoId}:
+    get:
+      tags:
+      - GISApp
+      summary: Gets the contents of a photo of a feature.
+      operationId: downloadFeaturePhoto
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: The photo was successfully retrieved.
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: "The accession does not exist, or does not have a photo with\
+            \ the requested filename."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    delete:
+      tags:
+      - GISApp
+      summary: Deletes a photo of a feature.
+      operationId: deleteFeaturePhoto
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Photo deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/gis/features/{featureId}/photos/{photoId}/metadata:
+    get:
+      tags:
+      - GISApp
+      summary: Gets information about a photo of a feature.
+      operationId: getFeaturePhotoMetadata
+      parameters:
+      - name: featureId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Photo metadata retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFeaturePhotoMetadataResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/gis/layers:
     post:
       tags:
@@ -1960,6 +2112,43 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateFeaturePhotoRequestPayload:
+      required:
+      - capturedTime
+      type: object
+      properties:
+        capturedTime:
+          type: string
+          format: date-time
+        heading:
+          type: number
+          description: Compass heading of phone/camera when photo was taken.
+          format: double
+        location:
+          $ref: '#/components/schemas/Point'
+        orientation:
+          type: number
+          description: Orientation of phone/camera when photo was taken.
+          format: double
+        gpsHorizAccuracy:
+          type: number
+          description: GPS horizontal accuracy in meters.
+          format: double
+        gpsVertAccuracy:
+          type: number
+          description: GPS vertical (altitude) accuracy in meters.
+          format: double
+    CreateFeaturePhotoResponsePayload:
+      required:
+      - photoId
+      - status
+      type: object
+      properties:
+        photoId:
+          type: integer
+          format: int64
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     CreateFeatureRequestPayload:
       required:
       - layerId
@@ -2286,6 +2475,50 @@ components:
           - $ref: '#/components/schemas/FieldNodePayload'
           - $ref: '#/components/schemas/NotNodePayload'
           - $ref: '#/components/schemas/OrNodePayload'
+    FeaturePhoto:
+      required:
+      - capturedTime
+      - contentType
+      - featureId
+      - fileName
+      - id
+      - size
+      type: object
+      properties:
+        capturedTime:
+          type: string
+          format: date-time
+        contentType:
+          type: string
+        featureId:
+          type: integer
+          format: int64
+        fileName:
+          type: string
+        gpsHorizAccuracy:
+          type: number
+          description: GPS horizontal accuracy in meters.
+          format: double
+        gpsVertAccuracy:
+          type: number
+          description: GPS vertical (altitude) accuracy in meters.
+          format: double
+        heading:
+          type: number
+          description: Compass heading of phone/camera when photo was taken.
+          format: double
+        id:
+          type: integer
+          format: int64
+        location:
+          $ref: '#/components/schemas/Point'
+        orientation:
+          type: number
+          description: Orientation of phone/camera when photo was taken.
+          format: double
+        size:
+          type: integer
+          format: int64
     FeatureResponse:
       required:
       - id
@@ -2512,6 +2745,16 @@ components:
           format: date-time
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetFeaturePhotoMetadataResponsePayload:
+      required:
+      - photo
+      - status
+      type: object
+      properties:
+        photo:
+          $ref: '#/components/schemas/FeaturePhoto'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetFeatureResponsePayload:
       required:
       - feature
@@ -2707,6 +2950,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ListFacilitiesElement'
+    ListFeaturePhotosResponsePayload:
+      required:
+      - photos
+      - status
+      type: object
+      properties:
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeaturePhoto'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ListFeaturesRequestPayload:
       type: object
       properties:
