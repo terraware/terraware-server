@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.scheduling.annotation.EnableScheduling
 
 /**
  * Stub application class. This does nothing by itself, but it is where we hang application-level
@@ -23,6 +24,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         ),
     tags = [Tag(name = "SeedBankApp"), Tag(name = "DeviceManager"), Tag(name = "GISApp")])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
+@EnableScheduling
 @SpringBootApplication
 class Application
 
