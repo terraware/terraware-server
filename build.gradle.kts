@@ -167,6 +167,7 @@ tasks {
         isPojosAsKotlinDataClasses = true
         isRecords = true
         isRoutines = false
+        isSpringAnnotations = true
       }
     }
 
