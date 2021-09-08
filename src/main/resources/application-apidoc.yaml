@@ -19,7 +19,6 @@ spring:
     banner-mode: "off"
 
 terraware:
-  site-config-url: "file:///"
   photo-dir: "/tmp"
   daily-tasks:
     enabled: false
