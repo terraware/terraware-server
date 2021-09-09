@@ -7,6 +7,9 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.InternalErrorException
 import com.terraformation.backend.api.NotFoundException
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -29,6 +32,7 @@ import java.math.BigDecimal
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Instant
+import javax.ws.rs.QueryParam
 import net.postgis.jdbc.geometry.Point
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
@@ -127,12 +131,21 @@ class PhotoController(
   @ApiResponse404(
       "The accession does not exist, or does not have a photo with the requested filename.")
   @GetMapping("/{photoFilename}", produces = [MediaType.IMAGE_JPEG_VALUE])
-  @Operation(summary = "Retrieve a specific photo from an accession.")
+  @Operation(
+      summary = "Retrieve a specific photo from an accession.",
+      description = PHOTO_OPERATION_DESCRIPTION)
   @ResponseBody
   fun getPhoto(
       @PathVariable accessionNumber: String,
-      @PathVariable photoFilename: String
+      @PathVariable photoFilename: String,
+      @QueryParam("maxWidth")
+      @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
+      maxWidth: Int? = null,
+      @QueryParam("maxHeight")
+      @Schema(description = PHOTO_MAXHEIGHT_DESCRIPTION)
+      maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
+    val headers = HttpHeaders()
     val facilityId = currentUser().defaultFacilityId()
 
     if (accessionStore.getIdByNumber(facilityId, accessionNumber) == null) {
@@ -140,11 +153,9 @@ class PhotoController(
     }
 
     try {
-      val size = photoRepository.getPhotoFileSize(facilityId, accessionNumber, photoFilename)
-      val headers = HttpHeaders()
-      headers.contentLength = size
-
-      val inputStream = photoRepository.readPhoto(facilityId, accessionNumber, photoFilename)
+      val inputStream =
+          photoRepository.readPhoto(facilityId, accessionNumber, photoFilename, maxWidth, maxHeight)
+      headers.contentLength = inputStream.size
 
       val resource = InputStreamResource(inputStream)
       return ResponseEntity(resource, headers, HttpStatus.OK)

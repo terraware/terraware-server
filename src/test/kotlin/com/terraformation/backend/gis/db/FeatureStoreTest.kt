@@ -21,17 +21,18 @@ import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
-import com.terraformation.backend.db.tables.daos.ThumbnailDao
+import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.pojos.FeaturePhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
 import com.terraformation.backend.db.tables.pojos.PlantsRow
-import com.terraformation.backend.db.tables.pojos.ThumbnailRow
+import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.gis.model.FeatureModel
 import io.mockk.every
 import io.mockk.justRun
@@ -74,6 +75,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
   private val fileStore: FileStore = mockk()
   private val pathGenerator: PathGenerator = mockk()
+  private val thumbnailStore: ThumbnailStore = mockk()
 
   private lateinit var store: FeatureStore
   private lateinit var featurePhotosDao: FeaturePhotosDao
@@ -81,7 +83,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var plantsDao: PlantsDao
   private lateinit var plantObservationsDao: PlantObservationsDao
   private lateinit var photosDao: PhotosDao
-  private lateinit var thumbnailDao: ThumbnailDao
+  private lateinit var thumbnailsDao: ThumbnailsDao
 
   @BeforeEach
   fun init() {
@@ -91,11 +93,18 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     plantsDao = PlantsDao(jooqConfig)
     plantObservationsDao = PlantObservationsDao(jooqConfig)
     photosDao = PhotosDao(jooqConfig)
-    thumbnailDao = ThumbnailDao(jooqConfig)
+    thumbnailsDao = ThumbnailsDao(jooqConfig)
 
     store =
         FeatureStore(
-            clock, dslContext, featurePhotosDao, fileStore, pathGenerator, photosDao, thumbnailDao)
+            clock,
+            dslContext,
+            featurePhotosDao,
+            fileStore,
+            pathGenerator,
+            photosDao,
+            thumbnailStore,
+            thumbnailsDao)
 
     every { clock.instant() } returns time1
     every { fileStore.getUrl(any()) } returns storageUrl
@@ -301,9 +310,17 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     featurePhotosDao.insert(
         FeaturePhotosRow(
             featureId = feature.id, photoId = photoId, plantObservationId = plantObservationId))
-    thumbnailDao.insert(
-        ThumbnailRow(
-            id = thumbnailId, photoId = photoId, fileName = "myphoto", width = 20, height = 20))
+    thumbnailsDao.insert(
+        ThumbnailsRow(
+            contentType = MediaType.IMAGE_JPEG_VALUE,
+            createdTime = time1,
+            height = 20,
+            id = thumbnailId,
+            photoId = photoId,
+            size = 1,
+            storageUrl = URI("file:///thumb"),
+            width = 20,
+        ))
 
     justRun { fileStore.delete(storageUrl) }
 
@@ -315,7 +332,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     assert(plantObservationsDao.fetchByFeatureId(deletedId).isEmpty())
     assert(featurePhotosDao.fetchByFeatureId(deletedId).isEmpty())
     assert(photosDao.fetchById(photoId).isEmpty())
-    assert(thumbnailDao.fetchById(thumbnailId).isEmpty())
+    assert(thumbnailsDao.fetchById(thumbnailId).isEmpty())
 
     verify { fileStore.delete(storageUrl) }
   }
@@ -490,6 +507,25 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(photosRow.storageUrl!!) } returns sizedInputStream
 
     val actualStream = store.getPhotoData(featureId, photosRow.id!!)
+
+    assertSame(sizedInputStream, actualStream)
+  }
+
+  @Test
+  fun `getPhotoData returns thumbnail if photo dimensions are specified`() {
+    val data = byteArrayOf(1, 2, 3)
+    val inputStream = data.inputStream()
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+    val width = 40
+    val height = 30
+
+    val sizedInputStream = SizedInputStream(inputStream, data.size.toLong())
+    every { thumbnailStore.getThumbnailData(photosRow.id!!, width, height) } returns
+        sizedInputStream
+
+    val actualStream = store.getPhotoData(featureId, photosRow.id!!, width, height)
 
     assertSame(sizedInputStream, actualStream)
   }
