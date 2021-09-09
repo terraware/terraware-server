@@ -14,8 +14,23 @@ import org.springframework.security.access.AccessDeniedException
 /** Permission-aware accessors for facility information. */
 @ManagedBean
 class FacilityStore(private val facilitiesDao: FacilitiesDao) {
+  fun fetchById(facilityId: FacilityId): FacilityModel? {
+    return if (!currentUser().canReadFacility(facilityId)) {
+      null
+    } else {
+      facilitiesDao.fetchOneById(facilityId)?.toModel()
+    }
+  }
+
   fun fetchById(ids: Collection<FacilityId>): List<FacilityModel> {
-    return facilitiesDao.fetchById(*ids.toTypedArray()).map { it.toModel() }
+    val user = currentUser()
+    val availableIds = ids.filter { user.canReadFacility(it) }.toTypedArray()
+
+    return if (availableIds.isEmpty()) {
+      emptyList()
+    } else {
+      facilitiesDao.fetchById(*availableIds).map { it.toModel() }
+    }
   }
 
   /** Returns a list of all the facilities the current user can access. */

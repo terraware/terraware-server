@@ -14,6 +14,7 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.UsersDao
@@ -60,6 +61,7 @@ class UserStore(
     private val accessionsDao: AccessionsDao,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val devicesDao: DevicesDao,
     private val featuresDao: FeaturesDao,
     private val httpClient: HttpClient,
     private val keycloakProperties: KeycloakSpringBootProperties,
@@ -371,6 +373,7 @@ class UserStore(
         usersRow.lastName,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
         accessionsDao,
+        devicesDao,
         featuresDao,
         layersDao,
         permissionStore,

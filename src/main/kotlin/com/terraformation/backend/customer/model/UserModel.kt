@@ -5,6 +5,7 @@ import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
@@ -15,6 +16,7 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.log.perClassLogger
@@ -53,6 +55,7 @@ class UserModel(
     val lastName: String?,
     val userType: UserType,
     private val accessionsDao: AccessionsDao,
+    private val devicesDao: DevicesDao,
     private val featuresDao: FeaturesDao,
     private val layersDao: LayersDao,
     private val permissionStore: PermissionStore,
@@ -138,6 +141,10 @@ class UserModel(
   fun canListFacilities(siteId: SiteId): Boolean {
     // Any user who has access to a site can list its facilities.
     return siteRoles[siteId] != null
+  }
+
+  fun canReadFacility(facilityId: FacilityId): Boolean {
+    return facilityId in facilityRoles
   }
 
   private fun canAccessLayer(siteId: SiteId): Boolean {
@@ -279,6 +286,18 @@ class UserModel(
       canCreateSpecies()
 
   fun canCreateFamily(): Boolean = canCreateSpecies()
+
+  fun canCreateTimeseries(deviceId: DeviceId): Boolean {
+    val facilityId = devicesDao.fetchOneById(deviceId)?.facilityId ?: return false
+    return when (facilityRoles[facilityId]) {
+      Role.OWNER, Role.ADMIN, Role.MANAGER -> true
+      else -> false
+    }
+  }
+
+  fun canReadTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
+
+  fun canUpdateTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
 
   /** Returns true if the user is an admin or owner of any organizations. */
   fun hasAnyAdminRole(): Boolean =

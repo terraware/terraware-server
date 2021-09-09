@@ -1,5 +1,6 @@
 package com.terraformation.backend.api
 
+import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
@@ -72,6 +73,21 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
     sortSchemas(openApi)
     addDescriptionsToRefs(openApi)
     useRefForGeometry(openApi)
+    removeAdditionalProperties(openApi)
+  }
+
+  /**
+   * Removes the additionalProperties value from `Map<String, Any>` properties. By default, the
+   * generated schema will say that the values of the map are JSON objects, which is wrong; they
+   * could also be strings or numbers.
+   */
+  private fun removeAdditionalProperties(openApi: OpenAPI) {
+    val fieldsToModify = mapOf(DeviceConfig::class.swaggerSchemaName to "settings")
+
+    fieldsToModify.forEach { (schemaName, fieldName) ->
+      openApi.components.schemas[schemaName]?.properties?.get(fieldName)?.additionalProperties =
+          null
+    }
   }
 
   private fun renderSearchFieldAsEnum(openApi: OpenAPI) {

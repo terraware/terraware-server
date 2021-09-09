@@ -13,25 +13,13 @@ tags:
 - name: DeviceManager
 - name: GISApp
 paths:
-  /api/v1/device/all/config:
-    get:
-      tags:
-      - DeviceManager
-      operationId: listDeviceConfigs
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListDeviceConfigsResponse'
   /api/v1/facility:
     get:
       tags:
       - Customer
       summary: List all accessible facilities
       description: List all the facilities the current user can access.
-      operationId: listAll_2
+      operationId: listAllFacilities
       responses:
         "200":
           description: OK
@@ -39,6 +27,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListFacilitiesResponse'
+  /api/v1/facility/{facilityId}:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about a single facility
+      operationId: getFacility
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFacilityResponse'
+  /api/v1/facility/{facilityId}/devices:
+    get:
+      tags:
+      - DeviceManager
+      summary: Lists the configurations of all the devices at a facility.
+      operationId: listFacilityDevices
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Successfully listed the facility's devices.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDeviceConfigsResponse'
+        "404":
+          description: The facility does not exist or is not accessible by the current
+            user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/gis/features:
     post:
       tags:
@@ -733,100 +768,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOrganizationsResponse'
-  /api/v1/resources:
-    post:
-      tags:
-      - DeviceManager
-      summary: Create a new resource (timeseries) for device metrics.
-      operationId: createResource
-      parameters:
-      - name: path
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: name
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: type
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int32
-      - name: data_type
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int32
-      - name: min_storage_interval
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-      - name: decimal_places
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-      - name: units
-        in: query
-        required: false
-        schema:
-          type: string
-      - name: max_history
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "200":
-          description: "The timeseries was successfully created, or it already existed\
-            \ so no action was needed."
-          content:
-            text/plain:
-              schema:
-                type: string
-        "404":
-          description: No device with the given path was defined.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/resources/{*path}:
-    get:
-      tags:
-      - DeviceManager
-      summary: Tests for the existence of a resource (timeseries).
-      operationId: getResource
-      parameters:
-      - name: path
-        in: path
-        required: true
-        schema:
-          type: string
-          description: "Path of resource, typically including organization, site,\
-            \ facility, device, and timeseries name."
-          example: terraformation/pac-flight/ohana/BMU-L/system_voltage
-      responses:
-        "200":
-          description: The resource exists. The response body is just the string "Found".
-          content:
-            text/plain:
-              schema:
-                type: string
-        "404":
-          description: The requested resource was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/accession:
     post:
       tags:
@@ -1290,78 +1231,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
-  /api/v1/seedbank/timeseries:
+  /api/v1/seedbank/timeseries/create:
     post:
       tags:
       - DeviceManager
-      summary: Report a numeric timeseries value.
-      operationId: reportNumericValue
-      parameters:
-      - name: device
-        in: query
+      summary: Defines a list of timeseries for one or more devices.
+      description: "If there are existing timeseries with the same names, the old\
+        \ definitions will be overwritten."
+      operationId: createMultipleTimeseries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTimeseriesRequestPayload'
         required: true
-        schema:
-          type: string
-          description: Name of device. Must match the device name as defined in the
-            per-site configuration.
-      - name: timeseries
-        in: query
-        required: true
-        schema:
-          type: string
-          description: "Name of timeseries. If the timeseries does not already exist,\
-            \ it will be created."
-      - name: value
-        in: query
-        required: true
-        schema:
-          type: number
-      - name: units
-        in: query
-        required: false
-        schema:
-          type: string
-          description: The type of unit the value measures. Ignored if the timeseries
-            already exists.
-          example: MB
-      - name: decimalPlaces
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: Number of significant decimal places. Ignored if the timeseries
-            already exists. Values are always stored in their entirety but dashboards
-            and reports can use this value to control how many decimal places to display.
-          format: int32
-      - name: siteModuleId
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: Alias for facilityId for backward compatibility.
-          format: int64
-      - name: facilityId
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: "Which facility the device is in, if it isn't in the seed bank's\
-            \ default facility. Must match the facility ID the device is associated\
-            \ with in the per-site configuration."
-          format: int64
       responses:
         "200":
-          description: Timeseries value recorded successfully.
+          description: The requested operation succeeded.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-        "404":
-          description: The requested resource was not found.
+  /api/v1/seedbank/timeseries/values:
+    post:
+      tags:
+      - DeviceManager
+      summary: Records new values for one or more timeseries.
+      operationId: recordTimeseriesValues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordTimeseriesValuesRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: "Successfully processed the request. Note that this status\
+            \ will be returned even if the server was unable to record some of the\
+            \ values. In that case, the failed values will be returned in the response\
+            \ payload."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+                $ref: '#/components/schemas/RecordTimeseriesValuesResponsePayload'
   /api/v1/seedbank/values:
     post:
       tags:
@@ -2393,6 +2305,45 @@ components:
           $ref: '#/components/schemas/SpeciesDetails'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateTimeseriesEntry:
+      required:
+      - deviceId
+      - timeseriesName
+      - type
+      type: object
+      properties:
+        deviceId:
+          type: integer
+          description: ID of device that produces this timeseries.
+          format: int64
+        timeseriesName:
+          type: string
+          description: "Name of this timeseries. Duplicate timeseries names for the\
+            \ same device aren't allowed, but different devices can have timeseries\
+            \ with the same name."
+        type:
+          type: string
+          enum:
+          - Numeric
+          - Text
+        decimalPlaces:
+          type: integer
+          description: "Number of significant fractional digits (after the decimal\
+            \ point), if this is a timeseries with non-integer numeric values."
+          format: int32
+        units:
+          type: string
+          description: Units of measure for values in this timeseries.
+          example: volts
+    CreateTimeseriesRequestPayload:
+      required:
+      - timeseries
+      type: object
+      properties:
+        timeseries:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateTimeseriesEntry'
     DeleteFeatureResponsePayload:
       required:
       - id
@@ -2428,23 +2379,22 @@ components:
           $ref: '#/components/schemas/SuccessOrError'
     DeviceConfig:
       required:
-      - facility
+      - facilityId
+      - id
       - make
       - model
       - name
-      - serverPath
-      - siteModule
       - type
       type: object
       properties:
-        facility:
-          type: string
-          description: Name of facility where this device is located.
-          example: garage
-        siteModule:
-          type: string
-          description: Copy of facility for backward compatibility.
-          example: garage
+        id:
+          type: integer
+          description: Unique identifier of this device.
+          format: int64
+        facilityId:
+          type: integer
+          description: Identifier of facility where this device is located.
+          format: int64
         name:
           type: string
           description: Name of this device. Should be unique within the facility.
@@ -2477,17 +2427,14 @@ components:
           format: int32
           example: 50000
         settings:
-          type: string
-          description: Protocol- and device-specific custom settings. Format is defined
-            by the device manager.
+          type: object
+          description: Protocol- and device-specific custom settings. This is an arbitrary
+            JSON object; the exact settings depend on the device type.
         pollingInterval:
           type: integer
+          description: "How often the device manager should poll for status updates,\
+            \ in seconds."
           format: int32
-        serverPath:
-          type: string
-          description: "Device's resource path on the server, minus organization and\
-            \ site names. Currently, this is always just the facility and device name."
-          example: garage/BMU-1
     DeviceInfoPayload:
       type: object
       properties:
@@ -2555,6 +2502,28 @@ components:
           - $ref: '#/components/schemas/FieldNodePayload'
           - $ref: '#/components/schemas/NotNodePayload'
           - $ref: '#/components/schemas/OrNodePayload'
+    FacilityPayload:
+      required:
+      - id
+      - name
+      - role
+      - type
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - Seed Bank
+          - Desalination
+          - Reverse Osmosis
+        role:
+          type: string
+          description: The name of the role the current user has at the facility.
     FeaturePhoto:
       required:
       - capturedTime
@@ -2825,6 +2794,16 @@ components:
           format: date-time
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetFacilityResponse:
+      required:
+      - facility
+      - status
+      type: object
+      properties:
+        facility:
+          $ref: '#/components/schemas/FacilityPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetFeaturePhotoMetadataResponsePayload:
       required:
       - photo
@@ -3003,33 +2982,18 @@ components:
             $ref: '#/components/schemas/DeviceConfig'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    ListFacilitiesElement:
-      required:
-      - id
-      - name
-      - role
-      - type
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        type:
-          type: integer
-          format: int32
-        role:
-          type: string
     ListFacilitiesResponse:
       required:
       - facilities
+      - status
       type: object
       properties:
         facilities:
           type: array
           items:
-            $ref: '#/components/schemas/ListFacilitiesElement'
+            $ref: '#/components/schemas/FacilityPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ListFeaturePhotosResponsePayload:
       required:
       - photos
@@ -3543,6 +3507,31 @@ components:
                 items:
                   type: number
                   format: double
+    RecordTimeseriesValuesRequestPayload:
+      required:
+      - timeseries
+      type: object
+      properties:
+        timeseries:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeseriesValuesPayload'
+    RecordTimeseriesValuesResponsePayload:
+      required:
+      - status
+      type: object
+      properties:
+        failures:
+          type: array
+          description: List of values that the server failed to record. Will not be
+            included if all the values were recorded successfully.
+          items:
+            $ref: '#/components/schemas/TimeseriesValuesPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+        error:
+          $ref: '#/components/schemas/ErrorDetails'
+      description: Results of a request to record timeseries values.
     SearchField:
       type: string
       enum:
@@ -4026,6 +4015,39 @@ components:
           type: integer
           format: int32
       description: The current value and value as of last week for a summary statistic
+    TimeseriesValuePayload:
+      required:
+      - timestamp
+      - value
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: string
+          description: "Value to record. If the timeseries is of type Numeric, this\
+            \ must be a decimal or integer value in string form. If the timeseries\
+            \ is of type Text, this can be an arbitrary string."
+    TimeseriesValuesPayload:
+      required:
+      - deviceId
+      - timeseriesName
+      - values
+      type: object
+      properties:
+        deviceId:
+          type: integer
+          description: ID of device that produced this value.
+          format: int64
+        timeseriesName:
+          type: string
+          description: Name of timeseries. This must be the name of a timeseries that
+            has already been created for the device.
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeseriesValuePayload'
     UpdateAccessionRequestPayload:
       type: object
       properties:
