@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.bind.DefaultValue
-import org.springframework.core.io.Resource
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.validation.annotation.Validated
 
@@ -25,14 +24,6 @@ import org.springframework.validation.annotation.Validated
 @ConstructorBinding
 @Validated
 class TerrawareServerConfig(
-    /** URL of site-specific configuration file. */
-    @NotNull val siteConfigUrl: Resource,
-
-    /**
-     * How often to refresh site-specific configuration, in seconds. 0 disables periodic refresh.
-     */
-    @Min(0) val siteConfigRefreshSecs: Long = 3600,
-
     /**
      * Name of S3 bucket to use for storage of files such as photos. If not specified, files won't
      * be stored on S3.
