@@ -23,6 +23,8 @@ The server does not depend on the Balena or Raspberry Pi environments and should
 * Follow the set up instructions in [KEYCLOAK.md](KEYCLOAK.md).
 * Don't forget to launch the OAuth2 Proxy as described in [KEYCLOAK.md](KEYCLOAK.md).
 
+On Windows, you need to tell the build system how to communicate with the Docker daemon. In PowerShell: `$Env:DOCKER_HOST = "npipe:////./pipe/docker_engine`
+
 ### Running the server
 
 Mac/Linux: `./gradlew bootRun`
@@ -42,6 +44,7 @@ Fetch the details of a sample site.
     curl -H "Authorization: Basic $(echo -n user:dummyKey | base64)" http://localhost:8080/api/v1/site/1
 
 ### Viewing the API documentation
+
 Start the server via the command line or in IntelliJ and then navigate to: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
 
 ### Running the tests
