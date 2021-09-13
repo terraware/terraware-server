@@ -119,7 +119,11 @@ class TerrawareGenerator : KotlinGenerator() {
             ForcedType()
                 .withBinding("com.terraformation.backend.db.GeometryBinding")
                 .withIncludeTypes("GEOMETRY")
-                .withUserType("net.postgis.jdbc.geometry.Geometry"))
+                .withUserType("net.postgis.jdbc.geometry.Geometry"),
+            ForcedType()
+                .withIncludeExpression("(?i:.*_ur[li])")
+                .withConverter("com.terraformation.backend.db.UriConverter")
+                .withUserType("java.net.URI"))
 
     ENUM_TABLES.forEach { types.add(it.forcedType(targetPackage)) }
     ID_WRAPPERS.forEach { types.add(it.forcedType(targetPackage)) }

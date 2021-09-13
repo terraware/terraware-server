@@ -74,6 +74,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -736,7 +737,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             contentType = MediaType.IMAGE_JPEG_VALUE,
             modifiedTime = Instant.now(),
             size = 123,
-            storageUrl = "file:///photo.jpg",
+            storageUrl = URI("file:///photo.jpg"),
         )
     photosDao.insert(photosRow)
 
