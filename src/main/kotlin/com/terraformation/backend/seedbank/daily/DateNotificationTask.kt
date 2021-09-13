@@ -1,16 +1,16 @@
 package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.NotificationStore
 import com.terraformation.backend.seedbank.i18n.Messages
-import java.time.Clock
+import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -21,12 +21,11 @@ import org.springframework.context.event.EventListener
 @ManagedBean
 class DateNotificationTask(
     private val accessionStore: AccessionStore,
-    override val clock: Clock,
+    private val dailyTaskRunner: DailyTaskRunner,
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao,
-    override val taskProcessedTimesDao: TaskProcessedTimesDao,
     private val messages: Messages,
-    private val notificationStore: NotificationStore
+    private val notificationStore: NotificationStore,
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -34,19 +33,20 @@ class DateNotificationTask(
   fun generateNotifications(
       @Suppress("UNUSED_PARAMETER") event: AccessionScheduledStateTask.FinishedEvent
   ): FinishedEvent {
-    processNewWork { after, until ->
-      log.info("Generating date update notifications for due dates since $after")
+    dailyTaskRunner.runTask(this)
+    return FinishedEvent()
+  }
 
-      dslContext.transaction { _ ->
-        facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
-          moveToDryingCabinet(facilityId, after, until)
-          germinationTest(facilityId, after, until)
-          withdraw(facilityId, after, until)
-        }
+  override fun processPeriod(since: Instant, until: Instant) {
+    log.info("Generating date update notifications for due dates since $since")
+
+    dslContext.transaction { _ ->
+      facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
+        moveToDryingCabinet(facilityId, since, until)
+        germinationTest(facilityId, since, until)
+        withdraw(facilityId, since, until)
       }
     }
-
-    return FinishedEvent()
   }
 
   private fun moveToDryingCabinet(

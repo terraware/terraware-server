@@ -1,17 +1,18 @@
 package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.NotificationStore
 import com.terraformation.backend.seedbank.i18n.Messages
 import com.terraformation.backend.time.atMostRecent
 import java.time.Clock
+import java.time.Instant
 import java.time.ZonedDateTime
 import javax.annotation.ManagedBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -22,12 +23,12 @@ import org.springframework.context.event.EventListener
 @ManagedBean
 class StateSummaryNotificationTask(
     private val accessionStore: AccessionStore,
-    override val clock: Clock,
+    private val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val dailyTaskRunner: DailyTaskRunner,
     private val facilitiesDao: FacilitiesDao,
-    override val taskProcessedTimesDao: TaskProcessedTimesDao,
     private val messages: Messages,
-    private val notificationStore: NotificationStore
+    private val notificationStore: NotificationStore,
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -35,20 +36,21 @@ class StateSummaryNotificationTask(
   fun generateNotifications(
       @Suppress("UNUSED_PARAMETER") event: AccessionScheduledStateTask.FinishedEvent
   ): FinishedEvent {
-    processNewWork { sinceInstant, _ ->
-      log.info("Generating state update notifications")
-
-      val since = ZonedDateTime.ofInstant(sinceInstant, clock.zone)
-
-      facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
-        pending(facilityId, since)
-        processed(facilityId, 2, since)
-        processed(facilityId, 4, since)
-        dried(facilityId, since)
-      }
-    }
-
+    dailyTaskRunner.runTask(this)
     return FinishedEvent()
+  }
+
+  override fun processPeriod(since: Instant, until: Instant) {
+    log.info("Generating state update notifications")
+
+    val zonedSince = ZonedDateTime.ofInstant(since, clock.zone)
+
+    facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
+      pending(facilityId, zonedSince)
+      processed(facilityId, 2, zonedSince)
+      processed(facilityId, 4, zonedSince)
+      dried(facilityId, zonedSince)
+    }
   }
 
   private fun pending(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
