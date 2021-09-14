@@ -54,7 +54,7 @@ internal class S3FileStoreTest : FileStoreTest() {
 
     every { config.s3BucketName } returns bucketName
 
-    store = S3FileStore(config)
+    store = S3FileStore(config, PathGenerator())
   }
 
   @AfterEach

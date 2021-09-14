@@ -15,7 +15,6 @@ import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.file.FileStore
-import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.log.perClassLogger
@@ -45,7 +44,6 @@ class PhotoRepository(
     private val dslContext: DSLContext,
     private val clock: Clock,
     private val fileStore: FileStore,
-    private val pathGenerator: PathGenerator,
     private val photosDao: PhotosDao,
     private val thumbnailStore: ThumbnailStore,
 ) {
@@ -67,8 +65,7 @@ class PhotoRepository(
       throw AccessDeniedException("No permission to update accession data")
     }
 
-    val path = pathGenerator.generatePath(clock.instant(), "accession", metadata.contentType)
-    val photoUrl = fileStore.getUrl(path)
+    val photoUrl = fileStore.newUrl(clock.instant(), "accession", metadata.contentType)
 
     try {
       fileStore.write(photoUrl, data, size)

@@ -18,7 +18,6 @@ import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PLANT_OBSERVATIONS
 import com.terraformation.backend.file.FileStore
-import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.gis.model.FeatureModel
@@ -38,7 +37,6 @@ class FeatureStore(
     private val dslContext: DSLContext,
     private val featurePhotosDao: FeaturePhotosDao,
     private val fileStore: FileStore,
-    private val pathGenerator: PathGenerator,
     private val photosDao: PhotosDao,
     private val thumbnailStore: ThumbnailStore,
     private val thumbnailsDao: ThumbnailsDao,
@@ -226,8 +224,7 @@ class FeatureStore(
     }
 
     val createdTime = clock.instant()
-    val path = pathGenerator.generatePath(createdTime, "feature", contentType)
-    val photoUrl = fileStore.getUrl(path)
+    val photoUrl = fileStore.newUrl(createdTime, "feature", contentType)
 
     try {
       fileStore.write(photoUrl, data, size)

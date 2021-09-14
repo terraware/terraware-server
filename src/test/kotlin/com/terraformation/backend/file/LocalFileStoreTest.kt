@@ -28,7 +28,7 @@ class LocalFileStoreTest : FileStoreTest() {
   fun setUp() {
     every { config.photoDir } returns tempDir
 
-    store = LocalFileStore(config)
+    store = LocalFileStore(config, PathGenerator())
   }
 
   @Test
@@ -37,7 +37,7 @@ class LocalFileStoreTest : FileStoreTest() {
     tempDir.resolve("subdir").createDirectories()
 
     every { config.photoDir } returns tempDir.resolve("subdir")
-    store = LocalFileStore(config)
+    store = LocalFileStore(config, PathGenerator())
 
     assertThrows<NoSuchFileException> { store.read(URI("file:///../fileInParentDir")) }
   }
