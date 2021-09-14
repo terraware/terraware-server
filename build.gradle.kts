@@ -33,7 +33,11 @@ buildscript {
   val jooqVersion: String by project
   configurations.classpath {
     resolutionStrategy {
-      setForcedModules("org.jooq:jooq-codegen:$jooqVersion")
+      setForcedModules(
+          // https://github.com/revolut-engineering/jooq-plugin/pull/17
+          "com.github.docker-java:docker-java-transport-okhttp:3.2.12",
+          "org.jooq:jooq-codegen:$jooqVersion",
+      )
     }
   }
 }

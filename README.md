@@ -23,8 +23,6 @@ The server does not depend on the Balena or Raspberry Pi environments and should
 * Follow the set up instructions in [KEYCLOAK.md](KEYCLOAK.md).
 * Don't forget to launch the OAuth2 Proxy as described in [KEYCLOAK.md](KEYCLOAK.md).
 
-On Windows, you need to tell the build system how to communicate with the Docker daemon. In PowerShell: `$Env:DOCKER_HOST = "npipe:////./pipe/docker_engine`
-
 ### Running the server
 
 Mac/Linux: `./gradlew bootRun`
