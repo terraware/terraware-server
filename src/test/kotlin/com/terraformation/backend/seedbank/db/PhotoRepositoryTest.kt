@@ -25,6 +25,7 @@ import io.mockk.mockk
 import java.io.IOException
 import java.io.InputStream
 import java.net.SocketTimeoutException
+import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
@@ -65,7 +66,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   override val user: UserModel = mockk()
 
   private lateinit var photoPath: Path
-  private lateinit var photoStorageUrl: String
+  private lateinit var photoStorageUrl: URI
   private lateinit var tempDir: Path
 
   private val accessionId = AccessionId(12345)
@@ -113,7 +114,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val relativePath = Path("2021", "02", "03", "accession", "040506-0123456789ABCDEF.jpg")
 
     photoPath = tempDir.resolve(relativePath)
-    photoStorageUrl = "file:///${relativePath.invariantSeparatorsPathString}"
+    photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
     every { user.canReadAccession(any(), any()) } returns true
     every { user.canUpdateAccession(any(), any()) } returns true
@@ -187,7 +188,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             capturedTime = capturedTime,
             contentType = contentType,
             fileName = filename,
-            storageUrl = "file:///$filename",
+            storageUrl = URI("file:///$filename"),
             location = mercatorPoint(1.0, 2.0, 3.0),
             size = 1,
             createdTime = uploadedTime,

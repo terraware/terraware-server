@@ -80,7 +80,7 @@ class PhotoRepository(
                 location = metadata.location,
                 modifiedTime = clock.instant(),
                 size = size,
-                storageUrl = "$photoUrl",
+                storageUrl = photoUrl,
             )
 
         photosDao.insert(photosRow)
@@ -187,7 +187,6 @@ class PhotoRepository(
         .and(ACCESSIONS.NUMBER.eq(accessionNumber))
         .and(PHOTOS.FILE_NAME.eq(filename))
         .fetchOne(PHOTOS.STORAGE_URL)
-        ?.let { URI(it) }
         ?: throw NoSuchFileException(filename)
   }
 }

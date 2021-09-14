@@ -293,7 +293,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             id = photoId,
             capturedTime = time1,
             fileName = "myphoto",
-            storageUrl = "$storageUrl",
+            storageUrl = storageUrl,
             contentType = "jpeg",
             size = 1000,
             createdTime = time1,
@@ -338,7 +338,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             id = photoId,
             capturedTime = time1,
             fileName = "myphoto",
-            storageUrl = "$storageUrl",
+            storageUrl = storageUrl,
             contentType = "jpeg",
             size = 1000,
             createdTime = time1,
@@ -431,7 +431,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         photosRow.copy(
-            id = photoId, createdTime = null, modifiedTime = null, storageUrl = "$storageUrl"),
+            id = photoId, createdTime = null, modifiedTime = null, storageUrl = storageUrl),
         actualPhotosRow?.copy(createdTime = null, modifiedTime = null))
   }
 
@@ -455,7 +455,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
     val photosRow = insertFeaturePhoto(featureId)
-    val storageUrl = URI(photosRow.storageUrl!!)
+    val storageUrl = photosRow.storageUrl!!
 
     justRun { fileStore.delete(any()) }
 
@@ -487,7 +487,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val photosRow = insertFeaturePhoto(featureId)
 
     val sizedInputStream = SizedInputStream(inputStream, data.size.toLong())
-    every { fileStore.read(URI(photosRow.storageUrl!!)) } returns sizedInputStream
+    every { fileStore.read(photosRow.storageUrl!!) } returns sizedInputStream
 
     val actualStream = store.getPhotoData(featureId, photosRow.id!!)
 
@@ -581,7 +581,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             fileName = "foo",
             modifiedTime = Instant.EPOCH,
             size = 1,
-            storageUrl = "file:///${Random.nextLong()}",
+            storageUrl = URI("file:///${Random.nextLong()}"),
         )
 
     photosDao.insert(photosRow)

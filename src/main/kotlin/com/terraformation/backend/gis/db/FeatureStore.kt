@@ -23,7 +23,6 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.gis.model.FeatureModel
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
-import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
@@ -237,7 +236,7 @@ class FeatureStore(
                 createdTime = createdTime,
                 id = null,
                 modifiedTime = createdTime,
-                storageUrl = "$photoUrl")
+                storageUrl = photoUrl)
 
         photosDao.insert(sanitizedRow)
 
@@ -294,7 +293,7 @@ class FeatureStore(
   fun getPhotoData(featureId: FeatureId, photoId: PhotoId): SizedInputStream {
     val photosRow = getPhotoMetadata(featureId, photoId)
 
-    return fileStore.read(URI(photosRow.storageUrl!!))
+    return fileStore.read(photosRow.storageUrl!!)
   }
 
   fun deletePhoto(featureId: FeatureId, photoId: PhotoId) {
@@ -305,7 +304,7 @@ class FeatureStore(
     }
 
     val thumbnails = thumbnailDao.fetchByPhotoId(photoId)
-    val url = URI(photosRow.storageUrl!!)
+    val url = photosRow.storageUrl!!
 
     dslContext.transaction { _ ->
       if (thumbnails.isNotEmpty()) {
