@@ -228,6 +228,13 @@ paths:
       tags:
       - GISApp
       summary: Gets the contents of a photo of a feature.
+      description: "Optional maxWidth and maxHeight parameters may be included to\
+        \ control the dimensions of the image; the server will scale the original\
+        \ down as needed. If neither parameter is specified, the original full-size\
+        \ image will be returned. The aspect ratio of the original image is maintained,\
+        \ so the returned image may be smaller than the requested width and height.\
+        \ If only maxWidth or only maxHeight is supplied, the other dimension will\
+        \ be computed based on the original image's aspect ratio."
       operationId: downloadFeaturePhoto
       parameters:
       - name: featureId
@@ -242,6 +249,28 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: maxWidth
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "Maximum desired width in pixels. If neither this nor maxHeight\
+            \ is specified, the full-sized original image will be returned. If this\
+            \ is specified, an image no wider than this will be returned. The image\
+            \ may be narrower than this value if needed to preserve the aspect ratio\
+            \ of the original."
+          format: int32
+      - name: maxHeight
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "Maximum desired height in pixels. If neither this nor maxWidth\
+            \ is specified, the full-sized original image will be returned. If this\
+            \ is specified, an image no taller than this will be returned. The image\
+            \ may be shorter than this value if needed to preserve the aspect ratio\
+            \ of the original."
+          format: int32
       responses:
         "200":
           description: The photo was successfully retrieved.
@@ -886,6 +915,13 @@ paths:
       tags:
       - SeedBankApp
       summary: Retrieve a specific photo from an accession.
+      description: "Optional maxWidth and maxHeight parameters may be included to\
+        \ control the dimensions of the image; the server will scale the original\
+        \ down as needed. If neither parameter is specified, the original full-size\
+        \ image will be returned. The aspect ratio of the original image is maintained,\
+        \ so the returned image may be smaller than the requested width and height.\
+        \ If only maxWidth or only maxHeight is supplied, the other dimension will\
+        \ be computed based on the original image's aspect ratio."
       operationId: getPhoto
       parameters:
       - name: accessionNumber
@@ -898,6 +934,28 @@ paths:
         required: true
         schema:
           type: string
+      - name: maxWidth
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "Maximum desired width in pixels. If neither this nor maxHeight\
+            \ is specified, the full-sized original image will be returned. If this\
+            \ is specified, an image no wider than this will be returned. The image\
+            \ may be narrower than this value if needed to preserve the aspect ratio\
+            \ of the original."
+          format: int32
+      - name: maxHeight
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "Maximum desired height in pixels. If neither this nor maxWidth\
+            \ is specified, the full-sized original image will be returned. If this\
+            \ is specified, an image no taller than this will be returned. The image\
+            \ may be shorter than this value if needed to preserve the aspect ratio\
+            \ of the original."
+          format: int32
       responses:
         "200":
           description: The photo was successfully retrieved.

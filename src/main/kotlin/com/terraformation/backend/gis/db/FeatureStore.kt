@@ -9,7 +9,7 @@ import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
-import com.terraformation.backend.db.tables.daos.ThumbnailDao
+import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.pojos.FeaturePhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.references.FEATURES
@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tables.references.PLANT_OBSERVATIONS
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.gis.model.FeatureModel
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
@@ -39,7 +40,8 @@ class FeatureStore(
     private val fileStore: FileStore,
     private val pathGenerator: PathGenerator,
     private val photosDao: PhotosDao,
-    private val thumbnailDao: ThumbnailDao,
+    private val thumbnailStore: ThumbnailStore,
+    private val thumbnailsDao: ThumbnailsDao,
 ) {
   private val log = perClassLogger()
 
@@ -290,10 +292,19 @@ class FeatureStore(
     return photosDao.fetchOneById(photoId) ?: throw PhotoNotFoundException(photoId)
   }
 
-  fun getPhotoData(featureId: FeatureId, photoId: PhotoId): SizedInputStream {
+  fun getPhotoData(
+      featureId: FeatureId,
+      photoId: PhotoId,
+      maxWidth: Int? = null,
+      maxHeight: Int? = null
+  ): SizedInputStream {
     val photosRow = getPhotoMetadata(featureId, photoId)
 
-    return fileStore.read(photosRow.storageUrl!!)
+    return if (maxWidth != null || maxHeight != null) {
+      thumbnailStore.getThumbnailData(photoId, maxWidth, maxHeight)
+    } else {
+      fileStore.read(photosRow.storageUrl!!)
+    }
   }
 
   fun deletePhoto(featureId: FeatureId, photoId: PhotoId) {
@@ -303,12 +314,12 @@ class FeatureStore(
       throw AccessDeniedException("No permission to delete feature photos.")
     }
 
-    val thumbnails = thumbnailDao.fetchByPhotoId(photoId)
+    val thumbnails = thumbnailsDao.fetchByPhotoId(photoId)
     val url = photosRow.storageUrl!!
 
     dslContext.transaction { _ ->
       if (thumbnails.isNotEmpty()) {
-        thumbnailDao.delete(thumbnails)
+        thumbnailsDao.delete(thumbnails)
       }
 
       featurePhotosDao.deleteById(photoId)

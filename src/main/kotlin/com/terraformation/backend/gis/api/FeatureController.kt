@@ -3,6 +3,9 @@ package com.terraformation.backend.gis.api
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.GISAppEndpoint
 import com.terraformation.backend.api.NotFoundException
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
@@ -20,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import javax.ws.rs.BadRequestException
+import javax.ws.rs.QueryParam
 import net.postgis.jdbc.geometry.Geometry
 import net.postgis.jdbc.geometry.Point
 import org.springframework.core.io.InputStreamResource
@@ -161,13 +165,21 @@ class FeatureController(private val featureStore: FeatureStore) {
   @ApiResponse404(
       "The accession does not exist, or does not have a photo with the requested filename.")
   @GetMapping("/{featureId}/photos/{photoId}", produces = [MediaType.IMAGE_JPEG_VALUE])
-  @Operation(summary = "Gets the contents of a photo of a feature.")
+  @Operation(
+      summary = "Gets the contents of a photo of a feature.",
+      description = PHOTO_OPERATION_DESCRIPTION)
   @ResponseBody
   fun downloadFeaturePhoto(
       @PathVariable featureId: FeatureId,
-      @PathVariable photoId: PhotoId
+      @PathVariable photoId: PhotoId,
+      @QueryParam("maxWidth")
+      @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
+      maxWidth: Int? = null,
+      @QueryParam("maxHeight")
+      @Schema(description = PHOTO_MAXHEIGHT_DESCRIPTION)
+      maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
-    val stream = featureStore.getPhotoData(featureId, photoId)
+    val stream = featureStore.getPhotoData(featureId, photoId, maxWidth, maxHeight)
     val headers = HttpHeaders()
     headers.contentLength = stream.size
 

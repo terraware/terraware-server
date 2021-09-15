@@ -19,9 +19,13 @@ import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.file.PathGenerator
+import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.SocketTimeoutException
@@ -62,6 +66,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private lateinit var pathGenerator: PathGenerator
   private val random: Random = mockk()
   private lateinit var repository: PhotoRepository
+  private val thumbnailStore: ThumbnailStore = mockk()
 
   override val user: UserModel = mockk()
 
@@ -127,7 +132,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             clock,
             fileStore,
             pathGenerator,
-            photosDao)
+            photosDao,
+            thumbnailStore)
 
     insertSiteData()
     accessionsDao.insert(
@@ -293,6 +299,28 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     assertThrows(AccessionNotFoundException::class.java) {
       repository.readPhoto(facilityId, accessionNumber, filename)
     }
+  }
+
+  @Test
+  fun `readPhoto returns thumbnail if photo dimensions are specified`() {
+    val photoData = Random.nextBytes(10)
+    val thumbnailData = Random.nextBytes(10)
+    val thumbnailStream =
+        SizedInputStream(ByteArrayInputStream(thumbnailData), thumbnailData.size.toLong())
+    val width = 123
+    val height = 456
+
+    repository.storePhoto(
+        facilityId, accessionNumber, photoData.inputStream(), photoData.size.toLong(), metadata)
+    val photoId = photosDao.findAll().first().id!!
+
+    every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
+
+    val stream = repository.readPhoto(facilityId, accessionNumber, filename, width, height)
+
+    verify { thumbnailStore.getThumbnailData(photoId, width, height) }
+
+    assertArrayEquals(thumbnailData, stream.readAllBytes())
   }
 
   @Test

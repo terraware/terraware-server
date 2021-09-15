@@ -74,7 +74,7 @@ val ID_WRAPPERS =
         IdWrapper("SpeciesNameId", listOf("species_names\\.id")),
         IdWrapper(
             "StorageLocationId", listOf("storage_locations\\.id", ".*\\.storage_location_id")),
-        IdWrapper("ThumbnailId", listOf("thumbnail\\.id")),
+        IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
         IdWrapper("TimeseriesId", listOf("timeseries\\.id", ".*\\.timeseries_id")),
         IdWrapper("UserId", listOf("users\\.id", ".*\\.user_id")),
         IdWrapper("WithdrawalId", listOf("withdrawals\\.id", ".*\\.withdrawal_id")),

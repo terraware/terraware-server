@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
@@ -15,6 +16,8 @@ import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.PathGenerator
+import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import java.io.IOException
@@ -44,6 +47,7 @@ class PhotoRepository(
     private val fileStore: FileStore,
     private val pathGenerator: PathGenerator,
     private val photosDao: PhotosDao,
+    private val thumbnailStore: ThumbnailStore,
 ) {
   private val log = perClassLogger()
 
@@ -109,7 +113,13 @@ class PhotoRepository(
   }
 
   @Throws(IOException::class)
-  fun readPhoto(facilityId: FacilityId, accessionNumber: String, filename: String): InputStream {
+  fun readPhoto(
+      facilityId: FacilityId,
+      accessionNumber: String,
+      filename: String,
+      maxWidth: Int? = null,
+      maxHeight: Int? = null,
+  ): SizedInputStream {
     val accessionId =
         accessionStore.getIdByNumber(facilityId, accessionNumber)
             ?: throw AccessionNotFoundException(accessionNumber)
@@ -118,8 +128,12 @@ class PhotoRepository(
       throw AccessDeniedException("No permission to read accession data")
     }
 
-    val photoUrl = fetchUrl(facilityId, accessionNumber, filename)
-    return fileStore.read(photoUrl)
+    return if (maxWidth != null || maxHeight != null) {
+      thumbnailStore.getThumbnailData(
+          fetchPhotoId(facilityId, accessionNumber, filename), maxWidth, maxHeight)
+    } else {
+      fileStore.read(fetchUrl(facilityId, accessionNumber, filename))
+    }
   }
 
   /** Returns the photo's size in bytes. */
@@ -187,6 +201,30 @@ class PhotoRepository(
         .and(ACCESSIONS.NUMBER.eq(accessionNumber))
         .and(PHOTOS.FILE_NAME.eq(filename))
         .fetchOne(PHOTOS.STORAGE_URL)
+        ?: throw NoSuchFileException(filename)
+  }
+
+  /**
+   * Returns the ID of an existing photo.
+   *
+   * @throws NoSuchFileException There was no record of the photo.
+   */
+  private fun fetchPhotoId(
+      facilityId: FacilityId,
+      accessionNumber: String,
+      filename: String
+  ): PhotoId {
+    return dslContext
+        .select(PHOTOS.ID)
+        .from(PHOTOS)
+        .join(ACCESSION_PHOTOS)
+        .on(PHOTOS.ID.eq(ACCESSION_PHOTOS.PHOTO_ID))
+        .join(ACCESSIONS)
+        .on(ACCESSIONS.ID.eq(ACCESSION_PHOTOS.ACCESSION_ID))
+        .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+        .and(ACCESSIONS.NUMBER.eq(accessionNumber))
+        .and(PHOTOS.FILE_NAME.eq(filename))
+        .fetchOne(PHOTOS.ID)
         ?: throw NoSuchFileException(filename)
   }
 }
