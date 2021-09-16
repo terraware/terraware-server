@@ -273,6 +273,10 @@ class UserModel(
 
   fun canCreateFamily(): Boolean = canCreateSpecies()
 
+  /** Returns true if the user is an admin or owner of any organizations. */
+  fun hasAnyAdminRole(): Boolean =
+      organizationRoles.values.any { it == Role.OWNER || it == Role.ADMIN }
+
   /**
    * Temporary helper to get the user's facility ID.
    *

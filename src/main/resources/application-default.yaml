@@ -3,6 +3,7 @@ terraware:
     client-id: "dev-terraware-server"
   photo-dir: "/tmp/terraware-server-photos"
   use-test-clock: true
+  allow-admin-ui-for-non-admins: true
 
 spring:
   flyway:

@@ -1,6 +1,7 @@
 package com.terraformation.backend.api
 
 import org.springframework.context.annotation.Configuration
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.util.pattern.PathPatternParser
@@ -10,7 +11,8 @@ import org.springframework.web.util.pattern.PathPatternParser
  * options require programmatic configuration.
  */
 @Configuration
-class SpringMvcConfig : WebMvcConfigurer {
+class SpringMvcConfig(private val existingAdminRoleInterceptor: ExistingAdminRoleInterceptor) :
+    WebMvcConfigurer {
   /**
    * Matches URLs to controller paths using a newer matcher. The default matcher doesn't have good
    * support for controllers with parameterized paths that can contain multiple path elements, e.g.,
@@ -21,5 +23,9 @@ class SpringMvcConfig : WebMvcConfigurer {
    */
   override fun configurePathMatch(configurer: PathMatchConfigurer) {
     configurer.setPatternParser(PathPatternParser())
+  }
+
+  override fun addInterceptors(registry: InterceptorRegistry) {
+    registry.addInterceptor(existingAdminRoleInterceptor)
   }
 }
