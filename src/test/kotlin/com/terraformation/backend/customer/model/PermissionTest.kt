@@ -133,6 +133,7 @@ internal class PermissionTest : DatabaseTest() {
             config,
             featuresDao,
             mockk(),
+            mockk(),
             layersDao,
             mockk(),
             mockk(),

@@ -1,8 +1,11 @@
 terraware:
   keycloak:
     api-client-id: "api"
-    client-id: "terraware-server"
-    realm: "terraware"
+
+keycloak:
+  realm: "terraware"
+  resource: "terraware-server"
+#  token-cookie-path: "/"
 
 spring:
   datasource:
@@ -19,6 +22,9 @@ spring:
     multipart:
       max-request-size: 20MB
       max-file-size: 20MB
+
+  session:
+    store-type: jdbc
 
 # Configuration for the Swagger API explorer. These settings are used when the server is running
 # and serving real requests; there are also settings in application-apidoc.yaml that are used when

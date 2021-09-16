@@ -2,6 +2,7 @@ package com.terraformation.backend.auth
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import org.keycloak.OAuth2Constants
+import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.admin.client.resource.RealmResource
@@ -18,21 +19,26 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class KeycloakBeans {
   @Bean
-  fun keycloak(config: TerrawareServerConfig): Keycloak? {
-    val keycloakConfig = config.keycloak
+  fun keycloak(
+      config: TerrawareServerConfig,
+      keycloakProperties: KeycloakSpringBootProperties
+  ): Keycloak? {
+    val keycloakAdapterSecret = keycloakProperties.credentials["secret"]?.toString()
 
     return KeycloakBuilder.builder()
-        .clientId(keycloakConfig.clientId)
-        .clientSecret(keycloakConfig.clientSecret)
-        .realm(keycloakConfig.realm)
-        .serverUrl(keycloakConfig.serverUrl.toString())
+        .clientId(config.keycloak.clientId ?: keycloakProperties.resource)
+        .clientSecret(config.keycloak.clientSecret ?: keycloakAdapterSecret)
+        .realm(keycloakProperties.realm)
+        .serverUrl(keycloakProperties.authServerUrl)
         .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
         .build()
   }
 
   @Bean
-  fun realmResource(config: TerrawareServerConfig, keycloak: Keycloak): RealmResource? {
-    val realm = config.keycloak.realm
-    return keycloak.realm(realm)
+  fun realmResource(
+      keycloak: Keycloak,
+      keycloakProperties: KeycloakSpringBootProperties
+  ): RealmResource? {
+    return keycloak.realm(keycloakProperties.realm)
   }
 }

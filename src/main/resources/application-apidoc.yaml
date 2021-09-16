@@ -24,10 +24,13 @@ terraware:
     enabled: false
   keycloak:
     apiClientId: dummy
-    clientId: dummy
-    clientSecret: dummy
-    serverUrl: http://dummy
-    realm: dummy
+
+keycloak:
+  auth-server-url: http://dummy
+  realm: dummy
+  resource: dummy
+  credentials:
+    secret: dummy
 
 logging:
   level:

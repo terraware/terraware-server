@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.PermissionStore
@@ -95,12 +96,18 @@ class UserModel(
   fun run(func: () -> Unit) {
     val context = SecurityContextHolder.getContext()
     val oldAuthentication = context.authentication
+    val oldUserModel = CurrentUserHolder.getCurrentUser()
     val newAuthentication = PreAuthenticatedAuthenticationToken(this, "N/A", authorities)
     try {
       context.authentication = newAuthentication
+      CurrentUserHolder.setCurrentUser(this)
       func()
     } finally {
-      context.authentication = oldAuthentication
+      try {
+        context.authentication = oldAuthentication
+      } finally {
+        CurrentUserHolder.setCurrentUser(oldUserModel)
+      }
     }
   }
 

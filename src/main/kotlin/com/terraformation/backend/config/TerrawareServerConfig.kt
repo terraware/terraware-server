@@ -1,6 +1,5 @@
 package com.terraformation.backend.config
 
-import java.net.URI
 import java.nio.file.Path
 import java.time.LocalTime
 import java.time.ZoneId
@@ -88,23 +87,23 @@ class TerrawareServerConfig(
   @ConstructorBinding
   class KeycloakConfig(
       /**
-       * URL of the root of the Keycloak server's administrative API. Typically, this will be
-       * `https://server.domain.name/auth`.
-       */
-      @NotNull val serverUrl: URI,
-
-      /** Keycloak realm containing user information. */
-      @NotNull val realm: String,
-
-      /**
        * Client ID that terraware-server will use for Keycloak admin API requests. Typically, you'll
        * configure a dedicated client ID for this, enable the client's service account, and grant
        * the service account all the roles related to user administration.
+       *
+       * Defaults to the client ID configured in the Keycloak adapter config.
+       *
+       * This may be a different client ID than the one that users use to log into the app; the
+       * authentication client ID is configured in the Keycloak properties.
        */
-      @NotNull val clientId: String,
+      val clientId: String? = null,
 
-      /** Client secret corresponding to clientId. */
-      @NotNull val clientSecret: String,
+      /**
+       * Client secret corresponding to clientId.
+       *
+       * Defaults to the client secret configured in the Keycloak adapter config.
+       */
+      val clientSecret: String? = null,
 
       /**
        * Client ID that API clients will use to request access tokens given an offline refresh
