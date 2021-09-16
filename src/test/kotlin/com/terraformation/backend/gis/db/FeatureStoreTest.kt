@@ -30,7 +30,6 @@ import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.file.FileStore
-import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.gis.model.FeatureModel
@@ -42,7 +41,6 @@ import java.net.URI
 import java.nio.file.NoSuchFileException
 import java.time.Clock
 import java.time.Instant
-import kotlin.io.path.Path
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -74,7 +72,6 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val time2 = time1.plusSeconds(1)
 
   private val fileStore: FileStore = mockk()
-  private val pathGenerator: PathGenerator = mockk()
   private val thumbnailStore: ThumbnailStore = mockk()
 
   private lateinit var store: FeatureStore
@@ -101,14 +98,12 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             dslContext,
             featurePhotosDao,
             fileStore,
-            pathGenerator,
             photosDao,
             thumbnailStore,
             thumbnailsDao)
 
     every { clock.instant() } returns time1
-    every { fileStore.getUrl(any()) } returns storageUrl
-    every { pathGenerator.generatePath(any(), any(), any()) } returns Path("x")
+    every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
     every { user.canCreateLayerData(featureId = any()) } returns true
     every { user.canCreateLayerData(layerId = any()) } returns true
     every { user.canReadLayerData(featureId = any()) } returns true

@@ -6,6 +6,7 @@ import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
+import java.time.Instant
 
 /**
  * Handles storage of file contents (as opposed to metadata). Implementations of this interface talk
@@ -75,4 +76,12 @@ interface FileStore {
 
   /** Returns the URL of a file with a given relative path on this file store. */
   fun getUrl(path: Path): URI
+
+  /**
+   * Creates a new URL for a file of a particular category with a particular content type.
+   *
+   * This will typically delegate the construction of the relative path to
+   * [PathGenerator.generatePath].
+   */
+  fun newUrl(timestamp: Instant, category: String, contentType: String): URI
 }

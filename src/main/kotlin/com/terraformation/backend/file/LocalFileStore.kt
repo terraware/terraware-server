@@ -7,6 +7,7 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.time.Instant
 import javax.annotation.ManagedBean
 import javax.annotation.Priority
 import kotlin.io.path.Path
@@ -31,7 +32,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 @ConditionalOnProperty("terraware.photo-dir", havingValue = "")
 @ManagedBean
 @Priority(2) // If both S3 and filesystem storage are configured, prefer S3.
-class LocalFileStore(private val config: TerrawareServerConfig) : FileStore {
+class LocalFileStore(
+    private val config: TerrawareServerConfig,
+    private val pathGenerator: PathGenerator
+) : FileStore {
   override fun delete(url: URI) {
     getFullPath(url).deleteExisting()
   }
@@ -70,6 +74,10 @@ class LocalFileStore(private val config: TerrawareServerConfig) : FileStore {
   override fun getUrl(path: Path): URI {
     val relativePath = if (path.isAbsolute) path.relativeTo(path.root) else path
     return URI("file:///${relativePath.invariantSeparatorsPathString}")
+  }
+
+  override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
+    return getUrl(pathGenerator.generatePath(timestamp, category, contentType))
   }
 
   private fun getFullPath(url: URI): Path {

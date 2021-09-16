@@ -17,6 +17,7 @@ import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
+import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
@@ -61,7 +62,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private lateinit var accessionStore: AccessionStore
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
-  private val fileStore = LocalFileStore(config)
+  private lateinit var fileStore: FileStore
   private lateinit var photosDao: PhotosDao
   private lateinit var pathGenerator: PathGenerator
   private val random: Random = mockk()
@@ -115,6 +116,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     every { random.nextLong() } returns 0x0123456789abcdef
     pathGenerator = PathGenerator(random)
+    fileStore = LocalFileStore(config, pathGenerator)
 
     val relativePath = Path("2021", "02", "03", "accession", "040506-0123456789ABCDEF.jpg")
 
@@ -131,7 +133,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             dslContext,
             clock,
             fileStore,
-            pathGenerator,
             photosDao,
             thumbnailStore)
 

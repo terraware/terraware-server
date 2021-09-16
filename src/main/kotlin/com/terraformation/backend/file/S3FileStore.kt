@@ -9,6 +9,7 @@ import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystemException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
+import java.time.Instant
 import javax.annotation.ManagedBean
 import javax.annotation.Priority
 import kotlin.io.path.invariantSeparatorsPathString
@@ -26,7 +27,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
 @ConditionalOnProperty("terraware.s3BucketName", havingValue = "")
 @ManagedBean
 @Priority(1) // If both S3 and filesystem storage are configured, prefer S3.
-class S3FileStore(config: TerrawareServerConfig) : FileStore {
+class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: PathGenerator) :
+    FileStore {
   private val log = perClassLogger()
   private val s3Client = S3Client.create()!!
 
@@ -103,6 +105,10 @@ class S3FileStore(config: TerrawareServerConfig) : FileStore {
   override fun getUrl(path: Path): URI {
     val relativePath = if (path.isAbsolute) path.relativeTo(path.root) else path
     return URI("s3://$bucketName/${relativePath.invariantSeparatorsPathString}")
+  }
+
+  override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
+    return getUrl(pathGenerator.generatePath(timestamp, category, contentType))
   }
 
   /** Returns an S3 key for a URL. */
