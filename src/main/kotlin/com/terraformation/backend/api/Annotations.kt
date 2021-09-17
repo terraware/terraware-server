@@ -49,3 +49,12 @@ annotation class ApiResponse404(val description: String = "The requested resourc
 annotation class ApiResponseSimpleSuccess(
     val description: String = "The requested operation succeeded."
 )
+
+/**
+ * Requires the user to be an admin or owner in at least one organization in order to access an
+ * endpoint. If this annotation is used at the class level, it applies to all the handler methods in
+ * the class.
+ */
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class RequireExistingAdminRole

@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.terraformation.backend.api.NotFoundException
+import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
@@ -35,8 +36,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 
-@RequestMapping("/admin")
 @Controller
+@RequestMapping("/admin")
+@RequireExistingAdminRole
 @Validated
 class AdminController(
     private val config: TerrawareServerConfig,
