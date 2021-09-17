@@ -198,7 +198,7 @@ data class SearchSortOrderElement(
     description =
         "A search criterion. The search will return results that match this criterion. The " +
             "criterion can be composed of other search criteria to form arbitrary Boolean " +
-            "search expressions.",
+            "search expressions. TYPESCRIPT-OVERRIDE-TYPE-WITH-ANY",
     oneOf =
         [
             AndNodePayload::class,
