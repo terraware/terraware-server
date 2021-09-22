@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - wip-*
+    tags:
+      - v[0-9].[0-9]+.[0-9]+
   pull_request:
 
 jobs:
@@ -18,6 +20,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Set environment
+      run: ./.github/scripts/set-environment.sh
+
     - name: Set up Java ${{ matrix.java-version }}
       uses: actions/setup-java@v1
       with:
@@ -30,7 +35,7 @@ jobs:
         path: |
           ~/.gradle
           ~/.m2
-        key: 2-${{ matrix.java-version }}-${{ hashFiles('*.gradle.kts', 'gradle.properties') }}
+        key: 2-${{ matrix.java-version }}-${{ hashFiles('*.gradle.kts', 'gradle.properties') }}-${{ env.TIER }}
 
     # The build/test process is broken out into individual steps here so it's easier to watch
     # the progress of the build in the GitHub UI and so it's clearer what failed if the build
@@ -86,16 +91,18 @@ jobs:
       uses: actions/cache@v2
       with:
         path: /tmp/.buildx-cache
-        key: 1-buildx-${{ matrix.java-version }}
+        key: 1-buildx-${{ matrix.java-version }}-${{ env.TIER }}
 
-    - name: Build Docker image and push if on main branch
+    - name: Build Docker image and push if on main branch or tag
       if: matrix.java-version == '15'
       uses: docker/build-push-action@v2
       with:
         context: build/docker
-        tags: terraware/terraware-server:latest
+        tags: |
+          terraware/terraware-server:${{ env.TIER }}
+          terraware/terraware-server:${{ env.COMMIT_SHA }}
         platforms: linux/amd64,linux/arm64
-        push: ${{ github.ref == 'refs/heads/main' }}
+        push: ${{ github.ref == 'refs/heads/main' }} || ${{ github.ref == 'refs/tags/v[0-9].[0-9]+.[0-9]+' }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
