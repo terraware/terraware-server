@@ -1,6 +1,6 @@
-# Keycloak / OAuth2 Proxy quickstart guide
+# Keycloak quickstart guide
 
-Terraware-server currently depends on [Keycloak](https://keycloak.org/) to manage user registration and login, and on [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to manage authentication of incoming requests.
+Terraware-server currently depends on [Keycloak](https://keycloak.org/) to manage user registration and login.
 
 It can use an existing Keycloak server or a locally-hosted one. Either way, some initial setup is required.
 
@@ -35,16 +35,7 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
    1. Mouse over "Master" in the left navbar and click "Add Realm."
    2. Set the name to `terraware`.
    3. Click "Create."
-3. Create a client for OAuth2 Proxy.
-   1. Click "Clients" in the left navbar.
-   2. Click "Create" on the header bar of the list of clients.
-   3. Set the client ID to `localhost-oauth2-proxy` and the root URL to `http://localhost:4000/`.
-   4. Click "Save." This will cause a bunch of additional fields to appear in the UI.
-   5. Set the access type to "confidential".
-   6. Click "Save."
-   7. Click the "Credentials" tab.
-   8. Copy the value of the "client secret" field; you'll be using it later.
-4. Create a client for terraware-server to use for its Keycloak admin API requests.
+3. Create a client for terraware-server to use for its Keycloak admin API requests.
    1. Click "Clients" in the left navbar.
    2. Click "Create" on the header bar of the list of clients.
    3. Set the client ID to `dev-terraware-server`.
@@ -59,19 +50,19 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
       - view-users
    10. Click the "Credentials" tab.
    11. Copy the value of the "client secret" field; you'll be using it later.
-5. Create a role that will identify the synthetic Keycloak users for API clients.
+4. Create a role that will identify the synthetic Keycloak users for API clients.
    1. Click "Roles" in the left navbar.
    2. Click "Add Role" in the header bar of the list of roles.
    3. Enter a role name of `api-client`. (You can use a different name if you prefer, but we'll use that name in these instructions.)
    4. Click "Save."
-6. Create a group that grants the new role to API clients.
+5. Create a group that grants the new role to API clients.
    1. Click "Groups" in the left navbar.
    2. Click "New" in the header bar of the list of groups.
    3. Use a group name of `api-clients`. (If you choose a different name, you will have to override a configuration setting as described later.)
    4. Click "Save."
    5. Click the "Role Mappings" tab.
    6. Select "api-client" in the list of available roles and click "Add selected."
-7. Create an authentication flow that only allows users with the API client role to authenticate.
+6. Create an authentication flow that only allows users with the API client role to authenticate.
    1. Click "Authentication" in the left navbar.
    2. Click "New" in the header bar of the list of authentication flows.
    3. Set "Alias" to `API Client Authentication`. (You can use a different name if you prefer.)
@@ -101,7 +92,7 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
    27. Select "Deny Access."
    28. Click "Save."
    29. Click the "Required" radio button on the "Deny Access" line.
-8. Create a Keycloak client that terraware-server API clients will use to request access tokens.
+7. Create a Keycloak client that terraware-server API clients will use to request access tokens.
    1. Click "Clients" in the left navbar.
    2. Click "Create" in the header bar of the list of clients.
    3. Set the client ID to `api`. Leave the other fields set to their default values.
@@ -122,10 +113,10 @@ If you work at Terraformation then ask a fellow developer for the values of thes
 
 | Property | Environment Variable | Description
 | --- | --- | ---
-| `terraware.keycloak.server-url` | `TERRAWARE_KEYCLOAK_SERVER_URL` | Your Keycloak server's API address. If you are running Keycloak locally, this will be `http://localhost:8081/auth`. Otherwise, it will be the URL of your Keycloak server including the path prefix for the Keycloak API, which is usually `/auth`.
-| `terraware.keycloak.realm` | `TERRAWARE_KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions to create a local Keycloak instance then this will be `terraware`.
-| `terraware.keycloak.client-id` | `TERRAWARE_KEYCLOAK_CLIENT_ID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
-| `terraware.keycloak.client-secret` | `TERRAWARE_KEYCLOAK_CLIENT_SECRET` | The secret associated with the client ID.
+| `keycloak.auth-server-url` | `KEYCLOAK_AUTH_SERVER_URL` | Your Keycloak server's API address. If you are running Keycloak locally, this will be `http://localhost:8081/auth`. Otherwise, it will be the URL of your Keycloak server including the path prefix for the Keycloak API, which is usually `/auth`.
+| `keycloak.realm` | `KEYCLOAK_REALM` | The name of the Keycloak realm that contains terraware-server user information. If you followed the instructions to create a local Keycloak instance then this will be `terraware`.
+| `keycloak.resource` | `KEYCLOAK_RESOURCE` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
+| `keycloak.credentials.secret` | `KEYCLOAK_CREDENTIALS_SECRET` | The secret associated with the client ID.
 | `terraware.keycloak.api-client-id` | `TERRAWARE_KEYCLOAK_API_CLIENT_ID` | The Keycloak client ID that terraware-server API clients will use to generate access tokens. If you followed the instructions to create a local Keycloak instance, then this will be `api`.
 | `terraware.keycloak.api-client-group-name` | `TERRAWARE_KEYCLOAK_API_CLIENT_GROUP_NAME` | The name of the Keycloak group to add newly-created API client users to. The default is `/api-clients`. If you chose a different group name when you were setting up Keycloak, you'll need to set this. Note that because Keycloak group names are hierarchical, the value must start with `/`.
 | `terraware.keycloak.api-client-username-prefix` | `TERRAWARE_KEYCLOAK_API_CLIENT_USERNAME_PREFIX` | A prefix to put at the beginning of the Keycloak usernames of API client users. The default is `api-`. This is to make the users easy to identify in the Keycloak admin console.
@@ -139,7 +130,7 @@ If you're launching the server from an IDE such as IntelliJ IDEA, you can set th
 1. In the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window, choose "Edit Configurations..."
 2. Select "Application" under "Spring Boot" if it's not already selected.
 3. Click the little icon at the end of the "Environment Variables" text field to pop up a dialog that shows the current set of environment variables.
-4. Add all the `TERRAWARE_KEYCLOAK` environment variables listed above.
+4. Add all the environment variables listed above.
 5. Click OK on the environment variable dialog and the run configurations dialog.
 
 #### Using a profile-specific properties file for local development
@@ -147,44 +138,7 @@ If you're launching the server from an IDE such as IntelliJ IDEA, you can set th
 See the "Using a profile-specific properties file for local development" section in [README.md](README.md) to learn more about this; you can also set other values that aren't related to Keycloak. The Keycloak-related part of the properties file will be structured hierarchically, for example:
 
 ```yaml
-terraware:
-  keycloak:
-    server-url: http://your-server/auth
-    realm: your-realm
+keycloak:
+  auth-server-url: http://your-server/auth
+  realm: your-realm
 ```
-
-## Setting Up OAuth2 Proxy
-
-### Installation
-You'll want to install the proxy locally. There is a Docker image, and you can make it work if your local host is running Linux. However, it's easier to run the proxy on the host OS because of limitations of the networking features in Docker for Mac and Docker for Windows.
-
-On OS X with Homebrew, you can install it by running `brew install oauth2_proxy`.
-
-See [the OAuth2 Proxy install docs](https://oauth2-proxy.github.io/oauth2-proxy/docs/) for other options.
-
-### Configuration
-Copy the file [`oauth2-proxy.cfg.sample`](oauth2-proxy.cfg.sample) to `oauth2-proxy.cfg` and edit the following config settings. If you work at Terraformation then ask a fellow developer where to find the setting values (they will likely be in the Terraformation 1Password Eng Infra Vault).
-
-| Setting | Description |
-| --- | ---
-| `client_secret` | The client secret for the OAuth2 Proxy client, as shown in the Keycloak admin UI.
-| `cookie_secret` |  A cookie secret for OAuth2 Proxy to use when it generates session cookies. The cookie secret should be 32 characters long.
-| `oidc_issuer_url` | The address of your realm on your Keycloak server. Typically this will look like `https://your.keycloak.server/auth/realms/terraware`. You can leave this alone if you're running Keycloak locally with a realm name of `terraware`.
-| `client_id` | The ID of the client that will be used to authenticate users to Keycloak; you can leave this alone if you're using the default one.
-
-When setting up the config, you can generate the `cookie_secret` however you like. E.g, this will work:
-```shell
-base64 < /dev/random | head -c32
-```
-
-The config file is set up for a typical terraware-server development environment, where the front end (as launched with `yarn start` from the front end repo) listens on HTTP port 3000 and the back end (terraware-server) listens on HTTP port 8080. The proxy itself is configured to listen on port 4000.
-
-
-### Using the proxy
-After the configuration is done, start the proxy with:
-
-```shell
-oauth2-proxy --config oauth2-proxy.cfg
-```
-
-Connect to http://localhost:4000/ and you should see a login form.

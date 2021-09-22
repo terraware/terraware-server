@@ -1,10 +1,13 @@
 package com.terraformation.backend
 
+import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.customer.model.UserModel
+import io.mockk.mockk
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
 /**
  * Convenience interface to run test methods with the current user set to a test double. Typically
@@ -19,7 +22,7 @@ interface RunsAsUser {
    * User to masquerade as while running tests. Typically, you'll want to define this as
    *
    * ```
-   * override val user = mockk<TerrawareUserDetails>()
+   * override val user: UserModel = mockk()
    * ```
    *
    * and then use the MockK API to control the behavior of the stubbed-out user.
@@ -28,12 +31,19 @@ interface RunsAsUser {
 
   @BeforeEach
   fun setupSecurityContextWithMockUser() {
+    val keycloakAccount = SimpleKeycloakAccount(user, emptySet(), mockk())
+
     SecurityContextHolder.getContext().authentication =
-        PreAuthenticatedAuthenticationToken(user, "N/A")
+        KeycloakAuthenticationToken(keycloakAccount, false)
+    CurrentUserHolder.setCurrentUser(user)
   }
 
   @AfterEach
   fun clearSecurityContext() {
-    SecurityContextHolder.clearContext()
+    try {
+      SecurityContextHolder.clearContext()
+    } finally {
+      CurrentUserHolder.clearCurrentUser()
+    }
   }
 }

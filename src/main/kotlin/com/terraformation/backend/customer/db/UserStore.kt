@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.log.perClassLogger
+import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -31,15 +32,13 @@ import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 import kotlin.random.Random
 import org.apache.commons.codec.binary.Base32
+import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.AccessDeniedException
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 
 /**
  * Data accessor for user information.
@@ -63,13 +62,14 @@ class UserStore(
     private val config: TerrawareServerConfig,
     private val featuresDao: FeaturesDao,
     private val httpClient: HttpClient,
+    private val keycloakProperties: KeycloakSpringBootProperties,
     private val layersDao: LayersDao,
     private val objectMapper: ObjectMapper,
     private val organizationStore: OrganizationStore,
     private val permissionStore: PermissionStore,
     realmResource: RealmResource,
     private val usersDao: UsersDao,
-) : UserDetailsService {
+) {
   private val log = perClassLogger()
   private val usersResource = realmResource.users()
 
@@ -299,9 +299,9 @@ class UserStore(
     user.resetPassword(credentials)
 
     try {
+      val authUrl = URI(keycloakProperties.authServerUrl)
       val tokenUrl =
-          config.keycloak.serverUrl.resolve(
-              "/auth/realms/${config.keycloak.realm}/protocol/openid-connect/token")
+          authUrl.resolve("/auth/realms/${keycloakProperties.realm}/protocol/openid-connect/token")
 
       val formSubmission =
           mapOf(
@@ -359,20 +359,6 @@ class UserStore(
       isTemporary = false
       type = "password"
       value = Base64.getEncoder().encodeToString(Random.nextBytes(40))
-    }
-  }
-
-  /**
-   * Returns a user who was authenticated via oauth2-proxy. This is called by Spring Security as
-   * part of request authentication; in application code, call [fetchByAuthId] instead since it
-   * follows our usual method naming convention.
-   */
-  override fun loadUserByUsername(username: String): UserDetails {
-    try {
-      return fetchByAuthId(username)
-    } catch (e: KeycloakUserNotFoundException) {
-      // Spring Security expects a specific exception to be thrown in this case.
-      throw UsernameNotFoundException(e.message, e)
     }
   }
 

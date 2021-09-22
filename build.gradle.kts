@@ -68,6 +68,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.springframework.boot:spring-boot-starter-validation")
+  implementation("org.springframework.session:spring-session-jdbc")
 
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
@@ -80,6 +81,8 @@ dependencies {
   implementation("org.apache.tika:tika-core:2.1.0")
   implementation("org.codehaus.janino:janino:3.1.3")
   implementation("org.flywaydb:flyway-core:7.5.4")
+  implementation(platform("org.keycloak.bom:keycloak-adapter-bom:14.0.0"))
+  implementation("org.keycloak:keycloak-spring-boot-starter")
   implementation("org.keycloak:keycloak-admin-client:14.0.0")
   implementation(kotlin("reflect"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")

@@ -21,7 +21,6 @@ The server does not depend on the Balena or Raspberry Pi environments and should
 
 * Create a local database: `createdb terraware`
 * Follow the set up instructions in [KEYCLOAK.md](KEYCLOAK.md).
-* Don't forget to launch the OAuth2 Proxy as described in [KEYCLOAK.md](KEYCLOAK.md).
 
 ### Running the server
 
@@ -51,15 +50,15 @@ The `check` target will run the linter as well as the actual tests; to run just 
 
 ## Using the front end
 
-To use the web front end, you'll need to run OAuth2 Proxy and you'll need access to a Keycloak instance, either an existing one or a local one. See [KEYCLOAK.md](KEYCLOAK.md) for setup instructions.
+To use the web front end, you'll need access to a Keycloak instance, either an existing one or a local one. See [KEYCLOAK.md](KEYCLOAK.md) for setup instructions.
 
 Clone the [seed bank app front end code base](https://github.com/terraware/seedbank-app).
 
 Follow the front end repo's initial setup instructions to install dependencies and so forth.
 
-Run `yarn start` from the directory where you cloned the front end code. It will start a local server that listens on HTTP port 3000. You won't use that directly, but OAuth2 Proxy will forward requests to it.
+Run `yarn start` from the directory where you cloned the front end code. It will start a local server that listens on HTTP port 3000.
 
-Connect to http://localhost:4000/ to log in.
+Connect to http://localhost:3000/ to log in.
 
 ## Editing the code
 
@@ -81,7 +80,7 @@ The code should build (if you've previously built it from the command line, it w
 
 Once you've launched the application once, it will appear in the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window. You can select it there and click the Run (triangle) or Debug (beetle) button to the right of the drop-down menu. You can also launch it with keyboard shortcuts but that's beyond the scope of this quick intro.
 
-Depending on how you set the Keycloak-related environment variables in the initial setup steps above, the server might complain that it can't find some required `terraware.keycloak` properties. If that's the case revisit the "Terraware-server configuration" section in [KEYCLOAK.md](KEYCLOAK.md).
+Depending on how you set the Keycloak-related environment variables in the initial setup steps above, the server might complain that it can't find some required `keycloak` properties. If that's the case revisit the "Terraware-server configuration" section in [KEYCLOAK.md](KEYCLOAK.md).
 
 ## Using a profile-specific properties file for local development
 

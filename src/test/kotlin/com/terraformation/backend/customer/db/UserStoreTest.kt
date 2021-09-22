@@ -21,7 +21,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -35,10 +34,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.security.access.AccessDeniedException
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 
 /**
  * Tests for the user store.
@@ -65,14 +64,13 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   private val keycloakConfig =
       TerrawareServerConfig.KeycloakConfig(
-          URI("http://keycloak"),
-          realm = "realm",
           clientId = "clientId",
           clientSecret = "clientSecret",
           apiClientId = "api",
           apiClientGroupName = "/api-clients",
           apiClientUsernamePrefix = "prefix-",
       )
+  private val keycloakProperties = KeycloakSpringBootProperties()
 
   private val authId = "authId"
   private val organizationId = OrganizationId(1)
@@ -99,6 +97,13 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canRemoveOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.CONTRIBUTOR) } returns true
 
+    keycloakProperties.apply {
+      authServerUrl = "http://keycloak"
+      credentials = mapOf("secret" to "clientSecret")
+      realm = "realm"
+      resource = "clientId"
+    }
+
     usersResource.create(userRepresentation)
 
     val configuration = dslContext.configuration()
@@ -118,6 +123,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             config,
             featuresDao,
             httpClient,
+            keycloakProperties,
             layersDao,
             ObjectMapper().registerModule(KotlinModule()),
             organizationStore,
@@ -246,9 +252,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
     assertThrows<KeycloakUserNotFoundException>("Looking up user by auth ID should fail") {
       userStore.fetchByAuthId(user.authId)
-    }
-    assertThrows<UsernameNotFoundException>("Spring Security user lookup should fail") {
-      userStore.loadUserByUsername(user.authId)
     }
   }
 
