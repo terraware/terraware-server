@@ -31,15 +31,11 @@ Windows: `gradlew.bat bootRun`
 
 See the "Editing The Code" section below for details on how to run the server inside of IntelliJ.
 
-The server will listen on port 8080. As a demo, it will create an API client with an API key of `dummyKey`, which you can use to make API requests.
+The server will listen on port 8080.
 
-Fetch the API schema. (This doesn't require authentication.)
+Fetch the API schema to confirm the server is up and running. (This doesn't require authentication.)
 
     curl http://localhost:8080/v3/api-docs.yaml
-
-Fetch the details of a sample site.
-
-    curl -H "Authorization: Basic $(echo -n user:dummyKey | base64)" http://localhost:8080/api/v1/site/1
 
 ### Viewing the API documentation
 
