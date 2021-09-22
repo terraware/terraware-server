@@ -72,10 +72,29 @@ class SecurityConfig(private val userStore: UserStore) : KeycloakWebSecurityConf
 
       httpBasic { disable() }
 
-      // Don't create a new session (and set a session cookie) on each request, but use the session
-      // if one exists. The Keycloak adapter creates a session when the user logs in interactively
-      // (so we'll get a session cookie for web sessions) but not for requests that use bearer
-      // tokens (so we won't get useless cookies for non-web sessions).
+      // By default, Spring Security will create a new session for each request that doesn't already
+      // have one. It will persist the session to the session store and generate a cookie, and then
+      // when a new request comes in, it will see the cookie and look up the existing session to
+      // get the user's identity.
+      //
+      // For noninteractive clients, we don't want that; they'll include an authentication token
+      // with each request and with the default behavior, we'd be constantly creating a bunch of
+      // sessions the client would just ignore because it's not looking at the Cookie header in the
+      // response.
+      //
+      // But for interactive clients, we do want a cookie so they don't have to authenticate each
+      // request separately.
+      //
+      // Setting the session creation policy to NEVER tells Spring Security to never automatically
+      // create a session. But the application code is still allowed to explicitly create one, and
+      // Spring Security will honor it. In this case, the "application code" is the Keycloak
+      // adapter's interactive login endpoint (/sso/login, which the user gets redirected to after
+      // entering their password): the adapter explicitly creates a session so it can attach the
+      // user's Keycloak identity to the session.
+      //
+      // This gives us the behavior we want: a session cookie for interactive users, and no cookie
+      // for programmatic clients because they never go through the interactive login process and
+      // thus never hit the /sso/login endpoint.
       sessionManagement { sessionCreationPolicy = SessionCreationPolicy.NEVER }
 
       // This has nothing to do with security, but Spring Security supports adding custom headers.
