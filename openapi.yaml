@@ -3073,6 +3073,7 @@ components:
           - GeometryCollection
         crs:
           $ref: '#/components/schemas/CRS'
+      description: GEOMETRY-FIX-TYPE-ON-CLIENT-SIDE
       discriminator:
         propertyName: type
         mapping:
@@ -3548,6 +3549,7 @@ components:
     ListPlantsResponseElement:
       required:
       - featureId
+      - layerId
       type: object
       properties:
         featureId:
@@ -3563,11 +3565,24 @@ components:
         datePlanted:
           type: string
           format: date
+        layerId:
+          type: integer
+          format: int64
+        gpsHorizAccuracy:
+          type: number
+          format: double
+        gpsVertAccuracy:
+          type: number
+          format: double
+        attrib:
+          type: string
         notes:
           type: string
         enteredTime:
           type: string
           format: date-time
+        geom:
+          $ref: '#/components/schemas/Geometry'
     ListPlantsResponsePayload:
       required:
       - list

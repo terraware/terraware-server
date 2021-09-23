@@ -26,6 +26,7 @@ abstract class GeoJsonOpenApiSchema {
   }
 
   @Schema(
+      description = "GEOMETRY-FIX-TYPE-ON-CLIENT-SIDE",
       discriminatorProperty = "type",
       discriminatorMapping =
           [
