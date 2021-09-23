@@ -102,7 +102,7 @@ jobs:
           terraware/terraware-server:${{ env.TIER }}
           terraware/terraware-server:${{ env.COMMIT_SHA }}
         platforms: linux/amd64,linux/arm64
-        push: ${{ github.ref == 'refs/heads/main' }} || ${{ github.ref == 'refs/tags/v[0-9].[0-9]+.[0-9]+' }}
+        push: env.IS_CD == true
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
@@ -110,3 +110,19 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+    - name: Configure AWS Credentials
+      if: env.IS_CD == true
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets[env.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
+        aws-secret-access-key: ${{ secrets[env.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
+        aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
+
+    - name: Deploy
+      if: env.IS_CD == true
+      env:
+        SSH_HOST: ${{ secrets[env.SSH_HOST_SECRET_NAME] }}
+        SSH_KEY: ${{ secrets[env.SSH_KEY_SECRET_NAME] }}
+        SSH_USER: ${{ secrets[env.SSH_USER_SECRET_NAME] }}
+      run: ./.github/scripts/deploy.sh

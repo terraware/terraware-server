@@ -1,11 +1,30 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
-if [[ "$GITHUB_REF" =~ refs/tags/v[0-9].[0-9]+.[0-9]+ ]]: then
-  echo "TIER=prod" >> $GITHUB_ENV
+# Define tier based on branch ref
+if [[ "$GITHUB_REF" =~ refs/tags/v[0-9].[0-9]+.[0-9]+ ]]; then
+  export \
+    TIER=prod \
+    IS_CD=true
+elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+  export \
+    TIER=staging \
+    IS_CD=true
 else
-  echo "TIER=staging" >> $GITHUB_ENV
+  export IS_CD=false
+  exit
 fi
 
-echo "COMMIT_SHA=${GITHUB_REF:0:12}" >> $GITHUB_ENV
+# Define secret names based on the tier
+cat >> $GITHUB_ENV <<-EOF
+  TIER=$TIER
+  IS_CD=$IS_CD
+  SSH_HOST_SECRET_NAME=${TIER}_SSH_HOST
+  SSH_KEY_SECRET_NAME=${TIER}_SSH_KEY
+  SSH_USER_SECRET_NAME=${TIER}_SSH_USER
+  AWS_ACCESS_KEY_ID_SECRET_NAME=${TIER}_AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY_SECRET_NAME=${TIER}_AWS_SECRET_ACCESS_KEY
+  AWS_REGION_SECRET_NAME=${TIER}_AWS_REGION
+  COMMIT_SHA=${GITHUB_REF:0:12}
+EOF
