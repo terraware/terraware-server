@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
@@ -35,13 +36,14 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * that can be used to view the next set of results.
    */
   fun search(
+      facilityId: FacilityId,
       fields: List<SearchField<*>>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
       limit: Int = Int.MAX_VALUE
   ): SearchResults {
-    val fieldNames = setOf("accessionNumber") + fields.map { it.fieldName }.toSet()
+    val fieldNames = setOf("id", "accessionNumber") + fields.map { it.fieldName }.toSet()
     val fieldObjects =
         fieldNames.map {
           searchFields[it] ?: throw IllegalArgumentException("Unknown field name $it")
@@ -52,7 +54,11 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val databaseFields = fieldObjects.flatMap { it.selectFields }.toSet()
 
     // Filter out results the user doesn't have permission to see.
-    val conditions = criteria.toCondition().and(SearchTables.Accession.conditionForPermissions())
+    val conditions =
+        criteria
+            .toCondition()
+            .and(SearchTables.Accession.conditionForPermissions())
+            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
 
     val orderBy =
         sortOrder.flatMap { sortOrderElement ->
@@ -60,7 +66,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
             SearchDirection.Ascending -> sortOrderElement.field.orderByFields
             SearchDirection.Descending -> sortOrderElement.field.orderByFields.map { it.desc() }
           }
-        } + listOf(ACCESSIONS.NUMBER)
+        } + listOf(ACCESSIONS.NUMBER, ACCESSIONS.ID)
 
     var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSIONS)
 

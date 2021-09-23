@@ -83,7 +83,6 @@ import java.time.temporal.ChronoUnit
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -200,7 +199,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create of empty accession populates default values`() {
-    store.create(facilityId, AccessionModel())
+    store.create(AccessionModel(facilityId = facilityId))
 
     assertEquals(
         AccessionsRow(
@@ -214,26 +213,28 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create deals with collisions in accession numbers`() {
-    store.create(facilityId, AccessionModel())
+    store.create(AccessionModel(facilityId = facilityId))
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
-    store.create(facilityId, AccessionModel())
+    store.create(AccessionModel(facilityId = facilityId))
 
     assertNotNull(accessionsDao.fetchOneByNumber(accessionNumbers[1]))
   }
 
   @Test
   fun `create gives up if it can't generate an unused accession number`() {
-    repeat(10) { store.create(facilityId, AccessionModel()) }
+    repeat(10) { store.create(AccessionModel(facilityId = facilityId)) }
 
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
 
-    assertThrows(DuplicateKeyException::class.java) { store.create(facilityId, AccessionModel()) }
+    assertThrows(DuplicateKeyException::class.java) {
+      store.create(AccessionModel(facilityId = facilityId))
+    }
   }
 
   @Test
   fun `create adds digit to accession number suffix if it exceeds 3 digits`() {
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000001000).execute()
-    val inserted = store.create(facilityId, AccessionModel())
+    val inserted = store.create(AccessionModel(facilityId = facilityId))
     assertEquals(inserted.accessionNumber, "197001011000")
   }
 
@@ -242,7 +243,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateFamily() } returns false
 
     assertThrows<AccessDeniedException> {
-      store.create(facilityId, AccessionModel(family = "newFamily"))
+      store.create(AccessionModel(facilityId = facilityId, family = "newFamily"))
     }
 
     assertEquals(
@@ -254,7 +255,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateSpecies() } returns false
 
     assertThrows<AccessDeniedException> {
-      store.create(facilityId, AccessionModel(species = "newSpecies"))
+      store.create(AccessionModel(facilityId = facilityId, species = "newSpecies"))
     }
 
     assertEquals(
@@ -265,15 +266,16 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `existing rows are used for free-text fields that live in reference tables`() {
     val payload =
         AccessionModel(
+            facilityId = facilityId,
             species = "test species",
             family = "test family",
             primaryCollector = "primary collector",
             secondaryCollectors = setOf("secondary 1", "secondary 2"))
 
     // First time inserts the reference table rows
-    val initialAccession = store.create(facilityId, payload)
+    val initialAccession = store.create(payload)
     // Second time should reuse them
-    val secondAccession = store.create(facilityId, payload)
+    val secondAccession = store.create(payload)
 
     val initialRow = accessionsDao.fetchOneByNumber(accessionNumbers[0])!!
     val secondRow = accessionsDao.fetchOneByNumber(accessionNumbers[1])!!
@@ -296,9 +298,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `bag numbers are not shared between accessions`() {
-    val payload = AccessionModel(bagNumbers = setOf("bag 1", "bag 2"))
-    store.create(facilityId, payload)
-    store.create(facilityId, payload)
+    val payload = AccessionModel(bagNumbers = setOf("bag 1", "bag 2"), facilityId = facilityId)
+    store.create(payload)
+    store.create(payload)
 
     val initialBags = bagsDao.fetchByAccessionId(AccessionId(1)).toSet()
     val secondBags = bagsDao.fetchByAccessionId(AccessionId(2)).toSet()
@@ -308,7 +310,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `bags are inserted and deleted as needed`() {
-    val initial = store.create(facilityId, AccessionModel(bagNumbers = setOf("bag 1", "bag 2")))
+    val initial =
+        store.create(AccessionModel(bagNumbers = setOf("bag 1", "bag 2"), facilityId = facilityId))
     val initialBags = bagsDao.fetchByAccessionId(AccessionId(1))
 
     // Insertion order is not defined by the API, so don't assume bag ID 1 is "bag 1".
@@ -319,7 +322,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val desired = initial.copy(bagNumbers = setOf("bag 2", "bag 3"))
 
-    assertTrue(store.update(facilityId, initial.accessionNumber!!, desired), "Update succeeded")
+    assertTrue(store.update(desired), "Update succeeded")
 
     val updatedBags = bagsDao.fetchByAccessionId(AccessionId(1))
 
@@ -333,8 +336,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `device info is inserted at creation`() {
-    val payload = AccessionModel(deviceInfo = AppDeviceModel(model = "model"))
-    store.create(facilityId, payload)
+    val payload =
+        AccessionModel(deviceInfo = AppDeviceModel(model = "model"), facilityId = facilityId)
+    store.create(payload)
 
     val appDevice = appDevicesDao.fetchOneById(AppDeviceId(1))
     assertNotNull(appDevice, "Device row should have been inserted")
@@ -344,10 +348,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `device info is retrieved`() {
-    val payload = AccessionModel(deviceInfo = AppDeviceModel(model = "model"))
-    val initial = store.create(facilityId, payload)
+    val payload =
+        AccessionModel(deviceInfo = AppDeviceModel(model = "model"), facilityId = facilityId)
+    val initial = store.create(payload)
 
-    val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val fetched = store.fetchById(initial.id!!)
 
     assertNotNull(fetched?.deviceInfo)
     assertEquals("model", fetched?.deviceInfo?.model)
@@ -358,8 +363,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `geolocations are inserted and deleted as needed`() {
     val initial =
         store.create(
-            facilityId,
             AccessionModel(
+                facilityId = facilityId,
                 geolocations =
                     setOf(
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
@@ -382,7 +387,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                     Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                     Geolocation(BigDecimal(5), BigDecimal(6))))
 
-    assertTrue(store.update(facilityId, initial.accessionNumber!!, desired), "Update succeeded")
+    assertTrue(store.update(desired), "Update succeeded")
 
     val updatedGeos = geolocationsDao.fetchByAccessionId(AccessionId(1))
 
@@ -400,7 +405,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `germination test types are inserted at creation time`() {
-    store.create(facilityId, AccessionModel(germinationTestTypes = setOf(GerminationTestType.Lab)))
+    store.create(
+        AccessionModel(
+            germinationTestTypes = setOf(GerminationTestType.Lab), facilityId = facilityId))
     val types =
         dslContext
             .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
@@ -413,7 +420,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `germination tests are inserted by update`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     val startDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val withTest =
         initial
@@ -425,7 +432,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                             testType = GerminationTestType.Lab, startDate = startDate)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
-    store.update(facilityId, initial.accessionNumber!!, withTest.toModel())
+    store.update(withTest.toModel(id = initial.id!!))
 
     val updatedTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(
@@ -450,11 +457,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `germination test types are inserted by update`() {
     val initial =
         store.create(
-            facilityId, AccessionModel(germinationTestTypes = setOf(GerminationTestType.Lab)))
+            AccessionModel(
+                germinationTestTypes = setOf(GerminationTestType.Lab), facilityId = facilityId))
     val desired =
         initial.copy(
             germinationTestTypes = setOf(GerminationTestType.Lab, GerminationTestType.Nursery))
-    store.update(facilityId, initial.accessionNumber!!, desired)
+    store.update(desired)
 
     val types =
         dslContext
@@ -469,9 +477,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `germination test types are deleted by update`() {
     val initial =
         store.create(
-            facilityId, AccessionModel(germinationTestTypes = setOf(GerminationTestType.Lab)))
+            AccessionModel(
+                germinationTestTypes = setOf(GerminationTestType.Lab), facilityId = facilityId))
     val desired = initial.copy(germinationTestTypes = setOf(GerminationTestType.Nursery))
-    store.update(facilityId, initial.accessionNumber!!, desired)
+    store.update(desired)
 
     val types =
         dslContext
@@ -503,7 +512,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         substrate = GerminationSubstrate.PaperPetriDish,
                         notes = "notes",
                         seedsSown = 5)))
-    store.update(facilityId, initial.accessionNumber!!, desired)
+    store.update(desired)
 
     val updatedTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(
@@ -555,7 +564,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                     initial.germinationTests[0].copy(remaining = grams(60)),
                 ),
         )
-    val updated = store.updateAndFetch(facilityId, desired, initial.accessionNumber!!)
+    val updated = store.updateAndFetch(desired)
 
     assertEquals(
         grams<SeedQuantityModel>(60),
@@ -598,9 +607,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         notes = "notes",
                         seedsSown = 5)))
 
-    assertThrows(IllegalArgumentException::class.java) {
-      store.update(facilityId, initial.accessionNumber!!, desired)
-    }
+    assertThrows(IllegalArgumentException::class.java) { store.update(desired) }
   }
 
   @Test
@@ -624,7 +631,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                             listOf(
                                 GerminationModel(
                                     recordingDate = localDate, seedsGerminated = 75)))))
-    store.update(facilityId, initial.accessionNumber!!, desired)
+    store.update(desired)
 
     val germinationTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(1, germinationTests.size, "Number of germination tests after update")
@@ -676,7 +683,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                             listOf(
                                 GerminationModel(
                                     recordingDate = localDate, seedsGerminated = 75)))))
-    store.update(facilityId, initial.accessionNumber!!, desired)
+    store.update(desired)
     val germinations = germinationsDao.fetchByTestId(GerminationTestId(1))
 
     assertEquals(1, germinations.size, "Number of germinations after update")
@@ -704,16 +711,15 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             name = locationName,
             conditionId = StorageCondition.Freezer))
 
-    val initial = store.create(facilityId, AccessionModel())
-    store.update(
-        facilityId, initial.accessionNumber!!, initial.copy(storageLocation = locationName))
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    store.update(initial.copy(storageLocation = locationName))
 
     assertEquals(
         locationId,
         accessionsDao.fetchOneById(AccessionId(1))?.storageLocationId,
         "Existing storage location ID was used")
 
-    val updated = store.fetchByNumber(facilityId, initial.accessionNumber!!)!!
+    val updated = store.fetchById(initial.id!!)!!
     assertEquals(locationName, updated.storageLocation, "Location name")
     assertEquals(StorageCondition.Freezer, updated.storageCondition, "Storage condition")
   }
@@ -721,14 +727,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `unknown storage locations are rejected`() {
     assertThrows(IllegalArgumentException::class.java) {
-      val initial = store.create(facilityId, AccessionModel())
-      store.update(facilityId, initial.accessionNumber!!, initial.copy(storageLocation = "bogus"))
+      val initial = store.create(AccessionModel(facilityId = facilityId))
+      store.update(initial.copy(storageLocation = "bogus"))
     }
   }
 
   @Test
   fun `photo filenames are returned`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     val photosRow =
         PhotosRow(
             fileName = "photo.jpg",
@@ -744,71 +750,60 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     accessionPhotosDao.insert(
         AccessionPhotosRow(accessionId = AccessionId(1), photoId = photosRow.id))
 
-    val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val fetched = store.fetchById(initial.id!!)
 
     assertEquals(listOf("photo.jpg"), fetched?.photoFilenames)
   }
 
   @Test
   fun `update recalculates estimated seed count`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     store.update(
-        facilityId,
-        initial.accessionNumber!!,
         initial.copy(
             processingMethod = ProcessingMethod.Weight,
             subsetCount = 1,
             subsetWeightQuantity = SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Ounces),
             total = SeedQuantityModel(BigDecimal.TEN, SeedQuantityUnits.Pounds)))
-    val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)!!
+    val fetched = store.fetchById(initial.id!!)!!
 
     assertEquals(160, fetched.estimatedSeedCount, "Estimated seed count is added")
 
-    store.update(facilityId, initial.accessionNumber!!, fetched.copy(total = null))
+    store.update(fetched.copy(total = null))
 
-    val fetchedAfterClear = store.fetchByNumber(facilityId, initial.accessionNumber!!)!!
+    val fetchedAfterClear = store.fetchById(initial.id!!)!!
 
     assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
   }
 
   @Test
   fun `update recalculates seeds remaining when seed count is filled in`() {
-    val initial = store.create(facilityId, AccessionModel())
-    store.update(
-        facilityId,
-        initial.accessionNumber!!,
-        initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
-    val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
+    val fetched = store.fetchById(initial.id!!)
 
     assertEquals(seeds<SeedQuantityModel>(10), fetched?.remaining)
   }
 
   @Test
   fun `update recalculates seeds remaining on withdrawal`() {
-    val initial = store.create(facilityId, AccessionModel())
-    store.update(
-        facilityId,
-        initial.accessionNumber!!,
-        initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
-    val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
+    val fetched = store.fetchById(initial.id!!)
 
     assertEquals(seeds(10), fetched?.remaining)
   }
 
   @Test
   fun `update rejects future storageStartDate`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     assertThrows(IllegalArgumentException::class.java) {
-      store.update(
-          facilityId,
-          initial.accessionNumber!!,
-          initial.copy(storageStartDate = LocalDate.now(clock).plusDays(1)))
+      store.update(initial.copy(storageStartDate = LocalDate.now(clock).plusDays(1)))
     }
   }
 
   @Test
   fun `absence of deviceInfo causes source to be set to Web`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     assertEquals(AccessionSource.Web, initial.source)
   }
 
@@ -819,16 +814,16 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val updatedDate = LocalDate.of(2021, 2, 2)
     val initial =
         store.create(
-            facilityId,
             AccessionModel(
+                facilityId = facilityId,
                 deviceInfo = AppDeviceModel(appName = "collector"),
                 collectedDate = initialCollectedDate,
                 receivedDate = initialReceivedDate))
     val requested = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
 
-    store.update(facilityId, initial.accessionNumber!!, requested)
+    store.update(requested)
 
-    val actual = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val actual = store.fetchById(initial.id!!)
 
     assertEquals(initial, actual)
   }
@@ -840,14 +835,15 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val updatedDate = LocalDate.of(2021, 2, 2)
     val initial =
         store.create(
-            facilityId,
             AccessionModel(
-                collectedDate = initialCollectedDate, receivedDate = initialReceivedDate))
+                facilityId = facilityId,
+                collectedDate = initialCollectedDate,
+                receivedDate = initialReceivedDate))
     val desired = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
 
-    store.update(facilityId, initial.accessionNumber!!, desired)
+    store.update(desired)
 
-    val actual = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val actual = store.fetchById(initial.id!!)
 
     assertEquals(desired, actual)
   }
@@ -877,7 +873,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         seeds<SeedQuantityModel>(5), accession.remaining, "Seeds remaining after test creation")
 
-    val updated = store.updateAndFetch(facilityId, accession, accession.accessionNumber!!)
+    val updated = store.updateAndFetch(accession)
     assertEquals(
         seeds<SeedQuantityModel>(5), updated.remaining, "Seeds remaining after test update")
   }
@@ -897,10 +893,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             remaining = seeds(4))
 
     val afterTestModified =
-        store.updateAndFetch(
-            facilityId,
-            initial.copy(germinationTests = listOf(modifiedTest)),
-            initial.accessionNumber!!)
+        store.updateAndFetch(initial.copy(germinationTests = listOf(modifiedTest)))
 
     assertEquals(listOf(modifiedWithdrawal), afterTestModified.withdrawals)
   }
@@ -908,9 +901,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update does not modify withdrawals when their germination tests are not modified`() {
     val initial = createAccessionWithGerminationTest()
-    val updated =
-        store.updateAndFetch(
-            facilityId, initial.copy(receivedDate = LocalDate.now()), initial.accessionNumber!!)
+    val updated = store.updateAndFetch(initial.copy(receivedDate = LocalDate.now()))
 
     assertEquals(initial.withdrawals, updated.withdrawals)
   }
@@ -918,9 +909,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update removes withdrawals when germination tests are removed`() {
     val initial = createAccessionWithGerminationTest()
-    val updated =
-        store.updateAndFetch(
-            facilityId, initial.copy(germinationTests = emptyList()), initial.accessionNumber!!)
+    val updated = store.updateAndFetch(initial.copy(germinationTests = emptyList()))
 
     assertEquals(emptyList<GerminationTestModel>(), updated.withdrawals)
   }
@@ -941,16 +930,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val updated =
         store.updateAndFetch(
-            facilityId,
-            initial.copy(withdrawals = listOf(modifiedInitialWithdrawal, newWithdrawal)),
-            initial.accessionNumber!!)
+            initial.copy(withdrawals = listOf(modifiedInitialWithdrawal, newWithdrawal)))
 
     assertEquals(initial.withdrawals, updated.withdrawals)
   }
 
   @Test
   fun `state history row is inserted at creation time`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     val historyRecords =
         dslContext
             .selectFrom(ACCESSION_STATE_HISTORY)
@@ -969,12 +956,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `state transitions to Processing when seed count entered`() {
-    val initial = store.create(facilityId, AccessionModel())
-    store.update(
-        facilityId,
-        initial.accessionNumber!!,
-        initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(100)))
-    val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(100)))
+    val fetched = store.fetchById(initial.id!!)
 
     assertEquals(AccessionState.Processing, fetched?.state)
     assertEquals(LocalDate.now(clock), fetched?.processingStartDate)
@@ -999,9 +983,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `dryRun does not persist changes`() {
-    val initial = store.create(facilityId, AccessionModel(species = "Initial Species"))
-    store.dryRun(facilityId, initial.copy(species = "Modified Species"), initial.accessionNumber!!)
-    val fetched = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val initial = store.create(AccessionModel(species = "Initial Species", facilityId = facilityId))
+    store.dryRun(initial.copy(species = "Modified Species"))
+    val fetched = store.fetchById(initial.id!!)
 
     assertEquals(initial.species, fetched?.species)
   }
@@ -1098,7 +1082,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `countInState correctly examines state changes`() {
     // Insert dummy accession rows so we can use the accession IDs
-    repeat(7) { store.create(facilityId, AccessionModel()) }
+    repeat(7) { store.create(AccessionModel(facilityId = facilityId)) }
 
     listOf(1 to 6, 1 to null, 2 to null, 2 to 5, 4 to null, 6 to null, 6 to null).forEachIndexed {
         index,
@@ -1181,7 +1165,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     listOf(1 to 2, 1 to 3, 1 to 4, 1 to 5, 1 to null, 3 to null).forEach {
         (createdTime, withdrawnTime) ->
       every { clock.instant() } returns Instant.ofEpochMilli(createdTime.toLong())
-      val accession = store.create(facilityId, AccessionModel())
+      val accession = store.create(AccessionModel(facilityId = facilityId))
 
       if (withdrawnTime != null) {
         dslContext
@@ -1214,12 +1198,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update rejects weight-based withdrawals for count-based accessions`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows(IllegalArgumentException::class.java) {
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               processingMethod = ProcessingMethod.Count,
               total = seeds(50),
@@ -1234,12 +1216,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update rejects withdrawals without remaining quantity for weight-based accessions`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows(IllegalArgumentException::class.java) {
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               processingMethod = ProcessingMethod.Weight,
               total = grams(100),
@@ -1273,12 +1253,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update requires subset weight to use weight units`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows(IllegalArgumentException::class.java) {
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               processingMethod = ProcessingMethod.Weight,
               total = grams(10),
@@ -1288,12 +1266,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update rejects withdrawals if accession total size not set`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows(IllegalArgumentException::class.java) {
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               processingMethod = ProcessingMethod.Count,
               withdrawals =
@@ -1307,12 +1283,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update rejects germination tests without remaining quantity for weight-based accessions`() {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows(IllegalArgumentException::class.java) {
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               processingMethod = ProcessingMethod.Weight,
               total = grams(100),
@@ -1343,16 +1317,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val withCountMethod =
         store.updateAndFetch(
-            facilityId,
-            initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(1)),
-            initial.accessionNumber!!)
+            initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(1)))
     assertEquals(seeds<SeedQuantityModel>(1), withCountMethod.total)
 
     val withWeightMethod =
         store.updateAndFetch(
-            facilityId,
-            withCountMethod.copy(processingMethod = ProcessingMethod.Weight, total = grams(2)),
-            initial.accessionNumber!!)
+            withCountMethod.copy(processingMethod = ProcessingMethod.Weight, total = grams(2)))
     assertEquals(grams<SeedQuantityModel>(2), withWeightMethod.total)
   }
 
@@ -1366,10 +1336,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     assertThrows(IllegalArgumentException::class.java) {
-      store.update(
-          facilityId,
-          initial.accessionNumber!!,
-          initial.copy(processingMethod = ProcessingMethod.Weight, total = grams(5)))
+      store.update(initial.copy(processingMethod = ProcessingMethod.Weight, total = grams(5)))
     }
   }
 
@@ -1388,10 +1355,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     assertThrows(IllegalArgumentException::class.java) {
-      store.update(
-          facilityId,
-          initial.accessionNumber!!,
-          initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
+      store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
     }
   }
 
@@ -1444,7 +1408,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
     }
 
-    val stored = store.create(facilityId, accession.toModel())
+    val stored = store.create(accession.toModel())
 
     accessionModelProperties.filter { it.name in propertyNames }.forEach { prop ->
       assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
@@ -1538,8 +1502,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             name = storageLocationName,
             conditionId = StorageCondition.Freezer))
 
-    val initial = store.create(facilityId, AccessionModel())
-    val stored = store.updateAndFetch(facilityId, update.toModel(), initial.accessionNumber!!)
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    val stored = store.updateAndFetch(update.toModel(initial.id!!))
 
     accessionModelProperties.filter { it.name in propertyNames }.forEach { prop ->
       assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
@@ -1550,30 +1514,30 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `create does not write to database if user does not have permission`() {
     every { user.canCreateAccession(facilityId) } returns false
 
-    assertThrows(AccessDeniedException::class.java) { store.create(facilityId, AccessionModel()) }
+    assertThrows(AccessDeniedException::class.java) {
+      store.create(AccessionModel(facilityId = facilityId))
+    }
   }
 
   @Test
   fun `fetchByNumber does not return accession if user does not have permission`() {
     every { user.canReadAccession(any(), facilityId) } returns false
 
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     assertNotNull(initial, "Should have created accession successfully")
-    assertNull(
-        store.fetchByNumber(facilityId, initial.accessionNumber!!),
-        "Should not have been able to read accession")
+    assertNull(store.fetchById(initial.id!!), "Should not have been able to read accession")
   }
 
   @Test
   fun `update does not write to database if user does not have permission`() {
     every { user.canUpdateAccession(any(), facilityId) } returns false
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows(AccessDeniedException::class.java) {
-      store.update(facilityId, initial.accessionNumber!!, initial.copy(numberOfTrees = 1))
+      store.update(initial.copy(numberOfTrees = 1))
     }
 
-    val afterUpdate = store.fetchByNumber(facilityId, initial.accessionNumber!!)
+    val afterUpdate = store.fetchById(initial.id!!)
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
     assertNull(afterUpdate?.numberOfTrees, "Update should not have been written")
   }
@@ -1589,39 +1553,36 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can create accessions with different facility IDs`() {
-      val accessionInMainFacility = store.create(facilityId, AccessionModel())
-      val accessionInOtherFacility = store.create(otherFacilityId, AccessionModel())
+      val accessionInMainFacility = store.create(AccessionModel(facilityId = facilityId))
+      val accessionInOtherFacility = store.create(AccessionModel(facilityId = otherFacilityId))
 
       assertNotEquals(
           accessionInMainFacility.accessionNumber,
           accessionInOtherFacility.accessionNumber,
           "Accession number")
 
-      assertNotNull(
-          store.fetchByNumber(facilityId, accessionInMainFacility.accessionNumber!!),
-          "Accession in main facility")
-      assertNotNull(
-          store.fetchByNumber(otherFacilityId, accessionInOtherFacility.accessionNumber!!),
-          "Accession in other facility")
+      assertEquals(accessionInMainFacility.facilityId, facilityId, "Accession in main facility")
+      assertEquals(
+          accessionInOtherFacility.facilityId, otherFacilityId, "Accession in other facility")
     }
 
     @Test
     fun `countActive only counts accessions from the requested facility`() {
-      store.create(facilityId, AccessionModel())
+      store.create(AccessionModel(facilityId = facilityId))
       assertEquals(1, store.countActive(facilityId, clock.instant()))
       assertEquals(0, store.countActive(otherFacilityId, clock.instant()))
     }
 
     @Test
     fun `countInState without timing only counts accessions from requested facility`() {
-      val initial = store.create(facilityId, AccessionModel())
+      val initial = store.create(AccessionModel(facilityId = facilityId))
       assertEquals(1, store.countInState(facilityId, initial.state!!))
       assertEquals(0, store.countInState(otherFacilityId, initial.state!!))
     }
 
     @Test
     fun `countInState with timing only counts accessions from requested facility`() {
-      val initial = store.create(facilityId, AccessionModel())
+      val initial = store.create(AccessionModel(facilityId = facilityId))
       assertEquals(
           1, store.countInState(facilityId, initial.state!!, Instant.EPOCH, clock.instant()))
       assertEquals(
@@ -1629,17 +1590,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetchByNumber only returns accessions from the requested facility`() {
-      val initial = store.create(facilityId, AccessionModel())
-      assertNull(store.fetchByNumber(otherFacilityId, initial.accessionNumber!!))
-    }
-
-    @Test
     fun `fetchDryingMoveDue only matches accessions from the requested facility`() {
-      val initial = store.create(facilityId, AccessionModel())
+      val initial = store.create(AccessionModel(facilityId = facilityId))
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               dryingStartDate = LocalDate.now(clock).minusDays(2),
               dryingMoveDate = LocalDate.now(clock).minusDays(1)))
@@ -1656,10 +1609,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetchGerminationTestDue only matches accessions from the requested facility`() {
-      val initial = store.create(facilityId, AccessionModel())
+      val initial = store.create(AccessionModel(facilityId = facilityId))
       val updated =
           store.updateAndFetch(
-              facilityId,
               initial.copy(
                   processingMethod = ProcessingMethod.Count,
                   total = seeds(1),
@@ -1667,8 +1619,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           GerminationTestModel(
                               testType = GerminationTestType.Lab,
-                              startDate = LocalDate.now(clock).minusDays(1)))),
-              initial.accessionNumber!!)
+                              startDate = LocalDate.now(clock).minusDays(1)))))
       assertEquals(AccessionState.Processing, updated.state)
 
       val beforeTestStart = clock.instant().minus(3, ChronoUnit.DAYS)
@@ -1688,10 +1639,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       val twoDaysLater = clock.instant().plus(2, ChronoUnit.DAYS)
 
       // Make accession in Drying state, scheduled to become Dried tomorrow
-      val initial = store.create(facilityId, AccessionModel())
+      val initial = store.create(AccessionModel(facilityId = facilityId))
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               dryingStartDate = LocalDate.now(clock),
               dryingEndDate = LocalDate.now(clock).plusDays(1)))
@@ -1710,10 +1659,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetchWithdrawalDue only matches accessions from the requested facility`() {
-      val initial = store.create(facilityId, AccessionModel())
+      val initial = store.create(AccessionModel(facilityId = facilityId))
       store.update(
-          facilityId,
-          initial.accessionNumber!!,
           initial.copy(
               processingMethod = ProcessingMethod.Count,
               total = seeds(1),
@@ -1733,25 +1680,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           store.fetchWithdrawalDue(otherFacilityId, beforeTestStart, clock.instant()).size,
           "Number of results with incorrect facility ID")
     }
-
-    @Test
-    fun `getIdByNumber only matches accessions from the requested facility`() {
-      val initial = store.create(facilityId, AccessionModel())
-      assertNull(store.getIdByNumber(otherFacilityId, initial.accessionNumber!!))
-    }
-
-    @Test
-    fun `update only matches accessions from the requested facility`() {
-      val initial = store.create(facilityId, AccessionModel(fieldNotes = "initial"))
-      assertFalse(
-          store.update(
-              otherFacilityId, initial.accessionNumber!!, initial.copy(fieldNotes = "updated")),
-          "Update should not have succeeded")
-      assertEquals(
-          "initial",
-          store.fetchByNumber(facilityId, initial.accessionNumber!!)?.fieldNotes,
-          "Value should not have been updated")
-    }
   }
 
   private fun getSecondaryCollectors(accessionId: AccessionId?): Set<CollectorId> {
@@ -1769,9 +1697,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   private fun createAndUpdate(
       edit: (UpdateAccessionRequestPayload) -> UpdateAccessionRequestPayload
   ): AccessionModel {
-    val initial = store.create(facilityId, AccessionModel())
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     val edited = edit(initial.toUpdatePayload())
-    return store.updateAndFetch(facilityId, edited.toModel(), initial.accessionNumber!!)
+    return store.updateAndFetch(edited.toModel(initial.id!!))
   }
 
   private fun createAccessionWithGerminationTest(): AccessionModel {

@@ -1,9 +1,9 @@
 package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.atMostRecent
@@ -13,6 +13,7 @@ import java.time.Clock
 import java.time.DayOfWeek
 import java.time.ZonedDateTime
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -25,10 +26,9 @@ class SummaryController(
     private val config: TerrawareServerConfig,
     private val speciesStore: SpeciesStore,
 ) {
-  @GetMapping
-  @Operation(summary = "Get summary statistics about the seed bank")
-  fun getSummary(): SummaryResponse {
-    val facilityId = currentUser().defaultFacilityId()
+  @GetMapping("/{facilityId}")
+  @Operation(summary = "Get summary statistics about a seed bank")
+  fun getSummary(@PathVariable facilityId: FacilityId): SummaryResponse {
     val now = ZonedDateTime.now(clock)
     val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
     val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)

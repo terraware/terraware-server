@@ -1,12 +1,12 @@
 package com.terraformation.backend.seedbank.db
 
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.api.NotificationPayload
@@ -19,13 +19,16 @@ import org.jooq.impl.DSL
 @ManagedBean
 class NotificationStore(
     private val clock: Clock,
-    private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao
 ) {
   private val log = perClassLogger()
 
-  fun fetchSince(since: Instant? = null, maxResults: Long? = null): List<NotificationPayload> {
+  fun fetchSince(
+      facilityId: FacilityId,
+      since: Instant? = null,
+      maxResults: Long? = null
+  ): List<NotificationPayload> {
     return dslContext
         .select(
             NOTIFICATIONS.ID,
@@ -33,10 +36,14 @@ class NotificationStore(
             NOTIFICATIONS.TYPE_ID,
             NOTIFICATIONS.READ,
             NOTIFICATIONS.MESSAGE,
+            NOTIFICATIONS.accessions().ID,
             NOTIFICATIONS.accessions().NUMBER,
             NOTIFICATIONS.ACCESSION_STATE_ID)
         .from(NOTIFICATIONS)
-        .apply { if (since != null) where(NOTIFICATIONS.CREATED_TIME.ge(since)) }
+        .join(FACILITIES)
+        .on(NOTIFICATIONS.SITE_ID.eq(FACILITIES.SITE_ID))
+        .where(FACILITIES.ID.eq(facilityId))
+        .apply { if (since != null) and(NOTIFICATIONS.CREATED_TIME.ge(since)) }
         .orderBy(NOTIFICATIONS.CREATED_TIME.desc(), NOTIFICATIONS.ID.desc())
         .apply { if (maxResults != null) limit(maxResults) }
         .fetch { record ->
@@ -46,7 +53,7 @@ class NotificationStore(
               type = record[NOTIFICATIONS.TYPE_ID]!!,
               read = record[NOTIFICATIONS.READ]!!,
               text = record[NOTIFICATIONS.MESSAGE]!!,
-              accessionNumber = record[NOTIFICATIONS.accessions().NUMBER],
+              accessionId = record[NOTIFICATIONS.accessions().ID],
               state = record[NOTIFICATIONS.ACCESSION_STATE_ID])
         }
   }

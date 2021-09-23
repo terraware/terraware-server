@@ -7,8 +7,8 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.AppDeviceModel
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
@@ -61,12 +61,11 @@ class AccessionController(private val accessionStore: AccessionStore, private va
       responseCode = "200",
       description =
           "The accession was created successfully. Response includes fields populated by the " +
-              "server, including the accession number.")
+              "server, including the accession number and ID.")
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val facilityId = payload.facilityId ?: currentUser().defaultFacilityId()
-    val updatedPayload = accessionStore.create(facilityId, payload.toModel())
+    val updatedPayload = accessionStore.create(payload.toModel())
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
   }
 
@@ -77,10 +76,10 @@ class AccessionController(private val accessionStore: AccessionStore, private va
               "modified by the server as a result of the update.")
   @ApiResponse404(description = "The specified accession doesn't exist.")
   @Operation(summary = "Update an existing accession.")
-  @PutMapping("/{accessionNumber}")
+  @PutMapping("/{id}")
   fun update(
       @RequestBody payload: UpdateAccessionRequestPayload,
-      @PathVariable accessionNumber: String,
+      @PathVariable("id") accessionId: AccessionId,
       @RequestParam
       @Schema(
           description =
@@ -88,14 +87,12 @@ class AccessionController(private val accessionStore: AccessionStore, private va
                   "have been returned if it had been saved.")
       simulate: Boolean?
   ): UpdateAccessionResponsePayload {
-    val facilityId = currentUser().defaultFacilityId()
-
     try {
       val updatedModel =
           if (simulate == true) {
-            accessionStore.dryRun(facilityId, payload.toModel(), accessionNumber)
+            accessionStore.dryRun(payload.toModel(accessionId))
           } else {
-            accessionStore.updateAndFetch(facilityId, payload.toModel(), accessionNumber)
+            accessionStore.updateAndFetch(payload.toModel(accessionId))
           }
       return UpdateAccessionResponsePayload(AccessionPayload(updatedModel, clock))
     } catch (e: AccessionNotFoundException) {
@@ -105,12 +102,11 @@ class AccessionController(private val accessionStore: AccessionStore, private va
 
   @ApiResponse(responseCode = "200")
   @ApiResponse404
-  @GetMapping("/{accessionNumber}")
+  @GetMapping("/{id}")
   @Operation(summary = "Retrieve an existing accession.")
-  fun read(@PathVariable accessionNumber: String): GetAccessionResponsePayload {
-    val facilityId = currentUser().defaultFacilityId()
+  fun read(@PathVariable("id") accessionId: AccessionId): GetAccessionResponsePayload {
     val accession =
-        accessionStore.fetchByNumber(facilityId, accessionNumber)
+        accessionStore.fetchById(accessionId)
             ?: throw NotFoundException("The specified accession doesn't exist.")
     return GetAccessionResponsePayload(AccessionPayload(accession, clock))
   }
@@ -124,7 +120,7 @@ data class CreateAccessionRequestPayload(
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
     val environmentalNotes: String? = null,
-    val facilityId: FacilityId?,
+    val facilityId: FacilityId,
     val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,
@@ -147,6 +143,7 @@ data class CreateAccessionRequestPayload(
         deviceInfo = deviceInfo?.toModel(),
         endangered = endangered,
         environmentalNotes = environmentalNotes,
+        facilityId = facilityId,
         family = family,
         fieldNotes = fieldNotes,
         founderId = founderId,
@@ -215,7 +212,7 @@ data class UpdateAccessionRequestPayload(
     val targetStorageCondition: StorageCondition? = null,
     @Valid val withdrawals: List<WithdrawalPayload>? = null,
 ) {
-  fun toModel() =
+  fun toModel(id: AccessionId) =
       AccessionModel(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
@@ -233,6 +230,7 @@ data class UpdateAccessionRequestPayload(
           geolocations = geolocations.orEmpty(),
           germinationTestTypes = germinationTestTypes.orEmpty(),
           germinationTests = germinationTests.orEmpty().map { it.toModel() },
+          id = id,
           landowner = landowner,
           numberOfTrees = numberOfTrees,
           nurseryStartDate = nurseryStartDate,
@@ -262,7 +260,11 @@ data class UpdateAccessionRequestPayload(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema
 data class AccessionPayload(
-    @Schema(description = "Server-generated unique identifier for the accession.")
+    @Schema(
+        description =
+            "Server-generated human-readable identifier for the accession. This is unique " +
+                "within a single seed bank, but different seed banks may have accessions with " +
+                "the same number.")
     val accessionNumber: String?,
     @Schema(
         description = "Server-calculated active indicator. This is based on the accession's state.")
@@ -279,12 +281,18 @@ data class AccessionPayload(
     val endangered: SpeciesEndangeredType?,
     val environmentalNotes: String?,
     val estimatedSeedCount: Int?,
+    val facilityId: FacilityId,
     val family: String?,
     val fieldNotes: String?,
     val founderId: String?,
     val geolocations: Set<Geolocation>?,
     val germinationTests: List<GerminationTestPayload>?,
     val germinationTestTypes: Set<GerminationTestType>?,
+    @Schema(
+        description =
+            "Server-generated unique identifier for the accession. This is unique across all " +
+                "seed banks, but is not suitable for display to end users.")
+    val id: AccessionId,
     @Schema(
         description =
             "Initial size of accession. The units of this value must match the measurement type " +
@@ -369,12 +377,14 @@ data class AccessionPayload(
       model.endangered,
       model.environmentalNotes,
       model.estimatedSeedCount,
+      model.facilityId ?: throw IllegalArgumentException("Accession did not have a facility ID"),
       model.family,
       model.fieldNotes,
       model.founderId,
       model.geolocations.orNull(),
       model.germinationTests.map { GerminationTestPayload(it) }.orNull(),
       model.germinationTestTypes.orNull(),
+      model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       model.total?.toPayload(),
       model.landowner,
       model.latestGerminationTestDate,
