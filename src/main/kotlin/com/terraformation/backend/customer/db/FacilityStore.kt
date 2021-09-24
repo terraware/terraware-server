@@ -22,22 +22,14 @@ class FacilityStore(private val facilitiesDao: FacilitiesDao) {
     }
   }
 
-  fun fetchById(ids: Collection<FacilityId>): List<FacilityModel> {
-    val user = currentUser()
-    val availableIds = ids.filter { user.canReadFacility(it) }.toTypedArray()
-
+  /** Returns a list of all the facilities the current user can access. */
+  fun fetchAll(): List<FacilityModel> {
+    val availableIds = currentUser().facilityRoles.keys.toTypedArray()
     return if (availableIds.isEmpty()) {
       emptyList()
     } else {
       facilitiesDao.fetchById(*availableIds).map { it.toModel() }
     }
-  }
-
-  /** Returns a list of all the facilities the current user can access. */
-  fun fetchAll(): List<FacilityModel> {
-    val user = currentUser()
-    val facilityIds = user.facilityRoles.keys
-    return fetchById(facilityIds)
   }
 
   /** Returns all the facilities the current user can access at a site. */
