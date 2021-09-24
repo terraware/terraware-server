@@ -52,7 +52,7 @@ val ID_WRAPPERS =
         IdWrapper(
             "CollectorId",
             listOf("collectors\\.id", ".*\\.collector_id", "accessions\\.primary_collector_id")),
-        IdWrapper("DeviceId", listOf("devices\\.id", ".*\\.device_id")),
+        IdWrapper("DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
         IdWrapper("FacilityId", listOf("facilities\\.id", ".*\\.facility_id")),
         IdWrapper("FamilyId", listOf("families\\.id", ".*\\.family_id")),
         IdWrapper("FamilyNameId", listOf("family_names\\.id")),

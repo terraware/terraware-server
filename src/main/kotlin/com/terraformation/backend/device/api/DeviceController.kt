@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
+import com.terraformation.backend.api.NotFoundException
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
@@ -13,15 +16,19 @@ import com.terraformation.backend.device.db.DeviceStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.jooq.JSONB
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @DeviceManagerAppEndpoint
 @RestController
 class DeviceController(
     private val deviceStore: DeviceStore,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) {
   @ApiResponse(responseCode = "200", description = "Successfully listed the facility's devices.")
   @ApiResponse404(
@@ -30,19 +37,52 @@ class DeviceController(
   @Operation(summary = "Lists the configurations of all the devices at a facility.")
   fun listFacilityDevices(@PathVariable facilityId: FacilityId): ListDeviceConfigsResponse {
     val devices = deviceStore.fetchByFacilityId(facilityId)
-    return ListDeviceConfigsResponse(
-        devices.map { DeviceConfig(it, it.settings?.let { objectMapper.readValue(it.data()) }) })
+    return ListDeviceConfigsResponse(devices.map { DeviceConfig(it, objectMapper) })
+  }
+
+  @ApiResponseSimpleSuccess
+  @PostMapping("/api/v1/devices")
+  fun createDevice(@RequestBody payload: CreateDeviceRequestPayload): CreateDeviceResponsePayload {
+    val devicesRow = payload.toRow(objectMapper)
+    val deviceId = deviceStore.create(devicesRow)
+    return CreateDeviceResponsePayload(deviceId)
+  }
+
+  @ApiResponse(responseCode = "200", description = "Device configuration retrieved.")
+  @ApiResponse404
+  @GetMapping("/api/v1/devices/{id}")
+  @Operation(summary = "Gets the configuration of a single device.")
+  fun getDevice(@PathVariable("id") deviceId: DeviceId): GetDeviceResponsePayload {
+    val devicesRow = deviceStore.fetchOneById(deviceId) ?: throw NotFoundException()
+    return GetDeviceResponsePayload(DeviceConfig(devicesRow, objectMapper))
+  }
+
+  @ApiResponse(responseCode = "200", description = "Device configuration updated.")
+  @ApiResponse404
+  @Operation(summary = "Updates the configuration of an existing device.")
+  @PutMapping("/api/v1/devices/{id}")
+  fun updateDevice(
+      @PathVariable("id") deviceId: DeviceId,
+      @RequestBody payload: UpdateDeviceRequestPayload
+  ): SimpleSuccessResponsePayload {
+    val devicesRow = payload.toRow(deviceId, objectMapper)
+    deviceStore.update(devicesRow)
+    return SimpleSuccessResponsePayload()
   }
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DeviceConfig(
-    @Schema(description = "Unique identifier of this device.") val id: DeviceId,
+    @Schema(
+        description = "Unique identifier of this device.",
+    )
+    val id: DeviceId,
     @Schema(description = "Identifier of facility where this device is located.")
     val facilityId: FacilityId,
     @Schema(
-        description = "Name of this device. Should be unique within the facility.",
-        example = "BMU-1")
+        description = "Name of this device.",
+        example = "BMU-1",
+    )
     val name: String,
     @Schema(
         description =
@@ -71,10 +111,12 @@ data class DeviceConfig(
     @Schema(
         description = "How often the device manager should poll for status updates, in seconds.")
     val pollingInterval: Int?,
+    @Schema(description = "ID of parent device such as a hub or gateway, if any.")
+    val parentId: DeviceId?,
 ) {
   constructor(
       row: DevicesRow,
-      settings: Map<String, Any?>?
+      objectMapper: ObjectMapper
   ) : this(
       id = row.id!!,
       facilityId = row.facilityId!!,
@@ -85,9 +127,130 @@ data class DeviceConfig(
       protocol = row.protocol,
       address = row.address,
       port = row.port,
-      settings = settings,
+      settings = row.settings?.let { objectMapper.readValue(it.data()) },
       pollingInterval = row.pollingInterval,
+      parentId = row.parentId,
   )
 }
 
+data class CreateDeviceRequestPayload(
+    @Schema(description = "Identifier of facility where this device is located.")
+    val facilityId: FacilityId,
+    @Schema(
+        description = "Name of this device.",
+        example = "BMU-1",
+    )
+    val name: String,
+    @Schema(
+        description =
+            "High-level type of the device. Device manager may use this in conjunction " +
+                "with the make and model to determine which metrics to report.",
+        example = "inverter")
+    val type: String,
+    @Schema(description = "Name of device manufacturer.", example = "InHand Networks")
+    val make: String,
+    @Schema(description = "Model number or model name of the device.", example = "IR915L")
+    val model: String,
+    @Schema(description = "Device manager protocol name.", example = "modbus")
+    val protocol: String? = null,
+    @Schema(
+        description =
+            "Protocol-specific address of device, e.g., an IP address or a Bluetooth device ID.",
+        example = "192.168.1.100")
+    val address: String? = null,
+    @Schema(description = "Port number if relevant for the protocol.", example = "50000")
+    val port: Int? = null,
+    @Schema(
+        description =
+            "Protocol- and device-specific custom settings. This is an arbitrary JSON object; " +
+                "the exact settings depend on the device type.")
+    val settings: Map<String, Any?>? = null,
+    @Schema(
+        description = "How often the device manager should poll for status updates, in seconds.")
+    val pollingInterval: Int? = null,
+    @Schema(
+        description =
+            "ID of parent device such as a hub or gateway, if any. The parent device must exist.")
+    val parentId: DeviceId? = null,
+) {
+  fun toRow(objectMapper: ObjectMapper): DevicesRow {
+    return DevicesRow(
+        null,
+        facilityId,
+        name,
+        type,
+        make,
+        model,
+        protocol,
+        address,
+        port,
+        pollingInterval,
+        true,
+        settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        parentId,
+    )
+  }
+}
+
+data class UpdateDeviceRequestPayload(
+    @Schema(
+        description = "Name of this device.",
+        example = "BMU-1",
+    )
+    val name: String,
+    @Schema(
+        description =
+            "High-level type of the device. Device manager may use this in conjunction " +
+                "with the make and model to determine which metrics to report.",
+        example = "inverter")
+    val type: String,
+    @Schema(description = "Name of device manufacturer.", example = "InHand Networks")
+    val make: String,
+    @Schema(description = "Model number or model name of the device.", example = "IR915L")
+    val model: String,
+    @Schema(description = "Device manager protocol name.", example = "modbus")
+    val protocol: String? = null,
+    @Schema(
+        description =
+            "Protocol-specific address of device, e.g., an IP address or a Bluetooth device ID.",
+        example = "192.168.1.100")
+    val address: String? = null,
+    @Schema(description = "Port number if relevant for the protocol.", example = "50000")
+    val port: Int? = null,
+    @Schema(
+        description =
+            "Protocol- and device-specific custom settings. This is an arbitrary JSON object; " +
+                "the exact settings depend on the device type.")
+    val settings: Map<String, Any?>? = null,
+    @Schema(
+        description = "How often the device manager should poll for status updates, in seconds.")
+    val pollingInterval: Int? = null,
+    @Schema(
+        description =
+            "ID of parent device such as a hub or gateway, if any. The parent device must exist.")
+    val parentId: DeviceId? = null,
+) {
+  fun toRow(deviceId: DeviceId, objectMapper: ObjectMapper): DevicesRow {
+    return DevicesRow(
+        deviceId,
+        null,
+        name,
+        type,
+        make,
+        model,
+        protocol,
+        address,
+        port,
+        pollingInterval,
+        true,
+        settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        parentId,
+    )
+  }
+}
+
+data class GetDeviceResponsePayload(val device: DeviceConfig) : SuccessResponsePayload
+
 data class ListDeviceConfigsResponse(val devices: List<DeviceConfig>) : SuccessResponsePayload
+
+data class CreateDeviceResponsePayload(val id: DeviceId) : SuccessResponsePayload

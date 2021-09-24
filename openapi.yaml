@@ -13,6 +13,81 @@ tags:
 - name: DeviceManager
 - name: GISApp
 paths:
+  /api/v1/devices:
+    post:
+      tags:
+      - DeviceManager
+      operationId: createDevice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/devices/{id}:
+    get:
+      tags:
+      - DeviceManager
+      summary: Gets the configuration of a single device.
+      operationId: getDevice
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Device configuration retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDeviceResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - DeviceManager
+      summary: Updates the configuration of an existing device.
+      operationId: updateDevice
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: Device configuration updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/facility:
     get:
       tags:
@@ -2104,6 +2179,64 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateDeviceRequestPayload:
+      required:
+      - facilityId
+      - make
+      - model
+      - name
+      - type
+      type: object
+      properties:
+        facilityId:
+          type: integer
+          description: Identifier of facility where this device is located.
+          format: int64
+        name:
+          type: string
+          description: Name of this device.
+          example: BMU-1
+        type:
+          type: string
+          description: High-level type of the device. Device manager may use this
+            in conjunction with the make and model to determine which metrics to report.
+          example: inverter
+        make:
+          type: string
+          description: Name of device manufacturer.
+          example: InHand Networks
+        model:
+          type: string
+          description: Model number or model name of the device.
+          example: IR915L
+        protocol:
+          type: string
+          description: Device manager protocol name.
+          example: modbus
+        address:
+          type: string
+          description: "Protocol-specific address of device, e.g., an IP address or\
+            \ a Bluetooth device ID."
+          example: 192.168.1.100
+        port:
+          type: integer
+          description: Port number if relevant for the protocol.
+          format: int32
+          example: 50000
+        settings:
+          type: object
+          description: Protocol- and device-specific custom settings. This is an arbitrary
+            JSON object; the exact settings depend on the device type.
+        pollingInterval:
+          type: integer
+          description: "How often the device manager should poll for status updates,\
+            \ in seconds."
+          format: int32
+        parentId:
+          type: integer
+          description: "ID of parent device such as a hub or gateway, if any. The\
+            \ parent device must exist."
+          format: int64
     CreateFeaturePhotoRequestPayload:
       required:
       - capturedTime
@@ -2397,7 +2530,7 @@ components:
           format: int64
         name:
           type: string
-          description: Name of this device. Should be unique within the facility.
+          description: Name of this device.
           example: BMU-1
         type:
           type: string
@@ -2435,6 +2568,10 @@ components:
           description: "How often the device manager should poll for status updates,\
             \ in seconds."
           format: int32
+        parentId:
+          type: integer
+          description: "ID of parent device such as a hub or gateway, if any."
+          format: int64
     DeviceInfoPayload:
       type: object
       properties:
@@ -2792,6 +2929,16 @@ components:
         currentTime:
           type: string
           format: date-time
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetDeviceResponsePayload:
+      required:
+      - device
+      - status
+      type: object
+      properties:
+        device:
+          $ref: '#/components/schemas/DeviceConfig'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     GetFacilityResponse:
@@ -4235,6 +4382,59 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    UpdateDeviceRequestPayload:
+      required:
+      - make
+      - model
+      - name
+      - type
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of this device.
+          example: BMU-1
+        type:
+          type: string
+          description: High-level type of the device. Device manager may use this
+            in conjunction with the make and model to determine which metrics to report.
+          example: inverter
+        make:
+          type: string
+          description: Name of device manufacturer.
+          example: InHand Networks
+        model:
+          type: string
+          description: Model number or model name of the device.
+          example: IR915L
+        protocol:
+          type: string
+          description: Device manager protocol name.
+          example: modbus
+        address:
+          type: string
+          description: "Protocol-specific address of device, e.g., an IP address or\
+            \ a Bluetooth device ID."
+          example: 192.168.1.100
+        port:
+          type: integer
+          description: Port number if relevant for the protocol.
+          format: int32
+          example: 50000
+        settings:
+          type: object
+          description: Protocol- and device-specific custom settings. This is an arbitrary
+            JSON object; the exact settings depend on the device type.
+        pollingInterval:
+          type: integer
+          description: "How often the device manager should poll for status updates,\
+            \ in seconds."
+          format: int32
+        parentId:
+          type: integer
+          description: "ID of parent device such as a hub or gateway, if any. The\
+            \ parent device must exist."
+          format: int64
     UpdateFeatureRequestPayload:
       required:
       - layerId
