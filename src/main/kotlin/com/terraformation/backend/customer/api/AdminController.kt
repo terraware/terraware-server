@@ -52,7 +52,13 @@ class AdminController(
   private val log = perClassLogger()
   private val prefix = "/admin"
 
+  /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
+  fun redirectToTrailingSlash(): String {
+    return "redirect:/admin/"
+  }
+
+  @GetMapping("/")
   fun index(model: Model): String {
     val organizations = organizationStore.fetchAll().sortedBy { it.id.value }
 
