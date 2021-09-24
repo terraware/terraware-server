@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
@@ -15,10 +16,12 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
@@ -86,6 +89,7 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 internal class PermissionTest : DatabaseTest() {
   private lateinit var accessionsDao: AccessionsDao
+  private lateinit var devicesDao: DevicesDao
   private lateinit var featuresDao: FeaturesDao
   private lateinit var layersDao: LayersDao
   private lateinit var permissionStore: PermissionStore
@@ -111,6 +115,7 @@ internal class PermissionTest : DatabaseTest() {
       listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111)
           .map { FacilityId(it.toLong()) }
           .toMutableSet()
+  private val deviceIds = facilityIds.map { DeviceId(it.value) }.toMutableSet()
   private val accessionIds = facilityIds.map { AccessionId(it.value) }.toMutableSet()
   private val layerIds = listOf(1000, 1001, 1100, 2100).map { LayerId(it.toLong()) }.toMutableSet()
   private val featureIds =
@@ -122,6 +127,7 @@ internal class PermissionTest : DatabaseTest() {
 
     val jooqConfig = dslContext.configuration()
     accessionsDao = AccessionsDao(jooqConfig)
+    devicesDao = DevicesDao(jooqConfig)
     featuresDao = FeaturesDao(jooqConfig)
     layersDao = LayersDao(jooqConfig)
     permissionStore = PermissionStore(dslContext)
@@ -131,6 +137,7 @@ internal class PermissionTest : DatabaseTest() {
             accessionsDao,
             clock,
             config,
+            devicesDao,
             featuresDao,
             mockk(),
             mockk(),
@@ -153,6 +160,14 @@ internal class PermissionTest : DatabaseTest() {
               facilityId = facilityId,
               stateId = AccessionState.Pending,
               createdTime = Instant.EPOCH))
+      devicesDao.insert(
+          DevicesRow(
+              id = DeviceId(facilityId.value),
+              facilityId = facilityId,
+              name = "Device $facilityId",
+              deviceType = "type",
+              make = "make",
+              model = "model"))
     }
 
     layerIds.forEach { insertLayer(it.value) }
@@ -245,6 +260,20 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1111),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        DeviceId(1000),
+        DeviceId(1001),
+        DeviceId(1010),
+        DeviceId(1011),
+        DeviceId(1100),
+        DeviceId(1101),
+        DeviceId(1110),
+        DeviceId(1111),
+        createTimeseries = true,
+        readTimeseries = true,
+        updateTimeseries = true,
     )
 
     permissions.andNothingElse()
@@ -346,6 +375,20 @@ internal class PermissionTest : DatabaseTest() {
         updateAccession = true,
     )
 
+    permissions.expect(
+        DeviceId(1000),
+        DeviceId(1001),
+        DeviceId(1010),
+        DeviceId(1011),
+        DeviceId(1100),
+        DeviceId(1101),
+        DeviceId(1110),
+        DeviceId(1111),
+        createTimeseries = true,
+        readTimeseries = true,
+        updateTimeseries = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -403,6 +446,16 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1011),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        DeviceId(1000),
+        DeviceId(1001),
+        DeviceId(1010),
+        DeviceId(1011),
+        createTimeseries = true,
+        readTimeseries = true,
+        updateTimeseries = true,
     )
 
     permissions.andNothingElse()
@@ -506,12 +559,15 @@ internal class PermissionTest : DatabaseTest() {
     }
   }
 
-  inner class PermissionsTracker() {
+  inner class PermissionsTracker {
     private val uncheckedOrgs = organizationIds
     private val uncheckedProjects = projectIds
     private val uncheckedSites = siteIds
     private val uncheckedFacilities = facilityIds
     private val uncheckedAccessions = accessionIds
+    private val uncheckedLayers = layerIds
+    private val uncheckedFeatures = featureIds
+    private val uncheckedDevices = deviceIds
 
     // All checks keyed on organization IDs go here
     fun expect(
@@ -641,6 +697,8 @@ internal class PermissionTest : DatabaseTest() {
             updateLayerData,
             user.canUpdateLayerData(layerId),
             "Can update layer data associated with layer $layerId")
+
+        uncheckedLayers.remove(layerId)
       }
     }
 
@@ -669,14 +727,45 @@ internal class PermissionTest : DatabaseTest() {
             deleteLayerData,
             user.canDeleteLayerData(featureId),
             "Can delete layer data associated with feature $featureId")
+
+        uncheckedFeatures.remove(featureId)
       }
     }
+
+    // All checks keyed on device IDs go here
+    fun expect(
+        vararg devices: DeviceId,
+        createTimeseries: Boolean = false,
+        readTimeseries: Boolean = false,
+        updateTimeseries: Boolean = false,
+    ) {
+      devices.forEach { deviceId ->
+        assertEquals(
+            createTimeseries,
+            user.canCreateTimeseries(deviceId),
+            "Can create timeseries for device $deviceId")
+        assertEquals(
+            readTimeseries,
+            user.canReadTimeseries(deviceId),
+            "Can read timeseries for device $deviceId")
+        assertEquals(
+            updateTimeseries,
+            user.canUpdateTimeseries(deviceId),
+            "Can update timeseries for device $deviceId")
+
+        uncheckedDevices.remove(deviceId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedProjects.toTypedArray())
       expect(*uncheckedSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedAccessions.toTypedArray())
+      expect(*uncheckedLayers.toTypedArray())
+      expect(*uncheckedFeatures.toTypedArray())
+      expect(*uncheckedDevices.toTypedArray())
     }
   }
 }

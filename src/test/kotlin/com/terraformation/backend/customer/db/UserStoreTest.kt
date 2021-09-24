@@ -12,6 +12,7 @@ import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
@@ -54,6 +55,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   override val user: UserModel = mockk()
 
   private lateinit var accessionsDao: AccessionsDao
+  private lateinit var devicesDao: DevicesDao
   private lateinit var featuresDao: FeaturesDao
   private lateinit var layersDao: LayersDao
   private lateinit var organizationsDao: OrganizationsDao
@@ -108,6 +110,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     val configuration = dslContext.configuration()
     accessionsDao = AccessionsDao(configuration)
+    devicesDao = DevicesDao(configuration)
     featuresDao = FeaturesDao(configuration)
     layersDao = LayersDao(configuration)
     organizationsDao = OrganizationsDao(configuration)
@@ -121,6 +124,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             accessionsDao,
             Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             config,
+            devicesDao,
             featuresDao,
             httpClient,
             keycloakProperties,

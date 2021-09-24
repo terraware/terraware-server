@@ -1,33 +1,45 @@
 package com.terraformation.backend.device.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @DeviceManagerAppEndpoint
 @RestController
-@RequestMapping("/api/v1/device")
-class DeviceController(private val deviceStore: DeviceStore) {
-  @GetMapping("/all/config")
-  fun listDeviceConfigs(): ListDeviceConfigsResponse {
-    val facilityId = currentUser().defaultFacilityId()
-    val devices = deviceStore.fetchDeviceConfigurationForSite(facilityId)
-    return ListDeviceConfigsResponse(devices)
+class DeviceController(
+    private val deviceStore: DeviceStore,
+    private val objectMapper: ObjectMapper
+) {
+  @ApiResponse(responseCode = "200", description = "Successfully listed the facility's devices.")
+  @ApiResponse404(
+      description = "The facility does not exist or is not accessible by the current user.")
+  @GetMapping("/api/v1/facility/{facilityId}/devices")
+  @Operation(summary = "Lists the configurations of all the devices at a facility.")
+  fun listFacilityDevices(@PathVariable facilityId: FacilityId): ListDeviceConfigsResponse {
+    val devices = deviceStore.fetchByFacilityId(facilityId)
+    return ListDeviceConfigsResponse(
+        devices.map { DeviceConfig(it, it.settings?.let { objectMapper.readValue(it.data()) }) })
   }
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DeviceConfig(
-    @Schema(description = "Name of facility where this device is located.", example = "garage")
-    val facility: String,
-    @Schema(description = "Copy of facility for backward compatibility.", example = "garage")
-    val siteModule: String,
+    @Schema(description = "Unique identifier of this device.") val id: DeviceId,
+    @Schema(description = "Identifier of facility where this device is located.")
+    val facilityId: FacilityId,
     @Schema(
         description = "Name of this device. Should be unique within the facility.",
         example = "BMU-1")
@@ -53,18 +65,29 @@ data class DeviceConfig(
     val port: Int?,
     @Schema(
         description =
-            "Protocol- and device-specific custom settings. Format is defined by the device manager.")
-    val settings: String?,
+            "Protocol- and device-specific custom settings. This is an arbitrary JSON object; " +
+                "the exact settings depend on the device type.")
+    val settings: Map<String, Any?>?,
+    @Schema(
+        description = "How often the device manager should poll for status updates, in seconds.")
     val pollingInterval: Int?,
 ) {
-  @get:Schema(
-      description =
-          "Device's resource path on the server, minus organization and site names. Currently, " +
-              "this is always just the facility and device name.",
-      example = "garage/BMU-1")
-  @Suppress("unused")
-  val serverPath: String
-    get() = "$facility/$name"
+  constructor(
+      row: DevicesRow,
+      settings: Map<String, Any?>?
+  ) : this(
+      id = row.id!!,
+      facilityId = row.facilityId!!,
+      name = row.name!!,
+      type = row.deviceType!!,
+      make = row.make!!,
+      model = row.model!!,
+      protocol = row.protocol,
+      address = row.address,
+      port = row.port,
+      settings = settings,
+      pollingInterval = row.pollingInterval,
+  )
 }
 
 data class ListDeviceConfigsResponse(val devices: List<DeviceConfig>) : SuccessResponsePayload
