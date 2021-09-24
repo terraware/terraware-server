@@ -44,3 +44,9 @@ springdoc:
     # Disable the demo API (pet store)
     disable-swagger-default-url: true
     operations-sorter: alpha
+
+logging:
+  level:
+    # Suppress a warning message about deserialization (Keycloak tries to add a serialization filter
+    # in the middle of an object graph). See https://issues.redhat.com/browse/KEYCLOAK-15901
+    org.keycloak.common.util.DelegatingSerializationFilter: ERROR
