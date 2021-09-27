@@ -7,7 +7,7 @@ import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageCondition
@@ -82,9 +82,8 @@ class ValuesController(
     }
   }
 
-  @GetMapping("/storageLocation")
-  fun getStorageLocations(): StorageLocationsResponsePayload {
-    val facilityId = currentUser().defaultFacilityId()
+  @GetMapping("/storageLocation/{facilityId}")
+  fun getStorageLocations(@PathVariable facilityId: FacilityId): StorageLocationsResponsePayload {
     return StorageLocationsResponsePayload(
         storageLocationStore.fetchStorageConditionsByLocationName(facilityId).map {
           StorageLocationDetails(it.key, it.value)
@@ -163,6 +162,7 @@ data class FieldValuesPayload(
 )
 
 data class ListFieldValuesRequestPayload(
+    val facilityId: FacilityId,
     val fields: List<SearchField<*>>,
     override val filters: List<SearchFilter>?,
     override val search: SearchNodePayload?,
@@ -188,7 +188,10 @@ data class AllFieldValuesPayload(
     val partial: Boolean
 )
 
-data class ListAllFieldValuesRequestPayload(val fields: List<SearchField<*>>)
+data class ListAllFieldValuesRequestPayload(
+    val facilityId: FacilityId,
+    val fields: List<SearchField<*>>
+)
 
 data class ListAllFieldValuesResponsePayload(
     val results: Map<SearchField<*>, AllFieldValuesPayload>

@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.FuzzySearchOperators
@@ -195,6 +196,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "Germination treatment",
             GERMINATION_TESTS.TREATMENT_ID,
             SearchTables.GerminationTest),
+        AccessionIdField("id", "ID"),
         TextField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
         DateField(
             "latestGerminationTestDate",
@@ -320,6 +322,31 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
           other.fieldName == fieldName &&
           other.databaseField == databaseField &&
           other.table == table
+    }
+  }
+
+  /** Search field for accession identifiers. */
+  class AccessionIdField(override val fieldName: String, override val displayName: String) :
+      SingleColumnSearchField<AccessionId>() {
+    override val databaseField
+      get() = ACCESSIONS.ID
+    override val nullable
+      get() = false
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact)
+    override val table
+      get() = SearchTables.Accession
+
+    override fun getCondition(fieldNode: FieldNode): Condition {
+      val allValues = fieldNode.values.filterNotNull().map { id -> AccessionId(id.toLong()) }
+      return when (fieldNode.type) {
+        SearchFilterType.Exact ->
+            if (allValues.isNotEmpty()) databaseField.`in`(allValues) else DSL.falseCondition()
+        SearchFilterType.Fuzzy ->
+            throw RuntimeException("Fuzzy search not supported for accession IDs")
+        SearchFilterType.Range ->
+            throw RuntimeException("Range search not supported for accession IDs")
+      }
     }
   }
 

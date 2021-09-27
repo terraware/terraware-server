@@ -783,23 +783,24 @@ paths:
       responses:
         "200":
           description: "The accession was created successfully. Response includes\
-            \ fields populated by the server, including the accession number."
+            \ fields populated by the server, including the accession number and ID."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateAccessionResponsePayload'
-  /api/v1/seedbank/accession/{accessionNumber}:
+  /api/v1/seedbank/accession/{id}:
     get:
       tags:
       - SeedBankApp
       summary: Retrieve an existing accession.
       operationId: read
       parameters:
-      - name: accessionNumber
+      - name: id
         in: path
         required: true
         schema:
-          type: string
+          type: integer
+          format: int64
       responses:
         "200":
           description: OK
@@ -819,11 +820,12 @@ paths:
       summary: Update an existing accession.
       operationId: update
       parameters:
-      - name: accessionNumber
+      - name: id
         in: path
         required: true
         schema:
-          type: string
+          type: integer
+          format: int64
       - name: simulate
         in: query
         required: false
@@ -851,18 +853,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/seedbank/accession/{accessionNumber}/photo:
+  /api/v1/seedbank/accession/{id}/photo:
     get:
       tags:
       - SeedBankApp
       summary: List all the available photos for an accession.
       operationId: listPhotos
       parameters:
-      - name: accessionNumber
+      - name: id
         in: path
         required: true
         schema:
-          type: string
+          type: integer
+          format: int64
       responses:
         "200":
           description: The accession's photos are listed in the response.
@@ -876,7 +879,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/seedbank/accession/{accessionNumber}/photo/{photoFilename}:
+  /api/v1/seedbank/accession/{id}/photo/{photoFilename}:
     get:
       tags:
       - SeedBankApp
@@ -890,11 +893,12 @@ paths:
         \ be computed based on the original image's aspect ratio."
       operationId: getPhoto
       parameters:
-      - name: accessionNumber
+      - name: id
         in: path
         required: true
         schema:
-          type: string
+          type: integer
+          format: int64
       - name: photoFilename
         in: path
         required: true
@@ -943,11 +947,12 @@ paths:
       summary: Upload a new photo for an accession.
       operationId: uploadPhoto
       parameters:
-      - name: accessionNumber
+      - name: id
         in: path
         required: true
         schema:
-          type: string
+          type: integer
+          format: int64
       - name: photoFilename
         in: path
         required: true
@@ -1066,6 +1071,12 @@ paths:
       summary: Get a list of recent notifications
       operationId: listAll
       parameters:
+      - name: facilityId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
       - name: since
         in: query
         description: Don't return notifications older than this; default is 1 month
@@ -1218,12 +1229,19 @@ paths:
               schema:
                 type: string
                 format: binary
-  /api/v1/seedbank/summary:
+  /api/v1/seedbank/summary/{facilityId}:
     get:
       tags:
       - SeedBankApp
-      summary: Get summary statistics about the seed bank
+      summary: Get summary statistics about a seed bank
       operationId: getSummary
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "200":
           description: OK
@@ -1385,11 +1403,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
       deprecated: true
-  /api/v1/seedbank/values/storageLocation:
+  /api/v1/seedbank/values/storageLocation/{facilityId}:
     get:
       tags:
       - SeedBankApp
       operationId: getStorageLocations
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "200":
           description: OK
@@ -1702,13 +1727,18 @@ components:
   schemas:
     AccessionPayload:
       required:
+      - accessionNumber
       - active
+      - facilityId
+      - id
       - state
       type: object
       properties:
         accessionNumber:
           type: string
-          description: Server-generated unique identifier for the accession.
+          description: "Server-generated human-readable identifier for the accession.\
+            \ This is unique within a single seed bank, but different seed banks may\
+            \ have accessions with the same number."
         active:
           type: string
           description: Server-calculated active indicator. This is based on the accession's
@@ -1755,6 +1785,9 @@ components:
         estimatedSeedCount:
           type: integer
           format: int32
+        facilityId:
+          type: integer
+          format: int64
         family:
           type: string
         fieldNotes:
@@ -1778,6 +1811,12 @@ components:
             enum:
             - Lab
             - Nursery
+        id:
+          type: integer
+          description: "Server-generated unique identifier for the accession. This\
+            \ is unique across all seed banks, but is not suitable for display to\
+            \ end users."
+          format: int64
         initialQuantity:
           description: Initial size of accession. The units of this value must match
             the measurement type in "processingMethod".
@@ -2481,9 +2520,13 @@ components:
           type: string
     ExportRequestPayload:
       required:
+      - facilityId
       - fields
       type: object
       properties:
+        facilityId:
+          type: integer
+          format: int64
         fields:
           type: array
           items:
@@ -2951,9 +2994,13 @@ components:
                 format: double
     ListAllFieldValuesRequestPayload:
       required:
+      - facilityId
       - fields
       type: object
       properties:
+        facilityId:
+          type: integer
+          format: int64
         fields:
           type: array
           items:
@@ -3035,9 +3082,13 @@ components:
           $ref: '#/components/schemas/SuccessOrError'
     ListFieldValuesRequestPayload:
       required:
+      - facilityId
       - fields
       type: object
       properties:
+        facilityId:
+          type: integer
+          format: int64
         fields:
           type: array
           items:
@@ -3359,9 +3410,10 @@ components:
           type: string
           description: Plain-text body of notification.
           example: Accession XYZ is ready to be dried.
-        accessionNumber:
-          type: string
+        accessionId:
+          type: integer
           description: "For accession notifications, which accession caused the notification."
+          format: int64
         state:
           type: string
           description: "For state notifications, which state is being summarized."
@@ -3560,6 +3612,7 @@ components:
       - germinationTestNotes
       - germinationTestType
       - germinationTreatment
+      - id
       - landowner
       - latestGerminationTestDate
       - latestViabilityPercent
@@ -3651,9 +3704,13 @@ components:
     SearchRequestPayload:
       required:
       - count
+      - facilityId
       - fields
       type: object
       properties:
+        facilityId:
+          type: integer
+          format: int64
         fields:
           type: array
           items:

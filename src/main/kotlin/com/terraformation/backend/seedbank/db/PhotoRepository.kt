@@ -2,15 +2,15 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
+import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
-import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.transformSrid
@@ -40,7 +40,7 @@ import org.springframework.security.access.AccessDeniedException
 @ManagedBean
 class PhotoRepository(
     private val accessionPhotosDao: AccessionPhotosDao,
-    private val accessionStore: AccessionStore,
+    private val accessionsDao: AccessionsDao,
     private val dslContext: DSLContext,
     private val clock: Clock,
     private val fileStore: FileStore,
@@ -50,18 +50,11 @@ class PhotoRepository(
   private val log = perClassLogger()
 
   @Throws(IOException::class)
-  fun storePhoto(
-      facilityId: FacilityId,
-      accessionNumber: String,
-      data: InputStream,
-      size: Long,
-      metadata: PhotoMetadata
-  ) {
-    val accessionId =
-        accessionStore.getIdByNumber(facilityId, accessionNumber)
-            ?: throw AccessionNotFoundException(accessionNumber)
+  fun storePhoto(accessionId: AccessionId, data: InputStream, size: Long, metadata: PhotoMetadata) {
+    val accession =
+        accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    if (!currentUser().canUpdateAccession(accessionId, facilityId)) {
+    if (!currentUser().canUpdateAccession(accessionId, accession.facilityId)) {
       throw AccessDeniedException("No permission to update accession data")
     }
 
@@ -111,51 +104,43 @@ class PhotoRepository(
 
   @Throws(IOException::class)
   fun readPhoto(
-      facilityId: FacilityId,
-      accessionNumber: String,
+      accessionId: AccessionId,
       filename: String,
       maxWidth: Int? = null,
       maxHeight: Int? = null,
   ): SizedInputStream {
-    val accessionId =
-        accessionStore.getIdByNumber(facilityId, accessionNumber)
-            ?: throw AccessionNotFoundException(accessionNumber)
+    val accession =
+        accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    if (!currentUser().canReadAccession(accessionId, facilityId)) {
-      throw AccessDeniedException("No permission to read accession data")
+    if (!currentUser().canReadAccession(accessionId, accession.facilityId)) {
+      throw AccessionNotFoundException(accessionId)
     }
 
     return if (maxWidth != null || maxHeight != null) {
-      thumbnailStore.getThumbnailData(
-          fetchPhotoId(facilityId, accessionNumber, filename), maxWidth, maxHeight)
+      thumbnailStore.getThumbnailData(fetchPhotoId(accessionId, filename), maxWidth, maxHeight)
     } else {
-      fileStore.read(fetchUrl(facilityId, accessionNumber, filename))
+      fileStore.read(fetchUrl(accessionId, filename))
     }
   }
 
   /** Returns the photo's size in bytes. */
   @Throws(IOException::class)
-  fun getPhotoFileSize(facilityId: FacilityId, accessionNumber: String, filename: String): Long {
-    val accessionId =
-        accessionStore.getIdByNumber(facilityId, accessionNumber)
-            ?: throw AccessionNotFoundException(accessionNumber)
+  fun getPhotoFileSize(accessionId: AccessionId, filename: String): Long {
+    val accession =
+        accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    if (!currentUser().canReadAccession(accessionId, facilityId)) {
-      throw AccessDeniedException("No permission to read accession data")
+    if (!currentUser().canReadAccession(accessionId, accession.facilityId)) {
+      throw AccessionNotFoundException(accessionId)
     }
 
-    val photoUrl = fetchUrl(facilityId, accessionNumber, filename)
+    val photoUrl = fetchUrl(accessionId, filename)
     return fileStore.size(photoUrl)
   }
 
   /** Returns a list of metadata for an accession's photos. */
-  fun listPhotos(facilityId: FacilityId, accessionNumber: String): List<PhotoMetadata> {
-    val accessionId =
-        accessionStore.getIdByNumber(facilityId, accessionNumber)
-            ?: throw AccessionNotFoundException(accessionNumber)
-
-    if (!currentUser().canReadAccession(accessionId, facilityId)) {
-      throw AccessDeniedException("No permission to read accession data")
+  fun listPhotos(accessionId: AccessionId): List<PhotoMetadata> {
+    if (!currentUser().canReadAccession(accessionId)) {
+      throw AccessionNotFoundException(accessionId)
     }
 
     return dslContext
@@ -186,16 +171,13 @@ class PhotoRepository(
    *
    * @throws NoSuchFileException There was no record of the photo.
    */
-  private fun fetchUrl(facilityId: FacilityId, accessionNumber: String, filename: String): URI {
+  private fun fetchUrl(accessionId: AccessionId, filename: String): URI {
     return dslContext
         .select(PHOTOS.STORAGE_URL)
         .from(PHOTOS)
         .join(ACCESSION_PHOTOS)
         .on(PHOTOS.ID.eq(ACCESSION_PHOTOS.PHOTO_ID))
-        .join(ACCESSIONS)
-        .on(ACCESSIONS.ID.eq(ACCESSION_PHOTOS.ACCESSION_ID))
-        .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-        .and(ACCESSIONS.NUMBER.eq(accessionNumber))
+        .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .and(PHOTOS.FILE_NAME.eq(filename))
         .fetchOne(PHOTOS.STORAGE_URL)
         ?: throw NoSuchFileException(filename)
@@ -206,20 +188,13 @@ class PhotoRepository(
    *
    * @throws NoSuchFileException There was no record of the photo.
    */
-  private fun fetchPhotoId(
-      facilityId: FacilityId,
-      accessionNumber: String,
-      filename: String
-  ): PhotoId {
+  private fun fetchPhotoId(accessionId: AccessionId, filename: String): PhotoId {
     return dslContext
         .select(PHOTOS.ID)
         .from(PHOTOS)
         .join(ACCESSION_PHOTOS)
         .on(PHOTOS.ID.eq(ACCESSION_PHOTOS.PHOTO_ID))
-        .join(ACCESSIONS)
-        .on(ACCESSIONS.ID.eq(ACCESSION_PHOTOS.ACCESSION_ID))
-        .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-        .and(ACCESSIONS.NUMBER.eq(accessionNumber))
+        .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .and(PHOTOS.FILE_NAME.eq(filename))
         .fetchOne(PHOTOS.ID)
         ?: throw NoSuchFileException(filename)

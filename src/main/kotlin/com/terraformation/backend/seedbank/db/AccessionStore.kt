@@ -64,39 +64,15 @@ class AccessionStore(
 
   private val log = perClassLogger()
 
-  /**
-   * Looks up the ID of an accession with the given accession number. Returns null if the accession
-   * number does not exist.
-   */
-  fun getIdByNumber(facilityId: FacilityId, accessionNumber: String): AccessionId? {
-    val accessionId =
-        dslContext
-            .select(ACCESSIONS.ID)
-            .from(ACCESSIONS)
-            .where(ACCESSIONS.NUMBER.eq(accessionNumber))
-            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
-            .fetchOne(ACCESSIONS.ID)
-            ?: return null
-
-    return if (currentUser().canReadAccession(accessionId, facilityId)) {
-      accessionId
-    } else {
-      log.warn("No permission to read accession $accessionId in facility $facilityId")
-      null
-    }
-  }
-
-  fun fetchByNumber(facilityId: FacilityId, accessionNumber: String): AccessionModel? {
-    return fetchByNumber(facilityId, accessionNumber, false)
-  }
-
-  private fun fetchByNumber(
-      facilityId: FacilityId,
-      accessionNumber: String,
-      skipPermissionCheck: Boolean
-  ): AccessionModel? {
-    // First, fetch all the values that are either directly on the accession table or are in other
-    // tables such that there is at most one value for a given accession (N:1 relation).
+  fun fetchById(accessionId: AccessionId, skipPermissionCheck: Boolean = false): AccessionModel? {
+    // The accession data forms a tree structure. The parent node is the data from the accessions
+    // table itself, as well as data in reference tables where a given accession can only have a
+    // single value. For example, there is a species table, but an accession only has one species,
+    // so we can consider species to be an attribute of the accession rather than a child entity.
+    //
+    // Under the parent, there are things an accession can have zero or more of, e.g., withdrawals
+    // or photos. We currently query each of those things individually rather than attempting to
+    // grab all of them in a single SQL query.
     val parentRow =
         dslContext
             .select(
@@ -112,16 +88,14 @@ class AccessionStore(
                 ACCESSIONS.PROCESSING_STAFF_RESPONSIBLE,
             )
             .from(ACCESSIONS)
-            .where(ACCESSIONS.NUMBER.eq(accessionNumber))
-            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
+            .where(ACCESSIONS.ID.eq(accessionId))
             .fetchOne()
             ?: return null
 
-    // Now populate all the items that there can be many of per accession.
-    val accessionId = parentRow[ACCESSIONS.ID]!!
-
-    if (!skipPermissionCheck && !currentUser().canReadAccession(accessionId, facilityId)) {
-      log.warn("No permission to read accession $accessionId in facility $facilityId")
+    if (!skipPermissionCheck &&
+        !currentUser().canReadAccession(accessionId, parentRow[ACCESSIONS.FACILITY_ID])) {
+      log.warn(
+          "No permission to read accession $accessionId in facility ${parentRow[ACCESSIONS.FACILITY_ID]}")
       return null
     }
 
@@ -139,7 +113,7 @@ class AccessionStore(
 
     return with(ACCESSIONS) {
       AccessionModel(
-          accessionNumber = accessionNumber,
+          accessionNumber = parentRow[NUMBER],
           bagNumbers = bagNumbers,
           collectedDate = parentRow[COLLECTED_DATE],
           cutTestSeedsCompromised = parentRow[CUT_TEST_SEEDS_COMPROMISED],
@@ -202,7 +176,9 @@ class AccessionStore(
     }
   }
 
-  fun create(facilityId: FacilityId, accession: AccessionModel): AccessionModel {
+  fun create(accession: AccessionModel): AccessionModel {
+    val facilityId =
+        accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
     if (!currentUser().canCreateAccession(facilityId)) {
       throw AccessDeniedException("No permission to create accessions in facility $facilityId")
     }
@@ -213,78 +189,81 @@ class AccessionStore(
       val accessionNumber = generateAccessionNumber()
 
       try {
-        dslContext.transaction { _ ->
-          val appDeviceId =
-              accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
-          val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
-          val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
-          val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
+        val accessionId =
+            dslContext.transactionResult { _ ->
+              val appDeviceId =
+                  accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
+              val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
+              val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
+              val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
 
-          val accessionId =
-              with(ACCESSIONS) {
+              val accessionId =
+                  with(ACCESSIONS) {
+                    dslContext
+                        .insertInto(ACCESSIONS)
+                        .set(APP_DEVICE_ID, appDeviceId)
+                        .set(COLLECTED_DATE, accession.collectedDate)
+                        .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
+                        .set(COLLECTION_SITE_NAME, accession.siteLocation)
+                        .set(CREATED_TIME, clock.instant())
+                        .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
+                        .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
+                        .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
+                        .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
+                        .set(FACILITY_ID, facilityId)
+                        .set(FAMILY_ID, familyId)
+                        .set(FIELD_NOTES, accession.fieldNotes)
+                        .set(FOUNDER_ID, accession.founderId)
+                        .set(
+                            LATEST_GERMINATION_RECORDING_DATE,
+                            accession.calculateLatestGerminationRecordingDate())
+                        .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                        .set(NUMBER, accessionNumber)
+                        .set(NURSERY_START_DATE, accession.nurseryStartDate)
+                        .set(PRIMARY_COLLECTOR_ID, collectorId)
+                        .set(RARE_TYPE_ID, accession.rare)
+                        .set(RECEIVED_DATE, accession.receivedDate)
+                        .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
+                        .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
+                        .set(SPECIES_ID, speciesId)
+                        .set(STATE_ID, AccessionState.Pending)
+                        .set(
+                            STORAGE_LOCATION_ID,
+                            getStorageLocationId(facilityId, accession.storageLocation))
+                        .set(STORAGE_NOTES, accession.storageNotes)
+                        .set(STORAGE_PACKETS, accession.storagePackets)
+                        .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
+                        .set(STORAGE_START_DATE, accession.storageStartDate)
+                        .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
+                        .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
+                        .returning(ID)
+                        .fetchOne()
+                        ?.get(ID)!!
+                  }
+
+              with(ACCESSION_STATE_HISTORY) {
                 dslContext
-                    .insertInto(ACCESSIONS)
-                    .set(APP_DEVICE_ID, appDeviceId)
-                    .set(COLLECTED_DATE, accession.collectedDate)
-                    .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
-                    .set(COLLECTION_SITE_NAME, accession.siteLocation)
-                    .set(CREATED_TIME, clock.instant())
-                    .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
-                    .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
-                    .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
-                    .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
-                    .set(FACILITY_ID, facilityId)
-                    .set(FAMILY_ID, familyId)
-                    .set(FIELD_NOTES, accession.fieldNotes)
-                    .set(FOUNDER_ID, accession.founderId)
-                    .set(
-                        LATEST_GERMINATION_RECORDING_DATE,
-                        accession.calculateLatestGerminationRecordingDate())
-                    .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
-                    .set(NUMBER, accessionNumber)
-                    .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                    .set(PRIMARY_COLLECTOR_ID, collectorId)
-                    .set(RARE_TYPE_ID, accession.rare)
-                    .set(RECEIVED_DATE, accession.receivedDate)
-                    .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
-                    .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
-                    .set(SPECIES_ID, speciesId)
-                    .set(STATE_ID, AccessionState.Pending)
-                    .set(
-                        STORAGE_LOCATION_ID,
-                        getStorageLocationId(facilityId, accession.storageLocation))
-                    .set(STORAGE_NOTES, accession.storageNotes)
-                    .set(STORAGE_PACKETS, accession.storagePackets)
-                    .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
-                    .set(STORAGE_START_DATE, accession.storageStartDate)
-                    .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
-                    .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
-                    .returning(ID)
-                    .fetchOne()
-                    ?.get(ID)!!
+                    .insertInto(ACCESSION_STATE_HISTORY)
+                    .set(ACCESSION_ID, accessionId)
+                    .set(REASON, "Accession created")
+                    .set(NEW_STATE_ID, AccessionState.Pending)
+                    .set(UPDATED_TIME, clock.instant())
+                    .execute()
               }
 
-          with(ACCESSION_STATE_HISTORY) {
-            dslContext
-                .insertInto(ACCESSION_STATE_HISTORY)
-                .set(ACCESSION_ID, accessionId)
-                .set(REASON, "Accession created")
-                .set(NEW_STATE_ID, AccessionState.Pending)
-                .set(UPDATED_TIME, clock.instant())
-                .execute()
-          }
+              insertSecondaryCollectors(facilityId, accessionId, accession.secondaryCollectors)
+              bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
+              geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
+              germinationStore.updateGerminationTestTypes(
+                  accessionId, emptySet(), accession.germinationTestTypes)
+              germinationStore.updateGerminationTests(
+                  accessionId, emptyList(), accession.germinationTests)
+              withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
 
-          insertSecondaryCollectors(facilityId, accessionId, accession.secondaryCollectors)
-          bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
-          geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
-          germinationStore.updateGerminationTestTypes(
-              accessionId, emptySet(), accession.germinationTestTypes)
-          germinationStore.updateGerminationTests(
-              accessionId, emptyList(), accession.germinationTests)
-          withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
-        }
+              accessionId
+            }
 
-        return fetchByNumber(facilityId, accessionNumber, true)!!
+        return fetchById(accessionId, true)!!
       } catch (ex: DuplicateKeyException) {
         log.info("Accession number $accessionNumber already existed; trying again")
         if (attemptsRemaining <= 0) {
@@ -297,13 +276,13 @@ class AccessionStore(
     throw RuntimeException("BUG! Inserting accession failed but error was not caught.")
   }
 
-  fun update(facilityId: FacilityId, accessionNumber: String, updated: AccessionModel): Boolean {
-    val existing = fetchByNumber(facilityId, accessionNumber) ?: return false
-    val accessionId = existing.id ?: return false
+  fun update(updated: AccessionModel): Boolean {
+    val accessionId = updated.id ?: return false
+    val existing = fetchById(accessionId) ?: return false
+    val facilityId = existing.facilityId ?: return false
 
     if (!currentUser().canUpdateAccession(accessionId, facilityId)) {
-      throw AccessDeniedException(
-          "No permission to update accession $accessionNumber in facility $facilityId")
+      throw AccessDeniedException("No permission to update accession $accessionId")
     }
 
     val accession = updated.withCalculatedValues(clock, existing)
@@ -357,7 +336,7 @@ class AccessionStore(
       if (existing.state != accession.state) {
         existing.getStateTransition(accession, clock)?.let { stateTransition ->
           log.info(
-              "Accession $accessionNumber transitioning from ${existing.state} to " +
+              "Accession $accessionId transitioning from ${existing.state} to " +
                   "${stateTransition.newState}: ${stateTransition.reason}")
 
           with(ACCESSION_STATE_HISTORY) {
@@ -429,14 +408,13 @@ class AccessionStore(
                 .set(TOTAL_UNITS_ID, accession.total?.units)
                 .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
                 .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
-                .where(NUMBER.eq(accessionNumber))
-                .and(FACILITY_ID.eq(facilityId))
+                .where(ID.eq(accessionId))
                 .execute()
           }
 
       if (rowsUpdated != 1) {
-        log.error("Accession $accessionNumber exists in database but update failed")
-        throw DataAccessException("Unable to update accession $accessionNumber")
+        log.error("Accession $accessionId exists in database but update failed")
+        throw DataAccessException("Unable to update accession $accessionId")
       }
     }
 
@@ -449,19 +427,16 @@ class AccessionStore(
    *
    * @return null if the accession didn't exist.
    */
-  fun updateAndFetch(
-      facilityId: FacilityId,
-      accession: AccessionModel,
-      accessionNumber: String
-  ): AccessionModel {
+  fun updateAndFetch(accession: AccessionModel): AccessionModel {
+    val accessionId = accession.id ?: throw IllegalArgumentException("Missing accession ID")
     val updated =
-        if (update(facilityId, accessionNumber, accession)) {
-          fetchByNumber(facilityId, accessionNumber)
+        if (update(accession)) {
+          fetchById(accessionId)
         } else {
           null
         }
 
-    return updated ?: throw AccessionNotFoundException(accessionNumber)
+    return updated ?: throw AccessionNotFoundException(accessionId)
   }
 
   /**
@@ -470,14 +445,9 @@ class AccessionStore(
    *
    * @throws AccessionNotFoundException if the accession doesn't exist.
    */
-  fun dryRun(
-      facilityId: FacilityId,
-      accession: AccessionModel,
-      accessionNumber: String
-  ): AccessionModel {
-    val existing =
-        fetchByNumber(facilityId, accessionNumber)
-            ?: throw AccessionNotFoundException(accessionNumber)
+  fun dryRun(accession: AccessionModel): AccessionModel {
+    val accessionId = accession.id ?: throw IllegalArgumentException("Missing accession ID")
+    val existing = fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
     return accession.withCalculatedValues(clock, existing)
   }
 
@@ -491,7 +461,7 @@ class AccessionStore(
 
     return with(ACCESSIONS) {
       dslContext
-          .select(NUMBER)
+          .select(ID)
           .from(ACCESSIONS)
           .where(
               STATE_ID
@@ -504,11 +474,11 @@ class AccessionStore(
                           .and(STORAGE_START_DATE.le(today).or(DRYING_END_DATE.le(today))))
                   .or(STATE_ID.eq(AccessionState.Dried).and(STORAGE_START_DATE.le(today))))
           .and(FACILITY_ID.eq(facilityId))
-          .fetch(NUMBER)
-          .mapNotNull { accessionNumber ->
+          .fetch(ID)
+          .mapNotNull { accessionId ->
             // This is an N+1 query which isn't ideal but we are going to be processing these one
             // at a time anyway so optimizing this to a single SELECT wouldn't help much.
-            fetchByNumber(facilityId, accessionNumber!!)
+            fetchById(accessionId!!)
           }
     }
   }
