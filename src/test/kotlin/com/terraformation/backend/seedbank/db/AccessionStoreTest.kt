@@ -86,7 +86,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -226,9 +225,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
 
-    assertThrows(DuplicateKeyException::class.java) {
-      store.create(AccessionModel(facilityId = facilityId))
-    }
+    assertThrows<DuplicateKeyException> { store.create(AccessionModel(facilityId = facilityId)) }
   }
 
   @Test
@@ -607,7 +604,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         notes = "notes",
                         seedsSown = 5)))
 
-    assertThrows(IllegalArgumentException::class.java) { store.update(desired) }
+    assertThrows<IllegalArgumentException> { store.update(desired) }
   }
 
   @Test
@@ -726,7 +723,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `unknown storage locations are rejected`() {
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       val initial = store.create(AccessionModel(facilityId = facilityId))
       store.update(initial.copy(storageLocation = "bogus"))
     }
@@ -796,7 +793,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update rejects future storageStartDate`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(initial.copy(storageStartDate = LocalDate.now(clock).plusDays(1)))
     }
   }
@@ -1200,7 +1197,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `update rejects weight-based withdrawals for count-based accessions`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(
           initial.copy(
               processingMethod = ProcessingMethod.Count,
@@ -1218,7 +1215,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `update rejects withdrawals without remaining quantity for weight-based accessions`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(
           initial.copy(
               processingMethod = ProcessingMethod.Weight,
@@ -1255,7 +1252,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `update requires subset weight to use weight units`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(
           initial.copy(
               processingMethod = ProcessingMethod.Weight,
@@ -1268,7 +1265,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `update rejects withdrawals if accession total size not set`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(
           initial.copy(
               processingMethod = ProcessingMethod.Count,
@@ -1285,7 +1282,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `update rejects germination tests without remaining quantity for weight-based accessions`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(
           initial.copy(
               processingMethod = ProcessingMethod.Weight,
@@ -1335,7 +1332,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)))
     }
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(initial.copy(processingMethod = ProcessingMethod.Weight, total = grams(5)))
     }
   }
@@ -1354,7 +1351,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                       remainingQuantity = grams(5))))
     }
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
     }
   }
@@ -1514,9 +1511,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `create does not write to database if user does not have permission`() {
     every { user.canCreateAccession(facilityId) } returns false
 
-    assertThrows(AccessDeniedException::class.java) {
-      store.create(AccessionModel(facilityId = facilityId))
-    }
+    assertThrows<AccessDeniedException> { store.create(AccessionModel(facilityId = facilityId)) }
   }
 
   @Test
@@ -1533,9 +1528,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateAccession(any(), facilityId) } returns false
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    assertThrows(AccessDeniedException::class.java) {
-      store.update(initial.copy(numberOfTrees = 1))
-    }
+    assertThrows<AccessDeniedException> { store.update(initial.copy(numberOfTrees = 1)) }
 
     val afterUpdate = store.fetchById(initial.id!!)
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
