@@ -61,6 +61,9 @@ class DeviceStore(private val devicesDao: DevicesDao) {
 
     val existing = devicesDao.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
 
+    // A null facility ID is fine here because we don't require clients to pass in facility IDs
+    // when they update devices. But if they _do_ pass one in, it needs to be the same as the
+    // existing one; they can't attempt to move a device to a different facility.
     if (devicesRow.facilityId != null && devicesRow.facilityId != existing.facilityId) {
       throw IllegalArgumentException(
           "Devices may not be moved between facilities; create a new device instead.")

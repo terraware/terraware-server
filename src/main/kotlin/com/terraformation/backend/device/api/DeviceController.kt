@@ -175,19 +175,19 @@ data class CreateDeviceRequestPayload(
 ) {
   fun toRow(objectMapper: ObjectMapper): DevicesRow {
     return DevicesRow(
-        null,
-        facilityId,
-        name,
-        type,
-        make,
-        model,
-        protocol,
-        address,
-        port,
-        pollingInterval,
-        true,
-        settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
-        parentId,
+        id = null,
+        facilityId = facilityId,
+        name = name,
+        deviceType = type,
+        make = make,
+        model = model,
+        protocol = protocol,
+        address = address,
+        port = port,
+        pollingInterval = pollingInterval,
+        enabled = true,
+        settings = settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        parentId = parentId,
     )
   }
 }
@@ -232,19 +232,19 @@ data class UpdateDeviceRequestPayload(
 ) {
   fun toRow(deviceId: DeviceId, objectMapper: ObjectMapper): DevicesRow {
     return DevicesRow(
-        deviceId,
-        null,
-        name,
-        type,
-        make,
-        model,
-        protocol,
-        address,
-        port,
-        pollingInterval,
-        true,
-        settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
-        parentId,
+        id = deviceId,
+        facilityId = null,
+        name = name,
+        deviceType = type,
+        make = make,
+        model = model,
+        protocol = protocol,
+        address = address,
+        port = port,
+        pollingInterval = pollingInterval,
+        enabled = true,
+        settings = settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        parentId = parentId,
     )
   }
 }
