@@ -29,6 +29,18 @@ class SiteStore(private val sitesDao: SitesDao) {
     }
   }
 
+  /** Returns all the sites the user has access to. */
+  fun fetchAll(): List<SiteModel> {
+    val user = currentUser()
+    val listableProjects = user.projectRoles.keys.filter { user.canListSites(it) }
+
+    return if (listableProjects.isNotEmpty()) {
+      sitesDao.fetchByProjectId(*listableProjects.toTypedArray()).map { it.toModel() }
+    } else {
+      emptyList()
+    }
+  }
+
   fun create(
       projectId: ProjectId,
       name: String,

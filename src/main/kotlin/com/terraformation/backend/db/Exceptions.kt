@@ -29,6 +29,9 @@ class PlantNotFoundException(val featureId: FeatureId) :
 class PlantObservationNotFoundException(val id: PlantObservationId) :
     Exception("Plant observation $id not found")
 
+class ProjectNotFoundException(val projectId: ProjectId) :
+    Exception("Project $projectId not found")
+
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     Exception("Species $speciesId not found")
 

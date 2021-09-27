@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.pojos.ProjectsRow
@@ -42,6 +43,10 @@ class ProjectStore(
 
   /** Returns all the projects the user has access to in an organization. */
   fun fetchByOrganization(organizationId: OrganizationId): List<ProjectModel> {
+    if (!currentUser().canListProjects(organizationId)) {
+      return emptyList()
+    }
+
     val accessibleProjects = currentUser().projectRoles
     return projectsDao
         .fetchByOrganizationId(organizationId)
@@ -63,6 +68,18 @@ class ProjectStore(
 
     projectsDao.insert(projectsRow)
     return projectsRow.toModel()
+  }
+
+  fun update(row: ProjectsRow) {
+    val projectId = row.id ?: throw IllegalArgumentException("Missing project ID")
+    if (!currentUser().canUpdateProject(projectId)) {
+      throw AccessDeniedException("No permission to update project")
+    }
+
+    val existing = projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
+
+    projectsDao.update(
+        row.copy(organizationId = existing.organizationId, modifiedTime = clock.instant()))
   }
 
   fun addUser(projectId: ProjectId, userId: UserId) {

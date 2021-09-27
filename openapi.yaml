@@ -768,6 +768,141 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOrganizationsResponse'
+  /api/v1/organizations/{organizationId}/projects:
+    get:
+      tags:
+      - Customer
+      summary: Gets a list of the projects in an organization.
+      description: Only projects that are accessible by the current user are included.
+      operationId: listOrganizationProjects
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Projects retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProjectsResponsePayload'
+        "404":
+          description: "The user is not a member of the organization, or the organization\
+            \ does not exist."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/projects:
+    get:
+      tags:
+      - Customer
+      summary: Gets a list of all projects the user can access.
+      operationId: listAllProjects
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProjectsResponsePayload'
+    post:
+      tags:
+      - Customer
+      summary: Creates a new project in an existing organization.
+      operationId: createProject
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: Project created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProjectResponsePayload'
+  /api/v1/projects/{id}:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about a single project.
+      operationId: getProject
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Project retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProjectResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - Customer
+      operationId: updateProject
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/projects/{projectId}/sites:
+    get:
+      tags:
+      - Customer
+      summary: Gets all of the sites associated with a project.
+      operationId: listProjectSites
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Retrieved list of sites.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSitesResponsePayload'
+        "404":
+          description: The project does not exist or is not accessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/accession:
     post:
       tags:
@@ -1397,10 +1532,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StorageLocationsResponsePayload'
-  /api/v1/site/{siteId}:
+  /api/v1/sites:
     get:
       tags:
       - Customer
+      summary: Gets all of the sites the current user can access.
+      operationId: listAllSites
+      responses:
+        "200":
+          description: Retrieved list of sites.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSitesResponsePayload'
+  /api/v1/sites/{siteId}:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about a particular site.
       operationId: getSite
       parameters:
       - name: siteId
@@ -1410,19 +1559,18 @@ paths:
           type: integer
           format: int64
       responses:
-        "400":
-          description: Client is not associated with an organization and is not a
-            site admin
+        "200":
+          description: Site retrieved.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetSiteResponse'
+                $ref: '#/components/schemas/GetSiteResponsePayload'
         "404":
-          description: No site with the requested ID exists.
+          description: The requested resource was not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetSiteResponse'
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/species:
     get:
       tags:
@@ -2288,6 +2436,17 @@ components:
           $ref: '#/components/schemas/PlantResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateProjectRequestPayload:
+      required:
+      - name
+      - organizationId
+      type: object
+      properties:
+        name:
+          type: string
+        organizationId:
+          type: integer
+          format: int64
     CreateSpeciesRequestPayload:
       required:
       - name
@@ -2863,27 +3022,26 @@ components:
         maxEnteredTime:
           type: string
           format: date-time
-    GetSiteResponse:
+    GetProjectResponsePayload:
       required:
-      - id
-      - latitude
-      - longitude
-      - name
+      - project
+      - status
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        latitude:
-          type: string
-        longitude:
-          type: string
-        locale:
-          type: string
-        timezone:
-          type: string
+        project:
+          $ref: '#/components/schemas/ProjectPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetSiteResponsePayload:
+      required:
+      - site
+      - status
+      type: object
+      properties:
+        site:
+          $ref: '#/components/schemas/SiteElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     LayerResponse:
       required:
       - hidden
@@ -3199,6 +3357,30 @@ components:
             $ref: '#/components/schemas/ListPlantsResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ListProjectsResponsePayload:
+      required:
+      - projects
+      - status
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListSitesResponsePayload:
+      required:
+      - sites
+      - status
+      type: object
+      properties:
+        sites:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ListSpeciesResponsePayload:
       required:
       - status
@@ -3507,6 +3689,21 @@ components:
                 items:
                   type: number
                   format: double
+    ProjectPayload:
+      required:
+      - id
+      - name
+      - organizationId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        organizationId:
+          type: integer
+          format: int64
     RecordTimeseriesValuesRequestPayload:
       required:
       - timeseries
@@ -3751,6 +3948,31 @@ components:
       properties:
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    SiteElement:
+      required:
+      - id
+      - latitude
+      - longitude
+      - name
+      - projectId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        projectId:
+          type: integer
+          format: int64
+        latitude:
+          type: string
+        longitude:
+          type: string
+        locale:
+          type: string
+        timezone:
+          type: string
     SpeciesCreateResponsePayload:
       required:
       - id
@@ -4373,6 +4595,13 @@ components:
           $ref: '#/components/schemas/PlantResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    UpdateProjectRequestPayload:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
     UploadPhotoMetadataPayload:
       required:
       - capturedTime

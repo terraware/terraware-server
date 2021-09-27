@@ -10,7 +10,9 @@ data class SiteModel(
     val projectId: ProjectId,
     val name: String,
     val latitude: BigDecimal,
-    val longitude: BigDecimal
+    val longitude: BigDecimal,
+    val locale: String? = null,
+    val timezone: String? = null,
 )
 
 fun SitesRow.toModel() =
@@ -19,4 +21,6 @@ fun SitesRow.toModel() =
         projectId ?: throw IllegalArgumentException("Project ID is required"),
         name ?: throw IllegalArgumentException("Name is required"),
         latitude ?: throw IllegalArgumentException("Latitude is required"),
-        longitude ?: throw IllegalArgumentException("Longitude is required"))
+        longitude ?: throw IllegalArgumentException("Longitude is required"),
+        locale,
+        timezone)

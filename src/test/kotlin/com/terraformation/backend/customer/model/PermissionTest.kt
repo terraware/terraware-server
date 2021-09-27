@@ -31,7 +31,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.keycloak.admin.client.resource.RealmResource
@@ -192,6 +191,7 @@ internal class PermissionTest : DatabaseTest() {
         OrganizationId(1),
         addOrganizationUser = true,
         createProject = true,
+        listProjects = true,
         deleteOrganization = true,
         removeOrganizationUser = true,
     )
@@ -199,6 +199,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(10),
         ProjectId(11),
+        updateProject = true,
         addProjectUser = true,
         createSite = true,
         listSites = true,
@@ -289,6 +290,7 @@ internal class PermissionTest : DatabaseTest() {
         OrganizationId(3),
         addOrganizationUser = true,
         createProject = true,
+        listProjects = true,
         deleteOrganization = true,
         removeOrganizationUser = true,
     )
@@ -306,12 +308,14 @@ internal class PermissionTest : DatabaseTest() {
         OrganizationId(1),
         addOrganizationUser = true,
         createProject = true,
+        listProjects = true,
         removeOrganizationUser = true,
     )
 
     permissions.expect(
         ProjectId(10),
         ProjectId(11),
+        updateProject = true,
         addProjectUser = true,
         createSite = true,
         listSites = true,
@@ -398,6 +402,8 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
+    permissions.expect(OrganizationId(1), listProjects = true)
+
     permissions.expect(
         ProjectId(10),
         addProjectUser = true,
@@ -467,6 +473,8 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
+    permissions.expect(OrganizationId(1), listProjects = true)
+
     permissions.expect(ProjectId(10), listSites = true)
 
     permissions.expect(
@@ -521,19 +529,6 @@ internal class PermissionTest : DatabaseTest() {
     PermissionsTracker().andNothingElse()
   }
 
-  @Test
-  fun `user with no organization memberships has no default organization ID`() {
-    assertNull(userStore.fetchById(userId)!!.defaultOrganizationId())
-  }
-
-  @Test
-  fun `user with multiple organization memberships has no default organization ID`() {
-    givenRole(OrganizationId(1), Role.CONTRIBUTOR)
-    givenRole(OrganizationId(2), Role.CONTRIBUTOR)
-
-    assertNull(userStore.fetchById(userId)!!.defaultOrganizationId())
-  }
-
   private fun givenRole(organizationId: OrganizationId, role: Role, vararg projects: ProjectId) {
     with(ORGANIZATION_USERS) {
       dslContext
@@ -574,6 +569,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg organizations: OrganizationId,
         addOrganizationUser: Boolean = false,
         createProject: Boolean = false,
+        listProjects: Boolean = false,
         deleteOrganization: Boolean = false,
         removeOrganizationUser: Boolean = false,
     ) {
@@ -586,6 +582,10 @@ internal class PermissionTest : DatabaseTest() {
             createProject,
             user.canCreateProject(organizationId),
             "Can create project in organization $organizationId")
+        assertEquals(
+            listProjects,
+            user.canListProjects(organizationId),
+            "Can list projects of organization $organizationId")
         assertEquals(
             deleteOrganization,
             user.canDeleteOrganization(organizationId),
@@ -602,12 +602,15 @@ internal class PermissionTest : DatabaseTest() {
     // All checks keyed on project IDs go here
     fun expect(
         vararg projects: ProjectId,
+        updateProject: Boolean = false,
         addProjectUser: Boolean = false,
         createSite: Boolean = false,
         listSites: Boolean = false,
         removeProjectUser: Boolean = false,
     ) {
       projects.forEach { projectId ->
+        assertEquals(
+            updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
         assertEquals(
             addProjectUser, user.canAddProjectUser(projectId), "Can add project $projectId user")
         assertEquals(

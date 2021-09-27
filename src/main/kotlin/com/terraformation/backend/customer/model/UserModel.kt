@@ -229,6 +229,15 @@ class UserModel(
     return role == Role.ADMIN || role == Role.OWNER
   }
 
+  fun canListProjects(organizationId: OrganizationId): Boolean {
+    return organizationId in organizationRoles
+  }
+
+  fun canUpdateProject(projectId: ProjectId): Boolean {
+    val role = projectRoles[projectId]
+    return role == Role.ADMIN || role == Role.OWNER
+  }
+
   fun canAddProjectUser(projectId: ProjectId): Boolean {
     val role = projectRoles[projectId]
     return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
@@ -313,19 +322,6 @@ class UserModel(
       return facilityRoles.keys.first()
     } else {
       throw IllegalStateException("User has no facilities")
-    }
-  }
-
-  /**
-   * Returns the user's organization ID if they belong to exactly one organization.
-   *
-   * TODO: Remove this once the client passes in organization IDs.
-   */
-  fun defaultOrganizationId(): OrganizationId? {
-    return if (organizationRoles.size == 1) {
-      organizationRoles.keys.first()
-    } else {
-      null
     }
   }
 
