@@ -110,6 +110,7 @@ class SecurityConfig(private val userStore: UserStore) : KeycloakWebSecurityConf
   /** Configures Spring Security to use the Keycloak client library to authenticate requests. */
   override fun configure(auth: AuthenticationManagerBuilder) {
     auth.authenticationProvider(KeycloakAuthenticationProvider())
+    auth.authenticationProvider(ExistingSessionAuthenticationProvider())
   }
 
   override fun sessionAuthenticationStrategy(): SessionAuthenticationStrategy {
