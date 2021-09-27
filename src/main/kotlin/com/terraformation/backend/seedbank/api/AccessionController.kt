@@ -265,7 +265,7 @@ data class AccessionPayload(
             "Server-generated human-readable identifier for the accession. This is unique " +
                 "within a single seed bank, but different seed banks may have accessions with " +
                 "the same number.")
-    val accessionNumber: String?,
+    val accessionNumber: String,
     @Schema(
         description = "Server-calculated active indicator. This is based on the accession's state.")
     val active: AccessionActive,
@@ -363,7 +363,7 @@ data class AccessionPayload(
       model: AccessionModel,
       clock: Clock
   ) : this(
-      model.accessionNumber,
+      model.accessionNumber ?: throw IllegalArgumentException("Accession did not have a number"),
       model.active ?: AccessionActive.Active,
       model.bagNumbers.orNull(),
       model.collectedDate,
