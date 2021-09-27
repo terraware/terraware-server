@@ -1727,6 +1727,7 @@ components:
   schemas:
     AccessionPayload:
       required:
+      - accessionNumber
       - active
       - facilityId
       - id
