@@ -147,6 +147,25 @@ class UserModel(
     return facilityId in facilityRoles
   }
 
+  fun canCreateDevice(facilityId: FacilityId): Boolean {
+    // Any user with access to the facility can create a new device.
+    // TODO: Revisit this once we can set roles on API clients
+    return facilityId in facilityRoles
+  }
+
+  fun canReadDevice(deviceId: DeviceId): Boolean {
+    // Any user with access to the facility can read a device.
+    // TODO: Revisit this once we can set roles on API clients (settings may contain sensitive data)
+    val facilityId = devicesDao.fetchOneById(deviceId)?.facilityId ?: return false
+    return facilityId in facilityRoles
+  }
+
+  fun canUpdateDevice(deviceId: DeviceId): Boolean {
+    // TODO: Revisit this once we can set roles on API clients
+    val facilityId = devicesDao.fetchOneById(deviceId)?.facilityId ?: return false
+    return facilityId in facilityRoles
+  }
+
   private fun canAccessLayer(siteId: SiteId): Boolean {
     // Any user who has access to a site can access all its layers
     return siteId in siteRoles
@@ -289,10 +308,7 @@ class UserModel(
 
   fun canCreateTimeseries(deviceId: DeviceId): Boolean {
     val facilityId = devicesDao.fetchOneById(deviceId)?.facilityId ?: return false
-    return when (facilityRoles[facilityId]) {
-      Role.OWNER, Role.ADMIN, Role.MANAGER -> true
-      else -> false
-    }
+    return facilityId in facilityRoles
   }
 
   fun canReadTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
