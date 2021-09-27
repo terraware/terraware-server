@@ -9,6 +9,7 @@ import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
 /** Populates [CurrentUserHolder] with the [UserModel] for incoming requests. */
 class UserModelFilter(private val userStore: UserStore) : Filter {
@@ -16,13 +17,14 @@ class UserModelFilter(private val userStore: UserStore) : Filter {
 
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     try {
-      val keycloakUser = SecurityContextHolder.getContext().authentication
+      val authentication = SecurityContextHolder.getContext().authentication
 
-      if (keycloakUser is KeycloakAuthenticationToken) {
-        val userModel = userStore.fetchByAuthId(keycloakUser.name)
+      if (authentication is KeycloakAuthenticationToken ||
+          authentication is PreAuthenticatedAuthenticationToken) {
+        val userModel = userStore.fetchByAuthId(authentication.name)
         CurrentUserHolder.setCurrentUser(userModel)
 
-        log.trace("Loaded UserModel for auth ID ${keycloakUser.name}")
+        log.trace("Loaded UserModel for auth ID ${authentication.name}")
       }
 
       chain.doFilter(request, response)
