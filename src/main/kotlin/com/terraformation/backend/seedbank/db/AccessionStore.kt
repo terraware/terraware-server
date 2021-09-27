@@ -65,8 +65,14 @@ class AccessionStore(
   private val log = perClassLogger()
 
   fun fetchById(accessionId: AccessionId, skipPermissionCheck: Boolean = false): AccessionModel? {
-    // First, fetch all the values that are either directly on the accession table or are in other
-    // tables such that there is at most one value for a given accession (N:1 relation).
+    // The accession data forms a tree structure. The parent node is the data from the accessions
+    // table itself, as well as data in reference tables where a given accession can only have a
+    // single value. For example, there is a species table, but an accession only has one species,
+    // so we can consider species to be an attribute of the accession rather than a child entity.
+    //
+    // Under the parent, there are things an accession can have zero or more of, e.g., withdrawals
+    // or photos. We currently query each of those things individually rather than attempting to
+    // grab all of them in a single SQL query.
     val parentRow =
         dslContext
             .select(
