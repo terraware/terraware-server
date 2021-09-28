@@ -9,6 +9,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
@@ -21,7 +22,6 @@ import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
-import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -203,8 +203,9 @@ internal class PermissionStoreTest : DatabaseTest() {
                   projectId = projectId,
                   name = "Site $siteId",
                   enabled = true,
-                  latitude = BigDecimal.ONE,
-                  longitude = BigDecimal.TEN))
+                  location = mercatorPoint(1.0, 10.0, 0.0),
+                  createdTime = Instant.EPOCH,
+                  modifiedTime = Instant.EPOCH))
 
           facilities.forEach { facilityId ->
             facilitiesDao.insert(

@@ -21,6 +21,9 @@ class KeycloakUserNotFoundException(message: String) : Exception(message)
 
 class LayerNotFoundException(val layerId: LayerId) : Exception("Layer $layerId not found")
 
+class OrganizationNotFoundException(val organizationId: OrganizationId) :
+    Exception("Organization $organizationId not found")
+
 class PhotoNotFoundException(val photoId: PhotoId) : Exception("Photo $photoId not found")
 
 class PlantNotFoundException(val featureId: FeatureId) :
@@ -28,6 +31,9 @@ class PlantNotFoundException(val featureId: FeatureId) :
 
 class PlantObservationNotFoundException(val id: PlantObservationId) :
     Exception("Plant observation $id not found")
+
+class ProjectNotFoundException(val projectId: ProjectId) :
+    Exception("Project $projectId not found")
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     Exception("Species $speciesId not found")
