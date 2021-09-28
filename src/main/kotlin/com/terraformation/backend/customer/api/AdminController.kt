@@ -13,6 +13,7 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
+import net.postgis.jdbc.geometry.Point
 import org.jooq.DSLContext
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
@@ -386,7 +388,9 @@ class AdminController(
       @Min(-180L) @Max(180L) @RequestParam("longitude") longitude: BigDecimal,
       model: Model
   ): String {
-    siteStore.create(projectId, name, latitude, longitude)
+    val location =
+        Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
+    siteStore.create(projectId, name, location)
 
     model.addAttribute("successMessage", "Site created.")
     return project(projectId, model)

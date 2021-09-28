@@ -890,6 +890,14 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: srid
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Spatial reference system identifier to use for locations.
+          format: int32
+          default: 4326
       responses:
         "200":
           description: Retrieved list of sites.
@@ -1538,6 +1546,15 @@ paths:
       - Customer
       summary: Gets all of the sites the current user can access.
       operationId: listAllSites
+      parameters:
+      - name: srid
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Spatial reference system identifier to use for locations.
+          format: int32
+          default: 4326
       responses:
         "200":
           description: Retrieved list of sites.
@@ -1558,6 +1575,14 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: srid
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Spatial reference system identifier to use for locations.
+          format: int32
+          default: 4326
       responses:
         "200":
           description: Site retrieved.
@@ -3951,8 +3976,7 @@ components:
     SiteElement:
       required:
       - id
-      - latitude
-      - longitude
+      - location
       - name
       - projectId
       type: object
@@ -3965,10 +3989,8 @@ components:
         projectId:
           type: integer
           format: int64
-        latitude:
-          type: string
-        longitude:
-          type: string
+        location:
+          $ref: '#/components/schemas/Point'
         locale:
           type: string
         timezone:

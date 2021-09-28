@@ -9,7 +9,6 @@ import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
-import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import net.postgis.jdbc.geometry.Geometry
@@ -112,8 +111,9 @@ abstract class DatabaseTest {
           .set(ID, SiteId(id))
           .set(PROJECT_ID, ProjectId(projectId))
           .set(NAME, name)
-          .set(LATITUDE, BigDecimal.valueOf(1))
-          .set(LONGITUDE, BigDecimal.valueOf(2))
+          .set(LOCATION, mercatorPoint(1.0, 2.0, 0.0))
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, Instant.EPOCH)
           .execute()
     }
   }
