@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.transformSrid
+import java.time.Clock
 import javax.annotation.ManagedBean
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Condition
@@ -17,7 +18,11 @@ import org.jooq.DSLContext
 import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
-class SiteStore(private val dslContext: DSLContext, private val sitesDao: SitesDao) {
+class SiteStore(
+    private val clock: Clock,
+    private val dslContext: DSLContext,
+    private val sitesDao: SitesDao
+) {
   fun fetchById(siteId: SiteId, srid: Int = SRID.LONG_LAT): SiteModel? {
     return if (currentUser().canReadSite(siteId)) {
       return fetchModelsWhere(srid, SITES.ID.eq(siteId)).firstOrNull()
@@ -51,7 +56,13 @@ class SiteStore(private val dslContext: DSLContext, private val sitesDao: SitesD
       throw AccessDeniedException("No permission to create sites in this project")
     }
 
-    val row = SitesRow(location = location, name = name, projectId = projectId)
+    val row =
+        SitesRow(
+            createdTime = clock.instant(),
+            location = location,
+            modifiedTime = clock.instant(),
+            name = name,
+            projectId = projectId)
 
     sitesDao.insert(row)
 
