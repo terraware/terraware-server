@@ -16,10 +16,6 @@ else
   exit
 fi
 
-# docker_tags="${docker_image}:${GITHUB_REF:0:12}"
-
-# if [[ -n "$TIER" ]]; then
-# fi
 docker_image='terraware/terraware-server'
 docker_tags="${docker_image}:${GITHUB_REF:0:12}\n${docker_image}:${TIER}"
 
