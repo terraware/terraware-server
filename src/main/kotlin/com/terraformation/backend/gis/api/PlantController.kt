@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.LocalDate
+import javax.ws.rs.QueryParam
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -57,16 +58,19 @@ class PlantController(private val plantStore: PlantStore) {
               "and/or notes filters.")
   @GetMapping("/list/{layerId}")
   fun getPlantsList(
-      @RequestBody payload: ListPlantsRequestPayload,
+      @QueryParam("speciesName") speciesName: String? = null,
+      @QueryParam("minEnteredTime") minEnteredTime: Instant? = null,
+      @QueryParam("maxEnteredTime") maxEnteredTime: Instant? = null,
+      @QueryParam("notes") notes: String? = null,
       @PathVariable layerId: LayerId
   ): ListPlantsResponsePayload {
     val plants =
         plantStore.fetchPlantsList(
             layerId = layerId,
-            speciesName = payload.speciesName,
-            minEnteredTime = payload.minEnteredTime,
-            maxEnteredTime = payload.maxEnteredTime,
-            notes = payload.notes)
+            speciesName = speciesName,
+            minEnteredTime = minEnteredTime,
+            maxEnteredTime = maxEnteredTime,
+            notes = notes)
 
     return ListPlantsResponsePayload(plants.map { ListPlantsResponseElement(it) })
   }
@@ -78,14 +82,13 @@ class PlantController(private val plantStore: PlantStore) {
               "Can filter based on enteredTime.")
   @GetMapping("/list/summary/{layerId}")
   fun getPlantSummary(
-      @RequestBody payload: GetPlantSummaryPayload,
+      @QueryParam("minEnteredTime") minEnteredTime: Instant? = null,
+      @QueryParam("maxEnteredTime") maxEnteredTime: Instant? = null,
       @PathVariable layerId: LayerId
   ): PlantSummaryResponsePayload {
     val summary =
         plantStore.fetchPlantSummary(
-            layerId,
-            minEnteredTime = payload.minEnteredTime,
-            maxEnteredTime = payload.maxEnteredTime)
+            layerId, minEnteredTime = minEnteredTime, maxEnteredTime = maxEnteredTime)
     return PlantSummaryResponsePayload(summary)
   }
 
@@ -124,18 +127,6 @@ data class CreatePlantRequestPayload(
         datePlanted = datePlanted)
   }
 }
-
-data class ListPlantsRequestPayload(
-    val speciesName: String? = null,
-    val minEnteredTime: Instant? = null,
-    val maxEnteredTime: Instant? = null,
-    val notes: String? = null,
-)
-
-data class GetPlantSummaryPayload(
-    val minEnteredTime: Instant? = null,
-    val maxEnteredTime: Instant? = null
-)
 
 data class UpdatePlantRequestPayload(
     val label: String? = null,

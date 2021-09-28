@@ -74,10 +74,21 @@ class FeatureController(private val featureStore: FeatureStore) {
   @Operation(summary = "List all features associated with a layer.")
   @GetMapping("/list/{layerId}")
   fun list(
-      @RequestBody payload: ListFeaturesRequestPayload,
+      @QueryParam("skip")
+      @Schema(
+          description =
+              "Number of entries to skip in search results. Used in conjunction with limit to " +
+                  "paginate through large results. Default is 0 (don't skip any results).")
+      skip: Int? = null,
+      @QueryParam("limit")
+      @Schema(
+          description =
+              "Maximum number of entries to return. Used in conjunction with skip to paginate " +
+                  "through large results. The system may impose a cap on this value.")
+      limit: Int? = null,
       @PathVariable layerId: LayerId
   ): ListFeaturesResponsePayload {
-    val features = featureStore.listFeatures(layerId, skip = payload.skip, limit = payload.limit)
+    val features = featureStore.listFeatures(layerId, skip = skip, limit = limit)
     return ListFeaturesResponsePayload(features.map { FeatureResponse(it) })
   }
 
@@ -245,19 +256,6 @@ data class CreateFeatureRequestPayload(
     )
   }
 }
-
-data class ListFeaturesRequestPayload(
-    @Schema(
-        description =
-            "Number of entries to skip in search results. Used in conjunction with limit to " +
-                "paginate through large results. Default is 0 (don't skip any results).")
-    val skip: Int? = null,
-    @Schema(
-        description =
-            "Maximum number of entries to return. Used in conjunction with skip to paginate " +
-                "through large results. The system may impose a cap on this value.")
-    val limit: Int? = null,
-)
 
 data class UpdateFeatureRequestPayload(
     val layerId: LayerId,

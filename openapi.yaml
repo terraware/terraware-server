@@ -176,11 +176,24 @@ paths:
       summary: List all features associated with a layer.
       operationId: list_1
       parameters:
-      - name: payload
+      - name: skip
         in: query
-        required: true
+        required: false
         schema:
-          $ref: '#/components/schemas/ListFeaturesRequestPayload'
+          type: integer
+          description: Number of entries to skip in search results. Used in conjunction
+            with limit to paginate through large results. Default is 0 (don't skip
+            any results).
+          format: int32
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Maximum number of entries to return. Used in conjunction with
+            skip to paginate through large results. The system may impose a cap on
+            this value.
+          format: int32
       - name: layerId
         in: path
         required: true
@@ -704,11 +717,18 @@ paths:
         Can filter based on enteredTime.
       operationId: getPlantSummary
       parameters:
-      - name: payload
+      - name: minEnteredTime
         in: query
-        required: true
+        required: false
         schema:
-          $ref: '#/components/schemas/GetPlantSummaryPayload'
+          type: string
+          format: date-time
+      - name: maxEnteredTime
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
       - name: layerId
         in: path
         required: true
@@ -730,11 +750,28 @@ paths:
         \ time, and/or notes filters."
       operationId: getPlantsList
       parameters:
-      - name: payload
+      - name: speciesName
         in: query
-        required: true
+        required: false
         schema:
-          $ref: '#/components/schemas/ListPlantsRequestPayload'
+          type: string
+      - name: minEnteredTime
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: maxEnteredTime
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: notes
+        in: query
+        required: false
+        schema:
+          type: string
       - name: layerId
         in: path
         required: true
@@ -3228,15 +3265,6 @@ components:
           $ref: '#/components/schemas/PlantResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    GetPlantSummaryPayload:
-      type: object
-      properties:
-        minEnteredTime:
-          type: string
-          format: date-time
-        maxEnteredTime:
-          type: string
-          format: date-time
     GetProjectResponsePayload:
       required:
       - project
@@ -3383,21 +3411,6 @@ components:
             $ref: '#/components/schemas/FeaturePhoto'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    ListFeaturesRequestPayload:
-      type: object
-      properties:
-        skip:
-          type: integer
-          description: Number of entries to skip in search results. Used in conjunction
-            with limit to paginate through large results. Default is 0 (don't skip
-            any results).
-          format: int32
-        limit:
-          type: integer
-          description: Maximum number of entries to return. Used in conjunction with
-            skip to paginate through large results. The system may impose a cap on
-            this value.
-          format: int32
     ListFeaturesResponsePayload:
       required:
       - features
@@ -3532,19 +3545,6 @@ components:
             $ref: '#/components/schemas/ListPhotosResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    ListPlantsRequestPayload:
-      type: object
-      properties:
-        speciesName:
-          type: string
-        minEnteredTime:
-          type: string
-          format: date-time
-        maxEnteredTime:
-          type: string
-          format: date-time
-        notes:
-          type: string
     ListPlantsResponseElement:
       required:
       - featureId
