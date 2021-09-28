@@ -552,6 +552,8 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
+    permissions.expect(OrganizationId(1), listProjects = true)
+
     permissions.expect(
         ProjectId(10),
         ProjectId(11),
