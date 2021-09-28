@@ -16,12 +16,12 @@ else
   exit
 fi
 
-docker_image='terraware/terraware-server'
-docker_tags="${docker_image}:${GITHUB_REF:0:12}"
+# docker_tags="${docker_image}:${GITHUB_REF:0:12}"
 
-if [[ -n "$TIER" ]]; then
-  docker_tags="${docker_tags}\n${docker_image}:${TIER}"
-fi
+# if [[ -n "$TIER" ]]; then
+# fi
+docker_image='terraware/terraware-server'
+docker_tags="${docker_image}:${GITHUB_REF:0:12}\n${docker_image}:${TIER}"
 
 # Define secret names based on the tier
 cat >> $GITHUB_ENV <<-EOF
