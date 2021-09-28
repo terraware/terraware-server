@@ -41,7 +41,7 @@ class AccessionScheduledStateTask(
           .filter { it.getStateTransition(it, clock) != null }
           .forEach { model ->
             if (model.accessionNumber != null) {
-              accessionStore.update(facilityId, model.accessionNumber, model)
+              accessionStore.update(model)
             }
           }
     }

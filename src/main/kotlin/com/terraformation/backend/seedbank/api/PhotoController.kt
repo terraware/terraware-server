@@ -15,11 +15,10 @@ import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.UnsupportedPhotoFormatException
-import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.swagger.v3.oas.annotations.Operation
@@ -48,13 +47,10 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
-@RequestMapping("/api/v1/seedbank/accession/{accessionNumber}/photo")
+@RequestMapping("/api/v1/seedbank/accession/{id}/photo")
 @RestController
 @SeedBankAppEndpoint
-class PhotoController(
-    private val accessionStore: AccessionStore,
-    private val photoRepository: PhotoRepository,
-) {
+class PhotoController(private val photoRepository: PhotoRepository) {
   private val log = perClassLogger()
 
   @ApiResponseSimpleSuccess
@@ -73,13 +69,11 @@ class PhotoController(
       content =
           [Content(encoding = [Encoding(name = "file", contentType = MediaType.IMAGE_JPEG_VALUE)])])
   fun uploadPhoto(
-      @PathVariable accessionNumber: String,
+      @PathVariable("id") accessionId: AccessionId,
       @PathVariable photoFilename: String,
       @RequestPart("file") file: MultipartFile,
       @RequestPart("metadata") metadata: UploadPhotoMetadataPayload
   ): SimpleSuccessResponsePayload {
-    val facilityId = currentUser().defaultFacilityId()
-
     val contentType = file.contentType?.substringBefore(';')
     if (contentType != MediaType.IMAGE_JPEG_VALUE) {
       throw UnsupportedPhotoFormatException()
@@ -95,8 +89,7 @@ class PhotoController(
 
     try {
       photoRepository.storePhoto(
-          facilityId,
-          accessionNumber,
+          accessionId,
           file.inputStream,
           file.size,
           PhotoMetadata(
@@ -107,13 +100,13 @@ class PhotoController(
               location,
               metadata.gpsAccuracy))
     } catch (e: AccessionNotFoundException) {
-      throw NotFoundException("Accession $accessionNumber does not exist.")
+      throw NotFoundException("Accession $accessionId does not exist.")
     } catch (e: FileAlreadyExistsException) {
-      log.info("Rejecting duplicate photo $photoFilename for accession $accessionNumber")
+      log.info("Rejecting duplicate photo $photoFilename for accession $accessionId")
       throw DuplicateNameException(
-          "Photo $photoFilename already exists for accession $accessionNumber.")
+          "Photo $photoFilename already exists for accession $accessionId.")
     } catch (e: Exception) {
-      log.error("Unable to store photo $photoFilename for accession $accessionNumber", e)
+      log.error("Unable to store photo $photoFilename for accession $accessionId", e)
       throw InternalErrorException("Unable to store the photo.")
     }
 
@@ -136,7 +129,7 @@ class PhotoController(
       description = PHOTO_OPERATION_DESCRIPTION)
   @ResponseBody
   fun getPhoto(
-      @PathVariable accessionNumber: String,
+      @PathVariable("id") accessionId: AccessionId,
       @PathVariable photoFilename: String,
       @QueryParam("maxWidth")
       @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
@@ -146,15 +139,9 @@ class PhotoController(
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
     val headers = HttpHeaders()
-    val facilityId = currentUser().defaultFacilityId()
-
-    if (accessionStore.getIdByNumber(facilityId, accessionNumber) == null) {
-      throw NotFoundException("Accession $accessionNumber does not exist.")
-    }
 
     try {
-      val inputStream =
-          photoRepository.readPhoto(facilityId, accessionNumber, photoFilename, maxWidth, maxHeight)
+      val inputStream = photoRepository.readPhoto(accessionId, photoFilename, maxWidth, maxHeight)
       headers.contentLength = inputStream.size
 
       val resource = InputStreamResource(inputStream)
@@ -169,13 +156,12 @@ class PhotoController(
   @ApiResponse404("The accession does not exist.")
   @GetMapping
   @Operation(summary = "List all the available photos for an accession.")
-  fun listPhotos(@PathVariable accessionNumber: String): ListPhotosResponsePayload {
-    val facilityId = currentUser().defaultFacilityId()
+  fun listPhotos(@PathVariable("id") accessionId: AccessionId): ListPhotosResponsePayload {
     val photos =
         try {
-          photoRepository.listPhotos(facilityId, accessionNumber)
+          photoRepository.listPhotos(accessionId)
         } catch (e: AccessionNotFoundException) {
-          throw NotFoundException("Accession $accessionNumber does not exist.")
+          throw NotFoundException("Accession $accessionId does not exist.")
         }
 
     val elements = photos.map { ListPhotosResponseElement(it) }

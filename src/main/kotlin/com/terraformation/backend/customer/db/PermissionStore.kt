@@ -7,15 +7,15 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
-import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.db.tables.references.USERS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.jooq.conf.ParamType
 
 /**
  * Stores and retrieves user permission information.
@@ -40,6 +40,8 @@ class PermissionStore(private val dslContext: DSLContext) {
     return dslContext
         .select(FACILITIES.ID, ORGANIZATION_USERS.ROLE_ID)
         .from(ORGANIZATION_USERS)
+        .join(USERS)
+        .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
         .join(PROJECTS)
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
         .join(SITES)
@@ -54,7 +56,8 @@ class PermissionStore(private val dslContext: DSLContext) {
             ORGANIZATION_USERS
                 .ROLE_ID
                 .`in`(Role.OWNER.id, Role.ADMIN.id)
-                .or(PROJECT_USERS.USER_ID.isNotNull))
+                .or(PROJECT_USERS.USER_ID.isNotNull)
+                .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
 
@@ -80,6 +83,8 @@ class PermissionStore(private val dslContext: DSLContext) {
     return dslContext
         .select(PROJECTS.ID, ORGANIZATION_USERS.ROLE_ID)
         .from(ORGANIZATION_USERS)
+        .join(USERS)
+        .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
         .join(PROJECTS)
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
         .leftJoin(PROJECT_USERS)
@@ -90,7 +95,8 @@ class PermissionStore(private val dslContext: DSLContext) {
             ORGANIZATION_USERS
                 .ROLE_ID
                 .`in`(Role.OWNER.id, Role.ADMIN.id)
-                .or(PROJECT_USERS.USER_ID.isNotNull))
+                .or(PROJECT_USERS.USER_ID.isNotNull)
+                .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
 
@@ -107,6 +113,8 @@ class PermissionStore(private val dslContext: DSLContext) {
     return dslContext
         .select(SITES.ID, ORGANIZATION_USERS.ROLE_ID)
         .from(ORGANIZATION_USERS)
+        .join(USERS)
+        .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
         .join(PROJECTS)
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
         .join(SITES)
@@ -119,8 +127,8 @@ class PermissionStore(private val dslContext: DSLContext) {
             ORGANIZATION_USERS
                 .ROLE_ID
                 .`in`(Role.OWNER.id, Role.ADMIN.id)
-                .or(PROJECT_USERS.USER_ID.isNotNull))
-        .also { perClassLogger().info(it.getSQL(ParamType.INLINED)) }
+                .or(PROJECT_USERS.USER_ID.isNotNull)
+                .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
 

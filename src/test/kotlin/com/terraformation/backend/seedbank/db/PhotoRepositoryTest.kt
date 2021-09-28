@@ -129,7 +129,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     repository =
         PhotoRepository(
             accessionPhotosDao,
-            accessionStore,
+            accessionsDao,
             dslContext,
             clock,
             fileStore,
@@ -155,8 +155,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   fun `storePhoto writes file and database row`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(10)
 
-    repository.storePhoto(
-        facilityId, accessionNumber, photoData.inputStream(), photoData.size.toLong(), metadata)
+    repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
 
     val expectedPhoto =
         PhotosRow(
@@ -208,7 +207,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     dslContext.execute("CREATE UNIQUE INDEX ON photos (file_name)")
 
     assertThrows(DuplicateKeyException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
+      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -224,7 +223,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
         }
 
     assertThrows<SocketTimeoutException> {
-      repository.storePhoto(facilityId, accessionNumber, badStream, 1000, metadata)
+      repository.storePhoto(accessionId, badStream, 1000, metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -232,8 +231,9 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `storePhoto throws exception if accession does not exist`() {
+    val nonexistentAccessionId = AccessionId(2000)
     assertThrows(AccessionNotFoundException::class.java) {
-      repository.storePhoto(facilityId, "nonexistent", ByteArray(0).inputStream(), 0, metadata)
+      repository.storePhoto(nonexistentAccessionId, ByteArray(0).inputStream(), 0, metadata)
     }
 
     assertFalse(Files.exists(photoPath), "File should not exist")
@@ -244,7 +244,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateAccession(accessionId, facilityId) } returns false
 
     assertThrows(AccessDeniedException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
+      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
     }
   }
 
@@ -255,7 +255,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     Files.createFile(photoPath.parent)
 
     assertThrows(IOException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
+      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
     }
   }
 
@@ -265,7 +265,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     Files.createFile(photoPath)
 
     assertThrows(FileAlreadyExistsException::class.java) {
-      repository.storePhoto(facilityId, accessionNumber, ByteArray(0).inputStream(), 0, metadata)
+      repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
     }
 
     val photosWritten = accessionPhotosDao.findAll()
@@ -278,19 +278,16 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   fun `readPhoto reads existing photo file`() {
     val photoData = Random(System.currentTimeMillis()).nextBytes(1000)
 
-    repository.storePhoto(
-        facilityId, accessionNumber, photoData.inputStream(), photoData.size.toLong(), metadata)
+    repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
 
-    val stream = repository.readPhoto(facilityId, accessionNumber, filename)
+    val stream = repository.readPhoto(accessionId, filename)
 
     assertArrayEquals(photoData, stream.readAllBytes())
   }
 
   @Test
   fun `readPhoto throws exception on nonexistent file`() {
-    assertThrows(NoSuchFileException::class.java) {
-      repository.readPhoto(facilityId, accessionNumber, filename)
-    }
+    assertThrows(NoSuchFileException::class.java) { repository.readPhoto(accessionId, filename) }
   }
 
   @Test
@@ -298,7 +295,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(accessionId, facilityId) } returns false
 
     assertThrows(AccessionNotFoundException::class.java) {
-      repository.readPhoto(facilityId, accessionNumber, filename)
+      repository.readPhoto(accessionId, filename)
     }
   }
 
@@ -311,13 +308,12 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val width = 123
     val height = 456
 
-    repository.storePhoto(
-        facilityId, accessionNumber, photoData.inputStream(), photoData.size.toLong(), metadata)
+    repository.storePhoto(accessionId, photoData.inputStream(), photoData.size.toLong(), metadata)
     val photoId = photosDao.findAll().first().id!!
 
     every { thumbnailStore.getThumbnailData(any(), any(), any()) } returns thumbnailStream
 
-    val stream = repository.readPhoto(facilityId, accessionNumber, filename, width, height)
+    val stream = repository.readPhoto(accessionId, filename, width, height)
 
     verify { thumbnailStore.getThumbnailData(photoId, width, height) }
 
@@ -329,17 +325,15 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     val expectedSize = 17
     val photoData = ByteArray(expectedSize)
 
-    repository.storePhoto(
-        facilityId, accessionNumber, photoData.inputStream(), expectedSize.toLong(), metadata)
+    repository.storePhoto(accessionId, photoData.inputStream(), expectedSize.toLong(), metadata)
 
-    assertEquals(
-        expectedSize.toLong(), repository.getPhotoFileSize(facilityId, accessionNumber, filename))
+    assertEquals(expectedSize.toLong(), repository.getPhotoFileSize(accessionId, filename))
   }
 
   @Test
   fun `getPhotoFileSize throws exception on nonexistent file`() {
     assertThrows(NoSuchFileException::class.java) {
-      repository.getPhotoFileSize(facilityId, accessionNumber, filename)
+      repository.getPhotoFileSize(accessionId, filename)
     }
   }
 
@@ -348,7 +342,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(accessionId, facilityId) } returns false
 
     assertThrows(AccessionNotFoundException::class.java) {
-      repository.getPhotoFileSize(facilityId, accessionNumber, filename)
+      repository.getPhotoFileSize(accessionId, filename)
     }
   }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.opencsv.CSVWriter
 import com.terraformation.backend.api.SeedBankAppEndpoint
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.seedbank.search.AndNode
 import com.terraformation.backend.seedbank.search.FieldNode
 import com.terraformation.backend.seedbank.search.NoConditionNode
@@ -79,6 +80,7 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   ): SearchResponsePayload {
     return SearchResponsePayload(
         searchService.search(
+            payload.facilityId,
             payload.fields,
             payload.toSearchNode(),
             payload.searchSortFields ?: emptyList(),
@@ -96,7 +98,10 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   fun export(@RequestBody payload: ExportRequestPayload): ResponseEntity<ByteArray> {
     val searchResults =
         searchService.search(
-            payload.fields, payload.toSearchNode(), payload.searchSortFields ?: emptyList())
+            payload.facilityId,
+            payload.fields,
+            payload.toSearchNode(),
+            payload.searchSortFields ?: emptyList())
     return exportCsv(payload, searchResults)
   }
 
@@ -159,6 +164,7 @@ interface HasSearchNode {
 }
 
 data class SearchRequestPayload(
+    val facilityId: FacilityId,
     @NotEmpty val fields: List<SearchField<*>>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
@@ -168,6 +174,7 @@ data class SearchRequestPayload(
 ) : HasSearchNode, HasSortOrder
 
 data class ExportRequestPayload(
+    val facilityId: FacilityId,
     @NotEmpty val fields: List<SearchField<*>>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,

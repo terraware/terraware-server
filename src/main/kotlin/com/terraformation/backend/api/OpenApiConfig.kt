@@ -1,6 +1,8 @@
 package com.terraformation.backend.api
 
+import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
+import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
@@ -82,11 +84,18 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
    * could also be strings or numbers.
    */
   private fun removeAdditionalProperties(openApi: OpenAPI) {
-    val fieldsToModify = mapOf(DeviceConfig::class.swaggerSchemaName to "settings")
+    val fieldsToModify =
+        listOf(
+            CreateDeviceRequestPayload::class.swaggerSchemaName to "settings",
+            DeviceConfig::class.swaggerSchemaName to "settings",
+            UpdateDeviceRequestPayload::class.swaggerSchemaName to "settings",
+        )
 
     fieldsToModify.forEach { (schemaName, fieldName) ->
-      openApi.components.schemas[schemaName]?.properties?.get(fieldName)?.additionalProperties =
-          null
+      val field =
+          openApi.components.schemas[schemaName]?.properties?.get(fieldName)
+              ?: throw IllegalStateException("Cannot find field $schemaName.$fieldName")
+      field.additionalProperties = null
     }
   }
 

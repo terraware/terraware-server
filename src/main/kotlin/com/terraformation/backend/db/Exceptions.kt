@@ -2,10 +2,10 @@ package com.terraformation.backend.db
 
 import java.io.IOException
 
-class AccessionNotFoundException(val accessionNumber: String) :
-    Exception("Accession $accessionNumber not found")
+class AccessionNotFoundException(val accessionId: AccessionId) :
+    Exception("Accession $accessionId not found")
 
-class DeviceNotFoundException(override val message: String) : Exception(message)
+class DeviceNotFoundException(val deviceId: DeviceId) : Exception("Device $deviceId not found")
 
 class FeatureNotFoundException(val featureId: FeatureId) :
     Exception("Feature $featureId not found")

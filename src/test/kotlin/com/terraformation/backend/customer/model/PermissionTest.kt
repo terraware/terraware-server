@@ -248,6 +248,7 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1110),
         FacilityId(1111),
         createAccession = true,
+        createDevice = true,
     )
 
     permissions.expect(
@@ -275,6 +276,8 @@ internal class PermissionTest : DatabaseTest() {
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
+        readDevice = true,
+        updateDevice = true,
     )
 
     permissions.andNothingElse()
@@ -364,6 +367,7 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1110),
         FacilityId(1111),
         createAccession = true,
+        createDevice = true,
     )
 
     permissions.expect(
@@ -391,6 +395,8 @@ internal class PermissionTest : DatabaseTest() {
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
+        readDevice = true,
+        updateDevice = true,
     )
 
     permissions.andNothingElse()
@@ -443,6 +449,7 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1010),
         FacilityId(1011),
         createAccession = true,
+        createDevice = true,
     )
 
     permissions.expect(
@@ -462,6 +469,8 @@ internal class PermissionTest : DatabaseTest() {
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
+        readDevice = true,
+        updateDevice = true,
     )
 
     permissions.andNothingElse()
@@ -509,6 +518,7 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1010),
         FacilityId(1011),
         createAccession = true,
+        createDevice = true,
     )
 
     permissions.expect(
@@ -518,6 +528,107 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1011),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        DeviceId(1000),
+        DeviceId(1001),
+        DeviceId(1010),
+        DeviceId(1011),
+        createTimeseries = true,
+        readTimeseries = true,
+        updateTimeseries = true,
+        readDevice = true,
+        updateDevice = true,
+    )
+
+    permissions.andNothingElse()
+  }
+
+  @Test
+  fun `API clients are members of all projects, sites, facilities, and layers`() {
+    usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.APIClient))
+    givenRole(OrganizationId(1), Role.CONTRIBUTOR)
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        ProjectId(10),
+        ProjectId(11),
+        listSites = true,
+    )
+
+    permissions.expect(
+        SiteId(100),
+        SiteId(101),
+        SiteId(110),
+        SiteId(111),
+        listFacilities = true,
+        readSite = true,
+        createLayer = true,
+        readLayer = true,
+        updateLayer = true,
+        deleteLayer = true,
+    )
+
+    permissions.expect(
+        LayerId(1000),
+        LayerId(1001),
+        LayerId(1100),
+        createLayerData = true,
+        updateLayerData = true,
+    )
+
+    permissions.expect(
+        FeatureId(10010),
+        FeatureId(11000),
+        FeatureId(11001),
+        createLayerData = true,
+        readLayerData = true,
+        updateLayerData = true,
+        deleteLayerData = true,
+    )
+
+    permissions.expect(
+        FacilityId(1000),
+        FacilityId(1001),
+        FacilityId(1010),
+        FacilityId(1011),
+        FacilityId(1100),
+        FacilityId(1101),
+        FacilityId(1110),
+        FacilityId(1111),
+        createAccession = true,
+        createDevice = true,
+    )
+
+    permissions.expect(
+        AccessionId(1000),
+        AccessionId(1001),
+        AccessionId(1010),
+        AccessionId(1011),
+        AccessionId(1100),
+        AccessionId(1101),
+        AccessionId(1110),
+        AccessionId(1111),
+        readAccession = true,
+        updateAccession = true,
+    )
+
+    permissions.expect(
+        DeviceId(1000),
+        DeviceId(1001),
+        DeviceId(1010),
+        DeviceId(1011),
+        DeviceId(1100),
+        DeviceId(1101),
+        DeviceId(1110),
+        DeviceId(1111),
+        createTimeseries = true,
+        readTimeseries = true,
+        updateTimeseries = true,
+        readDevice = true,
+        updateDevice = true,
     )
 
     permissions.andNothingElse()
@@ -656,12 +767,17 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg facilities: FacilityId,
         createAccession: Boolean = false,
+        createDevice: Boolean = false,
     ) {
       facilities.forEach { facilityId ->
         assertEquals(
             createAccession,
             user.canCreateAccession(facilityId),
             "Can create accession at facility $facilityId")
+        assertEquals(
+            createDevice,
+            user.canCreateDevice(facilityId),
+            "Can create device at facility $facilityId")
 
         uncheckedFacilities.remove(facilityId)
       }
@@ -741,6 +857,8 @@ internal class PermissionTest : DatabaseTest() {
         createTimeseries: Boolean = false,
         readTimeseries: Boolean = false,
         updateTimeseries: Boolean = false,
+        readDevice: Boolean = false,
+        updateDevice: Boolean = false,
     ) {
       devices.forEach { deviceId ->
         assertEquals(
@@ -755,6 +873,8 @@ internal class PermissionTest : DatabaseTest() {
             updateTimeseries,
             user.canUpdateTimeseries(deviceId),
             "Can update timeseries for device $deviceId")
+        assertEquals(readDevice, user.canReadDevice(deviceId), "Can read device $deviceId")
+        assertEquals(updateDevice, user.canUpdateDevice(deviceId), "Can update device $deviceId")
 
         uncheckedDevices.remove(deviceId)
       }
