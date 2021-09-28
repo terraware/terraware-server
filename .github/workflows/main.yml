@@ -99,7 +99,7 @@ jobs:
       with:
         context: build/docker
         tags: |
-          terraware/terraware-server:${{ env.TIER }}
+          terraware/terraware-server:${{ env.IMAGE_TAG }}
           terraware/terraware-server:${{ env.COMMIT_SHA }}
         platforms: linux/amd64,linux/arm64
         push: ${{ env.IS_CD == true }}
