@@ -169,7 +169,10 @@ class PlantStore(
             .fetch()
 
     val summaryMap = mutableMapOf<SpeciesId, Int>()
-    records.forEach { record -> summaryMap[record.get(PLANTS.SPECIES_ID)!!] = record.get(1) as Int }
+    records.forEach { record ->
+      val speciesId = record[PLANTS.SPECIES_ID] ?: SpeciesId(-1)
+      summaryMap[speciesId] = record.get(1) as Int
+    }
     return summaryMap
   }
 

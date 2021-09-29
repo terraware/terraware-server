@@ -148,7 +148,8 @@ abstract class GeoJsonOpenApiSchema {
           description =
               "Name of the coordinate reference system. This must be in the form EPSG:nnnn where " +
                   "nnnn is the numeric identifier of a coordinate system in the EPSG dataset. " +
-                  "The default is 4326, the defined coordinate system for GeoJSON.",
+                  "The default is Longitude/Latitude EPSG:4326, which is the coordinate system +" +
+                  "for GeoJSON.",
           example = "EPSG:4326",
           externalDocs =
               ExternalDocumentation(
