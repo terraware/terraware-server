@@ -89,7 +89,8 @@ class FeatureController(private val featureStore: FeatureStore) {
       @PathVariable layerId: LayerId
   ): ListFeaturesResponsePayload {
     val features = featureStore.listFeatures(layerId, skip = skip, limit = limit)
-    return ListFeaturesResponsePayload(features.map { FeatureResponse(it) })
+    val totalCount = featureStore.countFeatures(layerId)
+    return ListFeaturesResponsePayload(features.map { FeatureResponse(it) }, totalCount)
   }
 
   @ApiResponse(responseCode = "200", description = "The feature was updated successfully.")
@@ -349,7 +350,7 @@ data class GetFeatureResponsePayload(val feature: FeatureResponse) : SuccessResp
 data class ListFeaturePhotosResponsePayload(val photos: List<FeaturePhoto>) :
     SuccessResponsePayload
 
-data class ListFeaturesResponsePayload(val features: List<FeatureResponse>) :
+data class ListFeaturesResponsePayload(val features: List<FeatureResponse>, val totalCount: Int) :
     SuccessResponsePayload
 
 data class GetFeaturePhotoMetadataResponsePayload(val photo: FeaturePhoto) : SuccessResponsePayload

@@ -3418,12 +3418,16 @@ components:
       required:
       - features
       - status
+      - totalCount
       type: object
       properties:
         features:
           type: array
           items:
             $ref: '#/components/schemas/FeatureResponse'
+        totalCount:
+          type: integer
+          format: int32
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListFieldValuesRequestPayload:

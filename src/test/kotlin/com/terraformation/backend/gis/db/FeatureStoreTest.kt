@@ -228,6 +228,29 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `count returns 0 if layer id is invalid`() {
+    assertEquals(0, store.countFeatures(nonExistentLayerId))
+  }
+
+  @Test
+  fun `count returns 0 if user does not have read permissions`() {
+    store.createFeature(validCreateRequest)
+    every { user.canReadLayerData(layerId = any()) } returns false
+    assertEquals(0, store.countFeatures(layerId))
+  }
+
+  @Test
+  fun `count returns total number of features in layer`() {
+    repeat(5) { store.createFeature(validCreateRequest) }
+
+    val otherLayerId = LayerId(200)
+    insertLayer(otherLayerId.value, siteId.value, LayerType.Infrastructure)
+    store.createFeature(validCreateRequest.copy(layerId = otherLayerId))
+
+    assertEquals(5, store.countFeatures(layerId))
+  }
+
+  @Test
   fun `update modifies database, returns FeatureModel with updated modified time`() {
     val feature = store.createFeature(validCreateRequest)
     val newAttrib = "Brand new attrib"

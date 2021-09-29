@@ -115,6 +115,20 @@ class FeatureStore(
     return noPermissionsCheckFetch(id)
   }
 
+  fun countFeatures(id: LayerId): Int {
+    if (!currentUser().canReadLayerData(id)) {
+      return 0
+    }
+
+    return dslContext
+        .selectCount()
+        .from(FEATURES)
+        .where(FEATURES.LAYER_ID.eq(id))
+        .fetchOne()
+        ?.value1()
+        ?: 0
+  }
+
   fun listFeatures(id: LayerId, skip: Int? = null, limit: Int? = null): List<FeatureModel> {
     if (!currentUser().canReadLayerData(id)) {
       return emptyList()
