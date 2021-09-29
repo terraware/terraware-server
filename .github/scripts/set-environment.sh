@@ -17,7 +17,7 @@ else
 fi
 
 docker_image='terraware/terraware-server'
-docker_tags="${docker_image}:${GITHUB_REF:0:12}\n${docker_image}:${TIER}"
+docker_tags="${docker_image}:${GITHUB_SHA:0:12},${docker_image}:${TIER}"
 
 # Define secret names based on the tier
 # cat >> $GITHUB_ENV <<-EOF
