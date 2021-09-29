@@ -4,14 +4,16 @@ mkdir -p ~/.ssh
 echo "$SSH_KEY" > ~/.ssh/key
 chmod 600 ~/.ssh/key
 cat >> ~/.ssh/config <<END
-Host bastion
-  HostName $SSH_HOST
+Host $SSH_HOST
   User $SSH_USER
   IdentityFile ~/.ssh/key
   StrictHostKeyChecking no
 
 Host *
-  ProxyCommand ssh -W %h:%p -q bastion
+  User $SSH_USER
+  IdentityFile ~/.ssh/key
+  ProxyCommand ssh -W %h:%p -q $SSH_HOST
+  StrictHostKeyChecking no
 END
 
 aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
