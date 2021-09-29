@@ -20,8 +20,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # - name: Set environment
-    #   run: ./.github/scripts/set-environment.sh
+    - name: Set environment
+      run: ./.github/scripts/set-environment.sh
 
     # - name: Set up Java ${{ matrix.java-version }}
     #   uses: actions/setup-java@v1
