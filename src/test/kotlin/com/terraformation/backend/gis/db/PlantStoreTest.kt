@@ -203,7 +203,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchPlantList elements contain the same data we would have gotten from get feature and get plant`() {
+  fun `fetchPlantList elements contain all feature and plant data`() {
     val feature =
         FeatureModel(
             id = nonExistentFeatureId,
@@ -355,6 +355,22 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchPlantSummary counts how many plants of each species exist in a layer`() {
     insertSeveralPlants(speciesIdsToCount)
     assertEquals(speciesIdsToCount, store.fetchPlantSummary(layerId))
+  }
+
+  @Test
+  fun `fetchPlantSummary uses -1 as a sentinel species ID to count plants where species ID = null`() {
+    insertSeveralPlants(speciesIdsToCount)
+    val featuresWithoutSpecies = mutableListOf<FeatureId>()
+    repeat(3) {
+      val randomFeatureId = FeatureId(Random.nextLong())
+      featuresWithoutSpecies.add(randomFeatureId)
+      insertFeature(id = randomFeatureId.value, layerId = layerId.value, enteredTime = time1)
+      plantsDao.insert(
+          PlantsRow(featureId = randomFeatureId, createdTime = time1, modifiedTime = time2))
+    }
+    val expectedSpeciesIdsToCount = speciesIdsToCount.toMutableMap()
+    expectedSpeciesIdsToCount[SpeciesId(-1)] = 3
+    assertEquals(expectedSpeciesIdsToCount, store.fetchPlantSummary(layerId))
   }
 
   @Test

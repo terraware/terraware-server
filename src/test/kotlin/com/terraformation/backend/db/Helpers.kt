@@ -20,12 +20,12 @@ fun newPoint(x: Double, y: Double, z: Double, srid: Int): Point {
 fun mercatorPoint(x: Double, y: Double, z: Double) = newPoint(x, y, z, SRID.SPHERICAL_MERCATOR)
 
 /**
- * Assert Point coordinate data is equal. Since the coordinates probably went through at least one
+ * Assert two Point coordinates are equal. Since the coordinates probably went through at least one
  * coordinate system conversion in the database write/read, allow a small fuzz factor in the x and y
  * coordinates.
  */
 fun assertPointsEqual(expected: Geometry?, actual: Geometry?, message: String = "Point") {
-  assertNotNull(expected, "$message BUG! Expected value was null")
+  assertNotNull(expected, "$message BUG! Cannot use null for expected Point")
   assertNotNull(actual, message)
 
   expected!!

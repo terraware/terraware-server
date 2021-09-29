@@ -80,7 +80,8 @@ class PlantController(private val plantStore: PlantStore) {
   @Operation(
       summary =
           "Fetch a count of how many plants of each species exist in a layer. " +
-              "Can filter based on enteredTime.")
+              "Can filter based on enteredTime. Plants that are not associated with any species " +
+              "will be grouped together and keyed on the sentinel value of -1.")
   @GetMapping("/list/summary/{layerId}")
   fun getPlantSummary(
       @QueryParam("minEnteredTime") minEnteredTime: Instant? = null,

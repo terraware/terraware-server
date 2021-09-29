@@ -135,7 +135,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create always returns coordinates in LongLat (srid = 4326) even if they are provided in another coordinate reference system`() {
+  fun `create always returns coordinates in LongLat (srid = 4326) even if they are provided in another coordinate system`() {
     val featureModel = store.createFeature(validCreateRequest.copy(geom = sphericalMercatorPoint))
     assertPointsEqual(longLatPoint, featureModel.geom)
   }
@@ -159,6 +159,13 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val fetchedFeature = store.fetchFeature(newFeature.id!!)
     assertNotNull(fetchedFeature)
     assertEquals(newFeature, fetchedFeature)
+  }
+
+  @Test
+  fun `read returns coordinates in LongLat (srid = 4326)`() {
+    val newFeature = store.createFeature(validCreateRequest.copy(geom = sphericalMercatorPoint))
+    val fetchedFeature = store.fetchFeature(newFeature.id!!)
+    assertPointsEqual(longLatPoint, fetchedFeature!!.geom!!)
   }
 
   @Test
@@ -260,7 +267,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update returns coordinates in LongLat (srid = 4326) even if they are provided in another coordinate reference system`() {
+  fun `update returns coordinates in LongLat (srid = 4326) even if they are provided in another coordinate system`() {
     val feature = store.createFeature(validCreateRequest)
     val updatedFeature = store.updateFeature(feature.copy(geom = sphericalMercatorPoint))
     assertPointsEqual(longLatPoint, updatedFeature.geom)
