@@ -5,6 +5,7 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UsesFuzzySearchOperators
 import com.terraformation.backend.db.tables.daos.FeaturesDao
@@ -13,11 +14,13 @@ import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.PLANTS
+import com.terraformation.backend.db.transformSrid
 import java.lang.IllegalArgumentException
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import javax.annotation.ManagedBean
+import net.postgis.jdbc.geometry.Geometry
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -30,8 +33,13 @@ data class FetchPlantListResult(
     val speciesId: SpeciesId? = null,
     val naturalRegen: Boolean? = null,
     val datePlanted: LocalDate? = null,
+    val layerId: LayerId,
+    val gpsHorizAccuracy: Double? = null,
+    val gpsVertAccuracy: Double? = null,
+    val attrib: String? = null,
     val notes: String? = null,
     val enteredTime: Instant? = null,
+    val geom: Geometry? = null,
 )
 
 @ManagedBean
@@ -102,8 +110,14 @@ class PlantStore(
                 PLANTS.SPECIES_ID,
                 PLANTS.NATURAL_REGEN,
                 PLANTS.DATE_PLANTED,
+                FEATURES.LAYER_ID,
+                FEATURES.GPS_HORIZ_ACCURACY,
+                FEATURES.GPS_VERT_ACCURACY,
+                FEATURES.ATTRIB,
                 FEATURES.NOTES,
-                FEATURES.ENTERED_TIME)
+                FEATURES.ENTERED_TIME,
+                FEATURES.GEOM.transformSrid(SRID.LONG_LAT).`as`(FEATURES.GEOM),
+            )
             .from(PLANTS)
             .join(FEATURES)
             .on(PLANTS.FEATURE_ID.eq(FEATURES.ID))
@@ -112,13 +126,18 @@ class PlantStore(
 
     return records.map {
       FetchPlantListResult(
-          featureId = it.get(PLANTS.FEATURE_ID)!!,
-          label = it.get(PLANTS.LABEL),
-          speciesId = it.get(PLANTS.SPECIES_ID),
-          naturalRegen = it.get(PLANTS.NATURAL_REGEN),
-          datePlanted = it.get(PLANTS.DATE_PLANTED),
-          notes = it.get(FEATURES.NOTES),
-          enteredTime = it.get(FEATURES.ENTERED_TIME),
+          featureId = it[PLANTS.FEATURE_ID]!!,
+          label = it[PLANTS.LABEL],
+          speciesId = it[PLANTS.SPECIES_ID],
+          naturalRegen = it[PLANTS.NATURAL_REGEN],
+          datePlanted = it[PLANTS.DATE_PLANTED],
+          layerId = it[FEATURES.LAYER_ID]!!,
+          gpsHorizAccuracy = it[FEATURES.GPS_HORIZ_ACCURACY],
+          gpsVertAccuracy = it[FEATURES.GPS_VERT_ACCURACY],
+          attrib = it[FEATURES.ATTRIB],
+          notes = it[FEATURES.NOTES],
+          enteredTime = it[FEATURES.ENTERED_TIME],
+          geom = it[FEATURES.GEOM],
       )
     }
   }

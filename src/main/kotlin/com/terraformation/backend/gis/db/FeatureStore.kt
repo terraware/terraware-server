@@ -7,6 +7,7 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.PlantObservationId
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PLANT_OBSERVATIONS
+import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
@@ -62,7 +64,7 @@ class FeatureStore(
               .set(ENTERED_TIME, model.enteredTime)
               .set(CREATED_TIME, currTime)
               .set(MODIFIED_TIME, currTime)
-              .returning(ID, GEOM)
+              .returning(ID, GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
               .fetchOne()
               ?: throw DataAccessException("Database did not return ID")
         }
@@ -80,7 +82,7 @@ class FeatureStore(
             .select(
                 FEATURES.ID,
                 FEATURES.LAYER_ID,
-                FEATURES.GEOM,
+                FEATURES.GEOM.transformSrid(SRID.LONG_LAT).`as`(FEATURES.GEOM),
                 FEATURES.GPS_HORIZ_ACCURACY,
                 FEATURES.GPS_VERT_ACCURACY,
                 FEATURES.ATTRIB,
@@ -124,7 +126,7 @@ class FeatureStore(
               .select(
                   ID,
                   LAYER_ID,
-                  GEOM,
+                  GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM),
                   GPS_HORIZ_ACCURACY,
                   GPS_VERT_ACCURACY,
                   ATTRIB,
@@ -172,21 +174,25 @@ class FeatureStore(
 
     val currTime = clock.instant()
 
-    with(FEATURES) {
-      dslContext
-          .update(FEATURES)
-          .set(GEOM, newModel.geom)
-          .set(GPS_HORIZ_ACCURACY, newModel.gpsHorizAccuracy)
-          .set(GPS_VERT_ACCURACY, newModel.gpsVertAccuracy)
-          .set(ATTRIB, newModel.attrib)
-          .set(NOTES, newModel.notes)
-          .set(ENTERED_TIME, newModel.enteredTime)
-          .set(MODIFIED_TIME, currTime)
-          .where(ID.eq(newModel.id))
-          .execute()
-    }
+    val longLatGeom =
+        with(FEATURES) {
+          dslContext
+              .update(FEATURES)
+              .set(GEOM, newModel.geom)
+              .set(GPS_HORIZ_ACCURACY, newModel.gpsHorizAccuracy)
+              .set(GPS_VERT_ACCURACY, newModel.gpsVertAccuracy)
+              .set(ATTRIB, newModel.attrib)
+              .set(NOTES, newModel.notes)
+              .set(ENTERED_TIME, newModel.enteredTime)
+              .set(MODIFIED_TIME, currTime)
+              .where(ID.eq(newModel.id))
+              .returningResult(GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
+              .fetchOne()
+              ?.getValue(GEOM)
+              ?: throw DataAccessException("Database did not return Geom")
+        }
 
-    return newModel.copy(modifiedTime = currTime)
+    return newModel.copy(modifiedTime = currTime, geom = longLatGeom)
   }
 
   fun deleteFeature(id: FeatureId): FeatureId {

@@ -149,7 +149,7 @@ class PhotoRepository(
             PHOTOS.CONTENT_TYPE,
             PHOTOS.SIZE,
             PHOTOS.GPS_HORIZ_ACCURACY,
-            PHOTOS.LOCATION.transformSrid(SRID.LONG_LAT),
+            PHOTOS.LOCATION.transformSrid(SRID.LONG_LAT).`as`(PHOTOS.LOCATION),
             PHOTOS.FILE_NAME)
         .from(PHOTOS)
         .join(ACCESSION_PHOTOS)

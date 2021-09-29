@@ -1,6 +1,9 @@
 package com.terraformation.backend.db
 
+import net.postgis.jdbc.geometry.Geometry
 import net.postgis.jdbc.geometry.Point
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 
 /** Returns a PostGIS [Point] with a specific spatial reference ID. */
 fun newPoint(x: Double, y: Double, z: Double, srid: Int): Point {
@@ -15,3 +18,23 @@ fun newPoint(x: Double, y: Double, z: Double, srid: Int): Point {
  * coordinates are already in that coordinate system.
  */
 fun mercatorPoint(x: Double, y: Double, z: Double) = newPoint(x, y, z, SRID.SPHERICAL_MERCATOR)
+
+/**
+ * Assert Point coordinate data is equal. Since the coordinates probably went through at least one
+ * coordinate system conversion in the database write/read, allow a small fuzz factor in the x and y
+ * coordinates.
+ */
+fun assertPointsEqual(expected: Geometry?, actual: Geometry?, message: String = "Point") {
+  assertNotNull(expected, "$message BUG! Expected value was null")
+  assertNotNull(actual, message)
+
+  expected!!
+  actual!!
+
+  assertEquals(expected.type, Geometry.POINT, "$message BUG! Can only assert equality with Points")
+  assertEquals(expected.type, actual.type, "$message (type)")
+  assertEquals(expected.srid, actual.srid, "$message (srid)")
+  assertEquals(expected.firstPoint.x, actual.firstPoint.x, 0.0001, "$message (x)")
+  assertEquals(expected.firstPoint.y, actual.firstPoint.y, 0.0001, "$message (y)")
+  assertEquals(expected.firstPoint.z, actual.firstPoint.z, 0.0001, "$message (z)")
+}

@@ -2321,9 +2321,9 @@ components:
           type: string
           description: "Name of the coordinate reference system. This must be in the\
             \ form EPSG:nnnn where nnnn is the numeric identifier of a coordinate\
-            \ system in the EPSG dataset. A common one is 3857, the Web Mercator projection\
-            \ used by many mapping tools."
-          example: EPSG:3857
+            \ system in the EPSG dataset. The default is 4326, the defined coordinate\
+            \ system for GeoJSON."
+          example: EPSG:4326
           externalDocs:
             url: https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset
     CreateAccessionRequestPayload:
@@ -2996,6 +2996,8 @@ components:
         enteredTime:
           type: string
           format: date-time
+      description: Describes a map feature. The coordinate reference system of the
+        "geom" field will be longitude/latitude EPSG:4326.
     FieldNodePayload:
       required:
       - field
@@ -3073,6 +3075,7 @@ components:
           - GeometryCollection
         crs:
           $ref: '#/components/schemas/CRS'
+      description: GEOMETRY-FIX-TYPE-ON-CLIENT-SIDE
       discriminator:
         propertyName: type
         mapping:
@@ -3548,6 +3551,7 @@ components:
     ListPlantsResponseElement:
       required:
       - featureId
+      - layerId
       type: object
       properties:
         featureId:
@@ -3563,11 +3567,24 @@ components:
         datePlanted:
           type: string
           format: date
+        layerId:
+          type: integer
+          format: int64
+        gpsHorizAccuracy:
+          type: number
+          format: double
+        gpsVertAccuracy:
+          type: number
+          format: double
+        attrib:
+          type: string
         notes:
           type: string
         enteredTime:
           type: string
           format: date-time
+        geom:
+          $ref: '#/components/schemas/Geometry'
     ListPlantsResponsePayload:
       required:
       - list

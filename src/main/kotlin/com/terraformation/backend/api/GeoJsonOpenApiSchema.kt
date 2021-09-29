@@ -26,6 +26,7 @@ abstract class GeoJsonOpenApiSchema {
   }
 
   @Schema(
+      description = "GEOMETRY-FIX-TYPE-ON-CLIENT-SIDE",
       discriminatorProperty = "type",
       discriminatorMapping =
           [
@@ -147,8 +148,8 @@ abstract class GeoJsonOpenApiSchema {
           description =
               "Name of the coordinate reference system. This must be in the form EPSG:nnnn where " +
                   "nnnn is the numeric identifier of a coordinate system in the EPSG dataset. " +
-                  "A common one is 3857, the Web Mercator projection used by many mapping tools.",
-          example = "EPSG:3857",
+                  "The default is 4326, the defined coordinate system for GeoJSON.",
+          example = "EPSG:4326",
           externalDocs =
               ExternalDocumentation(
                   url = "https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset"))
