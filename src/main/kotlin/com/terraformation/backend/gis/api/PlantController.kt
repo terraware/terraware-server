@@ -158,18 +158,18 @@ data class PlantResponse(
 }
 
 data class ListPlantsResponseElement(
-  val featureId: FeatureId,
-  val label: String? = null,
-  val speciesId: SpeciesId? = null,
-  val naturalRegen: Boolean? = null,
-  val datePlanted: LocalDate? = null,
-  val layerId: LayerId,
-  val gpsHorizAccuracy: Double? = null,
-  val gpsVertAccuracy: Double? = null,
-  val attrib: String? = null,
-  val notes: String? = null,
-  val enteredTime: Instant? = null,
-  val geom: Geometry? = null,
+    val featureId: FeatureId,
+    val label: String? = null,
+    val speciesId: SpeciesId? = null,
+    val naturalRegen: Boolean? = null,
+    val datePlanted: LocalDate? = null,
+    val layerId: LayerId,
+    val gpsHorizAccuracy: Double? = null,
+    val gpsVertAccuracy: Double? = null,
+    val attrib: String? = null,
+    val notes: String? = null,
+    val enteredTime: Instant? = null,
+    val geom: Geometry? = null,
 ) {
   constructor(
       model: FetchPlantListResult

@@ -4,6 +4,5 @@ __pycache__
 .venv
 application-dev*.yaml
 build
-oauth2-proxy.cfg
 out
 .idea

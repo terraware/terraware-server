@@ -8,18 +8,23 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PlantNotFoundException
 import com.terraformation.backend.db.PostgresFuzzySearchOperators
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.assertPointsEqual
+import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
+import com.terraformation.backend.gis.model.FeatureModel
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -195,6 +200,64 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchPlant returns null if plant doesn't exist`() {
     store.createPlant(validCreateRequest)
     assertNull(store.fetchPlant(nonExistentFeatureId))
+  }
+
+  @Test
+  fun `fetchPlantList elements contain the same data we would have gotten from get feature and get plant`() {
+    val feature =
+        FeatureModel(
+            id = nonExistentFeatureId,
+            layerId = layerId,
+            geom = newPoint(60.8, -45.6, 0.0, SRID.LONG_LAT),
+            gpsHorizAccuracy = 10.28,
+            gpsVertAccuracy = 20.08,
+            attrib = "Some attrib",
+            notes = "Some notes",
+            enteredTime = time1,
+        )
+    insertFeature(
+        feature.id!!.value,
+        feature.layerId.value,
+        feature.geom,
+        feature.gpsHorizAccuracy,
+        feature.gpsVertAccuracy,
+        feature.attrib,
+        feature.notes,
+        feature.enteredTime!!)
+
+    val species =
+        SpeciesRow(id = SpeciesId(15), createdTime = time1, modifiedTime = time2, name = "Koa")
+    speciesDao.insert(species)
+
+    val plant =
+        store.createPlant(
+            PlantsRow(
+                featureId = feature.id,
+                label = "Some label",
+                speciesId = species.id,
+                naturalRegen = true,
+                datePlanted = LocalDate.EPOCH))
+
+    val expectedPlantFeatureData =
+        FetchPlantListResult(
+            featureId = plant.featureId!!,
+            label = plant.label,
+            speciesId = species.id,
+            naturalRegen = plant.naturalRegen,
+            datePlanted = plant.datePlanted,
+            layerId = feature.layerId,
+            gpsHorizAccuracy = feature.gpsHorizAccuracy,
+            gpsVertAccuracy = feature.gpsVertAccuracy,
+            attrib = feature.attrib,
+            notes = feature.notes,
+            enteredTime = feature.enteredTime,
+            geom = feature.geom,
+        )
+    var actualPlantFeatureData = store.fetchPlantsList(layerId)[0]
+
+    assertPointsEqual(expectedPlantFeatureData.geom!!, actualPlantFeatureData.geom!!)
+    assertEquals(
+        expectedPlantFeatureData, actualPlantFeatureData.copy(geom = expectedPlantFeatureData.geom))
   }
 
   @Test

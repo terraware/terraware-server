@@ -5,6 +5,7 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UsesFuzzySearchOperators
 import com.terraformation.backend.db.tables.daos.FeaturesDao
@@ -13,6 +14,7 @@ import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.PLANTS
+import com.terraformation.backend.db.transformSrid
 import java.lang.IllegalArgumentException
 import java.time.Clock
 import java.time.Instant
@@ -26,19 +28,19 @@ import org.jooq.impl.DSL.trueCondition
 import org.springframework.security.access.AccessDeniedException
 
 data class FetchPlantListResult(
-  val featureId: FeatureId,
-  val label: String? = null,
-  val speciesId: SpeciesId? = null,
-  val naturalRegen: Boolean? = null,
-  val datePlanted: LocalDate? = null,
-  val layerId: LayerId,
-  val gpsHorizAccuracy: Double? = null,
-  val gpsVertAccuracy: Double? = null,
-  val attrib: String? = null,
-  val notes: String? = null,
-  val enteredTime: Instant? = null,
-  val geom: Geometry? = null,
-  )
+    val featureId: FeatureId,
+    val label: String? = null,
+    val speciesId: SpeciesId? = null,
+    val naturalRegen: Boolean? = null,
+    val datePlanted: LocalDate? = null,
+    val layerId: LayerId,
+    val gpsHorizAccuracy: Double? = null,
+    val gpsVertAccuracy: Double? = null,
+    val attrib: String? = null,
+    val notes: String? = null,
+    val enteredTime: Instant? = null,
+    val geom: Geometry? = null,
+)
 
 @ManagedBean
 class PlantStore(
@@ -114,7 +116,7 @@ class PlantStore(
                 FEATURES.ATTRIB,
                 FEATURES.NOTES,
                 FEATURES.ENTERED_TIME,
-                FEATURES.GEOM,
+                FEATURES.GEOM.transformSrid(SRID.LONG_LAT).`as`(FEATURES.GEOM),
             )
             .from(PLANTS)
             .join(FEATURES)
