@@ -10,7 +10,8 @@ Host $SSH_HOST
   StrictHostKeyChecking no
   ProxyCommand none
 
-Host *
+Host terraware*
+  User $SSH_USER
   IdentityFile ~/.ssh/key
   ProxyCommand ssh -W %h:%p -q $SSH_HOST
   StrictHostKeyChecking no
