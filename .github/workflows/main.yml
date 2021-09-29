@@ -98,7 +98,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: build/docker
-        tags: ${{ env.DOCKER_TAGS }}
+        tags: "${{ env.DOCKER_TAGS }}"
         platforms: linux/amd64,linux/arm64
         push: ${{ env.IS_CD == 'true' }}
         cache-from: type=local,src=/tmp/.buildx-cache
