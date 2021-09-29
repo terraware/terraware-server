@@ -11,18 +11,20 @@ Host $SSH_HOST
   ProxyCommand none
 
 Host *
-  User $SSH_USER
   IdentityFile ~/.ssh/key
   ProxyCommand ssh -W %h:%p -q $SSH_HOST
   StrictHostKeyChecking no
 END
 
+# aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
+#   | jq -r ' .Reservations[].Instances[].PrivateIpAddress' \
+
 aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
-  | jq -r ' .Reservations[].Instances[].PrivateIpAddress' \
-  | while read _ip; do
+  | jq -r ' .Reservations[].Instances[].Tags[] | select(.Key == "Hostname") | .Value' \
+  | while read _host; do
       echo
-      echo "Deploying to $_ip"
+      echo "Deploying to $_host"
       echo
       # ssh -A bastion ssh $_ip "/usr/local/bin/update.sh terraware-server $COMMIT_SHA"
-      ssh $_ip /usr/local/bin/update.sh
+      ssh $_host /usr/local/bin/update.sh
     done
