@@ -313,12 +313,13 @@ data class FeaturePhoto(
       size = photosRow.size!!)
 }
 
+@Schema(
+    description =
+        "Describes a map feature. The coordinate reference system of the \"geom\" field will be " +
+            "longitude/latitude EPSG:4326.")
 data class FeatureResponse(
     val id: FeatureId,
     val layerId: LayerId,
-    @Schema(
-        description = "The coordinate reference system will be longitude/latitude EPSG:4326.",
-    )
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,

@@ -62,8 +62,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val nonExistentFeatureId = FeatureId(400)
   // Spherical Mercator coordinates X=261845.71, Y=6250564.35, Z=35.0
   // map to longitude = 2.3522, latitude = 48.8566, elevation = 35.0
-  private val sphericalMercatorPoint =
-      newPoint(261845.71, 6250564.35, 35.0, SRID.SPHERICAL_MERCATOR)
+  private val sphericalMercatorPoint = mercatorPoint(261845.71, 6250564.35, 35.0)
   private val longLatPoint = newPoint(2.3522, 48.8566, 35.0, SRID.LONG_LAT)
   private val photoId = PhotoId(30)
   private val plantObservationId = PlantObservationId(20)
@@ -128,7 +127,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   fun `create adds new row to database and returns populated FeatureModel`() {
     val featureModel = store.createFeature(validCreateRequest)
     assertNotNull(featureModel.id)
-    assertPointsEqual(validCreateRequest.geom!!, featureModel.geom!!)
+    assertPointsEqual(validCreateRequest.geom, featureModel.geom)
     assertEquals(
         validCreateRequest.copy(createdTime = time1, modifiedTime = time1),
         featureModel.copy(id = null, geom = validCreateRequest.geom))
@@ -138,7 +137,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create always returns coordinates in LongLat (srid = 4326) even if they are provided in another coordinate reference system`() {
     val featureModel = store.createFeature(validCreateRequest.copy(geom = sphericalMercatorPoint))
-    assertPointsEqual(longLatPoint, featureModel.geom!!)
+    assertPointsEqual(longLatPoint, featureModel.geom)
   }
 
   @Test
@@ -241,7 +240,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   fun `update returns coordinates in LongLat (srid = 4326) even if they are provided in another coordinate reference system`() {
     val feature = store.createFeature(validCreateRequest)
     val updatedFeature = store.updateFeature(feature.copy(geom = sphericalMercatorPoint))
-    assertPointsEqual(longLatPoint, updatedFeature.geom!!)
+    assertPointsEqual(longLatPoint, updatedFeature.geom)
   }
 
   @Test
@@ -410,11 +409,19 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   fun `feature geometry can be retrieved as server-rendered GeoJSON`() {
     store.createFeature(validCreateRequest)
 
-    val expected =
-        """{"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[6768225.040231031,-5716479.015326829,0]}"""
-    val actual = dslContext.select(FEATURES.GEOM.asGeoJson()).from(FEATURES).fetchOne()?.value1()
+    // We can't do approximate equality on the floating-point values in the GeoJSON, but there may
+    // be floating-point inaccuracies in the coordinate conversion. Match the coordinate values
+    // using regexes as a rough equivalent.
+    val pattern =
+        """\{"type":"Point","crs":\{"type":"name","properties":\{"name":"EPSG:3857"}}""" +
+            ""","coordinates":\[6768225\.04023\d+,-5716479\.01532\d+,0]}"""
+    val expected = Regex(pattern)
+    val actual = dslContext.select(FEATURES.GEOM.asGeoJson()).from(FEATURES).fetchOne()?.value1()!!
 
-    assertEquals(expected, actual)
+    if (!expected.matches(actual)) {
+      // This will give us a useful assertion message if the regex doesn't match.
+      assertEquals(pattern, actual, "GeoJSON value did not match regular expression")
+    }
   }
 
   @Test

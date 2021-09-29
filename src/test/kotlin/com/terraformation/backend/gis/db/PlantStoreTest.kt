@@ -253,9 +253,9 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
             enteredTime = feature.enteredTime,
             geom = feature.geom,
         )
-    var actualPlantFeatureData = store.fetchPlantsList(layerId)[0]
+    val actualPlantFeatureData = store.fetchPlantsList(layerId)[0]
 
-    assertPointsEqual(expectedPlantFeatureData.geom!!, actualPlantFeatureData.geom!!)
+    assertPointsEqual(expectedPlantFeatureData.geom, actualPlantFeatureData.geom)
     assertEquals(
         expectedPlantFeatureData, actualPlantFeatureData.copy(geom = expectedPlantFeatureData.geom))
   }

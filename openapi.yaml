@@ -2996,6 +2996,8 @@ components:
         enteredTime:
           type: string
           format: date-time
+      description: Describes a map feature. The coordinate reference system of the
+        "geom" field will be longitude/latitude EPSG:4326.
     FieldNodePayload:
       required:
       - field
