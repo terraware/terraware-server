@@ -8,6 +8,7 @@ Host $SSH_HOST
   User $SSH_USER
   IdentityFile ~/.ssh/key
   StrictHostKeyChecking no
+  ProxyCommand none
 
 Host *
   User $SSH_USER
