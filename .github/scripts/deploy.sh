@@ -4,9 +4,8 @@ mkdir -p ~/.ssh
 echo "$SSH_KEY" > ~/.ssh/key
 chmod 600 ~/.ssh/key
 cat >> ~/.ssh/config <<END
-Host bastion
+Host $SSH_HOST
   User $SSH_USER
-  HostName $SSH_HOST
   IdentityFile ~/.ssh/key
   StrictHostKeyChecking no
 END
@@ -26,6 +25,6 @@ aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
       echo
       echo "Deploying to $_host"
       echo
-      ssh -A bastion ssh $_host "/usr/local/bin/update.sh terraware-server $COMMIT_SHA"
+      ssh -J $SSH_HOST $_host "/usr/local/bin/update.sh terraware-server $COMMIT_SHA"
       # ssh $_host /usr/local/bin/update.sh
     done
