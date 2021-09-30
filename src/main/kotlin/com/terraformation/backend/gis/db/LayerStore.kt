@@ -108,7 +108,7 @@ class LayerStore(
             id = record[ID],
             siteId = record[SITE_ID]!!,
             layerType = record[LAYER_TYPE_ID]!!,
-            tileSetName = record[TILE_SET_NAME]!!,
+            tileSetName = record[TILE_SET_NAME],
             proposed = record[LAYERS.PROPOSED]!!,
             hidden = record[LAYERS.HIDDEN]!!,
             deleted = record[LAYERS.DELETED],

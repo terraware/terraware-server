@@ -127,7 +127,7 @@ data class LayerResponse(
     val id: LayerId,
     val siteId: SiteId,
     val layerType: LayerType,
-    val tileSetName: String,
+    val tileSetName: String?,
     val proposed: Boolean,
     val hidden: Boolean,
 ) {

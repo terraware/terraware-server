@@ -9,7 +9,7 @@ data class LayerModel(
     val id: LayerId? = null,
     val siteId: SiteId,
     val layerType: LayerType,
-    val tileSetName: String,
+    val tileSetName: String?,
     val proposed: Boolean,
     val hidden: Boolean,
     val deleted: Boolean? = null,
