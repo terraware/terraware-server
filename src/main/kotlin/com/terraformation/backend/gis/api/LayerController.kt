@@ -91,7 +91,7 @@ class LayerController(private val layerStore: LayerStore) {
 data class CreateLayerRequestPayload(
     val siteId: SiteId,
     val layerType: LayerType,
-    val tileSetName: String,
+    val tileSetName: String?,
     val proposed: Boolean,
     val hidden: Boolean,
 ) {
@@ -108,7 +108,7 @@ data class CreateLayerRequestPayload(
 data class UpdateLayerRequestPayload(
     val siteId: SiteId,
     val layerType: LayerType,
-    val tileSetName: String,
+    val tileSetName: String?,
     val proposed: Boolean,
     val hidden: Boolean,
 ) {

@@ -2563,7 +2563,6 @@ components:
       - layerType
       - proposed
       - siteId
-      - tileSetName
       type: object
       properties:
         siteId:
@@ -4796,7 +4795,6 @@ components:
       - layerType
       - proposed
       - siteId
-      - tileSetName
       type: object
       properties:
         siteId:
