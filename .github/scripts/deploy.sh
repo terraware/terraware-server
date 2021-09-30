@@ -26,5 +26,5 @@ aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
       echo
       echo "Deploying to $_host"
       echo
-      ssh $_host "echo Hello!"
+      ssh $_host "/usr/local/bin/update.sh terraware-server $COMMIT_SHA"
     done
