@@ -21,8 +21,6 @@ docker_image='terraware/terraware-server'
 docker_tags="${docker_image}:$commit_sha,${docker_image}:${TIER}"
 
 # Define secret names based on the tier
-# cat >> $GITHUB_ENV <<-EOF
-
 echo "TIER=$TIER
 IS_CD=$IS_CD
 SSH_HOST_SECRET_NAME=${TIER}_SSH_HOST
@@ -33,5 +31,3 @@ AWS_SECRET_ACCESS_KEY_SECRET_NAME=${TIER}_AWS_SECRET_ACCESS_KEY
 AWS_REGION_SECRET_NAME=${TIER}_AWS_REGION
 COMMIT_SHA=$commit_sha
 DOCKER_TAGS=$docker_tags" >> $GITHUB_ENV
-
-# EOF
