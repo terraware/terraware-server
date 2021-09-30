@@ -3,13 +3,19 @@
 mkdir -p ~/.ssh
 echo "$SSH_KEY" > ~/.ssh/key
 chmod 600 ~/.ssh/key
-# cat >> ~/.ssh/config <<END
-# Host terraware*
-#   User $SSH_USER
-#   IdentityFile ~/.ssh/key
-#   ProxyCommand ssh -W %h:%p $SSH_USER@$SSH_HOST
-#   StrictHostKeyChecking no
-# END
+cat >> ~/.ssh/config <<END
+Host bastion*
+  User $SSH_USER
+  IdentityFile ~/.ssh/key
+  ProxyCommand none
+  StrictHostKeyChecking no
+
+Host terraware*
+  User $SSH_USER
+  IdentityFile ~/.ssh/key
+  ProxyCommand ssh -W %h:%p $SSH_USER@$SSH_HOST
+  StrictHostKeyChecking no
+END
 
 # aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
 #   | jq -r ' .Reservations[].Instances[].PrivateIpAddress' \
@@ -21,7 +27,7 @@ aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
       echo "Deploying to $_host"
       echo
       # ssh -o ProxyCommand="ssh -W %h:%p $SSH_USER@$SSH_HOST" -i ~/.ssh/key -o StrictHostKeyChecking=no $SSH_USER@$_host "echo Hello world"
-      ssh -o StrictHostKeyChecking=no -i ~/.ssh/key $SSH_USER@$SSH_HOST "echo Hello!"
+      ssh $SSH_HOST "echo Hello!"
 
       # ssh -J $SSH_HOST $_host "/usr/local/bin/update.sh terraware-server $COMMIT_SHA"
       # ssh $_host /usr/local/bin/update.sh
