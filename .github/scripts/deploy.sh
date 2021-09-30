@@ -13,7 +13,7 @@ Host bastion*
 Host terraware*
   User $SSH_USER
   IdentityFile ~/.ssh/key
-  ProxyCommand ssh -W %h:%p $SSH_USER@$SSH_HOST
+  ProxyCommand ssh -W %h:%p $SSH_HOST
   StrictHostKeyChecking no
 END
 
@@ -26,9 +26,5 @@ aws ec2 describe-instances --filters "Name=tag:Application,Values=terraware" \
       echo
       echo "Deploying to $_host"
       echo
-      # ssh -o ProxyCommand="ssh -W %h:%p $SSH_USER@$SSH_HOST" -i ~/.ssh/key -o StrictHostKeyChecking=no $SSH_USER@$_host "echo Hello world"
-      ssh $SSH_HOST "echo Hello!"
-
-      # ssh -J $SSH_HOST $_host "/usr/local/bin/update.sh terraware-server $COMMIT_SHA"
-      # ssh $_host /usr/local/bin/update.sh
+      ssh $_host "echo Hello!"
     done
