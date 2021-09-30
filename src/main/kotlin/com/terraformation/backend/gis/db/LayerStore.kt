@@ -70,7 +70,7 @@ class LayerStore(
         id = id,
         siteId = siteId,
         layerType = layer[LAYERS.LAYER_TYPE_ID]!!,
-        tileSetName = layer[LAYERS.TILE_SET_NAME]!!,
+        tileSetName = layer[LAYERS.TILE_SET_NAME],
         proposed = layer[LAYERS.PROPOSED]!!,
         hidden = layer[LAYERS.HIDDEN]!!,
         deleted = layer[LAYERS.DELETED],
