@@ -3296,7 +3296,6 @@ components:
       - layerType
       - proposed
       - siteId
-      - tileSetName
       type: object
       properties:
         id:
