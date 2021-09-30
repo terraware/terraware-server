@@ -10,7 +10,7 @@ if [[ "$GITHUB_REF" =~ refs/tags/v[0-9].[0-9]+.[0-9]+ ]]; then
 elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
   export \
     TIER=STAGING \
-    IS_CD=
+    IS_CD=true
 else
   export IS_CD=false
   exit
