@@ -81,7 +81,7 @@ jobs:
       uses: docker/setup-buildx-action@v1
 
     - name: Log into Docker Hub
-      if: matrix.java-version == '15' && env.IS_CD == true
+      if: matrix.java-version == '15' && env.IS_CD == 'true'
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -100,7 +100,7 @@ jobs:
         context: build/docker
         tags: ${{ env.DOCKER_TAGS }}
         platforms: linux/amd64,linux/arm64
-        push: ${{ env.IS_CD == true }}
+        push: ${{ env.IS_CD == 'true' }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
@@ -110,7 +110,7 @@ jobs:
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     - name: Configure AWS Credentials
-      if: env.IS_CD == true
+      if: env.IS_CD == 'true'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets[env.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
@@ -118,7 +118,7 @@ jobs:
         aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
 
     - name: Deploy
-      if: env.IS_CD == true
+      if: env.IS_CD == 'true'
       env:
         SSH_HOST: ${{ secrets[env.SSH_HOST_SECRET_NAME] }}
         SSH_KEY: ${{ secrets[env.SSH_KEY_SECRET_NAME] }}
