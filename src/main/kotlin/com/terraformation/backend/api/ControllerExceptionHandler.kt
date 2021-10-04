@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import com.terraformation.backend.db.EntityNotFoundException
 import javax.ws.rs.QueryParam
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -32,6 +33,14 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       request: WebRequest
   ): ResponseEntity<*> {
     return simpleErrorResponse(ex.message, ex.status, request)
+  }
+
+  @ExceptionHandler
+  fun handleEntityNotFoundException(
+      ex: EntityNotFoundException,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(ex.message, HttpStatus.NOT_FOUND, request)
   }
 
   @ExceptionHandler

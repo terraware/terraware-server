@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.api
 
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -12,9 +11,12 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.log.perClassLogger
@@ -74,7 +76,9 @@ class AdminController(
 
   @GetMapping("/organization/{organizationId}")
   fun organization(@PathVariable organizationId: OrganizationId, model: Model): String {
-    val organization = organizationStore.fetchById(organizationId) ?: throw NotFoundException()
+    val organization =
+        organizationStore.fetchById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
     val projects = projectStore.fetchByOrganization(organizationId).sortedBy { it.name }
     val users = organizationStore.fetchUsers(listOf(organizationId)).sortedBy { it.email }
 
@@ -113,7 +117,7 @@ class AdminController(
 
   @GetMapping("/project/{projectId}")
   fun project(@PathVariable projectId: ProjectId, model: Model): String {
-    val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
+    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
     val organization = organizationStore.fetchById(project.organizationId)
     val orgUsers =
         organizationStore.fetchUsers(listOf(project.organizationId)).sortedBy { it.email }
@@ -134,9 +138,9 @@ class AdminController(
 
   @GetMapping("/site/{siteId}")
   fun site(@PathVariable siteId: SiteId, model: Model): String {
-    val site = siteStore.fetchById(siteId) ?: throw NotFoundException()
+    val site = siteStore.fetchById(siteId) ?: throw SiteNotFoundException(siteId)
     val projectId = site.projectId
-    val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
+    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
     val organization = organizationStore.fetchById(project.organizationId)
     val facilities = facilityStore.fetchBySiteId(siteId).sortedBy { it.name }
 
