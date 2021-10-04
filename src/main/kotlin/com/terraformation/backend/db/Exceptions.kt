@@ -40,3 +40,6 @@ class SpeciesNotFoundException(val speciesId: SpeciesId) :
 
 class SpeciesNameNotFoundException(val speciesNameId: SpeciesNameId) :
     RuntimeException("Species name $speciesNameId not found")
+
+class TimeseriesNotFoundException(val timeseriesId: TimeseriesId) :
+    Exception("Timeseries $timeseriesId not found")

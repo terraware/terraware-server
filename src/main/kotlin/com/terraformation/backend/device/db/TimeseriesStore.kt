@@ -3,6 +3,7 @@ package com.terraformation.backend.device.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.TimeseriesId
+import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
@@ -68,6 +69,22 @@ class TimeseriesStore(private val dslContext: DSLContext) {
   }
 
   fun insertValue(timeseriesId: TimeseriesId, value: String, createdTime: Instant) {
+    val deviceId =
+        dslContext
+            .select(TIMESERIES.DEVICE_ID)
+            .from(TIMESERIES)
+            .where(TIMESERIES.ID.eq(timeseriesId))
+            .fetchOne(TIMESERIES.DEVICE_ID)
+            ?: throw TimeseriesNotFoundException(timeseriesId)
+
+    if (!currentUser().canUpdateTimeseries(deviceId)) {
+      if (currentUser().canReadTimeseries(deviceId)) {
+        throw AccessDeniedException("No permission to update timeseries")
+      } else {
+        throw TimeseriesNotFoundException(timeseriesId)
+      }
+    }
+
     with(TIMESERIES_VALUES) {
       dslContext
           .insertInto(TIMESERIES_VALUES)
