@@ -155,7 +155,7 @@ class UserStore(
 
   /**
    * Creates a new user as a member of an organization. This registers them in Keycloak and also
-   * adds them to the local database.
+   * adds them to the `users` table.
    */
   fun createUser(
       organizationId: OrganizationId,
@@ -258,7 +258,7 @@ class UserStore(
     if (response.statusInfo.family == Response.Status.Family.SUCCESSFUL) {
       log.info("Removed API client user $userId (${user.authId}) from Keycloak")
     } else if (response.status == Response.Status.NOT_FOUND.statusCode) {
-      log.warn("API client user $userId (${user.authId}) in local database but not in Keycloak")
+      log.warn("API client user $userId (${user.authId}) in users table but not in Keycloak")
     } else {
       log.error(
           "Got unexpected HTTP status ${response.status} when deleting API client user $userId " +
