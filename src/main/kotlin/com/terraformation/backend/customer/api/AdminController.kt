@@ -19,9 +19,11 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.log.perClassLogger
 import java.math.BigDecimal
+import java.net.URI
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import javax.servlet.http.HttpServletRequest
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
@@ -249,33 +251,39 @@ class AdminController(
     return index(model)
   }
 
-  @PostMapping("/addOrganizationUser")
-  fun addOrganizationUser(
+  @PostMapping("/createUser")
+  fun createUser(
       @RequestParam("organizationId") organizationId: OrganizationId,
       @NotBlank @RequestParam("email") email: String,
+      @RequestParam("firstName") firstName: String?,
+      @RequestParam("lastName") lastName: String?,
       @RequestParam("role") roleId: Int,
+      request: HttpServletRequest,
       model: Model
   ): String {
     val role = Role.of(roleId)
-
     if (role == null) {
       model.addAttribute("failureMessage", "Invalid role selected.")
       return organization(organizationId, model)
     }
 
-    val userDetails = userStore.fetchByEmail(email)
-    if (userDetails == null) {
-      model.addAttribute("failureMessage", "User $email not found.")
-      return organization(organizationId, model)
-    }
-
     try {
-      organizationStore.addUser(organizationId, userDetails.userId, role)
-      model.addAttribute("successMessage", "$email added to organization.")
-    } catch (e: AccessDeniedException) {
-      model.addAttribute("failureMessage", "No permission to add users to this organization.")
+      val redirectUrl =
+          config.keycloak.postCreateRedirectUrl ?: URI(request.requestURL.toString()).resolve("/")
+      val user =
+          userStore.createUser(
+              organizationId, role, email, firstName, lastName, redirectUrl = redirectUrl)
+
+      model.addAttribute("successMessage", "User added to organization.")
+
+      return user(user.userId, model)
     } catch (e: DuplicateKeyException) {
-      model.addAttribute("failureMessage", "$email was already a member of the organization.")
+      model.addAttribute("failureMessage", "User is already in the organization.")
+    } catch (e: AccessDeniedException) {
+      model.addAttribute("failureMessage", "No permission to create users in this organization.")
+    } catch (e: Exception) {
+      log.error("User creation failed", e)
+      model.addAttribute("failureMessage", "Unexpected failure while creating user.")
     }
 
     return organization(organizationId, model)
