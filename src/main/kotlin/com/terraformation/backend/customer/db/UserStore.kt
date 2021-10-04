@@ -154,6 +154,62 @@ class UserStore(
   }
 
   /**
+   * Creates a new user as a member of an organization. This registers them in Keycloak and also
+   * adds them to the `users` table.
+   */
+  fun createUser(
+      organizationId: OrganizationId,
+      role: Role,
+      email: String,
+      firstName: String? = null,
+      lastName: String? = null,
+      redirectUrl: URI? = null,
+      requireResetPassword: Boolean = true,
+  ): UserModel {
+    if (!currentUser().canAddOrganizationUser(organizationId)) {
+      throw AccessDeniedException("No permission to add users to this organization")
+    }
+
+    val existingUser = fetchByEmail(email)
+    if (existingUser != null) {
+      if (organizationId in existingUser.organizationRoles) {
+        throw DuplicateKeyException("User is already in the organization")
+      }
+
+      log.info("User $email already exists; adding to organization $organizationId")
+      organizationStore.addUser(organizationId, existingUser.userId, role)
+      return existingUser
+    }
+
+    log.info("Creating new user $email")
+
+    val keycloakUser = registerKeycloakUser(email, firstName, lastName)
+    val usersRow = insertKeycloakUser(keycloakUser)
+    val user = rowToDetails(usersRow)
+
+    organizationStore.addUser(organizationId, user.userId, role)
+
+    val userResource =
+        usersResource.get(keycloakUser.id)
+            ?: throw IllegalStateException("Registered user with Keycloak but could not find them")
+
+    if (requireResetPassword) {
+      keycloakUser.requiredActions = listOf("UPDATE_PASSWORD")
+
+      userResource.update(keycloakUser)
+
+      if (redirectUrl != null) {
+        userResource.executeActionsEmail(
+            keycloakProperties.resource, "$redirectUrl", keycloakUser.requiredActions)
+      } else {
+        userResource.executeActionsEmail(keycloakUser.requiredActions)
+      }
+    }
+
+    return user
+  }
+
+  /**
    * Creates a new API client user and registers it with Keycloak.
    *
    * We do a few things to make API client users easier to deal with in the Keycloak admin console.
@@ -202,7 +258,7 @@ class UserStore(
     if (response.statusInfo.family == Response.Status.Family.SUCCESSFUL) {
       log.info("Removed API client user $userId (${user.authId}) from Keycloak")
     } else if (response.status == Response.Status.NOT_FOUND.statusCode) {
-      log.warn("API client user $userId (${user.authId}) in local database but not in Keycloak")
+      log.warn("API client user $userId (${user.authId}) in users table but not in Keycloak")
     } else {
       log.error(
           "Got unexpected HTTP status ${response.status} when deleting API client user $userId " +
@@ -233,8 +289,7 @@ class UserStore(
       username: String,
       firstName: String?,
       lastName: String?,
-      @Suppress("SameParameterValue") // We'll use this method for invitations later
-      type: UserType
+      type: UserType = UserType.Individual
   ): UserRepresentation {
     val newKeycloakUser = UserRepresentation()
     newKeycloakUser.isEmailVerified = true

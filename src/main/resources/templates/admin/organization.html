@@ -46,12 +46,8 @@
     </li>
 </ul>
 
-<form method="POST" th:action="|${prefix}/addOrganizationUser|" th:if="${canAddUser}">
+<form method="POST" th:action="|${prefix}/createUser|" th:if="${canAddUser}">
     <h4>Add User to Organization</h4>
-
-    <p>
-        User must already have an account on the system; invitations aren't implemented yet.
-    </p>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
     <label for="email">Email Address</label>
@@ -61,6 +57,10 @@
             name
         </option>
     </select>
+    <label for="firstName">First Name</label>
+    <input type="text" name="firstName" id="firstName"/>
+    <label for="lastName">Last Name</label>
+    <input type="text" name="lastName" id="lastName"/>
     <input type="submit" value=" Add User to Organization "/>
 </form>
 
