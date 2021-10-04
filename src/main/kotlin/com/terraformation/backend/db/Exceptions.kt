@@ -2,13 +2,24 @@ package com.terraformation.backend.db
 
 import java.io.IOException
 
-class AccessionNotFoundException(val accessionId: AccessionId) :
-    Exception("Accession $accessionId not found")
+/**
+ * Thrown when an entity wasn't found when it should have been.
+ *
+ * Subclasses of this are mapped to HTTP 404 Not Found if they are thrown by a controller method.
+ */
+abstract class EntityNotFoundException(message: String) : RuntimeException(message) {
+  override val message: String
+    get() = super.message!!
+}
 
-class DeviceNotFoundException(val deviceId: DeviceId) : Exception("Device $deviceId not found")
+class AccessionNotFoundException(val accessionId: AccessionId) :
+    EntityNotFoundException("Accession $accessionId not found")
+
+class DeviceNotFoundException(val deviceId: DeviceId) :
+    EntityNotFoundException("Device $deviceId not found")
 
 class FeatureNotFoundException(val featureId: FeatureId) :
-    Exception("Feature $featureId not found")
+    EntityNotFoundException("Feature $featureId not found")
 
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(
@@ -17,26 +28,30 @@ open class KeycloakRequestFailedException(
 ) : IOException(message, cause)
 
 /** Keycloak couldn't find a user that we expected to be able to find. */
-class KeycloakUserNotFoundException(message: String) : Exception(message)
+class KeycloakUserNotFoundException(message: String) : EntityNotFoundException(message)
 
-class LayerNotFoundException(val layerId: LayerId) : Exception("Layer $layerId not found")
+class LayerNotFoundException(val layerId: LayerId) :
+    EntityNotFoundException("Layer $layerId not found")
 
 class OrganizationNotFoundException(val organizationId: OrganizationId) :
-    Exception("Organization $organizationId not found")
+    EntityNotFoundException("Organization $organizationId not found")
 
-class PhotoNotFoundException(val photoId: PhotoId) : Exception("Photo $photoId not found")
+class PhotoNotFoundException(val photoId: PhotoId) :
+    EntityNotFoundException("Photo $photoId not found")
 
 class PlantNotFoundException(val featureId: FeatureId) :
-    Exception("Plant with feature id $featureId not found")
+    EntityNotFoundException("Plant with feature id $featureId not found")
 
 class PlantObservationNotFoundException(val id: PlantObservationId) :
-    Exception("Plant observation $id not found")
+    EntityNotFoundException("Plant observation $id not found")
 
 class ProjectNotFoundException(val projectId: ProjectId) :
-    Exception("Project $projectId not found")
+    EntityNotFoundException("Project $projectId not found")
+
+class SiteNotFoundException(val siteId: SiteId) : EntityNotFoundException("Site $siteId not found")
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
-    Exception("Species $speciesId not found")
+    EntityNotFoundException("Species $speciesId not found")
 
 class SpeciesNameNotFoundException(val speciesNameId: SpeciesNameId) :
-    RuntimeException("Species name $speciesNameId not found")
+    EntityNotFoundException("Species name $speciesNameId not found")
