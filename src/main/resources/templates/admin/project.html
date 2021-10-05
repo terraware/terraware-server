@@ -55,6 +55,17 @@
     <label for="longitude">Longitude</label>
     <input type="number" name="longitude" id="longitude" min="-180" max="180" step="0.000001"
            required/>
+    <label for="layerTypes">Layers</label>
+    <select multiple name="layerTypes" id="layerTypes" style="vertical-align: top;">
+        <option th:each="layerType : ${defaultLayerTypes}" th:value="|${layerType}|"
+                th:text="|${layerType.displayName}|" selected="selected">
+            Layer Name
+        </option>
+        <option th:each="layerType : ${otherLayerTypes}" th:value="|${layerType}|"
+                th:text="|${layerType.displayName}|">
+            Layer Name
+        </option>
+    </select>
     <input type="submit" value=" Create Site "/>
 </form>
 
