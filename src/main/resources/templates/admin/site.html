@@ -43,5 +43,27 @@
     <input type="submit" value=" Create Facility "/>
 </form>
 
+<h3>Layers</h3>
+
+<ul th:if="${layers.size > 0}">
+    <li th:each="layer : ${layers}" th:text="|${layer.layerType.displayName} (${layer.id})|">
+        Layer Type (12345)
+    </li>
+</ul>
+
+<form method="POST" th:action="|${prefix}/createLayer|" th:if="${canCreateLayer}">
+    <h4>Create Layer</h4>
+
+    <input type="hidden" name="siteId" th:value="${site.id}"/>
+    <label for="layerType">Layer Type</label>
+    <select id="layerType" name="layerType">
+        <option th:each="layerType : ${layerTypes}" th:value="${layerType}"
+                th:text="${layerType.displayName}">
+            Layer Type
+        </option>
+    </select>
+    <input type="submit" value=" Create Layer "/>
+</form>
+
 </body>
 </html>
