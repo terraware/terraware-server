@@ -41,6 +41,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import javax.validation.Valid
 import javax.validation.constraints.PositiveOrZero
@@ -65,7 +66,8 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val updatedPayload = accessionStore.create(payload.toModel())
+    val updatedPayload =
+        accessionStore.create(payload.toModel(), checkedIn = payload.checkedIn ?: true)
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
   }
 
@@ -110,12 +112,28 @@ class AccessionController(private val accessionStore: AccessionStore, private va
             ?: throw NotFoundException("The specified accession doesn't exist.")
     return GetAccessionResponsePayload(AccessionPayload(accession, clock))
   }
+
+  @ApiResponse(responseCode = "200")
+  @ApiResponse404
+  @Operation(summary = "Marks an accession as checked in.")
+  @PostMapping("/{id}/checkIn")
+  fun checkIn(@PathVariable("id") accessionId: AccessionId): UpdateAccessionResponsePayload {
+    val accession = accessionStore.checkIn(accessionId)
+    return UpdateAccessionResponsePayload(AccessionPayload(accession, clock))
+  }
 }
 
 // Mark all fields as write-only in the schema
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
+    @Schema(
+        description =
+            "If false, the accession will be created in \"Awaiting Check-In\" state and must be " +
+                "checked in using a separate API request. If true, the accession will already be " +
+                "checked in when it is initially created.",
+        defaultValue = "true")
+    val checkedIn: Boolean? = null,
     val collectedDate: LocalDate? = null,
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
@@ -270,6 +288,7 @@ data class AccessionPayload(
         description = "Server-calculated active indicator. This is based on the accession's state.")
     val active: AccessionActive,
     val bagNumbers: Set<String>?,
+    val checkedInTime: Instant?,
     val collectedDate: LocalDate?,
     val deviceInfo: DeviceInfoPayload?,
     val cutTestSeedsCompromised: Int?,
@@ -366,6 +385,7 @@ data class AccessionPayload(
       model.accessionNumber ?: throw IllegalArgumentException("Accession did not have a number"),
       model.active ?: AccessionActive.Active,
       model.bagNumbers.orNull(),
+      model.checkedInTime,
       model.collectedDate,
       model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.cutTestSeedsCompromised,
