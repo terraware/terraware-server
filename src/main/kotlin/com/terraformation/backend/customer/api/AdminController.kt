@@ -433,18 +433,25 @@ class AdminController(
         Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
     val site = siteStore.create(projectId, name, location)
 
-    layerTypes?.forEach { layerType ->
-      layerStore.createLayer(
-          LayerModel(
-              hidden = false,
-              layerType = layerType,
-              proposed = false,
-              siteId = site.id,
-              tileSetName = null,
-          ))
+    try {
+      layerTypes?.forEach { layerType ->
+        layerStore.createLayer(
+            LayerModel(
+                hidden = false,
+                layerType = layerType,
+                proposed = false,
+                siteId = site.id,
+                tileSetName = null,
+            ))
+      }
+
+      redirectAttributes.addFlashAttribute("successMessage", "Site created.")
+    } catch (e: Exception) {
+      log.error("Layer creation failed", e)
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "Created site but could not create layers.")
     }
 
-    redirectAttributes.addFlashAttribute("successMessage", "Site created.")
     return project(projectId)
   }
 
