@@ -469,6 +469,27 @@ class AdminController(
     return site(siteId)
   }
 
+  @PostMapping("/createLayer")
+  fun createLayer(
+      @RequestParam("siteId") siteId: SiteId,
+      @RequestParam("layerType") layerType: LayerType,
+      model: Model
+  ): String {
+    val layer =
+        layerStore.createLayer(
+            LayerModel(
+                hidden = false,
+                layerType = layerType,
+                proposed = false,
+                siteId = siteId,
+                tileSetName = null,
+            ))
+
+    model.addAttribute("successMessage", "Layer ${layer.id} created.")
+
+    return site(siteId, model)
+  }
+
   @PostMapping("/createFacility")
   fun createFacility(
       @RequestParam("siteId") siteId: SiteId,
