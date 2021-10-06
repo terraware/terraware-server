@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.PhotoId
@@ -27,7 +27,6 @@ import java.nio.file.NoSuchFileException
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.springframework.security.access.AccessDeniedException
 
 /**
  * Manages storage of photos including metadata. In this implementation, image files are stored on
@@ -54,9 +53,7 @@ class PhotoRepository(
     val accession =
         accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    if (!currentUser().canUpdateAccession(accessionId, accession.facilityId)) {
-      throw AccessDeniedException("No permission to update accession data")
-    }
+    requirePermissions { updateAccession(accessionId, accession.facilityId) }
 
     val photoUrl = fileStore.newUrl(clock.instant(), "accession", metadata.contentType)
 
@@ -112,9 +109,7 @@ class PhotoRepository(
     val accession =
         accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    if (!currentUser().canReadAccession(accessionId, accession.facilityId)) {
-      throw AccessionNotFoundException(accessionId)
-    }
+    requirePermissions { readAccession(accessionId, accession.facilityId) }
 
     return if (maxWidth != null || maxHeight != null) {
       thumbnailStore.getThumbnailData(fetchPhotoId(accessionId, filename), maxWidth, maxHeight)
@@ -129,9 +124,7 @@ class PhotoRepository(
     val accession =
         accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    if (!currentUser().canReadAccession(accessionId, accession.facilityId)) {
-      throw AccessionNotFoundException(accessionId)
-    }
+    requirePermissions { readAccession(accessionId, accession.facilityId) }
 
     val photoUrl = fetchUrl(accessionId, filename)
     return fileStore.size(photoUrl)
@@ -139,9 +132,7 @@ class PhotoRepository(
 
   /** Returns a list of metadata for an accession's photos. */
   fun listPhotos(accessionId: AccessionId): List<PhotoMetadata> {
-    if (!currentUser().canReadAccession(accessionId)) {
-      throw AccessionNotFoundException(accessionId)
-    }
+    requirePermissions { readAccession(accessionId) }
 
     return dslContext
         .select(

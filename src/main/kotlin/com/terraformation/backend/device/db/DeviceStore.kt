@@ -1,13 +1,13 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import javax.annotation.ManagedBean
-import org.springframework.security.access.AccessDeniedException
 
 /** Permission-aware database operations for device configuration data. */
 @ManagedBean
@@ -32,13 +32,11 @@ class DeviceStore(private val devicesDao: DevicesDao) {
     val facilityId =
         devicesRow.facilityId ?: throw IllegalArgumentException("No facility ID specified")
 
-    if (!currentUser().canCreateDevice(facilityId)) {
-      throw AccessDeniedException("No permission to create devices in facility")
-    }
+    requirePermissions { createDevice(facilityId) }
 
     val parentId = devicesRow.parentId
-    if (parentId != null && !currentUser().canUpdateDevice(parentId)) {
-      throw AccessDeniedException("No permission to update parent device")
+    if (parentId != null) {
+      requirePermissions { updateDevice(parentId) }
     }
 
     val newRow = devicesRow.copy(id = null)
@@ -50,13 +48,11 @@ class DeviceStore(private val devicesDao: DevicesDao) {
   fun update(devicesRow: DevicesRow) {
     val deviceId = devicesRow.id ?: throw IllegalArgumentException("No device ID specified")
 
-    if (!currentUser().canUpdateDevice(deviceId)) {
-      throw AccessDeniedException("No permission to update device")
-    }
+    requirePermissions { updateDevice(deviceId) }
 
     val parentId = devicesRow.parentId
-    if (parentId != null && !currentUser().canUpdateDevice(parentId)) {
-      throw AccessDeniedException("No permission to update parent device")
+    if (parentId != null) {
+      requirePermissions { updateDevice(parentId) }
     }
 
     val existing = devicesDao.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)

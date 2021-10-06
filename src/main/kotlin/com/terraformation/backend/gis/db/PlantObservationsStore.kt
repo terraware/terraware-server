@@ -1,6 +1,7 @@
 package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.PlantObservationNotFoundException
@@ -10,7 +11,6 @@ import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
 import java.lang.IllegalArgumentException
 import java.time.Clock
 import javax.annotation.ManagedBean
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class PlantObservationsStore(
@@ -21,10 +21,8 @@ class PlantObservationsStore(
   fun create(row: PlantObservationsRow): PlantObservationsRow {
     val featureId = row.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
-    if (!currentUser().canCreateLayerData(featureId)) {
-      throw AccessDeniedException(
-          "No permission to create a plant observation associated with featureId $featureId")
-    }
+    requirePermissions { createLayerData(featureId) }
+
     if (plantsDao.fetchOneByFeatureId(featureId) == null) {
       throw IllegalArgumentException(
           "Cannot create Plant Observation because " +

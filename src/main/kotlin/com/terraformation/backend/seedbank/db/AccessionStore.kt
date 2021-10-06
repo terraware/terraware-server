@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.AppDeviceStore
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
@@ -41,7 +42,6 @@ import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class AccessionStore(
@@ -179,9 +179,7 @@ class AccessionStore(
   fun create(accession: AccessionModel): AccessionModel {
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
-    if (!currentUser().canCreateAccession(facilityId)) {
-      throw AccessDeniedException("No permission to create accessions in facility $facilityId")
-    }
+    requirePermissions { createAccession(facilityId) }
 
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
@@ -281,9 +279,7 @@ class AccessionStore(
     val existing = fetchById(accessionId) ?: return false
     val facilityId = existing.facilityId ?: return false
 
-    if (!currentUser().canUpdateAccession(accessionId, facilityId)) {
-      throw AccessDeniedException("No permission to update accession $accessionId")
-    }
+    requirePermissions { updateAccession(accessionId, facilityId) }
 
     val accession = updated.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)

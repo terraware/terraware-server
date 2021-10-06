@@ -1,6 +1,7 @@
 package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerNotFoundException
 import com.terraformation.backend.db.SiteId
@@ -9,7 +10,6 @@ import com.terraformation.backend.gis.model.LayerModel
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class LayerStore(
@@ -17,9 +17,8 @@ class LayerStore(
     private val dslContext: DSLContext,
 ) {
   fun createLayer(layerModel: LayerModel): LayerModel {
-    if (!currentUser().canCreateLayer(layerModel.siteId)) {
-      throw AccessDeniedException("No permission to create layer at site ${layerModel.siteId}")
-    }
+    requirePermissions { createLayer(layerModel.siteId) }
+
     val currTime = clock.instant()
     val layerID =
         dslContext
@@ -140,8 +139,8 @@ class LayerStore(
     // Caller provided siteId must match the siteId in the database because allowing site moves
     // would add additional permissions complexity. Plus, the caller can achieve that behavior
     // using a combination of createLayer() and deleteLayer().
-    if (layerModel.siteId != currentRow[LAYERS.SITE_ID] ||
-        !currentUser().canUpdateLayer(currentRow[LAYERS.SITE_ID]!!)) {
+    requirePermissions { updateLayer(layerModel.id!!, layerModel.siteId) }
+    if (layerModel.siteId != currentRow[LAYERS.SITE_ID]) {
       throw LayerNotFoundException(layerModel.id!!)
     }
 
@@ -180,11 +179,9 @@ class LayerStore(
 
   fun deleteLayer(id: LayerId): LayerModel {
     // Must fetch layer to get site ID and check permissions
-    val layer: LayerModel? = fetchLayer(id)
+    val layer = fetchLayer(id) ?: throw LayerNotFoundException(id)
 
-    if (layer == null || !currentUser().canDeleteLayer(layer.siteId)) {
-      throw LayerNotFoundException(id)
-    }
+    requirePermissions { deleteLayer(id, layer.siteId) }
 
     val currTime = clock.instant()
     dslContext

@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SiteModel
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
@@ -15,7 +16,6 @@ import javax.annotation.ManagedBean
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Condition
 import org.jooq.DSLContext
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class SiteStore(
@@ -52,9 +52,7 @@ class SiteStore(
   }
 
   fun create(projectId: ProjectId, name: String, location: Point): SiteModel {
-    if (!currentUser().canCreateSite(projectId)) {
-      throw AccessDeniedException("No permission to create sites in this project")
-    }
+    requirePermissions { createSite(projectId) }
 
     val row =
         SitesRow(
