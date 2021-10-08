@@ -18,9 +18,6 @@ class AccessionNotFoundException(val accessionId: AccessionId) :
 class DeviceNotFoundException(val deviceId: DeviceId) :
     EntityNotFoundException("Device $deviceId not found")
 
-class FacilityNotFoundException(val facilityId: FacilityId) :
-    EntityNotFoundException("Facility $facilityId not found")
-
 class FeatureNotFoundException(val featureId: FeatureId) :
     EntityNotFoundException("Feature $featureId not found")
 
