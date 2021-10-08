@@ -2,12 +2,15 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AppDeviceId
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.APP_DEVICES
 import com.terraformation.backend.util.eqOrIsNull
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.exception.DataAccessException
+import org.jooq.impl.DSL
 
 @ManagedBean
 class AppDeviceStore(private val dslContext: DSLContext, private val clock: Clock) {
@@ -66,5 +69,12 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
     } else {
       null
     }
+  }
+
+  fun appDeviceMultiset(
+      idField: Field<AppDeviceId?> = ACCESSIONS.APP_DEVICE_ID
+  ): Field<AppDeviceModel?> {
+    return DSL.multiset(DSL.selectFrom(APP_DEVICES).where(APP_DEVICES.ID.eq(idField)))
+        .convertFrom { result -> result.firstOrNull()?.let { AppDeviceModel(it) } }
   }
 }

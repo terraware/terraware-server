@@ -13,14 +13,14 @@ import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
-import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
-import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
+import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.debugWithTiming
@@ -40,6 +40,7 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
@@ -48,12 +49,10 @@ import org.springframework.dao.DuplicateKeyException
 @ManagedBean
 class AccessionStore(
     private val dslContext: DSLContext,
-    private val accessionPhotosDao: AccessionPhotosDao,
     private val appDeviceStore: AppDeviceStore,
     private val bagStore: BagStore,
     private val geolocationStore: GeolocationStore,
     private val germinationStore: GerminationStore,
-    private val photosDao: PhotosDao,
     private val speciesStore: SpeciesStore,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
@@ -74,9 +73,19 @@ class AccessionStore(
     // so we can consider species to be an attribute of the accession rather than a child entity.
     //
     // Under the parent, there are things an accession can have zero or more of, e.g., withdrawals
-    // or photos. We currently query each of those things individually rather than attempting to
-    // grab all of them in a single SQL query.
-    val parentRow =
+    // or photos. We query those things using multisets, which causes the list of values to appear
+    // as a single field in the top-level query. Each multiset field gets translated into a subquery
+    // by jOOQ, so we can get everything in one database request.
+    val appDeviceField = appDeviceStore.appDeviceMultiset()
+    val bagNumbersField = bagStore.bagNumbersMultiset()
+    val geolocationsField = geolocationStore.geolocationsMultiset()
+    val germinationTestsField = germinationStore.germinationTestsMultiset()
+    val germinationTestTypesField = germinationStore.germinationTestTypesMultiset()
+    val photoFilenamesField = photoFilenamesMultiset()
+    val secondaryCollectorsField = secondaryCollectorsMultiset()
+    val withdrawalsField = withdrawalStore.withdrawalsMultiset()
+
+    val record =
         dslContext
             .select(
                 ACCESSIONS.asterisk(),
@@ -89,6 +98,14 @@ class AccessionStore(
                 ACCESSIONS.TARGET_STORAGE_CONDITION,
                 ACCESSIONS.PROCESSING_METHOD_ID,
                 ACCESSIONS.PROCESSING_STAFF_RESPONSIBLE,
+                appDeviceField,
+                bagNumbersField,
+                geolocationsField,
+                germinationTestsField,
+                germinationTestTypesField,
+                photoFilenamesField,
+                secondaryCollectorsField,
+                withdrawalsField,
             )
             .from(ACCESSIONS)
             .where(ACCESSIONS.ID.eq(accessionId))
@@ -97,84 +114,75 @@ class AccessionStore(
 
     if (!skipPermissionCheck && !currentUser().canReadAccession(accessionId)) {
       log.warn(
-          "No permission to read accession $accessionId in facility ${parentRow[ACCESSIONS.FACILITY_ID]}")
+          "No permission to read accession $accessionId in facility ${record[ACCESSIONS.FACILITY_ID]}")
       return null
     }
 
-    val secondaryCollectorNames = fetchSecondaryCollectorNames(accessionId)
-    val bagNumbers = bagStore.fetchBagNumbers(accessionId)
-    val deviceInfo = appDeviceStore.fetchById(parentRow[ACCESSIONS.APP_DEVICE_ID])
-    val geolocations = geolocationStore.fetchGeolocations(accessionId)
-    val germinationTestTypes = germinationStore.fetchGerminationTestTypes(accessionId)
-    val germinationTests = germinationStore.fetchGerminationTests(accessionId)
-    val photoIds = accessionPhotosDao.fetchByAccessionId(accessionId).mapNotNull { it.photoId }
-    val photoFilenames = photosDao.fetchById(*photoIds.toTypedArray()).mapNotNull { it.fileName }
-    val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
-
-    val source = if (deviceInfo != null) AccessionSource.SeedCollectorApp else AccessionSource.Web
+    val source =
+        if (record[appDeviceField] != null) AccessionSource.SeedCollectorApp
+        else AccessionSource.Web
 
     return with(ACCESSIONS) {
       AccessionModel(
-          accessionNumber = parentRow[NUMBER],
-          bagNumbers = bagNumbers,
-          checkedInTime = parentRow[CHECKED_IN_TIME],
-          collectedDate = parentRow[COLLECTED_DATE],
-          cutTestSeedsCompromised = parentRow[CUT_TEST_SEEDS_COMPROMISED],
-          cutTestSeedsEmpty = parentRow[CUT_TEST_SEEDS_EMPTY],
-          cutTestSeedsFilled = parentRow[CUT_TEST_SEEDS_FILLED],
-          deviceInfo = deviceInfo,
-          dryingEndDate = parentRow[DRYING_END_DATE],
-          dryingMoveDate = parentRow[DRYING_MOVE_DATE],
-          dryingStartDate = parentRow[DRYING_START_DATE],
-          endangered = parentRow[SPECIES_ENDANGERED_TYPE_ID],
-          environmentalNotes = parentRow[ENVIRONMENTAL_NOTES],
-          estimatedSeedCount = parentRow[EST_SEED_COUNT],
-          facilityId = parentRow[FACILITY_ID],
-          family = parentRow[families().NAME],
-          fieldNotes = parentRow[FIELD_NOTES],
-          founderId = parentRow[FOUNDER_ID],
-          geolocations = geolocations,
-          germinationTestTypes = germinationTestTypes,
-          germinationTests = germinationTests,
+          accessionNumber = record[NUMBER],
+          bagNumbers = record[bagNumbersField],
+          checkedInTime = record[CHECKED_IN_TIME],
+          collectedDate = record[COLLECTED_DATE],
+          cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
+          cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
+          cutTestSeedsFilled = record[CUT_TEST_SEEDS_FILLED],
+          deviceInfo = record[appDeviceField],
+          dryingEndDate = record[DRYING_END_DATE],
+          dryingMoveDate = record[DRYING_MOVE_DATE],
+          dryingStartDate = record[DRYING_START_DATE],
+          endangered = record[SPECIES_ENDANGERED_TYPE_ID],
+          environmentalNotes = record[ENVIRONMENTAL_NOTES],
+          estimatedSeedCount = record[EST_SEED_COUNT],
+          facilityId = record[FACILITY_ID],
+          family = record[families().NAME],
+          fieldNotes = record[FIELD_NOTES],
+          founderId = record[FOUNDER_ID],
+          geolocations = record[geolocationsField],
+          germinationTestTypes = record[germinationTestTypesField],
+          germinationTests = record[germinationTestsField],
           id = accessionId,
-          landowner = parentRow[COLLECTION_SITE_LANDOWNER],
-          latestGerminationTestDate = parentRow[LATEST_GERMINATION_RECORDING_DATE],
-          latestViabilityPercent = parentRow[LATEST_VIABILITY_PERCENT],
-          numberOfTrees = parentRow[TREES_COLLECTED_FROM],
-          nurseryStartDate = parentRow[NURSERY_START_DATE],
-          photoFilenames = photoFilenames,
-          primaryCollector = parentRow[collectors().NAME],
-          processingMethod = parentRow[PROCESSING_METHOD_ID],
-          processingNotes = parentRow[PROCESSING_NOTES],
-          processingStaffResponsible = parentRow[PROCESSING_STAFF_RESPONSIBLE],
-          processingStartDate = parentRow[PROCESSING_START_DATE],
-          rare = parentRow[RARE_TYPE_ID],
-          receivedDate = parentRow[RECEIVED_DATE],
-          remaining =
-              SeedQuantityModel.of(parentRow[REMAINING_QUANTITY], parentRow[REMAINING_UNITS_ID]),
-          secondaryCollectors = secondaryCollectorNames,
-          siteLocation = parentRow[COLLECTION_SITE_NAME],
+          landowner = record[COLLECTION_SITE_LANDOWNER],
+          latestGerminationTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
+          latestViabilityPercent = record[LATEST_VIABILITY_PERCENT],
+          numberOfTrees = record[TREES_COLLECTED_FROM],
+          nurseryStartDate = record[NURSERY_START_DATE],
+          photoFilenames = record[photoFilenamesField],
+          primaryCollector = record[collectors().NAME],
+          processingMethod = record[PROCESSING_METHOD_ID],
+          processingNotes = record[PROCESSING_NOTES],
+          processingStaffResponsible = record[PROCESSING_STAFF_RESPONSIBLE],
+          processingStartDate = record[PROCESSING_START_DATE],
+          rare = record[RARE_TYPE_ID],
+          receivedDate = record[RECEIVED_DATE],
+          remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
+          secondaryCollectors = record[secondaryCollectorsField],
+          siteLocation = record[COLLECTION_SITE_NAME],
           source = source,
-          sourcePlantOrigin = parentRow[SOURCE_PLANT_ORIGIN_ID],
-          species = parentRow[species().NAME],
-          speciesId = parentRow[SPECIES_ID],
-          state = parentRow[STATE_ID]!!,
-          storageCondition = parentRow[storageLocations().CONDITION_ID],
-          storageLocation = parentRow[storageLocations().NAME],
-          storageNotes = parentRow[STORAGE_NOTES],
-          storagePackets = parentRow[STORAGE_PACKETS],
-          storageStaffResponsible = parentRow[STORAGE_STAFF_RESPONSIBLE],
-          storageStartDate = parentRow[STORAGE_START_DATE],
-          subsetCount = parentRow[SUBSET_COUNT],
+          sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
+          species = record[species().NAME],
+          speciesId = record[SPECIES_ID],
+          state = record[STATE_ID]!!,
+          storageCondition = record[storageLocations().CONDITION_ID],
+          storageLocation = record[storageLocations().NAME],
+          storageNotes = record[STORAGE_NOTES],
+          storagePackets = record[STORAGE_PACKETS],
+          storageStaffResponsible = record[STORAGE_STAFF_RESPONSIBLE],
+          storageStartDate = record[STORAGE_START_DATE],
+          subsetCount = record[SUBSET_COUNT],
           subsetWeightQuantity =
               SeedQuantityModel.of(
-                  parentRow[SUBSET_WEIGHT_QUANTITY],
-                  parentRow[SUBSET_WEIGHT_UNITS_ID],
+                  record[SUBSET_WEIGHT_QUANTITY],
+                  record[SUBSET_WEIGHT_UNITS_ID],
               ),
-          targetStorageCondition = parentRow[TARGET_STORAGE_CONDITION],
-          total = SeedQuantityModel.of(parentRow[TOTAL_QUANTITY], parentRow[TOTAL_UNITS_ID]),
-          totalViabilityPercent = parentRow[TOTAL_VIABILITY_PERCENT],
-          withdrawals = withdrawals,
+          targetStorageCondition = record[TARGET_STORAGE_CONDITION],
+          total = SeedQuantityModel.of(record[TOTAL_QUANTITY], record[TOTAL_UNITS_ID]),
+          totalViabilityPercent = record[TOTAL_VIABILITY_PERCENT],
+          withdrawals = record[withdrawalsField],
       )
     }
   }
@@ -537,17 +545,26 @@ class AccessionStore(
     }
   }
 
-  private fun fetchSecondaryCollectorNames(accessionId: AccessionId): Set<String> {
-    return dslContext
-        .select(COLLECTORS.NAME)
-        .from(COLLECTORS)
-        .join(ACCESSION_SECONDARY_COLLECTORS)
-        .on(COLLECTORS.ID.eq(ACCESSION_SECONDARY_COLLECTORS.COLLECTOR_ID))
-        .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
-        .orderBy(COLLECTORS.NAME)
-        .fetch(COLLECTORS.NAME)
-        .filterNotNull()
-        .toSet()
+  private fun photoFilenamesMultiset(): Field<List<String>> {
+    return DSL.multiset(
+            DSL.select(PHOTOS.FILE_NAME)
+                .from(ACCESSION_PHOTOS)
+                .join(PHOTOS)
+                .on(ACCESSION_PHOTOS.PHOTO_ID.eq(PHOTOS.ID))
+                .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(ACCESSIONS.ID))
+                .orderBy(PHOTOS.CREATED_TIME))
+        .convertFrom { result -> result.map { it.value1() } }
+  }
+
+  private fun secondaryCollectorsMultiset(): Field<Set<String>> {
+    return DSL.multiset(
+            DSL.select(COLLECTORS.NAME)
+                .from(COLLECTORS)
+                .join(ACCESSION_SECONDARY_COLLECTORS)
+                .on(COLLECTORS.ID.eq(ACCESSION_SECONDARY_COLLECTORS.COLLECTOR_ID))
+                .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
+                .orderBy(COLLECTORS.NAME))
+        .convertFrom { result -> result.map { it.value1() }.toSet() }
   }
 
   private fun insertSecondaryCollectors(
