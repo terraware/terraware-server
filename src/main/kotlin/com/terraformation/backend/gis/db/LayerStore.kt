@@ -119,6 +119,8 @@ class LayerStore(
   }
 
   fun updateLayer(layerModel: LayerModel): LayerModel {
+    val layerId = layerModel.id ?: throw IllegalArgumentException("No layer ID specified")
+
     val currentRow =
         dslContext
             .select(
@@ -131,17 +133,17 @@ class LayerStore(
                 LAYERS.MODIFIED_TIME,
             )
             .from(LAYERS)
-            .where(LAYERS.ID.eq(layerModel.id))
+            .where(LAYERS.ID.eq(layerId))
             .and(LAYERS.DELETED.isFalse)
             .fetchOne()
-            ?: throw LayerNotFoundException(layerModel.id!!)
+            ?: throw LayerNotFoundException(layerId)
 
     // Caller provided siteId must match the siteId in the database because allowing site moves
     // would add additional permissions complexity. Plus, the caller can achieve that behavior
     // using a combination of createLayer() and deleteLayer().
-    requirePermissions { updateLayer(layerModel.id!!, layerModel.siteId) }
+    requirePermissions { updateLayer(layerId, layerModel.siteId) }
     if (layerModel.siteId != currentRow[LAYERS.SITE_ID]) {
-      throw LayerNotFoundException(layerModel.id!!)
+      throw LayerNotFoundException(layerId)
     }
 
     // Check if the row we just fetched is the same as what we're trying to write.
@@ -170,7 +172,7 @@ class LayerStore(
         .set(LAYERS.PROPOSED, layerModel.proposed)
         .set(LAYERS.HIDDEN, layerModel.hidden)
         .set(LAYERS.MODIFIED_TIME, currTime)
-        .where(LAYERS.ID.eq(layerModel.id))
+        .where(LAYERS.ID.eq(layerId))
         .execute()
 
     return layerModel.copy(
