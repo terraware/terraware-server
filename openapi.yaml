@@ -2908,10 +2908,14 @@ components:
       - id
       - name
       - role
+      - siteId
       - type
       type: object
       properties:
         id:
+          type: integer
+          format: int64
+        siteId:
           type: integer
           format: int64
         name:
