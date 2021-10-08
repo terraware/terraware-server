@@ -479,22 +479,22 @@ class AccessionStore(
     // problematic in the face of systems with different levels of precision in their native time
     // representations.
     val checkedInTime = clock.instant().truncatedTo(ChronoUnit.SECONDS)
-    val checkedIn =
+    val withCheckedInTime =
         accession.copy(checkedInTime = checkedInTime).withCalculatedValues(clock, accession)
 
     dslContext.transaction { _ ->
       dslContext
           .update(ACCESSIONS)
           .set(ACCESSIONS.CHECKED_IN_TIME, checkedInTime)
-          .set(ACCESSIONS.STATE_ID, checkedIn.state)
+          .set(ACCESSIONS.STATE_ID, withCheckedInTime.state)
           .where(ACCESSIONS.ID.eq(accessionId))
           .and(ACCESSIONS.CHECKED_IN_TIME.isNull)
           .execute()
 
-      insertStateHistory(accession, checkedIn)
+      insertStateHistory(accession, withCheckedInTime)
     }
 
-    return checkedIn
+    return withCheckedInTime
   }
 
   /**

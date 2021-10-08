@@ -267,6 +267,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         AccessionsRow(
+            // Checked-in times should not include fractional seconds.
             checkedInTime = Instant.EPOCH,
             createdTime = clock.instant(),
             facilityId = facilityId,
