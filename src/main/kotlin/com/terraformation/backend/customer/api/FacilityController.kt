@@ -7,6 +7,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.SiteId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,7 +35,7 @@ class FacilityController(private val facilityStore: FacilityStore) {
               facilityRoles[facility.id]
                   ?: throw IllegalStateException(
                       "BUG! No role for facility that was selected based on the presence of a role")
-          FacilityPayload(facility.id, facility.name, facility.type, role.name)
+          FacilityPayload(facility.id, facility.siteId, facility.name, facility.type, role.name)
         }
 
     return ListFacilitiesResponse(elements)
@@ -48,12 +49,14 @@ class FacilityController(private val facilityStore: FacilityStore) {
         currentUser().facilityRoles[facilityId]
             ?: throw IllegalStateException("BUG! No role for facility")
 
-    return GetFacilityResponse(FacilityPayload(facilityId, facility.name, facility.type, role.name))
+    return GetFacilityResponse(
+        FacilityPayload(facilityId, facility.siteId, facility.name, facility.type, role.name))
   }
 }
 
 data class FacilityPayload(
     val id: FacilityId,
+    val siteId: SiteId,
     val name: String,
     val type: FacilityType,
     @Schema(description = "The name of the role the current user has at the facility.")

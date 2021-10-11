@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
@@ -9,7 +10,6 @@ import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
 import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class TimeseriesStore(private val dslContext: DSLContext) {
@@ -34,9 +34,7 @@ class TimeseriesStore(private val dslContext: DSLContext) {
   private fun createOrUpdate(row: TimeseriesRow): TimeseriesId {
     val deviceId = row.deviceId ?: throw IllegalArgumentException("No device ID specified")
 
-    if (!currentUser().canCreateTimeseries(deviceId)) {
-      throw AccessDeniedException("No permission to create timeseries")
-    }
+    requirePermissions { createTimeseries(deviceId) }
 
     return with(TIMESERIES) {
       dslContext

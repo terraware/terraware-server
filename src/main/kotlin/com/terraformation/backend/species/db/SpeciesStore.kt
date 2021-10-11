@@ -1,6 +1,6 @@
 package com.terraformation.backend.species.db
 
-import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FamilyId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
@@ -70,9 +70,7 @@ class SpeciesStore(
   }
 
   fun createSpecies(row: SpeciesRow): SpeciesId {
-    if (!currentUser().canCreateSpecies()) {
-      throw AccessDeniedException("No permission to create species")
-    }
+    requirePermissions { createSpecies() }
 
     val newRow = row.copy(createdTime = clock.instant(), modifiedTime = clock.instant())
     speciesDao.insert(newRow)
@@ -90,9 +88,7 @@ class SpeciesStore(
   }
 
   private fun createFamily(row: FamiliesRow): FamilyId {
-    if (!currentUser().canCreateFamily()) {
-      throw AccessDeniedException("No permission to create families")
-    }
+    requirePermissions { createFamily() }
 
     val newRow = row.copy(id = null, createdTime = clock.instant(), modifiedTime = clock.instant())
     familiesDao.insert(newRow)
@@ -118,9 +114,7 @@ class SpeciesStore(
   fun updateSpecies(row: SpeciesRow) {
     val speciesId = row.id ?: throw IllegalArgumentException("No species ID specified")
 
-    if (!currentUser().canUpdateSpecies(speciesId)) {
-      throw AccessDeniedException("No permission to update species")
-    }
+    requirePermissions { updateSpecies(speciesId) }
 
     val existing = speciesDao.fetchOneById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
 
@@ -174,9 +168,7 @@ class SpeciesStore(
    * @throws SpeciesNotFoundException No species with the requested ID exists.
    */
   fun deleteSpecies(speciesId: SpeciesId) {
-    if (!currentUser().canDeleteSpecies(speciesId)) {
-      throw AccessDeniedException("No permission to delete species")
-    }
+    requirePermissions { deleteSpecies(speciesId) }
 
     val rowsDeleted =
         dslContext.transactionResult { _ ->
@@ -201,9 +193,7 @@ class SpeciesStore(
    */
   fun createSpeciesName(row: SpeciesNamesRow): SpeciesNameId {
     val speciesId = row.speciesId ?: throw IllegalArgumentException("Species ID may not be null")
-    if (!currentUser().canUpdateSpecies(speciesId)) {
-      throw AccessDeniedException("No permission to create species name")
-    }
+    requirePermissions { updateSpecies(speciesId) }
 
     val newRow = row.copy(id = null, createdTime = clock.instant(), modifiedTime = clock.instant())
     speciesNamesDao.insert(newRow)
@@ -224,9 +214,7 @@ class SpeciesStore(
     val speciesId = existing.speciesId!!
     val species = speciesDao.fetchOneById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
 
-    if (!currentUser().canUpdateSpecies(speciesId)) {
-      throw AccessDeniedException("No permission to delete species name")
-    }
+    requirePermissions { updateSpecies(speciesId) }
 
     if (existing.name == species.name) {
       throw DataIntegrityViolationException("Cannot delete primary name of a species")
@@ -274,9 +262,7 @@ class SpeciesStore(
     val speciesId = existing.speciesId!!
     val species = speciesDao.fetchOneById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
 
-    if (!currentUser().canUpdateSpecies(speciesId)) {
-      throw AccessDeniedException("No permission to update species name")
-    }
+    requirePermissions { updateSpecies(speciesId) }
 
     dslContext.transaction { _ ->
       speciesNamesDao.update(

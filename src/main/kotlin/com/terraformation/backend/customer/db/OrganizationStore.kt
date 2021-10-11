@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
@@ -134,12 +135,9 @@ class OrganizationStore(
   }
 
   fun addUser(organizationId: OrganizationId, userId: UserId, role: Role) {
-    if (!currentUser().canAddOrganizationUser(organizationId)) {
-      throw AccessDeniedException("No permission to add users to organization")
-    }
-
-    if (!currentUser().canSetOrganizationUserRole(organizationId, role)) {
-      throw AccessDeniedException("No permission to grant a higher role than the current user has")
+    requirePermissions {
+      addOrganizationUser(organizationId)
+      setOrganizationUserRole(organizationId, role)
     }
 
     with(ORGANIZATION_USERS) {
@@ -159,9 +157,7 @@ class OrganizationStore(
    * projects.
    */
   fun removeUser(organizationId: OrganizationId, userId: UserId): Boolean {
-    if (!currentUser().canRemoveOrganizationUser(organizationId)) {
-      throw AccessDeniedException("No permission to remove users from organization")
-    }
+    requirePermissions { removeOrganizationUser(organizationId) }
 
     var result = false
 
