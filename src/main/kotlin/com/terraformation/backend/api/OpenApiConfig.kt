@@ -5,6 +5,7 @@ import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
+import com.terraformation.backend.seedbank.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import com.terraformation.backend.seedbank.search.SearchField
@@ -12,7 +13,9 @@ import com.terraformation.backend.seedbank.search.SearchFields
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
+import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
+import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
@@ -70,6 +73,7 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
 
   override fun customise(openApi: OpenAPI) {
     renderSearchFieldAsEnum(openApi)
+    renderSearchResultProperties(openApi)
     sortEndpoints(openApi)
     sortResponseCodes(openApi)
     sortSchemas(openApi)
@@ -105,6 +109,20 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
     schema.name = "SearchField"
 
     openApi.components.addSchemas(schema.name, schema)
+  }
+
+  /**
+   * Renders the type of the array of search results as an object with a fixed set of possible
+   * property names, one for each search field name.
+   */
+  private fun renderSearchResultProperties(openApi: OpenAPI) {
+    val schemaName = SearchResponsePayload::class.swaggerSchemaName
+    val resultsField =
+        (openApi.components.schemas[schemaName]?.properties?.get("results")
+            ?: throw IllegalStateException("Cannot find search results schema")) as ArraySchema
+
+    resultsField.items =
+        ObjectSchema().properties(searchFields.fieldNames.associateWith { StringSchema() })
   }
 
   private fun sortEndpoints(openApi: OpenAPI) {
