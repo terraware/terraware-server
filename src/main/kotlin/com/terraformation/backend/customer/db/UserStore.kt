@@ -9,6 +9,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
@@ -41,7 +42,6 @@ import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
-import org.springframework.security.access.AccessDeniedException
 
 /**
  * Data accessor for user information.
@@ -177,9 +177,7 @@ class UserStore(
       redirectUrl: URI? = null,
       linkLifetime: Duration = Duration.ofDays(3),
   ): UserModel {
-    if (!currentUser().canAddOrganizationUser(organizationId)) {
-      throw AccessDeniedException("No permission to add users to this organization")
-    }
+    requirePermissions { addOrganizationUser(organizationId) }
 
     val existingUser = fetchByEmail(email)
     if (existingUser != null) {
@@ -232,9 +230,7 @@ class UserStore(
    * - The first name is the admin-supplied description
    */
   fun createApiClient(organizationId: OrganizationId, description: String?): UserModel {
-    if (!currentUser().canCreateApiKey(organizationId)) {
-      throw AccessDeniedException("No permission to create API keys in this organization")
-    }
+    requirePermissions { createApiKey(organizationId) }
 
     // Use base32 instead of base64 so the username doesn't include "/" and "+".
     val randomString = Base32().encodeToString(Random.nextBytes(15)).lowercase()
@@ -259,9 +255,7 @@ class UserStore(
     }
 
     user.organizationRoles.keys.forEach { organizationId ->
-      if (!currentUser().canDeleteApiKey(organizationId)) {
-        throw AccessDeniedException("No permission to delete API keys in this organization")
-      }
+      requirePermissions { deleteApiKey(organizationId) }
     }
 
     log.debug("Removing API client user $userId (${user.authId}) from Keycloak")

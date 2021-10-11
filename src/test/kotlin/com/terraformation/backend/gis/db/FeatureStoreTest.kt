@@ -401,10 +401,10 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `delete throws a FeatureNotFoundException if the user doesn't have delete permissions`() {
+  fun `delete throws AccessDeniedException if the user doesn't have delete permission`() {
     val feature = store.createFeature(validCreateRequest)
     every { user.canDeleteLayerData(any()) } returns false
-    assertThrows<FeatureNotFoundException> { store.deleteFeature(feature.id!!) }
+    assertThrows<AccessDeniedException> { store.deleteFeature(feature.id!!) }
   }
 
   @Test

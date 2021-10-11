@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FeatureId
+import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PlantNotFoundException
@@ -166,8 +167,8 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create fails with AccessDeniedException if feature doesn't exist`() {
-    assertThrows<AccessDeniedException> {
+  fun `create fails with FeatureNotFoundException if feature doesn't exist`() {
+    assertThrows<FeatureNotFoundException> {
       store.createPlant(validCreateRequest.copy(featureId = nonExistentFeatureId))
     }
   }

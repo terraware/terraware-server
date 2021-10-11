@@ -1,6 +1,7 @@
 package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
@@ -31,7 +32,6 @@ import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class FeatureStore(
@@ -46,9 +46,7 @@ class FeatureStore(
   private val log = perClassLogger()
 
   fun createFeature(model: FeatureModel): FeatureModel {
-    if (!currentUser().canCreateLayerData(model.layerId)) {
-      throw AccessDeniedException("No permission to create feature within layer ${model.layerId}")
-    }
+    requirePermissions { createLayerData(model.layerId) }
 
     val currTime = clock.instant()
     val insertedRecord =
@@ -172,14 +170,16 @@ class FeatureStore(
   }
 
   fun updateFeature(newModel: FeatureModel): FeatureModel {
-    val oldModel = noPermissionsCheckFetch(newModel.id!!)
+    val featureId = newModel.id ?: throw IllegalArgumentException("No feature ID specified")
 
-    if (oldModel == null ||
-        newModel.layerId != oldModel.layerId ||
-        !currentUser().canUpdateLayerData(newModel.layerId)) {
+    requirePermissions { updateLayerData(newModel.layerId, featureId) }
+
+    val oldModel = noPermissionsCheckFetch(featureId)
+
+    if (newModel.layerId != oldModel?.layerId) {
       // Caller cannot change the layerId. They must delete this Feature and recreate a new one
       // if they want to "move" the feature into a new layer.
-      throw FeatureNotFoundException(newModel.id)
+      throw FeatureNotFoundException(featureId)
     }
 
     if (newModel == oldModel) {
@@ -199,7 +199,7 @@ class FeatureStore(
               .set(NOTES, newModel.notes)
               .set(ENTERED_TIME, newModel.enteredTime)
               .set(MODIFIED_TIME, currTime)
-              .where(ID.eq(newModel.id))
+              .where(ID.eq(featureId))
               .returningResult(GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
               .fetchOne()
               ?.getValue(GEOM)
@@ -210,7 +210,8 @@ class FeatureStore(
   }
 
   fun deleteFeature(id: FeatureId): FeatureId {
-    if (!currentUser().canDeleteLayerData(id) || noPermissionsCheckFetch(id) == null) {
+    requirePermissions { deleteLayerData(id) }
+    if (noPermissionsCheckFetch(id) == null) {
       throw FeatureNotFoundException(id)
     }
 
@@ -298,13 +299,12 @@ class FeatureStore(
   }
 
   fun getPhotoMetadata(featureId: FeatureId, photoId: PhotoId): PhotosRow {
-    val featurePhoto =
-        featurePhotosDao.fetchByPhotoId(photoId).firstOrNull()
-            ?: throw PhotoNotFoundException(photoId)
-
-    if (featurePhoto.featureId != featureId || !currentUser().canReadLayerData(featureId)) {
+    val featurePhoto = featurePhotosDao.fetchByPhotoId(photoId).firstOrNull()
+    if (featurePhoto == null || featurePhoto.featureId != featureId) {
       throw PhotoNotFoundException(photoId)
     }
+
+    requirePermissions { readLayerData(photoId, featureId) }
 
     return photosDao.fetchOneById(photoId) ?: throw PhotoNotFoundException(photoId)
   }
@@ -327,9 +327,7 @@ class FeatureStore(
   fun deletePhoto(featureId: FeatureId, photoId: PhotoId) {
     val photosRow = getPhotoMetadata(featureId, photoId)
 
-    if (!currentUser().canDeleteLayerData(featureId)) {
-      throw AccessDeniedException("No permission to delete feature photos.")
-    }
+    requirePermissions { deleteLayerData(featureId) }
 
     val thumbnails = thumbnailsDao.fetchByPhotoId(photoId)
     val url = photosRow.storageUrl!!

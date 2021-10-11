@@ -32,6 +32,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  * To get the current user's details, call [currentUser]. See that function's docs for some caveats,
  * but this is usually what you'll want to do.
  *
+ * For permission checking where lack of permission should be treated as an error, you will probably
+ * want to use [requirePermissions] instead of interacting directly with this class. See that
+ * function's docs for more details.
+ *
  * This class attempts to abstract away the implementation details of the permission checking
  * business logic. It has a bunch of methods like [canCreateSite] to check for specific permissions.
  * In general, we want those methods to be as fine-grained as possible and to take fine-grained
@@ -233,7 +237,6 @@ class UserModel(
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  @Suppress("UNUSED_PARAMETER")
   fun canListSites(projectId: ProjectId): Boolean {
     // Any user who has access to a project can list its sites.
     return projectRoles[projectId] != null
@@ -327,19 +330,6 @@ class UserModel(
   /** Returns true if the user is an admin or owner of any organizations. */
   fun hasAnyAdminRole(): Boolean =
       organizationRoles.values.any { it == Role.OWNER || it == Role.ADMIN }
-
-  /**
-   * Temporary helper to get the user's facility ID.
-   *
-   * TODO: Remove this once the client passes in facility IDs.
-   */
-  fun defaultFacilityId(): FacilityId {
-    if (facilityRoles.isNotEmpty()) {
-      return facilityRoles.keys.first()
-    } else {
-      throw IllegalStateException("User has no facilities")
-    }
-  }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return if (userType == UserType.SuperAdmin) {
