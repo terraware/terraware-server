@@ -1109,6 +1109,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/seedbank/accession/{id}/checkIn:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Marks an accession as checked in.
+      operationId: checkIn
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAccessionResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/accession/{id}/photo:
     get:
       tags:
@@ -2037,6 +2063,9 @@ components:
           type: array
           items:
             type: string
+        checkedInTime:
+          type: string
+          format: date-time
         collectedDate:
           type: string
           format: date
@@ -2184,6 +2213,7 @@ components:
           description: Server-calculated accession state. Can change due to modifications
             to accession data or based on passage of time.
           enum:
+          - Awaiting Check-In
           - Pending
           - Processing
           - Processed
@@ -3796,6 +3826,7 @@ components:
           type: string
           description: "For state notifications, which state is being summarized."
           enum:
+          - Awaiting Check-In
           - Pending
           - Processing
           - Processed
@@ -3983,6 +4014,7 @@ components:
       - accessionNumber
       - active
       - bagNumber
+      - checkedInTime
       - collectedDate
       - collectionNotes
       - cutTestSeedsCompromised
@@ -4143,6 +4175,8 @@ components:
               active:
                 type: string
               bagNumber:
+                type: string
+              checkedInTime:
                 type: string
               collectedDate:
                 type: string
