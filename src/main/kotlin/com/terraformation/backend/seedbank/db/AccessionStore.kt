@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
@@ -34,6 +36,7 @@ import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -41,7 +44,6 @@ import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class AccessionStore(
@@ -56,6 +58,7 @@ class AccessionStore(
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val support: StoreSupport,
+    private val config: TerrawareServerConfig,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -115,6 +118,7 @@ class AccessionStore(
       AccessionModel(
           accessionNumber = parentRow[NUMBER],
           bagNumbers = bagNumbers,
+          checkedInTime = parentRow[CHECKED_IN_TIME],
           collectedDate = parentRow[COLLECTED_DATE],
           cutTestSeedsCompromised = parentRow[CUT_TEST_SEEDS_COMPROMISED],
           cutTestSeedsEmpty = parentRow[CUT_TEST_SEEDS_EMPTY],
@@ -177,11 +181,10 @@ class AccessionStore(
   }
 
   fun create(accession: AccessionModel): AccessionModel {
+    val checkedIn = !config.enableAwaitingCheckIn
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
-    if (!currentUser().canCreateAccession(facilityId)) {
-      throw AccessDeniedException("No permission to create accessions in facility $facilityId")
-    }
+    requirePermissions { createAccession(facilityId) }
 
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
@@ -193,15 +196,19 @@ class AccessionStore(
             dslContext.transactionResult { _ ->
               val appDeviceId =
                   accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
+              val checkedInTime =
+                  if (checkedIn) clock.instant().truncatedTo(ChronoUnit.SECONDS) else null
               val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
               val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
               val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
+              val state = if (checkedIn) AccessionState.Pending else AccessionState.AwaitingCheckIn
 
               val accessionId =
                   with(ACCESSIONS) {
                     dslContext
                         .insertInto(ACCESSIONS)
                         .set(APP_DEVICE_ID, appDeviceId)
+                        .set(CHECKED_IN_TIME, checkedInTime)
                         .set(COLLECTED_DATE, accession.collectedDate)
                         .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
                         .set(COLLECTION_SITE_NAME, accession.siteLocation)
@@ -226,7 +233,7 @@ class AccessionStore(
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                         .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                         .set(SPECIES_ID, speciesId)
-                        .set(STATE_ID, AccessionState.Pending)
+                        .set(STATE_ID, state)
                         .set(
                             STORAGE_LOCATION_ID,
                             getStorageLocationId(facilityId, accession.storageLocation))
@@ -246,7 +253,7 @@ class AccessionStore(
                     .insertInto(ACCESSION_STATE_HISTORY)
                     .set(ACCESSION_ID, accessionId)
                     .set(REASON, "Accession created")
-                    .set(NEW_STATE_ID, AccessionState.Pending)
+                    .set(NEW_STATE_ID, state)
                     .set(UPDATED_TIME, clock.instant())
                     .execute()
               }
@@ -281,9 +288,7 @@ class AccessionStore(
     val existing = fetchById(accessionId) ?: return false
     val facilityId = existing.facilityId ?: return false
 
-    if (!currentUser().canUpdateAccession(accessionId, facilityId)) {
-      throw AccessDeniedException("No permission to update accession $accessionId")
-    }
+    requirePermissions { updateAccession(accessionId, facilityId) }
 
     val accession = updated.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)
@@ -333,24 +338,7 @@ class AccessionStore(
       germinationStore.updateGerminationTests(accessionId, existingTests, germinationTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
-      if (existing.state != accession.state) {
-        existing.getStateTransition(accession, clock)?.let { stateTransition ->
-          log.info(
-              "Accession $accessionId transitioning from ${existing.state} to " +
-                  "${stateTransition.newState}: ${stateTransition.reason}")
-
-          with(ACCESSION_STATE_HISTORY) {
-            dslContext
-                .insertInto(ACCESSION_STATE_HISTORY)
-                .set(ACCESSION_ID, accessionId)
-                .set(NEW_STATE_ID, stateTransition.newState)
-                .set(OLD_STATE_ID, existing.state)
-                .set(REASON, stateTransition.reason)
-                .set(UPDATED_TIME, clock.instant())
-                .execute()
-          }
-        }
-      }
+      insertStateHistory(existing, accession)
 
       val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
       val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
@@ -422,6 +410,34 @@ class AccessionStore(
   }
 
   /**
+   * Records a history entry for a state transition if an accession's state has changed as the
+   * result of a modification.
+   */
+  private fun insertStateHistory(before: AccessionModel, after: AccessionModel) {
+    val accessionId = before.id ?: throw IllegalArgumentException("Existing accession has no ID")
+
+    if (before.state != after.state) {
+      before.getStateTransition(after, clock)?.let { stateTransition ->
+        log.info(
+            "Accession $accessionId transitioning from ${before.state} to " +
+                "${stateTransition.newState}: ${stateTransition.reason}",
+        )
+
+        with(ACCESSION_STATE_HISTORY) {
+          dslContext
+              .insertInto(ACCESSION_STATE_HISTORY)
+              .set(ACCESSION_ID, accessionId)
+              .set(NEW_STATE_ID, stateTransition.newState)
+              .set(OLD_STATE_ID, before.state)
+              .set(REASON, stateTransition.reason)
+              .set(UPDATED_TIME, clock.instant())
+              .execute()
+        }
+      }
+    }
+  }
+
+  /**
    * Updates an accession and returns the modified accession data including any computed field
    * values.
    *
@@ -437,6 +453,45 @@ class AccessionStore(
         }
 
     return updated ?: throw AccessionNotFoundException(accessionId)
+  }
+
+  /**
+   * Marks an accession as checked in and returns the modified accession data including any computed
+   * field values.
+   *
+   * @throws AccessionNotFoundException The accession did not exist or wasn't accessible by the
+   * current user.
+   */
+  fun checkIn(accessionId: AccessionId): AccessionModel {
+    val accession = fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
+
+    requirePermissions { updateAccession(accessionId, accession.facilityId) }
+
+    if (accession.checkedInTime != null) {
+      log.info("Accession $accessionId is already checked in; ignoring request to check in again")
+      return accession
+    }
+
+    // Don't record the time with sub-second precision; it is not useful and makes exact searches
+    // problematic in the face of systems with different levels of precision in their native time
+    // representations.
+    val checkedInTime = clock.instant().truncatedTo(ChronoUnit.SECONDS)
+    val withCheckedInTime =
+        accession.copy(checkedInTime = checkedInTime).withCalculatedValues(clock, accession)
+
+    dslContext.transaction { _ ->
+      dslContext
+          .update(ACCESSIONS)
+          .set(ACCESSIONS.CHECKED_IN_TIME, checkedInTime)
+          .set(ACCESSIONS.STATE_ID, withCheckedInTime.state)
+          .where(ACCESSIONS.ID.eq(accessionId))
+          .and(ACCESSIONS.CHECKED_IN_TIME.isNull)
+          .execute()
+
+      insertStateHistory(accession, withCheckedInTime)
+    }
+
+    return withCheckedInTime
   }
 
   /**

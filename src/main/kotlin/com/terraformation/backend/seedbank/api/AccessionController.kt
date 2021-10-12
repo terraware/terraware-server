@@ -41,6 +41,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import javax.validation.Valid
 import javax.validation.constraints.PositiveOrZero
@@ -109,6 +110,15 @@ class AccessionController(private val accessionStore: AccessionStore, private va
         accessionStore.fetchById(accessionId)
             ?: throw NotFoundException("The specified accession doesn't exist.")
     return GetAccessionResponsePayload(AccessionPayload(accession, clock))
+  }
+
+  @ApiResponse(responseCode = "200")
+  @ApiResponse404
+  @Operation(summary = "Marks an accession as checked in.")
+  @PostMapping("/{id}/checkIn")
+  fun checkIn(@PathVariable("id") accessionId: AccessionId): UpdateAccessionResponsePayload {
+    val accession = accessionStore.checkIn(accessionId)
+    return UpdateAccessionResponsePayload(AccessionPayload(accession, clock))
   }
 }
 
@@ -270,6 +280,7 @@ data class AccessionPayload(
         description = "Server-calculated active indicator. This is based on the accession's state.")
     val active: AccessionActive,
     val bagNumbers: Set<String>?,
+    val checkedInTime: Instant?,
     val collectedDate: LocalDate?,
     val deviceInfo: DeviceInfoPayload?,
     val cutTestSeedsCompromised: Int?,
@@ -366,6 +377,7 @@ data class AccessionPayload(
       model.accessionNumber ?: throw IllegalArgumentException("Accession did not have a number"),
       model.active ?: AccessionActive.Active,
       model.bagNumbers.orNull(),
+      model.checkedInTime,
       model.collectedDate,
       model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.cutTestSeedsCompromised,

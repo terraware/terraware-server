@@ -49,10 +49,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var searchService: SearchService
 
   private val facilityId = FacilityId(100)
+  private val checkedInTimeString = "2021-08-18T11:33:55Z"
+  private val checkedInTime = Instant.parse(checkedInTimeString)
 
   private val searchFields = SearchFields(PostgresFuzzySearchOperators())
   private val accessionNumberField = searchFields["accessionNumber"]!!
   private val activeField = searchFields["active"]!!
+  private val checkedInTimeField = searchFields["checkedInTime"]!!
   private val germinationSeedsGerminatedField = searchFields["germinationSeedsGerminated"]!!
   private val germinationSeedsSownField = searchFields["germinationSeedsSown"]!!
   private val germinationTestTypeField = searchFields["germinationTestType"]!!
@@ -99,6 +102,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             id = AccessionId(1000),
             number = "XYZ",
             stateId = AccessionState.Processed,
+            checkedInTime = checkedInTime,
             createdTime = now,
             facilityId = facilityId,
             speciesId = SpeciesId(10000),
@@ -116,7 +120,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `finds example rows`() {
-    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
+    val fields =
+        listOf(
+            speciesField,
+            accessionNumberField,
+            treesCollectedFromField,
+            activeField,
+            checkedInTimeField)
     val sortOrder = fields.map { SearchSortField(it) }
 
     val result =
@@ -132,6 +142,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                     "accessionNumber" to "XYZ",
                     "treesCollectedFrom" to "1",
                     "active" to "Active",
+                    "checkedInTime" to checkedInTimeString,
                 ),
                 mapOf(
                     "species" to "Other Dogwood",
@@ -431,6 +442,29 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     assertThrows(IllegalArgumentException::class.java) {
       searchService.search(facilityId, fields, searchNode)
     }
+  }
+
+  @Test
+  fun `can search for timestamps using different but equivalent ISO-8601 time format`() {
+    val fields = listOf(checkedInTimeField)
+    val searchNode =
+        FieldNode(
+            checkedInTimeField,
+            listOf(checkedInTimeString.replace("Z", ".000+00:00")),
+            SearchFilterType.Exact)
+
+    val result = searchService.search(facilityId, fields, searchNode)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1000",
+                    "accessionNumber" to "XYZ",
+                    "checkedInTime" to checkedInTimeString)),
+            cursor = null)
+
+    assertEquals(expected, result)
   }
 
   @Test

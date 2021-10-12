@@ -22,6 +22,7 @@ import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
 import com.terraformation.backend.seedbank.model.toGrams
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.util.EnumSet
@@ -124,6 +125,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         UpperCaseTextField("accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
         ActiveField("active", "Active"),
         TextField("bagNumber", "Bag number", BAGS.BAG_NUMBER, SearchTables.Bag),
+        TimestampField("checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
         DateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
         TextField("collectionNotes", "Notes (collection)", ACCESSIONS.ENVIRONMENTAL_NOTES),
         IntegerField(
@@ -323,6 +325,24 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
           other.databaseField == databaseField &&
           other.table == table
     }
+
+    /**
+     * Returns a Condition for a range query on a field with a data type that is compatible with the
+     * SQL BETWEEN operator.
+     */
+    protected fun rangeCondition(values: List<T?>): Condition {
+      if (values.size != 2 || values[0] == null && values[1] == null) {
+        throw IllegalArgumentException("Range search must have two non-null values")
+      }
+
+      return if (values[0] != null && values[1] != null) {
+        databaseField.between(values[0], values[1])
+      } else if (values[0] == null) {
+        databaseField.le(values[1])
+      } else {
+        databaseField.ge(values[0])
+      }
+    }
   }
 
   /** Search field for accession identifiers. */
@@ -415,19 +435,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         }
         SearchFilterType.Fuzzy ->
             throw RuntimeException("Fuzzy search not supported for numeric fields")
-        SearchFilterType.Range ->
-            if (bigDecimalValues.size == 2 && nonNullValues.isNotEmpty()) {
-              if (bigDecimalValues[0] != null && bigDecimalValues[1] != null) {
-                databaseField.between(
-                    BigDecimal(fieldNode.values[0]), BigDecimal(fieldNode.values[1]))
-              } else if (bigDecimalValues[0] == null) {
-                databaseField.le(bigDecimalValues[1])
-              } else {
-                databaseField.ge(bigDecimalValues[0])
-              }
-            } else {
-              throw IllegalArgumentException("Range search must have two non-null values")
-            }
+        SearchFilterType.Range -> rangeCondition(bigDecimalValues)
       }
     }
 
@@ -463,19 +471,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
                 ))
         SearchFilterType.Fuzzy ->
             throw IllegalArgumentException("Fuzzy search not supported for dates")
-        SearchFilterType.Range ->
-            if (dateValues.size == 2 && nonNullDates.isNotEmpty()) {
-              if (dateValues[0] != null && dateValues[1] != null) {
-                databaseField.between(nonNullDates[0], nonNullDates[1])
-              } else if (dateValues[0] == null) {
-                databaseField.le(dateValues[1])
-              } else {
-                databaseField.ge(dateValues[0])
-              }
-            } else {
-              throw IllegalArgumentException(
-                  "Range search must have two values at least one of which is not null")
-            }
+        SearchFilterType.Range -> rangeCondition(dateValues)
       }
     }
   }
@@ -520,7 +516,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
     override val orderByFields: List<Field<*>>
       get() {
-        val displayNames = enumClass.enumConstants!!.associate { it to it.displayName }
+        val displayNames = enumClass.enumConstants!!.associateWith { it.displayName }
         return listOf(DSL.case_(databaseField).mapValues(displayNames))
       }
 
@@ -598,18 +594,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         }
         SearchFilterType.Fuzzy ->
             throw RuntimeException("Fuzzy search not supported for numeric fields")
-        SearchFilterType.Range ->
-            if (bigDecimalValues.size == 2 && nonNullValues.isNotEmpty()) {
-              if (bigDecimalValues[0] != null && bigDecimalValues[1] != null) {
-                databaseField.between(bigDecimalValues[0], bigDecimalValues[1])
-              } else if (bigDecimalValues[0] == null) {
-                databaseField.le(bigDecimalValues[1])
-              } else {
-                databaseField.ge(bigDecimalValues[0])
-              }
-            } else {
-              throw IllegalArgumentException("Range search must have two non-null values")
-            }
+        SearchFilterType.Range -> rangeCondition(bigDecimalValues)
       }
     }
 
@@ -661,19 +646,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
                 ))
         SearchFilterType.Fuzzy ->
             throw RuntimeException("Fuzzy search not supported for numeric fields")
-        SearchFilterType.Range ->
-            if (intValues.size == 2 && nonNullValues.isNotEmpty()) {
-              if (intValues[0] != null && intValues[1] != null) {
-                databaseField.between(nonNullValues[0], nonNullValues[1])
-              } else if (intValues[0] == null) {
-                databaseField.le(intValues[1])
-              } else {
-                databaseField.ge(intValues[0])
-              }
-            } else {
-              throw IllegalArgumentException(
-                  "Range search must have two values at least one of which must be non-null")
-            }
+        SearchFilterType.Range -> rangeCondition(intValues)
       }
     }
   }
@@ -711,6 +684,41 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
                 })
         SearchFilterType.Range ->
             throw IllegalArgumentException("Range search not supported for text fields")
+      }
+    }
+  }
+
+  /** Search field for columns that have full timestamps. */
+  class TimestampField(
+      override val fieldName: String,
+      override val displayName: String,
+      override val databaseField: TableField<*, Instant?>,
+      override val table: SearchTable = SearchTables.Accession,
+      override val nullable: Boolean = true
+  ) : SearchFields.SingleColumnSearchField<Instant>() {
+    override val supportedFilterTypes: Set<SearchFilterType>
+      get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
+
+    override fun getCondition(fieldNode: FieldNode): Condition {
+      val instantValues =
+          try {
+            fieldNode.values.map { if (it != null) Instant.parse(it) else null }
+          } catch (e: DateTimeParseException) {
+            throw IllegalArgumentException(
+                "Timestamps must be ISO-8601 format with timezone (example: 2021-05-28T18:45:30Z)")
+          }
+      val nonNullInstants = instantValues.filterNotNull()
+
+      return when (fieldNode.type) {
+        SearchFilterType.Exact ->
+            DSL.or(
+                listOfNotNull(
+                    if (nonNullInstants.isNotEmpty()) databaseField.`in`(nonNullInstants) else null,
+                    if (fieldNode.values.any { it == null }) databaseField.isNull else null,
+                ))
+        SearchFilterType.Fuzzy ->
+            throw IllegalArgumentException("Fuzzy search not supported for timestamps")
+        SearchFilterType.Range -> rangeCondition(instantValues)
       }
     }
   }

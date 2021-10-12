@@ -15,6 +15,7 @@ import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.WithdrawalPurpose
 import java.math.BigDecimal
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 
 enum class AccessionActive {
@@ -28,6 +29,7 @@ fun AccessionState.toActiveEnum() =
 
       // Don't use "else" here -- we want it to be a compile error if we add a state and forget
       // to specify whether it is active or inactive.
+      AccessionState.AwaitingCheckIn,
       AccessionState.Pending,
       AccessionState.Processing,
       AccessionState.Processed,
@@ -45,6 +47,7 @@ data class AccessionModel(
     val id: AccessionId? = null,
     val accessionNumber: String? = null,
     val bagNumbers: Set<String> = emptySet(),
+    val checkedInTime: Instant? = null,
     val collectedDate: LocalDate? = null,
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,
@@ -110,6 +113,7 @@ data class AccessionModel(
     val today = LocalDate.now(clock)
 
     fun LocalDate?.hasArrived(daysAgo: Long = 0) = this != null && this <= today.minusDays(daysAgo)
+    fun Instant?.hasArrived() = this != null && this <= clock.instant()
 
     val seedCountPresent = newModel.total != null
     val processingForTwoWeeks = newModel.processingStartDate.hasArrived(daysAgo = 14)
@@ -118,6 +122,7 @@ data class AccessionModel(
     val storageStarted = newModel.storageStartDate.hasArrived()
     val storageDetailsEntered = newModel.storagePackets != null || newModel.storageLocation != null
     val nurseryStarted = newModel.nurseryStartDate.hasArrived()
+    val checkedIn = newModel.checkedInTime.hasArrived()
 
     val desiredState: Pair<AccessionState, String> =
         when {
@@ -131,7 +136,8 @@ data class AccessionModel(
           processingForTwoWeeks ->
               AccessionState.Processed to "2 weeks have passed since processing start date"
           seedCountPresent -> AccessionState.Processing to "Seed count/weight has been entered"
-          else -> AccessionState.Pending to "No state conditions have been met"
+          checkedIn -> AccessionState.Pending to "Accession has been checked in"
+          else -> AccessionState.AwaitingCheckIn to "No state conditions have been met"
         }
 
     return if (desiredState.first != state) {

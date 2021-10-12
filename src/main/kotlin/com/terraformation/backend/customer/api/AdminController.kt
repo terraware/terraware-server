@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.api
 
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -11,12 +10,18 @@ import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.gis.db.LayerStore
+import com.terraformation.backend.gis.model.LayerModel
 import com.terraformation.backend.log.perClassLogger
 import java.math.BigDecimal
 import java.net.URI
@@ -39,6 +44,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/admin")
@@ -48,6 +54,7 @@ class AdminController(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
+    private val layerStore: LayerStore,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
     private val siteStore: SiteStore,
@@ -63,7 +70,7 @@ class AdminController(
   }
 
   @GetMapping("/")
-  fun index(model: Model): String {
+  fun getIndex(model: Model): String {
     val organizations = organizationStore.fetchAll().sortedBy { it.id.value }
 
     model.addAttribute("organizations", organizations)
@@ -73,8 +80,10 @@ class AdminController(
   }
 
   @GetMapping("/organization/{organizationId}")
-  fun organization(@PathVariable organizationId: OrganizationId, model: Model): String {
-    val organization = organizationStore.fetchById(organizationId) ?: throw NotFoundException()
+  fun getOrganization(@PathVariable organizationId: OrganizationId, model: Model): String {
+    val organization =
+        organizationStore.fetchById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
     val projects = projectStore.fetchByOrganization(organizationId).sortedBy { it.name }
     val users = organizationStore.fetchUsers(listOf(organizationId)).sortedBy { it.email }
 
@@ -112,8 +121,8 @@ class AdminController(
   }
 
   @GetMapping("/project/{projectId}")
-  fun project(@PathVariable projectId: ProjectId, model: Model): String {
-    val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
+  fun getProject(@PathVariable projectId: ProjectId, model: Model): String {
+    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
     val organization = organizationStore.fetchById(project.organizationId)
     val orgUsers =
         organizationStore.fetchUsers(listOf(project.organizationId)).sortedBy { it.email }
@@ -121,8 +130,14 @@ class AdminController(
     val availableUsers = orgUsers.filter { projectId !in it.projectIds }
     val sites = siteStore.fetchByProjectId(projectId).sortedBy { it.name }
 
+    val defaultLayerTypes = listOf(LayerType.PlantsPlanted)
+    val otherLayerTypes =
+        LayerType.values().filter { it !in defaultLayerTypes }.sortedBy { it.displayName }
+
     model.addAttribute("availableUsers", availableUsers)
     model.addAttribute("canCreateSite", currentUser().canCreateSite(projectId))
+    model.addAttribute("defaultLayerTypes", defaultLayerTypes)
+    model.addAttribute("otherLayerTypes", otherLayerTypes)
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("project", project)
@@ -133,16 +148,20 @@ class AdminController(
   }
 
   @GetMapping("/site/{siteId}")
-  fun site(@PathVariable siteId: SiteId, model: Model): String {
-    val site = siteStore.fetchById(siteId) ?: throw NotFoundException()
+  fun getSite(@PathVariable siteId: SiteId, model: Model): String {
+    val site = siteStore.fetchById(siteId) ?: throw SiteNotFoundException(siteId)
     val projectId = site.projectId
-    val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
+    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
     val organization = organizationStore.fetchById(project.organizationId)
     val facilities = facilityStore.fetchBySiteId(siteId).sortedBy { it.name }
+    val layers = layerStore.listLayers(siteId).sortedBy { it.layerType.displayName }
 
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(siteId))
+    model.addAttribute("canCreateLayer", currentUser().canCreateLayer(siteId))
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
+    model.addAttribute("layers", layers)
+    model.addAttribute("layerTypes", LayerType.values().sortedBy { it.displayName })
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("project", project)
@@ -152,7 +171,7 @@ class AdminController(
   }
 
   @GetMapping("/user/{userId}")
-  fun user(@PathVariable userId: UserId, model: Model): String {
+  fun getUser(@PathVariable userId: UserId, model: Model): String {
     val user = userStore.fetchById(userId)
     val organizations = organizationStore.fetchAll() // TODO: Only ones where currentUser is admin?
     val projects = projectStore.fetchAll().groupBy { it.organizationId }
@@ -172,7 +191,7 @@ class AdminController(
       @RequestParam("organizationId", required = false) organizationIdList: List<OrganizationId>?,
       @RequestParam("role", required = false) roleValues: List<String>?,
       @RequestParam("projectId", required = false) projectIdList: List<ProjectId>?,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     val organizationIds = organizationIdList?.toSet() ?: emptySet()
     val projectIds = projectIdList?.toSet() ?: emptySet()
@@ -186,8 +205,8 @@ class AdminController(
 
     val user = userStore.fetchById(userId)
     if (user == null) {
-      model.addAttribute("failureMessage", "User not found.")
-      return index(model)
+      redirectAttributes.addFlashAttribute("failureMessage", "User not found.")
+      return adminHome()
     }
 
     // We need to know which boxes were unchecked; the UI would have shown all the orgs and projects
@@ -233,22 +252,25 @@ class AdminController(
       projectsToRemove.forEach { projectId -> projectStore.removeUser(projectId, userId) }
     }
 
-    model.addAttribute("successMessage", "User memberships updated.")
+    redirectAttributes.addFlashAttribute("successMessage", "User memberships updated.")
 
-    return user(userId, model)
+    return user(userId)
   }
 
   @PostMapping("/createOrganization")
-  fun createOrganization(@NotBlank @RequestParam("name") name: String, model: Model): String {
+  fun createOrganization(
+      @NotBlank @RequestParam("name") name: String,
+      redirectAttributes: RedirectAttributes,
+  ): String {
     try {
       val org = organizationStore.createWithAdmin(name)
-      model.addAttribute("successMessage", "Created organization ${org.id}")
+      redirectAttributes.addFlashAttribute("successMessage", "Created organization ${org.id}")
     } catch (e: Exception) {
       log.error("Failed to create organization $name", e)
-      model.addAttribute("failureMessage", "Failed to create organization")
+      redirectAttributes.addFlashAttribute("failureMessage", "Failed to create organization")
     }
 
-    return index(model)
+    return adminHome()
   }
 
   @PostMapping("/createUser")
@@ -259,12 +281,12 @@ class AdminController(
       @RequestParam("lastName") lastName: String?,
       @RequestParam("role") roleId: Int,
       request: HttpServletRequest,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     val role = Role.of(roleId)
     if (role == null) {
-      model.addAttribute("failureMessage", "Invalid role selected.")
-      return organization(organizationId, model)
+      redirectAttributes.addFlashAttribute("failureMessage", "Invalid role selected.")
+      return organization(organizationId)
     }
 
     try {
@@ -274,38 +296,42 @@ class AdminController(
           userStore.createUser(
               organizationId, role, email, firstName, lastName, redirectUrl = redirectUrl)
 
-      model.addAttribute("successMessage", "User added to organization.")
+      redirectAttributes.addFlashAttribute("successMessage", "User added to organization.")
 
-      return user(user.userId, model)
+      return user(user.userId)
     } catch (e: DuplicateKeyException) {
-      model.addAttribute("failureMessage", "User is already in the organization.")
+      redirectAttributes.addFlashAttribute("failureMessage", "User is already in the organization.")
     } catch (e: AccessDeniedException) {
-      model.addAttribute("failureMessage", "No permission to create users in this organization.")
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "No permission to create users in this organization.")
     } catch (e: Exception) {
       log.error("User creation failed", e)
-      model.addAttribute("failureMessage", "Unexpected failure while creating user.")
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "Unexpected failure while creating user.")
     }
 
-    return organization(organizationId, model)
+    return organization(organizationId)
   }
 
   @PostMapping("/removeOrganizationUser")
   fun removeOrganizationUser(
       @RequestParam("organizationId") organizationId: OrganizationId,
       @RequestParam("userId") userId: UserId,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       if (organizationStore.removeUser(organizationId, userId)) {
-        model.addAttribute("successMessage", "User removed from organization.")
+        redirectAttributes.addFlashAttribute("successMessage", "User removed from organization.")
       } else {
-        model.addAttribute("failureMessage", "User was not a member of the organization.")
+        redirectAttributes.addFlashAttribute(
+            "failureMessage", "User was not a member of the organization.")
       }
     } catch (e: AccessDeniedException) {
-      model.addAttribute("failureMessage", "No permission to remove users from this organization.")
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "No permission to remove users from this organization.")
     }
 
-    return organization(organizationId, model)
+    return organization(organizationId)
   }
 
   @PostMapping("/setOrganizationUserRole")
@@ -313,79 +339,85 @@ class AdminController(
       @RequestParam("organizationId") organizationId: OrganizationId,
       @RequestParam("userId") userId: UserId,
       @RequestParam("role") roleId: Int,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     val role = Role.of(roleId)
 
     if (role == null) {
-      model.addAttribute("failureMessage", "Invalid role selected.")
-      return organization(organizationId, model)
+      redirectAttributes.addFlashAttribute("failureMessage", "Invalid role selected.")
+      return organization(organizationId)
     }
 
     try {
       if (organizationStore.setUserRole(organizationId, userId, role)) {
-        model.addAttribute("successMessage", "User role updated.")
+        redirectAttributes.addFlashAttribute("successMessage", "User role updated.")
       } else {
-        model.addAttribute("failureMessage", "User was not a member of the organization.")
+        redirectAttributes.addFlashAttribute(
+            "failureMessage", "User was not a member of the organization.")
       }
     } catch (e: AccessDeniedException) {
-      model.addAttribute("failureMessage", "No permission to set user roles for this organization.")
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "No permission to set user roles for this organization.")
     }
 
-    return organization(organizationId, model)
+    return organization(organizationId)
   }
 
   @PostMapping("/createProject")
   fun createProject(
       @RequestParam("organizationId") organizationId: OrganizationId,
       @NotBlank @RequestParam("name") name: String,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       projectStore.create(organizationId, name)
-      model.addAttribute("successMessage", "Project created.")
+      redirectAttributes.addFlashAttribute("successMessage", "Project created.")
     } catch (e: AccessDeniedException) {
-      model.addAttribute("failureMessage", "No permission to create projects in this organization.")
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "No permission to create projects in this organization.")
     }
 
-    return organization(organizationId, model)
+    return organization(organizationId)
   }
 
   @PostMapping("/removeProjectUser")
   fun removeProjectUser(
       @RequestParam("projectId") projectId: ProjectId,
       @RequestParam("userId") userId: UserId,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       if (projectStore.removeUser(projectId, userId)) {
-        model.addAttribute("successMessage", "User removed from project.")
+        redirectAttributes.addFlashAttribute("successMessage", "User removed from project.")
       } else {
-        model.addAttribute("failureMessage", "User was not a member of the project.")
+        redirectAttributes.addFlashAttribute(
+            "failureMessage", "User was not a member of the project.")
       }
     } catch (e: AccessDeniedException) {
-      model.addAttribute("failureMessage", "No permission to remove users from this project.")
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "No permission to remove users from this project.")
     }
 
-    return project(projectId, model)
+    return project(projectId)
   }
 
   @PostMapping("/addProjectUser")
   fun addProjectUser(
       @RequestParam("projectId") projectId: ProjectId,
       @RequestParam("userId") userId: UserId,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       projectStore.addUser(projectId, userId)
-      model.addAttribute("successMessage", "User added to project.")
+      redirectAttributes.addFlashAttribute("successMessage", "User added to project.")
     } catch (e: AccessDeniedException) {
-      model.addAttribute("failureMessage", "No permission to add users to this project.")
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "No permission to add users to this project.")
     } catch (e: DuplicateKeyException) {
-      model.addAttribute("failureMessage", "User is already in this project.")
+      redirectAttributes.addFlashAttribute("failureMessage", "User is already in this project.")
     }
 
-    return project(projectId, model)
+    return project(projectId)
   }
 
   @PostMapping("/createSite")
@@ -394,14 +426,54 @@ class AdminController(
       @NotBlank @RequestParam("name") name: String,
       @Min(-180L) @Max(180L) @RequestParam("latitude") latitude: BigDecimal,
       @Min(-180L) @Max(180L) @RequestParam("longitude") longitude: BigDecimal,
-      model: Model
+      @RequestParam("layerTypes", required = false) layerTypes: List<LayerType>?,
+      redirectAttributes: RedirectAttributes,
   ): String {
     val location =
         Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
-    siteStore.create(projectId, name, location)
+    val site = siteStore.create(projectId, name, location)
 
-    model.addAttribute("successMessage", "Site created.")
-    return project(projectId, model)
+    try {
+      layerTypes?.forEach { layerType ->
+        layerStore.createLayer(
+            LayerModel(
+                hidden = false,
+                layerType = layerType,
+                proposed = false,
+                siteId = site.id,
+                tileSetName = null,
+            ))
+      }
+
+      redirectAttributes.addFlashAttribute("successMessage", "Site created.")
+    } catch (e: Exception) {
+      log.error("Layer creation failed", e)
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "Created site but could not create layers.")
+    }
+
+    return project(projectId)
+  }
+
+  @PostMapping("/createLayer")
+  fun createLayer(
+      @RequestParam("siteId") siteId: SiteId,
+      @RequestParam("layerType") layerType: LayerType,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val layer =
+        layerStore.createLayer(
+            LayerModel(
+                hidden = false,
+                layerType = layerType,
+                proposed = false,
+                siteId = siteId,
+                tileSetName = null,
+            ))
+
+    redirectAttributes.addFlashAttribute("successMessage", "Layer ${layer.id} created.")
+
+    return site(siteId)
   }
 
   @PostMapping("/createFacility")
@@ -409,38 +481,56 @@ class AdminController(
       @RequestParam("siteId") siteId: SiteId,
       @NotBlank @RequestParam("name") name: String,
       @RequestParam("type") typeId: Int,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     val type = FacilityType.forId(typeId)
 
     if (type == null) {
-      model.addAttribute("failureMessage", "Unknown facility type.")
-      return site(siteId, model)
+      redirectAttributes.addFlashAttribute("failureMessage", "Unknown facility type.")
+      return site(siteId)
     }
 
     facilityStore.create(siteId, name, type)
 
-    model.addAttribute("successMessage", "Facility created.")
-    return site(siteId, model)
+    redirectAttributes.addFlashAttribute("successMessage", "Facility created.")
+
+    return site(siteId)
   }
 
   @PostMapping("/createApiKey")
   fun createApiKey(
       @RequestParam("organizationId") organizationId: OrganizationId,
       @RequestParam("description") description: String?,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
-    val organization = organizationStore.fetchById(organizationId)
     val newUser = userStore.createApiClient(organizationId, description)
 
     val token = userStore.generateOfflineToken(newUser.userId)
 
-    model.addAttribute("authId", newUser.authId)
-    model.addAttribute(
+    redirectAttributes.addFlashAttribute("authId", newUser.authId)
+    redirectAttributes.addFlashAttribute(
         "keyId", newUser.email.substringAfter(config.keycloak.apiClientUsernamePrefix))
+    redirectAttributes.addFlashAttribute("prefix", prefix)
+    redirectAttributes.addFlashAttribute("token", token)
+
+    return apiKeyAdded(organizationId)
+  }
+
+  @GetMapping("/apiKeyAdded/{organizationId}")
+  fun getApiKeyAdded(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+      model: Model,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    if (!model.containsAttribute("token")) {
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "You may not view an API key after it has been created.")
+      return organization(organizationId)
+    }
+
+    val organization = organizationStore.fetchById(organizationId)
+
     model.addAttribute("organization", organization)
-    model.addAttribute("prefix", prefix)
-    model.addAttribute("token", token)
 
     return "/admin/apiKeyAdded"
   }
@@ -449,14 +539,27 @@ class AdminController(
   fun deleteApiKey(
       @RequestParam("organizationId") organizationId: OrganizationId,
       @RequestParam("userId") userId: UserId,
-      model: Model
+      redirectAttributes: RedirectAttributes,
   ): String {
     if (userStore.deleteApiClient(userId)) {
-      model.addAttribute("successMessage", "API key deleted.")
+      redirectAttributes.addFlashAttribute("successMessage", "API key deleted.")
     } else {
-      model.addAttribute("failureMessage", "Unable to delete API key.")
+      redirectAttributes.addFlashAttribute("failureMessage", "Unable to delete API key.")
     }
 
-    return organization(organizationId, model)
+    return organization(organizationId)
   }
+
+  /** Returns a redirect view name for an admin endpoint. */
+  private fun redirect(endpoint: String) = "redirect:${prefix}$endpoint"
+
+  // Convenience methods to redirect to the GET endpoint for each kind of thing.
+
+  private fun adminHome() = redirect("/")
+  private fun apiKeyAdded(organizationId: OrganizationId) = redirect("/apiKeyAdded/$organizationId")
+  private fun organization(organizationId: OrganizationId) =
+      redirect("/organization/$organizationId")
+  private fun project(projectId: ProjectId) = redirect("/project/$projectId")
+  private fun site(siteId: SiteId) = redirect("/site/$siteId")
+  private fun user(userId: UserId) = redirect("/user/$userId")
 }

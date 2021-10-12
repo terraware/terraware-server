@@ -2,9 +2,9 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.ProjectModel
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
@@ -15,7 +15,6 @@ import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class ProjectStore(
@@ -44,9 +43,7 @@ class ProjectStore(
 
   /** Returns all the projects the user has access to in an organization. */
   fun fetchByOrganization(organizationId: OrganizationId): List<ProjectModel> {
-    if (!currentUser().canListProjects(organizationId)) {
-      throw OrganizationNotFoundException(organizationId)
-    }
+    requirePermissions { listProjects(organizationId) }
 
     val accessibleProjects = currentUser().projectRoles
     return projectsDao
@@ -56,9 +53,7 @@ class ProjectStore(
   }
 
   fun create(organizationId: OrganizationId, name: String): ProjectModel {
-    if (!currentUser().canCreateProject(organizationId)) {
-      throw AccessDeniedException("No permission to create projects")
-    }
+    requirePermissions { createProject(organizationId) }
 
     val projectsRow =
         ProjectsRow(
@@ -72,9 +67,7 @@ class ProjectStore(
   }
 
   fun update(projectId: ProjectId, name: String) {
-    if (!currentUser().canUpdateProject(projectId)) {
-      throw ProjectNotFoundException(projectId)
-    }
+    requirePermissions { updateProject(projectId) }
 
     val existing = projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
 
@@ -82,9 +75,7 @@ class ProjectStore(
   }
 
   fun addUser(projectId: ProjectId, userId: UserId) {
-    if (!currentUser().canAddProjectUser(projectId)) {
-      throw AccessDeniedException("No permission to add users to project")
-    }
+    requirePermissions { addProjectUser(projectId) }
 
     with(PROJECT_USERS) {
       dslContext
@@ -98,9 +89,7 @@ class ProjectStore(
   }
 
   fun removeUser(projectId: ProjectId, userId: UserId): Boolean {
-    if (!currentUser().canRemoveProjectUser(projectId)) {
-      throw AccessDeniedException("No permission to remove users on project")
-    }
+    requirePermissions { removeProjectUser(projectId) }
 
     val rowsDeleted =
         dslContext

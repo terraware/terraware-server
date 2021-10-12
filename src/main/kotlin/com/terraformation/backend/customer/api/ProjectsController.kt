@@ -10,7 +10,6 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.tables.pojos.ProjectsRow
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.web.bind.annotation.GetMapping
@@ -57,7 +56,6 @@ class ProjectsController(private val projectStore: ProjectStore) {
       @PathVariable("id") projectId: ProjectId,
       @RequestBody payload: UpdateProjectRequestPayload
   ): SimpleSuccessResponsePayload {
-    val row = payload.toRow(projectId)
     projectStore.update(projectId, payload.name)
     return SimpleSuccessResponsePayload()
   }
@@ -111,6 +109,4 @@ data class GetProjectResponsePayload(val project: ProjectPayload) : SuccessRespo
 
 data class ListProjectsResponsePayload(val projects: List<ProjectPayload>) : SuccessResponsePayload
 
-data class UpdateProjectRequestPayload(val name: String) {
-  fun toRow(id: ProjectId) = ProjectsRow(id = id, name = name)
-}
+data class UpdateProjectRequestPayload(val name: String)

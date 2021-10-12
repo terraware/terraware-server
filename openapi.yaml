@@ -1109,6 +1109,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/seedbank/accession/{id}/checkIn:
+    post:
+      tags:
+      - SeedBankApp
+      summary: Marks an accession as checked in.
+      operationId: checkIn
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAccessionResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/seedbank/accession/{id}/photo:
     get:
       tags:
@@ -2037,6 +2063,9 @@ components:
           type: array
           items:
             type: string
+        checkedInTime:
+          type: string
+          format: date-time
         collectedDate:
           type: string
           format: date
@@ -2184,6 +2213,7 @@ components:
           description: Server-calculated accession state. Can change due to modifications
             to accession data or based on passage of time.
           enum:
+          - Awaiting Check-In
           - Pending
           - Processing
           - Processed
@@ -2908,10 +2938,14 @@ components:
       - id
       - name
       - role
+      - siteId
       - type
       type: object
       properties:
         id:
+          type: integer
+          format: int64
+        siteId:
           type: integer
           format: int64
         name:
@@ -3792,6 +3826,7 @@ components:
           type: string
           description: "For state notifications, which state is being summarized."
           enum:
+          - Awaiting Check-In
           - Pending
           - Processing
           - Processed
@@ -3979,6 +4014,7 @@ components:
       - accessionNumber
       - active
       - bagNumber
+      - checkedInTime
       - collectedDate
       - collectionNotes
       - cutTestSeedsCompromised
@@ -4133,8 +4169,139 @@ components:
           type: array
           items:
             type: object
-            additionalProperties:
-              type: string
+            properties:
+              accessionNumber:
+                type: string
+              active:
+                type: string
+              bagNumber:
+                type: string
+              checkedInTime:
+                type: string
+              collectedDate:
+                type: string
+              collectionNotes:
+                type: string
+              cutTestSeedsCompromised:
+                type: string
+              cutTestSeedsEmpty:
+                type: string
+              cutTestSeedsFilled:
+                type: string
+              dryingEndDate:
+                type: string
+              dryingMoveDate:
+                type: string
+              dryingStartDate:
+                type: string
+              endangered:
+                type: string
+              estimatedSeedsIncoming:
+                type: string
+              family:
+                type: string
+              geolocation:
+                type: string
+              germinationEndDate:
+                type: string
+              germinationPercentGerminated:
+                type: string
+              germinationSeedType:
+                type: string
+              germinationSeedsGerminated:
+                type: string
+              germinationSeedsSown:
+                type: string
+              germinationStartDate:
+                type: string
+              germinationSubstrate:
+                type: string
+              germinationTestNotes:
+                type: string
+              germinationTestType:
+                type: string
+              germinationTreatment:
+                type: string
+              id:
+                type: string
+              landowner:
+                type: string
+              latestGerminationTestDate:
+                type: string
+              latestViabilityPercent:
+                type: string
+              nurseryStartDate:
+                type: string
+              primaryCollector:
+                type: string
+              processingMethod:
+                type: string
+              processingNotes:
+                type: string
+              processingStartDate:
+                type: string
+              rare:
+                type: string
+              receivedDate:
+                type: string
+              remainingGrams:
+                type: string
+              remainingQuantity:
+                type: string
+              remainingUnits:
+                type: string
+              siteLocation:
+                type: string
+              sourcePlantOrigin:
+                type: string
+              species:
+                type: string
+              state:
+                type: string
+              storageCondition:
+                type: string
+              storageLocation:
+                type: string
+              storageNotes:
+                type: string
+              storagePackets:
+                type: string
+              storageStartDate:
+                type: string
+              targetStorageCondition:
+                type: string
+              totalGrams:
+                type: string
+              totalQuantity:
+                type: string
+              totalUnits:
+                type: string
+              totalViabilityPercent:
+                type: string
+              treesCollectedFrom:
+                type: string
+              viabilityTestType:
+                type: string
+              withdrawalDate:
+                type: string
+              withdrawalDestination:
+                type: string
+              withdrawalGrams:
+                type: string
+              withdrawalNotes:
+                type: string
+              withdrawalPurpose:
+                type: string
+              withdrawalRemainingGrams:
+                type: string
+              withdrawalRemainingQuantity:
+                type: string
+              withdrawalRemainingUnits:
+                type: string
+              withdrawalQuantity:
+                type: string
+              withdrawalUnits:
+                type: string
         cursor:
           type: string
     SearchSortOrderElement:

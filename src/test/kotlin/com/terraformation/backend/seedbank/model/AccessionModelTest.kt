@@ -928,6 +928,7 @@ internal class AccessionModelTest {
               processingStartDate = today.minusDays(14),
               processingMethod = ProcessingMethod.Count,
               total = seeds(10),
+              checkedInTime = Instant.EPOCH,
           )
           .addStateTest(AccessionState.Nursery, "Nursery start date entered")
           .copy(nurseryStartDate = null)
@@ -947,7 +948,9 @@ internal class AccessionModelTest {
           .copy(processingStartDate = null)
           .addStateTest(AccessionState.Processing, "Seed count/weight entered")
           .copy(total = null, processingMethod = null)
-          .addStateTest(AccessionState.Pending, "No state conditions applied")
+          .addStateTest(AccessionState.Pending, "Checked-in time entered")
+          .copy(checkedInTime = null)
+          .addStateTest(AccessionState.AwaitingCheckIn, "No state conditions applied")
 
       return tests
     }

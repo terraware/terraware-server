@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.FacilityModel
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
@@ -48,9 +49,7 @@ class FacilityStore(private val facilitiesDao: FacilitiesDao) {
    * the site.
    */
   fun create(siteId: SiteId, name: String, type: FacilityType): FacilityModel {
-    if (!currentUser().canCreateFacility(siteId)) {
-      throw AccessDeniedException("No permission to create facilities on this site.")
-    }
+    requirePermissions { createFacility(siteId) }
 
     val row = FacilitiesRow(name = name, siteId = siteId, typeId = type)
 

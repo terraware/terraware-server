@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.terraformation.backend.auth.KeycloakRequiredActions
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
@@ -27,6 +29,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.time.Clock
+import java.time.Duration
 import java.util.Base64
 import javax.annotation.ManagedBean
 import javax.ws.rs.core.MediaType
@@ -39,7 +42,6 @@ import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
-import org.springframework.security.access.AccessDeniedException
 
 /**
  * Data accessor for user information.
@@ -156,6 +158,14 @@ class UserStore(
   /**
    * Creates a new user as a member of an organization. This registers them in Keycloak and also
    * adds them to the `users` table.
+   *
+   * @param sendPasswordEmail If true, send an email notification to the user with a link to set
+   * their password.
+   * @param linkLifetime How long the link in the password change email will remain valid. Only
+   * relevant if [sendPasswordEmail] is true.
+   * @param redirectUrl Where to redirect the user after they have changed their password using the
+   * link in the generated email. Only relevant if [sendPasswordEmail] is true. If this is null,
+   * Keycloak will display a page with a success message after the user sets their password.
    */
   fun createUser(
       organizationId: OrganizationId,
@@ -163,12 +173,11 @@ class UserStore(
       email: String,
       firstName: String? = null,
       lastName: String? = null,
+      sendPasswordEmail: Boolean = true,
       redirectUrl: URI? = null,
-      requireResetPassword: Boolean = true,
+      linkLifetime: Duration = Duration.ofDays(3),
   ): UserModel {
-    if (!currentUser().canAddOrganizationUser(organizationId)) {
-      throw AccessDeniedException("No permission to add users to this organization")
-    }
+    requirePermissions { addOrganizationUser(organizationId) }
 
     val existingUser = fetchByEmail(email)
     if (existingUser != null) {
@@ -183,26 +192,28 @@ class UserStore(
 
     log.info("Creating new user $email")
 
-    val keycloakUser = registerKeycloakUser(email, firstName, lastName)
+    val keycloakUser =
+        registerKeycloakUser(
+            email,
+            firstName,
+            lastName,
+            requiredActions = setOf(KeycloakRequiredActions.UpdatePassword))
     val usersRow = insertKeycloakUser(keycloakUser)
     val user = rowToDetails(usersRow)
 
     organizationStore.addUser(organizationId, user.userId, role)
 
-    val userResource =
-        usersResource.get(keycloakUser.id)
-            ?: throw IllegalStateException("Registered user with Keycloak but could not find them")
-
-    if (requireResetPassword) {
-      keycloakUser.requiredActions = listOf("UPDATE_PASSWORD")
-
-      userResource.update(keycloakUser)
+    if (sendPasswordEmail) {
+      val linkLifetimeSecs = linkLifetime.seconds.toInt()
+      val userResource = usersResource.get(user.authId)
 
       if (redirectUrl != null) {
+        // Client ID is required when specifying a redirect URL.
+        val keycloakClientId = keycloakProperties.resource
         userResource.executeActionsEmail(
-            keycloakProperties.resource, "$redirectUrl", keycloakUser.requiredActions)
+            keycloakClientId, "$redirectUrl", linkLifetimeSecs, keycloakUser.requiredActions)
       } else {
-        userResource.executeActionsEmail(keycloakUser.requiredActions)
+        userResource.executeActionsEmail(keycloakUser.requiredActions, linkLifetimeSecs)
       }
     }
 
@@ -219,9 +230,7 @@ class UserStore(
    * - The first name is the admin-supplied description
    */
   fun createApiClient(organizationId: OrganizationId, description: String?): UserModel {
-    if (!currentUser().canCreateApiKey(organizationId)) {
-      throw AccessDeniedException("No permission to create API keys in this organization")
-    }
+    requirePermissions { createApiKey(organizationId) }
 
     // Use base32 instead of base64 so the username doesn't include "/" and "+".
     val randomString = Base32().encodeToString(Random.nextBytes(15)).lowercase()
@@ -246,9 +255,7 @@ class UserStore(
     }
 
     user.organizationRoles.keys.forEach { organizationId ->
-      if (!currentUser().canDeleteApiKey(organizationId)) {
-        throw AccessDeniedException("No permission to delete API keys in this organization")
-      }
+      requirePermissions { deleteApiKey(organizationId) }
     }
 
     log.debug("Removing API client user $userId (${user.authId}) from Keycloak")
@@ -289,7 +296,8 @@ class UserStore(
       username: String,
       firstName: String?,
       lastName: String?,
-      type: UserType = UserType.Individual
+      type: UserType = UserType.Individual,
+      requiredActions: Collection<KeycloakRequiredActions>? = null,
   ): UserRepresentation {
     val newKeycloakUser = UserRepresentation()
     newKeycloakUser.isEmailVerified = true
@@ -299,6 +307,7 @@ class UserStore(
     newKeycloakUser.groups = defaultKeycloakGroups[type]
     newKeycloakUser.lastName = lastName
     newKeycloakUser.username = username
+    newKeycloakUser.requiredActions = requiredActions?.map { it.keyword }
 
     log.debug("Creating user $username in Keycloak")
 
@@ -343,9 +352,7 @@ class UserStore(
       throw IllegalArgumentException("Offline tokens may only be generated for API clients")
     }
 
-    val user =
-        usersResource.get(authId)
-            ?: throw KeycloakUserNotFoundException("Keycloak could not find user")
+    val user = usersResource.get(authId)
 
     // Reset the user's password, so we can use it to authenticate to Keycloak and request a new
     // offline token. There is no administrative Keycloak API to do that on behalf of a user.

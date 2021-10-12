@@ -1,7 +1,9 @@
 package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FeatureId
+import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
@@ -25,7 +27,6 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.trueCondition
-import org.springframework.security.access.AccessDeniedException
 
 data class FetchPlantListResult(
     val featureId: FeatureId,
@@ -55,10 +56,10 @@ class PlantStore(
   fun createPlant(plant: PlantsRow): PlantsRow {
     val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
-    if (!currentUser().canCreateLayerData(featureId) ||
-        featuresDao.fetchOneById(featureId) == null) {
-      throw AccessDeniedException(
-          "No permission to create a plant associated with featureId $featureId")
+    requirePermissions { createLayerData(featureId) }
+
+    if (!featuresDao.existsById(featureId)) {
+      throw FeatureNotFoundException(featureId)
     }
 
     val currTime = clock.instant()
