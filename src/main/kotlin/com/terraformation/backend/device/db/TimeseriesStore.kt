@@ -11,6 +11,8 @@ import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
 import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
 class TimeseriesStore(private val dslContext: DSLContext) {
@@ -66,30 +68,27 @@ class TimeseriesStore(private val dslContext: DSLContext) {
     return dslContext.transactionResult { _ -> rows.map { createOrUpdate(it) } }
   }
 
-  fun insertValue(timeseriesId: TimeseriesId, value: String, createdTime: Instant) {
-    val deviceId =
-        dslContext
-            .select(TIMESERIES.DEVICE_ID)
-            .from(TIMESERIES)
-            .where(TIMESERIES.ID.eq(timeseriesId))
-            .fetchOne(TIMESERIES.DEVICE_ID)
-            ?: throw TimeseriesNotFoundException(timeseriesId)
-
-    if (!currentUser().canUpdateTimeseries(deviceId)) {
-      if (currentUser().canReadTimeseries(deviceId)) {
-        throw AccessDeniedException("No permission to update timeseries")
-      } else {
-        throw TimeseriesNotFoundException(timeseriesId)
-      }
-    }
+  fun insertValue(
+      deviceId: DeviceId,
+      timeseriesId: TimeseriesId,
+      value: String,
+      createdTime: Instant
+  ) {
+    requirePermissions { updateTimeseries(deviceId) }
 
     with(TIMESERIES_VALUES) {
-      dslContext
-          .insertInto(TIMESERIES_VALUES)
-          .set(TIMESERIES_ID, timeseriesId)
-          .set(CREATED_TIME, createdTime)
-          .set(VALUE, value)
-          .execute()
+      try {
+        dslContext
+            .insertInto(TIMESERIES_VALUES)
+            .set(TIMESERIES_ID, timeseriesId)
+            .set(CREATED_TIME, createdTime)
+            .set(VALUE, value)
+            .execute()
+      } catch (e: DuplicateKeyException) {
+        throw e
+      } catch (e: DataIntegrityViolationException) {
+        throw TimeseriesNotFoundException(deviceId)
+      }
     }
   }
 }

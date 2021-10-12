@@ -125,7 +125,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     val timeseriesId = timeseriesRow.id!!
     val value = "1.5678"
 
-    store.insertValue(timeseriesId, value, Instant.EPOCH)
+    store.insertValue(deviceId, timeseriesId, value, Instant.EPOCH)
 
     val expected = listOf(TimeseriesValuesRow(timeseriesId, Instant.EPOCH, value))
     val actual = dslContext.selectFrom(TIMESERIES_VALUES).fetchInto(TimeseriesValuesRow::class.java)
@@ -137,8 +137,10 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     timeseriesDao.insert(timeseriesRow)
     val timeseriesId = timeseriesRow.id!!
 
-    store.insertValue(timeseriesId, "1", Instant.EPOCH)
-    assertThrows<DuplicateKeyException> { store.insertValue(timeseriesId, "2", Instant.EPOCH) }
+    store.insertValue(deviceId, timeseriesId, "1", Instant.EPOCH)
+    assertThrows<DuplicateKeyException> {
+      store.insertValue(deviceId, timeseriesId, "2", Instant.EPOCH)
+    }
   }
 
   @Test
@@ -148,7 +150,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateTimeseries(any()) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.insertValue(timeseriesRow.id!!, "1", Instant.EPOCH)
+      store.insertValue(deviceId, timeseriesRow.id!!, "1", Instant.EPOCH)
     }
   }
 
@@ -160,14 +162,14 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateTimeseries(any()) } returns false
 
     assertThrows<TimeseriesNotFoundException> {
-      store.insertValue(timeseriesRow.id!!, "1", Instant.EPOCH)
+      store.insertValue(deviceId, timeseriesRow.id!!, "1", Instant.EPOCH)
     }
   }
 
   @Test
   fun `insertValue throws exception if timeseries does not exist`() {
     assertThrows<TimeseriesNotFoundException> {
-      store.insertValue(TimeseriesId(1), "1", Instant.EPOCH)
+      store.insertValue(deviceId, TimeseriesId(1), "1", Instant.EPOCH)
     }
   }
 }

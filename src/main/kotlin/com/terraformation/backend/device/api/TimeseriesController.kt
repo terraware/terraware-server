@@ -63,7 +63,9 @@ class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
 
       if (timeseriesId == null) {
         log.error("Timeseries $timeseriesName for device $deviceId not found or no permission")
-        errors.add(TimeseriesValuesErrorPayload(valuesEntry, "Timeseries not found"))
+        errors.add(
+            TimeseriesValuesErrorPayload(
+                deviceId, timeseriesName, valuesEntry.values, "Timeseries not found"))
       } else {
         // Group failures by error message.
         val failures = mutableMapOf<String, MutableList<TimeseriesValuePayload>>()
@@ -71,7 +73,7 @@ class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
         valuesEntry.values.forEach { valueEntry ->
           val timestamp = valueEntry.timestamp
           try {
-            timeSeriesStore.insertValue(timeseriesId, valueEntry.value, timestamp)
+            timeSeriesStore.insertValue(deviceId, timeseriesId, valueEntry.value, timestamp)
           } catch (e: Exception) {
             val message =
                 when (e) {
@@ -144,17 +146,7 @@ data class TimeseriesValuesErrorPayload(
         description = "Human-readable details about the failure.",
     )
     val message: String,
-) {
-  constructor(
-      valuesPayload: TimeseriesValuesPayload,
-      message: String
-  ) : this(
-      deviceId = valuesPayload.deviceId,
-      message = message,
-      timeseriesName = valuesPayload.timeseriesName,
-      values = valuesPayload.values,
-  )
-}
+)
 
 data class TimeseriesValuesPayload(
     @Schema(

@@ -56,5 +56,10 @@ class SpeciesNotFoundException(val speciesId: SpeciesId) :
 class SpeciesNameNotFoundException(val speciesNameId: SpeciesNameId) :
     EntityNotFoundException("Species name $speciesNameId not found")
 
-class TimeseriesNotFoundException(val timeseriesId: TimeseriesId) :
-    EntityNotFoundException("Timeseries $timeseriesId not found")
+class TimeseriesNotFoundException(
+    val deviceId: DeviceId,
+    val timeseriesName: String?,
+    message: String = "Timeseries $timeseriesName not found on device $deviceId"
+) : EntityNotFoundException(message) {
+  constructor(deviceId: DeviceId) : this(deviceId, null, "Timeseries not found on device $deviceId")
+}
