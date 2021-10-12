@@ -66,8 +66,7 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @Operation(summary = "Create a new accession.")
   @PostMapping
   fun create(@RequestBody payload: CreateAccessionRequestPayload): CreateAccessionResponsePayload {
-    val updatedPayload =
-        accessionStore.create(payload.toModel(), checkedIn = payload.checkedIn ?: true)
+    val updatedPayload = accessionStore.create(payload.toModel())
     return CreateAccessionResponsePayload(AccessionPayload(updatedPayload, clock))
   }
 
@@ -127,13 +126,6 @@ class AccessionController(private val accessionStore: AccessionStore, private va
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
-    @Schema(
-        description =
-            "If false, the accession will be created in \"Awaiting Check-In\" state and must be " +
-                "checked in using a separate API request. If true, the accession will already be " +
-                "checked in when it is initially created.",
-        defaultValue = "true")
-    val checkedIn: Boolean? = null,
     val collectedDate: LocalDate? = null,
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,

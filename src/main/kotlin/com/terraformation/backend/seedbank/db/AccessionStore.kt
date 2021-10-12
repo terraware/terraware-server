@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
@@ -57,6 +58,7 @@ class AccessionStore(
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val support: StoreSupport,
+    private val config: TerrawareServerConfig,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -178,7 +180,8 @@ class AccessionStore(
     }
   }
 
-  fun create(accession: AccessionModel, checkedIn: Boolean = false): AccessionModel {
+  fun create(accession: AccessionModel): AccessionModel {
+    val checkedIn = !config.enableAwaitingCheckIn
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
     requirePermissions { createAccession(facilityId) }
@@ -462,9 +465,7 @@ class AccessionStore(
   fun checkIn(accessionId: AccessionId): AccessionModel {
     val accession = fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    if (!currentUser().canUpdateAccession(accessionId, accession.facilityId)) {
-      throw AccessDeniedException("No permission to update accession")
-    }
+    requirePermissions { updateAccession(accessionId, accession.facilityId) }
 
     if (accession.checkedInTime != null) {
       log.info("Accession $accessionId is already checked in; ignoring request to check in again")

@@ -2366,13 +2366,6 @@ components:
           writeOnly: true
           items:
             type: string
-        checkedIn:
-          type: boolean
-          description: "If false, the accession will be created in \"Awaiting Check-In\"\
-            \ state and must be checked in using a separate API request. If true,\
-            \ the accession will already be checked in when it is initially created."
-          writeOnly: true
-          default: true
         collectedDate:
           type: string
           format: date
@@ -4182,6 +4175,8 @@ components:
               active:
                 type: string
               bagNumber:
+                type: string
+              checkedInTime:
                 type: string
               collectedDate:
                 type: string

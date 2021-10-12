@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.customer.model.UserModel
@@ -126,6 +127,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       )
 
   private val clock: Clock = mockk()
+  private val config: TerrawareServerConfig = mockk()
 
   private lateinit var store: AccessionStore
   private lateinit var accessionsDao: AccessionsDao
@@ -170,6 +172,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
 
+    every { config.enableAwaitingCheckIn } returns true
+
     every { user.canCreateAccession(any()) } returns true
     every { user.canCreateFamily() } returns true
     every { user.canCreateSpecies() } returns true
@@ -191,6 +195,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalStore(dslContext, clock),
             clock,
             support,
+            config,
         )
 
     insertSiteData()
@@ -260,10 +265,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create sets checked-in timestamp`() {
+  fun `create sets checked-in timestamp if enableAwaitingCheckIn not set`() {
     every { clock.instant() } returns Instant.EPOCH.plusMillis(600)
+    every { config.enableAwaitingCheckIn } returns false
 
-    store.create(AccessionModel(facilityId = facilityId), checkedIn = true)
+    store.create(AccessionModel(facilityId = facilityId))
 
     assertEquals(
         AccessionsRow(
@@ -1004,7 +1010,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `checkIn does not modify accession that is already checked in`() {
-    val initial = store.create(AccessionModel(facilityId = facilityId), checkedIn = true)
+    every { config.enableAwaitingCheckIn } returns false
+    val initial = store.create(AccessionModel(facilityId = facilityId))
     every { clock.instant() } returns Instant.EPOCH.plusSeconds(30)
     val updated = store.checkIn(initial.id!!)
 
@@ -1422,7 +1429,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val accession =
         CreateAccessionRequestPayload(
             bagNumbers = setOf("abc"),
-            checkedIn = true,
             collectedDate = today,
             deviceInfo =
                 DeviceInfoPayload(
