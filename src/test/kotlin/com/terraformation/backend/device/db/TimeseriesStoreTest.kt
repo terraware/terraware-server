@@ -168,8 +168,6 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `insertValue throws exception if timeseries does not exist`() {
-    assertThrows<TimeseriesNotFoundException> {
-      store.insertValue(deviceId, TimeseriesId(1), "1", Instant.EPOCH)
-    }
+    assertThrows<Exception> { store.insertValue(deviceId, TimeseriesId(1), "1", Instant.EPOCH) }
   }
 }

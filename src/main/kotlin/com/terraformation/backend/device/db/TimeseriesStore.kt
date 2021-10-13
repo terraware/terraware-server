@@ -4,15 +4,12 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.TimeseriesId
-import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
 import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
 class TimeseriesStore(private val dslContext: DSLContext) {
@@ -77,18 +74,12 @@ class TimeseriesStore(private val dslContext: DSLContext) {
     requirePermissions { updateTimeseries(deviceId) }
 
     with(TIMESERIES_VALUES) {
-      try {
-        dslContext
-            .insertInto(TIMESERIES_VALUES)
-            .set(TIMESERIES_ID, timeseriesId)
-            .set(CREATED_TIME, createdTime)
-            .set(VALUE, value)
-            .execute()
-      } catch (e: DuplicateKeyException) {
-        throw e
-      } catch (e: DataIntegrityViolationException) {
-        throw TimeseriesNotFoundException(deviceId)
-      }
+      dslContext
+          .insertInto(TIMESERIES_VALUES)
+          .set(TIMESERIES_ID, timeseriesId)
+          .set(CREATED_TIME, createdTime)
+          .set(VALUE, value)
+          .execute()
     }
   }
 }
