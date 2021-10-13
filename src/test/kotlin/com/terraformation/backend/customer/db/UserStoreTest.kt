@@ -11,11 +11,6 @@ import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
-import com.terraformation.backend.db.tables.daos.FeaturesDao
-import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
@@ -55,13 +50,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val usersResource = InMemoryKeycloakUsersResource()
   override val user: UserModel = mockk()
 
-  private lateinit var accessionsDao: AccessionsDao
-  private lateinit var devicesDao: DevicesDao
-  private lateinit var featurePhotosDao: FeaturePhotosDao
-  private lateinit var featuresDao: FeaturesDao
-  private lateinit var layersDao: LayersDao
   private lateinit var organizationsDao: OrganizationsDao
   private lateinit var organizationStore: OrganizationStore
+  private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
   private lateinit var usersDao: UsersDao
   private lateinit var userStore: UserStore
@@ -111,30 +102,22 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     usersResource.create(userRepresentation)
 
     val configuration = dslContext.configuration()
-    accessionsDao = AccessionsDao(configuration)
-    devicesDao = DevicesDao(configuration)
-    featurePhotosDao = FeaturePhotosDao(configuration)
-    featuresDao = FeaturesDao(configuration)
-    layersDao = LayersDao(configuration)
     organizationsDao = OrganizationsDao(configuration)
     usersDao = UsersDao(configuration)
 
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
+    parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
 
     userStore =
         UserStore(
-            accessionsDao,
             Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             config,
-            devicesDao,
-            featurePhotosDao,
-            featuresDao,
             httpClient,
             keycloakProperties,
-            layersDao,
             ObjectMapper().registerModule(KotlinModule()),
             organizationStore,
+            parentStore,
             permissionStore,
             realmResource,
             usersDao)
