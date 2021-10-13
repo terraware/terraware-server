@@ -107,7 +107,7 @@ class FeatureStore(
   }
 
   fun fetchFeature(id: FeatureId): FeatureModel? {
-    if (!currentUser().canReadLayerData(id)) {
+    if (!currentUser().canReadFeature(id)) {
       return null
     }
     return noPermissionsCheckFetch(id)
@@ -172,7 +172,7 @@ class FeatureStore(
   fun updateFeature(newModel: FeatureModel): FeatureModel {
     val featureId = newModel.id ?: throw IllegalArgumentException("No feature ID specified")
 
-    requirePermissions { updateLayerData(newModel.layerId, featureId) }
+    requirePermissions { updateFeatureData(featureId) }
 
     val oldModel = noPermissionsCheckFetch(featureId)
 
@@ -210,10 +210,7 @@ class FeatureStore(
   }
 
   fun deleteFeature(id: FeatureId): FeatureId {
-    requirePermissions { deleteLayerData(id) }
-    if (noPermissionsCheckFetch(id) == null) {
-      throw FeatureNotFoundException(id)
-    }
+    requirePermissions { deleteFeature(id) }
 
     val featurePhotos = featurePhotosDao.fetchByFeatureId(id)
     val photos = photosDao.fetchById(*featurePhotos.mapNotNull { it.photoId }.toTypedArray())
@@ -239,8 +236,7 @@ class FeatureStore(
         photosRow.contentType ?: throw IllegalArgumentException("No content type specified")
     val size = photosRow.size ?: throw IllegalArgumentException("No file size specified")
 
-    if (!currentUser().canCreateLayerData(featureId) ||
-        noPermissionsCheckFetch(featureId) == null) {
+    if (!currentUser().canCreateFeatureData(featureId)) {
       throw FeatureNotFoundException(featureId)
     }
 
@@ -284,9 +280,7 @@ class FeatureStore(
   }
 
   fun listPhotos(featureId: FeatureId): List<PhotosRow> {
-    if (!currentUser().canReadLayerData(featureId) || noPermissionsCheckFetch(featureId) == null) {
-      throw FeatureNotFoundException(featureId)
-    }
+    requirePermissions { readFeature(featureId) }
 
     return dslContext
         .select(PHOTOS.asterisk())
@@ -299,12 +293,12 @@ class FeatureStore(
   }
 
   fun getPhotoMetadata(featureId: FeatureId, photoId: PhotoId): PhotosRow {
-    val featurePhoto = featurePhotosDao.fetchByPhotoId(photoId).firstOrNull()
+    val featurePhoto = featurePhotosDao.fetchOneByPhotoId(photoId)
     if (featurePhoto == null || featurePhoto.featureId != featureId) {
       throw PhotoNotFoundException(photoId)
     }
 
-    requirePermissions { readLayerData(photoId, featureId) }
+    requirePermissions { readFeaturePhoto(photoId) }
 
     return photosDao.fetchOneById(photoId) ?: throw PhotoNotFoundException(photoId)
   }
@@ -327,7 +321,7 @@ class FeatureStore(
   fun deletePhoto(featureId: FeatureId, photoId: PhotoId) {
     val photosRow = getPhotoMetadata(featureId, photoId)
 
-    requirePermissions { deleteLayerData(featureId) }
+    requirePermissions { deleteFeatureData(featureId) }
 
     val thumbnails = thumbnailsDao.fetchByPhotoId(photoId)
     val url = photosRow.storageUrl!!

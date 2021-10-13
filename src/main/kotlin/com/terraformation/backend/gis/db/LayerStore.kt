@@ -56,18 +56,15 @@ class LayerStore(
             .where(LAYERS.ID.eq(id))
             .fetchOne()
 
-    if (layer == null || (layer[LAYERS.DELETED]!! && ignoreDeleted)) {
-      return null
-    }
-
-    val siteId = layer[LAYERS.SITE_ID]!!
-    if (!currentUser().canReadLayer(siteId)) {
+    if (layer == null ||
+        !currentUser().canReadLayer(id) ||
+        (layer[LAYERS.DELETED]!! && ignoreDeleted)) {
       return null
     }
 
     return LayerModel(
         id = id,
-        siteId = siteId,
+        siteId = layer[LAYERS.SITE_ID]!!,
         layerType = layer[LAYERS.LAYER_TYPE_ID]!!,
         tileSetName = layer[LAYERS.TILE_SET_NAME],
         proposed = layer[LAYERS.PROPOSED]!!,
@@ -79,7 +76,7 @@ class LayerStore(
   }
 
   fun listLayers(siteId: SiteId): List<LayerModel> {
-    if (!currentUser().canReadLayer(siteId)) {
+    if (!currentUser().canReadSite(siteId)) {
       return emptyList()
     }
 
@@ -141,7 +138,7 @@ class LayerStore(
     // Caller provided siteId must match the siteId in the database because allowing site moves
     // would add additional permissions complexity. Plus, the caller can achieve that behavior
     // using a combination of createLayer() and deleteLayer().
-    requirePermissions { updateLayer(layerId, layerModel.siteId) }
+    requirePermissions { updateLayer(layerId) }
     if (layerModel.siteId != currentRow[LAYERS.SITE_ID]) {
       throw LayerNotFoundException(layerId)
     }
@@ -183,7 +180,7 @@ class LayerStore(
     // Must fetch layer to get site ID and check permissions
     val layer = fetchLayer(id) ?: throw LayerNotFoundException(id)
 
-    requirePermissions { deleteLayer(id, layer.siteId) }
+    requirePermissions { deleteLayer(id) }
 
     val currTime = clock.instant()
     dslContext

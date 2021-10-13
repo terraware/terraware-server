@@ -53,6 +53,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadLayer(any()) } returns true
     every { user.canUpdateLayer(any()) } returns true
     every { user.canDeleteLayer(any()) } returns true
+    every { user.canReadSite(any()) } returns true
 
     insertSiteData()
   }
@@ -160,8 +161,8 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `list returns empty list if user doesn't have read permissions`() {
-    every { user.canReadLayer(any()) } returns false
+  fun `list returns empty list if user doesn't have read permission on site`() {
+    every { user.canReadSite(any()) } returns false
     repeat(3) { store.createLayer(validCreateRequestModel) }
     assertEquals(emptyList<LayerId>(), store.listLayers(siteId))
   }

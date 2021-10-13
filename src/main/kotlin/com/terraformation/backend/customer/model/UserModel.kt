@@ -10,6 +10,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
+import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.log.perClassLogger
@@ -45,6 +47,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  * takes a project ID argument. This way, if we add fine-grained permissions later on, existing
  * calls to [canCreateSite] won't need to be modified.
  *
+ * The permission-checking methods should never return true if the target object doesn't exist.
+ * Callers can thus make use of the fact that a successful permission check means the target object
+ * existed at the time the permission data was loaded.
+ *
  * In addition to holding some basic details about the user, this object also serves as a
  * short-lived cache for information such as the user's roles in various contexts. For example, if
  * you access [siteRoles] you will get a map of the user's role at each site they have access to.
@@ -60,6 +66,7 @@ class UserModel(
     val userType: UserType,
     private val accessionsDao: AccessionsDao,
     private val devicesDao: DevicesDao,
+    private val featurePhotosDao: FeaturePhotosDao,
     private val featuresDao: FeaturesDao,
     private val layersDao: LayersDao,
     private val permissionStore: PermissionStore,
@@ -123,18 +130,17 @@ class UserModel(
     return facilityId in facilityRoles
   }
 
-  fun canReadAccession(accessionId: AccessionId, facilityId: FacilityId? = null): Boolean {
-    val effectiveFacilityId =
-        facilityId ?: accessionsDao.fetchOneById(accessionId)?.facilityId ?: return false
+  fun canReadAccession(accessionId: AccessionId): Boolean {
+    val facilityId = accessionsDao.fetchOneById(accessionId)?.facilityId ?: return false
 
     // All users in a project can read all accessions in the project's facilities.
-    return effectiveFacilityId in facilityRoles
+    return facilityId in facilityRoles
   }
 
-  fun canUpdateAccession(accessionId: AccessionId, facilityId: FacilityId? = null): Boolean {
+  fun canUpdateAccession(accessionId: AccessionId): Boolean {
     // All users in a project can write all accessions in the project's facilities, so this
     // is the same as the read permission check.
-    return canReadAccession(accessionId, facilityId)
+    return canReadAccession(accessionId)
   }
 
   fun canCreateFacility(siteId: SiteId): Boolean {
@@ -170,66 +176,80 @@ class UserModel(
     return facilityId in facilityRoles
   }
 
-  private fun canAccessLayer(siteId: SiteId): Boolean {
+  private fun canAccessLayer(layerId: LayerId): Boolean {
     // Any user who has access to a site can access all its layers
+    val siteId = layersDao.fetchOneById(layerId)?.siteId ?: return false
     return siteId in siteRoles
   }
 
   fun canCreateLayer(siteId: SiteId): Boolean {
-    return canAccessLayer(siteId)
+    return siteId in siteRoles
   }
 
-  fun canReadLayer(siteId: SiteId): Boolean {
-    return canAccessLayer(siteId)
+  fun canReadLayer(layerId: LayerId): Boolean {
+    return canAccessLayer(layerId)
   }
 
-  fun canUpdateLayer(siteId: SiteId): Boolean {
-    return canAccessLayer(siteId)
+  fun canUpdateLayer(layerId: LayerId): Boolean {
+    return canAccessLayer(layerId)
   }
 
-  fun canDeleteLayer(siteId: SiteId): Boolean {
-    return canAccessLayer(siteId)
+  fun canDeleteLayer(layerId: LayerId): Boolean {
+    return canAccessLayer(layerId)
   }
 
   // "Layer data" refers to all tables that directly or indirectly references layers.
   // You can also think of it as all data that belongs "inside" a layer.
   private fun canAccessLayerData(layerId: LayerId): Boolean {
-    val siteId = layersDao.fetchOneById(layerId)?.siteId ?: return false
     // Currently, all gis data is lumped into one permission. In the future, permission
     // to create/update layers may be separated from general access to layer data.
-    return canAccessLayer(siteId)
+    return canAccessLayer(layerId)
   }
 
   fun canCreateLayerData(layerId: LayerId): Boolean {
     return canAccessLayerData(layerId)
   }
 
-  fun canCreateLayerData(featureId: FeatureId): Boolean {
-    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canCreateLayerData(layerId)
-  }
-
   fun canReadLayerData(layerId: LayerId): Boolean {
     return canAccessLayerData(layerId)
-  }
-
-  fun canReadLayerData(featureId: FeatureId): Boolean {
-    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canReadLayerData(layerId)
   }
 
   fun canUpdateLayerData(layerId: LayerId): Boolean {
     return canAccessLayerData(layerId)
   }
 
-  fun canUpdateLayerData(featureId: FeatureId): Boolean {
+  fun canReadFeature(featureId: FeatureId): Boolean {
+    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
+    return canReadLayerData(layerId)
+  }
+
+  fun canUpdateFeature(featureId: FeatureId): Boolean {
     val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
     return canUpdateLayerData(layerId)
   }
 
-  fun canDeleteLayerData(featureId: FeatureId): Boolean {
+  fun canDeleteFeature(featureId: FeatureId): Boolean {
+    return canUpdateFeature(featureId)
+  }
+
+  fun canCreateFeatureData(featureId: FeatureId): Boolean {
+    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
+    return canCreateLayerData(layerId)
+  }
+
+  fun canUpdateFeatureData(featureId: FeatureId): Boolean {
+    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
+    return canUpdateLayerData(layerId)
+  }
+
+  fun canDeleteFeatureData(featureId: FeatureId): Boolean {
     val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
     return canAccessLayerData(layerId)
+  }
+
+  fun canReadFeaturePhoto(photoId: PhotoId): Boolean {
+    val featureId = featurePhotosDao.fetchOneByPhotoId(photoId)?.featureId ?: return false
+    return canReadFeature(featureId)
   }
 
   fun canCreateSite(projectId: ProjectId): Boolean {

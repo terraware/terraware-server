@@ -21,7 +21,7 @@ class PlantObservationsStore(
   fun create(row: PlantObservationsRow): PlantObservationsRow {
     val featureId = row.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
-    requirePermissions { createLayerData(featureId) }
+    requirePermissions { createFeatureData(featureId) }
 
     if (plantsDao.fetchOneByFeatureId(featureId) == null) {
       throw IllegalArgumentException(
@@ -38,7 +38,7 @@ class PlantObservationsStore(
   fun fetch(id: PlantObservationId): PlantObservationsRow? {
     val row = observDao.fetchOneById(id)
 
-    if (row == null || !currentUser().canReadLayerData(row.featureId!!)) {
+    if (row == null || !currentUser().canReadFeature(row.featureId!!)) {
       return null
     }
 
@@ -46,7 +46,7 @@ class PlantObservationsStore(
   }
 
   fun fetchList(featureId: FeatureId): List<PlantObservationsRow> {
-    if (!currentUser().canReadLayerData(featureId)) {
+    if (!currentUser().canReadFeature(featureId)) {
       return emptyList()
     }
     return observDao.fetchByFeatureId(featureId)
@@ -57,7 +57,7 @@ class PlantObservationsStore(
 
     val existingRow = observDao.fetchOneById(id)
 
-    if (existingRow == null || !currentUser().canUpdateLayerData(existingRow.featureId!!)) {
+    if (existingRow == null || !currentUser().canUpdateFeature(existingRow.featureId!!)) {
       throw PlantObservationNotFoundException(id)
     }
 

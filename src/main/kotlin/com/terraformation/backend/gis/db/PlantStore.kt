@@ -56,7 +56,7 @@ class PlantStore(
   fun createPlant(plant: PlantsRow): PlantsRow {
     val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
-    requirePermissions { createLayerData(featureId) }
+    requirePermissions { createFeatureData(featureId) }
 
     if (!featuresDao.existsById(featureId)) {
       throw FeatureNotFoundException(featureId)
@@ -69,7 +69,7 @@ class PlantStore(
   }
 
   fun fetchPlant(featureId: FeatureId): PlantsRow? {
-    if (!currentUser().canReadLayerData(featureId)) {
+    if (!currentUser().canReadFeature(featureId)) {
       return null
     }
 
@@ -180,7 +180,7 @@ class PlantStore(
   fun updatePlant(plant: PlantsRow): PlantsRow {
     val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
-    if (!currentUser().canUpdateLayerData(featureId)) {
+    if (!currentUser().canUpdateFeature(featureId)) {
       throw PlantNotFoundException(featureId)
     }
 

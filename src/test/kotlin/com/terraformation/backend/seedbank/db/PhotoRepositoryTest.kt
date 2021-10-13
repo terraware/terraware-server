@@ -125,18 +125,11 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     photoPath = tempDir.resolve(relativePath)
     photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
-    every { user.canReadAccession(any(), any()) } returns true
-    every { user.canUpdateAccession(any(), any()) } returns true
+    every { user.canReadAccession(any()) } returns true
+    every { user.canUpdateAccession(any()) } returns true
 
     repository =
-        PhotoRepository(
-            accessionPhotosDao,
-            accessionsDao,
-            dslContext,
-            clock,
-            fileStore,
-            photosDao,
-            thumbnailStore)
+        PhotoRepository(accessionPhotosDao, dslContext, clock, fileStore, photosDao, thumbnailStore)
 
     insertSiteData()
     accessionsDao.insert(
@@ -232,18 +225,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `storePhoto throws exception if accession does not exist`() {
-    val nonexistentAccessionId = AccessionId(2000)
-    assertThrows(AccessionNotFoundException::class.java) {
-      repository.storePhoto(nonexistentAccessionId, ByteArray(0).inputStream(), 0, metadata)
-    }
-
-    assertFalse(Files.exists(photoPath), "File should not exist")
-  }
-
-  @Test
   fun `storePhoto throws exception if user does not have permission to update accession`() {
-    every { user.canUpdateAccession(accessionId, facilityId) } returns false
+    every { user.canUpdateAccession(accessionId) } returns false
 
     assertThrows(AccessDeniedException::class.java) {
       repository.storePhoto(accessionId, ByteArray(0).inputStream(), 0, metadata)
@@ -294,7 +277,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `readPhoto throws exception if user does not have permission to read accession`() {
-    every { user.canReadAccession(accessionId, facilityId) } returns false
+    every { user.canReadAccession(accessionId) } returns false
 
     assertThrows(AccessionNotFoundException::class.java) {
       repository.readPhoto(accessionId, filename)
@@ -341,7 +324,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `getPhotoFileSize throws exception if user does not have permission to read accession`() {
-    every { user.canReadAccession(accessionId, facilityId) } returns false
+    every { user.canReadAccession(accessionId) } returns false
 
     assertThrows(AccessionNotFoundException::class.java) {
       repository.getPhotoFileSize(accessionId, filename)

@@ -178,8 +178,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateFamily() } returns true
     every { user.canCreateSpecies() } returns true
     every { user.canDeleteSpecies(any()) } returns true
-    every { user.canReadAccession(any(), any()) } returns true
-    every { user.canUpdateAccession(any(), any()) } returns true
+    every { user.canReadAccession(any()) } returns true
+    every { user.canUpdateAccession(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
 
     store =
@@ -1583,7 +1583,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByNumber does not return accession if user does not have permission`() {
-    every { user.canReadAccession(any(), facilityId) } returns false
+    every { user.canReadAccession(any()) } returns false
 
     val initial = store.create(AccessionModel(facilityId = facilityId))
     assertNotNull(initial, "Should have created accession successfully")
@@ -1592,7 +1592,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update does not write to database if user does not have permission`() {
-    every { user.canUpdateAccession(any(), facilityId) } returns false
+    every { user.canUpdateAccession(any()) } returns false
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows<AccessDeniedException> { store.update(initial.copy(numberOfTrees = 1)) }
