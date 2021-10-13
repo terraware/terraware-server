@@ -210,6 +210,7 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createProject = true,
         listProjects = true,
+        readOrganization = true,
         deleteOrganization = true,
         removeOrganizationUser = true,
     )
@@ -217,6 +218,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(10),
         ProjectId(11),
+        readProject = true,
         updateProject = true,
         addProjectUser = true,
         createSite = true,
@@ -318,6 +320,7 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createProject = true,
         listProjects = true,
+        readOrganization = true,
         deleteOrganization = true,
         removeOrganizationUser = true,
     )
@@ -336,12 +339,14 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createProject = true,
         listProjects = true,
+        readOrganization = true,
         removeOrganizationUser = true,
     )
 
     permissions.expect(
         ProjectId(10),
         ProjectId(11),
+        readProject = true,
         updateProject = true,
         addProjectUser = true,
         createSite = true,
@@ -438,10 +443,11 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(OrganizationId(1), listProjects = true)
+    permissions.expect(OrganizationId(1), listProjects = true, readOrganization = true)
 
     permissions.expect(
         ProjectId(10),
+        readProject = true,
         addProjectUser = true,
         listSites = true,
         removeProjectUser = true,
@@ -513,9 +519,9 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(OrganizationId(1), listProjects = true)
+    permissions.expect(OrganizationId(1), listProjects = true, readOrganization = true)
 
-    permissions.expect(ProjectId(10), listSites = true)
+    permissions.expect(ProjectId(10), readProject = true, listSites = true)
 
     permissions.expect(
         SiteId(100),
@@ -584,11 +590,12 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(OrganizationId(1), listProjects = true)
+    permissions.expect(OrganizationId(1), listProjects = true, readOrganization = true)
 
     permissions.expect(
         ProjectId(10),
         ProjectId(11),
+        readProject = true,
         listSites = true,
     )
 
@@ -743,6 +750,7 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser: Boolean = false,
         createProject: Boolean = false,
         listProjects: Boolean = false,
+        readOrganization: Boolean = false,
         deleteOrganization: Boolean = false,
         removeOrganizationUser: Boolean = false,
     ) {
@@ -760,6 +768,10 @@ internal class PermissionTest : DatabaseTest() {
             user.canListProjects(organizationId),
             "Can list projects of organization $organizationId")
         assertEquals(
+            readOrganization,
+            user.canReadOrganization(organizationId),
+            "Can read organization $organizationId")
+        assertEquals(
             deleteOrganization,
             user.canDeleteOrganization(organizationId),
             "Can delete organization $organizationId")
@@ -775,6 +787,7 @@ internal class PermissionTest : DatabaseTest() {
     // All checks keyed on project IDs go here
     fun expect(
         vararg projects: ProjectId,
+        readProject: Boolean = false,
         updateProject: Boolean = false,
         addProjectUser: Boolean = false,
         createSite: Boolean = false,
@@ -782,6 +795,7 @@ internal class PermissionTest : DatabaseTest() {
         removeProjectUser: Boolean = false,
     ) {
       projects.forEach { projectId ->
+        assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
         assertEquals(
             updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
         assertEquals(

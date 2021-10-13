@@ -98,6 +98,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateApiKey(organizationId) } returns true
     every { user.canDeleteApiKey(organizationId) } returns true
     every { user.canListApiKeys(organizationId) } returns true
+    every { user.canReadOrganization(organizationId) } returns true
     every { user.canRemoveOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.CONTRIBUTOR) } returns true
 

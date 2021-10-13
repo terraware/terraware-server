@@ -143,7 +143,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
-    every { user.canCreateLayerData(layerId = any()) } returns false
+    every { user.canCreateLayerData(any()) } returns false
+    every { user.canReadLayer(any()) } returns true
     assertThrows<AccessDeniedException> { store.createFeature(validCreateRequest) }
   }
 
@@ -279,6 +280,16 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val updatedFeature = store.updateFeature(feature)
     assertEquals(feature, updatedFeature)
+  }
+
+  @Test
+  fun `update fails with FeatureNotFoundException if user doesn't have read access`() {
+    val feature = store.createFeature(validCreateRequest)
+    every { user.canUpdateFeature(any()) } returns false
+    every { user.canReadFeature(any()) } returns false
+    assertThrows<FeatureNotFoundException> {
+      store.updateFeature(feature.copy(gpsHorizAccuracy = 18.0))
+    }
   }
 
   @Test

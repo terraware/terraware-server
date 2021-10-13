@@ -4,7 +4,9 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
@@ -16,6 +18,7 @@ import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -66,6 +69,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createAccession() {
+    assertThrows<FacilityNotFoundException> { requirements.createAccession(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
     assertThrows<AccessDeniedException> { requirements.createAccession(facilityId) }
 
     grant { user.canCreateAccession(facilityId) }
@@ -82,6 +88,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun updateAccession() {
+    assertThrows<AccessionNotFoundException> { requirements.updateAccession(accessionId) }
+
+    grant { user.canReadAccession(accessionId) }
     assertThrows<AccessDeniedException> { requirements.updateAccession(accessionId) }
 
     grant { user.canUpdateAccession(accessionId) }
@@ -90,6 +99,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createFacility() {
+    assertThrows<SiteNotFoundException> { requirements.createFacility(siteId) }
+
+    grant { user.canReadSite(siteId) }
     assertThrows<AccessDeniedException> { requirements.createFacility(siteId) }
 
     grant { user.canCreateFacility(siteId) }
@@ -97,7 +109,18 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readFacility() {
+    assertThrows<FacilityNotFoundException> { requirements.readFacility(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    requirements.readFacility(facilityId)
+  }
+
+  @Test
   fun createDevice() {
+    assertThrows<FacilityNotFoundException> { requirements.createDevice(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
     assertThrows<AccessDeniedException> { requirements.createDevice(facilityId) }
 
     grant { user.canCreateDevice(facilityId) }
@@ -105,7 +128,18 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readDevice() {
+    assertThrows<DeviceNotFoundException> { requirements.readDevice(deviceId) }
+
+    grant { user.canReadDevice(deviceId) }
+    requirements.readDevice(deviceId)
+  }
+
+  @Test
   fun updateDevice() {
+    assertThrows<DeviceNotFoundException> { requirements.updateDevice(deviceId) }
+
+    grant { user.canReadDevice(deviceId) }
     assertThrows<AccessDeniedException> { requirements.updateDevice(deviceId) }
 
     grant { user.canUpdateDevice(deviceId) }
@@ -114,6 +148,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createLayer() {
+    assertThrows<SiteNotFoundException> { requirements.createLayer(siteId) }
+
+    grant { user.canReadSite(siteId) }
     assertThrows<AccessDeniedException> { requirements.createLayer(siteId) }
 
     grant { user.canCreateLayer(siteId) }
@@ -121,8 +158,19 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readLayer() {
+    assertThrows<LayerNotFoundException> { requirements.readLayer(layerId) }
+
+    grant { user.canReadLayer(layerId) }
+    requirements.readLayer(layerId)
+  }
+
+  @Test
   fun updateLayer() {
     assertThrows<LayerNotFoundException> { requirements.updateLayer(layerId) }
+
+    grant { user.canReadLayer(layerId) }
+    assertThrows<AccessDeniedException> { requirements.updateLayer(layerId) }
 
     grant { user.canUpdateLayer(layerId) }
     requirements.updateLayer(layerId)
@@ -132,12 +180,18 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun deleteLayer() {
     assertThrows<LayerNotFoundException> { requirements.deleteLayer(layerId) }
 
+    grant { user.canReadLayer(layerId) }
+    assertThrows<AccessDeniedException> { requirements.updateLayer(layerId) }
+
     grant { user.canDeleteLayer(layerId) }
     requirements.deleteLayer(layerId)
   }
 
   @Test
   fun createLayerData() {
+    assertThrows<LayerNotFoundException> { requirements.createLayerData(layerId) }
+
+    grant { user.canReadLayer(layerId) }
     assertThrows<AccessDeniedException> { requirements.createLayerData(layerId) }
 
     grant { user.canCreateLayerData(layerId) }
@@ -153,17 +207,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun deleteFeature() {
-    assertThrows<FeatureNotFoundException> { requirements.deleteFeature(featureId) }
-
-    grant { user.canReadFeature(featureId) }
-    assertThrows<AccessDeniedException> { requirements.deleteFeature(featureId) }
-
-    grant { user.canDeleteFeature(featureId) }
-    requirements.deleteFeature(featureId)
-  }
-
-  @Test
   fun updateFeature() {
     assertThrows<FeatureNotFoundException> { requirements.updateFeature(featureId) }
 
@@ -172,6 +215,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canUpdateFeature(featureId) }
     requirements.updateFeature(featureId)
+  }
+
+  @Test
+  fun deleteFeature() {
+    assertThrows<FeatureNotFoundException> { requirements.deleteFeature(featureId) }
+
+    grant { user.canReadFeature(featureId) }
+    assertThrows<AccessDeniedException> { requirements.deleteFeature(featureId) }
+
+    grant { user.canDeleteFeature(featureId) }
+    requirements.deleteFeature(featureId)
   }
 
   @Test
@@ -195,6 +249,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSite() {
+    assertThrows<ProjectNotFoundException> { requirements.createSite(projectId) }
+
+    grant { user.canReadProject(projectId) }
     assertThrows<AccessDeniedException> { requirements.createSite(projectId) }
 
     grant { user.canCreateSite(projectId) }
@@ -202,7 +259,18 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readSite() {
+    assertThrows<SiteNotFoundException> { requirements.readSite(siteId) }
+
+    grant { user.canReadSite(siteId) }
+    requirements.readSite(siteId)
+  }
+
+  @Test
   fun createProject() {
+    assertThrows<OrganizationNotFoundException> { requirements.createProject(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.createProject(organizationId) }
 
     grant { user.canCreateProject(organizationId) }
@@ -210,8 +278,19 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readProject() {
+    assertThrows<ProjectNotFoundException> { requirements.readProject(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    requirements.readProject(projectId)
+  }
+
+  @Test
   fun listProjects() {
     assertThrows<OrganizationNotFoundException> { requirements.listProjects(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.listProjects(organizationId) }
 
     grant { user.canListProjects(organizationId) }
     requirements.listProjects(organizationId)
@@ -221,12 +300,18 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun updateProject() {
     assertThrows<ProjectNotFoundException> { requirements.updateProject(projectId) }
 
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.updateProject(projectId) }
+
     grant { user.canUpdateProject(projectId) }
     requirements.updateProject(projectId)
   }
 
   @Test
   fun addProjectUser() {
+    assertThrows<ProjectNotFoundException> { requirements.addProjectUser(projectId) }
+
+    grant { user.canReadProject(projectId) }
     assertThrows<AccessDeniedException> { requirements.addProjectUser(projectId) }
 
     grant { user.canAddProjectUser(projectId) }
@@ -235,6 +320,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun removeProjectUser() {
+    assertThrows<ProjectNotFoundException> { requirements.removeProjectUser(projectId) }
+
+    grant { user.canReadProject(projectId) }
     assertThrows<AccessDeniedException> { requirements.removeProjectUser(projectId) }
 
     grant { user.canRemoveProjectUser(projectId) }
@@ -242,7 +330,18 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readOrganization() {
+    assertThrows<OrganizationNotFoundException> { requirements.readOrganization(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    requirements.readOrganization(organizationId)
+  }
+
+  @Test
   fun addOrganizationUser() {
+    assertThrows<OrganizationNotFoundException> { requirements.addOrganizationUser(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.addOrganizationUser(organizationId) }
 
     grant { user.canAddOrganizationUser(organizationId) }
@@ -251,6 +350,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun removeOrganizationUser() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.removeOrganizationUser(organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.removeOrganizationUser(organizationId) }
 
     grant { user.canRemoveOrganizationUser(organizationId) }
@@ -259,6 +363,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun setOrganizationUserRole() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.setOrganizationUserRole(organizationId, role)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> {
       requirements.setOrganizationUserRole(organizationId, role)
     }
@@ -269,6 +378,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createApiKey() {
+    assertThrows<OrganizationNotFoundException> { requirements.createApiKey(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.createApiKey(organizationId) }
 
     grant { user.canCreateApiKey(organizationId) }
@@ -277,6 +389,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun deleteApiKey() {
+    assertThrows<OrganizationNotFoundException> { requirements.deleteApiKey(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.deleteApiKey(organizationId) }
 
     grant { user.canDeleteApiKey(organizationId) }
@@ -317,6 +432,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createTimeseries() {
+    assertThrows<DeviceNotFoundException> { requirements.createTimeseries(deviceId) }
+
+    grant { user.canReadDevice(deviceId) }
     assertThrows<AccessDeniedException> { requirements.createTimeseries(deviceId) }
 
     grant { user.canCreateTimeseries(deviceId) }
