@@ -21,7 +21,7 @@ class PlantObservationsStore(
   fun create(row: PlantObservationsRow): PlantObservationsRow {
     val featureId = row.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
-    requirePermissions { createFeatureData(featureId) }
+    requirePermissions { updateFeature(featureId) }
 
     if (plantsDao.fetchOneByFeatureId(featureId) == null) {
       throw IllegalArgumentException(

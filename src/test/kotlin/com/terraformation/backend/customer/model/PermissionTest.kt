@@ -253,12 +253,14 @@ internal class PermissionTest : DatabaseTest() {
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
-        createFeatureData = true,
-        updateFeatureData = true,
-        deleteFeatureData = true,
     )
 
-    permissions.expect(PhotoId(10010), PhotoId(11000), PhotoId(11001), readFeaturePhoto = true)
+    permissions.expect(
+        PhotoId(10010),
+        PhotoId(11000),
+        PhotoId(11001),
+        readFeaturePhoto = true,
+        deleteFeaturePhoto = true)
 
     permissions.expect(
         FacilityId(1000),
@@ -376,12 +378,14 @@ internal class PermissionTest : DatabaseTest() {
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
-        createFeatureData = true,
-        updateFeatureData = true,
-        deleteFeatureData = true,
     )
 
-    permissions.expect(PhotoId(10010), PhotoId(11000), PhotoId(11001), readFeaturePhoto = true)
+    permissions.expect(
+        PhotoId(10010),
+        PhotoId(11000),
+        PhotoId(11001),
+        readFeaturePhoto = true,
+        deleteFeaturePhoto = true)
 
     permissions.expect(
         FacilityId(1000),
@@ -466,12 +470,9 @@ internal class PermissionTest : DatabaseTest() {
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
-        createFeatureData = true,
-        updateFeatureData = true,
-        deleteFeatureData = true,
     )
 
-    permissions.expect(PhotoId(10010), readFeaturePhoto = true)
+    permissions.expect(PhotoId(10010), readFeaturePhoto = true, deleteFeaturePhoto = true)
 
     permissions.expect(
         FacilityId(1000),
@@ -539,12 +540,9 @@ internal class PermissionTest : DatabaseTest() {
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
-        createFeatureData = true,
-        updateFeatureData = true,
-        deleteFeatureData = true,
     )
 
-    permissions.expect(PhotoId(10010), readFeaturePhoto = true)
+    permissions.expect(PhotoId(10010), readFeaturePhoto = true, deleteFeaturePhoto = true)
 
     permissions.expect(
         FacilityId(1000),
@@ -622,12 +620,14 @@ internal class PermissionTest : DatabaseTest() {
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
-        createFeatureData = true,
-        updateFeatureData = true,
-        deleteFeatureData = true,
     )
 
-    permissions.expect(PhotoId(10010), PhotoId(11000), PhotoId(11001), readFeaturePhoto = true)
+    permissions.expect(
+        PhotoId(10010),
+        PhotoId(11000),
+        PhotoId(11001),
+        readFeaturePhoto = true,
+        deleteFeaturePhoto = true)
 
     permissions.expect(
         FacilityId(1000),
@@ -889,9 +889,6 @@ internal class PermissionTest : DatabaseTest() {
         readFeature: Boolean = false,
         updateFeature: Boolean = false,
         deleteFeature: Boolean = false,
-        createFeatureData: Boolean = false,
-        updateFeatureData: Boolean = false,
-        deleteFeatureData: Boolean = false,
     ) {
       features.forEach { featureId ->
         assertEquals(readFeature, user.canReadFeature(featureId), "Can read feature $featureId")
@@ -899,28 +896,24 @@ internal class PermissionTest : DatabaseTest() {
             updateFeature, user.canUpdateFeature(featureId), "Can update feature $featureId")
         assertEquals(
             deleteFeature, user.canDeleteFeature(featureId), "Can delete feature $featureId")
-        assertEquals(
-            createFeatureData,
-            user.canCreateFeatureData(featureId),
-            "Can create data associated with feature $featureId")
-        assertEquals(
-            updateFeatureData,
-            user.canUpdateFeatureData(featureId),
-            "Can update data associated with feature $featureId")
-        assertEquals(
-            deleteFeatureData,
-            user.canDeleteFeatureData(featureId),
-            "Can delete data associated with feature $featureId")
 
         uncheckedFeatures.remove(featureId)
       }
     }
 
     // All checks keyed on photo IDs go here
-    fun expect(vararg photos: PhotoId, readFeaturePhoto: Boolean = false) {
+    fun expect(
+        vararg photos: PhotoId,
+        readFeaturePhoto: Boolean = false,
+        deleteFeaturePhoto: Boolean = false
+    ) {
       photos.forEach { photoId ->
         assertEquals(
             readFeaturePhoto, user.canReadFeaturePhoto(photoId), "Can read feature photo $photoId")
+        assertEquals(
+            deleteFeaturePhoto,
+            user.canDeleteFeaturePhoto(photoId),
+            "Can delete feature photo $photoId")
 
         uncheckedPhotos.remove(photoId)
       }

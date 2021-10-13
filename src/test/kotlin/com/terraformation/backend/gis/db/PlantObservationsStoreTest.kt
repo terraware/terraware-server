@@ -75,11 +75,9 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
 
     store = PlantObservationsStore(clock, plantsDao, observDao)
     every { clock.instant() } returns time1
-    every { user.canCreateFeatureData(any()) } returns true
     every { user.canReadFeature(any()) } returns true
     every { user.canReadLayerData(any()) } returns true
     every { user.canUpdateFeature(any()) } returns true
-    every { user.canDeleteFeatureData(any()) } returns true
 
     insertSiteData()
     insertLayer(id = layerId.value, siteId = siteId.value, layerType = LayerType.PlantsPlanted)
@@ -123,7 +121,7 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
-    every { user.canCreateFeatureData(featureId = any()) } returns false
+    every { user.canUpdateFeature(any()) } returns false
     assertThrows<AccessDeniedException> { store.create(validCreateRequest) }
   }
 

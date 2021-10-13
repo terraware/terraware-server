@@ -56,7 +56,7 @@ class PlantStore(
   fun createPlant(plant: PlantsRow): PlantsRow {
     val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
 
-    requirePermissions { createFeatureData(featureId) }
+    requirePermissions { updateFeature(featureId) }
 
     if (!featuresDao.existsById(featureId)) {
       throw FeatureNotFoundException(featureId)

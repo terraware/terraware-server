@@ -111,16 +111,14 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
     every { clock.instant() } returns time1
     every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
-    every { user.canCreateFeatureData(any()) } returns true
     every { user.canCreateLayerData(any()) } returns true
+    every { user.canDeleteFeaturePhoto(any()) } returns true
     every { user.canReadFeature(any()) } returns true
     every { user.canReadFeaturePhoto(any()) } returns true
     every { user.canReadLayerData(any()) } returns true
     every { user.canUpdateFeature(any()) } returns true
-    every { user.canUpdateFeatureData(any()) } returns true
     every { user.canUpdateLayerData(any()) } returns true
     every { user.canDeleteFeature(any()) } returns true
-    every { user.canDeleteFeatureData(any()) } returns true
 
     insertSiteData()
     insertLayer(layerId.value, siteId.value, LayerType.Infrastructure)
@@ -286,7 +284,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update fails with FeatureNotFoundException if user doesn't have update access`() {
     val feature = store.createFeature(validCreateRequest)
-    every { user.canUpdateFeatureData(any()) } returns false
+    every { user.canUpdateFeature(any()) } returns false
     assertThrows<FeatureNotFoundException> {
       store.updateFeature(feature.copy(gpsHorizAccuracy = 18.0))
     }
@@ -406,7 +404,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `delete throws AccessDeniedException if the user doesn't have delete permission`() {
     val feature = store.createFeature(validCreateRequest)
-    every { user.canDeleteFeature(any()) } returns false
+    every { user.canDeleteFeaturePhoto(any()) } returns false
     assertThrows<AccessDeniedException> { store.deleteFeature(feature.id!!) }
   }
 
@@ -491,7 +489,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
 
-    every { user.canCreateFeatureData(featureId) } returns false
+    every { user.canUpdateFeature(featureId) } returns false
 
     assertThrows<FeatureNotFoundException> {
       store.createPhoto(
@@ -524,7 +522,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val featureId = feature.id!!
     val photosRow = insertFeaturePhoto(featureId)
 
-    every { user.canDeleteFeatureData(featureId) } returns false
+    every { user.canUpdateFeature(featureId) } returns false
 
     assertThrows<AccessDeniedException> { store.deletePhoto(featureId, photosRow.id!!) }
   }

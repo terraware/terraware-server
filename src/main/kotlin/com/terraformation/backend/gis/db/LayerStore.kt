@@ -40,6 +40,10 @@ class LayerStore(
   }
 
   fun fetchLayer(id: LayerId, ignoreDeleted: Boolean = true): LayerModel? {
+    if (!currentUser().canReadLayer(id)) {
+      return null
+    }
+
     val layer =
         dslContext
             .select(
@@ -54,13 +58,9 @@ class LayerStore(
             )
             .from(LAYERS)
             .where(LAYERS.ID.eq(id))
+            .apply { if (ignoreDeleted) and(LAYERS.DELETED.isFalse) }
             .fetchOne()
-
-    if (layer == null ||
-        !currentUser().canReadLayer(id) ||
-        (layer[LAYERS.DELETED]!! && ignoreDeleted)) {
-      return null
-    }
+            ?: return null
 
     return LayerModel(
         id = id,
@@ -118,6 +118,8 @@ class LayerStore(
   fun updateLayer(layerModel: LayerModel): LayerModel {
     val layerId = layerModel.id ?: throw IllegalArgumentException("No layer ID specified")
 
+    requirePermissions { updateLayer(layerId) }
+
     val currentRow =
         dslContext
             .select(
@@ -138,7 +140,6 @@ class LayerStore(
     // Caller provided siteId must match the siteId in the database because allowing site moves
     // would add additional permissions complexity. Plus, the caller can achieve that behavior
     // using a combination of createLayer() and deleteLayer().
-    requirePermissions { updateLayer(layerId) }
     if (layerModel.siteId != currentRow[LAYERS.SITE_ID]) {
       throw LayerNotFoundException(layerId)
     }

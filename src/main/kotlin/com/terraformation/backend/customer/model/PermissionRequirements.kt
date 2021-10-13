@@ -158,21 +158,16 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
-  fun createFeatureData(featureId: FeatureId) {
-    if (!user.canCreateFeatureData(featureId)) {
-      throw AccessDeniedException("No permission to create data for feature $featureId")
+  fun deleteFeaturePhoto(photoId: PhotoId) {
+    if (!user.canDeleteFeaturePhoto(photoId)) {
+      readFeaturePhoto(photoId)
+      throw AccessDeniedException("No permission to delete feature photo $photoId")
     }
   }
 
-  fun updateFeatureData(featureId: FeatureId) {
-    if (!user.canUpdateFeatureData(featureId)) {
+  fun updateFeature(featureId: FeatureId) {
+    if (!user.canUpdateFeature(featureId)) {
       throw FeatureNotFoundException(featureId)
-    }
-  }
-
-  fun deleteFeatureData(featureId: FeatureId) {
-    if (!user.canDeleteFeatureData(featureId)) {
-      throw AccessDeniedException("No permission to delete data from feature $featureId")
     }
   }
 

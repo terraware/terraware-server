@@ -232,24 +232,14 @@ class UserModel(
     return canUpdateFeature(featureId)
   }
 
-  fun canCreateFeatureData(featureId: FeatureId): Boolean {
-    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canCreateLayerData(layerId)
-  }
-
-  fun canUpdateFeatureData(featureId: FeatureId): Boolean {
-    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canUpdateLayerData(layerId)
-  }
-
-  fun canDeleteFeatureData(featureId: FeatureId): Boolean {
-    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canAccessLayerData(layerId)
-  }
-
   fun canReadFeaturePhoto(photoId: PhotoId): Boolean {
     val featureId = featurePhotosDao.fetchOneByPhotoId(photoId)?.featureId ?: return false
     return canReadFeature(featureId)
+  }
+
+  fun canDeleteFeaturePhoto(photoId: PhotoId): Boolean {
+    val featureId = featurePhotosDao.fetchOneByPhotoId(photoId)?.featureId ?: return false
+    return canUpdateFeature(featureId)
   }
 
   fun canCreateSite(projectId: ProjectId): Boolean {
