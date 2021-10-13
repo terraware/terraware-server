@@ -282,10 +282,10 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update fails with FeatureNotFoundException if user doesn't have update access`() {
+  fun `update fails with AccessDeniedException if user doesn't have update access`() {
     val feature = store.createFeature(validCreateRequest)
     every { user.canUpdateFeature(any()) } returns false
-    assertThrows<FeatureNotFoundException> {
+    assertThrows<AccessDeniedException> {
       store.updateFeature(feature.copy(gpsHorizAccuracy = 18.0))
     }
   }
@@ -404,7 +404,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `delete throws AccessDeniedException if the user doesn't have delete permission`() {
     val feature = store.createFeature(validCreateRequest)
-    every { user.canDeleteFeaturePhoto(any()) } returns false
+    every { user.canDeleteFeature(any()) } returns false
     assertThrows<AccessDeniedException> { store.deleteFeature(feature.id!!) }
   }
 
@@ -521,10 +521,11 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
     val photosRow = insertFeaturePhoto(featureId)
+    val photoId = photosRow.id!!
 
-    every { user.canUpdateFeature(featureId) } returns false
+    every { user.canDeleteFeaturePhoto(photoId) } returns false
 
-    assertThrows<AccessDeniedException> { store.deletePhoto(featureId, photosRow.id!!) }
+    assertThrows<AccessDeniedException> { store.deletePhoto(featureId, photoId) }
   }
 
   @Test

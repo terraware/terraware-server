@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FeatureId
+import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.HealthState
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
@@ -117,6 +118,13 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<IllegalArgumentException> {
       store.create(validCreateRequest.copy(featureId = null))
     }
+  }
+
+  @Test
+  fun `create fails with FeatureNotFoundException if user doesn't have read permission`() {
+    every { user.canUpdateFeature(any()) } returns false
+    every { user.canReadFeature(any()) } returns false
+    assertThrows<FeatureNotFoundException> { store.create(validCreateRequest) }
   }
 
   @Test

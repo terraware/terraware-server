@@ -164,6 +164,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun updateFeature() {
+    assertThrows<FeatureNotFoundException> { requirements.updateFeature(featureId) }
+
+    grant { user.canReadFeature(featureId) }
+    assertThrows<AccessDeniedException> { requirements.updateFeature(featureId) }
+
+    grant { user.canUpdateFeature(featureId) }
+    requirements.updateFeature(featureId)
+  }
+
+  @Test
   fun readFeaturePhoto() {
     assertThrows<PhotoNotFoundException> { requirements.readFeaturePhoto(photoId) }
 
@@ -180,14 +191,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canDeleteFeaturePhoto(photoId) }
     requirements.deleteFeaturePhoto(photoId)
-  }
-
-  @Test
-  fun updateFeature() {
-    assertThrows<FeatureNotFoundException> { requirements.updateFeature(featureId) }
-
-    grant { user.canUpdateFeature(featureId) }
-    requirements.updateFeature(featureId)
   }
 
   @Test
