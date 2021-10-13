@@ -65,7 +65,14 @@ class TimeseriesStore(private val dslContext: DSLContext) {
     return dslContext.transactionResult { _ -> rows.map { createOrUpdate(it) } }
   }
 
-  fun insertValue(timeseriesId: TimeseriesId, value: String, createdTime: Instant) {
+  fun insertValue(
+      deviceId: DeviceId,
+      timeseriesId: TimeseriesId,
+      value: String,
+      createdTime: Instant
+  ) {
+    requirePermissions { updateTimeseries(deviceId) }
+
     with(TIMESERIES_VALUES) {
       dslContext
           .insertInto(TIMESERIES_VALUES)

@@ -4045,7 +4045,7 @@ components:
           description: List of values that the server failed to record. Will not be
             included if all the values were recorded successfully.
           items:
-            $ref: '#/components/schemas/TimeseriesValuesPayload'
+            $ref: '#/components/schemas/TimeseriesValuesErrorPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
         error:
@@ -4707,6 +4707,31 @@ components:
           description: "Value to record. If the timeseries is of type Numeric, this\
             \ must be a decimal or integer value in string form. If the timeseries\
             \ is of type Text, this can be an arbitrary string."
+    TimeseriesValuesErrorPayload:
+      required:
+      - deviceId
+      - message
+      - timeseriesName
+      - values
+      type: object
+      properties:
+        deviceId:
+          type: integer
+          description: Device ID as specified in the failing request.
+          format: int64
+        timeseriesName:
+          type: string
+          description: Name of timeseries as specified in the failing request.
+        values:
+          type: array
+          description: Values that the server was not able to successfully record.
+          items:
+            $ref: '#/components/schemas/TimeseriesValuePayload'
+        message:
+          type: string
+          description: Human-readable details about the failure.
+      description: List of values that the server failed to record. Will not be included
+        if all the values were recorded successfully.
     TimeseriesValuesPayload:
       required:
       - deviceId
