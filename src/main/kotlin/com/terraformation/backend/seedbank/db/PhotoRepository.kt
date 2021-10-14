@@ -3,11 +3,9 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
-import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
@@ -39,7 +37,6 @@ import org.jooq.DSLContext
 @ManagedBean
 class PhotoRepository(
     private val accessionPhotosDao: AccessionPhotosDao,
-    private val accessionsDao: AccessionsDao,
     private val dslContext: DSLContext,
     private val clock: Clock,
     private val fileStore: FileStore,
@@ -50,10 +47,7 @@ class PhotoRepository(
 
   @Throws(IOException::class)
   fun storePhoto(accessionId: AccessionId, data: InputStream, size: Long, metadata: PhotoMetadata) {
-    val accession =
-        accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
-
-    requirePermissions { updateAccession(accessionId, accession.facilityId) }
+    requirePermissions { updateAccession(accessionId) }
 
     val photoUrl = fileStore.newUrl(clock.instant(), "accession", metadata.contentType)
 
@@ -106,10 +100,7 @@ class PhotoRepository(
       maxWidth: Int? = null,
       maxHeight: Int? = null,
   ): SizedInputStream {
-    val accession =
-        accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
-
-    requirePermissions { readAccession(accessionId, accession.facilityId) }
+    requirePermissions { readAccession(accessionId) }
 
     return if (maxWidth != null || maxHeight != null) {
       thumbnailStore.getThumbnailData(fetchPhotoId(accessionId, filename), maxWidth, maxHeight)
@@ -121,10 +112,7 @@ class PhotoRepository(
   /** Returns the photo's size in bytes. */
   @Throws(IOException::class)
   fun getPhotoFileSize(accessionId: AccessionId, filename: String): Long {
-    val accession =
-        accessionsDao.fetchOneById(accessionId) ?: throw AccessionNotFoundException(accessionId)
-
-    requirePermissions { readAccession(accessionId, accession.facilityId) }
+    requirePermissions { readAccession(accessionId) }
 
     val photoUrl = fetchUrl(accessionId, filename)
     return fileStore.size(photoUrl)

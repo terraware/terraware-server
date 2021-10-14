@@ -111,13 +111,14 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
     every { clock.instant() } returns time1
     every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
-    every { user.canCreateLayerData(featureId = any()) } returns true
-    every { user.canCreateLayerData(layerId = any()) } returns true
-    every { user.canReadLayerData(featureId = any()) } returns true
-    every { user.canReadLayerData(layerId = any()) } returns true
-    every { user.canUpdateLayerData(featureId = any()) } returns true
-    every { user.canUpdateLayerData(layerId = any()) } returns true
-    every { user.canDeleteLayerData(any()) } returns true
+    every { user.canCreateFeature(any()) } returns true
+    every { user.canReadFeature(any()) } returns true
+    every { user.canReadFeaturePhoto(any()) } returns true
+    every { user.canReadLayer(any()) } returns true
+    every { user.canUpdateFeature(any()) } returns true
+    every { user.canUpdateLayer(any()) } returns true
+    every { user.canDeleteFeature(any()) } returns true
+    every { user.canDeleteFeaturePhoto(any()) } returns true
 
     insertSiteData()
     insertLayer(layerId.value, siteId.value, LayerType.Infrastructure)
@@ -142,7 +143,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
-    every { user.canCreateLayerData(layerId = any()) } returns false
+    every { user.canCreateFeature(any()) } returns false
     assertThrows<AccessDeniedException> { store.createFeature(validCreateRequest) }
   }
 
@@ -171,7 +172,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `read returns null if user doesn't have read permission, even if they have create permission`() {
     val newFeature = store.createFeature(validCreateRequest)
-    every { user.canReadLayerData(featureId = any()) } returns false
+    every { user.canReadFeature(any()) } returns false
     assertNull(store.fetchFeature(newFeature.id!!))
   }
 
@@ -225,7 +226,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `list returns empty list if user does not have read permissions`() {
     store.createFeature(validCreateRequest)
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertEquals(emptyList<FeatureModel>(), store.listFeatures(layerId))
   }
 
@@ -242,7 +243,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `count returns 0 if user does not have read permissions`() {
     store.createFeature(validCreateRequest)
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertEquals(0, store.countFeatures(layerId))
   }
 
@@ -281,10 +282,10 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update fails with FeatureNotFoundException if user doesn't have update access`() {
+  fun `update fails with AccessDeniedException if user doesn't have update access`() {
     val feature = store.createFeature(validCreateRequest)
-    every { user.canUpdateLayerData(layerId = any()) } returns false
-    assertThrows<FeatureNotFoundException> {
+    every { user.canUpdateFeature(any()) } returns false
+    assertThrows<AccessDeniedException> {
       store.updateFeature(feature.copy(gpsHorizAccuracy = 18.0))
     }
   }
@@ -403,14 +404,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `delete throws AccessDeniedException if the user doesn't have delete permission`() {
     val feature = store.createFeature(validCreateRequest)
-    every { user.canDeleteLayerData(any()) } returns false
+    every { user.canDeleteFeature(any()) } returns false
     assertThrows<AccessDeniedException> { store.deleteFeature(feature.id!!) }
-  }
-
-  @Test
-  fun `delete throws a FeatureNotFoundException if the feature doesn't exist`() {
-    store.createFeature(validCreateRequest)
-    assertThrows<FeatureNotFoundException> { store.deleteFeature(nonExistentFeatureId) }
   }
 
   @Test
@@ -494,7 +489,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
 
-    every { user.canCreateLayerData(featureId) } returns false
+    every { user.canUpdateFeature(featureId) } returns false
 
     assertThrows<FeatureNotFoundException> {
       store.createPhoto(
@@ -526,10 +521,11 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
     val photosRow = insertFeaturePhoto(featureId)
+    val photoId = photosRow.id!!
 
-    every { user.canDeleteLayerData(featureId) } returns false
+    every { user.canDeleteFeaturePhoto(photoId) } returns false
 
-    assertThrows<AccessDeniedException> { store.deletePhoto(featureId, photosRow.id!!) }
+    assertThrows<AccessDeniedException> { store.deletePhoto(featureId, photoId) }
   }
 
   @Test
@@ -568,14 +564,15 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `getPhotoData throws exception if user has no permission to read layer data`() {
+  fun `getPhotoData throws exception if user has no permission to read photo`() {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
     val photosRow = insertFeaturePhoto(featureId)
+    val photoId = photosRow.id!!
 
-    every { user.canReadLayerData(featureId) } returns false
+    every { user.canReadFeaturePhoto(photoId) } returns false
 
-    assertThrows<PhotoNotFoundException> { store.getPhotoData(featureId, photosRow.id!!) }
+    assertThrows<PhotoNotFoundException> { store.getPhotoData(featureId, photoId) }
   }
 
   @Test
@@ -599,14 +596,15 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `getPhotoMetadata throws exception if user has no permission to read layer data`() {
+  fun `getPhotoMetadata throws exception if user has no permission to read photo`() {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
     val photosRow = insertFeaturePhoto(featureId)
+    val photoId = photosRow.id!!
 
-    every { user.canReadLayerData(featureId) } returns false
+    every { user.canReadFeaturePhoto(photoId) } returns false
 
-    assertThrows<PhotoNotFoundException> { store.getPhotoMetadata(featureId, photosRow.id!!) }
+    assertThrows<PhotoNotFoundException> { store.getPhotoMetadata(featureId, photoId) }
   }
 
   @Test
@@ -631,18 +629,13 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `listPhotos throws exception if user has no permission to read layer data`() {
+  fun `listPhotos throws exception if user has no permission to read feature`() {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
 
-    every { user.canReadLayerData(featureId) } returns false
+    every { user.canReadFeature(featureId) } returns false
 
     assertThrows<FeatureNotFoundException> { store.listPhotos(featureId) }
-  }
-
-  @Test
-  fun `listPhotos throws exception if feature does not exist`() {
-    assertThrows<FeatureNotFoundException> { store.listPhotos(FeatureId(1)) }
   }
 
   private fun insertFeaturePhoto(featureId: FeatureId): PhotosRow {

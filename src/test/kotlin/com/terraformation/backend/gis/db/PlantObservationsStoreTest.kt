@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FeatureId
+import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.HealthState
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
@@ -75,11 +76,9 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
 
     store = PlantObservationsStore(clock, plantsDao, observDao)
     every { clock.instant() } returns time1
-    every { user.canCreateLayerData(featureId = any()) } returns true
-    every { user.canReadLayerData(featureId = any()) } returns true
-    every { user.canReadLayerData(layerId = any()) } returns true
-    every { user.canUpdateLayerData(featureId = any()) } returns true
-    every { user.canDeleteLayerData(any()) } returns true
+    every { user.canReadFeature(any()) } returns true
+    every { user.canReadLayer(any()) } returns true
+    every { user.canUpdateFeature(any()) } returns true
 
     insertSiteData()
     insertLayer(id = layerId.value, siteId = siteId.value, layerType = LayerType.PlantsPlanted)
@@ -122,8 +121,15 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `create fails with FeatureNotFoundException if user doesn't have read permission`() {
+    every { user.canUpdateFeature(any()) } returns false
+    every { user.canReadFeature(any()) } returns false
+    assertThrows<FeatureNotFoundException> { store.create(validCreateRequest) }
+  }
+
+  @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
-    every { user.canCreateLayerData(featureId = any()) } returns false
+    every { user.canUpdateFeature(any()) } returns false
     assertThrows<AccessDeniedException> { store.create(validCreateRequest) }
   }
 
@@ -154,7 +160,7 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetch returns null if user doesn't have read permission`() {
     val observation = store.create(validCreateRequest)
-    every { user.canReadLayerData(featureId = any()) } returns false
+    every { user.canReadFeature(any()) } returns false
     assertNull(store.fetch(observation.id!!))
   }
 
@@ -179,7 +185,7 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchList returns an empty list when user doesn't have read permission`() {
     store.create(validCreateRequest)
-    every { user.canReadLayerData(featureId = any()) } returns false
+    every { user.canReadFeature(any()) } returns false
     assertEquals(emptyList<PlantObservationsRow>(), store.fetchList(featureId))
   }
 
@@ -243,7 +249,7 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update fails with PlantObservationNotFoundException if user doesn't have update permission`() {
     val created = store.create(validCreateRequest)
-    every { user.canUpdateLayerData(featureId = any()) } returns false
+    every { user.canUpdateFeature(any()) } returns false
     assertThrows<PlantObservationNotFoundException> { store.update(created) }
   }
 

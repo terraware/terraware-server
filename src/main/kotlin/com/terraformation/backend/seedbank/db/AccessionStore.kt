@@ -95,8 +95,7 @@ class AccessionStore(
             .fetchOne()
             ?: return null
 
-    if (!skipPermissionCheck &&
-        !currentUser().canReadAccession(accessionId, parentRow[ACCESSIONS.FACILITY_ID])) {
+    if (!skipPermissionCheck && !currentUser().canReadAccession(accessionId)) {
       log.warn(
           "No permission to read accession $accessionId in facility ${parentRow[ACCESSIONS.FACILITY_ID]}")
       return null
@@ -288,7 +287,7 @@ class AccessionStore(
     val existing = fetchById(accessionId) ?: return false
     val facilityId = existing.facilityId ?: return false
 
-    requirePermissions { updateAccession(accessionId, facilityId) }
+    requirePermissions { updateAccession(accessionId) }
 
     val accession = updated.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)
@@ -465,7 +464,7 @@ class AccessionStore(
   fun checkIn(accessionId: AccessionId): AccessionModel {
     val accession = fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
 
-    requirePermissions { updateAccession(accessionId, accession.facilityId) }
+    requirePermissions { updateAccession(accessionId) }
 
     if (accession.checkedInTime != null) {
       log.info("Accession $accessionId is already checked in; ignoring request to check in again")

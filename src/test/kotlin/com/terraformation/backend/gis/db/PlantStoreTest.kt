@@ -75,11 +75,9 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
         PlantStore(
             clock, dslContext, featuresDao, postgresFuzzySearchOperators, plantsDao, speciesDao)
     every { clock.instant() } returns time1
-    every { user.canCreateLayerData(featureId = any()) } returns true
-    every { user.canReadLayerData(featureId = any()) } returns true
-    every { user.canReadLayerData(layerId = any()) } returns true
-    every { user.canUpdateLayerData(featureId = any()) } returns true
-    every { user.canDeleteLayerData(any()) } returns true
+    every { user.canReadFeature(any()) } returns true
+    every { user.canReadLayer(any()) } returns true
+    every { user.canUpdateFeature(any()) } returns true
 
     insertSiteData()
     insertLayer(id = layerId.value, siteId = siteId.value, layerType = LayerType.PlantsPlanted)
@@ -161,8 +159,8 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create fails with AccessDeniedException if user doesn't have create permission`() {
-    every { user.canCreateLayerData(featureId = any()) } returns false
+  fun `create fails with AccessDeniedException if user doesn't have permission`() {
+    every { user.canUpdateFeature(any()) } returns false
     assertThrows<AccessDeniedException> { store.createPlant(validCreateRequest) }
   }
 
@@ -193,7 +191,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchPlant returns null if user doesn't have read permission, even if they have create permission`() {
     val plant = store.createPlant(validCreateRequest)
-    every { user.canReadLayerData(featureId = any()) } returns false
+    every { user.canReadFeature(any()) } returns false
     assertNull(store.fetchPlant(plant.featureId!!))
   }
 
@@ -338,7 +336,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchPlantsList returns empty list when user doesn't have read permission`() {
     insertSeveralPlants(speciesIdsToCount)
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertEquals(emptyList<FetchPlantListResult>(), store.fetchPlantsList(layerId))
   }
 
@@ -390,7 +388,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchPlantSummary returns an empty map if user doesn't have permission to read layer data`() {
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     insertSeveralPlants(speciesIdsToCount)
     assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId))
   }
@@ -462,7 +460,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update fails with PlantNotFoundException if user doesn't have update permission`() {
     val plant = store.createPlant(validCreateRequest)
-    every { user.canUpdateLayerData(featureId = any()) } returns false
+    every { user.canUpdateFeature(any()) } returns false
     assertThrows<PlantNotFoundException> { store.updatePlant(plant) }
   }
 

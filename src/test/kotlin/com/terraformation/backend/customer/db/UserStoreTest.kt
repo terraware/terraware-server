@@ -13,6 +13,7 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
+import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
@@ -56,6 +57,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var accessionsDao: AccessionsDao
   private lateinit var devicesDao: DevicesDao
+  private lateinit var featurePhotosDao: FeaturePhotosDao
   private lateinit var featuresDao: FeaturesDao
   private lateinit var layersDao: LayersDao
   private lateinit var organizationsDao: OrganizationsDao
@@ -111,6 +113,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     val configuration = dslContext.configuration()
     accessionsDao = AccessionsDao(configuration)
     devicesDao = DevicesDao(configuration)
+    featurePhotosDao = FeaturePhotosDao(configuration)
     featuresDao = FeaturesDao(configuration)
     layersDao = LayersDao(configuration)
     organizationsDao = OrganizationsDao(configuration)
@@ -125,6 +128,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             config,
             devicesDao,
+            featurePhotosDao,
             featuresDao,
             httpClient,
             keycloakProperties,

@@ -4,11 +4,14 @@ import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
+import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
 import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import net.postgis.jdbc.geometry.Geometry
@@ -20,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
@@ -183,6 +187,49 @@ abstract class DatabaseTest {
           .set(ENTERED_TIME, enteredTime)
           .set(CREATED_TIME, createdTime)
           .set(MODIFIED_TIME, modifiedTime)
+          .execute()
+    }
+  }
+
+  protected fun insertPhoto(
+      id: Long,
+      storageUrl: URI = URI("http://server/$id"),
+      fileName: String = "$id.jpg",
+      contentType: String = MediaType.IMAGE_JPEG_VALUE,
+      size: Long = 1L,
+      createdTime: Instant = Instant.EPOCH,
+      capturedTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = Instant.EPOCH,
+  ) {
+    with(PHOTOS) {
+      dslContext
+          .insertInto(PHOTOS)
+          .set(CAPTURED_TIME, capturedTime)
+          .set(CONTENT_TYPE, contentType)
+          .set(CREATED_TIME, createdTime)
+          .set(FILE_NAME, fileName)
+          .set(ID, PhotoId(id))
+          .set(MODIFIED_TIME, modifiedTime)
+          .set(SIZE, size)
+          .set(STORAGE_URL, storageUrl)
+          .execute()
+    }
+  }
+
+  protected fun insertFeaturePhoto(
+      photoId: Long,
+      featureId: Long = photoId,
+      plantObservationId: Long? = null,
+  ) {
+    with(FEATURE_PHOTOS) {
+      dslContext
+          .insertInto(FEATURE_PHOTOS)
+          .set(PHOTO_ID, PhotoId(photoId))
+          .set(FEATURE_ID, FeatureId(featureId))
+          .apply {
+            if (plantObservationId != null)
+                set(PLANT_OBSERVATION_ID, PlantObservationId(plantObservationId))
+          }
           .execute()
     }
   }

@@ -50,6 +50,10 @@ import org.springframework.security.access.AccessDeniedException
  * - Exception messages should, if possible, include the identifier of the object the user didn't
  * have permission to operate on.
  *
+ * - For read actions, if the object doesn't exist, throw [EntityNotFoundException]. Note that the
+ * permission checking methods in [UserModel] are required to return false if the target object
+ * doesn't exist, so in most cases, it should suffice to just check for read permission.
+ *
  * - For read actions, if the user doesn't have permission to see the object at all, throw
  * [EntityNotFoundException]. We want inaccessible data to act as if it doesn't exist at all.
  *
@@ -82,14 +86,14 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
-  fun readAccession(accessionId: AccessionId, facilityId: FacilityId? = null) {
-    if (!user.canReadAccession(accessionId, facilityId)) {
+  fun readAccession(accessionId: AccessionId) {
+    if (!user.canReadAccession(accessionId)) {
       throw AccessionNotFoundException(accessionId)
     }
   }
 
-  fun updateAccession(accessionId: AccessionId, facilityId: FacilityId? = null) {
-    if (!user.canUpdateAccession(accessionId, facilityId)) {
+  fun updateAccession(accessionId: AccessionId) {
+    if (!user.canUpdateAccession(accessionId)) {
       throw AccessDeniedException("No permission to update accession $accessionId")
     }
   }
@@ -118,45 +122,54 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
-  fun updateLayer(layerId: LayerId, siteId: SiteId) {
-    if (!user.canUpdateLayer(siteId)) {
+  fun updateLayer(layerId: LayerId) {
+    if (!user.canUpdateLayer(layerId)) {
       throw LayerNotFoundException(layerId)
     }
   }
 
-  fun deleteLayer(layerId: LayerId, siteId: SiteId) {
-    if (!user.canDeleteLayer(siteId)) {
+  fun deleteLayer(layerId: LayerId) {
+    if (!user.canDeleteLayer(layerId)) {
       throw LayerNotFoundException(layerId)
     }
   }
 
-  fun createLayerData(layerId: LayerId) {
-    if (!user.canCreateLayerData(layerId)) {
-      throw AccessDeniedException("No permission to create data in layer $layerId")
+  fun createFeature(layerId: LayerId) {
+    if (!user.canCreateFeature(layerId)) {
+      throw AccessDeniedException("No permission to create feature in layer $layerId")
     }
   }
 
-  fun createLayerData(featureId: FeatureId) {
-    if (!user.canCreateLayerData(featureId)) {
-      throw AccessDeniedException("No permission to create data for feature $featureId")
-    }
-  }
-
-  fun readLayerData(photoId: PhotoId, featureId: FeatureId) {
-    if (!user.canReadLayerData(featureId)) {
-      throw PhotoNotFoundException(photoId)
-    }
-  }
-
-  fun updateLayerData(layerId: LayerId, featureId: FeatureId) {
-    if (!user.canUpdateLayerData(layerId)) {
+  fun readFeature(featureId: FeatureId) {
+    if (!user.canReadFeature(featureId)) {
       throw FeatureNotFoundException(featureId)
     }
   }
 
-  fun deleteLayerData(featureId: FeatureId) {
-    if (!user.canDeleteLayerData(featureId)) {
-      throw AccessDeniedException("No permission to delete data from feature $featureId")
+  fun updateFeature(featureId: FeatureId) {
+    if (!user.canUpdateFeature(featureId)) {
+      readFeature(featureId)
+      throw AccessDeniedException("No permission to update feature $featureId")
+    }
+  }
+
+  fun deleteFeature(featureId: FeatureId) {
+    if (!user.canDeleteFeature(featureId)) {
+      readFeature(featureId)
+      throw AccessDeniedException("No permission to delete feature $featureId")
+    }
+  }
+
+  fun readFeaturePhoto(photoId: PhotoId) {
+    if (!user.canReadFeaturePhoto(photoId)) {
+      throw PhotoNotFoundException(photoId)
+    }
+  }
+
+  fun deleteFeaturePhoto(photoId: PhotoId) {
+    if (!user.canDeleteFeaturePhoto(photoId)) {
+      readFeaturePhoto(photoId)
+      throw AccessDeniedException("No permission to delete feature photo $photoId")
     }
   }
 
