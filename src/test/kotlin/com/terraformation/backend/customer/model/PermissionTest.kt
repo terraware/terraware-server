@@ -381,13 +381,6 @@ internal class PermissionTest : DatabaseTest() {
         deleteFeaturePhoto = true)
 
     permissions.expect(
-        PhotoId(10010),
-        PhotoId(11000),
-        PhotoId(11001),
-        readFeaturePhoto = true,
-        deleteFeaturePhoto = true)
-
-    permissions.expect(
         FacilityId(1000),
         FacilityId(1001),
         FacilityId(1010),
