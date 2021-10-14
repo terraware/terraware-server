@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.AccessionId
@@ -18,9 +19,6 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
-import com.terraformation.backend.db.tables.daos.FeaturesDao
-import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
@@ -102,9 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired
 internal class PermissionTest : DatabaseTest() {
   private lateinit var accessionsDao: AccessionsDao
   private lateinit var devicesDao: DevicesDao
-  private lateinit var featurePhotosDao: FeaturePhotosDao
-  private lateinit var featuresDao: FeaturesDao
-  private lateinit var layersDao: LayersDao
+  private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
   private lateinit var usersDao: UsersDao
   private lateinit var userStore: UserStore
@@ -139,24 +135,18 @@ internal class PermissionTest : DatabaseTest() {
     val jooqConfig = dslContext.configuration()
     accessionsDao = AccessionsDao(jooqConfig)
     devicesDao = DevicesDao(jooqConfig)
-    featurePhotosDao = FeaturePhotosDao(jooqConfig)
-    featuresDao = FeaturesDao(jooqConfig)
-    layersDao = LayersDao(jooqConfig)
+    parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
     usersDao = UsersDao(jooqConfig)
     userStore =
         UserStore(
-            accessionsDao,
             clock,
             config,
-            devicesDao,
-            featurePhotosDao,
-            featuresDao,
             mockk(),
             mockk(),
-            layersDao,
             mockk(),
             mockk(),
+            parentStore,
             permissionStore,
             realmResource,
             usersDao)
