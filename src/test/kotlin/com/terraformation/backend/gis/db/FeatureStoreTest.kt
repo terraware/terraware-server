@@ -111,14 +111,14 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
     every { clock.instant() } returns time1
     every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
-    every { user.canCreateLayerData(any()) } returns true
-    every { user.canDeleteFeaturePhoto(any()) } returns true
+    every { user.canCreateFeature(any()) } returns true
     every { user.canReadFeature(any()) } returns true
     every { user.canReadFeaturePhoto(any()) } returns true
-    every { user.canReadLayerData(any()) } returns true
+    every { user.canReadLayer(any()) } returns true
     every { user.canUpdateFeature(any()) } returns true
-    every { user.canUpdateLayerData(any()) } returns true
+    every { user.canUpdateLayer(any()) } returns true
     every { user.canDeleteFeature(any()) } returns true
+    every { user.canDeleteFeaturePhoto(any()) } returns true
 
     insertSiteData()
     insertLayer(layerId.value, siteId.value, LayerType.Infrastructure)
@@ -143,7 +143,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create fails with AccessDeniedException if user doesn't have create permission`() {
-    every { user.canCreateLayerData(layerId = any()) } returns false
+    every { user.canCreateFeature(any()) } returns false
     assertThrows<AccessDeniedException> { store.createFeature(validCreateRequest) }
   }
 
@@ -226,7 +226,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `list returns empty list if user does not have read permissions`() {
     store.createFeature(validCreateRequest)
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertEquals(emptyList<FeatureModel>(), store.listFeatures(layerId))
   }
 
@@ -243,7 +243,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `count returns 0 if user does not have read permissions`() {
     store.createFeature(validCreateRequest)
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertEquals(0, store.countFeatures(layerId))
   }
 

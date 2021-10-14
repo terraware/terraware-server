@@ -242,8 +242,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -367,8 +366,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -461,8 +459,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -531,8 +528,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -609,8 +605,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -863,21 +858,16 @@ internal class PermissionTest : DatabaseTest() {
         readLayer: Boolean = false,
         updateLayer: Boolean = false,
         deleteLayer: Boolean = false,
-        createLayerData: Boolean = false,
-        updateLayerData: Boolean = false,
+        createFeature: Boolean = false,
     ) {
       layers.forEach { layerId ->
         assertEquals(readLayer, user.canReadLayer(layerId), "Can read layer $layerId")
         assertEquals(updateLayer, user.canUpdateLayer(layerId), "Can update layer $layerId")
         assertEquals(deleteLayer, user.canDeleteLayer(layerId), "Can delete layer $layerId")
         assertEquals(
-            createLayerData,
-            user.canCreateLayerData(layerId),
-            "Can create layer data associated with layer $layerId")
-        assertEquals(
-            updateLayerData,
-            user.canUpdateLayerData(layerId),
-            "Can update layer data associated with layer $layerId")
+            createFeature,
+            user.canCreateFeature(layerId),
+            "Can create feature associated with layer $layerId")
 
         uncheckedLayers.remove(layerId)
       }

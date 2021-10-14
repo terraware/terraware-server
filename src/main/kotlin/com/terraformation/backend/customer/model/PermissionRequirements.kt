@@ -133,9 +133,9 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
-  fun createLayerData(layerId: LayerId) {
-    if (!user.canCreateLayerData(layerId)) {
-      throw AccessDeniedException("No permission to create data in layer $layerId")
+  fun createFeature(layerId: LayerId) {
+    if (!user.canCreateFeature(layerId)) {
+      throw AccessDeniedException("No permission to create feature in layer $layerId")
     }
   }
 

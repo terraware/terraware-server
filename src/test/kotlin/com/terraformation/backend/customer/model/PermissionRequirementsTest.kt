@@ -137,11 +137,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun createLayerData() {
-    assertThrows<AccessDeniedException> { requirements.createLayerData(layerId) }
+  fun createFeature() {
+    assertThrows<AccessDeniedException> { requirements.createFeature(layerId) }
 
-    grant { user.canCreateLayerData(layerId) }
-    requirements.createLayerData(layerId)
+    grant { user.canCreateFeature(layerId) }
+    requirements.createFeature(layerId)
   }
 
   @Test

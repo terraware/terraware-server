@@ -83,7 +83,7 @@ class PlantStore(
       maxEnteredTime: Instant? = null,
       notes: String? = null
   ): List<FetchPlantListResult> {
-    if (!currentUser().canReadLayerData(layerId)) {
+    if (!currentUser().canReadLayer(layerId)) {
       return emptyList()
     }
 
@@ -148,7 +148,7 @@ class PlantStore(
       minEnteredTime: Instant? = null,
       maxEnteredTime: Instant? = null,
   ): Map<SpeciesId, Int> {
-    if (!currentUser().canReadLayerData(layerId)) {
+    if (!currentUser().canReadLayer(layerId)) {
       return emptyMap()
     }
     val records =

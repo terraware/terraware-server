@@ -198,34 +198,18 @@ class UserModel(
     return canAccessLayer(layerId)
   }
 
-  // "Layer data" refers to all tables that directly or indirectly references layers.
-  // You can also think of it as all data that belongs "inside" a layer.
-  private fun canAccessLayerData(layerId: LayerId): Boolean {
-    // Currently, all gis data is lumped into one permission. In the future, permission
-    // to create/update layers may be separated from general access to layer data.
-    return canAccessLayer(layerId)
-  }
-
-  fun canCreateLayerData(layerId: LayerId): Boolean {
-    return canAccessLayerData(layerId)
-  }
-
-  fun canReadLayerData(layerId: LayerId): Boolean {
-    return canAccessLayerData(layerId)
-  }
-
-  fun canUpdateLayerData(layerId: LayerId): Boolean {
-    return canAccessLayerData(layerId)
+  fun canCreateFeature(layerId: LayerId): Boolean {
+    return canUpdateLayer(layerId)
   }
 
   fun canReadFeature(featureId: FeatureId): Boolean {
     val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canReadLayerData(layerId)
+    return canReadLayer(layerId)
   }
 
   fun canUpdateFeature(featureId: FeatureId): Boolean {
     val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canUpdateLayerData(layerId)
+    return canUpdateLayer(layerId)
   }
 
   fun canDeleteFeature(featureId: FeatureId): Boolean {

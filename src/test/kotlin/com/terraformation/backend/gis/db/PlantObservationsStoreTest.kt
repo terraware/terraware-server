@@ -77,7 +77,7 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
     store = PlantObservationsStore(clock, plantsDao, observDao)
     every { clock.instant() } returns time1
     every { user.canReadFeature(any()) } returns true
-    every { user.canReadLayerData(any()) } returns true
+    every { user.canReadLayer(any()) } returns true
     every { user.canUpdateFeature(any()) } returns true
 
     insertSiteData()
