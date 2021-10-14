@@ -241,6 +241,10 @@ class UserModel(
     return organizationId in organizationRoles
   }
 
+  fun canReadProject(projectId: ProjectId): Boolean {
+    return projectId in projectRoles
+  }
+
   fun canUpdateProject(projectId: ProjectId): Boolean {
     val role = projectRoles[projectId]
     return role == Role.ADMIN || role == Role.OWNER
@@ -272,6 +276,10 @@ class UserModel(
       Role.OWNER, Role.ADMIN -> true
       else -> false
     }
+  }
+
+  fun canReadOrganization(organizationId: OrganizationId): Boolean {
+    return organizationId in organizationRoles
   }
 
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean {

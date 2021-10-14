@@ -282,6 +282,16 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `update fails with FeatureNotFoundException if user doesn't have read access`() {
+    val feature = store.createFeature(validCreateRequest)
+    every { user.canUpdateFeature(any()) } returns false
+    every { user.canReadFeature(any()) } returns false
+    assertThrows<FeatureNotFoundException> {
+      store.updateFeature(feature.copy(gpsHorizAccuracy = 18.0))
+    }
+  }
+
+  @Test
   fun `update fails with AccessDeniedException if user doesn't have update access`() {
     val feature = store.createFeature(validCreateRequest)
     every { user.canUpdateFeature(any()) } returns false

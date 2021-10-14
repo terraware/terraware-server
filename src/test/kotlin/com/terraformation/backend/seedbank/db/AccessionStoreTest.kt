@@ -1577,6 +1577,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create does not write to database if user does not have permission`() {
     every { user.canCreateAccession(facilityId) } returns false
+    every { user.canReadFacility(facilityId) } returns true
 
     assertThrows<AccessDeniedException> { store.create(AccessionModel(facilityId = facilityId)) }
   }

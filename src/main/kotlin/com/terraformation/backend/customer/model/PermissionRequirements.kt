@@ -3,8 +3,10 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
@@ -16,6 +18,7 @@ import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import org.springframework.security.access.AccessDeniedException
@@ -37,8 +40,7 @@ import org.springframework.security.access.AccessDeniedException
  * ## Exception behavior
  *
  * To ensure consistent behavior of the permission checks, the methods here should throw exceptions
- * using the following set of rules. (Note: Some of the existing code here hasn't been updated to
- * follow these rules yet, but new code should do so.)
+ * using the following set of rules.
  *
  * - Always throw the most specific exception class that describes the failure. For example, the
  * rules will say to throw [EntityNotFoundException] but you'd actually want to throw, e.g.,
@@ -82,6 +84,7 @@ import org.springframework.security.access.AccessDeniedException
 class PermissionRequirements(private val user: UserModel) {
   fun createAccession(facilityId: FacilityId) {
     if (!user.canCreateAccession(facilityId)) {
+      readFacility(facilityId)
       throw AccessDeniedException("No permission to create accessions in facility $facilityId")
     }
   }
@@ -94,48 +97,74 @@ class PermissionRequirements(private val user: UserModel) {
 
   fun updateAccession(accessionId: AccessionId) {
     if (!user.canUpdateAccession(accessionId)) {
+      readAccession(accessionId)
       throw AccessDeniedException("No permission to update accession $accessionId")
     }
   }
 
   fun createFacility(siteId: SiteId) {
     if (!user.canCreateFacility(siteId)) {
+      readSite(siteId)
       throw AccessDeniedException("No permission to create facilities in site $siteId")
+    }
+  }
+
+  fun readFacility(facilityId: FacilityId) {
+    if (!user.canReadFacility(facilityId)) {
+      throw FacilityNotFoundException(facilityId)
     }
   }
 
   fun createDevice(facilityId: FacilityId) {
     if (!user.canCreateDevice(facilityId)) {
+      readFacility(facilityId)
       throw AccessDeniedException("No permission to create device in facility $facilityId")
+    }
+  }
+
+  fun readDevice(deviceId: DeviceId) {
+    if (!user.canReadDevice(deviceId)) {
+      throw DeviceNotFoundException(deviceId)
     }
   }
 
   fun updateDevice(deviceId: DeviceId) {
     if (!user.canUpdateDevice(deviceId)) {
+      readDevice(deviceId)
       throw AccessDeniedException("No permission to update device $deviceId")
     }
   }
 
   fun createLayer(siteId: SiteId) {
     if (!user.canCreateLayer(siteId)) {
+      readSite(siteId)
       throw AccessDeniedException("No permission to create layer at site $siteId")
+    }
+  }
+
+  fun readLayer(layerId: LayerId) {
+    if (!user.canReadLayer(layerId)) {
+      throw LayerNotFoundException(layerId)
     }
   }
 
   fun updateLayer(layerId: LayerId) {
     if (!user.canUpdateLayer(layerId)) {
-      throw LayerNotFoundException(layerId)
+      readLayer(layerId)
+      throw AccessDeniedException("No permission to update layer $layerId")
     }
   }
 
   fun deleteLayer(layerId: LayerId) {
     if (!user.canDeleteLayer(layerId)) {
-      throw LayerNotFoundException(layerId)
+      readLayer(layerId)
+      throw AccessDeniedException("No permission to delete layer $layerId")
     }
   }
 
   fun createFeature(layerId: LayerId) {
     if (!user.canCreateFeature(layerId)) {
+      readLayer(layerId)
       throw AccessDeniedException("No permission to create feature in layer $layerId")
     }
   }
@@ -175,55 +204,82 @@ class PermissionRequirements(private val user: UserModel) {
 
   fun createSite(projectId: ProjectId) {
     if (!user.canCreateSite(projectId)) {
+      readProject(projectId)
       throw AccessDeniedException("No permission to create sites in project $projectId")
+    }
+  }
+
+  fun readSite(siteId: SiteId) {
+    if (!user.canReadSite(siteId)) {
+      throw SiteNotFoundException(siteId)
     }
   }
 
   fun createProject(organizationId: OrganizationId) {
     if (!user.canCreateProject(organizationId)) {
+      readOrganization(organizationId)
       throw AccessDeniedException(
           "No permission to create projects in organization $organizationId")
     }
   }
 
+  fun readProject(projectId: ProjectId) {
+    if (!user.canReadProject(projectId)) {
+      throw ProjectNotFoundException(projectId)
+    }
+  }
+
   fun listProjects(organizationId: OrganizationId) {
     if (!user.canListProjects(organizationId)) {
-      throw OrganizationNotFoundException(organizationId)
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to list projects in organization $organizationId")
     }
   }
 
   fun updateProject(projectId: ProjectId) {
     if (!user.canUpdateProject(projectId)) {
-      throw ProjectNotFoundException(projectId)
+      readProject(projectId)
+      throw AccessDeniedException("No permission to update project $projectId")
     }
   }
 
   fun addProjectUser(projectId: ProjectId) {
     if (!user.canAddProjectUser(projectId)) {
+      readProject(projectId)
       throw AccessDeniedException("No permission to add users to project $projectId")
     }
   }
 
   fun removeProjectUser(projectId: ProjectId) {
     if (!user.canRemoveProjectUser(projectId)) {
+      readProject(projectId)
       throw AccessDeniedException("No permission to remove users from project $projectId")
+    }
+  }
+
+  fun readOrganization(organizationId: OrganizationId) {
+    if (!user.canReadOrganization(organizationId)) {
+      throw OrganizationNotFoundException(organizationId)
     }
   }
 
   fun addOrganizationUser(organizationId: OrganizationId) {
     if (!user.canAddOrganizationUser(organizationId)) {
+      readOrganization(organizationId)
       throw AccessDeniedException("No permission to add users to organization $organizationId")
     }
   }
 
   fun removeOrganizationUser(organizationId: OrganizationId) {
     if (!user.canRemoveOrganizationUser(organizationId)) {
+      readOrganization(organizationId)
       throw AccessDeniedException("No permission to remove users from organization $organizationId")
     }
   }
 
   fun setOrganizationUserRole(organizationId: OrganizationId, role: Role) {
     if (!user.canSetOrganizationUserRole(organizationId, role)) {
+      readOrganization(organizationId)
       throw AccessDeniedException(
           "No permission to grant role to users in organization $organizationId")
     }
@@ -231,6 +287,7 @@ class PermissionRequirements(private val user: UserModel) {
 
   fun createApiKey(organizationId: OrganizationId) {
     if (!user.canCreateApiKey(organizationId)) {
+      readOrganization(organizationId)
       throw AccessDeniedException(
           "No permission to create API keys in organization $organizationId")
     }
@@ -238,6 +295,7 @@ class PermissionRequirements(private val user: UserModel) {
 
   fun deleteApiKey(organizationId: OrganizationId) {
     if (!user.canDeleteApiKey(organizationId)) {
+      readOrganization(organizationId)
       throw AccessDeniedException(
           "No permission to delete API keys from organization $organizationId")
     }
@@ -269,6 +327,7 @@ class PermissionRequirements(private val user: UserModel) {
 
   fun createTimeseries(deviceId: DeviceId) {
     if (!user.canCreateTimeseries(deviceId)) {
+      readDevice(deviceId)
       throw AccessDeniedException("No permission to create timeseries on device $deviceId")
     }
   }

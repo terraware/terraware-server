@@ -189,10 +189,20 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update fails with LayerNotFoundException if user doesn't have update permissions`() {
+  fun `update fails with LayerNotFoundException if user doesn't have read permission`() {
     val layer = store.createLayer(validCreateRequestModel)
     every { user.canUpdateLayer(any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertThrows<LayerNotFoundException> {
+      store.updateLayer(validCreateRequestModel.copy(id = layer.id))
+    }
+  }
+
+  @Test
+  fun `update fails with AccessDeniedException if user doesn't have update permission`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    every { user.canUpdateLayer(any()) } returns false
+    assertThrows<AccessDeniedException> {
       store.updateLayer(validCreateRequestModel.copy(id = layer.id))
     }
   }
@@ -258,10 +268,18 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `delete fails with LayerNotFoundException if user does not have permission`() {
+  fun `delete fails with LayerNotFoundException if user does not have read permission`() {
     val layer = store.createLayer(validCreateRequestModel)
     every { user.canDeleteLayer(any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertThrows<LayerNotFoundException> { store.deleteLayer(layer.id!!) }
+  }
+
+  @Test
+  fun `delete fails with AccessDeniedException if user does not have delete permission`() {
+    val layer = store.createLayer(validCreateRequestModel)
+    every { user.canDeleteLayer(any()) } returns false
+    assertThrows<AccessDeniedException> { store.deleteLayer(layer.id!!) }
     // record exists, user just didn't have permission to delete it
     assertEquals(store.fetchLayer(layer.id!!), layer)
   }

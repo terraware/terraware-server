@@ -56,6 +56,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
         DevicesRow(deviceId, facilityId, "device", "type", "make", "model", "protocol", "address"))
 
     every { user.canCreateTimeseries(any()) } returns true
+    every { user.canReadDevice(any()) } returns true
     every { user.canReadTimeseries(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
   }
