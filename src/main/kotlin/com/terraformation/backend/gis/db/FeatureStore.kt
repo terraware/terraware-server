@@ -46,7 +46,7 @@ class FeatureStore(
   private val log = perClassLogger()
 
   fun createFeature(model: FeatureModel): FeatureModel {
-    requirePermissions { createLayerData(model.layerId) }
+    requirePermissions { createFeature(model.layerId) }
 
     val currTime = clock.instant()
     val insertedRecord =
@@ -114,7 +114,7 @@ class FeatureStore(
   }
 
   fun countFeatures(id: LayerId): Int {
-    if (!currentUser().canReadLayerData(id)) {
+    if (!currentUser().canReadLayer(id)) {
       return 0
     }
 
@@ -128,7 +128,7 @@ class FeatureStore(
   }
 
   fun listFeatures(id: LayerId, skip: Int? = null, limit: Int? = null): List<FeatureModel> {
-    if (!currentUser().canReadLayerData(id)) {
+    if (!currentUser().canReadLayer(id)) {
       return emptyList()
     }
 

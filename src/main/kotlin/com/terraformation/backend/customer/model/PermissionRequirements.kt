@@ -20,6 +20,7 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.TimeseriesNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -161,10 +162,10 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
-  fun createLayerData(layerId: LayerId) {
-    if (!user.canCreateLayerData(layerId)) {
+  fun createFeature(layerId: LayerId) {
+    if (!user.canCreateFeature(layerId)) {
       readLayer(layerId)
-      throw AccessDeniedException("No permission to create data in layer $layerId")
+      throw AccessDeniedException("No permission to create feature in layer $layerId")
     }
   }
 
@@ -327,7 +328,20 @@ class PermissionRequirements(private val user: UserModel) {
   fun createTimeseries(deviceId: DeviceId) {
     if (!user.canCreateTimeseries(deviceId)) {
       readDevice(deviceId)
-      throw AccessDeniedException("No permission to create timeseries for device $deviceId")
+      throw AccessDeniedException("No permission to create timeseries on device $deviceId")
+    }
+  }
+
+  fun readTimeseries(deviceId: DeviceId) {
+    if (!user.canReadTimeseries(deviceId)) {
+      throw TimeseriesNotFoundException(deviceId)
+    }
+  }
+
+  fun updateTimeseries(deviceId: DeviceId) {
+    if (!user.canUpdateTimeseries(deviceId)) {
+      readTimeseries(deviceId)
+      throw AccessDeniedException("No permission to update timeseries on device $deviceId")
     }
   }
 }

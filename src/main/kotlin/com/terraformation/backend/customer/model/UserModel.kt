@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.DeviceId
@@ -16,11 +17,6 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
-import com.terraformation.backend.db.tables.daos.FeaturesDao
-import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.log.perClassLogger
 import java.security.Principal
 import org.springframework.security.core.GrantedAuthority
@@ -64,11 +60,7 @@ class UserModel(
     val firstName: String?,
     val lastName: String?,
     val userType: UserType,
-    private val accessionsDao: AccessionsDao,
-    private val devicesDao: DevicesDao,
-    private val featurePhotosDao: FeaturePhotosDao,
-    private val featuresDao: FeaturesDao,
-    private val layersDao: LayersDao,
+    private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
 ) : UserDetails, Principal {
   /** The user's role in each organization they belong to. */
@@ -131,7 +123,7 @@ class UserModel(
   }
 
   fun canReadAccession(accessionId: AccessionId): Boolean {
-    val facilityId = accessionsDao.fetchOneById(accessionId)?.facilityId ?: return false
+    val facilityId = parentStore.getFacilityId(accessionId) ?: return false
 
     // All users in a project can read all accessions in the project's facilities.
     return facilityId in facilityRoles
@@ -166,19 +158,19 @@ class UserModel(
   fun canReadDevice(deviceId: DeviceId): Boolean {
     // Any user with access to the facility can read a device.
     // TODO: Revisit this once we can set roles on API clients (settings may contain sensitive data)
-    val facilityId = devicesDao.fetchOneById(deviceId)?.facilityId ?: return false
+    val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
   }
 
   fun canUpdateDevice(deviceId: DeviceId): Boolean {
     // TODO: Revisit this once we can set roles on API clients
-    val facilityId = devicesDao.fetchOneById(deviceId)?.facilityId ?: return false
+    val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
   }
 
   private fun canAccessLayer(layerId: LayerId): Boolean {
     // Any user who has access to a site can access all its layers
-    val siteId = layersDao.fetchOneById(layerId)?.siteId ?: return false
+    val siteId = parentStore.getSiteId(layerId) ?: return false
     return siteId in siteRoles
   }
 
@@ -198,34 +190,18 @@ class UserModel(
     return canAccessLayer(layerId)
   }
 
-  // "Layer data" refers to all tables that directly or indirectly references layers.
-  // You can also think of it as all data that belongs "inside" a layer.
-  private fun canAccessLayerData(layerId: LayerId): Boolean {
-    // Currently, all gis data is lumped into one permission. In the future, permission
-    // to create/update layers may be separated from general access to layer data.
-    return canAccessLayer(layerId)
-  }
-
-  fun canCreateLayerData(layerId: LayerId): Boolean {
-    return canAccessLayerData(layerId)
-  }
-
-  fun canReadLayerData(layerId: LayerId): Boolean {
-    return canAccessLayerData(layerId)
-  }
-
-  fun canUpdateLayerData(layerId: LayerId): Boolean {
-    return canAccessLayerData(layerId)
+  fun canCreateFeature(layerId: LayerId): Boolean {
+    return canUpdateLayer(layerId)
   }
 
   fun canReadFeature(featureId: FeatureId): Boolean {
-    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canReadLayerData(layerId)
+    val layerId = parentStore.getLayerId(featureId) ?: return false
+    return canReadLayer(layerId)
   }
 
   fun canUpdateFeature(featureId: FeatureId): Boolean {
-    val layerId = featuresDao.fetchOneById(featureId)?.layerId ?: return false
-    return canUpdateLayerData(layerId)
+    val layerId = parentStore.getLayerId(featureId) ?: return false
+    return canUpdateLayer(layerId)
   }
 
   fun canDeleteFeature(featureId: FeatureId): Boolean {
@@ -233,12 +209,12 @@ class UserModel(
   }
 
   fun canReadFeaturePhoto(photoId: PhotoId): Boolean {
-    val featureId = featurePhotosDao.fetchOneByPhotoId(photoId)?.featureId ?: return false
+    val featureId = parentStore.getFeatureId(photoId) ?: return false
     return canReadFeature(featureId)
   }
 
   fun canDeleteFeaturePhoto(photoId: PhotoId): Boolean {
-    val featureId = featurePhotosDao.fetchOneByPhotoId(photoId)?.featureId ?: return false
+    val featureId = parentStore.getFeatureId(photoId) ?: return false
     return canUpdateFeature(featureId)
   }
 
@@ -337,7 +313,7 @@ class UserModel(
   fun canCreateFamily(): Boolean = canCreateSpecies()
 
   fun canCreateTimeseries(deviceId: DeviceId): Boolean {
-    val facilityId = devicesDao.fetchOneById(deviceId)?.facilityId ?: return false
+    val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
   }
 

@@ -76,7 +76,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
             clock, dslContext, featuresDao, postgresFuzzySearchOperators, plantsDao, speciesDao)
     every { clock.instant() } returns time1
     every { user.canReadFeature(any()) } returns true
-    every { user.canReadLayerData(any()) } returns true
+    every { user.canReadLayer(any()) } returns true
     every { user.canUpdateFeature(any()) } returns true
 
     insertSiteData()
@@ -336,7 +336,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchPlantsList returns empty list when user doesn't have read permission`() {
     insertSeveralPlants(speciesIdsToCount)
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     assertEquals(emptyList<FetchPlantListResult>(), store.fetchPlantsList(layerId))
   }
 
@@ -388,7 +388,7 @@ internal class PlantStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchPlantSummary returns an empty map if user doesn't have permission to read layer data`() {
-    every { user.canReadLayerData(layerId = any()) } returns false
+    every { user.canReadLayer(any()) } returns false
     insertSeveralPlants(speciesIdsToCount)
     assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId))
   }

@@ -16,13 +16,17 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @DeviceManagerAppEndpoint
-@RequestMapping("/api/v1/seedbank/timeseries")
+@RequestMapping(
+    "/api/v1/timeseries",
+    // TODO: Remove the following once the device manager is updated to use /api/v1/timeseries
+    "/api/v1/seedbank/timeseries")
 @RestController
 class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
   private val log = perClassLogger()
@@ -52,38 +56,56 @@ class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
   fun recordTimeseriesValues(
       @RequestBody payload: RecordTimeseriesValuesRequestPayload
   ): RecordTimeseriesValuesResponsePayload {
-    val failures = mutableListOf<TimeseriesValuesPayload>()
+    val errors = mutableListOf<TimeseriesValuesErrorPayload>()
+
     payload.timeseries.forEach { valuesEntry ->
-      val timeseriesRow =
-          timeSeriesStore.fetchOneByName(valuesEntry.deviceId, valuesEntry.timeseriesName)
+      val timeseriesName = valuesEntry.timeseriesName
+      val deviceId = valuesEntry.deviceId
+      val timeseriesRow = timeSeriesStore.fetchOneByName(deviceId, timeseriesName)
       val timeseriesId = timeseriesRow?.id
 
       if (timeseriesId == null) {
-        log.error(
-            "Timeseries ${valuesEntry.timeseriesName} for device ${valuesEntry.deviceId} not " +
-                "found or no permission")
-        failures.add(valuesEntry)
+        log.error("Timeseries $timeseriesName for device $deviceId not found or no permission")
+        errors.add(
+            TimeseriesValuesErrorPayload(
+                deviceId, timeseriesName, valuesEntry.values, "Timeseries not found"))
       } else {
-        val failedValues = mutableListOf<TimeseriesValuePayload>()
+        // Group failures by error message.
+        val failures = mutableMapOf<String, MutableList<TimeseriesValuePayload>>()
+
         valuesEntry.values.forEach { valueEntry ->
+          val timestamp = valueEntry.timestamp
           try {
-            timeSeriesStore.insertValue(timeseriesId, valueEntry.value, valueEntry.timestamp)
+            timeSeriesStore.insertValue(deviceId, timeseriesId, valueEntry.value, timestamp)
           } catch (e: Exception) {
-            log.error("Failed to insert value ${valueEntry.value} for timeseries $timeseriesId", e)
-            failedValues.add(valueEntry)
+            val message =
+                when (e) {
+                  is DuplicateKeyException -> {
+                    log.info("Duplicate value for timeseries $timeseriesId timestamp $timestamp")
+                    "Already have a value with this timestamp"
+                  }
+                  else -> {
+                    log.error(
+                        "Failed to insert value ${valueEntry.value} for timeseries $timeseriesId",
+                        e)
+                    "Unexpected error while saving value"
+                  }
+                }
+
+            failures.computeIfAbsent(message) { mutableListOf() }.add(valueEntry)
           }
         }
 
-        if (failedValues.isNotEmpty()) {
-          failures.add(valuesEntry.copy(values = failedValues))
+        failures.forEach { (message, values) ->
+          errors.add(TimeseriesValuesErrorPayload(deviceId, timeseriesName, values, message))
         }
       }
     }
 
-    return if (failures.isEmpty()) {
+    return if (errors.isEmpty()) {
       RecordTimeseriesValuesResponsePayload()
     } else {
-      RecordTimeseriesValuesResponsePayload(failures)
+      RecordTimeseriesValuesResponsePayload(errors)
     }
   }
 }
@@ -114,11 +136,30 @@ data class CreateTimeseriesEntry(
       )
 }
 
+data class TimeseriesValuesErrorPayload(
+    @Schema(
+        description = "Device ID as specified in the failing request.",
+    )
+    val deviceId: DeviceId,
+    @Schema(description = "Name of timeseries as specified in the failing request.")
+    val timeseriesName: String,
+    @Schema(description = "Values that the server was not able to successfully record.")
+    val values: List<TimeseriesValuePayload>,
+    @Schema(
+        description = "Human-readable details about the failure.",
+    )
+    val message: String,
+)
+
 data class TimeseriesValuesPayload(
-    @Schema(description = "ID of device that produced this value.") val deviceId: DeviceId,
+    @Schema(
+        description = "ID of device that produced this value.",
+    )
+    val deviceId: DeviceId,
     @Schema(
         description =
-            "Name of timeseries. This must be the name of a timeseries that has already been created for the device.")
+            "Name of timeseries. This must be the name of a timeseries that has already been " +
+                "created for the device.")
     val timeseriesName: String,
     val values: List<TimeseriesValuePayload>
 )
@@ -144,13 +185,13 @@ data class RecordTimeseriesValuesResponsePayload(
         description =
             "List of values that the server failed to record. Will not be included if all the " +
                 "values were recorded successfully.")
-    val failures: List<TimeseriesValuesPayload>?,
+    val failures: List<TimeseriesValuesErrorPayload>?,
     override val status: SuccessOrError,
     val error: ErrorDetails?
 ) : ResponsePayload {
   constructor() : this(null, SuccessOrError.Ok, null)
   constructor(
-      failures: List<TimeseriesValuesPayload>
+      failures: List<TimeseriesValuesErrorPayload>
   ) : this(
       failures,
       SuccessOrError.Error,

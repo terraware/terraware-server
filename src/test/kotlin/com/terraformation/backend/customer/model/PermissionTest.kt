@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.AccessionId
@@ -18,9 +19,6 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
-import com.terraformation.backend.db.tables.daos.FeaturesDao
-import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
@@ -102,9 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired
 internal class PermissionTest : DatabaseTest() {
   private lateinit var accessionsDao: AccessionsDao
   private lateinit var devicesDao: DevicesDao
-  private lateinit var featurePhotosDao: FeaturePhotosDao
-  private lateinit var featuresDao: FeaturesDao
-  private lateinit var layersDao: LayersDao
+  private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
   private lateinit var usersDao: UsersDao
   private lateinit var userStore: UserStore
@@ -139,24 +135,18 @@ internal class PermissionTest : DatabaseTest() {
     val jooqConfig = dslContext.configuration()
     accessionsDao = AccessionsDao(jooqConfig)
     devicesDao = DevicesDao(jooqConfig)
-    featurePhotosDao = FeaturePhotosDao(jooqConfig)
-    featuresDao = FeaturesDao(jooqConfig)
-    layersDao = LayersDao(jooqConfig)
+    parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
     usersDao = UsersDao(jooqConfig)
     userStore =
         UserStore(
-            accessionsDao,
             clock,
             config,
-            devicesDao,
-            featurePhotosDao,
-            featuresDao,
             mockk(),
             mockk(),
-            layersDao,
             mockk(),
             mockk(),
+            parentStore,
             permissionStore,
             realmResource,
             usersDao)
@@ -244,8 +234,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -372,8 +361,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -384,6 +372,13 @@ internal class PermissionTest : DatabaseTest() {
         updateFeature = true,
         deleteFeature = true,
     )
+
+    permissions.expect(
+        PhotoId(10010),
+        PhotoId(11000),
+        PhotoId(11001),
+        readFeaturePhoto = true,
+        deleteFeaturePhoto = true)
 
     permissions.expect(
         PhotoId(10010),
@@ -467,8 +462,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -537,8 +531,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -616,8 +609,7 @@ internal class PermissionTest : DatabaseTest() {
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
-        createLayerData = true,
-        updateLayerData = true,
+        createFeature = true,
     )
 
     permissions.expect(
@@ -877,21 +869,16 @@ internal class PermissionTest : DatabaseTest() {
         readLayer: Boolean = false,
         updateLayer: Boolean = false,
         deleteLayer: Boolean = false,
-        createLayerData: Boolean = false,
-        updateLayerData: Boolean = false,
+        createFeature: Boolean = false,
     ) {
       layers.forEach { layerId ->
         assertEquals(readLayer, user.canReadLayer(layerId), "Can read layer $layerId")
         assertEquals(updateLayer, user.canUpdateLayer(layerId), "Can update layer $layerId")
         assertEquals(deleteLayer, user.canDeleteLayer(layerId), "Can delete layer $layerId")
         assertEquals(
-            createLayerData,
-            user.canCreateLayerData(layerId),
-            "Can create layer data associated with layer $layerId")
-        assertEquals(
-            updateLayerData,
-            user.canUpdateLayerData(layerId),
-            "Can update layer data associated with layer $layerId")
+            createFeature,
+            user.canCreateFeature(layerId),
+            "Can create feature associated with layer $layerId")
 
         uncheckedLayers.remove(layerId)
       }

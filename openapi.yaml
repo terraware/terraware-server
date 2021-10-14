@@ -1557,7 +1557,7 @@ paths:
       tags:
       - DeviceManager
       summary: Records new values for one or more timeseries.
-      operationId: recordTimeseriesValues
+      operationId: recordTimeseriesValues_1
       requestBody:
         content:
           application/json:
@@ -2035,6 +2035,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/timeseries/create:
+    post:
+      tags:
+      - DeviceManager
+      summary: Defines a list of timeseries for one or more devices.
+      description: "If there are existing timeseries with the same names, the old\
+        \ definitions will be overwritten."
+      operationId: createMultipleTimeseries_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTimeseriesRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/timeseries/values:
+    post:
+      tags:
+      - DeviceManager
+      summary: Records new values for one or more timeseries.
+      operationId: recordTimeseriesValues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordTimeseriesValuesRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: "Successfully processed the request. Note that this status\
+            \ will be returned even if the server was unable to record some of the\
+            \ values. In that case, the failed values will be returned in the response\
+            \ payload."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordTimeseriesValuesResponsePayload'
 components:
   schemas:
     AccessionPayload:
@@ -4002,7 +4045,7 @@ components:
           description: List of values that the server failed to record. Will not be
             included if all the values were recorded successfully.
           items:
-            $ref: '#/components/schemas/TimeseriesValuesPayload'
+            $ref: '#/components/schemas/TimeseriesValuesErrorPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
         error:
@@ -4664,6 +4707,31 @@ components:
           description: "Value to record. If the timeseries is of type Numeric, this\
             \ must be a decimal or integer value in string form. If the timeseries\
             \ is of type Text, this can be an arbitrary string."
+    TimeseriesValuesErrorPayload:
+      required:
+      - deviceId
+      - message
+      - timeseriesName
+      - values
+      type: object
+      properties:
+        deviceId:
+          type: integer
+          description: Device ID as specified in the failing request.
+          format: int64
+        timeseriesName:
+          type: string
+          description: Name of timeseries as specified in the failing request.
+        values:
+          type: array
+          description: Values that the server was not able to successfully record.
+          items:
+            $ref: '#/components/schemas/TimeseriesValuePayload'
+        message:
+          type: string
+          description: Human-readable details about the failure.
+      description: List of values that the server failed to record. Will not be included
+        if all the values were recorded successfully.
     TimeseriesValuesPayload:
       required:
       - deviceId

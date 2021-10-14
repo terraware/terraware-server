@@ -15,11 +15,6 @@ import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
-import com.terraformation.backend.db.tables.daos.FeaturesDao
-import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.log.perClassLogger
@@ -61,17 +56,13 @@ import org.springframework.http.HttpStatus
  */
 @ManagedBean
 class UserStore(
-    private val accessionsDao: AccessionsDao,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
-    private val devicesDao: DevicesDao,
-    private val featurePhotosDao: FeaturePhotosDao,
-    private val featuresDao: FeaturesDao,
     private val httpClient: HttpClient,
     private val keycloakProperties: KeycloakSpringBootProperties,
-    private val layersDao: LayersDao,
     private val objectMapper: ObjectMapper,
     private val organizationStore: OrganizationStore,
+    private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
     realmResource: RealmResource,
     private val usersDao: UsersDao,
@@ -436,11 +427,7 @@ class UserStore(
         usersRow.firstName,
         usersRow.lastName,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
-        accessionsDao,
-        devicesDao,
-        featurePhotosDao,
-        featuresDao,
-        layersDao,
+        parentStore,
         permissionStore,
     )
   }
