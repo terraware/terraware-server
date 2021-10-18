@@ -65,13 +65,13 @@ interface SearchField {
   val selectFields: List<Field<*>>
 
   /**
-   * Which values are used when the query results are ordered by this field. Most of the time this
-   * is the same as [selectFields] and the default implementation delegates to that value, but for
-   * fields with computed values, the "field" here may be an expression rather than a simple column
-   * name.
+   * Which value is used when the query results are ordered by this field. Most of the time this is
+   * the same as the first element of [selectFields] and the default implementation delegates to
+   * that value, but for fields with computed values, the "field" here may be an expression rather
+   * than a simple column name. If the field is a compound value from multiple database columns,
+   * this should combine them into a single computed field that can be used for sorting.
    */
-  val orderByFields: List<Field<*>>
-    get() = selectFields
+  val orderByField: Field<*>
 
   /**
    * Which kinds of filters are allowed for this field. For example, it makes no sense to support
@@ -123,6 +123,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
         UpperCaseTextField("accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
         ActiveField("active", "Active"),
         TextField("bagNumber", "Bag number", BAGS.BAG_NUMBER, SearchTables.Bag),
+        TextField("bags.number", "Bag number", BAGS.BAG_NUMBER, SearchTables.Bag),
         TimestampField("checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
         DateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
         TextField("collectionNotes", "Notes (collection)", ACCESSIONS.ENVIRONMENTAL_NOTES),
@@ -188,6 +189,61 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             SearchTables.GerminationTest),
         EnumField.create(
             "germinationTestType",
+            "Germination test type",
+            GERMINATION_TESTS.TEST_TYPE,
+            SearchTables.GerminationTest),
+        DateField(
+            "germinationTests.endDate",
+            "Germination end date",
+            GERMINATION_TESTS.END_DATE,
+            SearchTables.GerminationTest),
+        DateField(
+            "germinationTests.germinations.recordingDate",
+            "Recording date of germination test result",
+            GERMINATIONS.RECORDING_DATE,
+            SearchTables.Germination),
+        IntegerField(
+            "germinationTests.germinations.seedsGerminated",
+            "Number of seeds germinated",
+            GERMINATIONS.SEEDS_GERMINATED,
+            SearchTables.Germination),
+        TextField(
+            "germinationTests.notes",
+            "Notes (germination test)",
+            GERMINATION_TESTS.NOTES,
+            SearchTables.GerminationTest),
+        IntegerField(
+            "germinationTests.percentGerminated",
+            "% Viability",
+            GERMINATION_TESTS.TOTAL_PERCENT_GERMINATED,
+            SearchTables.GerminationTest),
+        EnumField.create(
+            "germinationTests.seedType",
+            "Seed type",
+            GERMINATION_TESTS.SEED_TYPE_ID,
+            SearchTables.GerminationTest),
+        IntegerField(
+            "germinationTests.seedsSown",
+            "Number of seeds sown",
+            GERMINATION_TESTS.SEEDS_SOWN,
+            SearchTables.GerminationTest),
+        DateField(
+            "germinationTests.startDate",
+            "Germination start date",
+            GERMINATION_TESTS.START_DATE,
+            SearchTables.GerminationTest),
+        EnumField.create(
+            "germinationTests.substrate",
+            "Germination substrate",
+            GERMINATION_TESTS.SUBSTRATE_ID,
+            SearchTables.GerminationTest),
+        EnumField.create(
+            "germinationTests.treatment",
+            "Germination treatment",
+            GERMINATION_TESTS.TREATMENT_ID,
+            SearchTables.GerminationTest),
+        EnumField.create(
+            "germinationTests.type",
             "Germination test type",
             GERMINATION_TESTS.TEST_TYPE,
             SearchTables.GerminationTest),
@@ -293,6 +349,47 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
             "Units of measurement of quantity withdrawn",
             WITHDRAWALS.WITHDRAWN_UNITS_ID,
             SearchTables.Withdrawal),
+        DateField(
+            "withdrawals.date", "Date of withdrawal", WITHDRAWALS.DATE, SearchTables.Withdrawal),
+        TextField(
+            "withdrawals.destination",
+            "Destination",
+            WITHDRAWALS.DESTINATION,
+            SearchTables.Withdrawal),
+        GramsField(
+            "withdrawals.grams",
+            "Weight of seeds withdrawn (g)",
+            WITHDRAWALS.WITHDRAWN_GRAMS,
+            SearchTables.Withdrawal),
+        TextField(
+            "withdrawals.notes", "Notes (withdrawal)", WITHDRAWALS.NOTES, SearchTables.Withdrawal),
+        EnumField.create(
+            "withdrawals.purpose", "Purpose", WITHDRAWALS.PURPOSE_ID, SearchTables.Withdrawal),
+        BigDecimalField(
+            "withdrawals.quantity",
+            "Quantity of seeds withdrawn",
+            WITHDRAWALS.WITHDRAWN_QUANTITY,
+            SearchTables.Withdrawal),
+        GramsField(
+            "withdrawals.remainingGrams",
+            "Weight in grams of seeds remaining (withdrawal)",
+            WITHDRAWALS.REMAINING_GRAMS,
+            SearchTables.Withdrawal),
+        GramsField(
+            "withdrawals.remainingQuantity",
+            "Weight or count of seeds remaining (withdrawal)",
+            WITHDRAWALS.REMAINING_GRAMS,
+            SearchTables.Withdrawal),
+        EnumField.create(
+            "withdrawals.remainingUnits",
+            "Units of measurement of quantity remaining (withdrawal)",
+            WITHDRAWALS.REMAINING_UNITS_ID,
+            SearchTables.Withdrawal),
+        EnumField.create(
+            "withdrawals.units",
+            "Units of measurement of quantity withdrawn",
+            WITHDRAWALS.WITHDRAWN_UNITS_ID,
+            SearchTables.Withdrawal),
     )
   }
 
@@ -306,6 +403,9 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
     override val selectFields: List<Field<*>>
       get() = listOf(databaseField)
+
+    override val orderByField: Field<*>
+      get() = databaseField
 
     override fun getConditions(fieldNode: FieldNode) = listOfNotNull(getCondition(fieldNode))
 
@@ -399,11 +499,10 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       return record[ACCESSIONS.STATE_ID]?.toActiveEnum()?.toString()
     }
 
-    override val orderByFields: List<Field<*>>
+    override val orderByField: Field<*>
       get() =
-          listOf(
-              DSL.case_(ACCESSIONS.STATE_ID)
-                  .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" }))
+          DSL.case_(ACCESSIONS.STATE_ID)
+              .mapValues(AccessionState.values().associateWith { "${it?.toActiveEnum()}" })
 
     override fun toString() = fieldName
     override fun hashCode() = fieldName.hashCode()
@@ -512,10 +611,10 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
               if (fieldNode.values.any { it == null }) databaseField.isNull else null))
     }
 
-    override val orderByFields: List<Field<*>>
+    override val orderByField: Field<*>
       get() {
         val displayNames = enumClass.enumConstants!!.associateWith { it.displayName }
-        return listOf(DSL.case_(databaseField).mapValues(displayNames))
+        return DSL.case_(databaseField).mapValues(displayNames)
       }
 
     override fun computeValue(record: Record) = record[databaseField]?.displayName
@@ -549,6 +648,9 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
 
     override val selectFields: List<Field<*>>
       get() = listOf(latitudeField, longitudeField)
+
+    override val orderByField: Field<*>
+      get() = DSL.jsonbArray(latitudeField, longitudeField)
 
     override fun getConditions(fieldNode: FieldNode): List<Condition> {
       throw IllegalArgumentException("Filters not supported for geolocation")

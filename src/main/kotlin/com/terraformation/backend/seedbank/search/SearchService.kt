@@ -1,13 +1,15 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.seedbank.search.SearchTables.Germination.dependsOn
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record
+import org.jooq.Record1
+import org.jooq.Select
 import org.jooq.SelectJoinStep
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
@@ -26,6 +28,23 @@ import org.jooq.impl.DSL
 @ManagedBean
 class SearchService(private val dslContext: DSLContext, private val searchFields: SearchFields) {
   private val log = perClassLogger()
+
+  /** Returns a query that selects the IDs of accessions that match a list of filter criteria. */
+  private fun selectAccessionIds(
+      facilityId: FacilityId,
+      criteria: SearchNode
+  ): Select<Record1<AccessionId?>> {
+    // Filter out results the user doesn't have permission to see.
+    val conditions =
+        criteria
+            .toCondition()
+            .and(SearchTables.Accession.conditionForPermissions())
+            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
+
+    return joinWithSecondaryTables(
+            DSL.select(ACCESSIONS.ID).from(ACCESSIONS), emptyList(), criteria)
+        .where(conditions)
+  }
 
   /**
    * Queries the values of a list of fields on accessions that match a list of filter criteria.
@@ -50,28 +69,12 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
           searchFields[it] ?: throw IllegalArgumentException("Unknown field name $it")
         }
 
-    // A SearchField might map to multiple database columns (e.g., geolocation is a composite of
-    // latitude and longitude).
-    val databaseFields = fieldObjects.flatMap { it.selectFields }.toSet()
+    val queryBuilder = NestedQueryBuilder(dslContext)
+    queryBuilder.addSelectFields(fieldObjects)
+    queryBuilder.addSortFields(sortOrder)
+    queryBuilder.addCondition(ACCESSIONS.ID.`in`(selectAccessionIds(facilityId, criteria)))
 
-    // Filter out results the user doesn't have permission to see.
-    val conditions =
-        criteria
-            .toCondition()
-            .and(SearchTables.Accession.conditionForPermissions())
-            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
-
-    val orderBy =
-        sortOrder.flatMap { sortOrderElement ->
-          when (sortOrderElement.direction) {
-            SearchDirection.Ascending -> sortOrderElement.field.orderByFields
-            SearchDirection.Descending -> sortOrderElement.field.orderByFields.map { it.desc() }
-          }
-        } + listOf(ACCESSIONS.NUMBER, ACCESSIONS.ID)
-
-    var query: SelectJoinStep<out Record> = dslContext.select(databaseFields).from(ACCESSIONS)
-
-    query = joinWithSecondaryTables(query, fields, criteria, sortOrder)
+    val query = queryBuilder.toSelectQuery()
 
     // TODO: Better cursor support. Should remember the most recent values of the sort fields
     //       and pass them to skip(). For now, just treat the cursor as an offset.
@@ -79,38 +82,21 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     // Query one more row than the limit so we can tell the client whether or not there are
     // additional pages of results.
-    val orderedQuery = query.where(conditions).orderBy(orderBy)
-    val fullQuery =
+    val queryWithLimit =
         if (limit < Int.MAX_VALUE) {
-          orderedQuery.limit(limit + 1).offset(offset)
+          query.limit(limit + 1).offset(offset)
         } else {
-          orderedQuery
+          query
         }
 
     log.debug("search criteria: fields=$fields criteria=$criteria sort=$sortOrder")
-    log.debug("search SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
+    log.debug("search SQL query: ${queryWithLimit.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
-    val records = fullQuery.fetch()
+    val results = queryWithLimit.fetch(queryBuilder::convertToMap)
 
     val endTime = System.currentTimeMillis()
-    log.debug("search query returned ${records.size} rows in ${endTime - startTime} ms")
-
-    val results =
-        records.map { record ->
-          fieldObjects
-              .mapNotNull { field ->
-                // There can be field-specific logic for rendering column values as strings,
-                // e.g., geolocation includes both latitude and longitude.
-                val value = field.computeValue(record)
-                if (value != null) {
-                  field.fieldName to value
-                } else {
-                  null
-                }
-              }
-              .toMap()
-        }
+    log.debug("search query returned ${results.size} rows in ${endTime - startTime} ms")
 
     val newCursor =
         if (results.size > limit) {
@@ -134,10 +120,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    */
   fun fetchValues(field: SearchField, criteria: SearchNode, limit: Int = 50): List<String?> {
     val selectFields =
-        field.selectFields +
-            field.orderByFields.mapIndexed { index, orderByField ->
-              orderByField.`as`(DSL.field("field$index"))
-            }
+        field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
 
     var query: SelectJoinStep<out Record> = dslContext.selectDistinct(selectFields).from(ACCESSIONS)
 
@@ -148,10 +131,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val fullQuery =
         query
             .where(conditions)
-            .orderBy(
-                field.orderByFields.mapIndexed { index, _ ->
-                  DSL.field("field$index").asc().nullsLast()
-                })
+            .orderBy(DSL.field("order_by_field").asc().nullsLast())
             .limit(limit + 1)
 
     log.debug("fetchFieldValues ${field.fieldName} criteria $criteria")
@@ -195,10 +175,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
   private fun queryAllValues(field: SearchField, limit: Int): List<String> {
     val selectFields =
-        field.selectFields +
-            field.orderByFields.mapIndexed { index, orderByField ->
-              orderByField.`as`(DSL.field("field$index"))
-            }
+        field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
 
     val permsCondition = field.table.conditionForPermissions()
 
@@ -208,11 +185,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
             .from(field.table.fromTable)
             .let { field.table.joinForPermissions(it) }
             .let { if (permsCondition != null) it.where(permsCondition) else it }
-            .orderBy(
-                field.orderByFields.mapIndexed { index, _ ->
-                  DSL.field("field$index").asc().nullsLast()
-                },
-            )
+            .orderBy(DSL.field("order_by_field").asc().nullsLast())
             .limit(limit + 1)
 
     log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
@@ -228,21 +201,18 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * This handles indirect references; if a field is in a table that is two foreign-key hops away
    * from `accession`, the intermediate table is included here too.
    */
-  private fun joinWithSecondaryTables(
-      selectFrom: SelectJoinStep<out Record>,
+  private fun <T : Record> joinWithSecondaryTables(
+      selectFrom: SelectJoinStep<T>,
       fields: List<SearchField>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList()
-  ): SelectJoinStep<out Record> {
+  ): SelectJoinStep<T> {
     var query = selectFrom
     val directlyReferencedTables =
         fields.map { it.table }.toSet() +
             criteria.referencedTables() +
             sortOrder.map { it.field.table }.toSet()
-    val dependencyTables =
-        directlyReferencedTables.flatMap { it.dependsOn() }.toSet() - directlyReferencedTables
 
-    dependencyTables.forEach { table -> query = table.leftJoinWithAccession(query) }
     directlyReferencedTables.forEach { table -> query = table.leftJoinWithAccession(query) }
     return query
   }
@@ -254,8 +224,10 @@ data class SearchResults(
      * List of results containing the fields specified by the caller. Each element of the list is a
      * map of field name to non-null value. If an accession does not have a value for a particular
      * field, it is omitted from the map.
+     *
+     * Each value is either `String` or `List<Map<String, Any>>`.
      */
-    val results: List<Map<String, String>>,
+    val results: List<Map<String, Any>>,
 
     /**
      * Cursor that can be passed to [SearchService.search] to retrieve additional results. If

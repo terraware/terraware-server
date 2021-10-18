@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import org.jooq.Condition
+import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.Table
@@ -37,7 +38,7 @@ interface SearchTable {
    * Adds a LEFT JOIN clause to a query to connect this table to the accession table. The
    * implementation can assume that the accession table is already present in the SELECT statement.
    */
-  fun leftJoinWithAccession(query: SelectJoinStep<out Record>): SelectJoinStep<out Record>
+  fun <T : Record> leftJoinWithAccession(query: SelectJoinStep<T>): SelectJoinStep<T>
 
   /**
    * Adds a LEFT JOIN clause to a query to connect this table to any other tables required to filter
@@ -50,7 +51,7 @@ interface SearchTable {
    * already, e.g., if a table has a facility ID column, there's no need to join with another table
    * to get a facility ID.
    */
-  fun joinForPermissions(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> = query
+  fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> = query
 
   /**
    * Returns a condition that restricts this table's values to ones the user has permission to see.
@@ -62,16 +63,33 @@ interface SearchTable {
   fun conditionForPermissions(): Condition?
 
   /**
-   * Returns a set of intermediate tables that need to be joined in order to connect this table to
-   * the accession table. This supports multi-step chains of foreign keys. For example, if table
+   * An intermediate table that needs to be joined with this one in order to connect this table to
+   * the accessions table. This supports multi-step chains of foreign keys. For example, if table
    * `foo` has a foreign key column `accession_id` and table `bar` has a foreign key `foo_id`, a
    * query that wants to get a column from `bar` would need to also join with `foo`. In that case,
    * this method would return the [SearchTable] for `foo`.
    *
-   * The default implementation returns an empty set, suitable for tables that can be directly
-   * joined with the accession table.
+   * This should be null (the default) for children that can be directly joined with the accessions
+   * table.
    */
-  fun dependsOn(): Set<SearchTable> = emptySet()
+  val parent: SearchTable?
+    get() = null
+
+  /**
+   * Returns a condition to add to the `WHERE` clause of a multiset subquery to correlate it with
+   * the current row from the parent table.
+   */
+  fun conditionForMultiset(): Condition?
+
+  /**
+   * Returns the default fields to sort on. These are always included when querying the table; if
+   * there are user-supplied sort criteria, these come at the end. This allows us to return stable
+   * query results if the user-requested sort fields have duplicate values.
+   */
+  val defaultOrderFields: List<OrderField<*>>
+    get() =
+        fromTable.primaryKey?.fields
+            ?: throw IllegalStateException("BUG! No primary key fields found for $fromTable")
 }
 
 /**
@@ -79,24 +97,27 @@ interface SearchTable {
  * foreign key column pointing to the accession table, and hence have a many-to-one relationship
  * with accessions.
  *
- * @param idField The field that contains the accession ID.
+ * @param accessionIdField The field that contains the accession ID.
  */
-abstract class AccessionChildTable(private val idField: TableField<*, AccessionId?>) : SearchTable {
+abstract class AccessionChildTable(private val accessionIdField: TableField<*, AccessionId?>) :
+    SearchTable {
   override val fromTable
-    get() = idField.table!!
+    get() = accessionIdField.table!!
 
-  override fun leftJoinWithAccession(
-      query: SelectJoinStep<out Record>
-  ): SelectJoinStep<out Record> {
-    return query.leftJoin(idField.table!!).on(idField.eq(ACCESSIONS.ID))
+  override fun <T : Record> leftJoinWithAccession(query: SelectJoinStep<T>): SelectJoinStep<T> {
+    return query.leftJoin(accessionIdField.table!!).on(accessionIdField.eq(ACCESSIONS.ID))
   }
 
-  override fun joinForPermissions(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> {
-    return query.join(ACCESSIONS).on(idField.eq(ACCESSIONS.ID))
+  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+    return query.join(ACCESSIONS).on(accessionIdField.eq(ACCESSIONS.ID))
   }
 
   override fun conditionForPermissions(): Condition? {
     return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+  }
+
+  override fun conditionForMultiset(): Condition? {
+    return accessionIdField.eq(ACCESSIONS.ID)
   }
 }
 
@@ -118,13 +139,13 @@ abstract class AccessionParentTable<T>(
   override val fromTable
     get() = parentTableIdField.table!!
 
-  override fun leftJoinWithAccession(
-      query: SelectJoinStep<out Record>
-  ): SelectJoinStep<out Record> {
+  override fun <T : Record> leftJoinWithAccession(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query
         .leftJoin(parentTableIdField.table!!)
         .on(parentTableIdField.eq(accessionForeignKeyField))
   }
+
+  override fun conditionForMultiset(): Condition? = null
 }
 
 /**
@@ -136,15 +157,20 @@ class SearchTables {
     override val fromTable
       get() = ACCESSIONS
 
-    override fun leftJoinWithAccession(
-        query: SelectJoinStep<out Record>
-    ): SelectJoinStep<out Record> {
+    override val defaultOrderFields: List<OrderField<*>> = listOf(ACCESSIONS.NUMBER, ACCESSIONS.ID)
+
+    override fun <T : Record> leftJoinWithAccession(query: SelectJoinStep<T>): SelectJoinStep<T> {
       // No-op; initial query always selects from accession
       return query
     }
 
     override fun conditionForPermissions(): Condition {
       return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+    }
+
+    override fun conditionForMultiset(): Condition? {
+      // No-op; this is always the topmost table
+      return null
     }
   }
 
@@ -159,18 +185,17 @@ class SearchTables {
     override val fromTable
       get() = GERMINATIONS
 
-    override fun dependsOn(): Set<SearchTable> {
-      return setOf(GerminationTest)
+    override val parent
+      get() = GerminationTest
+
+    override fun <T : Record> leftJoinWithAccession(query: SelectJoinStep<T>): SelectJoinStep<T> {
+      return parent
+          .leftJoinWithAccession(query)
+          .leftJoin(GERMINATIONS)
+          .on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
     }
 
-    override fun leftJoinWithAccession(
-        query: SelectJoinStep<out Record>
-    ): SelectJoinStep<out Record> {
-      // We'll already be joined with germination_test
-      return query.leftJoin(GERMINATIONS).on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
-    }
-
-    override fun joinForPermissions(query: SelectJoinStep<out Record>): SelectJoinStep<out Record> {
+    override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
       return query
           .join(GERMINATION_TESTS)
           .on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
@@ -180,6 +205,10 @@ class SearchTables {
 
     override fun conditionForPermissions(): Condition {
       return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+    }
+
+    override fun conditionForMultiset(): Condition {
+      return GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID)
     }
   }
 

@@ -34,6 +34,7 @@ import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.validation.constraints.NotEmpty
+import javax.ws.rs.BadRequestException
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -96,6 +97,10 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   @Operation(summary = "Exports the results of a search as a downloadable CSV file.")
   @PostMapping("/export", produces = ["text/csv"])
   fun export(@RequestBody payload: ExportRequestPayload): ResponseEntity<ByteArray> {
+    if (payload.fields.any { it.fieldName.contains('.') }) {
+      throw BadRequestException("Nested fields are not supported for CSV export.")
+    }
+
     val searchResults =
         searchService.search(
             payload.facilityId,
@@ -126,7 +131,7 @@ class SearchController(private val clock: Clock, private val searchService: Sear
       csvWriter.writeNext(header, false)
 
       searchResults.results.forEach { result ->
-        val values = fieldNames.map { fieldName -> result[fieldName] }.toTypedArray()
+        val values = fieldNames.map { fieldName -> result[fieldName]?.toString() }.toTypedArray()
         csvWriter.writeNext(values, false)
       }
     }
@@ -182,7 +187,7 @@ data class ExportRequestPayload(
 ) : HasSearchNode, HasSortOrder
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class SearchResponsePayload(val results: List<Map<String, String>>, val cursor: String?) {
+data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor: String?) {
   constructor(searchResults: SearchResults) : this(searchResults.results, searchResults.cursor)
 }
 

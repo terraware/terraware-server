@@ -4057,6 +4057,7 @@ components:
       - accessionNumber
       - active
       - bagNumber
+      - bags.number
       - checkedInTime
       - collectedDate
       - collectionNotes
@@ -4079,6 +4080,17 @@ components:
       - germinationSubstrate
       - germinationTestNotes
       - germinationTestType
+      - germinationTests.endDate
+      - germinationTests.germinations.recordingDate
+      - germinationTests.germinations.seedsGerminated
+      - germinationTests.notes
+      - germinationTests.percentGerminated
+      - germinationTests.seedType
+      - germinationTests.seedsSown
+      - germinationTests.startDate
+      - germinationTests.substrate
+      - germinationTests.treatment
+      - germinationTests.type
       - germinationTreatment
       - id
       - landowner
@@ -4120,6 +4132,16 @@ components:
       - withdrawalRemainingQuantity
       - withdrawalRemainingUnits
       - withdrawalUnits
+      - withdrawals.date
+      - withdrawals.destination
+      - withdrawals.grams
+      - withdrawals.notes
+      - withdrawals.purpose
+      - withdrawals.quantity
+      - withdrawals.remainingGrams
+      - withdrawals.remainingQuantity
+      - withdrawals.remainingUnits
+      - withdrawals.units
     SearchFilter:
       required:
       - field
@@ -4219,6 +4241,13 @@ components:
                 type: string
               bagNumber:
                 type: string
+              bags:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    number:
+                      type: string
               checkedInTime:
                 type: string
               collectedDate:
@@ -4263,6 +4292,38 @@ components:
                 type: string
               germinationTestType:
                 type: string
+              germinationTests:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    endDate:
+                      type: string
+                    germinations:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          recordingDate:
+                            type: string
+                          seedsGerminated:
+                            type: string
+                    notes:
+                      type: string
+                    percentGerminated:
+                      type: string
+                    seedType:
+                      type: string
+                    seedsSown:
+                      type: string
+                    startDate:
+                      type: string
+                    substrate:
+                      type: string
+                    treatment:
+                      type: string
+                    type:
+                      type: string
               germinationTreatment:
                 type: string
               id:
@@ -4335,16 +4396,41 @@ components:
                 type: string
               withdrawalPurpose:
                 type: string
+              withdrawalQuantity:
+                type: string
               withdrawalRemainingGrams:
                 type: string
               withdrawalRemainingQuantity:
                 type: string
               withdrawalRemainingUnits:
                 type: string
-              withdrawalQuantity:
-                type: string
               withdrawalUnits:
                 type: string
+              withdrawals:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                    destination:
+                      type: string
+                    grams:
+                      type: string
+                    notes:
+                      type: string
+                    purpose:
+                      type: string
+                    quantity:
+                      type: string
+                    remainingGrams:
+                      type: string
+                    remainingQuantity:
+                      type: string
+                    remainingUnits:
+                      type: string
+                    units:
+                      type: string
         cursor:
           type: string
     SearchSortOrderElement:
