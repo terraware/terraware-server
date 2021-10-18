@@ -163,12 +163,12 @@ data class FieldValuesPayload(
 
 data class ListFieldValuesRequestPayload(
     val facilityId: FacilityId,
-    val fields: List<SearchField<*>>,
+    val fields: List<SearchField>,
     override val filters: List<SearchFilter>?,
     override val search: SearchNodePayload?,
 ) : HasSearchNode
 
-data class ListFieldValuesResponsePayload(val results: Map<SearchField<*>, FieldValuesPayload>) :
+data class ListFieldValuesResponsePayload(val results: Map<SearchField, FieldValuesPayload>) :
     SuccessResponsePayload
 
 data class AllFieldValuesPayload(
@@ -190,9 +190,9 @@ data class AllFieldValuesPayload(
 
 data class ListAllFieldValuesRequestPayload(
     val facilityId: FacilityId,
-    val fields: List<SearchField<*>>
+    val fields: List<SearchField>
 )
 
 data class ListAllFieldValuesResponsePayload(
-    val results: Map<SearchField<*>, AllFieldValuesPayload>
+    val results: Map<SearchField, AllFieldValuesPayload>
 ) : SuccessResponsePayload

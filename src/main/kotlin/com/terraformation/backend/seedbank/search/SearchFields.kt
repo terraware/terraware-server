@@ -38,7 +38,7 @@ import org.jooq.impl.DSL
  * Metadata about a field that can be included in accession search requests. This is used by
  * [SearchService] to dynamically construct SQL queries for arbitrary user-specified searches.
  */
-interface SearchField<T> {
+interface SearchField {
   /**
    * The name of the field as presented in the search API. This does not necessarily exactly match
    * the column name, though in most cases it should be similar.
@@ -112,15 +112,13 @@ interface SearchField<T> {
 @ManagedBean
 class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
     UsesFuzzySearchOperators {
-  private val fields: List<SearchField<*>> by lazy { createFieldList() }
-  private val fieldsByName: Map<String, SearchField<*>> by lazy {
-    fields.associateBy { it.fieldName }
-  }
+  private val fields: List<SearchField> by lazy { createFieldList() }
+  private val fieldsByName: Map<String, SearchField> by lazy { fields.associateBy { it.fieldName } }
 
   val fieldNames: Set<String>
     get() = fieldsByName.keys
 
-  private fun createFieldList(): List<SearchField<*>> {
+  private fun createFieldList(): List<SearchField> {
     return listOf(
         UpperCaseTextField("accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
         ActiveField("active", "Active"),
@@ -301,7 +299,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
   operator fun get(fieldName: String) = fieldsByName[fieldName]
 
   /** Base class for fields that map to a single database column. */
-  abstract class SingleColumnSearchField<T : Any> : SearchField<T> {
+  abstract class SingleColumnSearchField<T : Any> : SearchField {
     abstract val databaseField: Field<T?>
 
     abstract fun getCondition(fieldNode: FieldNode): Condition?
@@ -375,7 +373,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
    * from the `state` field.
    */
   class ActiveField(override val fieldName: String, override val displayName: String) :
-      SearchField<AccessionActive> {
+      SearchField {
     override val table
       get() = SearchTables.Accession
     override val selectFields
@@ -545,7 +543,7 @@ class SearchFields(override val fuzzySearchOperators: FuzzySearchOperators) :
       private val longitudeField: TableField<*, BigDecimal?>,
       override val table: SearchTable = SearchTables.Accession,
       override val nullable: Boolean = true
-  ) : SearchField<String> {
+  ) : SearchField {
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = emptySet()
 

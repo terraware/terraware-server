@@ -4,6 +4,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.search.SearchTables.Germination.dependsOn
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -37,7 +38,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    */
   fun search(
       facilityId: FacilityId,
-      fields: List<SearchField<*>>,
+      fields: List<SearchField>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
@@ -131,7 +132,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * @return A list of values, which may include `null` if the field is optional and has no value on
    * some of the matching accessions.
    */
-  fun <T> fetchValues(field: SearchField<T>, criteria: SearchNode, limit: Int = 50): List<String?> {
+  fun fetchValues(field: SearchField, criteria: SearchNode, limit: Int = 50): List<String?> {
     val selectFields =
         field.selectFields +
             field.orderByFields.mapIndexed { index, orderByField ->
@@ -180,7 +181,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * limit.
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
-  fun <T> fetchAllValues(field: SearchField<T>, limit: Int = 50): List<String?> {
+  fun fetchAllValues(field: SearchField, limit: Int = 50): List<String?> {
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
     val values = field.possibleValues ?: queryAllValues(field, limit)
@@ -192,7 +193,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     }
   }
 
-  private fun <T> queryAllValues(field: SearchField<T>, limit: Int): List<String> {
+  private fun queryAllValues(field: SearchField, limit: Int): List<String> {
     val selectFields =
         field.selectFields +
             field.orderByFields.mapIndexed { index, orderByField ->
@@ -229,7 +230,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    */
   private fun joinWithSecondaryTables(
       selectFrom: SelectJoinStep<out Record>,
-      fields: List<SearchField<*>>,
+      fields: List<SearchField>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList()
   ): SelectJoinStep<out Record> {

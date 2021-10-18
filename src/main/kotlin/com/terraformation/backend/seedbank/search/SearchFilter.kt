@@ -47,7 +47,7 @@ class NotNode(val child: SearchNode) : SearchNode {
 }
 
 class FieldNode(
-    val field: SearchField<*>,
+    val field: SearchField,
     val values: List<String?>,
     val type: SearchFilterType = SearchFilterType.Exact
 ) : SearchNode {
