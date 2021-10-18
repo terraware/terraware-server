@@ -193,6 +193,5 @@ data class ListAllFieldValuesRequestPayload(
     val fields: List<SearchField>
 )
 
-data class ListAllFieldValuesResponsePayload(
-    val results: Map<SearchField, AllFieldValuesPayload>
-) : SuccessResponsePayload
+data class ListAllFieldValuesResponsePayload(val results: Map<SearchField, AllFieldValuesPayload>) :
+    SuccessResponsePayload
