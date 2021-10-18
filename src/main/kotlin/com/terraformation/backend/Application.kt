@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.info.License
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.scheduling.annotation.EnableScheduling
 
@@ -25,7 +26,9 @@ import org.springframework.scheduling.annotation.EnableScheduling
     tags = [Tag(name = "SeedBankApp"), Tag(name = "DeviceManager"), Tag(name = "GISApp")])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @EnableScheduling
-@SpringBootApplication
+@SpringBootApplication(
+    // https://github.com/spring-projects/spring-boot/issues/26439
+    exclude = [R2dbcAutoConfiguration::class])
 class Application
 
 fun main(args: Array<String>) {

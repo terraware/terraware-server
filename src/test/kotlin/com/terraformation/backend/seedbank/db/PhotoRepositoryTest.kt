@@ -97,12 +97,10 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     accessionStore =
         AccessionStore(
             dslContext,
-            accessionPhotosDao,
             mockk(),
             mockk(),
             mockk(),
             mockk(),
-            photosDao,
             mockk(),
             mockk(),
             clock,

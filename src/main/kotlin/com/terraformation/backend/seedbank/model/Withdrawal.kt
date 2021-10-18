@@ -4,6 +4,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
+import com.terraformation.backend.db.tables.records.WithdrawalsRecord
 import com.terraformation.backend.util.compareNullsFirst
 import java.time.LocalDate
 
@@ -26,6 +27,20 @@ data class WithdrawalModel(
      */
     val weightDifference: SeedQuantityModel? = null,
 ) {
+  constructor(
+      record: WithdrawalsRecord
+  ) : this(
+      record.id,
+      record.accessionId,
+      record.date!!,
+      record.purposeId!!,
+      record.destination,
+      record.notes,
+      record.staffResponsible,
+      record.germinationTestId,
+      SeedQuantityModel.of(record.remainingQuantity, record.remainingUnitsId),
+      SeedQuantityModel.of(record.withdrawnQuantity, record.withdrawnUnitsId),
+  )
 
   fun validate() {
     withdrawn?.quantity?.signum()?.let { signum ->

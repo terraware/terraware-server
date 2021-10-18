@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
@@ -11,69 +12,78 @@ import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.impl.DSL
 
 @ManagedBean
 class GerminationStore(private val dslContext: DSLContext) {
-  fun fetchGerminationTestTypes(accessionId: AccessionId): Set<GerminationTestType> {
-    return dslContext
-        .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-        .from(ACCESSION_GERMINATION_TEST_TYPES)
-        .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(accessionId))
-        .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-        .filterNotNull()
-        .toSet()
+  fun germinationTestTypesMultiset(
+      idField: Field<AccessionId?> = ACCESSIONS.ID
+  ): Field<Set<GerminationTestType>> {
+    return DSL.multiset(
+            DSL.select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
+                .from(ACCESSION_GERMINATION_TEST_TYPES)
+                .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(idField)))
+        .convertFrom { result -> result.map { it.value1() }.toSet() }
   }
 
-  fun fetchGerminationTests(accessionId: AccessionId): List<GerminationTestModel> {
-    val germinationsByTestId =
-        dslContext
-            .select(
-                GERMINATIONS.ID,
-                GERMINATIONS.TEST_ID,
-                GERMINATIONS.RECORDING_DATE,
-                GERMINATIONS.SEEDS_GERMINATED,
-            )
-            .from(GERMINATIONS)
-            .join(GERMINATION_TESTS)
-            .on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
-            .where(GERMINATION_TESTS.ACCESSION_ID.eq(accessionId))
-            .orderBy(GERMINATIONS.RECORDING_DATE.desc(), GERMINATIONS.ID.desc())
-            .fetch { record ->
-              GerminationModel(
-                  record[GERMINATIONS.ID]!!,
-                  record[GERMINATIONS.TEST_ID]!!,
-                  record[GERMINATIONS.RECORDING_DATE]!!,
-                  record[GERMINATIONS.SEEDS_GERMINATED]!!,
-              )
-            }
-            .groupBy { it.testId }
+  fun germinationTestsMultiset(
+      idField: Field<AccessionId?> = ACCESSIONS.ID
+  ): Field<List<GerminationTestModel>> {
+    val germinationsMultiset = germinationsMultiset()
 
     return with(GERMINATION_TESTS) {
-      dslContext
-          .selectFrom(GERMINATION_TESTS)
-          .where(ACCESSION_ID.eq(accessionId))
-          .orderBy(ID)
-          .fetch { record ->
-            val testId = record[ID]!!
-            GerminationTestModel(
-                testId,
-                record[ACCESSION_ID]!!,
-                record[TEST_TYPE]!!,
-                record[START_DATE],
-                record[END_DATE],
-                record[SEED_TYPE_ID],
-                record[SUBSTRATE_ID],
-                record[TREATMENT_ID],
-                record[SEEDS_SOWN],
-                record[TOTAL_PERCENT_GERMINATED],
-                record[TOTAL_SEEDS_GERMINATED],
-                record[NOTES],
-                record[STAFF_RESPONSIBLE],
-                germinationsByTestId[testId],
-                SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-            )
+      DSL.multiset(
+              DSL.select(GERMINATION_TESTS.asterisk(), germinationsMultiset)
+                  .from(GERMINATION_TESTS)
+                  .where(ACCESSION_ID.eq(idField))
+                  .orderBy(ID))
+          .convertFrom { result ->
+            result.map { record ->
+              GerminationTestModel(
+                  record[ID]!!,
+                  record[ACCESSION_ID]!!,
+                  record[TEST_TYPE]!!,
+                  record[START_DATE],
+                  record[END_DATE],
+                  record[SEED_TYPE_ID],
+                  record[SUBSTRATE_ID],
+                  record[TREATMENT_ID],
+                  record[SEEDS_SOWN],
+                  record[TOTAL_PERCENT_GERMINATED],
+                  record[TOTAL_SEEDS_GERMINATED],
+                  record[NOTES],
+                  record[STAFF_RESPONSIBLE],
+                  record[germinationsMultiset],
+                  SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
+              )
+            }
           }
     }
+  }
+
+  private fun germinationsMultiset(): Field<List<GerminationModel>> {
+    return DSL.multiset(
+            DSL.select(
+                    GERMINATIONS.ID,
+                    GERMINATIONS.TEST_ID,
+                    GERMINATIONS.RECORDING_DATE,
+                    GERMINATIONS.SEEDS_GERMINATED,
+                )
+                .from(GERMINATIONS)
+                .where(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
+                .orderBy(GERMINATIONS.RECORDING_DATE.desc(), GERMINATIONS.ID.desc()),
+        )
+        .convertFrom { result ->
+          result.map { record ->
+            GerminationModel(
+                record[GERMINATIONS.ID]!!,
+                record[GERMINATIONS.TEST_ID]!!,
+                record[GERMINATIONS.RECORDING_DATE]!!,
+                record[GERMINATIONS.SEEDS_GERMINATED]!!,
+            )
+          }
+        }
   }
 
   fun insertGerminationTest(

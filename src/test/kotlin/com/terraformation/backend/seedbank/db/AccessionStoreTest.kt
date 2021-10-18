@@ -185,12 +185,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     store =
         AccessionStore(
             dslContext,
-            accessionPhotosDao,
             AppDeviceStore(dslContext, clock),
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
-            photosDao,
             speciesStore,
             WithdrawalStore(dslContext, clock),
             clock,

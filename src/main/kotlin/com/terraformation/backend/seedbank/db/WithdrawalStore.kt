@@ -2,13 +2,15 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.WithdrawalPurpose
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.impl.DSL
 
 @ManagedBean
 class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clock) {
@@ -20,19 +22,17 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
         .where(WITHDRAWALS.ACCESSION_ID.eq(accessionId))
         .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc())
         .fetch()
-        .map { record ->
-          WithdrawalModel(
-              record.id!!,
-              accessionId,
-              record.date!!,
-              record.purposeId!!,
-              record.destination,
-              record.notes,
-              record.staffResponsible,
-              record.germinationTestId,
-              SeedQuantityModel.of(record.remainingQuantity, record.remainingUnitsId)!!,
-              SeedQuantityModel.of(record.withdrawnQuantity, record.withdrawnUnitsId))
-        }
+        .map { WithdrawalModel(it) }
+  }
+
+  fun withdrawalsMultiset(
+      idField: Field<AccessionId?> = ACCESSIONS.ID
+  ): Field<List<WithdrawalModel>> {
+    return DSL.multiset(
+            DSL.selectFrom(WITHDRAWALS)
+                .where(WITHDRAWALS.ACCESSION_ID.eq(idField))
+                .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc()))
+        .convertFrom { result -> result.map { WithdrawalModel(it) } }
   }
 
   fun updateWithdrawals(

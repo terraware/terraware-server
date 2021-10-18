@@ -36,6 +36,7 @@ buildscript {
       setForcedModules(
           // https://github.com/revolut-engineering/jooq-plugin/pull/17
           "com.github.docker-java:docker-java-transport-okhttp:3.2.12",
+          "org.jooq:jooq:$jooqVersion",
           "org.jooq:jooq-codegen:$jooqVersion",
       )
     }
@@ -53,6 +54,7 @@ repositories { mavenCentral() }
 dependencies {
   val awsSdkVersion: String by project
   val jacksonVersion: String by project
+  val jooqVersion: String by project
   val postgresJdbcVersion: String by project
   val springDocVersion: String by project
 
@@ -81,6 +83,7 @@ dependencies {
   implementation("org.apache.tika:tika-core:2.1.0")
   implementation("org.codehaus.janino:janino:3.1.3")
   implementation("org.flywaydb:flyway-core:7.5.4")
+  implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:14.0.0"))
   implementation("org.keycloak:keycloak-spring-boot-starter")
   implementation("org.keycloak:keycloak-admin-client:14.0.0")

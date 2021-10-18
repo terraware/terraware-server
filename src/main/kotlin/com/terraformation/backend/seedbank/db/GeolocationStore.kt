@@ -1,29 +1,34 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 
 @ManagedBean
 class GeolocationStore(private val dslContext: DSLContext, private val clock: Clock) {
-  fun fetchGeolocations(accessionId: AccessionId): Set<Geolocation> {
-    return dslContext
-        .selectFrom(GEOLOCATIONS)
-        .where(GEOLOCATIONS.ACCESSION_ID.eq(accessionId))
-        .orderBy(GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE)
-        .fetch { record ->
-          Geolocation(
-              record[GEOLOCATIONS.LATITUDE]!!,
-              record[GEOLOCATIONS.LONGITUDE]!!,
-              record[GEOLOCATIONS.GPS_ACCURACY]?.let { BigDecimal(it) },
-          )
+  fun geolocationsMultiset(idField: Field<AccessionId?> = ACCESSIONS.ID): Field<Set<Geolocation>> {
+    return DSL.multiset(
+            DSL.selectFrom(GEOLOCATIONS)
+                .where(GEOLOCATIONS.ACCESSION_ID.eq(idField))
+                .orderBy(GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE))
+        .convertFrom { result ->
+          result
+              .map { record ->
+                Geolocation(
+                    record[GEOLOCATIONS.LATITUDE]!!,
+                    record[GEOLOCATIONS.LONGITUDE]!!,
+                    record[GEOLOCATIONS.GPS_ACCURACY]?.let { BigDecimal(it) },
+                )
+              }
+              .toSet()
         }
-        .toSet()
   }
 
   fun updateGeolocations(

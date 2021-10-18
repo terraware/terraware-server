@@ -1,21 +1,22 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.BAGS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.impl.DSL
 
 @ManagedBean
 class BagStore(private val dslContext: DSLContext) {
-  fun fetchBagNumbers(accessionId: AccessionId): Set<String> {
-    return dslContext
-        .select(BAGS.BAG_NUMBER)
-        .from(BAGS)
-        .where(BAGS.ACCESSION_ID.eq(accessionId))
-        .orderBy(BAGS.BAG_NUMBER)
-        .fetch(BAGS.BAG_NUMBER)
-        .filterNotNull()
-        .toSet()
+  fun bagNumbersMultiset(idField: Field<AccessionId?> = ACCESSIONS.ID): Field<Set<String>> {
+    return DSL.multiset(
+            DSL.select(BAGS.BAG_NUMBER)
+                .from(BAGS)
+                .where(BAGS.ACCESSION_ID.eq(idField))
+                .orderBy(BAGS.BAG_NUMBER))
+        .convertFrom { result -> result.map { it.get(BAGS.BAG_NUMBER) }.toSet() }
   }
 
   fun updateBags(
