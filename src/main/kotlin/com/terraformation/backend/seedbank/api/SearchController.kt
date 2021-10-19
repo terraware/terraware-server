@@ -165,7 +165,7 @@ interface HasSearchNode {
 
 data class SearchRequestPayload(
     val facilityId: FacilityId,
-    @NotEmpty val fields: List<SearchField<*>>,
+    @NotEmpty val fields: List<SearchField>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
@@ -175,7 +175,7 @@ data class SearchRequestPayload(
 
 data class ExportRequestPayload(
     val facilityId: FacilityId,
-    @NotEmpty val fields: List<SearchField<*>>,
+    @NotEmpty val fields: List<SearchField>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
@@ -187,7 +187,7 @@ data class SearchResponsePayload(val results: List<Map<String, String>>, val cur
 }
 
 data class SearchSortOrderElement(
-    val field: SearchField<*>,
+    val field: SearchField,
     @Schema(defaultValue = "Ascending") val direction: SearchDirection?
 ) {
   fun toSearchSortField() = SearchSortField(field, direction ?: SearchDirection.Ascending)
@@ -261,7 +261,7 @@ data class NotNodePayload(val child: SearchNodePayload) : SearchNodePayload {
 
 @JsonTypeName("field")
 data class FieldNodePayload(
-    val field: SearchField<*>,
+    val field: SearchField,
     @ArraySchema(
         schema = Schema(nullable = true),
         minItems = 1,
@@ -289,7 +289,7 @@ data class FieldNodePayload(
  * @see SearchService
  */
 data class SearchFilter(
-    val field: SearchField<*>,
+    val field: SearchField,
     @ArraySchema(
         schema = Schema(nullable = true),
         arraySchema =

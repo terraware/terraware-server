@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct
 class SearchFieldsDeserializer(
     private val objectMapper: ObjectMapper,
     private val searchFields: SearchFields
-) : StdDeserializer<SearchField<*>>(SearchField::class.java) {
+) : StdDeserializer<SearchField>(SearchField::class.java) {
   @PostConstruct
   fun registerModules() {
     val module = SimpleModule()
@@ -21,7 +21,7 @@ class SearchFieldsDeserializer(
     objectMapper.registerModule(module)
   }
 
-  override fun deserialize(p: JsonParser, context: DeserializationContext): SearchField<*> {
+  override fun deserialize(p: JsonParser, context: DeserializationContext): SearchField {
     val fieldName = p.text
     val field = searchFields[fieldName]
     if (field == null) {
