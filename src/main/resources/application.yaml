@@ -17,6 +17,8 @@ spring:
     locations:
       - "classpath:db/migration/postgres"
       - "classpath:db/migration/common"
+    placeholders:
+      jsonColumnType: "JSONB"
 
   servlet:
     multipart:

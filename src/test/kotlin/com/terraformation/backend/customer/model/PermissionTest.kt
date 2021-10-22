@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
@@ -18,12 +19,15 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.AutomationsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
@@ -99,6 +103,7 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 internal class PermissionTest : DatabaseTest() {
   private lateinit var accessionsDao: AccessionsDao
+  private lateinit var automationsDao: AutomationsDao
   private lateinit var devicesDao: DevicesDao
   private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
@@ -122,6 +127,7 @@ internal class PermissionTest : DatabaseTest() {
   private val siteIds = listOf(100, 101, 110, 111, 210).map { SiteId(it.toLong()) }
   private val facilityIds =
       listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111).map { FacilityId(it.toLong()) }
+  private val automationIds = facilityIds.map { AutomationId(it.value) }
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val layerIds = listOf(1000, 1001, 1100, 2100).map { LayerId(it.toLong()) }
@@ -134,6 +140,7 @@ internal class PermissionTest : DatabaseTest() {
 
     val jooqConfig = dslContext.configuration()
     accessionsDao = AccessionsDao(jooqConfig)
+    automationsDao = AutomationsDao(jooqConfig)
     devicesDao = DevicesDao(jooqConfig)
     parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
@@ -154,15 +161,22 @@ internal class PermissionTest : DatabaseTest() {
     organizationIds.forEach { insertOrganization(it.value) }
     projectIds.forEach { insertProject(it.value) }
     siteIds.forEach { insertSite(it.value) }
-    facilityIds.forEach { insertFacility(it.value) }
 
     facilityIds.forEach { facilityId ->
+      insertFacility(facilityId.value)
       accessionsDao.insert(
           AccessionsRow(
               id = AccessionId(facilityId.value),
               facilityId = facilityId,
               stateId = AccessionState.Pending,
               createdTime = Instant.EPOCH))
+      automationsDao.insert(
+          AutomationsRow(
+              id = AutomationId(facilityId.value),
+              facilityId = facilityId,
+              name = "Automation $facilityId",
+              createdTime = Instant.EPOCH,
+              modifiedTime = Instant.EPOCH))
       devicesDao.insert(
           DevicesRow(
               id = DeviceId(facilityId.value),
@@ -263,7 +277,9 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1110),
         FacilityId(1111),
         createAccession = true,
+        createAutomation = true,
         createDevice = true,
+        listAutomations = true,
     )
 
     permissions.expect(
@@ -277,6 +293,20 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1111),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        AutomationId(1000),
+        AutomationId(1001),
+        AutomationId(1010),
+        AutomationId(1011),
+        AutomationId(1100),
+        AutomationId(1101),
+        AutomationId(1110),
+        AutomationId(1111),
+        readAutomation = true,
+        updateAutomation = true,
+        deleteAutomation = true,
     )
 
     permissions.expect(
@@ -390,7 +420,9 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1110),
         FacilityId(1111),
         createAccession = true,
+        createAutomation = true,
         createDevice = true,
+        listAutomations = true,
     )
 
     permissions.expect(
@@ -404,6 +436,20 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1111),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        AutomationId(1000),
+        AutomationId(1001),
+        AutomationId(1010),
+        AutomationId(1011),
+        AutomationId(1100),
+        AutomationId(1101),
+        AutomationId(1110),
+        AutomationId(1111),
+        readAutomation = true,
+        updateAutomation = true,
+        deleteAutomation = true,
     )
 
     permissions.expect(
@@ -473,7 +519,9 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1010),
         FacilityId(1011),
         createAccession = true,
+        createAutomation = true,
         createDevice = true,
+        listAutomations = true,
     )
 
     permissions.expect(
@@ -483,6 +531,16 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1011),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        AutomationId(1000),
+        AutomationId(1001),
+        AutomationId(1010),
+        AutomationId(1011),
+        readAutomation = true,
+        updateAutomation = true,
+        deleteAutomation = true,
     )
 
     permissions.expect(
@@ -542,7 +600,9 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1010),
         FacilityId(1011),
         createAccession = true,
+        createAutomation = true,
         createDevice = true,
+        listAutomations = true,
     )
 
     permissions.expect(
@@ -552,6 +612,16 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1011),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        AutomationId(1000),
+        AutomationId(1001),
+        AutomationId(1010),
+        AutomationId(1011),
+        readAutomation = true,
+        updateAutomation = true,
+        deleteAutomation = true,
     )
 
     permissions.expect(
@@ -631,7 +701,9 @@ internal class PermissionTest : DatabaseTest() {
         FacilityId(1110),
         FacilityId(1111),
         createAccession = true,
+        createAutomation = true,
         createDevice = true,
+        listAutomations = true,
     )
 
     permissions.expect(
@@ -645,6 +717,20 @@ internal class PermissionTest : DatabaseTest() {
         AccessionId(1111),
         readAccession = true,
         updateAccession = true,
+    )
+
+    permissions.expect(
+        AutomationId(1000),
+        AutomationId(1001),
+        AutomationId(1010),
+        AutomationId(1011),
+        AutomationId(1100),
+        AutomationId(1101),
+        AutomationId(1110),
+        AutomationId(1111),
+        readAutomation = true,
+        updateAutomation = true,
+        deleteAutomation = true,
     )
 
     permissions.expect(
@@ -703,6 +789,7 @@ internal class PermissionTest : DatabaseTest() {
 
     dslContext.deleteFrom(TIMESERIES).execute()
     dslContext.deleteFrom(DEVICES).execute()
+    dslContext.deleteFrom(AUTOMATIONS).execute()
     dslContext.deleteFrom(ACCESSIONS).execute()
     dslContext.deleteFrom(FACILITIES).execute()
     dslContext.deleteFrom(FEATURE_PHOTOS).execute()
@@ -727,6 +814,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedLayers = layerIds.toMutableSet()
     private val uncheckedFeatures = featureIds.toMutableSet()
     private val uncheckedPhotos = photoIds.toMutableSet()
+    private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
 
     // All checks keyed on organization IDs go here
@@ -822,7 +910,9 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg facilities: FacilityId,
         createAccession: Boolean = false,
+        createAutomation: Boolean = false,
         createDevice: Boolean = false,
+        listAutomations: Boolean = false,
     ) {
       facilities.forEach { facilityId ->
         assertEquals(
@@ -830,9 +920,17 @@ internal class PermissionTest : DatabaseTest() {
             user.canCreateAccession(facilityId),
             "Can create accession at facility $facilityId")
         assertEquals(
+            createAutomation,
+            user.canCreateAutomation(facilityId),
+            "Can create automation at facility $facilityId")
+        assertEquals(
             createDevice,
             user.canCreateDevice(facilityId),
             "Can create device at facility $facilityId")
+        assertEquals(
+            listAutomations,
+            user.canListAutomations(facilityId),
+            "Can list automations at facility $facilityId")
 
         uncheckedFacilities.remove(facilityId)
       }
@@ -913,6 +1011,31 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    // All checks keyed on automation IDs go here
+    fun expect(
+        vararg automations: AutomationId,
+        readAutomation: Boolean = false,
+        updateAutomation: Boolean = false,
+        deleteAutomation: Boolean = false,
+    ) {
+      automations.forEach { automationId ->
+        assertEquals(
+            readAutomation,
+            user.canReadAutomation(automationId),
+            "Can read automation $automationId")
+        assertEquals(
+            updateAutomation,
+            user.canUpdateAutomation(automationId),
+            "Can update automation $automationId")
+        assertEquals(
+            deleteAutomation,
+            user.canDeleteAutomation(automationId),
+            "Can delete automation $automationId")
+
+        uncheckedAutomations.remove(automationId)
+      }
+    }
+
     // All checks keyed on device IDs go here
     fun expect(
         vararg devices: DeviceId,
@@ -951,6 +1074,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedLayers.toTypedArray())
       expect(*uncheckedFeatures.toTypedArray())
       expect(*uncheckedPhotos.toTypedArray())
+      expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
     }
   }
