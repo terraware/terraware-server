@@ -98,7 +98,10 @@ data class NotificationPayload(
     val id: String,
     val timestamp: Instant,
     val type: NotificationType,
-    @Schema(description = "If true, this notification has been marked as read.") val read: Boolean,
+    @Schema(
+        description = "If true, this notification has been marked as read.",
+    )
+    val read: Boolean,
     @Schema(
         description = "Plain-text body of notification.",
         example = "Accession XYZ is ready to be dried.")

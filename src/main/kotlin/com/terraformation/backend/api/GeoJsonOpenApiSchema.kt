@@ -139,7 +139,10 @@ abstract class GeoJsonOpenApiSchema {
               "In that case, this element is not present. Otherwise, it specifies which " +
               "coordinate system to use.")
   internal abstract class CRS(
-      @Schema(allowableValues = ["name"]) val type: String,
+      @Schema(
+          allowableValues = ["name"],
+      )
+      val type: String,
       val properties: CRSProperties
   )
 

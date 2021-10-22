@@ -336,7 +336,10 @@ data class AccessionPayload(
     val source: AccessionSource?,
     val sourcePlantOrigin: SourcePlantOrigin?,
     val species: String?,
-    @Schema(description = "Server-generated unique ID of the species.") val speciesId: SpeciesId?,
+    @Schema(
+        description = "Server-generated unique ID of the species.",
+    )
+    val speciesId: SpeciesId?,
     @Schema(
         description =
             "Server-calculated accession state. Can change due to modifications to accession data " +
@@ -531,7 +534,10 @@ data class GerminationTestPayload(
 
 data class GerminationPayload(
     val recordingDate: LocalDate,
-    @JsonProperty(required = true) val seedsGerminated: Int
+    @JsonProperty(
+        required = true,
+    )
+    val seedsGerminated: Int
 ) {
   constructor(model: GerminationModel) : this(model.recordingDate, model.seedsGerminated)
 

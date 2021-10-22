@@ -111,7 +111,10 @@ class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
 }
 
 data class CreateTimeseriesEntry(
-    @Schema(description = "ID of device that produces this timeseries.") val deviceId: DeviceId,
+    @Schema(
+        description = "ID of device that produces this timeseries.",
+    )
+    val deviceId: DeviceId,
     @Schema(
         description =
             "Name of this timeseries. Duplicate timeseries names for the same device aren't " +
