@@ -5,9 +5,6 @@ package com.terraformation.backend.util
  * to the `val x: Type by lazy {}` construct, but allows the computation function to live at the
  * point of access rather than the point of declaration of the variable, which can sometimes improve
  * clarity.
- *
- * This class is not thread-safe; if it is used concurrently in multiple threads, it is possible for
- * the computation function to be called twice.
  */
 class MemoizedValue<T : Any> {
   private var value: T? = null
