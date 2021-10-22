@@ -311,10 +311,15 @@ class FeatureStore(
   ): SizedInputStream {
     val photosRow = getPhotoMetadata(featureId, photoId)
 
-    return if (maxWidth != null || maxHeight != null) {
-      thumbnailStore.getThumbnailData(photoId, maxWidth, maxHeight)
-    } else {
-      fileStore.read(photosRow.storageUrl!!)
+    return try {
+      if (maxWidth != null || maxHeight != null) {
+        thumbnailStore.getThumbnailData(photoId, maxWidth, maxHeight)
+      } else {
+        fileStore.read(photosRow.storageUrl!!)
+      }
+    } catch (e: NoSuchFileException) {
+      log.error("Feature $featureId photo $photoId file ${photosRow.storageUrl} not found")
+      throw PhotoNotFoundException(photoId)
     }
   }
 
