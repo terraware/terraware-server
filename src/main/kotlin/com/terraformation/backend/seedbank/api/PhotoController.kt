@@ -179,7 +179,10 @@ data class UploadPhotoMetadataPayload(
     @Schema(deprecated = true, description = "Use location field instead.")
     val longitude: BigDecimal?,
     val location: Point?,
-    @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
+    @Schema(
+        description = "GPS accuracy in meters.",
+    )
+    val gpsAccuracy: Int?,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -187,10 +190,21 @@ data class ListPhotosResponseElement(
     val filename: String,
     val size: Long,
     val capturedTime: Instant,
-    @Schema(deprecated = true, description = "Use location field instead.") val latitude: Double?,
-    @Schema(deprecated = true, description = "Use location field instead.") val longitude: Double?,
+    @Schema(
+        deprecated = true,
+        description = "Use location field instead.",
+    )
+    val latitude: Double?,
+    @Schema(
+        deprecated = true,
+        description = "Use location field instead.",
+    )
+    val longitude: Double?,
     val location: Point?,
-    @Schema(description = "GPS accuracy in meters.") val gpsAccuracy: Int?,
+    @Schema(
+        description = "GPS accuracy in meters.",
+    )
+    val gpsAccuracy: Int?,
 ) {
   constructor(
       metadata: PhotoMetadata

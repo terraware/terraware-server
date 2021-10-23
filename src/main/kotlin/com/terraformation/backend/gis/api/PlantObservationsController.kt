@@ -90,7 +90,10 @@ data class CreateObservationRequestPayload(
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    @Schema(description = "Height in meters") val height: Double? = null,
+    @Schema(
+        description = "Height in meters",
+    )
+    val height: Double? = null,
     @Schema(description = "Diameter at breast height in meters")
     val diameterAtBreastHeight: Double? = null,
 ) {
@@ -114,7 +117,10 @@ data class UpdateObservationRequestPayload(
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    @Schema(description = "Height in meters") val height: Double? = null,
+    @Schema(
+        description = "Height in meters",
+    )
+    val height: Double? = null,
     @Schema(description = "Diameter at breast height in meters")
     val diameterAtBreastHeight: Double? = null,
 ) {
@@ -140,7 +146,10 @@ data class ObservationResponse(
     val flowers: Boolean? = null,
     val seeds: Boolean? = null,
     val pests: String? = null,
-    @Schema(description = "Height in meters") val height: Double? = null,
+    @Schema(
+        description = "Height in meters",
+    )
+    val height: Double? = null,
     @Schema(description = "Diameter at breast height in meters")
     val diameterAtBreastHeight: Double? = null,
 ) {
