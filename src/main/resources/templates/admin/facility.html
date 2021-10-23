@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a> -
+<a th:href="|${prefix}/organization/${organization.id}|" th:text="${organization.name}">Org Name</a>
+-
+<a th:href="|${prefix}/project/${project.id}|" th:text="${project.name}">Project Name</a>
+-
+<a th:href="|${prefix}/site/${site.id}|" th:text="${site.name}">Site Name</a>
+
+<h2 th:text="|Facility ${facility.name} (${facility.id})|">Facility (id)</h2>
+
+<form method="POST" th:action="|${prefix}/updateFacility|" th:if="${canUpdateFacility}">
+    <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+    <label for="name">Name</label>
+    <input type="text" name="name" id="name" required th:value="${facility.name}"/>
+    <br/>
+    <label for="type">Type</label>
+    <select name="type" id="type">
+        <option th:each="type : ${facilityTypes}"
+                th:selected="${facility.type} == ${type}"
+                th:text="${type.displayName}"
+                th:value="${type.id}">
+            Type
+        </option>
+    </select>
+    <br/>
+    <input type="submit" value=" Update Facility "/>
+</form>
+
+<div th:if="!${canUpdateFacility}">
+    Facility Type:
+    <span th:text="${facility.type.displayName}">Seed Bank</span>
+</div>
+
+<h3>Alert Recipients</h3>
+
+<ul>
+    <li th:each="recipient : ${recipients}">
+        <form method="POST" th:action="|${prefix}/deleteAlertRecipient|">
+            <span th:text="${recipient}">foo@bar.com</span>
+            <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+            <input type="hidden" name="email" th:value="${recipient}"/>
+            <input type="submit" value=" Delete " th:if="${canUpdateFacility}"/>
+        </form>
+    </li>
+
+    <li th:if="${canUpdateFacility}">
+        <form method="POST" th:action="|${prefix}/addAlertRecipient|">
+            <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" required/>
+            <input type="submit" value=" Add "/>
+        </form>
+    </li>
+</ul>
+
+<h4>Send Test Alert</h4>
+
+<form method="POST" th:action="|${prefix}/sendAlert|">
+    <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+    <label for="subject">Subject</label>
+    <input type="text" name="subject" id="subject" value="Testing Alert Email"/>
+    <br/>
+    <label for="body">Body</label>
+    <textarea rows="5" cols="40" name="body" id="body">This is a test of facility alert email.</textarea>
+    <br/>
+    <input type="submit" value=" Send Alert "/>
+</form>
+
+</body>
+</html>

@@ -2,6 +2,9 @@ terraware:
   photo-dir: "/tmp/terraware-server-photos"
   use-test-clock: true
   allow-admin-ui-for-non-admins: true
+  email:
+    always-send-to-override-address: true
+    subject-prefix: "[DEV]"
 
 keycloak:
   resource: "dev-terraware-server"

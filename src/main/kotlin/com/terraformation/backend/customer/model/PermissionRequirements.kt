@@ -151,6 +151,20 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
+  fun updateFacility(facilityId: FacilityId) {
+    if (!user.canUpdateFacility(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to update facility $facilityId")
+    }
+  }
+
+  fun sendAlert(facilityId: FacilityId) {
+    if (!user.canSendAlert(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to send alerts for facility $facilityId")
+    }
+  }
+
   fun createDevice(facilityId: FacilityId) {
     if (!user.canCreateDevice(facilityId)) {
       readFacility(facilityId)

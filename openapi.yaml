@@ -122,6 +122,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetFacilityResponse'
+  /api/v1/facility/{facilityId}/alert/send:
+    post:
+      tags:
+      - Customer
+      summary: Sends an alert to the facility's configured alert recipients.
+      operationId: sendFacilityAlert
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendFacilityAlertRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
   /api/v1/facility/{facilityId}/automations:
     get:
       tags:
@@ -4613,6 +4639,17 @@ components:
       description: "Represents a quantity of seeds, measured either in individual\
         \ seeds or by weight."
       readOnly: true
+    SendFacilityAlertRequestPayload:
+      required:
+      - body
+      - subject
+      type: object
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+          description: Alert body in plain text. HTML alerts are not supported yet.
     SimpleErrorResponsePayload:
       required:
       - error

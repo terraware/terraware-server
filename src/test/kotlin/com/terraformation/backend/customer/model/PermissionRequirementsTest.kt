@@ -172,6 +172,28 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun updateFacility() {
+    assertThrows<FacilityNotFoundException> { requirements.updateFacility(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.updateFacility(facilityId) }
+
+    grant { user.canUpdateFacility(facilityId) }
+    requirements.updateFacility(facilityId)
+  }
+
+  @Test
+  fun sendAlert() {
+    assertThrows<FacilityNotFoundException> { requirements.sendAlert(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.sendAlert(facilityId) }
+
+    grant { user.canSendAlert(facilityId) }
+    requirements.sendAlert(facilityId)
+  }
+
+  @Test
   fun createDevice() {
     assertThrows<FacilityNotFoundException> { requirements.createDevice(facilityId) }
 
