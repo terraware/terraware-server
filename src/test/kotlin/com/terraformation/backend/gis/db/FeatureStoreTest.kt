@@ -595,6 +595,17 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `getPhotoData throws exception if photo file does not exist`() {
+    val feature = store.createFeature(validCreateRequest)
+    val featureId = feature.id!!
+    val photosRow = insertFeaturePhoto(featureId)
+
+    every { fileStore.read(photosRow.storageUrl!!) } throws NoSuchFileException("error")
+
+    assertThrows<PhotoNotFoundException> { store.getPhotoData(featureId, photosRow.id!!) }
+  }
+
+  @Test
   fun `getPhotoMetadata returns photo metadata`() {
     val feature = store.createFeature(validCreateRequest)
     val featureId = feature.id!!
