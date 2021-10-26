@@ -25,8 +25,14 @@ class EmailService(
     private val facilityStore: FacilityStore,
     private val sender: JavaMailSender
 ) {
-  private val sesClient = SesV2Client.create()!!
+  private lateinit var sesClient: SesV2Client
   private val log = perClassLogger()
+
+  init {
+    if (config.email.enabled && config.email.useSes) {
+      sesClient = SesV2Client.create()
+    }
+  }
 
   /**
    * Sends an alert about a facility.
