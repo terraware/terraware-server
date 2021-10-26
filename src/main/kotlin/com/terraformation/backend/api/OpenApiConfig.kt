@@ -1,5 +1,7 @@
 package com.terraformation.backend.api
 
+import com.terraformation.backend.customer.api.AutomationPayload
+import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
@@ -90,8 +92,10 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
   private fun removeAdditionalProperties(openApi: OpenAPI) {
     val fieldsToModify =
         listOf(
+            AutomationPayload::class.swaggerSchemaName to "configuration",
             CreateDeviceRequestPayload::class.swaggerSchemaName to "settings",
             DeviceConfig::class.swaggerSchemaName to "settings",
+            ModifyAutomationRequestPayload::class.swaggerSchemaName to "configuration",
             UpdateDeviceRequestPayload::class.swaggerSchemaName to "settings",
         )
 

@@ -15,6 +15,9 @@ abstract class EntityNotFoundException(message: String) : RuntimeException(messa
 class AccessionNotFoundException(val accessionId: AccessionId) :
     EntityNotFoundException("Accession $accessionId not found")
 
+class AutomationNotFoundException(val automationId: AutomationId) :
+    EntityNotFoundException("Automation $automationId not found")
+
 class DeviceNotFoundException(val deviceId: DeviceId) :
     EntityNotFoundException("Device $deviceId not found")
 
