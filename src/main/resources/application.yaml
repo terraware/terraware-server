@@ -24,7 +24,7 @@ spring:
     # Spring Boot Mail checks for the existence of this option; we want to enable it even if
     # we aren't using SMTP.
     host: dummy
-    # Make authentication and TLS opt-out in local configurations since we usually want it.
+    # Default to using authentication and TLS. Can opt out in local configuration.
     properties:
       mail:
         smtp:
