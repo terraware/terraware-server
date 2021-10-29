@@ -1,0 +1,310 @@
+package com.terraformation.backend.db
+
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.CUSTOMER
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.GIS
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
+import com.terraformation.backend.log.perClassLogger
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
+import java.sql.DatabaseMetaData
+import java.sql.ResultSet
+import java.time.Duration
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
+import org.opentest4j.TestAbortedException
+import org.testcontainers.containers.BindMode
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.output.Slf4jLogConsumer
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy
+import org.testcontainers.utility.DockerImageName
+
+/**
+ * Generates a series of directories with self-contained static HTML database schema documentation.
+ *
+ * ## How to run the generator
+ *
+ * ```
+ * mkdir -p docs/schema
+ * SCHEMA_DOCS_DIR=docs/schema ./gradlew test --tests SchemaDocsGenerator
+ * ```
+ *
+ * ## Slices
+ *
+ * This class defines a set of "slices" each of which is a subset of the full database schema. A
+ * separate schema document is created for each slice. Aside from the special "ALL" slice which has
+ * just about every table, the goal should be to keep each slice focused on a specific subject area:
+ * someone who is looking at the data model for seeds probably doesn't care how timeseries values
+ * are represented.
+ *
+ * Tables can, and do, appear in multiple topic-specific slices. For example, most slices have the
+ * `projects` table because nearly all the data in our system is indirectly tied to a project. But
+ * most slices don't include the `project_types` reference table, even though `projects` has a
+ * foreign key reference to it, because the existence of that reference table is not relevant for
+ * someone who's focused on seed banking or tree tracking.
+ *
+ * ## Implementation notes
+ *
+ * Doc generation isn't super fast, so we skip it by default and only enable it if an environment
+ * variable is set.
+ *
+ * The actual doc generation is handled by [SchemaSpy](https://schemaspy.org/); this class invokes
+ * SchemaSpy using its official Docker image.
+ *
+ * This is a JUnit test because it's a convenient way to make use of the existing infrastructure for
+ * running our schema migrations and connecting to a database in the CI environment. And there is a
+ * real test method here, too, that ensures we don't add tables to the schema and forget to
+ * configure where they should appear in our docs.
+ *
+ * SchemaSpy populates each doc subdirectory with a bunch of minified JavaScript code, font files,
+ * and other such things. These don't take up additional space in the git history because their
+ * contents are identical across subdirectories.
+ */
+class SchemaDocsGenerator : DatabaseTest() {
+  /** Docker image to use to generate docs. */
+  private val schemaSpyDockerImage = DockerImageName.parse("schemaspy/schemaspy:6.1.0")
+
+  /**
+   * Name of environment variable specifying where the schema subdirectories should live. If not
+   * set, doc generation is skipped.
+   */
+  private val docsDirEnvVar = "SCHEMA_DOCS_DIR"
+
+  /**
+   * How long to let doc generation run. This should be long enough to account for slow GitHub
+   * Actions runners.
+   */
+  private val timeout = Duration.ofMinutes(10)!!
+
+  private val log = perClassLogger()
+
+  /**
+   * Defines the set of schema slices. Each slice gets turned into a separate documentation
+   * subdirectory. A given table can appear in multiple directories, or none at all.
+   */
+  enum class Slice(val subdirectory: String) {
+    /**
+     * The full schema. Doesn't include tables that are needed by libraries but not really part of
+     * the application's data model, e.g., the Flyway migration history table. But everything else
+     * should be in this slice.
+     */
+    ALL("all"),
+    CUSTOMER("customer"),
+    DEVICE("device"),
+    GIS("gis"),
+    SEEDBANK("seedbank"),
+    SPECIES("species")
+  }
+
+  /**
+   * Which slices each table should appear in. System tables such as the Flyway migration history
+   * table don't appear in our schema docs since they aren't part of our application's data model.
+   */
+  private val tableSlices =
+      mapOf(
+          "accession_germination_test_types" to setOf(ALL, SEEDBANK),
+          "accession_photos" to setOf(ALL, SEEDBANK),
+          "accession_secondary_collectors" to setOf(ALL, SEEDBANK),
+          "accession_state_history" to setOf(ALL, SEEDBANK),
+          "accession_states" to setOf(ALL, SEEDBANK),
+          "accessions" to setOf(ALL, SEEDBANK),
+          "app_devices" to setOf(ALL, SEEDBANK),
+          "automations" to setOf(ALL, DEVICE),
+          "bags" to setOf(ALL, SEEDBANK),
+          "collectors" to setOf(ALL, SEEDBANK),
+          "conservation_statuses" to setOf(ALL, SPECIES),
+          "devices" to setOf(ALL, DEVICE),
+          "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
+          "facility_alert_recipients" to setOf(ALL, CUSTOMER, DEVICE),
+          "facility_types" to setOf(ALL, CUSTOMER),
+          "families" to setOf(ALL, SEEDBANK, SPECIES),
+          "family_names" to setOf(ALL, SPECIES),
+          "feature_photos" to setOf(ALL, GIS),
+          "features" to setOf(ALL, GIS),
+          "flyway_schema_history" to emptySet(),
+          "geolocations" to setOf(ALL, SEEDBANK),
+          "germination_seed_types" to setOf(ALL, SEEDBANK),
+          "germination_substrates" to setOf(ALL, SEEDBANK),
+          "germination_test_types" to setOf(ALL, SEEDBANK),
+          "germination_tests" to setOf(ALL, SEEDBANK),
+          "germination_treatments" to setOf(ALL, SEEDBANK),
+          "germinations" to setOf(ALL, SEEDBANK),
+          "health_states" to setOf(ALL, GIS),
+          "layer_types" to setOf(ALL, GIS),
+          "layers" to setOf(ALL, GIS),
+          "notification_types" to setOf(ALL, SEEDBANK),
+          "notifications" to setOf(ALL, SEEDBANK),
+          "organization_users" to setOf(ALL, CUSTOMER),
+          "organizations" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK),
+          "photos" to setOf(ALL, GIS, SEEDBANK),
+          "plant_forms" to setOf(ALL, SPECIES),
+          "plant_observations" to setOf(ALL, GIS),
+          "plants" to setOf(ALL, GIS),
+          "processing_methods" to setOf(ALL, SEEDBANK),
+          "project_statuses" to setOf(ALL, CUSTOMER),
+          "project_types" to setOf(ALL, CUSTOMER),
+          "project_users" to setOf(ALL, CUSTOMER),
+          "projects" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK),
+          "rare_types" to setOf(ALL, SPECIES),
+          "roles" to setOf(ALL, CUSTOMER),
+          "seed_quantity_units" to setOf(ALL, SEEDBANK),
+          "sites" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK),
+          "source_plant_origins" to setOf(ALL, SEEDBANK),
+          "spatial_ref_sys" to emptySet(),
+          "species" to setOf(ALL, SEEDBANK, GIS, SPECIES),
+          "species_endangered_types" to setOf(ALL, SPECIES),
+          "species_names" to setOf(ALL, SPECIES),
+          "species_options" to setOf(ALL, SPECIES),
+          "spring_session" to emptySet(),
+          "spring_session_attributes" to emptySet(),
+          "storage_conditions" to setOf(ALL, SEEDBANK),
+          "storage_locations" to setOf(ALL, SEEDBANK),
+          "task_processed_times" to setOf(ALL),
+          "test_clock" to setOf(ALL),
+          "thumbnails" to setOf(ALL, GIS, SEEDBANK),
+          "timeseries" to setOf(ALL, DEVICE),
+          "timeseries_types" to setOf(ALL, DEVICE),
+          "timeseries_values" to setOf(ALL, DEVICE),
+          "user_types" to setOf(ALL, CUSTOMER),
+          "users" to setOf(ALL, CUSTOMER),
+          "withdrawal_purposes" to setOf(ALL, SEEDBANK),
+          "withdrawals" to setOf(ALL, SEEDBANK),
+      )
+
+  @EnumSource(Slice::class)
+  @ParameterizedTest
+  @Suppress("UPPER_BOUND_VIOLATED_WARNING") // For GenericContainer<GenericContainer<*>>
+  fun generateDocs(slice: Slice) {
+    val docsDirValue =
+        System.getenv(docsDirEnvVar)
+            ?: throw TestAbortedException("Skipping because $docsDirEnvVar is not set")
+    val docsDir = Path(docsDirValue).toAbsolutePath()
+
+    assertTrue(docsDir.exists(), "$docsDir doesn't exist")
+
+    // SchemaSpy matches table names against a regex. Construct one that has all the tables in the
+    // current slice. Table names should never include regex special characters.
+    val tableRegex = tableSlices.filterValues { slice in it }.keys.joinToString("|")
+
+    val sliceDir = docsDir.resolve(slice.subdirectory)
+
+    // The SchemaSpy Docker container runs as a different user than the CI build, so we need to
+    // allow it to create files in the slice directories. Set the permissions explicitly rather than
+    // as part of directory creation so they aren't altered by the current umask.
+    Files.createDirectories(sliceDir)
+    Files.setPosixFilePermissions(sliceDir, PosixFilePermissions.fromString("rwxrwxrwx"))
+
+    try {
+      log.info("Writing output to $sliceDir")
+
+      val container =
+          GenericContainer<GenericContainer<*>>(schemaSpyDockerImage)
+              .withCommand(
+                  // Use the driver for Postgres 11 and up
+                  "-t",
+                  "pgsql11",
+                  "-host",
+                  postgresContainer.networkAliases.first(),
+                  "-port",
+                  PostgreSQLContainer.POSTGRESQL_PORT.toString(),
+                  "-u",
+                  postgresContainer.username,
+                  "-p",
+                  postgresContainer.password,
+                  "-db",
+                  postgresContainer.databaseName,
+                  // Output all diagrams as SVG (default is PNG which generates huge image files)
+                  "-imageformat",
+                  "svg",
+                  // Disable a useless feature that warns when tables have similar column names
+                  "-noimplied",
+                  // Restrict the doc to the tables that should be shown in this slice
+                  "-i",
+                  tableRegex)
+              .withFileSystemBind(sliceDir.toString(), "/output", BindMode.READ_WRITE)
+              // Log stdout as INFO and stderr as ERROR
+              .withLogConsumer(Slf4jLogConsumer(log).withSeparateOutputStreams())
+              .withNetwork(postgresContainer.network)
+              // Wait for the container to exit with exit code 0 when it's started
+              .withStartupCheckStrategy(OneShotStartupCheckStrategy().withTimeout(timeout))
+
+      // This will wait for the command to finish, thanks to OneShotStartupCheckStrategy, and will
+      // throw an exception if the command exits with nonzero status.
+      container.start()
+    } finally {
+      // Don't leave a world-writable directory sitting around.
+      Files.setPosixFilePermissions(sliceDir, PosixFilePermissions.fromString("rwxr-xr-x"))
+    }
+  }
+
+  @Test
+  fun `all tables should be included in tableSlices configuration`() {
+    val tablesFromDb = mutableSetOf<String>()
+
+    forEachTable { metadata ->
+      val tableName = metadata.getString(TABLE_NAME)
+      tablesFromDb.add(tableName)
+    }
+
+    // Diff the configuration and the list of tables from the DB in two assertions so the failure
+    // message is easier to read; assertEquals() would require hunting through a big list of tables
+    // to spot the differences.
+
+    assertEquals(
+        emptySet<String>(),
+        tablesFromDb - tableSlices.keys,
+        "Tables not listed in schema doc configuration")
+    assertEquals(
+        emptySet<String>(),
+        tableSlices.keys - tablesFromDb,
+        "Nonexistent tables listed in schema doc configuration")
+  }
+
+  @Test
+  fun `tables that are included in docs should have comments`() {
+    val tablesWithoutComments = mutableListOf<String>()
+
+    forEachTable { metadata ->
+      val tableName = metadata.getString(TABLE_NAME)
+      if (!tableSlices[tableName].isNullOrEmpty() && metadata.getString(TABLE_COMMENT) == null) {
+        tablesWithoutComments.add(tableName)
+      }
+    }
+
+    assertEquals(
+        emptyList<String>(),
+        tablesWithoutComments.sorted(),
+        "Tables without comments that are included in docs; please add them to R__Comments.sql")
+  }
+
+  /**
+   * Queries the list of tables in the "public" schema from the database and passes the metadata for
+   * each one to a callback function. The metadata is in the form of a JDBC [ResultSet]; see
+   * [DatabaseMetaData.getTables] for a list of the available columns.
+   */
+  private fun forEachTable(func: (resultSet: ResultSet) -> Unit) {
+    dslContext.connection { conn ->
+      conn.metaData.getTables(null, "public", null, arrayOf("TABLE")).use { metadata ->
+        while (metadata.next()) {
+          func(metadata)
+        }
+      }
+    }
+  }
+
+  companion object {
+    /** Name of JDBC table metadata column that holds the table name. */
+    private const val TABLE_NAME = "TABLE_NAME"
+
+    /** Name of JDBC table metadata column that holds the table comment. */
+    private const val TABLE_COMMENT = "REMARKS"
+  }
+}

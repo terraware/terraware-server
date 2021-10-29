@@ -1,0 +1,4 @@
+# THIS FILE GETS REMOVED AS PART OF THE CI BUILD!
+
+# Don't allow generated schema docs to be committed to the main branch.
+schema
