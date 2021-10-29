@@ -181,6 +181,14 @@ class UserModel(
     return facilityId in facilityRoles
   }
 
+  fun canUpdateFacility(facilityId: FacilityId): Boolean {
+    return facilityId in facilityRoles
+  }
+
+  fun canSendAlert(facilityId: FacilityId): Boolean {
+    return facilityId in facilityRoles
+  }
+
   fun canCreateDevice(facilityId: FacilityId): Boolean {
     // Any user with access to the facility can create a new device.
     // TODO: Revisit this once we can set roles on API clients

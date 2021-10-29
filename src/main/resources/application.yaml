@@ -20,6 +20,19 @@ spring:
     placeholders:
       jsonColumnType: "JSONB"
 
+  mail:
+    # Spring Boot Mail checks for the existence of this option; we want to enable it even if
+    # we aren't using SMTP.
+    host: dummy
+    # Default to using authentication and TLS. Can opt out in local configuration.
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
   servlet:
     multipart:
       max-request-size: 20MB

@@ -116,6 +116,56 @@ For example, you could create `src/main/resources/application-dev-foo.yaml` and 
 
 You can have as many local profiles in the list as you like. If the same config setting is specified in more than one of them, the last one wins.
 
+## Configuring email
+
+By default, the server will output email messages to its log rather than trying to send them. To enable email, you need to tell it which mail server to connect to and how to authenticate. It supports both SMTP and the AWS Simple Email Service (SES) version 2.
+
+You can also configure it to send email to you rather than to the intended recipients; this is useful for testing locally when you want to make sure you don't accidentally spam anyone else.
+
+To use SMTP:
+
+```yaml
+terraware:
+  email:
+    enabled: true
+    override-address: your-name@your-domain.com
+    sender-address: your-name@your-domain.com
+
+spring:
+  mail:
+    host: smtp-host.yourdomain.com
+    port: 587   # This should be the SMTP host's STARTTLS port; 587 is a common one
+    username: your-smtp-username
+    password: your-smtp-password
+```
+
+To use SES, you need to supply AWS credentials, e.g., by setting the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables, by configuring them in `~/.aws/config`, or by using an instance profile. Then configure the server:
+
+```yaml
+terraware:
+  email:
+    enabled: true
+    override-address: your-name@your-domain.com
+    sender-address: your-name@your-domain.com
+    use-ses: true
+```
+
+To disable recipient address overriding, set its config option to false (in addition to the other configuration shown above):
+
+```yaml
+terraware:
+  email:
+    always-send-to-override-address: false
+```
+
+To include a prefix in the subject lines of all email messages, useful to identify that they're from your dev environment (note that this is already included in the `default` profile, so if you're using that, you don't need to do this explicitly):
+
+```yaml
+terraware:
+  email:
+    subject-prefix: "[DEV]"
+```
+
 ## How to contribute
 
 We welcome your contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for information about contributing to the project's development, including a discussion of coding conventions.

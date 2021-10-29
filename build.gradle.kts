@@ -67,6 +67,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-jooq")
+  implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -91,8 +92,10 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
   implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
+  implementation("software.amazon.awssdk:sesv2")
   implementation("software.amazon.awssdk:rds")
   implementation("software.amazon.awssdk:s3")
+  implementation("software.amazon.awssdk:sts")
 
   implementation("org.springdoc:springdoc-openapi-kotlin:$springDocVersion")
   implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")

@@ -279,7 +279,9 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
+        updateFacility = true,
         listAutomations = true,
+        sendAlert = true,
     )
 
     permissions.expect(
@@ -422,7 +424,9 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
+        updateFacility = true,
         listAutomations = true,
+        sendAlert = true,
     )
 
     permissions.expect(
@@ -521,7 +525,9 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
+        updateFacility = true,
         listAutomations = true,
+        sendAlert = true,
     )
 
     permissions.expect(
@@ -602,7 +608,9 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
+        updateFacility = true,
         listAutomations = true,
+        sendAlert = true,
     )
 
     permissions.expect(
@@ -703,7 +711,9 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
+        updateFacility = true,
         listAutomations = true,
+        sendAlert = true,
     )
 
     permissions.expect(
@@ -912,7 +922,9 @@ internal class PermissionTest : DatabaseTest() {
         createAccession: Boolean = false,
         createAutomation: Boolean = false,
         createDevice: Boolean = false,
+        updateFacility: Boolean = false,
         listAutomations: Boolean = false,
+        sendAlert: Boolean = false,
     ) {
       facilities.forEach { facilityId ->
         assertEquals(
@@ -928,9 +940,13 @@ internal class PermissionTest : DatabaseTest() {
             user.canCreateDevice(facilityId),
             "Can create device at facility $facilityId")
         assertEquals(
+            updateFacility, user.canUpdateFacility(facilityId), "Can update facility $facilityId")
+        assertEquals(
             listAutomations,
             user.canListAutomations(facilityId),
             "Can list automations at facility $facilityId")
+        assertEquals(
+            sendAlert, user.canSendAlert(facilityId), "Can send alert for facility $facilityId")
 
         uncheckedFacilities.remove(facilityId)
       }

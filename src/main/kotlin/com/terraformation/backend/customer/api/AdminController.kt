@@ -9,6 +9,8 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.OrganizationId
@@ -20,6 +22,7 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.gis.db.LayerStore
 import com.terraformation.backend.gis.model.LayerModel
 import com.terraformation.backend.log.perClassLogger
@@ -53,6 +56,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminController(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
+    private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val layerStore: LayerStore,
     private val organizationStore: OrganizationStore,
@@ -168,6 +172,30 @@ class AdminController(
     model.addAttribute("site", site)
 
     return "/admin/site"
+  }
+
+  @GetMapping("/facility/{facilityId}")
+  fun getFacility(@PathVariable facilityId: FacilityId, model: Model): String {
+    val facility =
+        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val site = siteStore.fetchById(facility.siteId) ?: throw SiteNotFoundException(facility.siteId)
+    val project =
+        projectStore.fetchById(site.projectId) ?: throw ProjectNotFoundException(site.projectId)
+    val organization =
+        organizationStore.fetchById(project.organizationId)
+            ?: throw OrganizationNotFoundException(project.organizationId)
+    val recipients = facilityStore.getAlertRecipients(facilityId)
+
+    model.addAttribute("canUpdateFacility", currentUser().canUpdateFacility(facilityId))
+    model.addAttribute("facility", facility)
+    model.addAttribute("facilityTypes", FacilityType.values())
+    model.addAttribute("organization", organization)
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("project", project)
+    model.addAttribute("recipients", recipients)
+    model.addAttribute("site", site)
+
+    return "/admin/facility"
   }
 
   @GetMapping("/user/{userId}")
@@ -497,6 +525,79 @@ class AdminController(
     return site(siteId)
   }
 
+  @PostMapping("/updateFacility")
+  fun updateFacility(
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("name") name: String,
+      @RequestParam("type") typeId: Int,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    val type = FacilityType.forId(typeId)
+
+    if (type == null) {
+      redirectAttributes.addFlashAttribute("failureMessage", "Unknown facility type.")
+      return facility(facilityId)
+    }
+
+    facilityStore.update(facilityId, name, type)
+
+    redirectAttributes.addFlashAttribute("successMessage", "Facility updated.")
+
+    return facility(facilityId)
+  }
+
+  @PostMapping("/deleteAlertRecipient")
+  fun deleteAlertRecipient(
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("email") email: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    facilityStore.deleteAlertRecipient(facilityId, email)
+
+    redirectAttributes.addFlashAttribute("successMessage", "Recipient deleted.")
+
+    return facility(facilityId)
+  }
+
+  @PostMapping("/addAlertRecipient")
+  fun addAlertRecipient(
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("email") email: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    facilityStore.insertAlertRecipient(facilityId, email)
+
+    redirectAttributes.addFlashAttribute("successMessage", "Recipient added.")
+
+    return facility(facilityId)
+  }
+
+  @PostMapping("/sendAlert")
+  fun sendAlert(
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("subject") subject: String,
+      @RequestParam("body") body: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      emailService.sendAlert(facilityId, subject, body)
+
+      val successMessage =
+          if (config.email.enabled) {
+            "Alert sent."
+          } else {
+            "Alert generated and logged, but email sending is currently disabled."
+          }
+
+      redirectAttributes.addFlashAttribute("successMessage", successMessage)
+    } catch (e: Exception) {
+      log.error("Failed to send alert", e)
+      redirectAttributes.addFlashAttribute("failureMessage", "Failed to send alert.")
+    }
+
+    return facility(facilityId)
+  }
+
   @PostMapping("/createApiKey")
   fun createApiKey(
       @RequestParam("organizationId") organizationId: OrganizationId,
@@ -561,5 +662,6 @@ class AdminController(
       redirect("/organization/$organizationId")
   private fun project(projectId: ProjectId) = redirect("/project/$projectId")
   private fun site(siteId: SiteId) = redirect("/site/$siteId")
+  private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")
   private fun user(userId: UserId) = redirect("/user/$userId")
 }
