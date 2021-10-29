@@ -29,15 +29,15 @@
 <text text-anchor="start" x="291" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
 <polygon fill="none" stroke="black" points="261,-61 261,-79 359,-79 359,-61 261,-61"/>
 <text text-anchor="start" x="264" y="-67.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="261,-43 261,-61 294,-61 294,-43 261,-43"/>
-<polygon fill="none" stroke="black" points="261,-43 261,-61 294,-61 294,-43 261,-43"/>
+<polygon fill="#ffffff" stroke="none" points="261,-43 261,-61 289,-61 289,-43 261,-43"/>
+<polygon fill="none" stroke="black" points="261,-43 261,-61 289,-61 289,-43 261,-43"/>
 <text text-anchor="start" x="264" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="294,-43 294,-61 341,-61 341,-43 294,-43"/>
-<polygon fill="none" stroke="black" points="294,-43 294,-61 341,-61 341,-43 294,-43"/>
-<text text-anchor="start" x="302" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="341,-43 341,-61 359,-61 359,-43 341,-43"/>
-<polygon fill="none" stroke="black" points="341,-43 341,-61 359,-61 359,-43 341,-43"/>
-<text text-anchor="start" x="349" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="289,-43 289,-61 333,-61 333,-43 289,-43"/>
+<polygon fill="none" stroke="black" points="289,-43 289,-61 333,-61 333,-43 289,-43"/>
+<text text-anchor="start" x="294" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="333,-43 333,-61 359,-61 359,-43 333,-43"/>
+<polygon fill="none" stroke="black" points="333,-43 333,-61 359,-61 359,-43 333,-43"/>
+<text text-anchor="start" x="339" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>

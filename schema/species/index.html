@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Thu Oct 28 21:13 GMT 2021</p>
+                                <p>Generated on Fri Oct 29 18:14 GMT 2021</p>
                             </div>
                         </div>
                     </div>
@@ -206,7 +206,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values for the &ldquo;Endangered&rdquo; attribute of an accession. This is not used for plants whose locations are being tracked; see <code>conservation_statuses</code> instead.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/plant_forms.html">plant_forms</a></td>
@@ -215,7 +215,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) What physical form a particular species takes. For example, &ldquo;Tree&rdquo; or &ldquo;Shrub.&rdquo;</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/conservation_statuses.html">conservation_statuses</a></td>
@@ -224,7 +224,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) UICN Red List categories defining the conservation status of a given species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/family_names.html">family_names</a></td>
@@ -233,7 +233,7 @@
                                         <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Alternate names for families. A family can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in <code>families</code>.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/families.html">families</a></td>
@@ -242,7 +242,7 @@
                                         <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Taxonomic family that each species belongs to. For example, Cousa dogwood (Cornus kousa) is in family &ldquo;Cornaceae.&rdquo;</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/rare_types.html">rare_types</a></td>
@@ -251,7 +251,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values of the &ldquo;Rare&rdquo; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/species.html">species</a></td>
@@ -260,16 +260,7 @@
                                         <td class="detail" align="right">11</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Information about plant species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/species_options.html">species_options</a></td>
@@ -278,7 +269,16 @@
                                         <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>species</code> and <code>organizations</code> that represents which species are in use by which organizations. Can also link a species to a project and/or a site.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Alternate names for species. A species can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in <code>species</code>.</p></td>
                                     </tr>
                             </table>
                         </div>

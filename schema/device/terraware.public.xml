@@ -4,7 +4,7 @@
       <sequence increment="1" name="accession_number_seq" startValue="1"/>
    </sequences>
    <tables>
-      <table name="automations" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="automations" numRows="0" remarks="Configuration of automatic processes run by the device manager." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
@@ -23,7 +23,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="devices" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="devices" numRows="0" remarks="Hardware devices managed by the device manager at a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="parent_id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="device_id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
@@ -49,10 +49,11 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="facilities" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="facilities" numRows="0" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="facility_id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
             <child column="facility_id" foreignKey="device_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <child column="facility_id" foreignKey="facility_alert_recipients_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_alert_recipients"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="site_module_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
@@ -67,8 +68,23 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="facility_alert_recipients" numRows="0" remarks="Where to send notifications about issues at a particular facility. The recipients are not necessarily Terraware users." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="facility_alert_recipients_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_alert_recipients_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="facility_alert_recipients_facility_id_email_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+            <column ascending="true" name="email"/>
+         </index>
+      </table>
       <table name="organizations" numRows="0" remarks="Top-level information about organizations." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Assigned centrally; matches the organization ID on the cloud service." size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -81,7 +97,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="projects" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="projects" numRows="0" remarks="Information about a single restoration project. A project can span multiple sites." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
          </column>
@@ -104,7 +120,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="sites" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="sites" numRows="0" remarks="Physical locations where facilities are located or plants are being tracked." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="site_id" foreignKey="site_module_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
          </column>
@@ -123,7 +139,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="timeseries" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="timeseries" numRows="0" remarks="Properties of a series of values collected from a device. Each device metric is represented as a timeseries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="timeseries_id" foreignKey="timeseries_value_timeseries_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries_values"/>
          </column>
@@ -146,7 +162,7 @@
          </index>
          <checkConstraint constraint="((decimal_places &gt;= 0))" name="timeseries_decimal_places_check"/>
       </table>
-      <table name="timeseries_types" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="timeseries_types" numRows="2" remarks="(Enum) Data formats of the values of a timeseries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="type_id" foreignKey="timeseries_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
          </column>
@@ -156,7 +172,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="timeseries_values" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="timeseries_values" numRows="0" remarks="Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="timeseries_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="timeseries_value_timeseries_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
          </column>

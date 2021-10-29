@@ -42,6 +42,7 @@ plant_observations
 timeseries
 automations
 bags
+facility_alert_recipients
 family_names
 geolocations
 germinations

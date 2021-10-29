@@ -4,7 +4,7 @@
       <sequence increment="1" name="accession_number_seq" startValue="1"/>
    </sequences>
    <tables>
-      <table name="feature_photos" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="feature_photos" numRows="0" remarks="Linking table between `features` and `photos`. Also optionally links `plant_observations` and `photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="feature_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
          </column>
@@ -22,7 +22,7 @@
             <column ascending="true" name="feature_id"/>
          </index>
       </table>
-      <table name="features" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="features" numRows="0" remarks="Physical features that appear on a map. For example, an individual tree whose location is being tracked is a map feature. This table only has generic information; child tables such as `plants` have more information about particular kinds of features." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="feature_id" foreignKey="feature_photos_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
             <child column="feature_id" foreignKey="plants_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
@@ -45,7 +45,7 @@
          <checkConstraint constraint="(((attrib IS NULL) OR (length(attrib) &gt; 0)))" name="attrib_cannot_be_empty_string"/>
          <checkConstraint constraint="(((notes IS NULL) OR (length(notes) &gt; 0)))" name="notes_cannot_be_empty_string"/>
       </table>
-      <table name="health_states" numRows="4" remarks="" schema="public" type="TABLE">
+      <table name="health_states" numRows="4" remarks="(Enum) Possible ratings of how healthy a plant was when it was observed." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="health_state_id" foreignKey="plant_observations_health_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
          </column>
@@ -58,7 +58,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="layer_types" numRows="12" remarks="" schema="public" type="TABLE">
+      <table name="layer_types" numRows="12" remarks="(Enum) Types of map features that can be grouped together into a layer." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="layer_type_id" foreignKey="layers_layer_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
          </column>
@@ -71,7 +71,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="layers" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="layers" numRows="0" remarks="Map layers. Each layer has features of a particular type, e.g., irrigation infrastructure or existing vegetation at a site." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="layer_id" foreignKey="features_layer_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
          </column>
@@ -94,7 +94,7 @@
          <checkConstraint constraint="(((tile_set_name IS NULL) OR (length(tile_set_name) &gt; 0)))" name="tile_set_name_cannot_be_empty_string"/>
       </table>
       <table name="organizations" numRows="0" remarks="Top-level information about organizations." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Assigned centrally; matches the organization ID on the cloud service." size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -107,7 +107,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="photos" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="photos" numRows="0" remarks="Generic information about individual photos. Photos are associated with application entities using linking tables such as `feature_photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="photo_id" foreignKey="feature_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
             <child column="photo_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
@@ -135,7 +135,7 @@
          <checkConstraint constraint="((length(content_type) &gt; 0))" name="content_type_cannot_be_empty_string"/>
          <checkConstraint constraint="((length(file_name) &gt; 0))" name="file_name_cannot_be_empty_string"/>
       </table>
-      <table name="plant_observations" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="plant_observations" numRows="0" remarks="Observations of a particular plant. A single plant can be observed repeatedly over time." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="plant_observation_id" foreignKey="feature_photos_plant_observation_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
          </column>
@@ -159,7 +159,7 @@
          </index>
          <checkConstraint constraint="(((pests IS NULL) OR (length(pests) &gt; 0)))" name="pests_cannot_be_empty_string"/>
       </table>
-      <table name="plants" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="plants" numRows="0" remarks="Plants whose locations are being tracked. Each plant is represented as a map feature in the `features` table; this table has information that only applies to plants and not to other kinds of map features." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="feature_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="feature_id" foreignKey="plant_observations_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
             <parent column="id" foreignKey="plants_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
@@ -178,7 +178,7 @@
          </index>
          <checkConstraint constraint="(((label IS NULL) OR (length(label) &gt; 0)))" name="label_cannot_be_empty_string"/>
       </table>
-      <table name="projects" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="projects" numRows="0" remarks="Information about a single restoration project. A project can span multiple sites." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
          </column>
@@ -201,7 +201,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="sites" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="sites" numRows="0" remarks="Physical locations where facilities are located or plants are being tracked." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="site_id" foreignKey="layers_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
          </column>
@@ -220,7 +220,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="species" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="species" numRows="0" remarks="Information about plant species." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
          </column>
@@ -245,7 +245,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="thumbnails" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="thumbnails" numRows="0" remarks="Information about scaled-down versions of photos." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>

@@ -1,5 +1,6 @@
 organization_users
 project_users
+facility_alert_recipients
 facilities
 sites
 projects

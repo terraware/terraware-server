@@ -224,24 +224,6 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>features_layer_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/features.html'>features</a><span>.layer_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/layers.html'>layers</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>layers_site_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -272,6 +254,24 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/layer_types.html'>layer_types</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>features_layer_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/features.html'>features</a><span>.layer_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/layers.html'>layers</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -360,6 +360,11 @@
                                         <td>(((pests IS NULL) OR (length(pests) &gt; 0)))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/layers.html'>layers</a></td>
+                                        <td>tile_set_name_cannot_be_empty_string</td>
+                                        <td>(((tile_set_name IS NULL) OR (length(tile_set_name) &gt; 0)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/features.html'>features</a></td>
                                         <td>attrib_cannot_be_empty_string</td>
                                         <td>(((attrib IS NULL) OR (length(attrib) &gt; 0)))</td>
@@ -368,11 +373,6 @@
                                         <td><a href='tables/features.html'>features</a></td>
                                         <td>notes_cannot_be_empty_string</td>
                                         <td>(((notes IS NULL) OR (length(notes) &gt; 0)))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/layers.html'>layers</a></td>
-                                        <td>tile_set_name_cannot_be_empty_string</td>
-                                        <td>(((tile_set_name IS NULL) OR (length(tile_set_name) &gt; 0)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/plants.html'>plants</a></td>

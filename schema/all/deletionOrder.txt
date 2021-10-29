@@ -16,6 +16,7 @@ thumbnails
 germinations
 geolocations
 family_names
+facility_alert_recipients
 bags
 automations
 timeseries

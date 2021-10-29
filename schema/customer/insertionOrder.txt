@@ -8,5 +8,6 @@ users
 projects
 sites
 facilities
+facility_alert_recipients
 project_users
 organization_users

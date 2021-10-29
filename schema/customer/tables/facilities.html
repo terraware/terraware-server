@@ -74,6 +74,19 @@
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
                     <h1>facilities</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-text-o"></i>
+                            <h3 id="Description" class="box-title">Description</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div><!-- /.box-header -->
+                        <div class="box-body clearfix">
+                            <p>Physical locations at a site. For example, each seed bank and each nursery is a facility.</p>
+                        </div><!-- /.box-body -->
+                    </div>
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -111,6 +124,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="facility_alert_recipients.facility_id references facilities.id via facility_alert_recipients_facility_id_fkey"><a href='facility_alert_recipients.html'>facility_alert_recipients</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">facility_alert_recipients_facility_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -285,6 +302,7 @@
 <area shape="rect" id="node1" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="237,41,503,316">
 <area shape="rect" id="node2" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="17,5,181,152">
 <area shape="rect" id="node3" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="5,169,193,287">
+<area shape="rect" id="node4" href="../../tables/facility_alert_recipients.html" target="_top" title="facility_alert_recipients" alt="" coords="547,15,813,167">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/facilities.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -293,7 +311,8 @@
 <area shape="rect" id="node1" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="429,41,695,316">
 <area shape="rect" id="node2" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="209,5,373,152">
 <area shape="rect" id="node3" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="197,169,385,287">
-<area shape="rect" id="node4" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="5,37,153,125">
+<area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="5,37,153,125">
+<area shape="rect" id="node4" href="../../tables/facility_alert_recipients.html" target="_top" title="facility_alert_recipients" alt="" coords="739,15,1005,167">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/facilities.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

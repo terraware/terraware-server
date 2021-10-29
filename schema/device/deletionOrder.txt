@@ -1,4 +1,5 @@
 timeseries_values
+facility_alert_recipients
 automations
 timeseries
 devices

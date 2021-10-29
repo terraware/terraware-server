@@ -85,7 +85,7 @@
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p><p>args: geom, from_proj, to_srid - Return a new geometry with its coordinates transformed to a different spatial reference system.</p></p>
+                            <p><p>args: geom, from_proj, to_proj - Return a new geometry with its coordinates transformed to a different spatial reference system.</p></p>
                         </div>
                         <!-- /.box-body -->
                     </div>
@@ -175,7 +175,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">transform</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT public.postgis_transform_geometry($1, $2, proj4text, $3)&#10;&#9;FROM spatial_ref_sys WHERE srid=$3;</textarea>
                         </div>
                     </div>
                 </section>

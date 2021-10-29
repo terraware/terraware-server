@@ -18,7 +18,7 @@
             <column ascending="true" name="germination_test_type_id"/>
          </index>
       </table>
-      <table name="accession_photos" numRows="0" remarks="Linking table between accessions and photos." schema="public" type="TABLE">
+      <table name="accession_photos" numRows="0" remarks="Linking table between `accessions` and `photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
          </column>
@@ -149,7 +149,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="35" name="storage_staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="36" name="latest_germination_recording_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="latest_viability_percent" nullable="true" remarks="Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="total_viability_percent" nullable="true" remarks="Percentage of viable seeds across all tests" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="total_viability_percent" nullable="true" remarks="Percentage of viable seeds across all tests." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="species_endangered_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_species_endangered_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_endangered_types"/>
          </column>
@@ -197,7 +197,7 @@
          <checkConstraint constraint="(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))" name="subset_weight_units_must_not_be_seeds"/>
          <checkConstraint constraint="((((total_quantity IS NOT NULL) AND (total_units_id IS NOT NULL)) OR ((total_quantity IS NULL) AND (total_units_id IS NULL))))" name="total_quantity_must_have_units"/>
       </table>
-      <table name="app_devices" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="app_devices" numRows="0" remarks="Installations of the mobile app that were used to upload seed data." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="app_device_id" foreignKey="accession_app_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
          </column>
@@ -225,7 +225,7 @@
             <column ascending="true" name="unique_id"/>
          </index>
       </table>
-      <table name="automations" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="automations" numRows="0" remarks="Configuration of automatic processes run by the device manager." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
@@ -244,7 +244,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="bags" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="bags" numRows="0" remarks="Individual bags of seeds that are part of an accession. An accession can consist of multiple bags." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="bag_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
@@ -255,7 +255,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="collectors" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="collectors" numRows="0" remarks="People who participated in seed collection. Both primary and secondary collectors are included." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="collector_id" foreignKey="accession_secondary_collector_collector_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_secondary_collectors"/>
             <child column="primary_collector_id" foreignKey="accession_primary_collector_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
@@ -270,7 +270,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="conservation_statuses" numRows="10" remarks="" schema="public" type="TABLE">
+      <table name="conservation_statuses" numRows="10" remarks="(Enum) UICN Red List categories defining the conservation status of a given species." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2" type="varchar" typeCode="12">
             <child column="conservation_status_id" foreignKey="species_conservation_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
@@ -283,7 +283,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="devices" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="devices" numRows="0" remarks="Hardware devices managed by the device manager at a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="parent_id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="device_id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
@@ -309,12 +309,13 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="facilities" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="facilities" numRows="0" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="facility_id" foreignKey="accession_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="facility_id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
             <child column="facility_id" foreignKey="collector_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="collectors"/>
             <child column="facility_id" foreignKey="device_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <child column="facility_id" foreignKey="facility_alert_recipients_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_alert_recipients"/>
             <child column="facility_id" foreignKey="storage_location_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="storage_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -332,7 +333,22 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="facility_types" numRows="3" remarks="" schema="public" type="TABLE">
+      <table name="facility_alert_recipients" numRows="0" remarks="Where to send notifications about issues at a particular facility. The recipients are not necessarily Terraware users." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="facility_alert_recipients_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_alert_recipients_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="facility_alert_recipients_facility_id_email_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+            <column ascending="true" name="email"/>
+         </index>
+      </table>
+      <table name="facility_types" numRows="3" remarks="(Enum) Types of facilities that can be represented in the data model." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="type_id" foreignKey="site_module_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
          </column>
@@ -342,7 +358,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="families" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="families" numRows="0" remarks="Taxonomic family that each species belongs to. For example, Cousa dogwood (Cornus kousa) is in family &quot;Cornaceae.&quot;" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="family_id" foreignKey="accession_species_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="family_id" foreignKey="family_names_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="family_names"/>
@@ -360,7 +376,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="family_names" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="family_names" numRows="0" remarks="Alternate names for families. A family can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `families`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="family_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="family_names_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="families"/>
@@ -379,7 +395,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="feature_photos" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="feature_photos" numRows="0" remarks="Linking table between `features` and `photos`. Also optionally links `plant_observations` and `photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="feature_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
          </column>
@@ -397,7 +413,7 @@
             <column ascending="true" name="feature_id"/>
          </index>
       </table>
-      <table name="features" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="features" numRows="0" remarks="Physical features that appear on a map. For example, an individual tree whose location is being tracked is a map feature. This table only has generic information; child tables such as `plants` have more information about particular kinds of features." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="feature_id" foreignKey="feature_photos_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
             <child column="feature_id" foreignKey="plants_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
@@ -420,7 +436,7 @@
          <checkConstraint constraint="(((attrib IS NULL) OR (length(attrib) &gt; 0)))" name="attrib_cannot_be_empty_string"/>
          <checkConstraint constraint="(((notes IS NULL) OR (length(notes) &gt; 0)))" name="notes_cannot_be_empty_string"/>
       </table>
-      <table name="geolocations" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="geolocations" numRows="0" remarks="Locations where seeds were collected." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="collection_event_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
@@ -437,7 +453,7 @@
             <column ascending="true" name="accession_id"/>
          </index>
       </table>
-      <table name="germination_seed_types" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="germination_seed_types" numRows="2" remarks="(Enum) Types of seeds that can be tested for germination ability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="seed_type_id" foreignKey="germination_test_seed_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
          </column>
@@ -447,7 +463,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="germination_substrates" numRows="4" remarks="" schema="public" type="TABLE">
+      <table name="germination_substrates" numRows="4" remarks="(Enum) Types of substrate that can be used to test seeds for germination ability." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="substrate_id" foreignKey="germination_test_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
          </column>
@@ -457,7 +473,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="germination_test_types" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="germination_test_types" numRows="2" remarks="(Enum) Types of tests that can be performed on seeds to check for germination ability." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="germination_test_type_id" foreignKey="accession_germination_test_type_germination_test_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_germination_test_types"/>
             <child column="test_type" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
@@ -471,7 +487,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="germination_tests" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="germination_tests" numRows="0" remarks="Information about a single batch of seeds being tested for germination ability. This is the information about the test itself; the results are represented in the `germinations` table." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="test_id" foreignKey="germination_test_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germinations"/>
             <child column="germination_test_id" foreignKey="withdrawal_germination_test_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="withdrawals"/>
@@ -511,7 +527,7 @@
             <column ascending="true" name="accession_id"/>
          </index>
       </table>
-      <table name="germination_treatments" numRows="5" remarks="" schema="public" type="TABLE">
+      <table name="germination_treatments" numRows="5" remarks="(Enum) Techniques that can be used to treat seeds before testing them for germination ability." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="treatment_id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
          </column>
@@ -521,7 +537,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="germinations" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="germinations" numRows="0" remarks="Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="test_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="germination_test_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
@@ -536,7 +552,7 @@
             <column ascending="true" name="test_id"/>
          </index>
       </table>
-      <table name="health_states" numRows="4" remarks="" schema="public" type="TABLE">
+      <table name="health_states" numRows="4" remarks="(Enum) Possible ratings of how healthy a plant was when it was observed." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="health_state_id" foreignKey="plant_observations_health_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
          </column>
@@ -549,7 +565,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="layer_types" numRows="12" remarks="" schema="public" type="TABLE">
+      <table name="layer_types" numRows="12" remarks="(Enum) Types of map features that can be grouped together into a layer." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="layer_type_id" foreignKey="layers_layer_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
          </column>
@@ -562,7 +578,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="layers" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="layers" numRows="0" remarks="Map layers. Each layer has features of a particular type, e.g., irrigation infrastructure or existing vegetation at a site." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="layer_id" foreignKey="features_layer_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
          </column>
@@ -584,7 +600,7 @@
          </index>
          <checkConstraint constraint="(((tile_set_name IS NULL) OR (length(tile_set_name) &gt; 0)))" name="tile_set_name_cannot_be_empty_string"/>
       </table>
-      <table name="notification_types" numRows="3" remarks="" schema="public" type="TABLE">
+      <table name="notification_types" numRows="3" remarks="(Enum) Types of seed bank notification that can be generated by the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="type_id" foreignKey="notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
          </column>
@@ -597,7 +613,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="notifications" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="notifications" numRows="0" remarks="Notifications about tasks that need to be performed at a seed bank." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="notification_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
@@ -639,7 +655,7 @@
          </index>
       </table>
       <table name="organizations" numRows="0" remarks="Top-level information about organizations." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Assigned centrally; matches the organization ID on the cloud service." size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="organization_id" foreignKey="species_names_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_names"/>
@@ -655,7 +671,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="photos" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="photos" numRows="0" remarks="Generic information about individual photos. Photos are associated with application entities using linking tables such as `feature_photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="photo_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_photos"/>
             <child column="photo_id" foreignKey="feature_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
@@ -686,7 +702,7 @@
          <checkConstraint constraint="((length(content_type) &gt; 0))" name="content_type_cannot_be_empty_string"/>
          <checkConstraint constraint="((length(file_name) &gt; 0))" name="file_name_cannot_be_empty_string"/>
       </table>
-      <table name="plant_forms" numRows="5" remarks="" schema="public" type="TABLE">
+      <table name="plant_forms" numRows="5" remarks="(Enum) What physical form a particular species takes. For example, &quot;Tree&quot; or &quot;Shrub.&quot;" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="plant_form_id" foreignKey="species_plant_form_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
@@ -699,7 +715,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="plant_observations" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="plant_observations" numRows="0" remarks="Observations of a particular plant. A single plant can be observed repeatedly over time." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="plant_observation_id" foreignKey="feature_photos_plant_observation_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
          </column>
@@ -723,7 +739,7 @@
          </index>
          <checkConstraint constraint="(((pests IS NULL) OR (length(pests) &gt; 0)))" name="pests_cannot_be_empty_string"/>
       </table>
-      <table name="plants" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="plants" numRows="0" remarks="Plants whose locations are being tracked. Each plant is represented as a map feature in the `features` table; this table has information that only applies to plants and not to other kinds of map features." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="feature_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="feature_id" foreignKey="plant_observations_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
             <parent column="id" foreignKey="plants_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
@@ -755,7 +771,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="project_statuses" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="project_statuses" numRows="0" remarks="(Enum) Statuses of projects recognized by the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="status_id" foreignKey="projects_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
@@ -768,7 +784,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="project_types" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="project_types" numRows="0" remarks="(Enum) Types of projects recognized by the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="type_id" foreignKey="projects_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
@@ -781,7 +797,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="project_users" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="project_users" numRows="0" remarks="Linking table between `projects` and `users` defining which users are allowed to access which projects." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="project_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
@@ -797,7 +813,7 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
-      <table name="projects" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="projects" numRows="0" remarks="Information about a single restoration project. A project can span multiple sites." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_id" foreignKey="project_users_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
             <child column="project_id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
@@ -828,7 +844,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="rare_types" numRows="3" remarks="" schema="public" type="TABLE">
+      <table name="rare_types" numRows="3" remarks="(Enum) Possible values of the &quot;Rare&quot; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="rare_type_id" foreignKey="accession_species_rare_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="rare_type_id" foreignKey="species_rare_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -839,7 +855,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="roles" numRows="4" remarks="" schema="public" type="TABLE">
+      <table name="roles" numRows="4" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
          </column>
@@ -852,7 +868,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="seed_quantity_units" numRows="6" remarks="" schema="public" type="TABLE">
+      <table name="seed_quantity_units" numRows="6" remarks="(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="remaining_units_id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="subset_weight_units_id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
@@ -867,7 +883,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="sites" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="sites" numRows="0" remarks="Physical locations where facilities are located or plants are being tracked." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="site_id" foreignKey="site_module_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="site_id" foreignKey="layers_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
@@ -889,7 +905,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="source_plant_origins" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="source_plant_origins" numRows="2" remarks="(Enum) Types of origins of plants from which seeds were collected. For example, &quot;Outplant&quot; represents a plant that was cultivated, as opposed to one growing in the wild." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="source_plant_origin_id" foreignKey="accession_source_plant_origin_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
          </column>
@@ -902,7 +918,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="species" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="species" numRows="0" remarks="Information about plant species." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="accession_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="species_id" foreignKey="plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
@@ -938,7 +954,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="species_endangered_types" numRows="3" remarks="" schema="public" type="TABLE">
+      <table name="species_endangered_types" numRows="3" remarks="(Enum) Possible values for the &quot;Endangered&quot; attribute of an accession. This is not used for plants whose locations are being tracked; see `conservation_statuses` instead." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="species_endangered_type_id" foreignKey="accession_species_endangered_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
          </column>
@@ -948,7 +964,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="species_names" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="species_names" numRows="0" remarks="Alternate names for species. A species can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `species`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_names_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -970,7 +986,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="species_options" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="species_options" numRows="0" remarks="Linking table between `species` and `organizations` that represents which species are in use by which organizations. Can also link a species to a project and/or a site." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_options_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -1005,7 +1021,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="storage_locations" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="storage_locations" numRows="0" remarks="The available locations where seeds can be stored at a seed bank facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="storage_location_id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
          </column>
@@ -1035,7 +1051,7 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="0" name="fake_time" nullable="false" remarks="What time the server should believe it was at the time the row was written." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="real_time" nullable="false" remarks="What time it was in the real world when the row was written." size="35" type="timestamptz" typeCode="93"/>
       </table>
-      <table name="thumbnails" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="thumbnails" numRows="0" remarks="Information about scaled-down versions of photos." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
@@ -1062,7 +1078,7 @@
             <column ascending="true" name="width"/>
          </index>
       </table>
-      <table name="timeseries" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="timeseries" numRows="0" remarks="Properties of a series of values collected from a device. Each device metric is represented as a timeseries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="timeseries_id" foreignKey="timeseries_value_timeseries_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries_values"/>
          </column>
@@ -1085,7 +1101,7 @@
          </index>
          <checkConstraint constraint="((decimal_places &gt;= 0))" name="timeseries_decimal_places_check"/>
       </table>
-      <table name="timeseries_types" numRows="2" remarks="" schema="public" type="TABLE">
+      <table name="timeseries_types" numRows="2" remarks="(Enum) Data formats of the values of a timeseries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="type_id" foreignKey="timeseries_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
          </column>
@@ -1095,7 +1111,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="timeseries_values" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="timeseries_values" numRows="0" remarks="Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="timeseries_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="timeseries_value_timeseries_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
          </column>
@@ -1106,7 +1122,7 @@
             <column ascending="false" name="created_time"/>
          </index>
       </table>
-      <table name="user_types" numRows="3" remarks="" schema="public" type="TABLE">
+      <table name="user_types" numRows="3" remarks="(Enum) Types of users. Most users are of type 1, &quot;Individual.&quot;" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="user_type_id" foreignKey="users_user_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
@@ -1119,14 +1135,14 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="users" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="users" numRows="0" remarks="User identities. A user can be associated with organizations via `organization_users`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="user_id" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
             <child column="user_id" foreignKey="project_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
             <child column="pm_user_id" foreignKey="projects_pm_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="false" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="first_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="last_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -1146,7 +1162,7 @@
             <column ascending="true" name="email"/>
          </index>
       </table>
-      <table name="withdrawal_purposes" numRows="7" remarks="" schema="public" type="TABLE">
+      <table name="withdrawal_purposes" numRows="7" remarks="(Enum) Reasons that someone can withdraw seeds from a seed bank." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="purpose_id" foreignKey="withdrawal_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
          </column>
@@ -1156,7 +1172,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="withdrawals" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="withdrawals" numRows="0" remarks="Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="withdrawal_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
