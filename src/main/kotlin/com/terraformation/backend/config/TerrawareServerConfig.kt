@@ -7,6 +7,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
+import org.springframework.boot.autoconfigure.mail.MailProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.bind.DefaultValue
@@ -78,6 +79,13 @@ class TerrawareServerConfig(
      * the login and registration process and is the source of truth for user identities.
      */
     @NotNull val keycloak: KeycloakConfig,
+
+    /**
+     * Configures the server's email-sending behavior. This is just the application-level
+     * configuration. To configure the mail server, use the Spring [MailProperties] config options
+     * under `spring.mail`.
+     */
+    @NotNull val email: EmailConfig = EmailConfig(),
 ) {
   @ConstructorBinding
   class DailyTasksConfig(
@@ -133,6 +141,52 @@ class TerrawareServerConfig(
        */
       val postCreateRedirectUrl: URI? = null,
   )
+
+  @ConstructorBinding
+  class EmailConfig(
+      /**
+       * If true, send email messages to recipients. If false, log the message contents but don't
+       * actually send email.
+       */
+      @DefaultValue("false") val enabled: Boolean = false,
+
+      /**
+       * If true, always send outgoing email to [overrideAddress], and require that config option to
+       * be set. This will usually be true in dev environments.
+       */
+      @DefaultValue("true") val alwaysSendToOverrideAddress: Boolean = true,
+
+      /**
+       * Send all outgoing email to this email address. This is mandatory if
+       * [alwaysSendToOverrideAddress] is true.
+       */
+      val overrideAddress: String? = null,
+
+      /**
+       * Sender address to use on outgoing messages. This will be parsed as a full address and can
+       * include both email and personal name parts. Required if [enabled] is true.
+       */
+      val senderAddress: String? = null,
+
+      /** If set, include this prefix in the subject line of every outgoing email message. */
+      val subjectPrefix: String? = null,
+
+      /** If true, use SES API rather than SMTP to send email. */
+      val useSes: Boolean = false,
+  ) {
+    init {
+      if (enabled) {
+        if (alwaysSendToOverrideAddress && overrideAddress == null) {
+          throw IllegalArgumentException(
+              "overrideEmailAddress is required because alwaysSendToOverrideAddress is true")
+        }
+
+        if (senderAddress == null) {
+          throw IllegalArgumentException("senderAddress is required if email is enabled")
+        }
+      }
+    }
+  }
 
   companion object {
     const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"

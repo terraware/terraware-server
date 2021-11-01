@@ -22,9 +22,11 @@
 
 <ul>
     <li th:each="facility : ${facilities}">
-        <span th:text="|${facility.name}|">MySeedBank</span>
-        (<span th:text="${facility.type.displayName}">Seed Bank</span>
-        <span th:text="${facility.id}">12345</span>)
+        <a th:href="|${prefix}/facility/${facility.id}|">
+            <span th:text="|${facility.name}|">MySeedBank</span>
+            (<span th:text="${facility.type.displayName}">Seed Bank</span>
+            <span th:text="${facility.id}">12345</span>)
+        </a>
     </li>
 </ul>
 

@@ -466,10 +466,15 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             )),
         updatedTests)
 
-    val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
-    assertNull(updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
-    assertNull(updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
-    assertNull(updatedAccession?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
+    val updatedRow = accessionsDao.fetchOneById(AccessionId(1))
+    assertNull(updatedRow?.totalViabilityPercent, "totalViabilityPercent")
+    assertNull(updatedRow?.latestViabilityPercent, "latestViabilityPercent")
+    assertNull(updatedRow?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
+
+    val updatedAccession = store.fetchById(AccessionId(1))!!
+    assertNull(
+        updatedAccession.germinationTests.first().germinations,
+        "Empty list of germinations should be null in model")
   }
 
   @Test

@@ -6,6 +6,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FeatureId
@@ -135,6 +136,37 @@ class UserModel(
     return canReadAccession(accessionId)
   }
 
+  private fun canAccessAutomations(facilityId: FacilityId): Boolean {
+    // All users that have access to the facility have full permissions on automations.
+    // TODO: Revisit automation permissions once we can set roles on API clients
+    return facilityId in facilityRoles
+  }
+
+  fun canCreateAutomation(facilityId: FacilityId): Boolean {
+    return canAccessAutomations(facilityId)
+  }
+
+  fun canListAutomations(facilityId: FacilityId): Boolean {
+    return canAccessAutomations(facilityId)
+  }
+
+  private fun canAccessAutomation(automationId: AutomationId): Boolean {
+    val facilityId = parentStore.getFacilityId(automationId) ?: return false
+    return canAccessAutomations(facilityId)
+  }
+
+  fun canReadAutomation(automationId: AutomationId): Boolean {
+    return canAccessAutomation(automationId)
+  }
+
+  fun canUpdateAutomation(automationId: AutomationId): Boolean {
+    return canAccessAutomation(automationId)
+  }
+
+  fun canDeleteAutomation(automationId: AutomationId): Boolean {
+    return canAccessAutomation(automationId)
+  }
+
   fun canCreateFacility(siteId: SiteId): Boolean {
     val role = siteRoles[siteId]
     return role == Role.ADMIN || role == Role.OWNER
@@ -146,6 +178,14 @@ class UserModel(
   }
 
   fun canReadFacility(facilityId: FacilityId): Boolean {
+    return facilityId in facilityRoles
+  }
+
+  fun canUpdateFacility(facilityId: FacilityId): Boolean {
+    return facilityId in facilityRoles
+  }
+
+  fun canSendAlert(facilityId: FacilityId): Boolean {
     return facilityId in facilityRoles
   }
 

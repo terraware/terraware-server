@@ -122,6 +122,189 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetFacilityResponse'
+  /api/v1/facility/{facilityId}/alert/send:
+    post:
+      tags:
+      - Customer
+      summary: Sends an alert to the facility's configured alert recipients.
+      operationId: sendFacilityAlert
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendFacilityAlertRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/facility/{facilityId}/automations:
+    get:
+      tags:
+      - Customer
+      summary: Lists a facility's automations.
+      operationId: listAutomations
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAutomationsResponsePayload'
+        "404":
+          description: The facility does not exist or is not accessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    post:
+      tags:
+      - Customer
+      summary: Creates a new automation at a facility.
+      operationId: createAutomation
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyAutomationRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAutomationResponsePayload'
+        "404":
+          description: The facility does not exist or is not accessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/facility/{facilityId}/automations/{automationId}:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about a single automation.
+      operationId: getAutomation
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: automationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAutomationResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - Customer
+      summary: Updates an existing automation.
+      operationId: updateAutomation
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: automationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyAutomationRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    delete:
+      tags:
+      - Customer
+      summary: Deletes an automation from a facility.
+      operationId: deleteAutomation
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: automationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/facility/{facilityId}/devices:
     get:
       tags:
@@ -2370,6 +2553,28 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SearchNodePayload'
+    AutomationPayload:
+      required:
+      - facilityId
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        facilityId:
+          type: integer
+          format: int64
+        name:
+          type: string
+          description: Short human-readable name of this automation.
+        description:
+          type: string
+          description: Human-readable description of this automation.
+        configuration:
+          type: object
+          description: Client-defined configuration data for this automation.
     CRS:
       required:
       - properties
@@ -2500,6 +2705,17 @@ components:
       properties:
         accession:
           $ref: '#/components/schemas/AccessionPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    CreateAutomationResponsePayload:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
         status:
           $ref: '#/components/schemas/SuccessOrError'
     CreateDeviceRequestPayload:
@@ -3264,6 +3480,16 @@ components:
           $ref: '#/components/schemas/AccessionPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetAutomationResponsePayload:
+      required:
+      - automation
+      - status
+      type: object
+      properties:
+        automation:
+          $ref: '#/components/schemas/AutomationPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetCurrentTimeResponsePayload:
       required:
       - currentTime
@@ -3452,6 +3678,18 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/AllFieldValuesPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListAutomationsResponsePayload:
+      required:
+      - automations
+      - status
+      type: object
+      properties:
+        automations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutomationPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListDeviceConfigsResponse:
@@ -3713,6 +3951,17 @@ components:
             $ref: '#/components/schemas/SpeciesDetails'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ModifyAutomationRequestPayload:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        configuration:
+          type: object
     MultiLineString:
       required:
       - coordinates
@@ -4476,6 +4725,17 @@ components:
       description: "Represents a quantity of seeds, measured either in individual\
         \ seeds or by weight."
       readOnly: true
+    SendFacilityAlertRequestPayload:
+      required:
+      - body
+      - subject
+      type: object
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+          description: Alert body in plain text. HTML alerts are not supported yet.
     SimpleErrorResponsePayload:
       required:
       - error

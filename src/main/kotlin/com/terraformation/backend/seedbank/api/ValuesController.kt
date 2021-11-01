@@ -7,6 +7,8 @@ import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class ValuesController(
+    private val config: TerrawareServerConfig,
     private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService,
     private val speciesDao: SpeciesDao,
@@ -119,7 +122,13 @@ class ValuesController(
 
     val values =
         payload.fields.associateWith { searchField ->
-          val values = searchService.fetchAllValues(searchField, limit)
+          var values = searchService.fetchAllValues(searchField, limit)
+
+          // TODO: Remove this once front end is updated to know about Awaiting Check-In state
+          if (searchField.fieldName == "state" && !config.enableAwaitingCheckIn) {
+            values = values.filter { it != AccessionState.AwaitingCheckIn.displayName }
+          }
+
           val partial = values.size > limit
           AllFieldValuesPayload(values.take(limit), partial)
         }

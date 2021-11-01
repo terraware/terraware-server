@@ -175,7 +175,10 @@ data class SearchRequestPayload(
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
     val cursor: String? = null,
-    @Schema(defaultValue = "10") val count: Int = 10
+    @Schema(
+        defaultValue = "10",
+    )
+    val count: Int = 10
 ) : HasSearchNode, HasSortOrder
 
 data class ExportRequestPayload(
@@ -193,7 +196,10 @@ data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor
 
 data class SearchSortOrderElement(
     val field: SearchField,
-    @Schema(defaultValue = "Ascending") val direction: SearchDirection?
+    @Schema(
+        defaultValue = "Ascending",
+    )
+    val direction: SearchDirection?
 ) {
   fun toSearchSortField() = SearchSortField(field, direction ?: SearchDirection.Ascending)
 }

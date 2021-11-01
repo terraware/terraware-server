@@ -2,6 +2,8 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.AutomationId
+import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
@@ -102,6 +104,40 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
+  fun createAutomation(facilityId: FacilityId) {
+    if (!user.canCreateAutomation(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to create automations in facility $facilityId")
+    }
+  }
+
+  fun listAutomations(facilityId: FacilityId) {
+    if (!user.canListAutomations(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to list automations in facility $facilityId")
+    }
+  }
+
+  fun readAutomation(automationId: AutomationId) {
+    if (!user.canReadAutomation(automationId)) {
+      throw AutomationNotFoundException(automationId)
+    }
+  }
+
+  fun updateAutomation(automationId: AutomationId) {
+    if (!user.canUpdateAutomation(automationId)) {
+      readAutomation(automationId)
+      throw AccessDeniedException("No permission to update automation $automationId")
+    }
+  }
+
+  fun deleteAutomation(automationId: AutomationId) {
+    if (!user.canDeleteAutomation(automationId)) {
+      readAutomation(automationId)
+      throw AccessDeniedException("No permission to delete automation $automationId")
+    }
+  }
+
   fun createFacility(siteId: SiteId) {
     if (!user.canCreateFacility(siteId)) {
       readSite(siteId)
@@ -112,6 +148,20 @@ class PermissionRequirements(private val user: UserModel) {
   fun readFacility(facilityId: FacilityId) {
     if (!user.canReadFacility(facilityId)) {
       throw FacilityNotFoundException(facilityId)
+    }
+  }
+
+  fun updateFacility(facilityId: FacilityId) {
+    if (!user.canUpdateFacility(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to update facility $facilityId")
+    }
+  }
+
+  fun sendAlert(facilityId: FacilityId) {
+    if (!user.canSendAlert(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to send alerts for facility $facilityId")
     }
   }
 

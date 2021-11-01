@@ -14,7 +14,10 @@ enum class SuccessOrError {
 }
 
 interface ResponsePayload {
-  @get:Schema(required = true) val status: SuccessOrError
+  @get:Schema(
+      required = true,
+  )
+  val status: SuccessOrError
 }
 
 interface SuccessResponsePayload : ResponsePayload {

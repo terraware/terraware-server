@@ -231,7 +231,10 @@ data class CreateFeaturePhotoRequestPayload(
     val location: Point?,
     @Schema(description = "Orientation of phone/camera when photo was taken.")
     val orientation: Double?,
-    @Schema(description = "GPS horizontal accuracy in meters.") val gpsHorizAccuracy: Double?,
+    @Schema(
+        description = "GPS horizontal accuracy in meters.",
+    )
+    val gpsHorizAccuracy: Double?,
     @Schema(description = "GPS vertical (altitude) accuracy in meters.")
     val gpsVertAccuracy: Double?
 )
@@ -286,7 +289,10 @@ data class FeaturePhoto(
     val contentType: String,
     val featureId: FeatureId,
     val fileName: String,
-    @Schema(description = "GPS horizontal accuracy in meters.") val gpsHorizAccuracy: Double?,
+    @Schema(
+        description = "GPS horizontal accuracy in meters.",
+    )
+    val gpsHorizAccuracy: Double?,
     @Schema(description = "GPS vertical (altitude) accuracy in meters.")
     val gpsVertAccuracy: Double?,
     @Schema(description = "Compass heading of phone/camera when photo was taken.")

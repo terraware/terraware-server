@@ -3,6 +3,8 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.AutomationId
+import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
@@ -47,6 +49,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val requirements = PermissionRequirements(user)
 
   private val accessionId = AccessionId(1)
+  private val automationId = AutomationId(1)
   private val deviceId = DeviceId(1)
   private val facilityId = FacilityId(1)
   private val featureId = FeatureId(1)
@@ -98,6 +101,58 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun createAutomation() {
+    assertThrows<FacilityNotFoundException> { requirements.createAutomation(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.createAutomation(facilityId) }
+
+    grant { user.canCreateAutomation(facilityId) }
+    requirements.createAutomation(facilityId)
+  }
+
+  @Test
+  fun listAutomations() {
+    assertThrows<FacilityNotFoundException> { requirements.listAutomations(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.listAutomations(facilityId) }
+
+    grant { user.canListAutomations(facilityId) }
+    requirements.listAutomations(facilityId)
+  }
+
+  @Test
+  fun readAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.readAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    requirements.readAutomation(automationId)
+  }
+
+  @Test
+  fun updateAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.updateAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    assertThrows<AccessDeniedException> { requirements.updateAutomation(automationId) }
+
+    grant { user.canUpdateAutomation(automationId) }
+    requirements.updateAutomation(automationId)
+  }
+
+  @Test
+  fun deleteAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.deleteAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    assertThrows<AccessDeniedException> { requirements.deleteAutomation(automationId) }
+
+    grant { user.canDeleteAutomation(automationId) }
+    requirements.deleteAutomation(automationId)
+  }
+
+  @Test
   fun createFacility() {
     assertThrows<SiteNotFoundException> { requirements.createFacility(siteId) }
 
@@ -114,6 +169,28 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadFacility(facilityId) }
     requirements.readFacility(facilityId)
+  }
+
+  @Test
+  fun updateFacility() {
+    assertThrows<FacilityNotFoundException> { requirements.updateFacility(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.updateFacility(facilityId) }
+
+    grant { user.canUpdateFacility(facilityId) }
+    requirements.updateFacility(facilityId)
+  }
+
+  @Test
+  fun sendAlert() {
+    assertThrows<FacilityNotFoundException> { requirements.sendAlert(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.sendAlert(facilityId) }
+
+    grant { user.canSendAlert(facilityId) }
+    requirements.sendAlert(facilityId)
   }
 
   @Test

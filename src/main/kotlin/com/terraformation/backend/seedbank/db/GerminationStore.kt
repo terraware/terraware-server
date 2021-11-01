@@ -54,7 +54,7 @@ class GerminationStore(private val dslContext: DSLContext) {
                   record[TOTAL_SEEDS_GERMINATED],
                   record[NOTES],
                   record[STAFF_RESPONSIBLE],
-                  record[germinationsMultiset],
+                  record[germinationsMultiset]?.ifEmpty { null },
                   SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
               )
             }
