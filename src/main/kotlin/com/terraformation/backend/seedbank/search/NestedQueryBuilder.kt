@@ -15,12 +15,136 @@ import org.jooq.impl.DSL
 /**
  * Builds a database query that returns nested results from a tree of child tables.
  *
- * For example, if you query an accession that has multiple bags, the query constructed by this
- * class will return a single row with a "bags" field that contains a list of the bags. If you were
- * to just join the accessions and bags tables, you'd get back a separate query result for each bag.
- *
  * This code produces a somewhat complex result. Understanding it may require some effort. The rest
  * of this comment will try to lay everything out.
+ *
+ * # Basic usage
+ *
+ * Uses of this class will follow the same basic pattern everywhere.
+ *
+ * 1. Create a [NestedQueryBuilder].
+ * 2. Call [addSelectFields] to set the list of fields that should be included in each result.
+ * 3. Call [addSortFields] to set the list of fields that should be used to sort the results.
+ * 4. Call [addCondition] to set the criteria that should be used to filter the results.
+ * 5. Call [toSelectQuery] to get back a jOOQ [SelectSeekStepN] object representing the query.
+ * 6. Call [SelectSeekStepN.fetch] to retrieve the query results.
+ *
+ * The filter criteria in step 4 will often involve a subquery; see the "Search criteria" section
+ * below for more on that.
+ *
+ * # Example
+ *
+ * Suppose you have the following data. (For clarity, this omits irrelevant columns.)
+ *
+ * ```sql
+ * INSERT INTO species (id, name) VALUES (1, 'First Species');
+ * INSERT INTO species (id, name) VALUES (2, 'Second Species');
+ *
+ * INSERT INTO accessions (id, species_id) VALUES (3, 1);
+ * INSERT INTO accessions (id, species_id) VALUES (4, 2);
+ *
+ * INSERT INTO bags (accession_id, number) VALUES (3, 'First bag for accession 3');
+ * INSERT INTO bags (accession_id, number) VALUES (3, 'Second bag for accession 3');
+ *
+ * INSERT INTO germination_tests (id, accession_id, start_date) VALUES (5, 3, '2021-10-01');
+ * INSERT INTO germination_tests (id, accession_id, start_date) VALUES (6, 3, '2021-10-15');
+ *
+ * INSERT INTO germinations (test_id, seeds_germinated) VALUES (5, 10);
+ * INSERT INTO germinations (test_id, seeds_germinated) VALUES (5, 20);
+ * ```
+ *
+ * This represents the following hierarchy.
+ *
+ * ```
+ * - Accession ID 3, species 1 "First Species"
+ *    - Bag number "First bag for accession 3"
+ *    - Bag number "Second bag for accession 3"
+ *    - Germination Test 5, start date 2021-10-01
+ *      - Germination, 10 seeds germinated
+ *      - Germination, 20 seeds germinated
+ *    - Germination Test 6, start date 2021-10-15
+ * - Accession ID 4, species 2 "Second Species", no bags or tests
+ * ```
+ *
+ * Now you construct a query like this, referencing the search fields in [SearchFields].
+ *
+ * ```kotlin
+ * val queryBuilder = NestedQueryBuilder(dslContext)
+ * val fields =
+ *     listOf(
+ *         searchFields["id"],
+ *         searchFields["species"],
+ *         searchFields["bags.number"],
+ *         searchFields["germinationTests.startDate"],
+ *         searchFields["germinationTests.germinations.seedsGerminated"])
+ * queryBuilder.addSelectFields(fields)
+ * queryBuilder.addSortFields(fields)
+ * val results = queryBuilder.toSelectQuery().fetch()
+ * ```
+ *
+ * You'll get back a list of results that looks like this:
+ *
+ * ```json
+ * [
+ *   {
+ *     "id": "3",
+ *     "bags": [
+ *       { "number": "First bag for accession 3" },
+ *       { "number": "Second bag for accession 3" }
+ *     ],
+ *     "germinationTests": [
+ *       {
+ *         "germinations": [
+ *           { "seedsGerminated": "10" },
+ *           { "seedsGerminated": "20" }
+ *         ],
+ *         "startDate": "2021-10-01"
+ *       },
+ *       {
+ *         "startDate": "2021-10-15"
+ *       }
+ *     ],
+ *     "species": "First Species"
+ *   },
+ *   {
+ *     "id": "4",
+ *     "species": "Second Species"
+ *   }
+ * ]
+ * ```
+ *
+ * Contrast this with the older non-nested fields, e.g.,
+ *
+ * ```kotlin
+ * val queryBuilder = NestedQueryBuilder(dslContext)
+ * queryBuilder.addSelectFields(
+ *     listOf(
+ *         searchFields["id"],
+ *         searchFields["species"],
+ *         searchFields["bagNumber"]))
+ * val results = queryBuilder.toSelectQuery().fetch()
+ * ```
+ *
+ * which would result in multiple entries for the same accession:
+ *
+ * ```json
+ * [
+ *   {
+ *     "id": "3",
+ *     "species": "First Species",
+ *     "bagNumber": "First bag for accession 3"
+ *   },
+ *   {
+ *     "id": "3",
+ *     "species": "First Species",
+ *     "bagNumber": "Second bag for accession 3"
+ *   },
+ *   {
+ *     "id": "4",
+ *     "species": "Second Species"
+ *   }
+ * ]
+ * ```
  *
  * # Field types
  *
