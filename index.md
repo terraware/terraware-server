@@ -1,4 +1,4 @@
-# Schema documentation test
+# Database schema documentation
 
 Available slices:
 
