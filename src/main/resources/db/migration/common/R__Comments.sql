@@ -1,0 +1,160 @@
+-- Schema documentation. The comments here are included in the generated HTML documentation that is
+-- produced by SchemaDocsGenerator.
+--
+-- This migration is run by Flyway whenever it changes. It runs after all the numbered migrations,
+-- so it's fine to add comments here in the same commit where you're creating new tables or columns.
+--
+-- Comments can use Markdown syntax.
+--
+-- Put "(Enum)" at the beginnings of comments on tables that define a fixed set of values.
+
+COMMENT ON TABLE accession_germination_test_types IS '(Enum) Types of tests that can be performed on seeds to determine whether or not they successfully germinate';
+
+COMMENT ON TABLE accession_photos IS 'Linking table between `accessions` and `photos`.';
+
+COMMENT ON TABLE accession_secondary_collectors IS 'Associates additional collectors with accessions. The primary collector is not included here, but is instead stored in `accessions.primary_collector_id`.';
+
+COMMENT ON TABLE accession_state_history IS 'Historical record of when accessions moved to different states. A row is inserted here for every state transition.';
+COMMENT ON COLUMN accession_state_history.old_state_id IS 'Null if this is the initial state for a new accession.';
+
+COMMENT ON TABLE accession_states IS '(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.';
+
+COMMENT ON TABLE accessions IS 'Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people.';
+COMMENT ON COLUMN accessions.latest_viability_percent IS 'Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet';
+COMMENT ON COLUMN accessions.number IS 'Displayed as the accession number to the user.';
+COMMENT ON COLUMN accessions.nursery_start_date IS 'When the accession was moved to a nursery, or null if it is not in a nursery.';
+COMMENT ON COLUMN accessions.target_storage_condition IS 'The intended storage condition of the accession as determined during initial processing.';
+COMMENT ON COLUMN accessions.total_viability_percent IS 'Percentage of viable seeds across all tests.';
+
+COMMENT ON TABLE app_devices IS 'Installations of the mobile app that were used to upload seed data.';
+
+COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the device manager.';
+
+COMMENT ON TABLE bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
+
+COMMENT ON TABLE collectors IS 'People who participated in seed collection. Both primary and secondary collectors are included.';
+
+COMMENT ON TABLE conservation_statuses IS '(Enum) UICN Red List categories defining the conservation status of a given species.';
+
+COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
+
+COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
+
+COMMENT ON TABLE facility_alert_recipients IS 'Where to send notifications about issues at a particular facility. The recipients are not necessarily Terraware users.';
+
+COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be represented in the data model.';
+
+COMMENT ON TABLE families IS 'Taxonomic family that each species belongs to. For example, Cousa dogwood (Cornus kousa) is in family "Cornaceae."';
+
+COMMENT ON TABLE family_names IS 'Alternate names for families. A family can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `families`.';
+
+COMMENT ON TABLE feature_photos IS 'Linking table between `features` and `photos`. Also optionally links `plant_observations` and `photos`.';
+
+COMMENT ON TABLE features IS 'Physical features that appear on a map. For example, an individual tree whose location is being tracked is a map feature. This table only has generic information; child tables such as `plants` have more information about particular kinds of features.';
+
+COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have already been applied. Used by the Flyway library, not by application.';
+
+COMMENT ON TABLE geolocations IS 'Locations where seeds were collected.';
+
+COMMENT ON TABLE germination_seed_types IS '(Enum) Types of seeds that can be tested for germination ability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';
+
+COMMENT ON TABLE germination_substrates IS '(Enum) Types of substrate that can be used to test seeds for germination ability.';
+
+COMMENT ON TABLE germination_test_types IS '(Enum) Types of tests that can be performed on seeds to check for germination ability.';
+
+COMMENT ON TABLE germination_tests IS 'Information about a single batch of seeds being tested for germination ability. This is the information about the test itself; the results are represented in the `germinations` table.';
+
+COMMENT ON TABLE germination_treatments IS '(Enum) Techniques that can be used to treat seeds before testing them for germination ability.';
+
+COMMENT ON TABLE germinations IS 'Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.';
+
+COMMENT ON TABLE health_states IS '(Enum) Possible ratings of how healthy a plant was when it was observed.';
+
+COMMENT ON TABLE layer_types IS '(Enum) Types of map features that can be grouped together into a layer.';
+
+COMMENT ON TABLE layers IS 'Map layers. Each layer has features of a particular type, e.g., irrigation infrastructure or existing vegetation at a site.';
+
+COMMENT ON TABLE notification_types IS '(Enum) Types of seed bank notification that can be generated by the application.';
+
+COMMENT ON TABLE notifications IS 'Notifications about tasks that need to be performed at a seed bank.';
+COMMENT ON COLUMN notifications.accession_id IS 'Null if this notification is not specific to a single accession.';
+COMMENT ON COLUMN notifications.accession_state_id IS 'For state notifications, which state is being notified about. Null otherwise.';
+
+COMMENT ON TABLE organization_users IS 'Organization membership and role information.';
+
+COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
+COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
+
+COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `feature_photos`.';
+
+COMMENT ON TABLE plant_forms IS '(Enum) What physical form a particular species takes. For example, "Tree" or "Shrub."';
+
+COMMENT ON TABLE plant_observations IS 'Observations of a particular plant. A single plant can be observed repeatedly over time.';
+
+COMMENT ON TABLE plants IS 'Plants whose locations are being tracked. Each plant is represented as a map feature in the `features` table; this table has information that only applies to plants and not to other kinds of map features.';
+
+COMMENT ON TABLE processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
+
+COMMENT ON TABLE project_statuses IS '(Enum) Statuses of projects recognized by the application.';
+
+COMMENT ON TABLE project_types IS '(Enum) Types of projects recognized by the application.';
+
+COMMENT ON TABLE project_users IS 'Linking table between `projects` and `users` defining which users are allowed to access which projects.';
+
+COMMENT ON TABLE projects IS 'Information about a single restoration project. A project can span multiple sites.';
+
+COMMENT ON TABLE rare_types IS '(Enum) Possible values of the "Rare" attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.';
+
+COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
+
+COMMENT ON TABLE seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
+
+COMMENT ON TABLE sites IS 'Physical locations where facilities are located or plants are being tracked.';
+COMMENT ON COLUMN sites.locale IS 'Default locale at the site; an IETF BCP 47 language tag such as en-US.';
+COMMENT ON COLUMN sites.timezone IS 'Name of time zone at site; an IANA tz database zone name.';
+
+COMMENT ON TABLE source_plant_origins IS '(Enum) Types of origins of plants from which seeds were collected. For example, "Outplant" represents a plant that was cultivated, as opposed to one growing in the wild.';
+
+COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (coordinate) systems. Managed by the PostGIS extension, not the application.';
+
+COMMENT ON TABLE species IS 'Information about plant species.';
+
+COMMENT ON TABLE species_endangered_types IS '(Enum) Possible values for the "Endangered" attribute of an accession. This is not used for plants whose locations are being tracked; see `conservation_statuses` instead.';
+
+COMMENT ON TABLE species_names IS 'Alternate names for species. A species can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `species`.';
+
+COMMENT ON TABLE species_options IS 'Linking table between `species` and `organizations` that represents which species are in use by which organizations. Can also link a species to a project and/or a site.';
+
+COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Session, not the application.';
+
+COMMENT ON TABLE spring_session_attributes IS 'Data associated with a login session. Used by Spring Session, not the application.';
+
+COMMENT ON TABLE storage_conditions IS '(Enum) Refrigeration condition of seeds during storage.';
+
+COMMENT ON TABLE storage_locations IS 'The available locations where seeds can be stored at a seed bank facility.';
+COMMENT ON COLUMN storage_locations.name IS 'E.g., Freezer 1, Freezer 2';
+
+COMMENT ON TABLE task_processed_times IS 'Tracks the most recently processed time for recurring tasks that need to cover non-overlapping time periods.';
+
+COMMENT ON TABLE test_clock IS 'User-adjustable clock for test environments. Not used in production.';
+COMMENT ON COLUMN test_clock.fake_time IS 'What time the server should believe it was at the time the row was written.';
+COMMENT ON COLUMN test_clock.real_time IS 'What time it was in the real world when the row was written.';
+
+COMMENT ON TABLE thumbnails IS 'Information about scaled-down versions of photos.';
+
+COMMENT ON TABLE timeseries IS 'Properties of a series of values collected from a device. Each device metric is represented as a timeseries.';
+COMMENT ON COLUMN timeseries.decimal_places IS 'For numeric timeseries, the number of digits after the decimal point to display.';
+COMMENT ON COLUMN timeseries.units IS 'For numeric timeseries, the units represented by the values; unit names should be short (possibly abbreviations) and in the default language of the site.';
+
+COMMENT ON TABLE timeseries_types IS '(Enum) Data formats of the values of a timeseries.';
+
+COMMENT ON TABLE timeseries_values IS 'Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here.';
+
+COMMENT ON TABLE user_types IS '(Enum) Types of users. Most users are of type 1, "Individual."';
+
+COMMENT ON TABLE users IS 'User identities. A user can be associated with organizations via `organization_users`.';
+COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID.';
+
+COMMENT ON TABLE withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
+
+COMMENT ON TABLE withdrawals IS 'Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here.';

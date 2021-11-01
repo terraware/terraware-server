@@ -27,6 +27,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
+import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
@@ -282,10 +283,16 @@ abstract class DatabaseTest {
     }
   }
 
+  @Suppress("UPPER_BOUND_VIOLATED_WARNING")
   companion object {
     private val imageName: DockerImageName =
         DockerImageName.parse("postgis/postgis:12-3.1").asCompatibleSubstituteFor("postgres")
-    val postgresContainer = PostgreSQLContainer<PostgreSQLContainer<*>>(imageName)
+    val postgresContainer: PostgreSQLContainer<*> =
+        PostgreSQLContainer<PostgreSQLContainer<*>>(imageName)
+            .withDatabaseName("terraware")
+            .withExposedPorts(PostgreSQLContainer.POSTGRESQL_PORT)
+            .withNetwork(Network.newNetwork())
+            .withNetworkAliases("postgres")
     var started: Boolean = false
   }
 }
