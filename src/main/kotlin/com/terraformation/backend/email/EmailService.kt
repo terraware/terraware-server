@@ -128,7 +128,9 @@ class EmailService(
   /** Sends the message using the SES SendEmail API. */
   private fun sendSes(message: MimeMessage, rawMessage: ByteArray): String? {
     val sdkBytes = SdkBytes.fromByteArrayUnsafe(rawMessage)
-    val sender = "${message.sender}"
+    val sender =
+        message.from?.getOrNull(0)?.toString()
+            ?: throw IllegalArgumentException("No sender address specified")
 
     val response =
         sesClient.sendEmail { builder ->
