@@ -70,31 +70,49 @@ import org.jooq.impl.DSL
  *
  * ```kotlin
  * val queryBuilder = NestedQueryBuilder(dslContext)
- * val fields =
+ *
+ * queryBuilder.addSelectFields(
  *     listOf(
  *         searchFields["id"],
  *         searchFields["species"],
  *         searchFields["bags.number"],
  *         searchFields["germinationTests.startDate"],
- *         searchFields["germinationTests.germinations.seedsGerminated"])
- * queryBuilder.addSelectFields(fields)
- * queryBuilder.addSortFields(fields)
+ *         searchFields["germinationTests.germinations.seedsGerminated"]))
+ *
+ * // You can sort on fields you didn't select, and vice versa, though we won't do that here just
+ * // to keep the example easier to follow.
+ * queryBuilder.addSortFields(
+ *     listOf(
+ *         SearchSortField(searchFields["species"]),
+ *         SearchSortField(searchFields["germinationTests.startDate"]),
+ *         SearchSortField(searchFields["bags.number"]),
+ *         SearchSortField(searchFields["germinationTests.germinations.seedsGerminated"])))
+ *
  * val results = queryBuilder.toSelectQuery().fetch()
  * ```
  *
- * You'll get back a list of results that looks like this:
+ * You'll get back a list of results that looks like this, minus the comments, of course:
  *
  * ```json
  * [
+ *   # The first sort key is "species". "First Species" is alphabetically lower than "Second
+ *   # Species", so accession 3 is first in the results list.
  *   {
  *     "id": "3",
+ *     "species": "First Species",
  *     "bags": [
+ *       # The first (and only) sort field under "bags" is the bag number, so this list is
+ *       # sorted alphabetically on that value.
  *       { "number": "First bag for accession 3" },
  *       { "number": "Second bag for accession 3" }
  *     ],
  *     "germinationTests": [
+ *       # The first sort field under "germinationTests" is the start date, so this list is sorted
+ *       # in ascending start date order.
  *       {
  *         "germinations": [
+ *           # The first sort field under "germinationTests.germinations" is "seedsGerminated",
+ *           # so this list is sorted by that.
  *           { "seedsGerminated": "10" },
  *           { "seedsGerminated": "20" }
  *         ],
@@ -103,12 +121,14 @@ import org.jooq.impl.DSL
  *       {
  *         "startDate": "2021-10-15"
  *       }
- *     ],
- *     "species": "First Species"
+ *     ]
  *   },
  *   {
- *     "id": "4",
- *     "species": "Second Species"
+ *     # Empty lists, and scalar fields with no values, are omitted from the result. Each result
+ *     # is a Map<String,Any> which might be implemented as a hashtable, so callers shouldn't
+ *     # assume the fields are in any particular order.
+ *     "species": "Second Species",
+ *     "id": "4"
  *   }
  * ]
  * ```
@@ -146,7 +166,9 @@ import org.jooq.impl.DSL
  * ]
  * ```
  *
- * # Field types
+ * # Implementation details
+ *
+ * ## Field types
  *
  * Search results are returned as a list of maps of field names to field values. A field value can
  * either be a string or a list of maps of field names to field values. Kotlin doesn't have support
@@ -170,7 +192,7 @@ import org.jooq.impl.DSL
  * `germinationTests` each element of which contains a sublist field called `germinations` each
  * element of which contains a scalar field called `recordingDate`.
  *
- * # Query hierarchy
+ * ## Query hierarchy
  *
  * The query is represented as a tree of [NestedQueryBuilder]s. The root node represents the query
  * as a whole, and each child node represents a sublist field.
@@ -186,11 +208,12 @@ import org.jooq.impl.DSL
  * ```
  *
  * Field names are always evaluated relative to the current node (that is, the prefix is stripped
- * off to get a relative name). So for example, the middle node in the above hierarchy treats the
- * search field as having a name of `germinations.recordingDate`. The presence of the `.` in that
- * name tells it that there needs to be another sublist field called `germinations`.
+ * off to get a relative name). So for example, the middle node in the above hierarchy strips off
+ * its prefix and treats the search field as having a name of `germinations.recordingDate`. Because
+ * that name contains a `.` character, the middle node needs to peel off the part before the `.` and
+ * treat the field as a sublist called `germinations`.
  *
- * # Multisets
+ * ## Multisets
  *
  * This implementation is heavily dependent on implementation details of jOOQ's "multiset" operator.
  * For background on multisets, please see
@@ -211,7 +234,7 @@ import org.jooq.impl.DSL
  * two-dimensional array indexed by row number and field position. This implementation detail will
  * become important later.
  *
- * # Search criteria
+ * ## Search criteria
  *
  * Say you have an accession with two bags, "A" and "B". The user does a search and asks for results
  * containing bag "A".
@@ -220,8 +243,8 @@ import org.jooq.impl.DSL
  * on bag numbers (returning a result with a single bag) or treat it as a filter on accessions
  * (returning a result with two bags).
  *
- * Our product decision is to do the latter. When you search for bag "B", what you're really telling
- * the system is that you want all _accessions_ that have a bag called "B". And for each accession
+ * Our product decision is to do the latter. When you search for bag "A", what you're really telling
+ * the system is that you want all _accessions_ that have a bag called "A". And for each accession
  * that matches the search criteria, you get back the full list of bags.
  *
  * That's relevant here because it changes what the SQL looks like: we don't apply any search
@@ -249,7 +272,7 @@ import org.jooq.impl.DSL
  *
  * The key point is that the multiset will contain _all_ the bags for the accession.
  *
- * # Ordering
+ * ## Ordering
  *
  * Unfortunately, the happy-path usage of multisets breaks down once you need to sort the results
  * based on a field in a child table, because the ordering needs to bubble up through the rest of
@@ -309,7 +332,7 @@ import org.jooq.impl.DSL
  * ORDER BY bags_multiset[0][1]
  * ```
  *
- * # Lateral joins
+ * ## Lateral joins
  *
  * Unfortunately, an `ORDER BY` clause can't use a computed value from the `SELECT` clause of the
  * same query. So in the above example, `ORDER BY bags_multiset[0][1]` won't work because
@@ -337,7 +360,7 @@ import org.jooq.impl.DSL
  * Here the `bags_multiset` column is computed in the subquery and is an input to the top-level
  * query, so we can reference it in the `ORDER BY` clause.
  *
- * # Enums
+ * ## Enums
  *
  * Some fields are stored as integer IDs in the database, but rendered as human-readable strings in
  * the UI. For example, an accession with `state_id = 10` is shown as having a state of `Pending`
@@ -368,8 +391,8 @@ class NestedQueryBuilder(
 
   /**
    * Sublists indexed by the first element of their relative names. For example, if this node has a
-   * prefix of `a.b` and there is a field whose full name is `a.b.c.d.e`, the entry in this map
-   * would have a key of `c`.
+   * prefix of `a.b` and there are two fields whose full names are `a.b.c.d.e` and `a.b.f.g`, this
+   * map would contain keys `c` and `f`.
    */
   private val sublists = mutableMapOf<String, NestedQueryBuilder>()
 
