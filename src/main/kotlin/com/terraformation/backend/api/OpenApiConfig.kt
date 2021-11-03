@@ -125,8 +125,32 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
         (openApi.components.schemas[schemaName]?.properties?.get("results")
             ?: throw IllegalStateException("Cannot find search results schema")) as ArraySchema
 
-    resultsField.items =
-        ObjectSchema().properties(searchFields.fieldNames.associateWith { StringSchema() })
+    resultsField.items = ObjectSchema().properties(getSearchResultFields())
+  }
+
+  /**
+   * Returns a map of search result payloads for fields whose names start with a prefix. Derives a
+   * tree structure from field names by looking for '.' delimiters. Any field name with a '.' is the
+   * name of a field of an array of child objects: a field name of `foo.bar` is interpreted as a
+   * field called `foo` which is an array of objects each of which has a field called `bar`.
+   */
+  private fun getSearchResultFields(
+      prefix: String = "",
+      fieldNames: Collection<String> = searchFields.fieldNames
+  ): Map<String, io.swagger.v3.oas.models.media.Schema<*>> {
+    val relativeNames =
+        fieldNames.filter { it.startsWith(prefix) }.map { it.substring(prefix.length) }
+
+    val scalarFields = relativeNames.filter { !it.contains('.') }.map { it to StringSchema() }
+
+    val sublistFields =
+        relativeNames.filter { it.contains('.') }.map { it.substringBefore('.') }.distinct().map {
+            sublistName ->
+          val sublistFields = getSearchResultFields("$sublistName.", relativeNames)
+          sublistName to ArraySchema().items(ObjectSchema().properties(sublistFields))
+        }
+
+    return (sublistFields + scalarFields).toMap().toSortedMap()
   }
 
   private fun sortEndpoints(openApi: OpenAPI) {

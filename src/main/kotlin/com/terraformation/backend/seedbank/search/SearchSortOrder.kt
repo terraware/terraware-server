@@ -1,8 +1,10 @@
 package com.terraformation.backend.seedbank.search
 
-enum class SearchDirection {
-  Ascending,
-  Descending
+import org.jooq.SortOrder
+
+enum class SearchDirection(val sortOrder: SortOrder) {
+  Ascending(SortOrder.ASC),
+  Descending(SortOrder.DESC)
 }
 
 /** Identifies a field to use for sorting search results, as well as which direction to sort. */
