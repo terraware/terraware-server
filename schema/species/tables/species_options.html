@@ -154,7 +154,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="organization_id">organization_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="organization_id">organization_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
@@ -166,12 +166,16 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="species_options.organization_id references organizations.id via species_options_organization_id_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">species_options_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="project_id">project_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="project_id">project_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title='nullable'>√</td>
@@ -183,12 +187,16 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="species_options.project_id references projects.id via species_options_project_id_fkey"><a href='projects.html'>projects</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">species_options_project_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="site_id">site_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="site_id">site_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title='nullable'>√</td>
@@ -200,6 +208,10 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="species_options.site_id references sites.id via species_options_site_id_fkey"><a href='sites.html'>sites</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">species_options_site_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>
@@ -291,20 +303,26 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="280,5,595,280">
-<area shape="rect" id="node2" href="../../tables/species.html" target="_top" title="species" alt="" coords="5,37,236,331">
+<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="237,352,408,499">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,329,193,447">
+<area shape="rect" id="node3" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="485,388,649,535">
+<area shape="rect" id="node4" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="727,219,1041,493">
+<area shape="rect" id="node5" href="../../tables/species.html" target="_top" title="species" alt="" coords="452,5,683,299">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/species_options.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="304,73,535,367">
-<area shape="rect" id="node2" href="../../tables/conservation_statuses.html" target="_top" title="conservation_statuses" alt="" coords="5,260,260,348">
-<area shape="rect" id="node3" href="../../tables/families.html" target="_top" title="families" alt="" coords="59,49,206,137">
-<area shape="rect" id="node4" href="../../tables/plant_forms.html" target="_top" title="plant_forms" alt="" coords="44,155,221,243">
-<area shape="rect" id="node5" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="49,365,216,453">
-<area shape="rect" id="node6" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="637,5,835,93">
-<area shape="rect" id="node7" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="579,111,893,385">
+<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="279,548,450,695">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,472,193,589">
+<area shape="rect" id="node3" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="569,584,733,731">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="536,121,767,415">
+<area shape="rect" id="node5" href="../../tables/conservation_statuses.html" target="_top" title="conservation_statuses" alt="" coords="237,301,492,389">
+<area shape="rect" id="node6" href="../../tables/families.html" target="_top" title="families" alt="" coords="291,91,438,179">
+<area shape="rect" id="node7" href="../../tables/plant_forms.html" target="_top" title="plant_forms" alt="" coords="276,196,453,284">
+<area shape="rect" id="node8" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="281,407,448,495">
+<area shape="rect" id="node9" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="869,71,1067,159">
+<area shape="rect" id="node10" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="811,415,1125,689">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species_options.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
