@@ -8,6 +8,7 @@ on:
     paths:
       - docs/**
       - src/main/resources/db/migration/**
+      - src/test/kotlin/com/terraformation/backend/db/SchemaDocsGenerator.kt
       - .github/workflows/docs.yaml
 
 jobs:
