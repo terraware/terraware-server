@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Define tier based on branch ref
-if [[ "$GITHUB_REF" =~ refs/tags/v[0-9].[0-9]+.[0-9]+ ]]; then
+if [[ "$GITHUB_REF" =~ refs/tags/v[0-9]+\.[0-9.]+ ]]; then
   export \
     TIER=PROD \
     IS_CD=true
