@@ -9,7 +9,7 @@ on:
       # Semver (these are glob-like patterns, not regexes; the "." has no special meaning)
       - v[0-9].[0-9]+.[0-9]+
       # Date-based
-      - v2[0-9][0-9][0-9].[0-9]+
+      - v2[0-9]+.[0-9]+
   pull_request:
 
 jobs:
