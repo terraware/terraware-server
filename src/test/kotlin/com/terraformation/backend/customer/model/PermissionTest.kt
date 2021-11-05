@@ -4,6 +4,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
@@ -92,14 +93,15 @@ import org.springframework.beans.factory.annotation.Autowired
  * ```
  *
  * The basic structure of each test is to:
- * ```
- *    grant the user a role in an organization and possibly add them to some projects
- *    create a PermissionsTracker() instance which should be used throughout the whole test
- *    use the permissions tracker to assert which specific permissions they should have on
- *        each of the above objects.
- *    call [andNothingElse] which will check that the user doesn't have any permissions other
- *      than the ones the test specifically said they should.
- * ```
+ *
+ * 1. Grant the user a role in an organization and possibly add them to some projects. In most
+ * cases, you will add them to organization 1 and project 10 because there are some canned ID lists
+ * you can use in assertions to make the tests clearer and more concise.
+ * 2. Create a [PermissionsTracker] instance which should be used throughout the whole test.
+ * 3. Use the tracker to assert which specific permissions the user should have on each of the above
+ * objects.
+ * 4. Call [PermissionsTracker.andNothingElse] which will check that the user doesn't have any
+ * permissions other than the ones the test specifically said they should.
  */
 internal class PermissionTest : DatabaseTest() {
   private lateinit var accessionsDao: AccessionsDao
@@ -123,16 +125,44 @@ internal class PermissionTest : DatabaseTest() {
    * "parent ID is our ID divided by 10" logic of the insert functions in DatabaseTest.
    */
   private val organizationIds = listOf(1, 2, 3).map { OrganizationId(it.toLong()) }
+  private val org1Id = OrganizationId(1)
+
   private val projectIds = listOf(10, 11, 20, 21).map { ProjectId(it.toLong()) }
+  private val org1ProjectIds = projectIds.take(2).toTypedArray()
+  private val project10Id = ProjectId(10)
+
   private val siteIds = listOf(100, 101, 110, 111, 210).map { SiteId(it.toLong()) }
+  private val org1SiteIds = siteIds.take(4).toTypedArray()
+  private val project10SiteIds = siteIds.take(2).toTypedArray()
+
+  private val layerIds = listOf(1000, 1001, 1100, 2100).map { LayerId(it.toLong()) }
+  private val org1LayerIds = layerIds.take(3).toTypedArray()
+  private val project10LayerIds = layerIds.take(2).toTypedArray()
+
+  private val featureIds = listOf(10010, 11000, 11001, 21000).map { FeatureId(it.toLong()) }
+  private val org1FeatureIds = featureIds.take(3).toTypedArray()
+  private val project10FeatureIds = featureIds.take(1).toTypedArray()
+
+  private val photoIds = featureIds.map { PhotoId(it.value) }
+  private val org1PhotoIds = photoIds.take(3).toTypedArray()
+  private val project10PhotoIds = photoIds.take(1).toTypedArray()
+
   private val facilityIds =
       listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111).map { FacilityId(it.toLong()) }
+  private val org1FacilityIds = facilityIds.toTypedArray()
+  private val project10FacilityIds = facilityIds.take(4).toTypedArray()
+
   private val automationIds = facilityIds.map { AutomationId(it.value) }
+  private val org1AutomationIds = automationIds.toTypedArray()
+  private val project10AutomationIds = org1AutomationIds.take(4).toTypedArray()
+
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
+  private val org1DeviceIds = deviceIds.toTypedArray()
+  private val project10DeviceIds = deviceIds.take(4).toTypedArray()
+
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
-  private val layerIds = listOf(1000, 1001, 1100, 2100).map { LayerId(it.toLong()) }
-  private val featureIds = listOf(10010, 11000, 11001, 21000).map { FeatureId(it.toLong()) }
-  private val photoIds = featureIds.map { PhotoId(it.value) }
+  private val org1AccessionIds = accessionIds.toTypedArray()
+  private val project10AccessionIds = accessionIds.take(4).toTypedArray()
 
   @BeforeEach
   fun setUp() {
@@ -206,11 +236,11 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `owner role grants all permissions in organization projects, sites, facilities, and layers`() {
-    givenRole(OrganizationId(1), Role.OWNER)
+    givenRole(org1Id, Role.OWNER)
     val permissions = PermissionsTracker()
 
     permissions.expect(
-        OrganizationId(1),
+        org1Id,
         addOrganizationUser = true,
         createProject = true,
         listProjects = true,
@@ -220,8 +250,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        ProjectId(10),
-        ProjectId(11),
+        *org1ProjectIds,
         readProject = true,
         updateProject = true,
         addProjectUser = true,
@@ -231,10 +260,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        SiteId(100),
-        SiteId(101),
-        SiteId(110),
-        SiteId(111),
+        *org1SiteIds,
         createFacility = true,
         listFacilities = true,
         readSite = true,
@@ -242,9 +268,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
-        LayerId(1100),
+        *org1LayerIds,
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
@@ -252,30 +276,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        FeatureId(10010),
-        FeatureId(11000),
-        FeatureId(11001),
+        *org1FeatureIds,
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
     )
 
     permissions.expect(
-        PhotoId(10010),
-        PhotoId(11000),
-        PhotoId(11001),
+        *org1PhotoIds,
         readFeaturePhoto = true,
-        deleteFeaturePhoto = true)
+        deleteFeaturePhoto = true,
+    )
 
     permissions.expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
-        FacilityId(1100),
-        FacilityId(1101),
-        FacilityId(1110),
-        FacilityId(1111),
+        *org1FacilityIds,
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -285,41 +299,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
-        AccessionId(1100),
-        AccessionId(1101),
-        AccessionId(1110),
-        AccessionId(1111),
+        *org1AccessionIds,
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        AutomationId(1000),
-        AutomationId(1001),
-        AutomationId(1010),
-        AutomationId(1011),
-        AutomationId(1100),
-        AutomationId(1101),
-        AutomationId(1110),
-        AutomationId(1111),
+        *org1AutomationIds,
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        DeviceId(1000),
-        DeviceId(1001),
-        DeviceId(1010),
-        DeviceId(1011),
-        DeviceId(1100),
-        DeviceId(1101),
-        DeviceId(1110),
-        DeviceId(1111),
+        *org1DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -351,12 +344,12 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `admin role grants all permissions except deleting organization`() {
-    givenRole(OrganizationId(1), Role.ADMIN)
+    givenRole(org1Id, Role.ADMIN)
 
     val permissions = PermissionsTracker()
 
     permissions.expect(
-        OrganizationId(1),
+        org1Id,
         addOrganizationUser = true,
         createProject = true,
         listProjects = true,
@@ -365,8 +358,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        ProjectId(10),
-        ProjectId(11),
+        *org1ProjectIds,
         readProject = true,
         updateProject = true,
         addProjectUser = true,
@@ -376,10 +368,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        SiteId(100),
-        SiteId(101),
-        SiteId(110),
-        SiteId(111),
+        *org1SiteIds,
         createFacility = true,
         listFacilities = true,
         readSite = true,
@@ -387,9 +376,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
-        LayerId(1100),
+        *org1LayerIds,
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
@@ -397,30 +384,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        FeatureId(10010),
-        FeatureId(11000),
-        FeatureId(11001),
+        *org1FeatureIds,
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
     )
 
     permissions.expect(
-        PhotoId(10010),
-        PhotoId(11000),
-        PhotoId(11001),
+        *org1PhotoIds,
         readFeaturePhoto = true,
-        deleteFeaturePhoto = true)
+        deleteFeaturePhoto = true,
+    )
 
     permissions.expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
-        FacilityId(1100),
-        FacilityId(1101),
-        FacilityId(1110),
-        FacilityId(1111),
+        *org1FacilityIds,
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -430,41 +407,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
-        AccessionId(1100),
-        AccessionId(1101),
-        AccessionId(1110),
-        AccessionId(1111),
+        *org1AccessionIds,
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        AutomationId(1000),
-        AutomationId(1001),
-        AutomationId(1010),
-        AutomationId(1011),
-        AutomationId(1100),
-        AutomationId(1101),
-        AutomationId(1110),
-        AutomationId(1111),
+        *org1AutomationIds,
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        DeviceId(1000),
-        DeviceId(1001),
-        DeviceId(1010),
-        DeviceId(1011),
-        DeviceId(1100),
-        DeviceId(1101),
-        DeviceId(1110),
-        DeviceId(1111),
+        *org1DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -477,14 +433,18 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `managers can add users to their project, access all data associated with their project`() {
-    givenRole(OrganizationId(1), Role.MANAGER, ProjectId(10))
+    givenRole(org1Id, Role.MANAGER, project10Id)
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(OrganizationId(1), listProjects = true, readOrganization = true)
+    permissions.expect(
+        org1Id,
+        listProjects = true,
+        readOrganization = true,
+    )
 
     permissions.expect(
-        ProjectId(10),
+        project10Id,
         readProject = true,
         addProjectUser = true,
         listSites = true,
@@ -492,16 +452,14 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        SiteId(100),
-        SiteId(101),
+        *project10SiteIds,
         listFacilities = true,
         readSite = true,
         createLayer = true,
     )
 
     permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
+        *project10LayerIds,
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
@@ -509,19 +467,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        FeatureId(10010),
+        *project10FeatureIds,
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
     )
 
-    permissions.expect(PhotoId(10010), readFeaturePhoto = true, deleteFeaturePhoto = true)
+    permissions.expect(
+        *project10PhotoIds,
+        readFeaturePhoto = true,
+        deleteFeaturePhoto = true,
+    )
 
     permissions.expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
+        *project10FacilityIds,
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -531,29 +490,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
+        *project10AccessionIds,
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        AutomationId(1000),
-        AutomationId(1001),
-        AutomationId(1010),
-        AutomationId(1011),
+        *project10AutomationIds,
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        DeviceId(1000),
-        DeviceId(1001),
-        DeviceId(1010),
-        DeviceId(1011),
+        *project10DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -566,25 +516,31 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `contributors have access to data associated with their project(s)`() {
-    givenRole(OrganizationId(1), Role.CONTRIBUTOR, ProjectId(10))
+    givenRole(org1Id, Role.CONTRIBUTOR, project10Id)
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(OrganizationId(1), listProjects = true, readOrganization = true)
-
-    permissions.expect(ProjectId(10), readProject = true, listSites = true)
+    permissions.expect(
+        org1Id,
+        listProjects = true,
+        readOrganization = true,
+    )
 
     permissions.expect(
-        SiteId(100),
-        SiteId(101),
+        project10Id,
+        readProject = true,
+        listSites = true,
+    )
+
+    permissions.expect(
+        *project10SiteIds,
         listFacilities = true,
         readSite = true,
         createLayer = true,
     )
 
     permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
+        *project10LayerIds,
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
@@ -592,19 +548,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        FeatureId(10010),
+        *project10FeatureIds,
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
     )
 
-    permissions.expect(PhotoId(10010), readFeaturePhoto = true, deleteFeaturePhoto = true)
+    permissions.expect(
+        *project10PhotoIds,
+        readFeaturePhoto = true,
+        deleteFeaturePhoto = true,
+    )
 
     permissions.expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
+        *project10FacilityIds,
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -614,29 +571,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
+        *project10AccessionIds,
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        AutomationId(1000),
-        AutomationId(1001),
-        AutomationId(1010),
-        AutomationId(1011),
+        *project10AutomationIds,
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        DeviceId(1000),
-        DeviceId(1001),
-        DeviceId(1010),
-        DeviceId(1011),
+        *project10DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -650,33 +598,31 @@ internal class PermissionTest : DatabaseTest() {
   @Test
   fun `API clients are members of all projects, sites, facilities, and layers`() {
     usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.APIClient))
-    givenRole(OrganizationId(1), Role.CONTRIBUTOR)
+    givenRole(org1Id, Role.CONTRIBUTOR)
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(OrganizationId(1), listProjects = true, readOrganization = true)
+    permissions.expect(
+        org1Id,
+        listProjects = true,
+        readOrganization = true,
+    )
 
     permissions.expect(
-        ProjectId(10),
-        ProjectId(11),
+        *org1ProjectIds,
         readProject = true,
         listSites = true,
     )
 
     permissions.expect(
-        SiteId(100),
-        SiteId(101),
-        SiteId(110),
-        SiteId(111),
+        *org1SiteIds,
         listFacilities = true,
         readSite = true,
         createLayer = true,
     )
 
     permissions.expect(
-        LayerId(1000),
-        LayerId(1001),
-        LayerId(1100),
+        *org1LayerIds,
         readLayer = true,
         updateLayer = true,
         deleteLayer = true,
@@ -684,30 +630,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        FeatureId(10010),
-        FeatureId(11000),
-        FeatureId(11001),
+        *org1FeatureIds,
         readFeature = true,
         updateFeature = true,
         deleteFeature = true,
     )
 
     permissions.expect(
-        PhotoId(10010),
-        PhotoId(11000),
-        PhotoId(11001),
+        *org1PhotoIds,
         readFeaturePhoto = true,
-        deleteFeaturePhoto = true)
+        deleteFeaturePhoto = true,
+    )
 
     permissions.expect(
-        FacilityId(1000),
-        FacilityId(1001),
-        FacilityId(1010),
-        FacilityId(1011),
-        FacilityId(1100),
-        FacilityId(1101),
-        FacilityId(1110),
-        FacilityId(1111),
+        *org1FacilityIds,
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -717,41 +653,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        AccessionId(1000),
-        AccessionId(1001),
-        AccessionId(1010),
-        AccessionId(1011),
-        AccessionId(1100),
-        AccessionId(1101),
-        AccessionId(1110),
-        AccessionId(1111),
+        *org1AccessionIds,
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        AutomationId(1000),
-        AutomationId(1001),
-        AutomationId(1010),
-        AutomationId(1011),
-        AutomationId(1100),
-        AutomationId(1101),
-        AutomationId(1110),
-        AutomationId(1111),
+        *org1AutomationIds,
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        DeviceId(1000),
-        DeviceId(1001),
-        DeviceId(1010),
-        DeviceId(1011),
-        DeviceId(1100),
-        DeviceId(1101),
-        DeviceId(1110),
-        DeviceId(1111),
+        *org1DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -795,7 +710,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `permissions require target objects to exist`() {
-    givenRole(OrganizationId(1), Role.OWNER)
+    givenRole(org1Id, Role.OWNER)
 
     dslContext.deleteFrom(TIMESERIES).execute()
     dslContext.deleteFrom(DEVICES).execute()
