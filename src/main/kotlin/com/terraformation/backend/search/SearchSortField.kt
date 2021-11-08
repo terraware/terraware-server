@@ -1,4 +1,4 @@
-package com.terraformation.backend.seedbank.search
+package com.terraformation.backend.search
 
 import org.jooq.SortOrder
 

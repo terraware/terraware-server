@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
+import com.terraformation.backend.search.SearchField
 import javax.annotation.ManagedBean
 import javax.annotation.PostConstruct
 

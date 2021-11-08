@@ -5,6 +5,12 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.search.NestedQueryBuilder
+import com.terraformation.backend.search.SearchField
+import com.terraformation.backend.search.SearchNode
+import com.terraformation.backend.search.SearchResults
+import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.search.SearchTable
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -213,25 +219,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
             criteria.referencedTables() +
             sortOrder.map { it.field.table }.toSet()
 
-    directlyReferencedTables.forEach { table -> query = table.leftJoinWithAccession(query) }
+    directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
     return query
   }
 }
-
-/** Return value from [SearchService.search]. */
-data class SearchResults(
-    /**
-     * List of results containing the fields specified by the caller. Each element of the list is a
-     * map of field name to non-null value. If an accession does not have a value for a particular
-     * field, it is omitted from the map.
-     *
-     * Each value is either `String` or `List<Map<String, Any>>`.
-     */
-    val results: List<Map<String, Any>>,
-
-    /**
-     * Cursor that can be passed to [SearchService.search] to retrieve additional results. If
-     * [results] contains the full set of results, this will be null.
-     */
-    val cursor: String?
-)
