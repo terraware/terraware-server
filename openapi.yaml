@@ -1714,49 +1714,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
-  /api/v1/seedbank/timeseries/create:
-    post:
-      tags:
-      - DeviceManager
-      summary: Defines a list of timeseries for one or more devices.
-      description: "If there are existing timeseries with the same names, the old\
-        \ definitions will be overwritten."
-      operationId: createMultipleTimeseries
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTimeseriesRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The requested operation succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-  /api/v1/seedbank/timeseries/values:
-    post:
-      tags:
-      - DeviceManager
-      summary: Records new values for one or more timeseries.
-      operationId: recordTimeseriesValues_1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RecordTimeseriesValuesRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: "Successfully processed the request. Note that this status\
-            \ will be returned even if the server was unable to record some of the\
-            \ values. In that case, the failed values will be returned in the response\
-            \ payload."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RecordTimeseriesValuesResponsePayload'
   /api/v1/seedbank/values:
     post:
       tags:
@@ -2225,7 +2182,7 @@ paths:
       summary: Defines a list of timeseries for one or more devices.
       description: "If there are existing timeseries with the same names, the old\
         \ definitions will be overwritten."
-      operationId: createMultipleTimeseries_1
+      operationId: createMultipleTimeseries
       requestBody:
         content:
           application/json:
