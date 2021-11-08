@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @DeviceManagerAppEndpoint
-@RequestMapping(
-    "/api/v1/timeseries",
-    // TODO: Remove the following once the device manager is updated to use /api/v1/timeseries
-    "/api/v1/seedbank/timeseries")
+@RequestMapping("/api/v1/timeseries")
 @RestController
 class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
   private val log = perClassLogger()
