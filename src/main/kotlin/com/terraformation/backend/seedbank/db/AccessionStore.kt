@@ -297,7 +297,11 @@ class AccessionStore(
 
     requirePermissions { updateAccession(accessionId) }
 
-    val accession = updated.withCalculatedValues(clock, existing)
+    // Some fields are significant to the state machine, but can't be directly set on update; pull
+    // them from the existing accession for purposes of value calculation.
+    val updatedWithReadOnlyValues = updated.copy(checkedInTime = existing.checkedInTime)
+
+    val accession = updatedWithReadOnlyValues.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)
 
     if (accession.storageStartDate?.isAfter(todayLocal) == true) {

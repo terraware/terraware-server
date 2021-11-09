@@ -1022,6 +1022,18 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `checkedInTime in model is ignored by update`() {
+    every { config.enableAwaitingCheckIn } returns false
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+
+    store.update(initial.copy(checkedInTime = null, primaryCollector = "test"))
+    val updated = store.fetchById(initial.id!!)!!
+
+    assertEquals(AccessionState.Pending, updated.state, "State")
+    assertEquals(Instant.EPOCH, updated.checkedInTime, "Checked-in time")
+  }
+
+  @Test
   fun `state transitions to Processing when seed count entered`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(100)))
