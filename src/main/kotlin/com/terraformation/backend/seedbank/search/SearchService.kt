@@ -6,11 +6,11 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.NestedQueryBuilder
-import com.terraformation.backend.search.SearchField
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.SearchTable
+import com.terraformation.backend.search.field.SearchField
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -44,7 +44,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val conditions =
         criteria
             .toCondition()
-            .and(SearchTables.Accession.conditionForPermissions())
+            .and(searchFields.searchTables.accessions.conditionForPermissions())
             .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
 
     return joinWithSecondaryTables(
@@ -132,7 +132,8 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
 
     query = joinWithSecondaryTables(query, listOf(field), criteria)
 
-    val conditions = criteria.toCondition().and(SearchTables.Accession.conditionForPermissions())
+    val conditions =
+        criteria.toCondition().and(searchFields.searchTables.accessions.conditionForPermissions())
 
     val fullQuery =
         query

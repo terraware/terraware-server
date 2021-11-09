@@ -1,26 +1,43 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.FuzzySearchOperators
+import com.terraformation.backend.search.field.BigDecimalField
+import com.terraformation.backend.search.field.DateField
+import com.terraformation.backend.search.field.EnumField
+import com.terraformation.backend.search.field.GramsField
+import com.terraformation.backend.search.field.IdWrapperField
+import com.terraformation.backend.search.field.IntegerField
+import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.field.TextField
+import com.terraformation.backend.search.field.TimestampField
+import com.terraformation.backend.search.field.UpperCaseTextField
 import com.terraformation.backend.seedbank.search.SearchService
+import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDate
 import org.jooq.Condition
+import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.Table
+import org.jooq.TableField
 
 /**
  * Defines a table whose columns can be declared as [SearchField] s. The methods here are used in
  * [SearchService] when it dynamically constructs SQL queries based on a search request from a
  * client.
  */
-interface SearchTable {
+abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperators) {
   /** The jOOQ Table object for the table in question. */
-  val fromTable: Table<out Record>
+  abstract val fromTable: Table<out Record>
 
   /**
    * Adds a LEFT JOIN clause to a query to connect this table to the main table. The implementation
    * can assume that the main table is already present in the SELECT statement.
    */
-  fun <T : Record> leftJoinWithMain(query: SelectJoinStep<T>): SelectJoinStep<T>
+  abstract fun <T : Record> leftJoinWithMain(query: SelectJoinStep<T>): SelectJoinStep<T>
 
   /**
    * Adds a LEFT JOIN clause to a query to connect this table to any other tables required to filter
@@ -33,7 +50,7 @@ interface SearchTable {
    * already, e.g., if a table has a facility ID column, there's no need to join with another table
    * to get a facility ID.
    */
-  fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> = query
+  open fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> = query
 
   /**
    * Returns a condition that restricts this table's values to ones the user has permission to see.
@@ -42,7 +59,7 @@ interface SearchTable {
    * This method can safely assume that [joinForPermissions] was called, so any tables added there
    * are available for use in the condition.
    */
-  fun conditionForPermissions(): Condition?
+  abstract fun conditionForPermissions(): Condition?
 
   /**
    * An intermediate table that needs to be joined with this one in order to connect this table to
@@ -54,22 +71,85 @@ interface SearchTable {
    * This should be null (the default) for children that can be directly joined with the accessions
    * table.
    */
-  val parent: SearchTable?
+  open val parent: SearchTable?
     get() = null
 
   /**
    * Returns a condition to add to the `WHERE` clause of a multiset subquery to correlate it with
    * the current row from the parent table.
    */
-  fun conditionForMultiset(): Condition?
+  abstract fun conditionForMultiset(): Condition?
 
   /**
    * Returns the default fields to sort on. These are always included when querying the table; if
    * there are user-supplied sort criteria, these come at the end. This allows us to return stable
    * query results if the user-requested sort fields have duplicate values.
    */
-  val defaultOrderFields: List<OrderField<*>>
+  open val defaultOrderFields: List<OrderField<*>>
     get() =
         fromTable.primaryKey?.fields
             ?: throw IllegalStateException("BUG! No primary key fields found for $fromTable")
+
+  fun bigDecimalField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, BigDecimal?>,
+  ) = BigDecimalField(fieldName, displayName, databaseField, this)
+
+  fun dateField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, LocalDate?>,
+      nullable: Boolean = false
+  ) = DateField(fieldName, displayName, databaseField, this, nullable)
+
+  inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<E>> enumField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, T?>,
+      nullable: Boolean = true
+  ) = EnumField(fieldName, displayName, databaseField, this, T::class.java, nullable)
+
+  fun gramsField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, BigDecimal?>
+  ) = GramsField(fieldName, displayName, databaseField, this)
+
+  fun <T : Any> idWrapperField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, T?>,
+      fromLong: (Long) -> T
+  ) = IdWrapperField(fieldName, displayName, databaseField, this, fromLong)
+
+  fun integerField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, Int?>,
+      nullable: Boolean = true
+  ) = IntegerField(fieldName, displayName, databaseField, this, nullable)
+
+  fun textField(
+      fieldName: String,
+      displayName: String,
+      databaseField: Field<String?>,
+      nullable: Boolean = true
+  ) = TextField(fieldName, displayName, databaseField, this, nullable, fuzzySearchOperators)
+
+  fun timestampField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, Instant?>,
+      nullable: Boolean = true
+  ) = TimestampField(fieldName, displayName, databaseField, this, nullable)
+
+  fun upperCaseTextField(
+      fieldName: String,
+      displayName: String,
+      databaseField: Field<String?>,
+      nullable: Boolean = true
+  ) =
+      UpperCaseTextField(
+          fieldName, displayName, databaseField, this, nullable, fuzzySearchOperators)
 }

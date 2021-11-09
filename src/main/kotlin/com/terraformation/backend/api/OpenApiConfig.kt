@@ -5,7 +5,7 @@ import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
-import com.terraformation.backend.search.SearchField
+import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.SearchResponsePayload
