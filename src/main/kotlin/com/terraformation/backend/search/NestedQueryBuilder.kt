@@ -1,5 +1,8 @@
-package com.terraformation.backend.seedbank.search
+package com.terraformation.backend.search
 
+import com.terraformation.backend.seedbank.search.SearchFields
+import com.terraformation.backend.seedbank.search.SearchService
+import com.terraformation.backend.seedbank.search.SearchTables
 import com.terraformation.backend.util.MemoizedValue
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -617,13 +620,13 @@ class NestedQueryBuilder(
 
     val selectTables = scalarFields.values.map { it.table }.toSet()
 
-    // SearchTable.leftJoinWithAccession will join with parent tables, so no need to
+    // SearchTable.leftJoinWithMain will join with parent tables, so no need to
     // add them a second time.
     val selectTableParents = selectTables.mapNotNull { it.parent }.toSet()
 
     val tablesToJoin = selectTables - selectTableParents
 
-    tablesToJoin.forEach { table -> joinedQuery = table.leftJoinWithAccession(joinedQuery) }
+    tablesToJoin.forEach { table -> joinedQuery = table.leftJoinWithMain(joinedQuery) }
 
     return joinedQuery
   }
@@ -735,8 +738,6 @@ class NestedQueryBuilder(
   /**
    * Returns the table to use in the `FROM` clause of this query.
    *
-   * For the root [NestedQueryBuilder], this is always [SearchTables.Accession].
-   *
    * For a sublist with scalar fields, it is whatever table contains the fields. (Currently we don't
    * support scalar fields from multiple tables in the same sublist.)
    *
@@ -750,16 +751,13 @@ class NestedQueryBuilder(
    * - For the outermost sublist, with prefix `germinationTests` -- which doesn't have any scalar
    * fields -- this is the parent of the table for the innermost sublist, namely
    * [SearchTables.GerminationTest].
-   * - For the root query, this is [SearchTables.Accession].
+   * - For the root query, which also doesn't have any scalar fields, this is the parent of the
+   * table for the outermost sublist, namely [SearchTables.Accession].
    */
   private fun getSearchTable(): SearchTable {
     val scalarFieldTable =
-        if (isRoot()) {
-          SearchTables.Accession
-        } else {
-          scalarFields.values.firstOrNull()?.table
-              ?: sortFields.firstOrNull { !isInSublist(getRelativeName(it.field)) }?.field?.table
-        }
+        scalarFields.values.firstOrNull()?.table
+            ?: sortFields.firstOrNull { !isInSublist(getRelativeName(it.field)) }?.field?.table
 
     if (scalarFieldTable != null) {
       return scalarFieldTable

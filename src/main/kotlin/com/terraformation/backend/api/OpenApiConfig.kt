@@ -5,12 +5,12 @@ import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
+import com.terraformation.backend.search.SearchField
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
-import com.terraformation.backend.seedbank.search.SearchField
 import com.terraformation.backend.seedbank.search.SearchFields
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
