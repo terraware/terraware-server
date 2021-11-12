@@ -20,7 +20,7 @@ data class FeatureModel(
     val plant: PlantsRow? = null,
 ) {
   private fun withoutReadOnlyFields(): FeatureModel {
-    return copy(createdTime = null, modifiedTime = null)
+    return copy(layerId = null, createdTime = null, modifiedTime = null)
   }
 
   fun writableFieldsEqual(other: FeatureModel): Boolean {
