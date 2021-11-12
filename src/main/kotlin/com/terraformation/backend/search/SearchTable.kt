@@ -43,8 +43,8 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
    * Adds a LEFT JOIN clause to a query to connect this table to any other tables required to filter
    * out values the user doesn't have permission to see.
    *
-   * This is only used when querying all the values of a table; for accession searches, permissions
-   * are checked on the accession.
+   * This is only used when querying all the values of a table; for searches, permissions are
+   * checked on the main table.
    *
    * The default no-op implementation will work for any tables that have the required information
    * already, e.g., if a table has a facility ID column, there's no need to join with another table
@@ -63,13 +63,12 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
 
   /**
    * An intermediate table that needs to be joined with this one in order to connect this table to
-   * the accessions table. This supports multi-step chains of foreign keys. For example, if table
-   * `foo` has a foreign key column `accession_id` and table `bar` has a foreign key `foo_id`, a
-   * query that wants to get a column from `bar` would need to also join with `foo`. In that case,
-   * this method would return the [SearchTable] for `foo`.
+   * the main table. For example, if table `foo` has a foreign key column `accession_id` and table
+   * `bar` has a foreign key `foo_id`, a query of accession data that wants to get a column from
+   * `bar` would need to also join with `foo`. In that case, this method would return the
+   * [SearchTable] for `foo`.
    *
-   * This should be null (the default) for children that can be directly joined with the accessions
-   * table.
+   * This should be null (the default) for children that can be directly joined with the main table.
    */
   open val parent: SearchTable?
     get() = null
