@@ -8,7 +8,7 @@ import net.postgis.jdbc.geometry.Geometry
 
 data class FeatureModel(
     val id: FeatureId? = null,
-    val layerId: LayerId,
+    val layerId: LayerId? = null,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,

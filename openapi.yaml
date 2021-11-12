@@ -356,9 +356,32 @@ paths:
     get:
       tags:
       - GISApp
-      summary: List all features associated with a layer.
+      summary: "Lists the features associated with a layer. Can optionally filter\
+        \ by entered time, notes, and (for plants) species name."
       operationId: list_1
       parameters:
+      - name: minEnteredTime
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: maxEnteredTime
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: notes
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: speciesName
+        in: query
+        required: false
+        schema:
+          type: string
       - name: skip
         in: query
         required: false
@@ -418,8 +441,8 @@ paths:
     put:
       tags:
       - GISApp
-      summary: Update an existing feature. Overwrites all fields. Does not allow a
-        feature to be moved between layers (layerId cannot be updated)
+      summary: "Updates an existing feature. If plant field is null or omitted, existing\
+        \ plant details are preserved."
       operationId: update_4
       parameters:
       - name: featureId
@@ -2793,6 +2816,8 @@ components:
         enteredTime:
           type: string
           format: date-time
+        plant:
+          $ref: '#/components/schemas/PlantDetailsPayload'
     CreateFeatureResponsePayload:
       required:
       - feature
@@ -3246,6 +3271,8 @@ components:
         enteredTime:
           type: string
           format: date-time
+        plant:
+          $ref: '#/components/schemas/PlantDetailsPayload'
       description: Describes a map feature. The coordinate reference system of the
         "geom" field will be longitude/latitude EPSG:4326.
     FieldNodePayload:
@@ -4128,6 +4155,20 @@ components:
         \ this will require x OR y OR z."
       allOf:
       - $ref: '#/components/schemas/SearchNodePayload'
+    PlantDetailsPayload:
+      type: object
+      properties:
+        datePlanted:
+          type: string
+          format: date
+        label:
+          type: string
+        naturalRegen:
+          type: boolean
+        speciesId:
+          type: integer
+          format: int64
+      description: Additional details for features that represent plants.
     PlantResponse:
       required:
       - featureId
@@ -5295,13 +5336,8 @@ components:
             \ parent device must exist."
           format: int64
     UpdateFeatureRequestPayload:
-      required:
-      - layerId
       type: object
       properties:
-        layerId:
-          type: integer
-          format: int64
         geom:
           $ref: '#/components/schemas/Geometry'
         gpsHorizAccuracy:
@@ -5317,6 +5353,8 @@ components:
         enteredTime:
           type: string
           format: date-time
+        plant:
+          $ref: '#/components/schemas/PlantDetailsPayload'
     UpdateFeatureResponsePayload:
       required:
       - feature

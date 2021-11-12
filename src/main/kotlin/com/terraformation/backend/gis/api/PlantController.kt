@@ -66,12 +66,13 @@ class PlantController(private val featureStore: FeatureStore) {
       @PathVariable layerId: LayerId
   ): ListPlantsResponsePayload {
     val plants =
-        featureStore.fetchPlantsList(
+        featureStore.listFeatures(
             layerId = layerId,
             speciesName = speciesName,
             minEnteredTime = minEnteredTime,
             maxEnteredTime = maxEnteredTime,
-            notes = notes)
+            notes = notes,
+            plantsOnly = true)
 
     return ListPlantsResponsePayload(plants.map { ListPlantsResponseElement(it) })
   }
@@ -180,7 +181,7 @@ data class ListPlantsResponseElement(
       model.plant?.speciesId,
       model.plant?.naturalRegen,
       model.plant?.datePlanted,
-      model.layerId,
+      model.layerId!!,
       model.gpsHorizAccuracy,
       model.gpsVertAccuracy,
       model.attrib,
