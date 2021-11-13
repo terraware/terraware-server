@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<database name="terraware" schema="public" type="PostgreSQL - 12.8 (Debian 12.8-1.pgdg110+1)">
+<database name="terraware" schema="public" type="PostgreSQL - 12.9 (Debian 12.9-1.pgdg110+1)">
    <sequences>
       <sequence increment="1" name="accession_number_seq" startValue="1"/>
    </sequences>
@@ -2393,7 +2393,7 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_scripts_build_date" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[Returns build date of the PostGIS scripts.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT '2021-09-04 07:26:17'::text AS version]]></definition>
+         <definition language="SQL"><![CDATA[SELECT '2021-10-21 04:25:59'::text AS version]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="postgis_scripts_installed" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[Returns version of the postgis scripts installed in this database.]]></comment>
