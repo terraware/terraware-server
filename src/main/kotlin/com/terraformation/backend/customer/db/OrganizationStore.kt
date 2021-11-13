@@ -1,22 +1,32 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
+import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
+import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.USERS
+import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.security.access.AccessDeniedException
@@ -30,18 +40,97 @@ class OrganizationStore(
   private val log = perClassLogger()
 
   /** Returns all the organizations the user has access to. */
-  fun fetchAll(): List<OrganizationModel> {
-    val user = currentUser()
-    val organizationIds = user.organizationRoles.keys
-    return organizationsDao.fetchById(*organizationIds.toTypedArray()).map { it.toModel() }
+  fun fetchAll(depth: FetchDepth = FetchDepth.Organization): List<OrganizationModel> {
+    return selectForDepth(depth)
   }
 
-  fun fetchById(organizationId: OrganizationId): OrganizationModel? {
+  fun fetchById(
+      organizationId: OrganizationId,
+      depth: FetchDepth = FetchDepth.Organization
+  ): OrganizationModel? {
     return if (organizationId in currentUser().organizationRoles) {
-      organizationsDao.fetchOneById(organizationId)?.toModel()
+      selectForDepth(depth, ORGANIZATIONS.ID.eq(organizationId)).firstOrNull()
     } else {
       log.warn("User ${currentUser().userId} attempted to fetch organization $organizationId")
       null
+    }
+  }
+
+  private fun selectForDepth(
+      depth: FetchDepth,
+      condition: Condition? = null
+  ): List<OrganizationModel> {
+    val user = currentUser()
+    val organizationIds = user.organizationRoles.keys
+
+    val facilitiesMultiset =
+        if (depth.level >= FetchDepth.Facility.level) {
+          DSL.multiset(
+                  DSL.select(FACILITIES.asterisk())
+                      .from(FACILITIES)
+                      .where(FACILITIES.SITE_ID.eq(SITES.ID))
+                      .orderBy(FACILITIES.ID))
+              .convertFrom { result -> result.map { FacilityModel(it) } }
+        } else {
+          DSL.value(null as List<FacilityModel>?)
+        }
+
+    val sitesMultiset =
+        if (depth.level >= FetchDepth.Site.level) {
+          DSL.multiset(
+                  DSL.select(
+                          SITES.CREATED_TIME,
+                          SITES.ENABLED,
+                          SITES.ID,
+                          SITES.LOCALE,
+                          SITES.MODIFIED_TIME,
+                          SITES.NAME,
+                          SITES.PROJECT_ID,
+                          SITES.TIMEZONE,
+                          SITES
+                              .LOCATION
+                              .transformSrid(SRID.LONG_LAT)
+                              .forMultiset()
+                              .`as`(SITES.LOCATION),
+                          facilitiesMultiset)
+                      .from(SITES)
+                      .where(SITES.PROJECT_ID.eq(PROJECTS.ID))
+                      .orderBy(SITES.ID))
+              .convertFrom { result ->
+                result.map { record -> SiteModel(record, facilitiesMultiset) }
+              }
+        } else {
+          DSL.value(null as List<SiteModel>?)
+        }
+
+    val projectsMultiset =
+        if (depth.level >= FetchDepth.Project.level) {
+          val projectIds = user.projectRoles.keys
+
+          if (projectIds.isNotEmpty()) {
+            DSL.multiset(
+                    DSL.select(PROJECTS.asterisk(), sitesMultiset)
+                        .from(PROJECTS)
+                        .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                        .and(PROJECTS.ID.`in`(projectIds))
+                        .orderBy(PROJECTS.ID))
+                .convertFrom { result -> result.map { ProjectModel(it, sitesMultiset) } }
+          } else {
+            DSL.value(emptyList<ProjectModel>())
+          }
+        } else {
+          DSL.value(null as List<ProjectModel>?)
+        }
+
+    return if (organizationIds.isNotEmpty()) {
+      dslContext
+          .select(ORGANIZATIONS.asterisk(), projectsMultiset)
+          .from(ORGANIZATIONS)
+          .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
+          .orderBy(ORGANIZATIONS.ID)
+          .fetch { OrganizationModel(it, projectsMultiset) }
+    } else {
+      emptyList()
     }
   }
 
@@ -200,5 +289,12 @@ class OrganizationStore(
             .execute()
 
     return rowsUpdated > 0
+  }
+
+  enum class FetchDepth(val level: Int) {
+    Organization(1),
+    Project(2),
+    Site(3),
+    Facility(4)
   }
 }

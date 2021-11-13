@@ -8,10 +8,10 @@ import com.terraformation.backend.api.InternalErrorException
 import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.model.AutomationModel
+import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.FacilityId
@@ -47,17 +47,11 @@ class FacilityController(
       description = "List all the facilities the current user can access.",
   )
   fun listAllFacilities(): ListFacilitiesResponse {
-    val user = currentUser()
-    val facilityRoles = user.facilityRoles
     val facilities = facilityStore.fetchAll()
 
     val elements =
         facilities.map { facility ->
-          val role =
-              facilityRoles[facility.id]
-                  ?: throw IllegalStateException(
-                      "BUG! No role for facility that was selected based on the presence of a role")
-          FacilityPayload(facility.id, facility.siteId, facility.name, facility.type, role.name)
+          FacilityPayload(facility.id, facility.siteId, facility.name, facility.type)
         }
 
     return ListFacilitiesResponse(elements)
@@ -67,12 +61,9 @@ class FacilityController(
   @Operation(summary = "Gets information about a single facility")
   fun getFacility(@PathVariable facilityId: FacilityId): GetFacilityResponse {
     val facility = facilityStore.fetchById(facilityId) ?: throw NotFoundException()
-    val role =
-        currentUser().facilityRoles[facilityId]
-            ?: throw IllegalStateException("BUG! No role for facility")
 
     return GetFacilityResponse(
-        FacilityPayload(facilityId, facility.siteId, facility.name, facility.type, role.name))
+        FacilityPayload(facilityId, facility.siteId, facility.name, facility.type))
   }
 
   @ApiResponse(responseCode = "200", description = "Success")
@@ -195,9 +186,9 @@ data class FacilityPayload(
     val siteId: SiteId,
     val name: String,
     val type: FacilityType,
-    @Schema(description = "The name of the role the current user has at the facility.")
-    val role: String,
-)
+) {
+  constructor(model: FacilityModel) : this(model.id, model.siteId, model.name, model.type)
+}
 
 data class ModifyAutomationRequestPayload(
     val name: String,
