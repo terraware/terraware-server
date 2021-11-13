@@ -2,6 +2,7 @@ package com.terraformation.backend.gis.model
 
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
+import com.terraformation.backend.db.tables.pojos.PlantsRow
 import java.time.Instant
 import net.postgis.jdbc.geometry.Geometry
 
@@ -16,4 +17,13 @@ data class FeatureModel(
     val enteredTime: Instant? = null,
     val createdTime: Instant? = null,
     val modifiedTime: Instant? = null,
-)
+    val plant: PlantsRow? = null,
+) {
+  private fun withoutReadOnlyFields(): FeatureModel {
+    return copy(createdTime = null, modifiedTime = null)
+  }
+
+  fun writableFieldsEqual(other: FeatureModel): Boolean {
+    return withoutReadOnlyFields() == other.withoutReadOnlyFields()
+  }
+}

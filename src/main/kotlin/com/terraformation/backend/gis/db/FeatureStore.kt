@@ -4,16 +4,22 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
+import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.PhotoNotFoundException
+import com.terraformation.backend.db.PlantNotFoundException
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.UsesFuzzySearchOperators
 import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
+import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.pojos.FeaturePhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
+import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
 import com.terraformation.backend.db.tables.references.PHOTOS
@@ -29,9 +35,14 @@ import java.io.InputStream
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Clock
+import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Record
+import org.jooq.SelectOnConditionStep
 import org.jooq.exception.DataAccessException
+import org.jooq.impl.DSL
+import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
 class FeatureStore(
@@ -39,71 +50,49 @@ class FeatureStore(
     private val dslContext: DSLContext,
     private val featurePhotosDao: FeaturePhotosDao,
     private val fileStore: FileStore,
+    override val fuzzySearchOperators: FuzzySearchOperators,
     private val photosDao: PhotosDao,
+    private val plantsDao: PlantsDao,
     private val thumbnailStore: ThumbnailStore,
     private val thumbnailsDao: ThumbnailsDao,
-) {
+) : UsesFuzzySearchOperators {
   private val log = perClassLogger()
 
   fun createFeature(model: FeatureModel): FeatureModel {
     requirePermissions { createFeature(model.layerId) }
 
-    val currTime = clock.instant()
-    val insertedRecord =
-        with(FEATURES) {
-          dslContext
-              .insertInto(FEATURES)
-              .set(LAYER_ID, model.layerId)
-              .set(GEOM, model.geom)
-              .set(GPS_HORIZ_ACCURACY, model.gpsHorizAccuracy)
-              .set(GPS_VERT_ACCURACY, model.gpsVertAccuracy)
-              .set(ATTRIB, model.attrib)
-              .set(NOTES, model.notes)
-              .set(ENTERED_TIME, model.enteredTime)
-              .set(CREATED_TIME, currTime)
-              .set(MODIFIED_TIME, currTime)
-              .returning(ID, GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
-              .fetchOne()
-              ?: throw DataAccessException("Database did not return ID")
-        }
+    return dslContext.transactionResult { _ ->
+      val currTime = clock.instant()
+      val insertedRecord =
+          with(FEATURES) {
+            dslContext
+                .insertInto(FEATURES)
+                .set(LAYER_ID, model.layerId)
+                .set(GEOM, model.geom)
+                .set(GPS_HORIZ_ACCURACY, model.gpsHorizAccuracy)
+                .set(GPS_VERT_ACCURACY, model.gpsVertAccuracy)
+                .set(ATTRIB, model.attrib)
+                .set(NOTES, model.notes)
+                .set(ENTERED_TIME, model.enteredTime)
+                .set(CREATED_TIME, currTime)
+                .set(MODIFIED_TIME, currTime)
+                .returning(ID, GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
+                .fetchOne()
+                ?: throw DataAccessException("Database did not return ID")
+          }
 
-    return model.copy(
-        id = insertedRecord.get(FEATURES.ID),
-        geom = insertedRecord.get(FEATURES.GEOM),
-        createdTime = currTime,
-        modifiedTime = currTime)
-  }
+      val featureId = insertedRecord[FEATURES.ID]
 
-  private fun noPermissionsCheckFetch(id: FeatureId): FeatureModel? {
-    val record =
-        dslContext
-            .select(
-                FEATURES.ID,
-                FEATURES.LAYER_ID,
-                FEATURES.GEOM.transformSrid(SRID.LONG_LAT).`as`(FEATURES.GEOM),
-                FEATURES.GPS_HORIZ_ACCURACY,
-                FEATURES.GPS_VERT_ACCURACY,
-                FEATURES.ATTRIB,
-                FEATURES.NOTES,
-                FEATURES.ENTERED_TIME,
-                FEATURES.CREATED_TIME,
-                FEATURES.MODIFIED_TIME)
-            .from(FEATURES)
-            .where(FEATURES.ID.eq(id))
-            .fetchOne()
-            ?: return null
+      val plant = model.plant?.copy(featureId = featureId)?.also { plantsDao.insert(it) }
 
-    return FeatureModel(
-        id = record[FEATURES.ID],
-        layerId = record[FEATURES.LAYER_ID]!!,
-        geom = record[FEATURES.GEOM],
-        gpsHorizAccuracy = record[FEATURES.GPS_HORIZ_ACCURACY],
-        gpsVertAccuracy = record[FEATURES.GPS_VERT_ACCURACY],
-        attrib = record[FEATURES.ATTRIB],
-        notes = record[FEATURES.NOTES],
-        enteredTime = record[FEATURES.ENTERED_TIME],
-        createdTime = record[FEATURES.CREATED_TIME],
-        modifiedTime = record[FEATURES.MODIFIED_TIME])
+      model.copy(
+          id = featureId,
+          geom = insertedRecord[FEATURES.GEOM],
+          createdTime = currTime,
+          modifiedTime = currTime,
+          plant = plant,
+      )
+    }
   }
 
   fun fetchFeature(id: FeatureId): FeatureModel? {
@@ -132,41 +121,12 @@ class FeatureStore(
       return emptyList()
     }
 
-    with(FEATURES) {
-      val records =
-          dslContext
-              .select(
-                  ID,
-                  LAYER_ID,
-                  GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM),
-                  GPS_HORIZ_ACCURACY,
-                  GPS_VERT_ACCURACY,
-                  ATTRIB,
-                  NOTES,
-                  ENTERED_TIME,
-                  CREATED_TIME,
-                  MODIFIED_TIME)
-              .from(FEATURES)
-              .where(LAYER_ID.eq(id))
-              .orderBy(ID)
-              .limit(limit)
-              .offset(skip)
-              .fetch()
-
-      return records.map { record ->
-        FeatureModel(
-            id = record[ID],
-            layerId = record[LAYER_ID]!!,
-            geom = record[GEOM],
-            gpsHorizAccuracy = record[GPS_HORIZ_ACCURACY],
-            gpsVertAccuracy = record[GPS_VERT_ACCURACY],
-            attrib = record[ATTRIB],
-            notes = record[NOTES],
-            enteredTime = record[ENTERED_TIME],
-            createdTime = record[CREATED_TIME],
-            modifiedTime = record[MODIFIED_TIME])
-      }
-    }
+    return selectFromFeatures()
+        .where(FEATURES.LAYER_ID.eq(id))
+        .orderBy(FEATURES.ID)
+        .limit(limit)
+        .offset(skip)
+        .fetch { recordToModel(it) }
   }
 
   fun updateFeature(newModel: FeatureModel): FeatureModel {
@@ -182,31 +142,44 @@ class FeatureStore(
       throw FeatureNotFoundException(featureId)
     }
 
-    if (newModel == oldModel) {
+    if (newModel.writableFieldsEqual(oldModel)) {
       return newModel
     }
 
-    val currTime = clock.instant()
+    return dslContext.transactionResult { _ ->
+      val currTime = clock.instant()
 
-    val longLatGeom =
-        with(FEATURES) {
-          dslContext
-              .update(FEATURES)
-              .set(GEOM, newModel.geom)
-              .set(GPS_HORIZ_ACCURACY, newModel.gpsHorizAccuracy)
-              .set(GPS_VERT_ACCURACY, newModel.gpsVertAccuracy)
-              .set(ATTRIB, newModel.attrib)
-              .set(NOTES, newModel.notes)
-              .set(ENTERED_TIME, newModel.enteredTime)
-              .set(MODIFIED_TIME, currTime)
-              .where(ID.eq(featureId))
-              .returningResult(GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
-              .fetchOne()
-              ?.getValue(GEOM)
-              ?: throw DataAccessException("Database did not return Geom")
+      val longLatGeom =
+          with(FEATURES) {
+            dslContext
+                .update(FEATURES)
+                .set(GEOM, newModel.geom)
+                .set(GPS_HORIZ_ACCURACY, newModel.gpsHorizAccuracy)
+                .set(GPS_VERT_ACCURACY, newModel.gpsVertAccuracy)
+                .set(ATTRIB, newModel.attrib)
+                .set(NOTES, newModel.notes)
+                .set(ENTERED_TIME, newModel.enteredTime)
+                .set(MODIFIED_TIME, currTime)
+                .where(ID.eq(featureId))
+                .returningResult(GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
+                .fetchOne()
+                ?.getValue(GEOM)
+          }
+
+      // Allow adding or updating plant data, but if the new model doesn't have plant data, treat
+      // it as "leave the existing plant data alone" because we don't want to allow changing a
+      // plant to some other kind of feature.
+      if (newModel.plant != null) {
+        val plantWithFeatureId = newModel.plant.copy(featureId = featureId)
+        if (oldModel.plant != null) {
+          plantsDao.update(plantWithFeatureId)
+        } else {
+          plantsDao.insert(plantWithFeatureId)
         }
+      }
 
-    return newModel.copy(modifiedTime = currTime, geom = longLatGeom)
+      newModel.copy(modifiedTime = currTime, geom = longLatGeom)
+    }
   }
 
   fun deleteFeature(id: FeatureId): FeatureId {
@@ -346,5 +319,126 @@ class FeatureStore(
     }
 
     // TODO: Delete thumbnails from file storage
+  }
+
+  fun createPlant(plant: PlantsRow): PlantsRow {
+    val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
+    val feature = fetchFeature(featureId) ?: throw FeatureNotFoundException(featureId)
+
+    if (feature.plant != null) {
+      throw DuplicateKeyException("Plant already exists")
+    }
+
+    updateFeature(feature.copy(plant = plant))
+
+    return plant.copy()
+  }
+
+  fun updatePlant(plant: PlantsRow): PlantsRow {
+    val featureId = plant.featureId ?: throw IllegalArgumentException("featureId cannot be null")
+    val feature = fetchFeature(featureId) ?: throw FeatureNotFoundException(featureId)
+
+    if (feature.plant == null) {
+      throw PlantNotFoundException(featureId)
+    }
+
+    updateFeature(feature.copy(plant = plant))
+
+    return plant.copy()
+  }
+
+  fun fetchPlantSummary(
+      layerId: LayerId,
+      minEnteredTime: Instant? = null,
+      maxEnteredTime: Instant? = null,
+  ): Map<SpeciesId, Int> {
+    if (!currentUser().canReadLayer(layerId)) {
+      return emptyMap()
+    }
+
+    return dslContext
+        .select(
+            DSL.coalesce<SpeciesId>(PLANTS.SPECIES_ID, SpeciesId(-1)), DSL.count(PLANTS.FEATURE_ID))
+        .from(PLANTS)
+        .join(FEATURES)
+        .on(PLANTS.FEATURE_ID.eq(FEATURES.ID))
+        .where(
+            listOfNotNull(
+                FEATURES.LAYER_ID.eq(layerId),
+                minEnteredTime?.let { FEATURES.ENTERED_TIME.greaterOrEqual(it) },
+                maxEnteredTime?.let { FEATURES.ENTERED_TIME.lessOrEqual(it) }))
+        .groupBy(PLANTS.SPECIES_ID)
+        .fetchMap({ it.value1() }, { it.value2() })
+  }
+
+  fun fetchPlantsList(
+      layerId: LayerId,
+      speciesName: String? = null,
+      minEnteredTime: Instant? = null,
+      maxEnteredTime: Instant? = null,
+      notes: String? = null
+  ): List<FeatureModel> {
+    if (!currentUser().canReadLayer(layerId)) {
+      return emptyList()
+    }
+
+    return selectFromFeatures()
+        .where(
+            listOfNotNull(
+                FEATURES.LAYER_ID.eq(layerId),
+                speciesName?.let { PLANTS.species().NAME.eq(it) },
+                minEnteredTime?.let { FEATURES.ENTERED_TIME.greaterOrEqual(it) },
+                maxEnteredTime?.let { FEATURES.ENTERED_TIME.lessOrEqual(it) },
+                notes?.let { FEATURES.NOTES.likeFuzzy(it) }))
+        .and(PLANTS.FEATURE_ID.isNotNull)
+        .orderBy(FEATURES.ID)
+        .fetch { recordToModel(it) }
+  }
+
+  private fun noPermissionsCheckFetch(id: FeatureId): FeatureModel? {
+    return selectFromFeatures().where(FEATURES.ID.eq(id)).fetchOne { recordToModel(it) }
+  }
+
+  private fun selectFromFeatures(): SelectOnConditionStep<Record> {
+    return dslContext
+        .select(
+            FEATURES.ID,
+            FEATURES.LAYER_ID,
+            FEATURES.GEOM.transformSrid(SRID.LONG_LAT).`as`(FEATURES.GEOM),
+            FEATURES.GPS_HORIZ_ACCURACY,
+            FEATURES.GPS_VERT_ACCURACY,
+            FEATURES.ATTRIB,
+            FEATURES.NOTES,
+            FEATURES.ENTERED_TIME,
+            FEATURES.CREATED_TIME,
+            FEATURES.MODIFIED_TIME,
+            PLANTS.asterisk(),
+        )
+        .from(FEATURES)
+        .leftJoin(PLANTS)
+        .on(FEATURES.ID.eq(PLANTS.FEATURE_ID))
+  }
+
+  private fun recordToModel(record: Record): FeatureModel {
+    val plant =
+        if (record[PLANTS.FEATURE_ID] != null) {
+          record.into(PlantsRow::class.java)
+        } else {
+          null
+        }
+
+    return FeatureModel(
+        id = record[FEATURES.ID],
+        layerId = record[FEATURES.LAYER_ID]!!,
+        geom = record[FEATURES.GEOM],
+        gpsHorizAccuracy = record[FEATURES.GPS_HORIZ_ACCURACY],
+        gpsVertAccuracy = record[FEATURES.GPS_VERT_ACCURACY],
+        attrib = record[FEATURES.ATTRIB],
+        notes = record[FEATURES.NOTES],
+        enteredTime = record[FEATURES.ENTERED_TIME],
+        createdTime = record[FEATURES.CREATED_TIME],
+        modifiedTime = record[FEATURES.MODIFIED_TIME],
+        plant = plant,
+    )
   }
 }

@@ -10,8 +10,10 @@ import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.PlantObservationId
+import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.ThumbnailId
 import com.terraformation.backend.db.asGeoJson
 import com.terraformation.backend.db.assertPointsEqual
@@ -19,14 +21,17 @@ import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
 import com.terraformation.backend.db.tables.daos.FeaturesDao
+import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
+import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.pojos.FeaturePhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
 import com.terraformation.backend.db.tables.pojos.PlantsRow
+import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.transformSrid
@@ -42,12 +47,15 @@ import java.net.URI
 import java.nio.file.NoSuchFileException
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import kotlin.random.Random
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
@@ -105,7 +113,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             dslContext,
             featurePhotosDao,
             fileStore,
+            PostgresFuzzySearchOperators(),
             photosDao,
+            plantsDao,
             thumbnailStore,
             thumbnailsDao)
 
@@ -121,7 +131,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteFeaturePhoto(any()) } returns true
 
     insertSiteData()
-    insertLayer(layerId.value, siteId.value, LayerType.Infrastructure)
+    insertLayer(layerId.value, siteId.value, LayerType.PlantsPlanted)
   }
 
   @Test
@@ -329,7 +339,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val storageUrl = URI("file:///foo")
 
-    plantsDao.insert(PlantsRow(featureId = feature.id, createdTime = time1, modifiedTime = time1))
+    plantsDao.insert(PlantsRow(featureId = feature.id))
     plantObservationsDao.insert(
         PlantObservationsRow(
             id = plantObservationId,
@@ -382,7 +392,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val feature = store.createFeature(validCreateRequest)
     val storageUrl = URI("file:///foo")
 
-    plantsDao.insert(PlantsRow(featureId = feature.id, createdTime = time1, modifiedTime = time1))
+    plantsDao.insert(PlantsRow(featureId = feature.id))
     plantObservationsDao.insert(
         PlantObservationsRow(
             id = plantObservationId,
@@ -674,5 +684,375 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     photosDao.insert(photosRow)
     featurePhotosDao.insert(FeaturePhotosRow(featureId = featureId, photoId = photosRow.id))
     return photosRow
+  }
+
+  @Nested
+  inner class PlantFeatureTest {
+    private val featureId = FeatureId(1000)
+
+    private val validCreateRequest = PlantsRow(featureId = featureId, label = "Some plant label")
+    private val speciesIdsToCount = mapOf(SpeciesId(1) to 4, SpeciesId(2) to 1, SpeciesId(3) to 3)
+    private val nonExistentSpeciesId = SpeciesId(402)
+
+    private lateinit var layersDao: LayersDao
+    private lateinit var speciesDao: SpeciesDao
+
+    @BeforeEach
+    fun init() {
+      val jooqConfig = dslContext.configuration()
+
+      featuresDao = FeaturesDao(jooqConfig)
+      layersDao = LayersDao(jooqConfig)
+      speciesDao = SpeciesDao(jooqConfig)
+
+      insertFeature(id = featureId.value, layerId = layerId.value)
+    }
+
+    private fun insertSeveralPlants(
+        speciesIdsToCount: Map<SpeciesId, Int>,
+        enteredTime: Instant = time1
+    ): Map<SpeciesId, List<FeatureId>> {
+      val speciesIdToFeatureIds = mutableMapOf<SpeciesId, List<FeatureId>>()
+      speciesIdsToCount.forEach { (currSpeciesId, count) ->
+        speciesDao.insert(
+            SpeciesRow(
+                id = currSpeciesId,
+                createdTime = time1,
+                modifiedTime = time1,
+                // Make the speciesName the same as the species id to simplify testing
+                name = currSpeciesId.toString()))
+
+        val featureIds = mutableListOf<FeatureId>()
+
+        repeat(count) {
+          val randomFeatureId = FeatureId(Random.nextLong())
+          featureIds.add(randomFeatureId)
+
+          // All features are associated with the class variable layerId
+          insertFeature(
+              id = randomFeatureId.value, layerId = layerId.value, enteredTime = enteredTime)
+
+          plantsDao.insert(PlantsRow(featureId = randomFeatureId, speciesId = currSpeciesId))
+        }
+
+        speciesIdToFeatureIds[currSpeciesId] = featureIds.sortedBy { it.value }
+      }
+
+      return speciesIdToFeatureIds
+    }
+
+    @Test
+    fun `create adds a new row to Plants table, returns PlantsRow`() {
+      val plant = store.createPlant(validCreateRequest)
+      assertEquals(validCreateRequest, plant)
+      assertEquals(plant, plantsDao.fetchOneByFeatureId(validCreateRequest.featureId!!))
+    }
+
+    @Test
+    fun `create does not modify row passed in, returns a different row instance`() {
+      val requestCopy = validCreateRequest.copy()
+      val plant = store.createPlant(validCreateRequest)
+      Assertions.assertTrue(
+          requestCopy == validCreateRequest,
+          "validCreateRequest is not being modified by the plant store")
+      Assertions.assertFalse(
+          validCreateRequest === plant,
+          "the plant store does not return back the same instance it received")
+    }
+
+    @Test
+    fun `create throws IllegalArgumentException if feature id is null`() {
+      assertThrows<IllegalArgumentException> {
+        store.createPlant(validCreateRequest.copy(featureId = null))
+      }
+    }
+
+    @Test
+    fun `create fails with AccessDeniedException if user doesn't have permission`() {
+      every { user.canUpdateFeature(any()) } returns false
+      assertThrows<AccessDeniedException> { store.createPlant(validCreateRequest) }
+    }
+
+    @Test
+    fun `create fails with FeatureNotFoundException if feature doesn't exist`() {
+      assertThrows<FeatureNotFoundException> {
+        store.createPlant(validCreateRequest.copy(featureId = nonExistentFeatureId))
+      }
+    }
+
+    @Test
+    fun `create fails with DataIntegrityViolationException if the label is an empty string`() {
+      assertThrows<DataIntegrityViolationException> {
+        store.createPlant(validCreateRequest.copy(label = ""))
+      }
+    }
+
+    @Test
+    fun `fetchFeature returns PlantsRow`() {
+      val plant = store.createPlant(validCreateRequest)
+      val readResult = store.fetchFeature(plant.featureId!!)?.plant
+      assertNotNull(readResult)
+      assertEquals(plant, readResult)
+    }
+
+    @Test
+    fun `fetchPlantsList elements contain all feature and plant data`() {
+      val feature =
+          FeatureModel(
+              id = nonExistentFeatureId,
+              layerId = layerId,
+              geom = newPoint(60.8, -45.6, 0.0, SRID.LONG_LAT),
+              gpsHorizAccuracy = 10.28,
+              gpsVertAccuracy = 20.08,
+              attrib = "Some attrib",
+              notes = "Some notes",
+              enteredTime = time1,
+          )
+      insertFeature(
+          feature.id!!.value,
+          feature.layerId.value,
+          feature.geom,
+          feature.gpsHorizAccuracy,
+          feature.gpsVertAccuracy,
+          feature.attrib,
+          feature.notes,
+          feature.enteredTime!!)
+
+      val species =
+          SpeciesRow(id = SpeciesId(15), createdTime = time1, modifiedTime = time2, name = "Koa")
+      speciesDao.insert(species)
+
+      val plant =
+          store.createPlant(
+              PlantsRow(
+                  featureId = feature.id,
+                  label = "Some label",
+                  speciesId = species.id,
+                  naturalRegen = true,
+                  datePlanted = LocalDate.EPOCH))
+
+      val expectedPlantFeatureData =
+          FeatureModel(
+              id = plant.featureId!!,
+              layerId = feature.layerId,
+              gpsHorizAccuracy = feature.gpsHorizAccuracy,
+              gpsVertAccuracy = feature.gpsVertAccuracy,
+              attrib = feature.attrib,
+              notes = feature.notes,
+              enteredTime = feature.enteredTime,
+              geom = feature.geom,
+              createdTime = time1,
+              modifiedTime = time1,
+              plant =
+                  PlantsRow(
+                      featureId = plant.featureId,
+                      label = plant.label,
+                      speciesId = species.id,
+                      naturalRegen = plant.naturalRegen,
+                      datePlanted = plant.datePlanted),
+          )
+      val actualPlantFeatureData = store.fetchPlantsList(layerId)[0]
+
+      assertPointsEqual(expectedPlantFeatureData.geom, actualPlantFeatureData.geom)
+      assertEquals(
+          expectedPlantFeatureData,
+          actualPlantFeatureData.copy(geom = expectedPlantFeatureData.geom))
+    }
+
+    @Test
+    fun `fetchPlantsList returns all plants in the layer when no filters are applied`() {
+      val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
+      val plantsFetched = store.fetchPlantsList(layerId)
+      val expectedFeatureIds =
+          speciesIdToFeatureIds.map { it -> it.value.map { it } }.flatten().sortedBy { it.value }
+      val actualFeatureIds = plantsFetched.map { it.id }
+      assertEquals(expectedFeatureIds, actualFeatureIds)
+    }
+
+    @Test
+    fun `fetchPlantsList filters on species id when it is provided`() {
+      val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
+      val speciesIdFilter = speciesIdToFeatureIds.keys.elementAt(0)
+      // For testing simplicity, insertSeveralPlants makes species name and id the same
+      val plantsFetched = store.fetchPlantsList(layerId, speciesName = speciesIdFilter.toString())
+      val expectedFeatureIds = speciesIdToFeatureIds[speciesIdFilter]!!.sortedBy { it.value }
+      val actualFeatureIds = plantsFetched.map { it.id }
+      assertEquals(expectedFeatureIds, actualFeatureIds)
+
+      assertEquals(
+          emptyList<FeatureModel>(),
+          store.fetchPlantsList(layerId, speciesName = nonExistentSpeciesId.toString()))
+    }
+
+    @Test
+    fun `fetchPlantsList filters on min and max entered times when they are provided`() {
+      val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount, enteredTime = time1)
+      val plantsFetched = store.fetchPlantsList(layerId, minEnteredTime = time1)
+      val maxPlantsFetched = store.fetchPlantsList(layerId, maxEnteredTime = time1)
+      assertEquals(plantsFetched, maxPlantsFetched)
+      val expectedFeatureIds =
+          speciesIdToFeatureIds.map { it -> it.value.map { it } }.flatten().sortedBy { it.value }
+      val actualFeatureIds = plantsFetched.map { it.id }
+      assertEquals(expectedFeatureIds, actualFeatureIds)
+
+      assertEquals(
+          emptyList<FeatureModel>(), store.fetchPlantsList(layerId, minEnteredTime = time2))
+      assertEquals(
+          emptyList<FeatureModel>(),
+          store.fetchPlantsList(layerId, maxEnteredTime = time1.minusSeconds(1)))
+    }
+
+    @Test
+    fun `fetchPlantsList filters on notes when provided`() {
+      val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
+      val featureId = speciesIdToFeatureIds.values.flatten().first()
+      val feature = featuresDao.fetchOneById(featureId)!!
+      val note = "special note to filter by"
+      feature.notes = note
+      featuresDao.update(feature)
+
+      val plantsFetched = store.fetchPlantsList(layerId, notes = note)
+      assertEquals(1, plantsFetched.size)
+      assertEquals(featureId, plantsFetched.last().id)
+
+      assertEquals(
+          emptyList<FeatureModel>(),
+          store.fetchPlantsList(layerId, notes = "note that doesn't exist"))
+    }
+
+    @Test
+    fun `fetchPlantsList filters on notes using fuzzy (approximate) matching`() {
+      val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
+      val featureId = speciesIdToFeatureIds.values.flatten().first()
+      val feature = featuresDao.fetchOneById(featureId)!!
+      feature.notes = "special note to filter by"
+      featuresDao.update(feature)
+
+      // Deliberately misspell "special"
+      val plantsFetched = store.fetchPlantsList(layerId, notes = "specal")
+      assertEquals(1, plantsFetched.size)
+      assertEquals(featureId, plantsFetched.last().id)
+    }
+
+    @Test
+    fun `fetchPlantsList returns empty list when user doesn't have read permission`() {
+      insertSeveralPlants(speciesIdsToCount)
+      every { user.canReadLayer(any()) } returns false
+      assertEquals(emptyList<FeatureModel>(), store.fetchPlantsList(layerId))
+    }
+
+    @Test
+    fun `fetchPlantsList returns empty list when layer doesn't exist`() {
+      assertEquals(emptyList<FeatureModel>(), store.fetchPlantsList(nonExistentLayerId))
+    }
+
+    @Test
+    fun `fetchPlantsList returns empty list when there are no plants in the layer`() {
+      assertEquals(emptyList<FeatureModel>(), store.fetchPlantsList(layerId))
+    }
+
+    @Test
+    fun `fetchPlantSummary counts how many plants of each species exist in a layer`() {
+      insertSeveralPlants(speciesIdsToCount)
+      assertEquals(speciesIdsToCount, store.fetchPlantSummary(layerId))
+    }
+
+    @Test
+    fun `fetchPlantSummary uses -1 as a sentinel species ID to count plants where species ID = null`() {
+      insertSeveralPlants(speciesIdsToCount)
+      val featuresWithoutSpecies = mutableListOf<FeatureId>()
+      repeat(3) {
+        val randomFeatureId = FeatureId(Random.nextLong())
+        featuresWithoutSpecies.add(randomFeatureId)
+        insertFeature(id = randomFeatureId.value, layerId = layerId.value, enteredTime = time1)
+        plantsDao.insert(PlantsRow(featureId = randomFeatureId))
+      }
+      val expectedSpeciesIdsToCount = speciesIdsToCount.toMutableMap()
+      expectedSpeciesIdsToCount[SpeciesId(-1)] = 3
+      assertEquals(expectedSpeciesIdsToCount, store.fetchPlantSummary(layerId))
+    }
+
+    @Test
+    fun `fetchPlantSummary applies min and max entered time filters when provided`() {
+      insertSeveralPlants(speciesIdsToCount, enteredTime = time1)
+      assertEquals(
+          emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId, minEnteredTime = time2))
+      assertEquals(
+          emptyMap<SpeciesId, Int>(),
+          store.fetchPlantSummary(layerId, maxEnteredTime = time1.minusSeconds(1)))
+      assertEquals(speciesIdsToCount, store.fetchPlantSummary(layerId, maxEnteredTime = time1))
+      assertEquals(
+          speciesIdsToCount,
+          store.fetchPlantSummary(layerId, minEnteredTime = time1, maxEnteredTime = time1))
+    }
+
+    @Test
+    fun `fetchPlantSummary returns an empty map if user doesn't have permission to read layer data`() {
+      every { user.canReadLayer(any()) } returns false
+      insertSeveralPlants(speciesIdsToCount)
+      assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId))
+    }
+
+    @Test
+    fun `fetchPlantSummary returns an empty map if the layer doesn't exist`() {
+      assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(nonExistentLayerId))
+    }
+
+    @Test
+    fun `fetchPlantSummary returns an empty map if there are no plants in the layer`() {
+      assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId))
+    }
+
+    @Test
+    fun `update changes the row in the database, returns row`() {
+      val plant = store.createPlant(validCreateRequest)
+      val plannedUpdates = plant.copy(label = "test update writes to db")
+      val updatedResult = store.updatePlant(plannedUpdates)
+
+      assertEquals(plannedUpdates, updatedResult)
+      assertEquals(updatedResult, plantsDao.fetchOneByFeatureId(featureId))
+    }
+
+    @Test
+    fun `update does not modify row passed in, returns a different row instance`() {
+      val plant = store.createPlant(validCreateRequest)
+      val plannedUpdates = plant.copy(label = "referential equality test")
+      val plannedUpdatesCopy = plannedUpdates.copy()
+      val updated = store.updatePlant(plannedUpdates)
+      Assertions.assertTrue(
+          plannedUpdatesCopy == plannedUpdates,
+          "instance we passed as an argument is not being modified by the plant store")
+      Assertions.assertFalse(
+          updated === plannedUpdates,
+          "the plant store does not return back the same instance it received")
+    }
+
+    @Test
+    fun `update fails with IllegalArgumentException if feature id is null`() {
+      assertThrows<IllegalArgumentException> {
+        store.updatePlant(validCreateRequest.copy(featureId = null))
+      }
+    }
+
+    @Test
+    fun `update fails with AccessDeniedException if user doesn't have update permission`() {
+      val plant = store.createPlant(validCreateRequest)
+      every { user.canUpdateFeature(any()) } returns false
+      assertThrows<AccessDeniedException> { store.updatePlant(plant) }
+    }
+
+    @Test
+    fun `update fails with FeatureNotFoundException if feature doesn't exist`() {
+      val plant = store.createPlant(validCreateRequest)
+      assertThrows<FeatureNotFoundException> {
+        store.updatePlant(plant.copy(featureId = nonExistentFeatureId))
+      }
+    }
+
+    @Test
+    fun `update fails with DataIntegrityViolationException if the label is an empty string`() {
+      val plant = store.createPlant(validCreateRequest)
+      assertThrows<DataIntegrityViolationException> { store.updatePlant(plant.copy(label = "")) }
+    }
   }
 }

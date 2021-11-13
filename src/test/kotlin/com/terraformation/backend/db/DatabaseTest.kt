@@ -241,8 +241,6 @@ abstract class DatabaseTest {
       speciesId: SpeciesId? = null,
       naturalRegen: Boolean? = null,
       datePlanted: LocalDate? = null,
-      createdTime: Instant = Instant.EPOCH,
-      modifiedTime: Instant = Instant.EPOCH,
   ) {
     with(PLANTS) {
       dslContext
@@ -252,8 +250,6 @@ abstract class DatabaseTest {
           .set(SPECIES_ID, speciesId)
           .set(NATURAL_REGEN, naturalRegen)
           .set(DATE_PLANTED, datePlanted)
-          .set(CREATED_TIME, createdTime)
-          .set(MODIFIED_TIME, modifiedTime)
           .execute()
     }
   }

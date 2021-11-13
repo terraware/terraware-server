@@ -10,8 +10,8 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PlantNotFoundException
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.pojos.PlantsRow
-import com.terraformation.backend.gis.db.FetchPlantListResult
-import com.terraformation.backend.gis.db.PlantStore
+import com.terraformation.backend.gis.db.FeatureStore
+import com.terraformation.backend.gis.model.FeatureModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
@@ -29,13 +29,13 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/gis/plants")
 @RestController
 @GISAppEndpoint
-class PlantController(private val plantStore: PlantStore) {
+class PlantController(private val featureStore: FeatureStore) {
   @ApiResponse(responseCode = "200", description = "The plant was created successfully.")
   @Operation(summary = "Creates a new plant. Use the Features API to delete the plant.")
   @PostMapping
   fun create(@RequestBody payload: CreatePlantRequestPayload): CreatePlantResponsePayload {
     try {
-      val newPlant = plantStore.createPlant(payload.toRow())
+      val newPlant = featureStore.createPlant(payload.toRow())
       return CreatePlantResponsePayload(PlantResponse(newPlant))
     } catch (e: FeatureNotFoundException) {
       throw NotFoundException("Cannot create Plant. Feature id ${payload.featureId} is invalid.")
@@ -47,7 +47,7 @@ class PlantController(private val plantStore: PlantStore) {
   @GetMapping("/{featureId}")
   fun get(@PathVariable featureId: FeatureId): GetPlantResponsePayload {
     val plant =
-        plantStore.fetchPlant(featureId)
+        featureStore.fetchFeature(featureId)?.plant
             ?: throw NotFoundException("The plant with id $featureId doesn't exist.")
     return GetPlantResponsePayload(PlantResponse(plant))
   }
@@ -66,7 +66,7 @@ class PlantController(private val plantStore: PlantStore) {
       @PathVariable layerId: LayerId
   ): ListPlantsResponsePayload {
     val plants =
-        plantStore.fetchPlantsList(
+        featureStore.fetchPlantsList(
             layerId = layerId,
             speciesName = speciesName,
             minEnteredTime = minEnteredTime,
@@ -89,7 +89,7 @@ class PlantController(private val plantStore: PlantStore) {
       @PathVariable layerId: LayerId
   ): PlantSummaryResponsePayload {
     val summary =
-        plantStore.fetchPlantSummary(
+        featureStore.fetchPlantSummary(
             layerId, minEnteredTime = minEnteredTime, maxEnteredTime = maxEnteredTime)
     return PlantSummaryResponsePayload(summary)
   }
@@ -103,7 +103,7 @@ class PlantController(private val plantStore: PlantStore) {
       @PathVariable featureId: FeatureId
   ): UpdatePlantResponsePayload {
     try {
-      val updatedPlant = plantStore.updatePlant(payload.toRow(featureId))
+      val updatedPlant = featureStore.updatePlant(payload.toRow(featureId))
       return UpdatePlantResponsePayload(PlantResponse(updatedPlant))
     } catch (e: PlantNotFoundException) {
       throw NotFoundException("The plant with feature id $featureId doesn't exist.")
@@ -173,13 +173,13 @@ data class ListPlantsResponseElement(
     val geom: Geometry? = null,
 ) {
   constructor(
-      model: FetchPlantListResult
+      model: FeatureModel
   ) : this(
-      model.featureId,
-      model.label,
-      model.speciesId,
-      model.naturalRegen,
-      model.datePlanted,
+      model.id!!,
+      model.plant?.label,
+      model.plant?.speciesId,
+      model.plant?.naturalRegen,
+      model.plant?.datePlanted,
       model.layerId,
       model.gpsHorizAccuracy,
       model.gpsVertAccuracy,
