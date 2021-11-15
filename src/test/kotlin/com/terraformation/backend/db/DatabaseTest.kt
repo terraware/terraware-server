@@ -80,11 +80,30 @@ abstract class DatabaseTest {
     }
   }
 
-  protected fun insertOrganization(id: Long, name: String = "Organization $id") {
+  /**
+   * Turns a value into a type-safe ID wrapper.
+   *
+   * This allows us to call `insertOrganization(1)` or `insertOrganization(OrganizationId(1))` when
+   * setting up test data.
+   *
+   * @receiver A value to convert to a wrapped ID. Can be a number in either raw or string form (in
+   * which case it is turned into a Long and passed to [wrapperConstructor] or an ID of the desired
+   * type (in which case it is returned to the caller).
+   */
+  private inline fun <R : Any, reified T : Any> R.toIdWrapper(wrapperConstructor: (Long) -> T): T {
+    return when (this) {
+      is T -> this
+      is Number -> wrapperConstructor(toLong())
+      is String -> wrapperConstructor(toLong())
+      else -> throw IllegalArgumentException("Unsupported ID type ${javaClass.name}")
+    }
+  }
+
+  protected fun insertOrganization(id: Any, name: String = "Organization $id") {
     with(ORGANIZATIONS) {
       dslContext
           .insertInto(ORGANIZATIONS)
-          .set(ID, OrganizationId(id))
+          .set(ID, id.toIdWrapper { OrganizationId(it) })
           .set(NAME, name)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
@@ -93,15 +112,15 @@ abstract class DatabaseTest {
   }
 
   protected fun insertProject(
-      id: Long,
-      organizationId: Long = id / 10,
+      id: Any,
+      organizationId: Any = "$id".toLong() / 10,
       name: String = "Project $id"
   ) {
     with(PROJECTS) {
       dslContext
           .insertInto(PROJECTS)
-          .set(ID, ProjectId(id))
-          .set(ORGANIZATION_ID, OrganizationId(organizationId))
+          .set(ID, id.toIdWrapper { ProjectId(it) })
+          .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
@@ -109,12 +128,16 @@ abstract class DatabaseTest {
     }
   }
 
-  protected fun insertSite(id: Long, projectId: Long = id / 10, name: String = "Site $id") {
+  protected fun insertSite(
+      id: Any,
+      projectId: Any = "$id".toLong() / 10,
+      name: String = "Site $id"
+  ) {
     with(SITES) {
       dslContext
           .insertInto(SITES)
-          .set(ID, SiteId(id))
-          .set(PROJECT_ID, ProjectId(projectId))
+          .set(ID, id.toIdWrapper { SiteId(it) })
+          .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
           .set(NAME, name)
           .set(LOCATION, mercatorPoint(1.0, 2.0, 0.0))
           .set(CREATED_TIME, Instant.EPOCH)
@@ -123,21 +146,26 @@ abstract class DatabaseTest {
     }
   }
 
-  protected fun insertFacility(id: Long, siteId: Long = id / 10, name: String = "Facility $id") {
+  protected fun insertFacility(
+      id: Any,
+      siteId: Any = "$id".toLong() / 10,
+      name: String = "Facility $id",
+      type: FacilityType = FacilityType.SeedBank
+  ) {
     with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
-          .set(ID, FacilityId(id))
-          .set(SITE_ID, SiteId(siteId))
-          .set(TYPE_ID, FacilityType.SeedBank)
+          .set(ID, id.toIdWrapper { FacilityId(it) })
+          .set(SITE_ID, siteId.toIdWrapper { SiteId(it) })
+          .set(TYPE_ID, type)
           .set(NAME, name)
           .execute()
     }
   }
 
   protected fun insertLayer(
-      id: Long,
-      siteId: Long = id / 10,
+      id: Any,
+      siteId: Any = "$id".toLong() / 10,
       layerType: LayerType = LayerType.PlantsPlanted,
       tileSetName: String = "Tile set test name",
       proposed: Boolean = false,
@@ -150,8 +178,8 @@ abstract class DatabaseTest {
     with(LAYERS) {
       dslContext
           .insertInto(LAYERS)
-          .set(ID, LayerId(id))
-          .set(SITE_ID, SiteId(siteId))
+          .set(ID, id.toIdWrapper { LayerId(it) })
+          .set(SITE_ID, siteId.toIdWrapper { SiteId(it) })
           .set(LAYER_TYPE_ID, layerType)
           .set(TILE_SET_NAME, tileSetName)
           .set(PROPOSED, proposed)
@@ -164,8 +192,8 @@ abstract class DatabaseTest {
   }
 
   protected fun insertFeature(
-      id: Long,
-      layerId: Long = id / 10,
+      id: Any,
+      layerId: Any = "$id".toLong() / 10,
       geom: Geometry? = null,
       gpsHorizAccuracy: Double? = null,
       gpsVertAccuracy: Double? = null,
@@ -178,8 +206,8 @@ abstract class DatabaseTest {
     with(FEATURES) {
       dslContext
           .insertInto(FEATURES)
-          .set(ID, FeatureId(id))
-          .set(LAYER_ID, LayerId(layerId))
+          .set(ID, id.toIdWrapper { FeatureId(it) })
+          .set(LAYER_ID, layerId.toIdWrapper { LayerId(it) })
           .set(GEOM, geom)
           .set(GPS_HORIZ_ACCURACY, gpsHorizAccuracy)
           .set(GPS_VERT_ACCURACY, gpsVertAccuracy)
@@ -193,7 +221,7 @@ abstract class DatabaseTest {
   }
 
   protected fun insertPhoto(
-      id: Long,
+      id: Any,
       storageUrl: URI = URI("http://server/$id"),
       fileName: String = "$id.jpg",
       contentType: String = MediaType.IMAGE_JPEG_VALUE,
@@ -209,7 +237,7 @@ abstract class DatabaseTest {
           .set(CONTENT_TYPE, contentType)
           .set(CREATED_TIME, createdTime)
           .set(FILE_NAME, fileName)
-          .set(ID, PhotoId(id))
+          .set(ID, id.toIdWrapper { PhotoId(it) })
           .set(MODIFIED_TIME, modifiedTime)
           .set(SIZE, size)
           .set(STORAGE_URL, storageUrl)
@@ -218,36 +246,36 @@ abstract class DatabaseTest {
   }
 
   protected fun insertFeaturePhoto(
-      photoId: Long,
-      featureId: Long = photoId,
-      plantObservationId: Long? = null,
+      photoId: Any,
+      featureId: Any = "$photoId",
+      plantObservationId: Any? = null,
   ) {
     with(FEATURE_PHOTOS) {
       dslContext
           .insertInto(FEATURE_PHOTOS)
-          .set(PHOTO_ID, PhotoId(photoId))
-          .set(FEATURE_ID, FeatureId(featureId))
+          .set(PHOTO_ID, photoId.toIdWrapper { PhotoId(it) })
+          .set(FEATURE_ID, featureId.toIdWrapper { FeatureId(it) })
           .apply {
             if (plantObservationId != null)
-                set(PLANT_OBSERVATION_ID, PlantObservationId(plantObservationId))
+                set(PLANT_OBSERVATION_ID, plantObservationId.toIdWrapper { PlantObservationId(it) })
           }
           .execute()
     }
   }
 
   protected fun insertPlant(
-      featureId: Long,
+      featureId: Any,
       label: String? = null,
-      speciesId: SpeciesId? = null,
+      speciesId: Any? = null,
       naturalRegen: Boolean? = null,
       datePlanted: LocalDate? = null,
   ) {
     with(PLANTS) {
       dslContext
           .insertInto(PLANTS)
-          .set(FEATURE_ID, FeatureId(featureId))
+          .set(FEATURE_ID, featureId.toIdWrapper { FeatureId(it) })
           .set(LABEL, label)
-          .set(SPECIES_ID, speciesId)
+          .set(SPECIES_ID, speciesId?.toIdWrapper { SpeciesId(it) })
           .set(NATURAL_REGEN, naturalRegen)
           .set(DATE_PLANTED, datePlanted)
           .execute()

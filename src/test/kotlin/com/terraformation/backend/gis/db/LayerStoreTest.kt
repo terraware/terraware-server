@@ -140,7 +140,7 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
     val layerIds = (1..3).map { store.createLayer(validCreateRequestModel).id!! }
 
     val otherSite = SiteId(20)
-    insertSite(id = otherSite.value, projectId = 2)
+    insertSite(id = otherSite, projectId = 2)
     store.createLayer(validCreateRequestModel.copy(siteId = otherSite))
 
     val listResult = store.listLayers(siteId)
