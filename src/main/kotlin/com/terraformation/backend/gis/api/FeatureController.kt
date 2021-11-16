@@ -1,8 +1,8 @@
 package com.terraformation.backend.gis.api
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.GISAppEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
@@ -13,7 +13,9 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.PhotoId
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.pojos.PhotosRow
+import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.gis.db.FeatureStore
 import com.terraformation.backend.gis.model.FeatureModel
 import io.swagger.v3.oas.annotations.Operation
@@ -22,6 +24,7 @@ import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
+import java.time.LocalDate
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.QueryParam
 import net.postgis.jdbc.geometry.Geometry
@@ -63,17 +66,27 @@ class FeatureController(private val featureStore: FeatureStore) {
   @ApiResponse404(description = "The specified feature doesn't exist.")
   @GetMapping("/{featureId}")
   fun read(@PathVariable featureId: FeatureId): GetFeatureResponsePayload {
-    val model =
-        featureStore.fetchFeature(featureId)
-            ?: throw NotFoundException("The feature with id $featureId doesn't exist.")
+    val model = featureStore.fetchFeature(featureId) ?: throw FeatureNotFoundException(featureId)
 
     return GetFeatureResponsePayload(FeatureResponse(model))
   }
 
   @ApiResponse(responseCode = "200")
-  @Operation(summary = "List all features associated with a layer.")
+  @Operation(
+      summary =
+          "Lists the features associated with a layer. Can optionally filter by entered time, " +
+              "notes, and (for plants) species name.")
   @GetMapping("/list/{layerId}")
   fun list(
+      @QueryParam("minEnteredTime") minEnteredTime: Instant? = null,
+      @QueryParam("maxEnteredTime") maxEnteredTime: Instant? = null,
+      @QueryParam("notes")
+      @Schema(
+          description =
+              "Text to search for in notes. This is a fuzzy search string and will match minor " +
+                  "variations in spelling.")
+      notes: String? = null,
+      @QueryParam("speciesId") speciesId: SpeciesId? = null,
       @QueryParam("skip")
       @Schema(
           description =
@@ -88,7 +101,15 @@ class FeatureController(private val featureStore: FeatureStore) {
       limit: Int? = null,
       @PathVariable layerId: LayerId
   ): ListFeaturesResponsePayload {
-    val features = featureStore.listFeatures(layerId, skip = skip, limit = limit)
+    val features =
+        featureStore.listFeatures(
+            layerId = layerId,
+            skip = skip,
+            limit = limit,
+            speciesId = speciesId,
+            minEnteredTime = minEnteredTime,
+            maxEnteredTime = maxEnteredTime,
+            notes = notes)
     val totalCount = featureStore.countFeatures(layerId)
     return ListFeaturesResponsePayload(features.map { FeatureResponse(it) }, totalCount)
   }
@@ -97,20 +118,15 @@ class FeatureController(private val featureStore: FeatureStore) {
   @ApiResponse404(description = "The specified feature doesn't exist.")
   @Operation(
       summary =
-          "Update an existing feature. Overwrites all fields. Does not allow a feature " +
-              "to be moved between layers (layerId cannot be updated)")
+          "Updates an existing feature. If plant field is null or omitted, existing plant " +
+              "details are preserved.")
   @PutMapping("/{featureId}")
   fun update(
       @RequestBody payload: UpdateFeatureRequestPayload,
       @PathVariable featureId: FeatureId,
   ): UpdateFeatureResponsePayload {
-    try {
-      val updatedModel = featureStore.updateFeature(payload.toModel(featureId))
-      return UpdateFeatureResponsePayload(FeatureResponse(updatedModel))
-    } catch (e: FeatureNotFoundException) {
-      throw NotFoundException(
-          "The feature with id $featureId, layer ID ${payload.layerId} doesn't exist.")
-    }
+    val updatedModel = featureStore.updateFeature(payload.toModel(featureId))
+    return UpdateFeatureResponsePayload(FeatureResponse(updatedModel))
   }
 
   @ApiResponse(responseCode = "200")
@@ -122,12 +138,8 @@ class FeatureController(private val featureStore: FeatureStore) {
               "and thumbnails.")
   @DeleteMapping("/{featureId}")
   fun delete(@PathVariable featureId: FeatureId): DeleteFeatureResponsePayload {
-    try {
-      featureStore.deleteFeature(featureId)
-      return DeleteFeatureResponsePayload(featureId)
-    } catch (e: FeatureNotFoundException) {
-      throw NotFoundException("The feature with id $featureId doesn't exist.")
-    }
+    featureStore.deleteFeature(featureId)
+    return DeleteFeatureResponsePayload(featureId)
   }
 
   @Operation(summary = "Uploads a new photo of a feature.")
@@ -247,6 +259,7 @@ data class CreateFeatureRequestPayload(
     val attrib: String? = null,
     val notes: String? = null,
     val enteredTime: Instant? = null,
+    val plant: PlantDetailsPayload? = null,
 ) {
   fun toModel(): FeatureModel {
     return FeatureModel(
@@ -257,29 +270,31 @@ data class CreateFeatureRequestPayload(
         attrib = attrib,
         notes = notes,
         enteredTime = enteredTime,
+        plant = plant?.toRow(),
     )
   }
 }
 
+@JsonIgnoreProperties("layerId") // For backward compatibility; used to be a required field.
 data class UpdateFeatureRequestPayload(
-    val layerId: LayerId,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
     val attrib: String? = null,
     val notes: String? = null,
     val enteredTime: Instant? = null,
+    val plant: PlantDetailsPayload? = null,
 ) {
   fun toModel(id: FeatureId): FeatureModel {
     return FeatureModel(
         id = id,
-        layerId = layerId,
         geom = geom,
         gpsHorizAccuracy = gpsHorizAccuracy,
         gpsVertAccuracy = gpsVertAccuracy,
         attrib = attrib,
         notes = notes,
         enteredTime = enteredTime,
+        plant = plant?.toRow(),
     )
   }
 }
@@ -333,18 +348,47 @@ data class FeatureResponse(
     val attrib: String? = null,
     val notes: String? = null,
     val enteredTime: Instant? = null,
+    val plant: PlantDetailsPayload? = null,
 ) {
   constructor(
       model: FeatureModel
   ) : this(
       model.id!!,
-      model.layerId,
+      model.layerId!!,
       model.geom,
       model.gpsHorizAccuracy,
       model.gpsVertAccuracy,
       model.attrib,
       model.notes,
-      model.enteredTime)
+      model.enteredTime,
+      model.plant?.let { PlantDetailsPayload(it) },
+  )
+}
+
+@Schema(description = "Additional details for features that represent plants.")
+data class PlantDetailsPayload(
+    val datePlanted: LocalDate? = null,
+    val label: String? = null,
+    val naturalRegen: Boolean? = null,
+    val speciesId: SpeciesId? = null,
+) {
+  constructor(
+      row: PlantsRow
+  ) : this(
+      datePlanted = row.datePlanted,
+      label = row.label,
+      naturalRegen = row.naturalRegen,
+      speciesId = row.speciesId,
+  )
+
+  fun toRow(): PlantsRow {
+    return PlantsRow(
+        datePlanted = datePlanted,
+        label = label,
+        naturalRegen = naturalRegen,
+        speciesId = speciesId,
+    )
+  }
 }
 
 data class CreateFeaturePhotoResponsePayload(val photoId: PhotoId) : SuccessResponsePayload

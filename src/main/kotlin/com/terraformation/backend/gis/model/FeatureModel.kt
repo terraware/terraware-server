@@ -8,7 +8,7 @@ import net.postgis.jdbc.geometry.Geometry
 
 data class FeatureModel(
     val id: FeatureId? = null,
-    val layerId: LayerId,
+    val layerId: LayerId? = null,
     val geom: Geometry? = null,
     val gpsHorizAccuracy: Double? = null,
     val gpsVertAccuracy: Double? = null,
@@ -20,7 +20,7 @@ data class FeatureModel(
     val plant: PlantsRow? = null,
 ) {
   private fun withoutReadOnlyFields(): FeatureModel {
-    return copy(createdTime = null, modifiedTime = null)
+    return copy(layerId = null, createdTime = null, modifiedTime = null)
   }
 
   fun writableFieldsEqual(other: FeatureModel): Boolean {

@@ -319,11 +319,11 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update fails if feature id is valid but caller's layer id does not match the layer id in the database`() {
+  fun `update ignores layer id`() {
     val feature = store.createFeature(validCreateRequest)
-    assertThrows<FeatureNotFoundException> {
-      store.updateFeature(feature.copy(layerId = nonExistentLayerId))
-    }
+    store.updateFeature(feature.copy(layerId = nonExistentLayerId))
+    val updatedLayerId = store.fetchFeature(feature.id!!)?.layerId
+    assertEquals(layerId, updatedLayerId)
   }
 
   @Test
@@ -795,7 +795,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetchPlantsList elements contain all feature and plant data`() {
+    fun `listFeatures elements contain all feature and plant data`() {
       val feature =
           FeatureModel(
               id = nonExistentFeatureId,
@@ -809,7 +809,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
           )
       insertFeature(
           feature.id!!,
-          feature.layerId,
+          feature.layerId!!,
           feature.geom,
           feature.gpsHorizAccuracy,
           feature.gpsVertAccuracy,
@@ -850,7 +850,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
                       naturalRegen = plant.naturalRegen,
                       datePlanted = plant.datePlanted),
           )
-      val actualPlantFeatureData = store.fetchPlantsList(layerId)[0]
+      val actualPlantFeatureData = store.listFeatures(layerId = layerId, plantsOnly = true)[0]
 
       assertPointsEqual(expectedPlantFeatureData.geom, actualPlantFeatureData.geom)
       assertEquals(
@@ -859,9 +859,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetchPlantsList returns all plants in the layer when no filters are applied`() {
+    fun `listFeatures returns all plants in the layer when no filters are applied`() {
       val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
-      val plantsFetched = store.fetchPlantsList(layerId)
+      val plantsFetched = store.listFeatures(layerId = layerId, plantsOnly = true)
       val expectedFeatureIds =
           speciesIdToFeatureIds.map { it -> it.value.map { it } }.flatten().sortedBy { it.value }
       val actualFeatureIds = plantsFetched.map { it.id }
@@ -869,25 +869,46 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetchPlantsList filters on species id when it is provided`() {
+    fun `listFeatures filters on species id when it is provided`() {
       val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
       val speciesIdFilter = speciesIdToFeatureIds.keys.elementAt(0)
-      // For testing simplicity, insertSeveralPlants makes species name and id the same
-      val plantsFetched = store.fetchPlantsList(layerId, speciesName = speciesIdFilter.toString())
+      val plantsFetched =
+          store.listFeatures(layerId = layerId, speciesId = speciesIdFilter, plantsOnly = true)
       val expectedFeatureIds = speciesIdToFeatureIds[speciesIdFilter]!!.sortedBy { it.value }
       val actualFeatureIds = plantsFetched.map { it.id }
       assertEquals(expectedFeatureIds, actualFeatureIds)
 
       assertEquals(
           emptyList<FeatureModel>(),
-          store.fetchPlantsList(layerId, speciesName = nonExistentSpeciesId.toString()))
+          store.listFeatures(
+              layerId = layerId, speciesId = nonExistentSpeciesId, plantsOnly = true))
     }
 
     @Test
-    fun `fetchPlantsList filters on min and max entered times when they are provided`() {
+    fun `listFeatures filters on species name when it is provided`() {
+      val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
+      val speciesIdFilter = speciesIdToFeatureIds.keys.elementAt(0)
+      // For testing simplicity, insertSeveralPlants makes species name and id the same
+      val plantsFetched =
+          store.listFeatures(
+              layerId = layerId, speciesName = speciesIdFilter.toString(), plantsOnly = true)
+      val expectedFeatureIds = speciesIdToFeatureIds[speciesIdFilter]!!.sortedBy { it.value }
+      val actualFeatureIds = plantsFetched.map { it.id }
+      assertEquals(expectedFeatureIds, actualFeatureIds)
+
+      assertEquals(
+          emptyList<FeatureModel>(),
+          store.listFeatures(
+              layerId = layerId, speciesName = nonExistentSpeciesId.toString(), plantsOnly = true))
+    }
+
+    @Test
+    fun `listFeatures filters on min and max entered times when they are provided`() {
       val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount, enteredTime = time1)
-      val plantsFetched = store.fetchPlantsList(layerId, minEnteredTime = time1)
-      val maxPlantsFetched = store.fetchPlantsList(layerId, maxEnteredTime = time1)
+      val plantsFetched =
+          store.listFeatures(layerId = layerId, minEnteredTime = time1, plantsOnly = true)
+      val maxPlantsFetched =
+          store.listFeatures(layerId = layerId, maxEnteredTime = time1, plantsOnly = true)
       assertEquals(plantsFetched, maxPlantsFetched)
       val expectedFeatureIds =
           speciesIdToFeatureIds.map { it -> it.value.map { it } }.flatten().sortedBy { it.value }
@@ -895,14 +916,16 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(expectedFeatureIds, actualFeatureIds)
 
       assertEquals(
-          emptyList<FeatureModel>(), store.fetchPlantsList(layerId, minEnteredTime = time2))
+          emptyList<FeatureModel>(),
+          store.listFeatures(layerId = layerId, minEnteredTime = time2, plantsOnly = true))
       assertEquals(
           emptyList<FeatureModel>(),
-          store.fetchPlantsList(layerId, maxEnteredTime = time1.minusSeconds(1)))
+          store.listFeatures(
+              layerId = layerId, maxEnteredTime = time1.minusSeconds(1), plantsOnly = true))
     }
 
     @Test
-    fun `fetchPlantsList filters on notes when provided`() {
+    fun `listFeatures filters on notes when provided`() {
       val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
       val featureId = speciesIdToFeatureIds.values.flatten().first()
       val feature = featuresDao.fetchOneById(featureId)!!
@@ -910,17 +933,18 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
       feature.notes = note
       featuresDao.update(feature)
 
-      val plantsFetched = store.fetchPlantsList(layerId, notes = note)
+      val plantsFetched = store.listFeatures(layerId = layerId, notes = note, plantsOnly = true)
       assertEquals(1, plantsFetched.size)
       assertEquals(featureId, plantsFetched.last().id)
 
       assertEquals(
           emptyList<FeatureModel>(),
-          store.fetchPlantsList(layerId, notes = "note that doesn't exist"))
+          store.listFeatures(
+              layerId = layerId, notes = "note that doesn't exist", plantsOnly = true))
     }
 
     @Test
-    fun `fetchPlantsList filters on notes using fuzzy (approximate) matching`() {
+    fun `listFeatures filters on notes using fuzzy (approximate) matching`() {
       val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
       val featureId = speciesIdToFeatureIds.values.flatten().first()
       val feature = featuresDao.fetchOneById(featureId)!!
@@ -928,26 +952,30 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
       featuresDao.update(feature)
 
       // Deliberately misspell "special"
-      val plantsFetched = store.fetchPlantsList(layerId, notes = "specal")
+      val plantsFetched = store.listFeatures(layerId = layerId, notes = "specal", plantsOnly = true)
       assertEquals(1, plantsFetched.size)
       assertEquals(featureId, plantsFetched.last().id)
     }
 
     @Test
-    fun `fetchPlantsList returns empty list when user doesn't have read permission`() {
+    fun `listFeatures returns empty list when user doesn't have read permission`() {
       insertSeveralPlants(speciesIdsToCount)
       every { user.canReadLayer(any()) } returns false
-      assertEquals(emptyList<FeatureModel>(), store.fetchPlantsList(layerId))
+      assertEquals(
+          emptyList<FeatureModel>(), store.listFeatures(layerId = layerId, plantsOnly = true))
     }
 
     @Test
-    fun `fetchPlantsList returns empty list when layer doesn't exist`() {
-      assertEquals(emptyList<FeatureModel>(), store.fetchPlantsList(nonExistentLayerId))
+    fun `listFeatures returns empty list when layer doesn't exist`() {
+      assertEquals(
+          emptyList<FeatureModel>(),
+          store.listFeatures(layerId = nonExistentLayerId, plantsOnly = true))
     }
 
     @Test
-    fun `fetchPlantsList returns empty list when there are no plants in the layer`() {
-      assertEquals(emptyList<FeatureModel>(), store.fetchPlantsList(layerId))
+    fun `listFeatures returns empty list when there are no plants in the layer`() {
+      assertEquals(
+          emptyList<FeatureModel>(), store.listFeatures(layerId = layerId, plantsOnly = true))
     }
 
     @Test

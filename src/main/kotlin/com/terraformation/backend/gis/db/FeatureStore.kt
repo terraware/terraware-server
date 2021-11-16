@@ -59,7 +59,9 @@ class FeatureStore(
   private val log = perClassLogger()
 
   fun createFeature(model: FeatureModel): FeatureModel {
-    requirePermissions { createFeature(model.layerId) }
+    val layerId = model.layerId ?: throw IllegalArgumentException("Layer ID must not be null")
+
+    requirePermissions { createFeature(layerId) }
 
     return dslContext.transactionResult { _ ->
       val currTime = clock.instant()
@@ -67,7 +69,7 @@ class FeatureStore(
           with(FEATURES) {
             dslContext
                 .insertInto(FEATURES)
-                .set(LAYER_ID, model.layerId)
+                .set(LAYER_ID, layerId)
                 .set(GEOM, model.geom)
                 .set(GPS_HORIZ_ACCURACY, model.gpsHorizAccuracy)
                 .set(GPS_VERT_ACCURACY, model.gpsVertAccuracy)
@@ -116,13 +118,32 @@ class FeatureStore(
         ?: 0
   }
 
-  fun listFeatures(id: LayerId, skip: Int? = null, limit: Int? = null): List<FeatureModel> {
-    if (!currentUser().canReadLayer(id)) {
+  fun listFeatures(
+      layerId: LayerId,
+      skip: Int? = null,
+      limit: Int? = null,
+      speciesId: SpeciesId? = null,
+      speciesName: String? = null,
+      minEnteredTime: Instant? = null,
+      maxEnteredTime: Instant? = null,
+      notes: String? = null,
+      plantsOnly: Boolean = false,
+  ): List<FeatureModel> {
+    if (!currentUser().canReadLayer(layerId)) {
       return emptyList()
     }
 
     return selectFromFeatures()
-        .where(FEATURES.LAYER_ID.eq(id))
+        .where(
+            listOfNotNull(
+                FEATURES.LAYER_ID.eq(layerId),
+                speciesId?.let { PLANTS.SPECIES_ID.eq(it) },
+                speciesName?.let { PLANTS.species().NAME.eq(it) },
+                minEnteredTime?.let { FEATURES.ENTERED_TIME.greaterOrEqual(it) },
+                maxEnteredTime?.let { FEATURES.ENTERED_TIME.lessOrEqual(it) },
+                notes?.let { FEATURES.NOTES.likeFuzzy(it) },
+                if (plantsOnly) PLANTS.FEATURE_ID.isNotNull else null,
+            ))
         .orderBy(FEATURES.ID)
         .limit(limit)
         .offset(skip)
@@ -134,13 +155,7 @@ class FeatureStore(
 
     requirePermissions { updateFeature(featureId) }
 
-    val oldModel = noPermissionsCheckFetch(featureId)
-
-    if (newModel.layerId != oldModel?.layerId) {
-      // Caller cannot change the layerId. They must delete this Feature and recreate a new one
-      // if they want to "move" the feature into a new layer.
-      throw FeatureNotFoundException(featureId)
-    }
+    val oldModel = noPermissionsCheckFetch(featureId) ?: throw FeatureNotFoundException(featureId)
 
     if (newModel.writableFieldsEqual(oldModel)) {
       return newModel
@@ -369,30 +384,6 @@ class FeatureStore(
                 maxEnteredTime?.let { FEATURES.ENTERED_TIME.lessOrEqual(it) }))
         .groupBy(PLANTS.SPECIES_ID)
         .fetchMap({ it.value1() }, { it.value2() })
-  }
-
-  fun fetchPlantsList(
-      layerId: LayerId,
-      speciesName: String? = null,
-      minEnteredTime: Instant? = null,
-      maxEnteredTime: Instant? = null,
-      notes: String? = null
-  ): List<FeatureModel> {
-    if (!currentUser().canReadLayer(layerId)) {
-      return emptyList()
-    }
-
-    return selectFromFeatures()
-        .where(
-            listOfNotNull(
-                FEATURES.LAYER_ID.eq(layerId),
-                speciesName?.let { PLANTS.species().NAME.eq(it) },
-                minEnteredTime?.let { FEATURES.ENTERED_TIME.greaterOrEqual(it) },
-                maxEnteredTime?.let { FEATURES.ENTERED_TIME.lessOrEqual(it) },
-                notes?.let { FEATURES.NOTES.likeFuzzy(it) }))
-        .and(PLANTS.FEATURE_ID.isNotNull)
-        .orderBy(FEATURES.ID)
-        .fetch { recordToModel(it) }
   }
 
   private fun noPermissionsCheckFetch(id: FeatureId): FeatureModel? {
