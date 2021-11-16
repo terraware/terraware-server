@@ -873,6 +873,22 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     fun `listFeatures filters on species id when it is provided`() {
       val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
       val speciesIdFilter = speciesIdToFeatureIds.keys.elementAt(0)
+      val plantsFetched =
+          store.listFeatures(layerId = layerId, speciesId = speciesIdFilter, plantsOnly = true)
+      val expectedFeatureIds = speciesIdToFeatureIds[speciesIdFilter]!!.sortedBy { it.value }
+      val actualFeatureIds = plantsFetched.map { it.id }
+      assertEquals(expectedFeatureIds, actualFeatureIds)
+
+      assertEquals(
+          emptyList<FeatureModel>(),
+          store.listFeatures(
+              layerId = layerId, speciesId = nonExistentSpeciesId, plantsOnly = true))
+    }
+
+    @Test
+    fun `listFeatures filters on species name when it is provided`() {
+      val speciesIdToFeatureIds = insertSeveralPlants(speciesIdsToCount)
+      val speciesIdFilter = speciesIdToFeatureIds.keys.elementAt(0)
       // For testing simplicity, insertSeveralPlants makes species name and id the same
       val plantsFetched =
           store.listFeatures(

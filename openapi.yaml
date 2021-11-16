@@ -377,11 +377,14 @@ paths:
         required: false
         schema:
           type: string
-      - name: speciesName
+          description: Text to search for in notes. This is a fuzzy search string
+            and will match minor variations in spelling.
+      - name: speciesId
         in: query
         required: false
         schema:
-          type: string
+          type: integer
+          format: int64
       - name: skip
         in: query
         required: false

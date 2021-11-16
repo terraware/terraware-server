@@ -80,8 +80,13 @@ class FeatureController(private val featureStore: FeatureStore) {
   fun list(
       @QueryParam("minEnteredTime") minEnteredTime: Instant? = null,
       @QueryParam("maxEnteredTime") maxEnteredTime: Instant? = null,
-      @QueryParam("notes") notes: String? = null,
-      @QueryParam("speciesName") speciesName: String? = null,
+      @QueryParam("notes")
+      @Schema(
+          description =
+              "Text to search for in notes. This is a fuzzy search string and will match minor " +
+                  "variations in spelling.")
+      notes: String? = null,
+      @QueryParam("speciesId") speciesId: SpeciesId? = null,
       @QueryParam("skip")
       @Schema(
           description =
@@ -101,7 +106,7 @@ class FeatureController(private val featureStore: FeatureStore) {
             layerId = layerId,
             skip = skip,
             limit = limit,
-            speciesName = speciesName,
+            speciesId = speciesId,
             minEnteredTime = minEnteredTime,
             maxEnteredTime = maxEnteredTime,
             notes = notes)

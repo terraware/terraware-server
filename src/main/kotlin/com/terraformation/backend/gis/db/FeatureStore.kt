@@ -122,6 +122,7 @@ class FeatureStore(
       layerId: LayerId,
       skip: Int? = null,
       limit: Int? = null,
+      speciesId: SpeciesId? = null,
       speciesName: String? = null,
       minEnteredTime: Instant? = null,
       maxEnteredTime: Instant? = null,
@@ -136,6 +137,7 @@ class FeatureStore(
         .where(
             listOfNotNull(
                 FEATURES.LAYER_ID.eq(layerId),
+                speciesId?.let { PLANTS.SPECIES_ID.eq(it) },
                 speciesName?.let { PLANTS.species().NAME.eq(it) },
                 minEnteredTime?.let { FEATURES.ENTERED_TIME.greaterOrEqual(it) },
                 maxEnteredTime?.let { FEATURES.ENTERED_TIME.lessOrEqual(it) },
