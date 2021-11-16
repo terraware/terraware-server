@@ -1,10 +1,12 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.seedbank.search.SearchService
+
 /** Return value from [SearchService.search]. */
 data class SearchResults(
     /**
      * List of results containing the fields specified by the caller. Each element of the list is a
-     * map of field name to non-null value. If an accession does not have a value for a particular
+     * map of field name to non-null value. If a result does not have a value for a particular
      * field, it is omitted from the map.
      *
      * Each value is either `String` or `List<Map<String, Any>>`.

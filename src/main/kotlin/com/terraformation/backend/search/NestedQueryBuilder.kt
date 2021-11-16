@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.search.SearchFields
 import com.terraformation.backend.seedbank.search.SearchService
 import com.terraformation.backend.seedbank.search.SearchTables
@@ -747,12 +748,12 @@ class NestedQueryBuilder(
    * For example, if you are querying `germinationTests.germinations.recordingDate`:
    *
    * - For the innermost sublist, with prefix `germinationTests.germinations`, this is the table
-   * that contains the `recordingDate` field, namely [SearchTables.Germination].
+   * that contains the `recordingDate` field, namely [SearchTables.germinations].
    * - For the outermost sublist, with prefix `germinationTests` -- which doesn't have any scalar
    * fields -- this is the parent of the table for the innermost sublist, namely
-   * [SearchTables.GerminationTest].
+   * [SearchTables.germinationTests].
    * - For the root query, which also doesn't have any scalar fields, this is the parent of the
-   * table for the outermost sublist, namely [SearchTables.Accession].
+   * table for the outermost sublist, namely [SearchTables.accessions].
    */
   private fun getSearchTable(): SearchTable {
     val scalarFieldTable =
