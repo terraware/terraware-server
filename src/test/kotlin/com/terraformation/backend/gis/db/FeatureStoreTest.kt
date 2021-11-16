@@ -131,7 +131,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteFeaturePhoto(any()) } returns true
 
     insertSiteData()
-    insertLayer(layerId.value, siteId.value, LayerType.PlantsPlanted)
+    insertLayer(layerId, siteId, LayerType.PlantsPlanted)
   }
 
   @Test
@@ -197,7 +197,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val featureIds = (1..5).map { store.createFeature(validCreateRequest).id!! }
 
     val otherLayerId = LayerId(200)
-    insertLayer(otherLayerId.value, siteId.value, LayerType.Infrastructure)
+    insertLayer(otherLayerId, siteId, LayerType.Infrastructure)
     store.createFeature(validCreateRequest.copy(layerId = otherLayerId))
 
     val listResult = store.listFeatures(layerId)
@@ -262,7 +262,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     repeat(5) { store.createFeature(validCreateRequest) }
 
     val otherLayerId = LayerId(200)
-    insertLayer(otherLayerId.value, siteId.value, LayerType.Infrastructure)
+    insertLayer(otherLayerId, siteId, LayerType.Infrastructure)
     store.createFeature(validCreateRequest.copy(layerId = otherLayerId))
 
     assertEquals(5, store.countFeatures(layerId))
@@ -705,7 +705,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
       layersDao = LayersDao(jooqConfig)
       speciesDao = SpeciesDao(jooqConfig)
 
-      insertFeature(id = featureId.value, layerId = layerId.value)
+      insertFeature(id = featureId, layerId = layerId)
     }
 
     private fun insertSeveralPlants(
@@ -729,8 +729,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
           featureIds.add(randomFeatureId)
 
           // All features are associated with the class variable layerId
-          insertFeature(
-              id = randomFeatureId.value, layerId = layerId.value, enteredTime = enteredTime)
+          insertFeature(id = randomFeatureId, layerId = layerId, enteredTime = enteredTime)
 
           plantsDao.insert(PlantsRow(featureId = randomFeatureId, speciesId = currSpeciesId))
         }
@@ -809,8 +808,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
               enteredTime = time1,
           )
       insertFeature(
-          feature.id!!.value,
-          feature.layerId.value,
+          feature.id!!,
+          feature.layerId,
           feature.geom,
           feature.gpsHorizAccuracy,
           feature.gpsVertAccuracy,
@@ -964,7 +963,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
       repeat(3) {
         val randomFeatureId = FeatureId(Random.nextLong())
         featuresWithoutSpecies.add(randomFeatureId)
-        insertFeature(id = randomFeatureId.value, layerId = layerId.value, enteredTime = time1)
+        insertFeature(id = randomFeatureId, layerId = layerId, enteredTime = time1)
         plantsDao.insert(PlantsRow(featureId = randomFeatureId))
       }
       val expectedSpeciesIdsToCount = speciesIdsToCount.toMutableMap()

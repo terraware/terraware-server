@@ -81,9 +81,9 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateFeature(any()) } returns true
 
     insertSiteData()
-    insertLayer(id = layerId.value, siteId = siteId.value, layerType = LayerType.PlantsPlanted)
-    insertFeature(id = featureId.value, layerId = layerId.value)
-    insertPlant(featureId = featureId.value)
+    insertLayer(id = layerId, siteId = siteId, layerType = LayerType.PlantsPlanted)
+    insertFeature(id = featureId, layerId = layerId)
+    insertPlant(featureId = featureId)
   }
 
   @Test
