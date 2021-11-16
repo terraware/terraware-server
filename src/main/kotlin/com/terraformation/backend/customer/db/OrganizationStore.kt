@@ -48,10 +48,12 @@ class OrganizationStore(
       organizationId: OrganizationId,
       depth: FetchDepth = FetchDepth.Organization
   ): OrganizationModel? {
-    return if (organizationId in currentUser().organizationRoles) {
+    val user = currentUser()
+
+    return if (organizationId in user.organizationRoles) {
       selectForDepth(depth, ORGANIZATIONS.ID.eq(organizationId)).firstOrNull()
     } else {
-      log.warn("User ${currentUser().userId} attempted to fetch organization $organizationId")
+      log.warn("User ${user.userId} attempted to fetch organization $organizationId")
       null
     }
   }
@@ -62,6 +64,10 @@ class OrganizationStore(
   ): List<OrganizationModel> {
     val user = currentUser()
     val organizationIds = user.organizationRoles.keys
+
+    if (organizationIds.isEmpty()) {
+      return emptyList()
+    }
 
     val facilitiesMultiset =
         if (depth.level >= FetchDepth.Facility.level) {
@@ -107,31 +113,31 @@ class OrganizationStore(
         if (depth.level >= FetchDepth.Project.level) {
           val projectIds = user.projectRoles.keys
 
-          if (projectIds.isNotEmpty()) {
-            DSL.multiset(
-                    DSL.select(PROJECTS.asterisk(), sitesMultiset)
-                        .from(PROJECTS)
-                        .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                        .and(PROJECTS.ID.`in`(projectIds))
-                        .orderBy(PROJECTS.ID))
-                .convertFrom { result -> result.map { ProjectModel(it, sitesMultiset) } }
-          } else {
-            DSL.value(emptyList<ProjectModel>())
-          }
+          // If the user isn't in any projects, we still want to construct a properly-typed
+          // multiset, but it should be empty.
+          val condition =
+              if (projectIds.isNotEmpty()) {
+                PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID).and(PROJECTS.ID.`in`(projectIds))
+              } else {
+                DSL.falseCondition()
+              }
+
+          DSL.multiset(
+                  DSL.select(PROJECTS.asterisk(), sitesMultiset)
+                      .from(PROJECTS)
+                      .where(condition)
+                      .orderBy(PROJECTS.ID))
+              .convertFrom { result -> result.map { ProjectModel(it, sitesMultiset) } }
         } else {
           DSL.value(null as List<ProjectModel>?)
         }
 
-    return if (organizationIds.isNotEmpty()) {
-      dslContext
-          .select(ORGANIZATIONS.asterisk(), projectsMultiset)
-          .from(ORGANIZATIONS)
-          .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
-          .orderBy(ORGANIZATIONS.ID)
-          .fetch { OrganizationModel(it, projectsMultiset) }
-    } else {
-      emptyList()
-    }
+    return dslContext
+        .select(ORGANIZATIONS.asterisk(), projectsMultiset)
+        .from(ORGANIZATIONS)
+        .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
+        .orderBy(ORGANIZATIONS.ID)
+        .fetch { OrganizationModel(it, projectsMultiset) }
   }
 
   /** Creates a new organization and makes the current user an owner. */

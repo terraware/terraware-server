@@ -11,7 +11,7 @@ import org.jooq.Record
 data class OrganizationModel(
     val id: OrganizationId,
     val name: String,
-    val location: String?,
+    val location: String? = null,
     val disabledTime: Instant? = null,
     val projects: List<ProjectModel>? = null,
 ) {
