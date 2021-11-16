@@ -191,7 +191,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createApiClient registers user in Keycloak and adds it to organization`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
 
     val description = "Description"
     val user = userStore.createApiClient(organizationId, description)
@@ -220,7 +220,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteApiClient removes user from Keycloak`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
     val user = userStore.createApiClient(organizationId, null)
 
     assertNotNull(usersResource.get(user.authId), "User exists in Keycloak after creation")
@@ -232,7 +232,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteApiClient causes user to no longer be findable`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
     val user = userStore.createApiClient(organizationId, null)
 
     assertTrue(userStore.deleteApiClient(user.userId), "Deletion should have succeeded")
@@ -249,7 +249,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteApiClient deletes user locally even if already deleted from Keycloak`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
     val user = userStore.createApiClient(organizationId, null)
 
     usersResource.delete(user.authId)
@@ -268,7 +268,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generateOfflineToken requests a token from Keycloak`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
     val user = userStore.createApiClient(organizationId, null)
     val expectedToken = "token"
 
@@ -287,7 +287,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generateOfflineToken throws exception if Keycloak returns a malformed token response`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
     val user = userStore.createApiClient(organizationId, null)
 
     val response: HttpResponse<String> = mockk()
@@ -302,7 +302,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generateOfflineToken throws exception if Keycloak does not generate a token`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
     val user = userStore.createApiClient(organizationId, null)
 
     val response: HttpResponse<String> = mockk()
@@ -317,7 +317,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generateOfflineToken generates a temporary password and removes it if token creation fails`() {
-    insertOrganization(organizationId.value)
+    insertOrganization(organizationId)
     val user = userStore.createApiClient(organizationId, null)
     val keycloakUser = usersResource.get(user.authId)!!
 

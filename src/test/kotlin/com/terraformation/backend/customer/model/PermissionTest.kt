@@ -188,12 +188,12 @@ internal class PermissionTest : DatabaseTest() {
             realmResource,
             usersDao)
 
-    organizationIds.forEach { insertOrganization(it.value) }
-    projectIds.forEach { insertProject(it.value) }
-    siteIds.forEach { insertSite(it.value) }
+    organizationIds.forEach { insertOrganization(it) }
+    projectIds.forEach { insertProject(it) }
+    siteIds.forEach { insertSite(it) }
 
     facilityIds.forEach { facilityId ->
-      insertFacility(facilityId.value)
+      insertFacility(facilityId)
       accessionsDao.insert(
           AccessionsRow(
               id = AccessionId(facilityId.value),
@@ -217,11 +217,11 @@ internal class PermissionTest : DatabaseTest() {
               model = "model"))
     }
 
-    layerIds.forEach { insertLayer(it.value) }
-    featureIds.forEach { insertFeature(it.value) }
+    layerIds.forEach { insertLayer(it) }
+    featureIds.forEach { insertFeature(it) }
     photoIds.forEach {
-      insertPhoto(it.value)
-      insertFeaturePhoto(it.value)
+      insertPhoto(it)
+      insertFeaturePhoto(it)
     }
 
     usersDao.insert(

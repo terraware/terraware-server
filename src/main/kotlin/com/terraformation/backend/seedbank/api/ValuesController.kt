@@ -15,7 +15,7 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.search.SearchField
+import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import com.terraformation.backend.seedbank.search.SearchService
 import com.terraformation.backend.species.db.SpeciesStore

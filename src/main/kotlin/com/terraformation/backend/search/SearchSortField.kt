@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.search.field.SearchField
 import org.jooq.SortOrder
 
 enum class SearchDirection(val sortOrder: SortOrder) {

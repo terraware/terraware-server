@@ -1624,7 +1624,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun createOtherFacility() {
-      insertFacility(otherFacilityId.value, 10)
+      insertFacility(otherFacilityId, 10)
     }
 
     @Test
