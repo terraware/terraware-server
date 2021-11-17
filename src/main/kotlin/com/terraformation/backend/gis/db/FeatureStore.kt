@@ -193,7 +193,11 @@ class FeatureStore(
         }
       }
 
-      newModel.copy(modifiedTime = currTime, geom = longLatGeom)
+      newModel.copy(
+          geom = longLatGeom,
+          layerId = oldModel.layerId,
+          modifiedTime = currTime,
+      )
     }
   }
 
