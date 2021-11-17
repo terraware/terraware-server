@@ -73,7 +73,7 @@ import org.jooq.impl.DSL
  * Now you construct a query like this, referencing the search fields in [SearchFields].
  *
  * ```kotlin
- * val queryBuilder = NestedQueryBuilder(dslContext)
+ * val queryBuilder = NestedQueryBuilder(dslContext, SearchFieldPathPrefix(searchFields))
  *
  * queryBuilder.addSelectFields(
  *     listOf(
@@ -172,7 +172,7 @@ import org.jooq.impl.DSL
  *
  * # Implementation details
  *
- * ## Field types
+ * ## Field paths
  *
  * Search results are returned as a list of maps of field names to field values. A field value can
  * either be a string or a list of maps of field names to field values. Kotlin doesn't have support
@@ -196,19 +196,50 @@ import org.jooq.impl.DSL
  * `germinationTests` each element of which contains a sublist field called `germinations` each
  * element of which contains a scalar field called `recordingDate`.
  *
+ * A field name is represented as a [SearchFieldPath] which consists of a prefix and a scalar field.
+ * The prefix is represented as a [SearchFieldPrefix] and includes a list of path elements. Each
+ * element is a sublist sublist field, forming a path to the location of the scalar field
+ * (`germinationTests` and `germinations` in the above example) as well as a "namespace" (in the
+ * form of a [SearchFieldNamespace]) that identifies where in the application's data model the
+ * prefix begins. In the example, the namespace would indicate that the fields are all under the
+ * "accessions" part of the data model.
+ *
+ * A filesystem analogy might make the pieces easier to understand:
+ *
+ * ```
+ * # This is the namespace; everything else is relative to it.
+ * cd /organizations/projects/sites/facilities/accessions
+ * # This is two path elements followed by a scalar field name.
+ * cat germinationTests/germinations/recordingDate
+ * ```
+ *
  * ## Query hierarchy
  *
  * The query is represented as a tree of [NestedQueryBuilder]s. The root node represents the query
- * as a whole, and each child node represents a sublist field.
+ * as a whole, and each child node represents a sublist field. Each node has a [SearchFieldPrefix].
  *
- * Each node in the tree has a "prefix" that is just the sublist names above it in the tree. For
- * example, a search field of `germinationTests.germinations.recordingDate` would be turned into a
- * hierarchy of:
+ * For example, a search field of `germinationTests.germinations.recordingDate` with `accessions` as
+ * a starting point would be turned into a structure something like this YAML document:
  *
- * ```
- * - A root node with no prefix with a sublist field `germinationTests`:
- *    - A node with prefix `germinationTests` and a sublist field `germinations`:
- *      - A node with prefix `germinationTests.germinations` and a scalar field `recordingDate`
+ * ```yaml
+ * prefix:
+ *   namespace: accessions
+ *   path: ""
+ * scalarFields: []
+ * sublists:
+ *   germinationTests:
+ *     prefix:
+ *       namespace: accessions
+ *       path: germinationTests
+ *     scalarFields: []
+ *     sublists:
+ *       germinations:
+ *         prefix:
+ *           namespace: accessions
+ *           path: germinationTests.germinations
+ *         scalarFields:
+ *           - recordingDate
+ *         sublists: []
  * ```
  *
  * Field names are always evaluated relative to the current node (that is, the prefix is stripped
@@ -216,6 +247,11 @@ import org.jooq.impl.DSL
  * its prefix and treats the search field as having a name of `germinations.recordingDate`. Because
  * that name contains a `.` character, the middle node needs to peel off the part before the `.` and
  * treat the field as a sublist called `germinations`.
+ *
+ * The examples in this document treat field names as string values. Although the client-facing API
+ * accepts field names as period-separated strings, internally they are represented as
+ * [SearchFieldPath] objects, which are automatically constructed during deserialization of the JSON
+ * request payloads.
  *
  * ## Multisets
  *
@@ -377,11 +413,11 @@ import org.jooq.impl.DSL
 class NestedQueryBuilder(
     private val dslContext: DSLContext,
     /**
-     * Field path prefix covered by this node, or null if this is the root node. For example, the
-     * node that contains the field `germinationTests.germinations.seedsSown` would have a prefix of
-     * `germinationTests.germinations`.
+     * Field path covered by this node. For example, the node that contains the field
+     * `germinationTests.germinations.seedsSown` would have a prefix of
+     * `germinationTests.germinations`. Must be an absolute path.
      */
-    private val prefix: String? = null,
+    private val prefix: SearchFieldPrefix,
 ) {
   /**
    * Conditions to include in this query's `WHERE` clause. This includes conditions that are
@@ -456,7 +492,7 @@ class NestedQueryBuilder(
    *
    * @throws IllegalStateException The query has already been rendered.
    */
-  fun addSelectFields(fields: Collection<SearchField>) {
+  fun addSelectFields(fields: Collection<SearchFieldPath>) {
     assertNotRendered()
     fields.forEach { addSelectField(it) }
   }
@@ -561,19 +597,21 @@ class NestedQueryBuilder(
    * Adds a field to the list of fields the caller wants to get back in the search results. If the
    * field is in a sublist, adds it to the sublist, creating the sublist if needed.
    */
-  private fun addSelectField(field: SearchField) {
-    val relativeName = getRelativeName(field)
+  private fun addSelectField(fieldPath: SearchFieldPath) {
+    val relativeField = fieldPath.relativeTo(prefix)
 
-    if (isInSublist(relativeName)) {
+    if (relativeField.isNested) {
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
-      val sublistName = getSublistName(relativeName)
-      getSublist(relativeName).addSelectField(field)
+      val sublistName = getSublistName(relativeField)
+      getSublist(relativeField).addSelectField(fieldPath)
       selectFieldPositions.computeIfAbsent(sublistName) { nextSelectFieldPosition++ }
     } else {
-      scalarFields[relativeName] = field
-      if (relativeName !in selectFieldPositions) {
-        selectFieldPositions[relativeName] = nextSelectFieldPosition
-        nextSelectFieldPosition += field.selectFields.size
+      val searchField = fieldPath.searchField
+      val fieldName = searchField.fieldName
+      scalarFields[fieldName] = searchField
+      if (fieldName !in selectFieldPositions) {
+        selectFieldPositions[fieldName] = nextSelectFieldPosition
+        nextSelectFieldPosition += searchField.selectFields.size
       }
     }
   }
@@ -585,24 +623,24 @@ class NestedQueryBuilder(
   private fun addSortField(sortField: SearchSortField) {
     sortFields.add(sortField)
 
-    val relativeName = getRelativeName(sortField.field)
+    val relativeField = sortField.field.relativeTo(prefix)
 
-    if (isInSublist(relativeName)) {
+    if (relativeField.isNested) {
       // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
-      getSublist(relativeName).addSortField(sortField)
+      getSublist(relativeField).addSortField(sortField)
     }
   }
 
   /** Returns the [NestedQueryBuilder] for a sublist, creating it if needed. */
-  private fun getSublist(relativeName: String): NestedQueryBuilder {
-    if (!isInSublist(relativeName)) {
-      throw IllegalArgumentException("Cannot get sublist for non-nested field $relativeName")
+  private fun getSublist(relativeField: SearchFieldPath): NestedQueryBuilder {
+    if (!relativeField.isNested) {
+      throw IllegalArgumentException("Cannot get sublist for non-nested field $relativeField")
     }
 
-    val sublistName = getSublistName(relativeName)
+    val sublistName = relativeField.containers.first().name
+
     return sublists.computeIfAbsent(sublistName) {
-      val sublistPrefix = if (prefix != null) "$prefix.$sublistName" else sublistName
-      NestedQueryBuilder(dslContext, sublistPrefix)
+      NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
     }
   }
 
@@ -663,13 +701,14 @@ class NestedQueryBuilder(
    * Otherwise, returns a field with an expression that calculates the sort key.
    */
   private fun getOrderByField(sortField: SearchSortField): SortField<*> {
-    val field = sortField.field
-    val relativeName = getRelativeName(field)
+    val relativeField = sortField.field.relativeTo(prefix)
+    val field = sortField.field.searchField
+    val relativeName = "$relativeField"
     val sortFieldIndex = sortFieldPositions[relativeName]
 
     val orderByField =
-        if (isInSublist(relativeName)) {
-          getOrderByFieldForSublist(field)
+        if (relativeField.isNested) {
+          getOrderByFieldForSublist(sortField.field)
         } else if (sortFieldIndex != null) {
           // Sorting by a column that's in the `SELECT` clause.
           DSL.inline(sortFieldIndex + 1)
@@ -707,11 +746,12 @@ class NestedQueryBuilder(
       emptyList()
     } else {
       sortFields
-          .filterNot { isInSublist(getRelativeName(it.field)) }
+          .filterNot { it.field.relativeTo(prefix).isNested }
           .distinctBy { it.field }
           .mapNotNull { sortField ->
-            val field = sortField.field
-            val relativeName = getRelativeName(field)
+            val field = sortField.field.searchField
+            val relativeField = sortField.field.relativeTo(prefix)
+            val relativeName = "$relativeField"
 
             if (relativeName !in sortFieldPositions) {
               // If we are selecting and sorting on an enum field, the sortable value will be a CASE
@@ -742,6 +782,8 @@ class NestedQueryBuilder(
    * For a sublist with scalar fields, it is whatever table contains the fields. (Currently we don't
    * support scalar fields from multiple tables in the same sublist.)
    *
+   * TODO: ^^^ this is wrong for parent tables
+   *
    * For a sublist that only contains child sublists, it is the parent table of the table that's
    * used in the `FROM` clauses of the sublists.
    *
@@ -758,7 +800,11 @@ class NestedQueryBuilder(
   private fun getSearchTable(): SearchTable {
     val scalarFieldTable =
         scalarFields.values.firstOrNull()?.table
-            ?: sortFields.firstOrNull { !isInSublist(getRelativeName(it.field)) }?.field?.table
+            ?: sortFields
+                .firstOrNull { !it.field.relativeTo(prefix).isNested }
+                ?.field
+                ?.searchField
+                ?.table
 
     if (scalarFieldTable != null) {
       return scalarFieldTable
@@ -789,11 +835,11 @@ class NestedQueryBuilder(
    */
   private fun toMultiset(): Field<List<Map<String, Any>>?> {
     return renderedMultiset.get {
-      if (prefix == null) {
+      if (isRoot()) {
         throw IllegalStateException("BUG! Root node should never be rendered as a multiset")
       }
 
-      val alias = prefix.replace('.', '_').lowercase() + "_multiset"
+      val alias = "$prefix".replace('.', '_').lowercase() + "_multiset"
 
       getSearchTable().conditionForMultiset()?.let { addCondition(it) }
 
@@ -815,16 +861,16 @@ class NestedQueryBuilder(
    * Returns a [Field] that extracts a scalar field from the first row of a sublist's multiset for
    * use in the `ORDER BY` clause of this query.
    */
-  private fun getOrderByFieldForSublist(field: SearchField): Field<Any?> {
-    val relativeName = getRelativeName(field)
-    if (!isInSublist(relativeName)) {
-      throw IllegalArgumentException("BUG! ${field.fieldName} is not a sublist")
+  private fun getOrderByFieldForSublist(field: SearchFieldPath): Field<Any?> {
+    val relativeField = field.relativeTo(prefix)
+    if (!relativeField.isNested) {
+      throw IllegalArgumentException("BUG! $field is not a sublist")
     }
 
-    val sublistName = getSublistName(relativeName)
+    val sublistName = getSublistName(relativeField)
     val sublist =
         sublists[sublistName]
-            ?: throw IllegalStateException("BUG! Unable to find subquery for $relativeName")
+            ?: throw IllegalStateException("BUG! Unable to find subquery for $relativeField")
     val multiset = getMultiset(sublistName)
 
     return DSL.field(sublist.buildMultisetFieldExpression(multiset.name, field))
@@ -844,12 +890,16 @@ class NestedQueryBuilder(
    * [this Stack Overflow question](https://stackoverflow.com/questions/69577525/how-to-order-by-values-from-nested-multisets)
    * (and especially the answer from Lukas Eder, the lead developer on jOOQ) for a bit more context.
    */
-  private fun buildMultisetFieldExpression(parentExpression: String, field: SearchField): String {
-    val relativeName = getRelativeName(field)
+  private fun buildMultisetFieldExpression(
+      parentExpression: String,
+      field: SearchFieldPath
+  ): String {
+    val relativeField = field.relativeTo(prefix)
+    val relativeName = "$relativeField"
 
-    return if (isInSublist(relativeName)) {
+    return if (relativeField.isNested) {
       // We're pulling the value out of a multiset.
-      val sublistName = getSublistName(relativeName)
+      val sublistName = getSublistName(relativeField)
       val fieldPosition =
           selectFieldPositions[sublistName]
               ?: throw IllegalStateException("BUG! No field position for sublist $sublistName")
@@ -870,33 +920,14 @@ class NestedQueryBuilder(
   }
 
   /** Returns true if this node is the root of the tree of [NestedQueryBuilder]s. */
-  private fun isRoot() = prefix == null
+  private fun isRoot() = prefix.isRoot
 
-  /**
-   * Returns the name of a search field relative to this node in the tree of [NestedQueryBuilder]s.
-   */
-  private fun getRelativeName(field: SearchField): String {
-    return if (prefix == null) {
-      field.fieldName
+  /** Returns the name of the sublist containing the given relative field. */
+  private fun getSublistName(relativeField: SearchFieldPath): String {
+    return if (relativeField.isNested) {
+      relativeField.containers.first().name
     } else {
-      if (!field.fieldName.startsWith("$prefix.")) {
-        throw IllegalArgumentException(
-            "BUG! Field name \"${field.fieldName}\" does not start with \"$prefix\"")
-      }
-
-      field.fieldName.substring(prefix.length + 1)
-    }
-  }
-
-  /** Returns true if the relative name refers to a field in a sublist of this query. */
-  private fun isInSublist(relativeName: String) = relativeName.contains('.')
-
-  /** Returns the name of the sublist containing the field with the given relative name. */
-  private fun getSublistName(relativeName: String): String {
-    return if (isInSublist(relativeName)) {
-      relativeName.substringBefore('.')
-    } else {
-      throw IllegalArgumentException("BUG! $relativeName has no sublist")
+      throw IllegalArgumentException("BUG! $relativeField has no sublist")
     }
   }
 }

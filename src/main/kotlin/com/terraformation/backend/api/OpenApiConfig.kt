@@ -5,7 +5,7 @@ import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
-import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.SearchResponsePayload
@@ -49,7 +49,7 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
     val schema = StringSchema()
     schema.`$ref` = "#/components/schemas/SearchField"
 
-    config.replaceWithSchema(SearchField::class.java, schema)
+    config.replaceWithSchema(SearchFieldPath::class.java, schema)
     config.replaceWithClass(
         net.postgis.jdbc.geometry.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
     config.replaceWithClass(
@@ -109,7 +109,7 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
 
   private fun renderSearchFieldAsEnum(openApi: OpenAPI) {
     val schema = StringSchema()
-    schema.enum = searchFields.fieldNames.sorted()
+    schema.enum = searchFields.getAllFieldNames().sorted()
     schema.name = "SearchField"
 
     openApi.components.addSchemas(schema.name, schema)
@@ -136,7 +136,7 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
    */
   private fun getSearchResultFields(
       prefix: String = "",
-      fieldNames: Collection<String> = searchFields.fieldNames
+      fieldNames: Collection<String> = searchFields.getAllFieldNames()
   ): Map<String, io.swagger.v3.oas.models.media.Schema<*>> {
     val relativeNames =
         fieldNames.filter { it.startsWith(prefix) }.map { it.substring(prefix.length) }
