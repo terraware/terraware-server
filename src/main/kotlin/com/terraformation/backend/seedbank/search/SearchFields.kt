@@ -196,10 +196,10 @@ class SearchFields(fuzzySearchOperators: FuzzySearchOperators) {
               "withdrawalRemainingGrams",
               "Weight in grams of seeds remaining (withdrawal)",
               WITHDRAWALS.REMAINING_GRAMS),
-          withdrawals.gramsField(
+          withdrawals.bigDecimalField(
               "withdrawalRemainingQuantity",
               "Weight or count of seeds remaining (withdrawal)",
-              WITHDRAWALS.REMAINING_GRAMS),
+              WITHDRAWALS.REMAINING_QUANTITY),
           withdrawals.enumField(
               "withdrawalRemainingUnits",
               "Units of measurement of quantity remaining (withdrawal)",
@@ -224,10 +224,10 @@ class SearchFields(fuzzySearchOperators: FuzzySearchOperators) {
               "withdrawals.remainingGrams",
               "Weight in grams of seeds remaining (withdrawal)",
               WITHDRAWALS.REMAINING_GRAMS),
-          withdrawals.gramsField(
+          withdrawals.bigDecimalField(
               "withdrawals.remainingQuantity",
               "Weight or count of seeds remaining (withdrawal)",
-              WITHDRAWALS.REMAINING_GRAMS),
+              WITHDRAWALS.REMAINING_QUANTITY),
           withdrawals.enumField(
               "withdrawals.remainingUnits",
               "Units of measurement of quantity remaining (withdrawal)",
