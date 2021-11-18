@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.api
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.NotFoundException
@@ -78,23 +79,26 @@ class ProjectSitesController(private val siteStore: SiteStore) {
   }
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class SiteElement(
     val id: SiteId,
     val name: String,
     val projectId: ProjectId,
     val location: Point,
     val locale: String?,
-    val timezone: String?
+    val timezone: String?,
+    val facilities: List<FacilityPayload>?,
 ) {
   constructor(
-      site: SiteModel
+      model: SiteModel
   ) : this(
-      id = site.id,
-      name = site.name,
-      projectId = site.projectId,
-      location = site.location,
-      locale = site.locale,
-      timezone = site.timezone,
+      id = model.id,
+      name = model.name,
+      projectId = model.projectId,
+      location = model.location,
+      locale = model.locale,
+      timezone = model.timezone,
+      facilities = model.facilities?.map { FacilityPayload(it) },
   )
 }
 

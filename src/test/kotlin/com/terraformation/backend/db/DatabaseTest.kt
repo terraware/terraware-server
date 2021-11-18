@@ -15,6 +15,7 @@ import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import net.postgis.jdbc.geometry.Geometry
+import net.postgis.jdbc.geometry.Point
 import org.jooq.DSLContext
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -131,7 +132,8 @@ abstract class DatabaseTest {
   protected fun insertSite(
       id: Any,
       projectId: Any = "$id".toLong() / 10,
-      name: String = "Site $id"
+      name: String = "Site $id",
+      location: Point = mercatorPoint(1.0, 2.0, 0.0),
   ) {
     with(SITES) {
       dslContext
@@ -139,7 +141,7 @@ abstract class DatabaseTest {
           .set(ID, id.toIdWrapper { SiteId(it) })
           .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
           .set(NAME, name)
-          .set(LOCATION, mercatorPoint(1.0, 2.0, 0.0))
+          .set(LOCATION, location)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .execute()
