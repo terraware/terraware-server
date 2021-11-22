@@ -73,24 +73,25 @@ import org.jooq.impl.DSL
  * Now you construct a query like this, referencing the search fields in [SearchFields].
  *
  * ```kotlin
- * val queryBuilder = NestedQueryBuilder(dslContext, SearchFieldPathPrefix(searchFields))
+ * val rootPrefix = SearchFieldPathPrefix(searchFields)
+ * val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
  *
  * queryBuilder.addSelectFields(
  *     listOf(
- *         searchFields["id"],
- *         searchFields["species"],
- *         searchFields["bags.number"],
- *         searchFields["germinationTests.startDate"],
- *         searchFields["germinationTests.germinations.seedsGerminated"]))
+ *         rootPrefix.resolve("id"),
+ *         rootPrefix.resolve("species"),
+ *         rootPrefix.resolve("bags.number"),
+ *         rootPrefix.resolve("germinationTests.startDate"),
+ *         rootPrefix.resolve("germinationTests.germinations.seedsGerminated")))
  *
  * // You can sort on fields you didn't select, and vice versa, though we won't do that here just
  * // to keep the example easier to follow.
  * queryBuilder.addSortFields(
  *     listOf(
- *         SearchSortField(searchFields["species"]),
- *         SearchSortField(searchFields["germinationTests.startDate"]),
- *         SearchSortField(searchFields["bags.number"]),
- *         SearchSortField(searchFields["germinationTests.germinations.seedsGerminated"])))
+ *         SearchSortField(rootPrefix.resolve("species")),
+ *         SearchSortField(rootPrefix.resolve("germinationTests.startDate")),
+ *         SearchSortField(rootPrefix.resolve("bags.number")),
+ *         SearchSortField(rootPrefix.resolve("germinationTests.germinations.seedsGerminated"))))
  *
  * val results = queryBuilder.toSelectQuery().fetch()
  * ```
@@ -140,12 +141,14 @@ import org.jooq.impl.DSL
  * Contrast this with the older non-nested fields, e.g.,
  *
  * ```kotlin
- * val queryBuilder = NestedQueryBuilder(dslContext)
+ * val rootPrefix = SearchFieldPathPrefix(searchFields)
+ * val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
+ *
  * queryBuilder.addSelectFields(
  *     listOf(
- *         searchFields["id"],
- *         searchFields["species"],
- *         searchFields["bagNumber"]))
+ *         rootPrefix.resolve("id"),
+ *         rootPrefix.resolve("species"),
+ *         rootPrefix.resolve("bagNumber")))
  * val results = queryBuilder.toSelectQuery().fetch()
  * ```
  *
