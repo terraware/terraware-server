@@ -21,16 +21,44 @@ interface SearchFieldPrefixElement {
    * given prefix.
    */
   val namespace: SearchFieldNamespace
+
+  /**
+   * True if this element represents a one-to-many relationship such that the search results should
+   * include a list of values for this path element. False if it represents a one-to-one or
+   * many-to-one relationship such that the search results should include a single value for this
+   * path element.
+   *
+   * For example, for the "projects" path element, a reference to the "sites" path element would be
+   * one-to-many because there can be many sites for a single project. But from that same "projects"
+   * path element, a reference to "organization" would _not_ be one-to-many because each project
+   * only has one organization.
+   */
+  val isMultiValue: Boolean
 }
 
 /**
- * A search field path element representing a sublist (1:N relationship). In search results, a
- * sublist turns into a list of values.
+ * A search field path element representing a 1:N relationship with the previous element. In search
+ * results, a sublist turns into a list of values.
  */
-data class SublistPrefixElement(
+data class MultiValuePrefixElement(
     override val name: String,
     override val namespace: SearchFieldNamespace
-) : SearchFieldPrefixElement
+) : SearchFieldPrefixElement {
+  override val isMultiValue: Boolean
+    get() = true
+}
+
+/**
+ * A search field path element representing an N:1 relationship with the previous element. In search
+ * results, this turns into a child object.
+ */
+data class SingleValuePrefixElement(
+    override val name: String,
+    override val namespace: SearchFieldNamespace
+) : SearchFieldPrefixElement {
+  override val isMultiValue: Boolean
+    get() = false
+}
 
 /**
  * A partial location of a search field in the application's data hierarchy. The prefix specifies
@@ -40,6 +68,13 @@ data class SearchFieldPrefix(
     val root: SearchFieldNamespace,
     val elements: List<SearchFieldPrefixElement> = emptyList()
 ) {
+  /**
+   * True if this prefix represents a 1:N relationship with its parent prefix. Always false for a
+   * root prefix since there is no parent.
+   */
+  val isMultiValue: Boolean
+    get() = elements.isNotEmpty() && elements.last().isMultiValue
+
   /**
    * True if this prefix is at the root of the path, that is, there aren't any additional path
    * elements.
@@ -68,7 +103,7 @@ data class SearchFieldPrefix(
         SearchFieldPath(prefix = this, searchField = field)
       }
     } else {
-      withSublistOrNull(nextAndRest[0])?.resolveOrNull(nextAndRest[1])
+      withElementOrNull(nextAndRest[0])?.resolveOrNull(nextAndRest[1])
     }
   }
 
@@ -83,23 +118,26 @@ data class SearchFieldPrefix(
         ?: throw IllegalArgumentException("Unknown field name $relativePath")
   }
 
-  private fun withSublistOrNull(sublistName: String): SearchFieldPrefix? {
-    if ('.' in sublistName) {
-      throw IllegalArgumentException("Cannot resolve multiple path elements: $sublistName")
+  private fun withElementOrNull(elementName: String): SearchFieldPrefix? {
+    if ('.' in elementName) {
+      throw IllegalArgumentException("Cannot resolve multiple path elements: $elementName")
     }
 
-    val sublist =
-        namespace.sublists[sublistName]?.let { SublistPrefixElement(sublistName, it) }
-            ?: return null
+    val element =
+        namespace.multiValueSublists[elementName]?.let { MultiValuePrefixElement(elementName, it) }
+            ?: namespace.singleValueSublists[elementName]?.let {
+              SingleValuePrefixElement(elementName, it)
+            }
+                ?: return null
 
-    val newContainers = elements.toMutableList()
-    newContainers.add(sublist)
-    return SearchFieldPrefix(root = root, elements = newContainers)
+    val newElements = elements.toMutableList()
+    newElements.add(element)
+    return SearchFieldPrefix(root = root, elements = newElements)
   }
 
   /** Returns a copy of this prefix with an additional sublist path element at the end. */
   fun withSublist(sublistName: String): SearchFieldPrefix {
-    return withSublistOrNull(sublistName)
+    return withElementOrNull(sublistName)
         ?: throw IllegalArgumentException("Unknown name $sublistName under $this")
   }
 

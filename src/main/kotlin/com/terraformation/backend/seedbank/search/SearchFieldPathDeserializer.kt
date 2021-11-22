@@ -14,9 +14,9 @@ import javax.annotation.PostConstruct
 @ManagedBean
 class SearchFieldPathDeserializer(
     private val objectMapper: ObjectMapper,
-    searchFields: SearchFields,
+    accessionsNamespace: AccessionsNamespace,
 ) : StdDeserializer<SearchFieldPath>(SearchFieldPath::class.java) {
-  private val root = SearchFieldPrefix(root = searchFields)
+  private val root = SearchFieldPrefix(root = accessionsNamespace)
 
   @PostConstruct
   fun registerModules() {

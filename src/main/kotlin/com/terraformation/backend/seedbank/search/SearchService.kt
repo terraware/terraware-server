@@ -5,6 +5,8 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.search.AndNode
+import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NestedQueryBuilder
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
@@ -36,22 +38,15 @@ import org.jooq.impl.DSL
 @ManagedBean
 class SearchService(
     private val dslContext: DSLContext,
-    private val searchFields: SearchFields,
+    private val accessionsNamespace: AccessionsNamespace,
     private val searchTables: SearchTables,
 ) {
   private val log = perClassLogger()
 
   /** Returns a query that selects the IDs of accessions that match a list of filter criteria. */
-  private fun selectAccessionIds(
-      facilityId: FacilityId,
-      criteria: SearchNode
-  ): Select<Record1<AccessionId?>> {
+  private fun selectAccessionIds(criteria: SearchNode): Select<Record1<AccessionId?>> {
     // Filter out results the user doesn't have permission to see.
-    val conditions =
-        criteria
-            .toCondition()
-            .and(searchTables.accessions.conditionForPermissions())
-            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
+    val conditions = criteria.toCondition().and(searchTables.accessions.conditionForPermissions())
 
     return joinWithSecondaryTables(
             DSL.select(ACCESSIONS.ID).from(ACCESSIONS), emptyList(), criteria)
@@ -75,18 +70,22 @@ class SearchService(
       cursor: String? = null,
       limit: Int = Int.MAX_VALUE
   ): SearchResults {
-    val rootPrefix = SearchFieldPrefix(root = searchFields)
+    val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
     val mandatoryFields =
         listOf("id", "accessionNumber")
-            .mapNotNull { searchFields[it] }
+            .mapNotNull { accessionsNamespace[it] }
             .map { SearchFieldPath(rootPrefix, it) }
             .toSet()
     val fieldObjects = mandatoryFields + fields.toSet()
 
+    val criteriaWithFacilityId =
+        AndNode(
+            listOf(criteria, FieldNode(rootPrefix.resolve("facility.id"), listOf("$facilityId"))))
+
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
     queryBuilder.addSelectFields(fieldObjects)
     queryBuilder.addSortFields(sortOrder)
-    queryBuilder.addCondition(ACCESSIONS.ID.`in`(selectAccessionIds(facilityId, criteria)))
+    queryBuilder.addCondition(ACCESSIONS.ID.`in`(selectAccessionIds(criteriaWithFacilityId)))
 
     val query = queryBuilder.toSelectQuery()
 
@@ -146,7 +145,9 @@ class SearchService(
     query = joinWithSecondaryTables(query, listOf(field), criteria)
 
     val conditions =
-        criteria.toCondition().and(searchFields.searchTables.accessions.conditionForPermissions())
+        criteria
+            .toCondition()
+            .and(accessionsNamespace.searchTables.accessions.conditionForPermissions())
 
     val fullQuery =
         query

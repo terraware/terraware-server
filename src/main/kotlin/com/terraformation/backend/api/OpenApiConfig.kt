@@ -11,7 +11,7 @@ import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
-import com.terraformation.backend.seedbank.search.SearchFields
+import com.terraformation.backend.seedbank.search.AccessionsNamespace
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
@@ -34,13 +34,14 @@ import org.springframework.beans.factory.annotation.Autowired
 /**
  * Customizes generation of OpenAPI documentation.
  *
- * - SearchField is represented as an enum based on the list of field names in [SearchFields].
+ * - SearchField is represented as an enum based on the list of field names in [AccessionsNamespace]
+ * .
  * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
  * so that the JSON/YAML documentation can be usefully diffed between code versions.
  * - PostGIS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  */
 @ManagedBean
-class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser {
+class OpenApiConfig(private val accessionsNamespace: AccessionsNamespace) : OpenApiCustomiser {
   @Autowired(required = false) var dslContext: DSLContext? = null
 
   init {
@@ -109,7 +110,7 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
 
   private fun renderSearchFieldAsEnum(openApi: OpenAPI) {
     val schema = StringSchema()
-    schema.enum = searchFields.getAllFieldNames().sorted()
+    schema.enum = accessionsNamespace.getAllFieldNames().sorted()
     schema.name = "SearchField"
 
     openApi.components.addSchemas(schema.name, schema)
@@ -136,7 +137,7 @@ class OpenApiConfig(private val searchFields: SearchFields) : OpenApiCustomiser 
    */
   private fun getSearchResultFields(
       prefix: String = "",
-      fieldNames: Collection<String> = searchFields.getAllFieldNames()
+      fieldNames: Collection<String> = accessionsNamespace.getAllFieldNames()
   ): Map<String, io.swagger.v3.oas.models.media.Schema<*>> {
     val relativeNames =
         fieldNames.filter { it.startsWith(prefix) }.map { it.substring(prefix.length) }

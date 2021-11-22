@@ -70,8 +70,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val checkedInTime = Instant.parse(checkedInTimeString)
 
   private val searchTables = SearchTables(PostgresFuzzySearchOperators())
-  private val searchFields = SearchFields(searchTables)
-  private val rootPrefix = SearchFieldPrefix(root = searchFields)
+  private val accessionsNamespace = AccessionsNamespace(searchTables)
+  private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")
   private val activeField = rootPrefix.resolve("active")
   private val bagNumberField = rootPrefix.resolve("bagNumber")
@@ -98,7 +98,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     bagsDao = BagsDao(jooqConfig)
     germinationTestsDao = GerminationTestsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
-    searchService = SearchService(dslContext, searchFields, searchTables)
+    searchService = SearchService(dslContext, accessionsNamespace, searchTables)
 
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
@@ -1166,6 +1166,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class NestedFieldsTest {
     private val bagsNumberField = rootPrefix.resolve("bags.number")
+    private val facilityNameField = rootPrefix.resolve("facility.name")
     private val seedsSownField = rootPrefix.resolve("germinationTests.seedsSown")
     private val seedsGerminatedField =
         rootPrefix.resolve("germinationTests.germinations.seedsGerminated")
@@ -1512,8 +1513,98 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns single-value sublists as maps rather than lists`() {
+      val fields = listOf(facilityNameField)
+      val sortOrder = listOf(SearchSortField(facilityNameField))
+      val criteria = FieldNode(accessionNumberField, listOf("XYZ"))
+
+      val result = searchService.search(facilityId, fields, criteria, sortOrder)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "1000",
+                      "accessionNumber" to "XYZ",
+                      "facility" to mapOf("name" to "ohana"))),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can navigate up and down namespace hierarchy`() {
+      val seedsSownViaGerminations =
+          rootPrefix.resolve("germinationTests.germinations.germinationTest.seedsSown")
+      val fields = listOf(seedsSownViaGerminations)
+      val sortOrder = listOf(SearchSortField(seedsSownViaGerminations))
+      val criteria = FieldNode(accessionNumberField, listOf("XYZ"))
+
+      val result = searchService.search(facilityId, fields, criteria, sortOrder)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "1000",
+                      "accessionNumber" to "XYZ",
+                      "germinationTests" to
+                          listOf(
+                              mapOf(
+                                  "germinations" to
+                                      listOf(
+                                          // There are two germinations. We want to make sure we
+                                          // can navigate back up from them even if we don't select
+                                          // any fields from them.
+                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
+                                      ))),
+                  ),
+              ),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can reference same field using two different paths`() {
+      val seedsSownViaGerminations =
+          rootPrefix.resolve("germinationTests.germinations.germinationTest.seedsSown")
+      val fields = listOf(seedsSownField, seedsSownViaGerminations)
+      val sortOrder = listOf(SearchSortField(seedsSownViaGerminations))
+      val criteria =
+          AndNode(
+              listOf(
+                  FieldNode(seedsSownViaGerminations, listOf("15")),
+                  FieldNode(seedsSownField, listOf("15"))))
+
+      val result = searchService.search(facilityId, fields, criteria, sortOrder)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "1000",
+                      "accessionNumber" to "XYZ",
+                      "germinationTests" to
+                          listOf(
+                              mapOf(
+                                  "seedsSown" to "15",
+                                  "germinations" to
+                                      listOf(
+                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
+                                      ))),
+                  ),
+              ),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
     fun `can search and sort all the fields`() {
-      val fields = searchFields.getAllFieldNames().sorted().map { rootPrefix.resolve(it) }
+      val fields = accessionsNamespace.getAllFieldNames().sorted().map { rootPrefix.resolve(it) }
       val sortOrder = fields.map { SearchSortField(it) }
 
       // We're querying a mix of nested fields and the old-style fields that put nested values
