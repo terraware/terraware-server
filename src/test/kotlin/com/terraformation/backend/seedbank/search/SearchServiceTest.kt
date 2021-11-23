@@ -70,8 +70,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val checkedInTime = Instant.parse(checkedInTimeString)
 
   private val searchTables = SearchTables(PostgresFuzzySearchOperators())
-  private val searchTables = SearchTables(searchTables)
-  private val rootPrefix = SearchFieldPrefix(root = searchFields)
   private val accessionsNamespace = AccessionsNamespace(searchTables)
   private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")
