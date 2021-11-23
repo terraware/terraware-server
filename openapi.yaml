@@ -1080,9 +1080,22 @@ paths:
     get:
       tags:
       - Customer
-      summary: List all organizations
-      description: List all organizations the user can access.
-      operationId: listAll_1
+      summary: Lists all organizations.
+      description: Lists all organizations the user can access.
+      operationId: listOrganizations
+      parameters:
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Return this level of information about the organization's contents.
+          default: Organization
+          enum:
+          - Organization
+          - Project
+          - Site
+          - Facility
       responses:
         "200":
           description: OK
@@ -1090,6 +1103,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOrganizationsResponse'
+  /api/v1/organization/{organizationId}:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about an organization.
+      operationId: getOrganization
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          description: ID of organization to get. User must be a member of the organization.
+          format: int64
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Return this level of information about the organization's contents.
+          default: Organization
+          enum:
+          - Organization
+          - Project
+          - Site
+          - Facility
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrganizationResponsePayload'
   /api/v1/organizations/{organizationId}/projects:
     get:
       tags:
@@ -3181,7 +3227,6 @@ components:
       required:
       - id
       - name
-      - role
       - siteId
       - type
       type: object
@@ -3200,9 +3245,6 @@ components:
           - Seed Bank
           - Desalination
           - Reverse Osmosis
-        role:
-          type: string
-          description: The name of the role the current user has at the facility.
     FeaturePhoto:
       required:
       - capturedTime
@@ -3548,6 +3590,16 @@ components:
           $ref: '#/components/schemas/ObservationResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetOrganizationResponsePayload:
+      required:
+      - organization
+      - status
+      type: object
+      properties:
+        organization:
+          $ref: '#/components/schemas/ListOrganizationsElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetPlantResponsePayload:
       required:
       - plant
@@ -3801,15 +3853,23 @@ components:
           format: int64
         name:
           type: string
+        projects:
+          type: array
+          description: This organization's projects. Omitted if depth is "Organization".
+          items:
+            $ref: '#/components/schemas/ProjectPayload'
     ListOrganizationsResponse:
       required:
       - organizations
+      - status
       type: object
       properties:
         organizations:
           type: array
           items:
             $ref: '#/components/schemas/ListOrganizationsElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ListPhotosResponseElement:
       required:
       - capturedTime
@@ -4276,6 +4336,10 @@ components:
         organizationId:
           type: integer
           format: int64
+        sites:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteElement'
     RecordTimeseriesValuesRequestPayload:
       required:
       - timeseries
@@ -4776,6 +4840,10 @@ components:
           type: string
         timezone:
           type: string
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacilityPayload'
     SpeciesCreateResponsePayload:
       required:
       - id
