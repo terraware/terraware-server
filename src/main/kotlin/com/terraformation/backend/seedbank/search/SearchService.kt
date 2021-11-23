@@ -6,6 +6,8 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.NestedQueryBuilder
+import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
@@ -32,7 +34,11 @@ import org.jooq.impl.DSL
  * This maximizes the database's flexibility to optimize the query.
  */
 @ManagedBean
-class SearchService(private val dslContext: DSLContext, private val searchFields: SearchFields) {
+class SearchService(
+    private val dslContext: DSLContext,
+    private val searchFields: SearchFields,
+    private val searchTables: SearchTables,
+) {
   private val log = perClassLogger()
 
   /** Returns a query that selects the IDs of accessions that match a list of filter criteria. */
@@ -44,7 +50,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val conditions =
         criteria
             .toCondition()
-            .and(searchFields.searchTables.accessions.conditionForPermissions())
+            .and(searchTables.accessions.conditionForPermissions())
             .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
 
     return joinWithSecondaryTables(
@@ -63,19 +69,21 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    */
   fun search(
       facilityId: FacilityId,
-      fields: List<SearchField>,
+      fields: List<SearchFieldPath>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
       limit: Int = Int.MAX_VALUE
   ): SearchResults {
-    val fieldNames = setOf("id", "accessionNumber") + fields.map { it.fieldName }.toSet()
-    val fieldObjects =
-        fieldNames.map {
-          searchFields[it] ?: throw IllegalArgumentException("Unknown field name $it")
-        }
+    val rootPrefix = SearchFieldPrefix(root = searchFields)
+    val mandatoryFields =
+        listOf("id", "accessionNumber")
+            .mapNotNull { searchFields[it] }
+            .map { SearchFieldPath(rootPrefix, it) }
+            .toSet()
+    val fieldObjects = mandatoryFields + fields.toSet()
 
-    val queryBuilder = NestedQueryBuilder(dslContext)
+    val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
     queryBuilder.addSelectFields(fieldObjects)
     queryBuilder.addSortFields(sortOrder)
     queryBuilder.addCondition(ACCESSIONS.ID.`in`(selectAccessionIds(facilityId, criteria)))
@@ -124,7 +132,12 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * @return A list of values, which may include `null` if the field is optional and has no value on
    * some of the matching accessions.
    */
-  fun fetchValues(field: SearchField, criteria: SearchNode, limit: Int = 50): List<String?> {
+  fun fetchValues(
+      fieldPath: SearchFieldPath,
+      criteria: SearchNode,
+      limit: Int = 50
+  ): List<String?> {
+    val field = fieldPath.searchField
     val selectFields =
         field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
 
@@ -168,9 +181,10 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
    * limit.
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
-  fun fetchAllValues(field: SearchField, limit: Int = 50): List<String?> {
+  fun fetchAllValues(fieldPath: SearchFieldPath, limit: Int = 50): List<String?> {
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
+    val field = fieldPath.searchField
     val values = field.possibleValues ?: queryAllValues(field, limit)
 
     return if (field.nullable) {
@@ -218,7 +232,7 @@ class SearchService(private val dslContext: DSLContext, private val searchFields
     val directlyReferencedTables =
         fields.map { it.table }.toSet() +
             criteria.referencedTables() +
-            sortOrder.map { it.field.table }.toSet()
+            sortOrder.map { it.field.searchField.table }.toSet()
 
     directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
     return query

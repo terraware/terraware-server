@@ -13,11 +13,11 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchDirection
+import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
-import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.search.SearchService
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
@@ -97,7 +97,7 @@ class SearchController(private val clock: Clock, private val searchService: Sear
   @Operation(summary = "Exports the results of a search as a downloadable CSV file.")
   @PostMapping("/export", produces = ["text/csv"])
   fun export(@RequestBody payload: ExportRequestPayload): ResponseEntity<ByteArray> {
-    if (payload.fields.any { it.fieldName.contains('.') }) {
+    if (payload.fields.any { it.isNested }) {
       throw BadRequestException("Nested fields are not supported for CSV export.")
     }
 
@@ -126,8 +126,8 @@ class SearchController(private val clock: Clock, private val searchService: Sear
     byteArrayOutputStream.write(191)
 
     CSVWriter(OutputStreamWriter(byteArrayOutputStream, StandardCharsets.UTF_8)).use { csvWriter ->
-      val header = payload.fields.map { it.displayName }.toTypedArray()
-      val fieldNames = payload.fields.map { it.fieldName }
+      val header = payload.fields.map { it.searchField.displayName }.toTypedArray()
+      val fieldNames = payload.fields.map { "$it" }
       csvWriter.writeNext(header, false)
 
       searchResults.results.forEach { result ->
@@ -170,7 +170,7 @@ interface HasSearchNode {
 
 data class SearchRequestPayload(
     val facilityId: FacilityId,
-    @NotEmpty val fields: List<SearchField>,
+    @NotEmpty val fields: List<SearchFieldPath>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
@@ -183,7 +183,7 @@ data class SearchRequestPayload(
 
 data class ExportRequestPayload(
     val facilityId: FacilityId,
-    @NotEmpty val fields: List<SearchField>,
+    @NotEmpty val fields: List<SearchFieldPath>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
@@ -195,7 +195,7 @@ data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor
 }
 
 data class SearchSortOrderElement(
-    val field: SearchField,
+    val field: SearchFieldPath,
     @Schema(
         defaultValue = "Ascending",
     )
@@ -272,7 +272,7 @@ data class NotNodePayload(val child: SearchNodePayload) : SearchNodePayload {
 
 @JsonTypeName("field")
 data class FieldNodePayload(
-    val field: SearchField,
+    val field: SearchFieldPath,
     @ArraySchema(
         schema = Schema(nullable = true),
         minItems = 1,
@@ -300,7 +300,7 @@ data class FieldNodePayload(
  * @see SearchService
  */
 data class SearchFilter(
-    val field: SearchField,
+    val field: SearchFieldPath,
     @ArraySchema(
         schema = Schema(nullable = true),
         arraySchema =

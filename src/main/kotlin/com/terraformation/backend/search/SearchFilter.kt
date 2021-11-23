@@ -1,6 +1,5 @@
 package com.terraformation.backend.search
 
-import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.impl.DSL
 
@@ -48,17 +47,17 @@ class NotNode(val child: SearchNode) : SearchNode {
 }
 
 class FieldNode(
-    val field: SearchField,
+    val field: SearchFieldPath,
     val values: List<String?>,
     val type: SearchFilterType = SearchFilterType.Exact
 ) : SearchNode {
   override fun toCondition(): Condition {
-    val conditions = field.getConditions(this)
+    val conditions = field.searchField.getConditions(this)
     return if (conditions.size == 1) conditions[0] else DSL.and(conditions)
   }
 
   override fun referencedTables(): Set<SearchTable> {
-    return setOf(field.table)
+    return setOf(field.searchField.table)
   }
 }
 

@@ -15,7 +15,7 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import com.terraformation.backend.seedbank.search.SearchService
 import com.terraformation.backend.species.db.SpeciesStore
@@ -125,7 +125,7 @@ class ValuesController(
           var values = searchService.fetchAllValues(searchField, limit)
 
           // TODO: Remove this once front end is updated to know about Awaiting Check-In state
-          if (searchField.fieldName == "state" && !config.enableAwaitingCheckIn) {
+          if ("$searchField" == "state" && !config.enableAwaitingCheckIn) {
             values = values.filter { it != AccessionState.AwaitingCheckIn.displayName }
           }
 
@@ -172,12 +172,12 @@ data class FieldValuesPayload(
 
 data class ListFieldValuesRequestPayload(
     val facilityId: FacilityId,
-    val fields: List<SearchField>,
+    val fields: List<SearchFieldPath>,
     override val filters: List<SearchFilter>?,
     override val search: SearchNodePayload?,
 ) : HasSearchNode
 
-data class ListFieldValuesResponsePayload(val results: Map<SearchField, FieldValuesPayload>) :
+data class ListFieldValuesResponsePayload(val results: Map<SearchFieldPath, FieldValuesPayload>) :
     SuccessResponsePayload
 
 data class AllFieldValuesPayload(
@@ -199,8 +199,9 @@ data class AllFieldValuesPayload(
 
 data class ListAllFieldValuesRequestPayload(
     val facilityId: FacilityId,
-    val fields: List<SearchField>
+    val fields: List<SearchFieldPath>
 )
 
-data class ListAllFieldValuesResponsePayload(val results: Map<SearchField, AllFieldValuesPayload>) :
-    SuccessResponsePayload
+data class ListAllFieldValuesResponsePayload(
+    val results: Map<SearchFieldPath, AllFieldValuesPayload>
+) : SuccessResponsePayload

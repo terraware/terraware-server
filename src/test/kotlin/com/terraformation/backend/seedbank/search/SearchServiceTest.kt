@@ -35,6 +35,7 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchDirection
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
@@ -68,23 +69,25 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val checkedInTimeString = "2021-08-18T11:33:55Z"
   private val checkedInTime = Instant.parse(checkedInTimeString)
 
-  private val searchFields = SearchFields(PostgresFuzzySearchOperators())
-  private val accessionNumberField = searchFields["accessionNumber"]!!
-  private val activeField = searchFields["active"]!!
-  private val bagNumberField = searchFields["bagNumber"]!!
-  private val checkedInTimeField = searchFields["checkedInTime"]!!
-  private val germinationSeedsGerminatedField = searchFields["germinationSeedsGerminated"]!!
-  private val germinationSeedsSownField = searchFields["germinationSeedsSown"]!!
-  private val germinationTestTypeField = searchFields["germinationTestType"]!!
-  private val receivedDateField = searchFields["receivedDate"]!!
-  private val speciesField = searchFields["species"]!!
-  private val stateField = searchFields["state"]!!
-  private val storageLocationField = searchFields["storageLocation"]!!
-  private val storageNotesField = searchFields["storageNotes"]!!
-  private val targetStorageConditionField = searchFields["targetStorageCondition"]!!
-  private val totalGramsField = searchFields["totalGrams"]!!
-  private val treesCollectedFromField = searchFields["treesCollectedFrom"]!!
-  private val viabilityTestTypeField = searchFields["viabilityTestType"]!!
+  private val searchTables = SearchTables(PostgresFuzzySearchOperators())
+  private val searchFields = SearchFields(searchTables)
+  private val rootPrefix = SearchFieldPrefix(root = searchFields)
+  private val accessionNumberField = rootPrefix.resolve("accessionNumber")
+  private val activeField = rootPrefix.resolve("active")
+  private val bagNumberField = rootPrefix.resolve("bagNumber")
+  private val checkedInTimeField = rootPrefix.resolve("checkedInTime")
+  private val germinationSeedsGerminatedField = rootPrefix.resolve("germinationSeedsGerminated")
+  private val germinationSeedsSownField = rootPrefix.resolve("germinationSeedsSown")
+  private val germinationTestTypeField = rootPrefix.resolve("germinationTestType")
+  private val receivedDateField = rootPrefix.resolve("receivedDate")
+  private val speciesField = rootPrefix.resolve("species")
+  private val stateField = rootPrefix.resolve("state")
+  private val storageLocationField = rootPrefix.resolve("storageLocation")
+  private val storageNotesField = rootPrefix.resolve("storageNotes")
+  private val targetStorageConditionField = rootPrefix.resolve("targetStorageCondition")
+  private val totalGramsField = rootPrefix.resolve("totalGrams")
+  private val treesCollectedFromField = rootPrefix.resolve("treesCollectedFrom")
+  private val viabilityTestTypeField = rootPrefix.resolve("viabilityTestType")
 
   @BeforeEach
   fun init() {
@@ -95,7 +98,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     bagsDao = BagsDao(jooqConfig)
     germinationTestsDao = GerminationTestsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
-    searchService = SearchService(dslContext, searchFields)
+    searchService = SearchService(dslContext, searchFields, searchTables)
 
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
@@ -1162,11 +1165,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class NestedFieldsTest {
-    private val bagsNumberField = searchFields["bags.number"]!!
-    private val seedsSownField = searchFields["germinationTests.seedsSown"]!!
+    private val bagsNumberField = rootPrefix.resolve("bags.number")
+    private val seedsSownField = rootPrefix.resolve("germinationTests.seedsSown")
     private val seedsGerminatedField =
-        searchFields["germinationTests.germinations.seedsGerminated"]!!
-    private val testTypeField = searchFields["germinationTests.type"]!!
+        rootPrefix.resolve("germinationTests.germinations.seedsGerminated")
+    private val testTypeField = rootPrefix.resolve("germinationTests.type")
 
     private lateinit var testId: GerminationTestId
     @BeforeEach
@@ -1510,7 +1513,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can search and sort all the fields`() {
-      val fields = searchFields.fieldNames.sorted().map { searchFields[it]!! }
+      val fields = searchFields.getAllFieldNames().sorted().map { rootPrefix.resolve(it) }
       val sortOrder = fields.map { SearchSortField(it) }
 
       // We're querying a mix of nested fields and the old-style fields that put nested values

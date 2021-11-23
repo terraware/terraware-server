@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.SearchTable
+import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.OrderField
 import org.jooq.Record
@@ -27,6 +28,7 @@ import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
 /** Definitions of all the available search tables. */
+@ManagedBean
 class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val accessions =
       object : SearchTable(fuzzySearchOperators) {
