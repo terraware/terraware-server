@@ -215,7 +215,7 @@ import org.jooq.impl.DSL
  *
  * A field name is represented as a [SearchFieldPath] which consists of a prefix and a scalar field.
  * The prefix is represented as a [SearchFieldPrefix] and includes a list of path elements. Each
- * element is a sublist sublist field, forming a path to the location of the scalar field
+ * element is a sublist field, forming a path to the location of the scalar field
  * (`germinationTests` and `germinations` in the above example) as well as a "namespace" (in the
  * form of a [SearchFieldNamespace]) that identifies where in the application's data model the
  * prefix begins. In the example, the namespace would indicate that the fields are all under the

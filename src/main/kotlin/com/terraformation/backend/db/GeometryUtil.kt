@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
 import net.postgis.jdbc.geometry.Geometry
+import net.postgis.jdbc.geometry.GeometryBuilder
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Field
 import org.jooq.impl.DSL
@@ -24,3 +25,10 @@ fun Field<Geometry?>.asGeoJson(): Field<String?> =
  */
 fun Field<Geometry?>.transformSrid(srid: Int): Field<Geometry?> =
     DSL.function("ST_Transform", Geometry::class.java, this, DSL.`val`(srid))
+
+/**
+ * Works around a bug/limitation in jOOQ's multiset code that prevents us from directly including a
+ * geometry column in a multiset.
+ */
+fun Field<Geometry?>.forMultiset(): Field<Geometry?> =
+    cast(String::class.java).convertFrom { GeometryBuilder.geomFromString(it) }
