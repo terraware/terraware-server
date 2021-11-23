@@ -33,8 +33,12 @@ data class SublistPrefixElement(
 ) : SearchFieldPrefixElement
 
 /**
- * A partial location of a search field in the application's data hierarchy. The prefix specifies
- * the starting point (root) of a relative path, and zero or more path elements underneath the root.
+ * A partial location of a search field in the application's data hierarchy.
+ *
+ * The full path of a search field consists of a root, zero or more path elements, and a scalar
+ * field. This class is where the root and the path elements live.
+ *
+ * See [SearchFieldPath] for more details about how prefixes work.
  */
 data class SearchFieldPrefix(
     val root: SearchFieldNamespace,
@@ -106,7 +110,42 @@ data class SearchFieldPrefix(
   @JsonValue override fun toString() = elements.joinToString(".") { it.name }
 }
 
-/** The location of a search field in the application's data hierarchy. */
+/**
+ * The location of a search field in the application's data hierarchy.
+ *
+ * The full path of a search field consists of a root, zero or more path elements, and a scalar
+ * field. The root and the path elements live in [SearchFieldPrefix] and the scalar field lives
+ * here.
+ *
+ * A filesystem analogy to help clarify the different parts:
+ *
+ * ```
+ * $ cd /a/b/c
+ * $ cat d/e/file
+ * ```
+ *
+ * The root is like your current working directory, `/a/b/c` in the filesystem analogy. All relative
+ * paths are evaluated starting from there.
+ *
+ * The path elements are like a series of subdirectories in a relative path, `d/e` in the analogy.
+ * The first one needs to exist in the root (working directory), the second needs to exist in the
+ * first, and so on.
+ *
+ * The scalar field is like the filename of a regular file. In the analogy it is `file`.
+ *
+ * There can be multiple paths that refer to the same field. To continue with the filesystem
+ * analogy, the following would output the same file as the first example:
+ *
+ * ```
+ * $ cd /a/b/c/d/e
+ * $ cat file
+ * ```
+ *
+ * The difference is how the two are mapped to search results. In the first case, the search results
+ * would be structured like `[{"d":[{"e":[{"file":"contents"}]}]}]` whereas in the second case, the
+ * structure would be `[{"file":"contents"}]`. This is very significant to the client because it
+ * controls how results are grouped together when there are multiple values for a particular field.
+ */
 class SearchFieldPath(private val prefix: SearchFieldPrefix, val searchField: SearchField) {
   val containers = prefix.elements
 
