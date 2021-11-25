@@ -40,24 +40,32 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
   abstract fun <T : Record> leftJoinWithMain(query: SelectJoinStep<T>): SelectJoinStep<T>
 
   /**
-   * Adds a LEFT JOIN clause to a query to connect this table to any other tables required to filter
-   * out values the user doesn't have permission to see.
+   * Adds a LEFT JOIN clause to a query to connect this table to another table to calculate whether
+   * the user is allowed to see a row in this table.
    *
-   * This is only used when querying all the values of a table; for searches, permissions are
-   * checked on the main table.
+   * This must join to the same table referenced by [inheritsPermissionsFrom].
    *
    * The default no-op implementation will work for any tables that have the required information
    * already, e.g., if a table has a facility ID column, there's no need to join with another table
-   * to get a facility ID.
+   * to get a facility ID. The default implementation is only valid if [inheritsPermissionsFrom]
+   * returns null.
    */
-  open fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> = query
+  open fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+    if (inheritsPermissionsFrom == null) {
+      return query
+    } else {
+      throw IllegalStateException(
+          "BUG! Must override joinForPermissions if permissions are inherited from another table.")
+    }
+  }
 
   /**
    * Returns a condition that restricts this table's values to ones the user has permission to see.
-   * If the table's values are visible to all users, returns null.
    *
    * This method can safely assume that [joinForPermissions] was called, so any tables added there
    * are available for use in the condition.
+   *
+   * If this is null, [inheritsPermissionsFrom] must be non-null.
    */
   abstract fun conditionForPermissions(): Condition?
 
@@ -72,6 +80,16 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
    */
   open val parent: SearchTable?
     get() = null
+
+  /**
+   * If the user's permission to see rows in this table can't be determined directly from the
+   * contents of the table itself, the other table that the query needs to left join with in order
+   * to check permissions.
+   *
+   * Null if the current table has the required information to determine whether the user can see a
+   * given row. In that case, [conditionForPermissions] must be non-null.
+   */
+  abstract val inheritsPermissionsFrom: SearchTable?
 
   /**
    * Returns a condition to add to the `WHERE` clause of a multiset subquery to correlate it with

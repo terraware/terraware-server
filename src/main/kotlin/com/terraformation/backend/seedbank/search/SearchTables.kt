@@ -49,6 +49,10 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
           return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
         }
 
+        // Table has facility ID
+        override val inheritsPermissionsFrom: SearchTable?
+          get() = null
+
         override fun conditionForMultiset(): Condition? {
           // No-op; this is always the topmost table
           return null
@@ -62,9 +66,12 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
 
   val facilities =
       object : AccessionParentTable<FacilityId>(FACILITIES.ID, ACCESSIONS.FACILITY_ID) {
-        override fun conditionForPermissions(): Condition? {
+        override fun conditionForPermissions(): Condition {
           return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
         }
+
+        override val inheritsPermissionsFrom: SearchTable?
+          get() = null
       }
 
   val geolocations = object : AccessionChildTable(GEOLOCATIONS.ACCESSION_ID) {}
@@ -85,16 +92,15 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
         }
 
         override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
-          return query
-              .join(GERMINATION_TESTS)
-              .on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
-              .join(ACCESSIONS)
-              .on(GERMINATION_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID))
+          return query.join(GERMINATION_TESTS).on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
         }
 
         override fun conditionForPermissions(): Condition {
           return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
         }
+
+        override val inheritsPermissionsFrom: SearchTable
+          get() = germinationTests
 
         override fun conditionForMultiset(): Condition {
           return GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID)
@@ -108,6 +114,9 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
         override fun conditionForPermissions(): Condition {
           return COLLECTORS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
         }
+
+        override val inheritsPermissionsFrom: SearchTable?
+          get() = null
       }
 
   val species =
@@ -115,6 +124,10 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
         override fun conditionForPermissions(): Condition? {
           return null
         }
+
+        // TODO: Make this check species ownership once we have per-org species.
+        override val inheritsPermissionsFrom: SearchTable?
+          get() = null
       }
 
   val families =
@@ -122,6 +135,9 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
         override fun conditionForPermissions(): Condition? {
           return null
         }
+
+        override val inheritsPermissionsFrom: SearchTable?
+          get() = null
       }
 
   val storageLocations =
@@ -131,6 +147,9 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
         override fun conditionForPermissions(): Condition {
           return STORAGE_LOCATIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
         }
+
+        override val inheritsPermissionsFrom: SearchTable?
+          get() = null
       }
 
   val withdrawals = object : AccessionChildTable(WITHDRAWALS.ACCESSION_ID) {}
@@ -184,8 +203,11 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
     }
 
     override fun conditionForPermissions(): Condition? {
-      return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+      return null
     }
+
+    override val inheritsPermissionsFrom: SearchTable?
+      get() = accessions
 
     override fun conditionForMultiset(): Condition? {
       return accessionIdField.eq(ACCESSIONS.ID)
