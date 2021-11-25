@@ -5,7 +5,7 @@ import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchTable
-import java.util.*
+import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
