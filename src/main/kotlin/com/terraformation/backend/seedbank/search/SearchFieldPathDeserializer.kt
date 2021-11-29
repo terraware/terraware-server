@@ -7,15 +7,17 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
+import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import javax.annotation.ManagedBean
 import javax.annotation.PostConstruct
 
 /** Configures the Jackson object mapper to be able to deserialize search field paths. */
 @ManagedBean
 class SearchFieldPathDeserializer(
+    namespaces: SearchFieldNamespaces,
     private val objectMapper: ObjectMapper,
-    accessionsNamespace: AccessionsNamespace,
 ) : StdDeserializer<SearchFieldPath>(SearchFieldPath::class.java) {
+  private val accessionsNamespace = namespaces.accessions
   private val root = SearchFieldPrefix(root = accessionsNamespace)
 
   @PostConstruct

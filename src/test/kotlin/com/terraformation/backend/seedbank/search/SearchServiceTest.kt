@@ -41,6 +41,7 @@ import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -72,7 +73,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val checkedInTime = Instant.parse(checkedInTimeString)
 
   private val searchTables = SearchTables(PostgresFuzzySearchOperators())
-  private val accessionsNamespace = AccessionsNamespace(searchTables)
+  private val namespaces = SearchFieldNamespaces(searchTables)
+  private val accessionsNamespace = namespaces.accessions
   private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")
   private val activeField = rootPrefix.resolve("active")
@@ -101,7 +103,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     germinationTestsDao = GerminationTestsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
     searchService = SearchService(dslContext)
-    accessionSearchService = AccessionSearchService(accessionsNamespace, searchService)
+    accessionSearchService = AccessionSearchService(namespaces, searchService)
 
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 

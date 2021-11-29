@@ -6,12 +6,13 @@ import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
 import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.namespace.AccessionsNamespace
+import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
-import com.terraformation.backend.seedbank.search.AccessionsNamespace
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
@@ -41,8 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired
  * - PostGIS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  */
 @ManagedBean
-class OpenApiConfig(private val accessionsNamespace: AccessionsNamespace) : OpenApiCustomiser {
+class OpenApiConfig(namespaces: SearchFieldNamespaces) : OpenApiCustomiser {
   @Autowired(required = false) var dslContext: DSLContext? = null
+
+  private val accessionsNamespace = namespaces.accessions
 
   init {
     val config = SpringDocUtils.getConfig()
