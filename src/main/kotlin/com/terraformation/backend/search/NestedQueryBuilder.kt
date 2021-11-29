@@ -460,6 +460,9 @@ class NestedQueryBuilder(
    */
   private val sublistQueryBuilders = mutableMapOf<String, NestedQueryBuilder>()
 
+  // TOOD: Document
+  val flattenedSublists = mutableSetOf<SublistField>()
+
   /**
    * Zero-indexed position of each field in the `SELECT` clause. Both scalar and sublist fields are
    * included. However, this does _not_ include fields that are only used as sort keys.
@@ -628,7 +631,22 @@ class NestedQueryBuilder(
   private fun addSelectField(fieldPath: SearchFieldPath) {
     val relativeField = fieldPath.relativeTo(prefix)
 
-    if (relativeField.isNested) {
+    if (relativeField.isFlattened) {
+      val (sublists, remainingPath) = relativeField.splitFlattened()
+      flattenedSublists.addAll(sublists)
+
+      if (remainingPath.isNested) {
+        addSelectField(remainingPath)
+      } else {
+        val searchField = fieldPath.searchField
+        val fieldName = "$relativeField"
+        scalarFields[fieldName] = searchField
+        if (fieldName !in selectFieldPositions) {
+          selectFieldPositions[fieldName] = nextSelectFieldPosition
+          nextSelectFieldPosition += searchField.selectFields.size
+        }
+      }
+    } else if (relativeField.isNested) {
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
       val sublistName = getSublistName(relativeField)
       getSublistQuery(relativeField).addSelectField(fieldPath)
@@ -650,13 +668,22 @@ class NestedQueryBuilder(
    * needed.
    */
   private fun addSortField(sortField: SearchSortField) {
-    sortFields.add(sortField)
-
     val relativeField = sortField.field.relativeTo(prefix)
 
-    if (relativeField.isNested) {
-      // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
-      getSublistQuery(relativeField).addSortField(sortField)
+    sortFields.add(sortField)
+
+    if (relativeField.isFlattened) {
+      val (sublists, remainingPath) = relativeField.splitFlattened()
+      flattenedSublists.addAll(sublists)
+
+      if (remainingPath.isNested) {
+        addSortField(sortField.copy(field = remainingPath))
+      }
+    } else {
+      if (relativeField.isNested) {
+        // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
+        getSublistQuery(relativeField).addSortField(sortField)
+      }
     }
   }
 
@@ -666,7 +693,7 @@ class NestedQueryBuilder(
       throw IllegalArgumentException("Cannot get sublist for non-nested field $relativeField")
     }
 
-    val sublistName = relativeField.containers.first().name
+    val sublistName = relativeField.sublists.first().name
 
     return sublistQueryBuilders.computeIfAbsent(sublistName) {
       NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
@@ -680,10 +707,6 @@ class NestedQueryBuilder(
    * multiple top-level entries in the results list.
    */
   private fun joinWithChildTables(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
-    if (!isRoot()) {
-      return query
-    }
-
     var joinedQuery = query
 
     val selectTables = scalarFields.values.map { it.table }.toSet() - getSearchTable()
@@ -692,9 +715,19 @@ class NestedQueryBuilder(
     // add them a second time.
     val selectTableParents = selectTables.mapNotNull { it.parent }.toSet()
 
-    val tablesToJoin = selectTables - selectTableParents
+    val tablesToJoin =
+        selectTables -
+            selectTableParents -
+            flattenedSublists.map { it.namespace.searchTable }.toSet()
 
     tablesToJoin.forEach { table -> joinedQuery = table.leftJoinWithMain(joinedQuery) }
+
+    flattenedSublists.forEach { sublist ->
+      joinedQuery =
+          joinedQuery
+              .leftJoin(sublist.namespace.searchTable.fromTable)
+              .on(sublist.conditionForMultiset)
+    }
 
     return joinedQuery
   }
@@ -736,11 +769,11 @@ class NestedQueryBuilder(
     val sortFieldIndex = sortFieldPositions[relativeName]
 
     val orderByField =
-        if (relativeField.isNested) {
-          getOrderByFieldForSublist(sortField.field)
-        } else if (sortFieldIndex != null) {
+        if (sortFieldIndex != null) {
           // Sorting by a column that's in the `SELECT` clause.
           DSL.inline(sortFieldIndex + 1)
+        } else if (relativeField.isNested) {
+          getOrderByFieldForSublist(sortField.field)
         } else {
           // Sorting by a derived value.
           field.orderByField
@@ -775,7 +808,10 @@ class NestedQueryBuilder(
       emptyList()
     } else {
       sortFields
-          .filterNot { it.field.relativeTo(prefix).isNested }
+          .filter {
+            val relativeField = it.field.relativeTo(prefix)
+            relativeField.isFlattened || !relativeField.isNested
+          }
           .distinctBy { it.field }
           .mapNotNull { sortField ->
             val field = sortField.field.searchField
@@ -834,7 +870,7 @@ class NestedQueryBuilder(
         throw IllegalStateException("BUG! Root node should never be rendered as a multiset")
       }
 
-      val alias = "$prefix".replace('.', '_').lowercase() + "_multiset"
+      val alias = "$prefix".replace('.', '_').lowercase() + "multiset"
 
       prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
 
@@ -921,7 +957,7 @@ class NestedQueryBuilder(
   /** Returns the name of the sublist containing the given relative field. */
   private fun getSublistName(relativeField: SearchFieldPath): String {
     return if (relativeField.isNested) {
-      relativeField.containers.first().name
+      relativeField.sublists.first().name
     } else {
       throw IllegalArgumentException("BUG! $relativeField has no sublist")
     }

@@ -28,7 +28,11 @@ class SearchService(private val dslContext: DSLContext) {
   private val log = perClassLogger()
 
   /** Returns a condition that filters search results based on a list of criteria. */
-  private fun filterResults(rootPrefix: SearchFieldPrefix, criteria: SearchNode): Condition {
+  private fun filterResults(
+      rootPrefix: SearchFieldPrefix,
+      criteria: SearchNode,
+      flattenedTables: Collection<SearchTable>
+  ): Condition {
     // Filter out results the user doesn't have permission to see.
     val searchTable = rootPrefix.root.searchTable
     val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTable))
@@ -40,7 +44,8 @@ class SearchService(private val dslContext: DSLContext) {
                 DSL.select(primaryKey).from(searchTable.fromTable),
                 rootPrefix,
                 emptyList(),
-                criteria)
+                criteria,
+                flattenedTables = flattenedTables)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
@@ -81,7 +86,9 @@ class SearchService(private val dslContext: DSLContext) {
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
     queryBuilder.addSelectFields(fields)
     queryBuilder.addSortFields(sortOrder)
-    queryBuilder.addCondition(filterResults(rootPrefix, criteria))
+    queryBuilder.addCondition(
+        filterResults(
+            rootPrefix, criteria, queryBuilder.flattenedSublists.map { it.namespace.searchTable }))
 
     val query = queryBuilder.toSelectQuery()
 
@@ -269,13 +276,16 @@ class SearchService(private val dslContext: DSLContext) {
       rootPrefix: SearchFieldPrefix,
       fields: List<SearchField>,
       criteria: SearchNode,
-      sortOrder: List<SearchSortField> = emptyList()
+      sortOrder: List<SearchSortField> = emptyList(),
+      flattenedTables: Collection<SearchTable> = emptySet()
   ): SelectJoinStep<T> {
     var query = selectFrom
     val directlyReferencedTables =
         fields.map { it.table }.toSet() +
             criteria.referencedTables() +
-            sortOrder.map { it.field.searchField.table }.toSet() - rootPrefix.namespace.searchTable
+            sortOrder.map { it.field.searchField.table }.toSet() -
+            flattenedTables.toSet() -
+            rootPrefix.namespace.searchTable
 
     directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
 

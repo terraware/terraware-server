@@ -46,4 +46,9 @@ data class SublistField(
      * would be `SITES.PROJECT_ID.eq(PROJECTS.ID)`.
      */
     val conditionForMultiset: Condition,
-)
+
+    // TODO: Document
+    val isFlattened: Boolean = false,
+) {
+  fun asFlattened(): SublistField = copy(isFlattened = true)
+}
