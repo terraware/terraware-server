@@ -1,6 +1,7 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.search.field.SearchField
+import org.jooq.Condition
 
 /**
  * Defines which search fields exist at a particular point in the application's hierarchical data
@@ -27,21 +28,8 @@ abstract class SearchFieldNamespace {
   /** Scalar fields that are valid in this namespace. Subclasses must supply this. */
   abstract val fields: List<SearchField>
 
-  /**
-   * Sublists that appear under this namespace for which there can be multiple values. Subclasses
-   * must supply this. The key of this map is the name of the sublist as it appears in a field path.
-   * The same namespace may appear more than once in this map as long as each one has a different
-   * name.
-   */
-  abstract val multiValueSublists: Map<String, SearchFieldNamespace>
-
-  /**
-   * Sublists that appear under this namespace for which there can be only a single value.
-   * Subclasses must supply this. The key of this map is the name of the sublist as it appears in a
-   * field path. The same namespace may appear more than once in this map as long as each one has a
-   * different name.
-   */
-  abstract val singleValueSublists: Map<String, SearchFieldNamespace>
+  /** Sublist fields that are valid in this namespace. Subclasses must supply this. */
+  abstract val sublists: List<SublistField>
 
   /**
    * The main search table for this namespace. By default, this is the table that contains the first
@@ -52,16 +40,47 @@ abstract class SearchFieldNamespace {
     get() = fields.first().table
 
   private val fieldsByName: Map<String, SearchField> by lazy { fields.associateBy { it.fieldName } }
+  private val sublistsByName: Map<String, SublistField> by lazy { sublists.associateBy { it.name } }
 
   fun getAllFieldNames(prefix: String = ""): Set<String> {
     val myFieldNames = fields.map { prefix + it.fieldName }
     val sublistFieldNames =
-        multiValueSublists.flatMap { (name, sublist) ->
-          sublist.getAllFieldNames("${prefix}$name.")
+        sublistsByName.filterValues { it.isMultiValue }.flatMap { (name, sublist) ->
+          sublist.namespace.getAllFieldNames("${prefix}$name.")
         }
 
     return (myFieldNames + sublistFieldNames).toSet()
   }
 
   operator fun get(fieldName: String): SearchField? = fieldsByName[fieldName]
+
+  fun getSublistOrNull(sublistName: String): SublistField? = sublistsByName[sublistName]
+
+  /**
+   * Returns a [SublistField] pointing to this namespace for use in cases where there can be
+   * multiple values. In other words, returns a [SublistField] that defines a 1:N relationship
+   * between another namespace and this one. For example, `facilities` is a multi-value sublist of
+   * `sites` because each site can have multiple facilities.
+   */
+  fun asMultiValueSublist(name: String, conditionForMultiset: Condition): SublistField {
+    return SublistField(
+        name = name,
+        namespace = this,
+        isMultiValue = true,
+        conditionForMultiset = conditionForMultiset)
+  }
+
+  /**
+   * Returns a [SublistField] pointing to this namespace for use in cases where there is only a
+   * single value. In other words, returns a [SublistField] that defines a 1:1 or N:1 relationship
+   * between another namespace and this one. For example, `site` is a single-value sublist of
+   * `facilities` because each facility is only associated with one site.
+   */
+  fun asSingleValueSublist(name: String, conditionForMultiset: Condition): SublistField {
+    return SublistField(
+        name = name,
+        namespace = this,
+        isMultiValue = false,
+        conditionForMultiset = conditionForMultiset)
+  }
 }

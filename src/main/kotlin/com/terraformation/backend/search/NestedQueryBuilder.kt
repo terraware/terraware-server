@@ -213,19 +213,19 @@ import org.jooq.impl.DSL
  * element of which contains a scalar field called `recordingDate`.
  *
  * A field name is represented as a [SearchFieldPath] which consists of a prefix and a scalar field.
- * The prefix is represented as a [SearchFieldPrefix] and includes a list of path elements. Each
- * element is a sublist field, forming a path to the location of the scalar field
- * (`germinationTests` and `germinations` in the above example) as well as a "namespace" (in the
- * form of a [SearchFieldNamespace]) that identifies where in the application's data model the
- * prefix begins. In the example, the namespace would indicate that the fields are all under the
- * "accessions" part of the data model.
+ * The prefix is represented as a [SearchFieldPrefix] and includes a list of sublist fields which
+ * form a path to the location of the scalar field (`germinationTests` and `germinations` in the
+ * above example). The prefix also includes a "root namespace" (in the form of a
+ * [SearchFieldNamespace]) that identifies where in the application's data model the prefix begins.
+ * In the example, the root namespace would indicate that the fields are all under the "accessions"
+ * part of the data model.
  *
  * A filesystem analogy might make the pieces easier to understand:
  *
  * ```
- * # This is the namespace; everything else is relative to it.
+ * # This is the root namespace; everything else is relative to it.
  * cd /organizations/projects/sites/facilities/accessions
- * # This is two path elements followed by a scalar field name.
+ * # This is two sublist fields followed by a scalar field.
  * cat germinationTests/germinations/recordingDate
  * ```
  *
@@ -235,27 +235,26 @@ import org.jooq.impl.DSL
  * as a whole, and each child node represents the query for a sublist field. Each node has a
  * [SearchFieldPrefix].
  *
- * For example, a search field of `germinationTests.germinations.recordingDate` with `accessions` as
- * a starting point would be turned into a structure something like this YAML document:
+ * For example, a search field of `germinationTests.germinations.recordingDate` with a root
+ * namespace of `accessions` would be turned into a structure something like this YAML document:
  *
  * ```yaml
  * prefix:
- *   namespace: accessions
- *   path: ""
+ *   root: accessions
+ *   sublists: []
  * scalarFields: []
  * sublistQueryBuilders:
  *   germinationTests:
  *     prefix:
- *       namespace: accessions
- *       path: germinationTests
+ *       root: accessions
+ *       sublists: [germinationTests]
  *     scalarFields: []
  *     sublistQueryBuilders:
  *       germinations:
  *         prefix:
- *           namespace: accessions
- *           path: germinationTests.germinations
- *         scalarFields:
- *           - recordingDate
+ *           root: accessions
+ *           sublists: [germinationTests, germinations]
+ *         scalarFields: [recordingDate]
  *         sublistQueryBuilders: []
  * ```
  *
@@ -280,9 +279,10 @@ import org.jooq.impl.DSL
  * introducing the feature.
  *
  * Conceptually, this works kind of like the examples in the docs: it constructs a query on the
- * accessions table where the list of fields includes [DSL.multiset] values that hold child records.
- * Those child records can, in turn, have their own multiset fields if they themselves have
- * children, e.g., an accession has germination tests each of which has germinations.
+ * table for the root namespace where the list of fields includes [DSL.multiset] values that hold
+ * child records. Those child records can, in turn, have their own multiset fields if they
+ * themselves have children, e.g., an accession has germination tests each of which has
+ * germinations.
  *
  * Under the covers, on PostgreSQL, jOOQ turns a multiset into an aggregation operation over a
  * subquery. The aggregation function returns a JSON array where each element of the array
@@ -293,16 +293,18 @@ import org.jooq.impl.DSL
  *
  * ## Search criteria
  *
- * Say you have an accession with two bags, "A" and "B". The user does a search and asks for results
- * containing bag "A".
+ * Say you have an accession with two bags, "A" and "B". The user does a search with a root
+ * namespace of `accessions` and asks for results containing bag "A".
  *
  * There are two ways that could work, neither of them wrong: treat the search criterion as a filter
  * on bag numbers (returning a result with a single bag) or treat it as a filter on accessions
  * (returning a result with two bags).
  *
- * Our product decision is to do the latter. When you search for bag "A", what you're really telling
- * the system is that you want all _accessions_ that have a bag called "A". And for each accession
- * that matches the search criteria, you get back the full list of bags.
+ * Our product decision is to do the latter. Search criteria control which top-level results are
+ * returned, but each result includes the full set of values for all its fields. When you search for
+ * bag "A", what you're really telling the system is that you want all _accessions_ that have a bag
+ * called "A". And for each accession that matches the search criteria, you get back the full list
+ * of bags.
  *
  * That's relevant here because it changes what the SQL looks like: we don't apply any search
  * criteria to the multiset subqueries, because we want to return the full set of data for any
@@ -357,18 +359,18 @@ import org.jooq.impl.DSL
  * ORDER BY ?????
  * ```
  *
- * It turns out there is no officially-supported way to peek inside the multiset from the enclosing
- * query. If you want to do it portably, for now
+ * It turns out there is no officially-supported way for the outer query to peek inside the
+ * multiset. If you want to do it portably, for now
  * [you have to repeat the subquery.](https://stackoverflow.com/questions/69577525/how-to-order-by-values-from-nested-multisets)
  *
  * Doing it that way would make queries more expensive, so instead we break portability and rely on
  * the way multisets are implemented on PostgreSQL. Recall that they turn into two-dimensional
  * arrays.
  *
- * We know that the multiset is already sorted correctly: the first row will always be the one that
- * should determine the sort order of the parent row. In the example query, the first row of the
- * multiset will have bag number "X" for accession 1 and "A" for accession 2 thanks to the `ORDER
- * BY` in the subquery.
+ * We know that the multiset is already sorted correctly because the subquery has an `ORDER BY`
+ * clause: the first row in the multiset will always be the one that should determine the sort order
+ * of the parent row. In the example query, the first row of the multiset will have bag number "X"
+ * for accession 1 and "A" for accession 2.
  *
  * We also know the order of the fields in the multiset's subquery. In the example, the field we
  * want to sort on is the second one, `bags.number`.
@@ -425,7 +427,8 @@ import org.jooq.impl.DSL
  * into enums in the generated Kotlin code.
  *
  * When the user sorts by a field that maps to an enum, we want to order it based on the (possibly
- * localized) display name, not on the numeric ID.
+ * localized) display name, not on the numeric ID. Currently, we do that by generating a `CASE`
+ * expression to map the IDs to their display names so the database can sort on them.
  */
 class NestedQueryBuilder(
     private val dslContext: DSLContext,
@@ -827,7 +830,7 @@ class NestedQueryBuilder(
 
       val alias = "$prefix".replace('.', '_').lowercase() + "_multiset"
 
-      getSearchTable().conditionForMultiset()?.let { addCondition(it) }
+      prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
 
       DSL.multiset(toSelectQuery()).`as`(alias).convertFrom { result ->
         result.map { record -> convertToMap(record) }
