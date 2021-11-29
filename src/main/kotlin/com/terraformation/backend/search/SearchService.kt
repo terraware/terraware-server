@@ -1,20 +1,13 @@
-package com.terraformation.backend.seedbank.search
+package com.terraformation.backend.search
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.search.AndNode
-import com.terraformation.backend.search.FieldNode
-import com.terraformation.backend.search.NestedQueryBuilder
-import com.terraformation.backend.search.SearchFieldPath
-import com.terraformation.backend.search.SearchFieldPrefix
-import com.terraformation.backend.search.SearchNode
-import com.terraformation.backend.search.SearchResults
-import com.terraformation.backend.search.SearchSortField
-import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.field.SearchField
+import com.terraformation.backend.seedbank.search.AccessionsNamespace
+import com.terraformation.backend.seedbank.search.SearchTables
 import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.DSLContext

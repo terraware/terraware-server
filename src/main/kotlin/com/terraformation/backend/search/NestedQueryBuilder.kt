@@ -2,7 +2,6 @@ package com.terraformation.backend.search
 
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.search.AccessionsNamespace
-import com.terraformation.backend.seedbank.search.SearchService
 import com.terraformation.backend.util.MemoizedValue
 import org.jooq.Condition
 import org.jooq.DSLContext

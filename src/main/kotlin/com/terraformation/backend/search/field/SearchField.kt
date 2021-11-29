@@ -3,8 +3,8 @@ package com.terraformation.backend.search.field
 import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
+import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchTable
-import com.terraformation.backend.seedbank.search.SearchService
 import java.util.*
 import org.jooq.Condition
 import org.jooq.Field

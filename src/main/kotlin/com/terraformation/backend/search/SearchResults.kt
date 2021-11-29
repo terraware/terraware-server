@@ -1,7 +1,5 @@
 package com.terraformation.backend.search
 
-import com.terraformation.backend.seedbank.search.SearchService
-
 /** Return value from [SearchService.search]. */
 data class SearchResults(
     /**

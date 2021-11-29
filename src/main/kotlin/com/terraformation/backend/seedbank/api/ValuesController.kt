@@ -16,8 +16,8 @@ import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.seedbank.db.StorageLocationStore
-import com.terraformation.backend.seedbank.search.SearchService
 import com.terraformation.backend.species.db.SpeciesStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
