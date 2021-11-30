@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
     "/api/v1/organization",
     "/api/v1/organizations",
 )
-class OrganizationController(private val organizationStore: OrganizationStore) {
+class OrganizationsController(private val organizationStore: OrganizationStore) {
   @GetMapping
   @Operation(
       summary = "Lists all organizations.",
