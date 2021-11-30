@@ -1082,7 +1082,7 @@ paths:
       - Customer
       summary: Lists all organizations.
       description: Lists all organizations the user can access.
-      operationId: listOrganizations
+      operationId: listOrganizations_1
       parameters:
       - name: depth
         in: query
@@ -1104,6 +1104,66 @@ paths:
               schema:
                 $ref: '#/components/schemas/ListOrganizationsResponsePayload'
   /api/v1/organization/{organizationId}:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about an organization.
+      operationId: getOrganization_1
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          description: ID of organization to get. User must be a member of the organization.
+          format: int64
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Return this level of information about the organization's contents.
+          default: Organization
+          enum:
+          - Organization
+          - Project
+          - Site
+          - Facility
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrganizationResponsePayload'
+  /api/v1/organizations:
+    get:
+      tags:
+      - Customer
+      summary: Lists all organizations.
+      description: Lists all organizations the user can access.
+      operationId: listOrganizations
+      parameters:
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Return this level of information about the organization's contents.
+          default: Organization
+          enum:
+          - Organization
+          - Project
+          - Site
+          - Facility
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrganizationsResponsePayload'
+  /api/v1/organizations/{organizationId}:
     get:
       tags:
       - Customer
