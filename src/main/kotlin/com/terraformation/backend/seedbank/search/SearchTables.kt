@@ -89,11 +89,8 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
         override val primaryKey: TableField<out Record, out Any?>
           get() = GERMINATIONS.ID
 
-        override val parent
-          get() = germinationTests
-
         override fun <T : Record> leftJoinWithMain(query: SelectJoinStep<T>): SelectJoinStep<T> {
-          return parent
+          return germinationTests
               .leftJoinWithMain(query)
               .leftJoin(GERMINATIONS)
               .on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))

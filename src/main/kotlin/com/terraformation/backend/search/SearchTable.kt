@@ -73,18 +73,6 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
   abstract fun conditionForPermissions(): Condition?
 
   /**
-   * An intermediate table that needs to be joined with this one in order to connect this table to
-   * the main table. For example, if table `foo` has a foreign key column `accession_id` and table
-   * `bar` has a foreign key `foo_id`, a query of accession data that wants to get a column from
-   * `bar` would need to also join with `foo`. In that case, this method would return the
-   * [SearchTable] for `foo`.
-   *
-   * This should be null (the default) for children that can be directly joined with the main table.
-   */
-  open val parent: SearchTable?
-    get() = null
-
-  /**
    * If the user's permission to see rows in this table can't be determined directly from the
    * contents of the table itself, the other table that the query needs to left join with in order
    * to check permissions.
@@ -95,7 +83,7 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
   abstract val inheritsPermissionsFrom: SearchTable?
 
   /**
-   * Returns the default fields to sort on. These are always included when querying the table; if
+   * Returns the default fields to sort on. These are included when doing non-distinct queries; if
    * there are user-supplied sort criteria, these come at the end. This allows us to return stable
    * query results if the user-requested sort fields have duplicate values.
    */

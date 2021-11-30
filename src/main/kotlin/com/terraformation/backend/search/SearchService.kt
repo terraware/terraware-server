@@ -28,11 +28,7 @@ class SearchService(private val dslContext: DSLContext) {
   private val log = perClassLogger()
 
   /** Returns a condition that filters search results based on a list of criteria. */
-  private fun filterResults(
-      rootPrefix: SearchFieldPrefix,
-      criteria: SearchNode,
-      flattenedTables: Collection<SearchTable>
-  ): Condition {
+  private fun filterResults(rootPrefix: SearchFieldPrefix, criteria: SearchNode): Condition {
     // Filter out results the user doesn't have permission to see.
     val searchTable = rootPrefix.root.searchTable
     val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTable))
@@ -44,8 +40,7 @@ class SearchService(private val dslContext: DSLContext) {
                 DSL.select(primaryKey).from(searchTable.fromTable),
                 rootPrefix,
                 emptyList(),
-                criteria,
-                flattenedTables = flattenedTables)
+                criteria)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
@@ -81,16 +76,15 @@ class SearchService(private val dslContext: DSLContext) {
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
-      limit: Int = Int.MAX_VALUE
+      limit: Int = Int.MAX_VALUE,
+      distinct: Boolean = false,
   ): SearchResults {
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
     queryBuilder.addSelectFields(fields)
     queryBuilder.addSortFields(sortOrder)
-    queryBuilder.addCondition(
-        filterResults(
-            rootPrefix, criteria, queryBuilder.flattenedSublists.map { it.namespace.searchTable }))
+    queryBuilder.addCondition(filterResults(rootPrefix, criteria))
 
-    val query = queryBuilder.toSelectQuery()
+    val query = queryBuilder.toSelectQuery(distinct)
 
     // TODO: Better cursor support. Should remember the most recent values of the sort fields
     //       and pass them to skip(). For now, just treat the cursor as an offset.
@@ -138,36 +132,20 @@ class SearchService(private val dslContext: DSLContext) {
       fieldPath: SearchFieldPath,
       criteria: SearchNode,
       limit: Int = 50,
-  ): List<String> {
-    val field = fieldPath.searchField
-    val selectFields =
-        field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
-
-    val searchTable = rootPrefix.root.searchTable
-    var query: SelectJoinStep<out Record> =
-        dslContext.selectDistinct(selectFields).from(searchTable.fromTable)
-
-    query = joinWithSecondaryTables(query, rootPrefix, listOf(field), criteria)
-
-    val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTable))
-
-    val fullQuery =
-        query
-            .where(conditions)
-            .orderBy(DSL.field("order_by_field").asc().nullsLast())
-            .limit(limit + 1)
-
-    log.debug("fetchFieldValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
-    val startTime = System.currentTimeMillis()
-
-    val results = fullQuery.fetch { field.computeValue(it) }
-
-    val endTime = System.currentTimeMillis()
-    log.debug("fetchFieldValues query returned ${results.size} rows in ${endTime - startTime} ms")
+  ): List<String?> {
+    val fieldPathName = "$fieldPath"
+    val searchResults =
+        search(
+            rootPrefix,
+            listOf(fieldPath),
+            criteria,
+            listOf(SearchSortField(fieldPath)),
+            limit = limit,
+            distinct = true)
 
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
-    return results.distinct()
+    return searchResults.results.map { it[fieldPathName] }.map { it?.toString() }.distinct()
   }
 
   /**
@@ -277,15 +255,12 @@ class SearchService(private val dslContext: DSLContext) {
       fields: List<SearchField>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
-      flattenedTables: Collection<SearchTable> = emptySet()
   ): SelectJoinStep<T> {
     var query = selectFrom
     val directlyReferencedTables =
         fields.map { it.table }.toSet() +
             criteria.referencedTables() +
-            sortOrder.map { it.field.searchField.table }.toSet() -
-            flattenedTables.toSet() -
-            rootPrefix.namespace.searchTable
+            sortOrder.map { it.field.searchField.table }.toSet() - rootPrefix.namespace.searchTable
 
     directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
 

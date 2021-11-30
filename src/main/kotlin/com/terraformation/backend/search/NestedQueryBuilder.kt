@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.namespace.AccessionsNamespace
 import com.terraformation.backend.util.MemoizedValue
@@ -460,7 +461,7 @@ class NestedQueryBuilder(
    */
   private val sublistQueryBuilders = mutableMapOf<String, NestedQueryBuilder>()
 
-  // TOOD: Document
+  // TODO: Document
   val flattenedSublists = mutableSetOf<SublistField>()
 
   /**
@@ -548,11 +549,14 @@ class NestedQueryBuilder(
    * Returns a jOOQ query object for the currently-configured query. Once this method is called,
    * attempts to modify its field lists or conditions will throw [IllegalStateException].
    */
-  fun toSelectQuery(): SelectSeekStepN<Record> {
+  fun toSelectQuery(distinct: Boolean = false): SelectSeekStepN<Record> {
     return renderedQuery.get {
-      val select = dslContext.select(getSelectFields()).from(getSearchTable().fromTable)
+      val select =
+          if (distinct) dslContext.selectDistinct(getSelectFields())
+          else dslContext.select(getSelectFields())
 
-      val selectWithParents = joinWithChildTables(select)
+      val selectFrom = select.from(getSearchTable().fromTable)
+      val selectWithParents = joinWithChildTables(selectFrom)
 
       // Add lateral joins for all the multiset subqueries.
       val selectWithLateral =
@@ -563,7 +567,7 @@ class NestedQueryBuilder(
 
       val selectWithConditions = selectWithLateral.where(conditions)
 
-      selectWithConditions.orderBy(getOrderBy())
+      selectWithConditions.orderBy(getOrderBy(!distinct))
     }
   }
 
@@ -630,6 +634,12 @@ class NestedQueryBuilder(
    */
   private fun addSelectField(fieldPath: SearchFieldPath) {
     val relativeField = fieldPath.relativeTo(prefix)
+
+    if (relativeField.searchField is AliasField) {
+      //      addSelectField(relativeField.searchField.targetPath)
+      val targetPath = relativeField.searchField.targetPath
+      flattenedSublists.addAll(targetPath.sublists)
+    }
 
     if (relativeField.isFlattened) {
       val (sublists, remainingPath) = relativeField.splitFlattened()
@@ -711,14 +721,7 @@ class NestedQueryBuilder(
 
     val selectTables = scalarFields.values.map { it.table }.toSet() - getSearchTable()
 
-    // SearchTable.leftJoinWithMain will join with parent tables, so no need to
-    // add them a second time.
-    val selectTableParents = selectTables.mapNotNull { it.parent }.toSet()
-
-    val tablesToJoin =
-        selectTables -
-            selectTableParents -
-            flattenedSublists.map { it.namespace.searchTable }.toSet()
+    val tablesToJoin = selectTables - flattenedSublists.map { it.namespace.searchTable }.toSet()
 
     tablesToJoin.forEach { table -> joinedQuery = table.leftJoinWithMain(joinedQuery) }
 
@@ -738,17 +741,21 @@ class NestedQueryBuilder(
    * (when sorting by the raw value of a column that already appears in the `SELECT` clause), and
    * computation expressions (when sorting by a derived value).
    */
-  private fun getOrderBy(): List<OrderField<*>> {
+  private fun getOrderBy(includeDefaultFields: Boolean): List<OrderField<*>> {
     val orderByFields = sortFields.map { getOrderByField(it) }
 
-    // Fall back on the default sort order for each table to ensure stable ordering of query results
-    // if the user doesn't specify precise sort criteria.
-    val defaultSortFields =
-        scalarFields.values.map { it.table }.distinct().flatMap { table ->
-          table.defaultOrderFields
-        }
+    return if (includeDefaultFields) {
+      // Fall back on the default sort order for each table to ensure stable ordering of query
+      // results if the user doesn't specify precise sort criteria.
+      val defaultSortFields =
+          scalarFields.values.map { it.table }.distinct().flatMap { table ->
+            table.defaultOrderFields
+          }
 
-    return orderByFields + defaultSortFields
+      orderByFields + defaultSortFields
+    } else {
+      orderByFields
+    }
   }
 
   /**
