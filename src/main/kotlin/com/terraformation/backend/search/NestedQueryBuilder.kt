@@ -4,6 +4,7 @@ import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.namespace.AccessionsNamespace
 import com.terraformation.backend.util.MemoizedValue
+import org.apache.naming.SelectorContext.prefix
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -811,41 +812,37 @@ class NestedQueryBuilder(
    * BY` clause of the parent query.
    */
   private fun getSortFieldsToExposeToParent(): List<Field<*>> {
-    return if (isRoot()) {
-      emptyList()
-    } else {
-      sortFields
-          .filter {
-            val relativeField = it.field.relativeTo(prefix)
-            relativeField.isFlattened || !relativeField.isNested
-          }
-          .distinctBy { it.field }
-          .mapNotNull { sortField ->
-            val field = sortField.field.searchField
-            val relativeField = sortField.field.relativeTo(prefix)
-            val relativeName = "$relativeField"
+    return sortFields
+        .filter {
+          val relativeField = it.field.relativeTo(prefix)
+          relativeField.isFlattened || !relativeField.isNested
+        }
+        .distinctBy { it.field }
+        .mapNotNull { sortField ->
+          val field = sortField.field.searchField
+          val relativeField = sortField.field.relativeTo(prefix)
+          val relativeName = "$relativeField"
 
-            if (relativeName !in sortFieldPositions) {
-              // If we are selecting and sorting on an enum field, the sortable value will be a CASE
-              // expression. We need to make that available in the multiset so the parent can order
-              // by
-              // it.
-              val selectFieldIndex = selectFieldPositions[relativeName]
-              val orderByField = field.orderByField
-              if (selectFieldIndex != null &&
-                  field.selectFields.size == 1 &&
-                  field.selectFields[0] == orderByField) {
-                sortFieldPositions[relativeName] = selectFieldIndex
-                null
-              } else {
-                sortFieldPositions[relativeName] = nextSelectFieldPosition++
-                orderByField
-              }
-            } else {
+          if (relativeName !in sortFieldPositions) {
+            // If we are selecting and sorting on an enum field, the sortable value will be a CASE
+            // expression. We need to make that available in the multiset so the parent can order
+            // by
+            // it.
+            val selectFieldIndex = selectFieldPositions[relativeName]
+            val orderByField = field.orderByField
+            if (selectFieldIndex != null &&
+                field.selectFields.size == 1 &&
+                field.selectFields[0] == orderByField) {
+              sortFieldPositions[relativeName] = selectFieldIndex
               null
+            } else {
+              sortFieldPositions[relativeName] = nextSelectFieldPosition++
+              orderByField
             }
+          } else {
+            null
           }
-    }
+        }
   }
 
   /**

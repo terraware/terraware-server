@@ -133,6 +133,10 @@ class SearchService(private val dslContext: DSLContext) {
       criteria: SearchNode,
       limit: Int = 50,
   ): List<String?> {
+    if (fieldPath.isNested) {
+      throw IllegalArgumentException("Fetching nested field values is not supported.")
+    }
+
     val fieldPathName = "$fieldPath"
     val searchResults =
         search(
