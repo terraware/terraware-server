@@ -3,8 +3,10 @@ package com.terraformation.backend.customer.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import io.swagger.v3.oas.annotations.Operation
@@ -30,7 +32,9 @@ class OrganizationController(private val organizationStore: OrganizationStore) {
       depth: OrganizationStore.FetchDepth,
   ): ListOrganizationsResponse {
     val elements =
-        organizationStore.fetchAll(depth).map { model -> ListOrganizationsElement(model) }
+        organizationStore.fetchAll(depth).map { model ->
+          ListOrganizationsElement(model, getRole(model))
+        }
     return ListOrganizationsResponse(elements)
   }
 
@@ -47,7 +51,12 @@ class OrganizationController(private val organizationStore: OrganizationStore) {
     val model =
         organizationStore.fetchById(organizationId, depth)
             ?: throw OrganizationNotFoundException(organizationId)
-    return GetOrganizationResponsePayload(ListOrganizationsElement(model))
+    return GetOrganizationResponsePayload(ListOrganizationsElement(model, getRole(model)))
+  }
+
+  private fun getRole(model: OrganizationModel): Role {
+    return currentUser().organizationRoles[model.id]
+        ?: throw OrganizationNotFoundException(model.id)
   }
 }
 
@@ -56,14 +65,20 @@ data class ListOrganizationsElement(
     val id: OrganizationId,
     val name: String,
     @Schema(description = "This organization's projects. Omitted if depth is \"Organization\".")
-    val projects: List<ProjectPayload>?
+    val projects: List<ProjectPayload>?,
+    @Schema(
+        description = "The current user's role in the organization.",
+    )
+    val role: Role,
 ) {
   constructor(
-      model: OrganizationModel
+      model: OrganizationModel,
+      role: Role,
   ) : this(
       model.id,
       model.name,
       model.projects?.map { ProjectPayload(it) },
+      role,
   )
 }
 
