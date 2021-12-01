@@ -246,12 +246,16 @@ import org.jooq.impl.DSL
  * sublistQueryBuilders:
  *   germinationTests:
  *     prefix:
+ *       # This prefix refers to the germinationTests sublist under accessions; the root
+ *       # is the same as the parent's root.
  *       root: accessions
  *       sublists: [germinationTests]
  *     scalarFields: []
  *     sublistQueryBuilders:
  *       germinations:
  *         prefix:
+ *           # This prefix refers to the germinations sublist under the germinationTests
+ *           # sublist under accessions. As before, the root is the same as the parent's.
  *           root: accessions
  *           sublists: [germinationTests, germinations]
  *         scalarFields: [recordingDate]
