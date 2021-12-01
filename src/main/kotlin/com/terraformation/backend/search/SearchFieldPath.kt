@@ -100,6 +100,12 @@ data class SearchFieldPrefix(
         ?: throw IllegalArgumentException("Unknown name $sublistName under $this")
   }
 
+  fun asFlattened(): SearchFieldPrefix {
+    return if (isFlattened || isRoot) { this } else {
+      SearchFieldPrefix(root, sublists.map { it.asFlattened()})
+    }
+  }
+
   @JsonValue
   override fun toString() =
       sublists.joinToString("") {
