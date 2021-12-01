@@ -29,7 +29,7 @@ data class SearchFieldPrefix(
     get() = sublists.isEmpty()
 
   val isFlattened: Boolean
-    get() = sublists.isNotEmpty() && sublists.all { it.isFlattened }
+    get() = sublists.isNotEmpty() && sublists.first().isFlattened
 
   /** Which sublist this prefix refers to, or null if this is a root prefix. */
   val sublistField: SublistField?
