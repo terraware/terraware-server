@@ -17,3 +17,4 @@ terraware:
 logging:
   level:
     com.terraformation: DEBUG
+    org.springframework: WARN
