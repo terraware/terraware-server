@@ -16,6 +16,7 @@ import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.field.SearchField
 import javax.annotation.ManagedBean
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.Record1
@@ -46,7 +47,8 @@ class SearchService(
   /** Returns a query that selects the IDs of accessions that match a list of filter criteria. */
   private fun selectAccessionIds(criteria: SearchNode): Select<Record1<AccessionId?>> {
     // Filter out results the user doesn't have permission to see.
-    val conditions = criteria.toCondition().and(searchTables.accessions.conditionForPermissions())
+    val conditions =
+        listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTables.accessions))
 
     return joinWithSecondaryTables(
             DSL.select(ACCESSIONS.ID).from(ACCESSIONS), emptyList(), criteria)
@@ -145,9 +147,9 @@ class SearchService(
     query = joinWithSecondaryTables(query, listOf(field), criteria)
 
     val conditions =
-        criteria
-            .toCondition()
-            .and(accessionsNamespace.searchTables.accessions.conditionForPermissions())
+        listOfNotNull(
+            criteria.toCondition(),
+            conditionForPermissions(accessionsNamespace.searchTables.accessions))
 
     val fullQuery =
         query
@@ -199,13 +201,14 @@ class SearchService(
     val selectFields =
         field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
 
-    val permsCondition = field.table.conditionForPermissions()
+    val searchTable = field.table
+    val permsCondition = conditionForPermissions(searchTable)
 
     val fullQuery =
         dslContext
             .selectDistinct(selectFields)
-            .from(field.table.fromTable)
-            .let { field.table.joinForPermissions(it) }
+            .from(searchTable.fromTable)
+            .let { joinForPermissions(it, setOf(searchTable), searchTable) }
             .let { if (permsCondition != null) it.where(permsCondition) else it }
             .orderBy(DSL.field("order_by_field").asc().nullsLast())
             .limit(limit + 1)
@@ -214,6 +217,52 @@ class SearchService(
     return log.debugWithTiming("queryAllValues") {
       fullQuery.fetch { field.computeValue(it) }.filterNotNull()
     }
+  }
+
+  /**
+   * Joins a query with any additional tables that are needed in order to determine which results
+   * the user has permission to see. This is needed when the query's root prefix points at a table
+   * that doesn't include enough information to do permissions filtering.
+   *
+   * This can potentially join with multiple additional tables if the required information is more
+   * than one hop away in the graph of search tables.
+   *
+   * The resulting query will include all the tables that will be referenced by
+   * [conditionForPermissions].
+   *
+   * @param referencedTables Which tables are already referenced in the query. This method will not
+   * join with these tables. Should not include tables that are only referenced in subqueries.
+   */
+  private fun <T : Record> joinForPermissions(
+      query: SelectJoinStep<T>,
+      referencedTables: Set<SearchTable>,
+      searchTable: SearchTable
+  ): SelectJoinStep<T> {
+    val inheritsPermissionsFrom = searchTable.inheritsPermissionsFrom ?: return query
+
+    return if (inheritsPermissionsFrom in referencedTables) {
+      // We've already joined with the next table in the chain, so no need to do it again. But we
+      // might still need to join with additional tables beyond the next one.
+      joinForPermissions(query, referencedTables, inheritsPermissionsFrom)
+    } else {
+      // The query doesn't already include the table we need to join with from this one in order to
+      // evaluate permissions; join with it and then see if there are additional tables that also
+      joinForPermissions(
+          searchTable.joinForPermissions(query),
+          referencedTables + inheritsPermissionsFrom,
+          inheritsPermissionsFrom)
+    }
+  }
+
+  /**
+   * Returns a condition that checks whether the user has permission to view a particular search
+   * result.
+   *
+   * The condition can refer to columns in any tables that are added by [joinForPermissions].
+   */
+  private fun conditionForPermissions(searchTable: SearchTable): Condition? {
+    return searchTable.conditionForPermissions()
+        ?: searchTable.inheritsPermissionsFrom?.let { conditionForPermissions(it) }
   }
 
   /**
@@ -236,6 +285,7 @@ class SearchService(
             sortOrder.map { it.field.searchField.table }.toSet()
 
     directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
-    return query
+
+    return joinForPermissions(query, directlyReferencedTables, accessionsNamespace.searchTable)
   }
 }
