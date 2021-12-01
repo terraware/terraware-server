@@ -649,7 +649,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can sort by aliased field that is not in select list`() {
-    val sortOrder = listOf(SearchSortField(treesCollectedFromField))
+    val sortOrder = listOf(SearchSortField(treesCollectedFromAlias))
 
     val expected =
         SearchResults(
