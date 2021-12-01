@@ -30,12 +30,12 @@ class OrganizationController(private val organizationStore: OrganizationStore) {
       @RequestParam("depth", defaultValue = "Organization")
       @Schema(description = "Return this level of information about the organization's contents.")
       depth: OrganizationStore.FetchDepth,
-  ): ListOrganizationsResponse {
+  ): ListOrganizationsResponsePayload {
     val elements =
         organizationStore.fetchAll(depth).map { model ->
-          ListOrganizationsElement(model, getRole(model))
+          OrganizationPayload(model, getRole(model))
         }
-    return ListOrganizationsResponse(elements)
+    return ListOrganizationsResponsePayload(elements)
   }
 
   @GetMapping("/{organizationId}")
@@ -51,7 +51,7 @@ class OrganizationController(private val organizationStore: OrganizationStore) {
     val model =
         organizationStore.fetchById(organizationId, depth)
             ?: throw OrganizationNotFoundException(organizationId)
-    return GetOrganizationResponsePayload(ListOrganizationsElement(model, getRole(model)))
+    return GetOrganizationResponsePayload(OrganizationPayload(model, getRole(model)))
   }
 
   private fun getRole(model: OrganizationModel): Role {
@@ -61,7 +61,7 @@ class OrganizationController(private val organizationStore: OrganizationStore) {
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class ListOrganizationsElement(
+data class OrganizationPayload(
     val id: OrganizationId,
     val name: String,
     @Schema(description = "This organization's projects. Omitted if depth is \"Organization\".")
@@ -82,8 +82,8 @@ data class ListOrganizationsElement(
   )
 }
 
-data class GetOrganizationResponsePayload(val organization: ListOrganizationsElement) :
+data class GetOrganizationResponsePayload(val organization: OrganizationPayload) :
     SuccessResponsePayload
 
-data class ListOrganizationsResponse(val organizations: List<ListOrganizationsElement>) :
+data class ListOrganizationsResponsePayload(val organizations: List<OrganizationPayload>) :
     SuccessResponsePayload

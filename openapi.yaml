@@ -1102,7 +1102,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListOrganizationsResponse'
+                $ref: '#/components/schemas/ListOrganizationsResponsePayload'
   /api/v1/organization/{organizationId}:
     get:
       tags:
@@ -3597,7 +3597,7 @@ components:
       type: object
       properties:
         organization:
-          $ref: '#/components/schemas/ListOrganizationsElement'
+          $ref: '#/components/schemas/OrganizationPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     GetPlantResponsePayload:
@@ -3842,32 +3842,7 @@ components:
             $ref: '#/components/schemas/ObservationResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    ListOrganizationsElement:
-      required:
-      - id
-      - name
-      - role
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        projects:
-          type: array
-          description: This organization's projects. Omitted if depth is "Organization".
-          items:
-            $ref: '#/components/schemas/ProjectPayload'
-        role:
-          type: string
-          description: The current user's role in the organization.
-          enum:
-          - Contributor
-          - Manager
-          - Admin
-          - Owner
-    ListOrganizationsResponse:
+    ListOrganizationsResponsePayload:
       required:
       - organizations
       - status
@@ -3876,7 +3851,7 @@ components:
         organizations:
           type: array
           items:
-            $ref: '#/components/schemas/ListOrganizationsElement'
+            $ref: '#/components/schemas/OrganizationPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListPhotosResponseElement:
@@ -4227,6 +4202,31 @@ components:
         \ this will require x OR y OR z."
       allOf:
       - $ref: '#/components/schemas/SearchNodePayload'
+    OrganizationPayload:
+      required:
+      - id
+      - name
+      - role
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        projects:
+          type: array
+          description: This organization's projects. Omitted if depth is "Organization".
+          items:
+            $ref: '#/components/schemas/ProjectPayload'
+        role:
+          type: string
+          description: The current user's role in the organization.
+          enum:
+          - Contributor
+          - Manager
+          - Admin
+          - Owner
     PlantDetailsPayload:
       type: object
       properties:
