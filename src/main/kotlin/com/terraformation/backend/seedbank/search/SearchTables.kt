@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.search
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.CollectorId
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FamilyId
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.SpeciesId
@@ -12,6 +13,7 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.COLLECTORS
+import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATIONS
@@ -57,6 +59,13 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
       object : AccessionChildTable(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID) {}
 
   val bags = object : AccessionChildTable(BAGS.ACCESSION_ID) {}
+
+  val facilities =
+      object : AccessionParentTable<FacilityId>(FACILITIES.ID, ACCESSIONS.FACILITY_ID) {
+        override fun conditionForPermissions(): Condition? {
+          return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
+        }
+      }
 
   val geolocations = object : AccessionChildTable(GEOLOCATIONS.ACCESSION_ID) {}
 

@@ -28,18 +28,37 @@ abstract class SearchFieldNamespace {
   abstract val fields: List<SearchField>
 
   /**
-   * Sublists that appear under this namespace. Subclasses must supply this. The key of this map is
-   * the name of the sublist as it appears in a field path. The same namespace may appear more than
-   * once in this map as long as each one has a different name.
+   * Sublists that appear under this namespace for which there can be multiple values. Subclasses
+   * must supply this. The key of this map is the name of the sublist as it appears in a field path.
+   * The same namespace may appear more than once in this map as long as each one has a different
+   * name.
    */
-  abstract val sublists: Map<String, SearchFieldNamespace>
+  abstract val multiValueSublists: Map<String, SearchFieldNamespace>
+
+  /**
+   * Sublists that appear under this namespace for which there can be only a single value.
+   * Subclasses must supply this. The key of this map is the name of the sublist as it appears in a
+   * field path. The same namespace may appear more than once in this map as long as each one has a
+   * different name.
+   */
+  abstract val singleValueSublists: Map<String, SearchFieldNamespace>
+
+  /**
+   * The main search table for this namespace. By default, this is the table that contains the first
+   * scalar field in the namespace. Subclasses can override this if the first scalar field happens
+   * to be in a reference table.
+   */
+  open val searchTable: SearchTable
+    get() = fields.first().table
 
   private val fieldsByName: Map<String, SearchField> by lazy { fields.associateBy { it.fieldName } }
 
   fun getAllFieldNames(prefix: String = ""): Set<String> {
     val myFieldNames = fields.map { prefix + it.fieldName }
     val sublistFieldNames =
-        sublists.flatMap { (name, sublist) -> sublist.getAllFieldNames("${prefix}$name.") }
+        multiValueSublists.flatMap { (name, sublist) ->
+          sublist.getAllFieldNames("${prefix}$name.")
+        }
 
     return (myFieldNames + sublistFieldNames).toSet()
   }

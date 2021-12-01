@@ -1,9 +1,8 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.seedbank.search.SearchFields
+import com.terraformation.backend.seedbank.search.AccessionsNamespace
 import com.terraformation.backend.seedbank.search.SearchService
-import com.terraformation.backend.seedbank.search.SearchTables
 import com.terraformation.backend.util.MemoizedValue
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -41,11 +40,13 @@ import org.jooq.impl.DSL
  * Suppose you have the following data. (For clarity, this omits irrelevant columns.)
  *
  * ```sql
+ * INSERT INTO facilities (id, name) VALUES (10, 'My Seed Bank');
+ *
  * INSERT INTO species (id, name) VALUES (1, 'First Species');
  * INSERT INTO species (id, name) VALUES (2, 'Second Species');
  *
- * INSERT INTO accessions (id, species_id) VALUES (3, 1);
- * INSERT INTO accessions (id, species_id) VALUES (4, 2);
+ * INSERT INTO accessions (id, facility_id, species_id) VALUES (3, 10, 1);
+ * INSERT INTO accessions (id, facility_id, species_id) VALUES (4, 10, 2);
  *
  * INSERT INTO bags (accession_id, number) VALUES (3, 'First bag for accession 3');
  * INSERT INTO bags (accession_id, number) VALUES (3, 'Second bag for accession 3');
@@ -60,20 +61,21 @@ import org.jooq.impl.DSL
  * This represents the following hierarchy.
  *
  * ```
- * - Accession ID 3, species 1 "First Species"
- *    - Bag number "First bag for accession 3"
- *    - Bag number "Second bag for accession 3"
- *    - Germination Test 5, start date 2021-10-01
- *      - Germination, 10 seeds germinated
- *      - Germination, 20 seeds germinated
- *    - Germination Test 6, start date 2021-10-15
- * - Accession ID 4, species 2 "Second Species", no bags or tests
+ * - Facility 10, name "My Seed Bank"
+ *   - Accession ID 3, species 1 "First Species"
+ *      - Bag number "First bag for accession 3"
+ *      - Bag number "Second bag for accession 3"
+ *      - Germination Test 5, start date 2021-10-01
+ *        - Germination, 10 seeds germinated
+ *        - Germination, 20 seeds germinated
+ *      - Germination Test 6, start date 2021-10-15
+ *   - Accession ID 4, species 2 "Second Species", no bags or tests
  * ```
  *
- * Now you construct a query like this, referencing the search fields in [SearchFields].
+ * Now you construct a query like this, referencing the search fields in [AccessionsNamespace].
  *
  * ```kotlin
- * val rootPrefix = SearchFieldPathPrefix(searchFields)
+ * val rootPrefix = SearchFieldPathPrefix(accessionsNamespace)
  * val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
  *
  * queryBuilder.addSelectFields(
@@ -81,6 +83,7 @@ import org.jooq.impl.DSL
  *         rootPrefix.resolve("id"),
  *         rootPrefix.resolve("species"),
  *         rootPrefix.resolve("bags.number"),
+ *         rootPrefix.resolve("facility.name"),
  *         rootPrefix.resolve("germinationTests.startDate"),
  *         rootPrefix.resolve("germinationTests.germinations.seedsGerminated")))
  *
@@ -111,6 +114,10 @@ import org.jooq.impl.DSL
  *       { "number": "First bag for accession 3" },
  *       { "number": "Second bag for accession 3" }
  *     ],
+ *     "facility": {
+ *       # This is a single value, not a list, since an accession only ever has one facility.
+ *       "name": "My Seed Bank"
+ *     },
  *     "germinationTests": [
  *       # The first sort field under "germinationTests" is the start date, so this list is sorted
  *       # in ascending start date order.
@@ -133,7 +140,10 @@ import org.jooq.impl.DSL
  *     # is a Map<String,Any> which might be implemented as a hashtable, so callers shouldn't
  *     # assume the fields are in any particular order.
  *     "species": "Second Species",
- *     "id": "4"
+ *     "id": "4",
+ *     "facility": {
+ *       "name": "My Seed Bank"
+ *     }
  *   }
  * ]
  * ```
@@ -141,7 +151,7 @@ import org.jooq.impl.DSL
  * Contrast this with the older non-nested fields, e.g.,
  *
  * ```kotlin
- * val rootPrefix = SearchFieldPathPrefix(searchFields)
+ * val rootPrefix = SearchFieldPathPrefix(accessionsNamespace)
  * val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
  *
  * queryBuilder.addSelectFields(
@@ -178,19 +188,23 @@ import org.jooq.impl.DSL
  * ## Field paths
  *
  * Search results are returned as a list of maps of field names to field values. A field value can
- * either be a string or a list of maps of field names to field values. Kotlin doesn't have support
- * for union types, so this gets represented as `List<Map<String, Any>>`.
+ * be a string, a map of field names to field values, or a list of maps of field names to field
+ * values. Kotlin doesn't have support for union types, so this gets represented as
+ * `List<Map<String, Any>>`.
  *
- * There are thus two styles of search field. Internally, this code refers to them as **scalars**
- * and **sublists** to reflect how they're returned in search results.
+ * There are thus three styles of search field. Internally, this code refers to them as **scalars**
+ * and **sublists** (the latter of which has two styles) to reflect how they're returned in search
+ * results.
  *
  * Scalar fields are single values, and are always represented as strings in the search results.
  * Scalar field values are either directly stored on main tables (e.g., `accessions.total_quantity`)
  * or are represented as foreign key columns on main tables and looked up from reference tables
  * (e.g., `germination_tests.seed_type_id`.)
  *
- * Sublist fields, as the name suggests, have a list of values. Each value is a map of field names
- * to field values, and the values can be scalars or sublists.
+ * Sublist fields, as the name suggests, are containers with their own lists of fields. They come in
+ * two flavors: "multi-value" and "single-value." A multi-value sublist turns into a list of JSON
+ * objects in the search results, whereas a single-value sublist turns into a single JSON object.
+ * Each of those objects can contain a mix of scalar fields and sublist fields.
  *
  * Sublist fields aren't directly searchable; they are just containers for scalar fields.
  *
@@ -576,10 +590,12 @@ class NestedQueryBuilder(
     // one field that's going to be returned to the caller.
     val sublistsWithSelectFields = sublists.filterValues { it.hasSelectFields() }
 
-    sublistsWithSelectFields.keys.forEach { sublistName ->
-      val value: List<Map<String, Any>>? = record[getMultiset(sublistName)]
-      if (value != null && value.isNotEmpty()) {
-        fieldValues[sublistName] = value
+    sublistsWithSelectFields.forEach { (sublistName, sublist) ->
+      val values: List<Map<String, Any>>? = record[getMultiset(sublistName)]
+      val firstValue = values?.firstOrNull()
+
+      if (firstValue != null) {
+        fieldValues[sublistName] = if (sublist.prefix.isMultiValue) values else firstValue
       }
     }
 
@@ -780,48 +796,11 @@ class NestedQueryBuilder(
   }
 
   /**
-   * Returns the table to use in the `FROM` clause of this query.
-   *
-   * For a sublist with scalar fields, it is whatever table contains the fields. (Currently we don't
-   * support scalar fields from multiple tables in the same sublist.)
-   *
-   * TODO: ^^^ this is wrong for parent tables
-   *
-   * For a sublist that only contains child sublists, it is the parent table of the table that's
-   * used in the `FROM` clauses of the sublists.
-   *
-   * For example, if you are querying `germinationTests.germinations.recordingDate`:
-   *
-   * - For the innermost sublist, with prefix `germinationTests.germinations`, this is the table
-   * that contains the `recordingDate` field, namely [SearchTables.germinations].
-   * - For the outermost sublist, with prefix `germinationTests` -- which doesn't have any scalar
-   * fields -- this is the parent of the table for the innermost sublist, namely
-   * [SearchTables.germinationTests].
-   * - For the root query, which also doesn't have any scalar fields, this is the parent of the
-   * table for the outermost sublist, namely [SearchTables.accessions].
+   * Returns the table to use in the `FROM` clause of this query. This will usually be the table
+   * that contains most of the scalar fields for the namespace of the current prefix.
    */
   private fun getSearchTable(): SearchTable {
-    val scalarFieldTable =
-        scalarFields.values.firstOrNull()?.table
-            ?: sortFields
-                .firstOrNull { !it.field.relativeTo(prefix).isNested }
-                ?.field
-                ?.searchField
-                ?.table
-
-    if (scalarFieldTable != null) {
-      return scalarFieldTable
-    }
-
-    val sublist =
-        sublists.values.firstOrNull()
-            ?: throw IllegalStateException("BUG! Query $prefix has no scalar or sublist fields")
-
-    val searchTable = sublist.getSearchTable()
-
-    return searchTable.parent
-        ?: throw IllegalStateException(
-            "BUG! Sublist ${sublist.prefix} search table $searchTable has no parent")
+    return prefix.namespace.searchTable
   }
 
   /** Returns the multiset field for a sublist, rendering it if it hasn't been rendered before. */
