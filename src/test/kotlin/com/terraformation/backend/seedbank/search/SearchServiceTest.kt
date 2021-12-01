@@ -35,12 +35,14 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchDirection
+import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import io.mockk.every
 import io.mockk.mockk
@@ -91,6 +93,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val targetStorageConditionField = rootPrefix.resolve("targetStorageCondition")
   private val totalGramsField = rootPrefix.resolve("totalGrams")
   private val treesCollectedFromField = rootPrefix.resolve("treesCollectedFrom")
+  private val treesCollectedFromAlias =
+      SearchFieldPath(rootPrefix, AliasField("treesCollectedFromAlias", treesCollectedFromField))
   private val viabilityTestTypeField = rootPrefix.resolve("viabilityTestType")
 
   @BeforeEach
@@ -601,6 +605,58 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val actual =
         accessionSearchService.search(
             facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `searching an aliased field returns results using the alias name`() {
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                    "treesCollectedFromAlias" to "2"),
+                mapOf("id" to "1000", "accessionNumber" to "XYZ", "treesCollectedFromAlias" to "1"),
+            ),
+            cursor = null)
+
+    val actual =
+        accessionSearchService.search(
+            facilityId, listOf(treesCollectedFromAlias), criteria = NoConditionNode())
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `can use aliased field in search criteria`() {
+    val criteria = FieldNode(treesCollectedFromAlias, listOf("2"))
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
+            ),
+            cursor = null)
+
+    val actual = accessionSearchService.search(facilityId, emptyList(), criteria = criteria)
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `can sort by aliased field that is not in select list`() {
+    val sortOrder = listOf(SearchSortField(treesCollectedFromField))
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
+            ),
+            cursor = null)
+
+    val actual =
+        accessionSearchService.search(
+            facilityId, emptyList(), criteria = NoConditionNode(), sortOrder = sortOrder)
     assertEquals(expected, actual)
   }
 
