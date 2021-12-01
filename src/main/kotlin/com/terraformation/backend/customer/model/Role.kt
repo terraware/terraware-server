@@ -1,5 +1,8 @@
 package com.terraformation.backend.customer.model
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonValue
+
 /**
  * Represents a user's role in an organization.
  *
@@ -10,7 +13,7 @@ package com.terraformation.backend.customer.model
  * In the future, it is possible we will support user-defined roles, at which point there will no
  * longer be a fixed list of roles hardwired in the code.
  */
-enum class Role(val id: Int, val displayName: String) {
+enum class Role(val id: Int, @get:JsonValue val displayName: String) {
   CONTRIBUTOR(1, "Contributor"),
   MANAGER(2, "Manager"),
   ADMIN(3, "Admin"),
@@ -18,10 +21,9 @@ enum class Role(val id: Int, val displayName: String) {
 
   companion object {
     private val byId: Map<Int, Role> = values().associateBy { it.id }
+    private val byDisplayName: Map<String, Role> = values().associateBy { it.displayName }
 
     @JvmStatic fun of(id: Int): Role? = byId[id]
-
-    @Suppress("unused")
-    private fun dummyFunctionToImportSymbolsReferredToInComments(): UserModel? = null
+    @JsonCreator @JvmStatic fun of(displayName: String): Role? = byDisplayName[displayName]
   }
 }

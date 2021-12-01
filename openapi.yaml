@@ -3846,6 +3846,7 @@ components:
       required:
       - id
       - name
+      - role
       type: object
       properties:
         id:
@@ -3858,6 +3859,14 @@ components:
           description: This organization's projects. Omitted if depth is "Organization".
           items:
             $ref: '#/components/schemas/ProjectPayload'
+        role:
+          type: string
+          description: The current user's role in the organization.
+          enum:
+          - Contributor
+          - Manager
+          - Admin
+          - Owner
     ListOrganizationsResponse:
       required:
       - organizations
