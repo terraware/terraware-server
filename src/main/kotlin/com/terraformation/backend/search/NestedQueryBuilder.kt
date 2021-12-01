@@ -233,7 +233,8 @@ import org.jooq.impl.DSL
  * ## Query hierarchy
  *
  * The query is represented as a tree of [NestedQueryBuilder]s. The root node represents the query
- * as a whole, and each child node represents a sublist field. Each node has a [SearchFieldPrefix].
+ * as a whole, and each child node represents the query for a sublist field. Each node has a
+ * [SearchFieldPrefix].
  *
  * For example, a search field of `germinationTests.germinations.recordingDate` with `accessions` as
  * a starting point would be turned into a structure something like this YAML document:
@@ -243,20 +244,20 @@ import org.jooq.impl.DSL
  *   namespace: accessions
  *   path: ""
  * scalarFields: []
- * sublists:
+ * sublistQueryBuilders:
  *   germinationTests:
  *     prefix:
  *       namespace: accessions
  *       path: germinationTests
  *     scalarFields: []
- *     sublists:
+ *     sublistQueryBuilders:
  *       germinations:
  *         prefix:
  *           namespace: accessions
  *           path: germinationTests.germinations
  *         scalarFields:
  *           - recordingDate
- *         sublists: []
+ *         sublistQueryBuilders: []
  * ```
  *
  * Field names are always evaluated relative to the current node (that is, the prefix is stripped
@@ -447,11 +448,11 @@ class NestedQueryBuilder(
   private val scalarFields = mutableMapOf<String, SearchField>()
 
   /**
-   * Sublists indexed by the first element of their relative names. For example, if this node has a
-   * prefix of `a.b` and there are two fields whose full names are `a.b.c.d.e` and `a.b.f.g`, this
-   * map would contain keys `c` and `f`.
+   * Query builders for sublists indexed by the first element of their relative names. For example,
+   * if this node has a prefix of `a.b` and there are two fields whose full names are `a.b.c.d.e`
+   * and `a.b.f.g`, this map would contain keys `c` and `f`.
    */
-  private val sublists = mutableMapOf<String, NestedQueryBuilder>()
+  private val sublistQueryBuilders = mutableMapOf<String, NestedQueryBuilder>()
 
   /**
    * Zero-indexed position of each field in the `SELECT` clause. Both scalar and sublist fields are
@@ -461,9 +462,9 @@ class NestedQueryBuilder(
 
   /**
    * Fields that should be used to sort the query results. This can include both scalar and sublist
-   * fields. Sublist sort fields will also appear in [sublists] even if they aren't going to be
-   * included in the search results. Scalar sort fields don't appear in [scalarFields] if they're
-   * only used for sorting.
+   * fields. Sublist sort fields will also appear in [sublistQueryBuilders] even if they aren't
+   * going to be included in the search results. Scalar sort fields don't appear in [scalarFields]
+   * if they're only used for sorting.
    */
   private val sortFields = mutableSetOf<SearchSortField>()
 
@@ -546,7 +547,7 @@ class NestedQueryBuilder(
 
       // Add lateral joins for all the multiset subqueries.
       val selectWithLateral =
-          sublists.keys.fold(selectWithParents) { query, sublistName ->
+          sublistQueryBuilders.keys.fold(selectWithParents) { query, sublistName ->
             val lateral = DSL.lateral(DSL.select(getMultiset(sublistName)))
             query.leftJoin(lateral).on(DSL.trueCondition())
           }
@@ -588,14 +589,14 @@ class NestedQueryBuilder(
     // needs to be a multiset for it (so the parent query can include it in `ORDER BY`) but we don't
     // want to include it in the results. So we only want to consider sublists that contain at least
     // one field that's going to be returned to the caller.
-    val sublistsWithSelectFields = sublists.filterValues { it.hasSelectFields() }
+    val sublistsWithSelectFields = sublistQueryBuilders.filterValues { it.hasSelectFields() }
 
-    sublistsWithSelectFields.forEach { (sublistName, sublist) ->
+    sublistsWithSelectFields.forEach { (sublistName, queryBuilder) ->
       val values: List<Map<String, Any>>? = record[getMultiset(sublistName)]
       val firstValue = values?.firstOrNull()
 
       if (firstValue != null) {
-        fieldValues[sublistName] = if (sublist.prefix.isMultiValue) values else firstValue
+        fieldValues[sublistName] = if (queryBuilder.prefix.isMultiValue) values else firstValue
       }
     }
 
@@ -614,7 +615,7 @@ class NestedQueryBuilder(
 
   /**
    * Adds a field to the list of fields the caller wants to get back in the search results. If the
-   * field is in a sublist, adds it to the sublist, creating the sublist if needed.
+   * field is in a sublist, adds it to the sublist query, creating the query if needed.
    */
   private fun addSelectField(fieldPath: SearchFieldPath) {
     val relativeField = fieldPath.relativeTo(prefix)
@@ -622,7 +623,7 @@ class NestedQueryBuilder(
     if (relativeField.isNested) {
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
       val sublistName = getSublistName(relativeField)
-      getSublist(relativeField).addSelectField(fieldPath)
+      getSublistQuery(relativeField).addSelectField(fieldPath)
       selectFieldPositions.computeIfAbsent(sublistName) { nextSelectFieldPosition++ }
     } else {
       val searchField = fieldPath.searchField
@@ -637,7 +638,8 @@ class NestedQueryBuilder(
 
   /**
    * Adds a field to the list of fields the caller wants to use to sort the search results. If the
-   * field is in a sublist, adds it to the sublist's sort fields, creating the sublist if needed.
+   * field is in a sublist, adds it to the sublist query's sort fields, creating the query if
+   * needed.
    */
   private fun addSortField(sortField: SearchSortField) {
     sortFields.add(sortField)
@@ -646,19 +648,19 @@ class NestedQueryBuilder(
 
     if (relativeField.isNested) {
       // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
-      getSublist(relativeField).addSortField(sortField)
+      getSublistQuery(relativeField).addSortField(sortField)
     }
   }
 
   /** Returns the [NestedQueryBuilder] for a sublist, creating it if needed. */
-  private fun getSublist(relativeField: SearchFieldPath): NestedQueryBuilder {
+  private fun getSublistQuery(relativeField: SearchFieldPath): NestedQueryBuilder {
     if (!relativeField.isNested) {
       throw IllegalArgumentException("Cannot get sublist for non-nested field $relativeField")
     }
 
     val sublistName = relativeField.containers.first().name
 
-    return sublists.computeIfAbsent(sublistName) {
+    return sublistQueryBuilders.computeIfAbsent(sublistName) {
       NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
     }
   }
@@ -741,14 +743,14 @@ class NestedQueryBuilder(
 
   /**
    * Returns the list of fields to include in the `SELECT` clause of the query. This includes fields
-   * that should be returned to the caller in search results, and also, if this node is a sublist,
-   * any fields that the parent query will need to be able to use in its `ORDER BY` clause.
+   * that should be returned to the caller in search results, and also, if this node is a sublist
+   * query, any fields that the parent query will need to be able to use in its `ORDER BY` clause.
    */
   private fun getSelectFields(): List<Field<*>> {
     val selectFields = scalarFields.values.flatMap { it.selectFields }
 
     val sublistFields =
-        sublists.keys.map { sublistName ->
+        sublistQueryBuilders.keys.map { sublistName ->
           val multiset = getMultiset(sublistName)
           DSL.field(multiset.name, multiset.dataType)
         }
@@ -803,11 +805,14 @@ class NestedQueryBuilder(
     return prefix.namespace.searchTable
   }
 
-  /** Returns the multiset field for a sublist, rendering it if it hasn't been rendered before. */
+  /**
+   * Returns the multiset field for a sublist query, rendering it if it hasn't been rendered before.
+   */
   private fun getMultiset(sublistName: String): Field<List<Map<String, Any>>?> {
-    val sublist =
-        sublists[sublistName] ?: throw IllegalStateException("BUG! Sublist $sublistName not found")
-    return sublist.toMultiset()
+    val queryBuilder =
+        sublistQueryBuilders[sublistName]
+            ?: throw IllegalStateException("BUG! Sublist $sublistName not found")
+    return queryBuilder.toMultiset()
   }
 
   /**
@@ -836,7 +841,7 @@ class NestedQueryBuilder(
    * as part of the query results. This will be false for builders that only contain sort criteria.
    */
   private fun hasSelectFields(): Boolean {
-    return scalarFields.isNotEmpty() || sublists.values.any { it.hasSelectFields() }
+    return scalarFields.isNotEmpty() || sublistQueryBuilders.values.any { it.hasSelectFields() }
   }
 
   /**
@@ -850,12 +855,12 @@ class NestedQueryBuilder(
     }
 
     val sublistName = getSublistName(relativeField)
-    val sublist =
-        sublists[sublistName]
+    val queryBuilder =
+        sublistQueryBuilders[sublistName]
             ?: throw IllegalStateException("BUG! Unable to find subquery for $relativeField")
     val multiset = getMultiset(sublistName)
 
-    return DSL.field(sublist.buildMultisetFieldExpression(multiset.name, field))
+    return DSL.field(queryBuilder.buildMultisetFieldExpression(multiset.name, field))
   }
 
   /**
@@ -886,10 +891,11 @@ class NestedQueryBuilder(
           selectFieldPositions[sublistName]
               ?: throw IllegalStateException("BUG! No field position for sublist $sublistName")
 
-      val sublist =
-          sublists[sublistName] ?: throw IllegalStateException("BUG! No sublist for $sublistName")
+      val queryBuilder =
+          sublistQueryBuilders[sublistName]
+              ?: throw IllegalStateException("BUG! No sublist for $sublistName")
 
-      sublist.buildMultisetFieldExpression("$parentExpression->0->$fieldPosition", field)
+      queryBuilder.buildMultisetFieldExpression("$parentExpression->0->$fieldPosition", field)
     } else {
       // We are the subquery where the field actually lives, so we want to dereference the actual
       // value.
