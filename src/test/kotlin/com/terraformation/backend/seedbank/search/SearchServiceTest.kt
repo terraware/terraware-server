@@ -616,8 +616,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
-                    "treesCollectedFromAlias" to "2"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ", "treesCollectedFromAlias" to "1"),
+                    "treesCollectedFromAlias" to "2",
+                ),
+                mapOf(
+                    "id" to "1000",
+                    "accessionNumber" to "XYZ",
+                    "treesCollectedFromAlias" to "1",
+                ),
             ),
             cursor = null)
 
