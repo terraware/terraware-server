@@ -4,7 +4,6 @@ import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SearchFilterType
-import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.search.SearchTables
@@ -24,8 +23,7 @@ class GeolocationsNamespace(private val searchTables: SearchTables) : SearchFiel
               "coordinates",
               "Geolocation coordinates",
               GEOLOCATIONS.LATITUDE,
-              GEOLOCATIONS.LONGITUDE,
-              searchTables.geolocations),
+              GEOLOCATIONS.LONGITUDE),
       )
 
   /**
@@ -33,14 +31,16 @@ class GeolocationsNamespace(private val searchTables: SearchTables) : SearchFiel
    * string value that includes both latitude and longitude. But in the database, those two values
    * are stored as separate columns.
    */
-  class GeolocationField(
+  inner class GeolocationField(
       override val fieldName: String,
       override val displayName: String,
       private val latitudeField: TableField<*, BigDecimal?>,
       private val longitudeField: TableField<*, BigDecimal?>,
-      override val table: SearchTable,
-      override val nullable: Boolean = true,
+      override val nullable: Boolean = true
   ) : SearchField {
+    override val table
+      get() = searchTables.geolocations
+
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = emptySet()
 

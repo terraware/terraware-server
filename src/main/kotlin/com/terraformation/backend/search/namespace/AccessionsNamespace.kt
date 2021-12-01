@@ -91,13 +91,8 @@ class AccessionsNamespace(
             accessions.enumField("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
             accessions.integerField(
                 "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
-            families.textField("family", "Family", FAMILIES.NAME),
-            GeolocationsNamespace.GeolocationField(
-                "geolocation",
-                "Geolocation",
-                GEOLOCATIONS.LATITUDE,
-                GEOLOCATIONS.LONGITUDE,
-                geolocations),
+            aliasField("family", "familyInfo_name"),
+            aliasField("geolocation", "geolocations_coordinates"),
             aliasField("germinationEndDate", "germinationTests_endDate"),
             aliasField("germinationPercentGerminated", "germinationTests_percentGerminated"),
             aliasField("germinationSeedType", "germinationTests_seedType"),
@@ -121,7 +116,7 @@ class AccessionsNamespace(
                 ACCESSIONS.LATEST_VIABILITY_PERCENT),
             accessions.dateField(
                 "nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
-            collectors.textField("primaryCollector", "Primary collector", COLLECTORS.NAME),
+            aliasField("primaryCollector", "primaryCollectorInfo_name"),
             accessions.enumField(
                 "processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
             accessions.textField(
@@ -139,12 +134,11 @@ class AccessionsNamespace(
             accessions.textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
             accessions.enumField(
                 "sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
-            species.textField("species", "Species", SPECIES.NAME),
+            aliasField("species", "speciesInfo_name"),
             accessions.enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
             accessions.enumField(
                 "storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
-            storageLocations.textField(
-                "storageLocation", "Storage location", STORAGE_LOCATIONS.NAME),
+            aliasField("storageLocation", "storageLocationInfo_name"),
             accessions.textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
             accessions.integerField(
                 "storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
@@ -164,10 +158,7 @@ class AccessionsNamespace(
                 "treesCollectedFrom",
                 "Number of trees collected from",
                 ACCESSIONS.TREES_COLLECTED_FROM),
-            accessionGerminationTestTypes.enumField(
-                "viabilityTestType",
-                "Viability test type (accession)",
-                ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID),
+            aliasField("viabilityTestType", "viabilityTestTypes_type"),
             aliasField("withdrawalDate", "withdrawals_date"),
             aliasField("withdrawalDestination", "withdrawals_destination"),
             aliasField("withdrawalGrams", "withdrawals_grams"),
