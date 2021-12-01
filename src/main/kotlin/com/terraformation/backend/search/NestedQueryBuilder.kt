@@ -557,7 +557,7 @@ class NestedQueryBuilder(
           else dslContext.select(getSelectFields())
 
       val selectFrom = select.from(getSearchTable().fromTable)
-      val selectWithParents = joinWithChildTables(selectFrom)
+      val selectWithParents = joinFlattenedSublists(selectFrom)
 
       // Add lateral joins for all the multiset subqueries.
       val selectWithLateral =
@@ -716,24 +716,13 @@ class NestedQueryBuilder(
    * used when child tables are queried using sublist fields, but is required for backward
    * compatibility with the existing search API that expects child table values to be returned as
    * multiple top-level entries in the results list.
+   *
+   * TODO: Update docs
    */
-  private fun joinWithChildTables(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
-    var joinedQuery = query
-
-    val selectTables = scalarFields.values.map { it.table }.toSet() - getSearchTable()
-
-    val tablesToJoin = selectTables - flattenedSublists.map { it.namespace.searchTable }.toSet()
-
-    tablesToJoin.forEach { table -> joinedQuery = table.leftJoinWithMain(joinedQuery) }
-
-    flattenedSublists.forEach { sublist ->
-      joinedQuery =
-          joinedQuery
-              .leftJoin(sublist.namespace.searchTable.fromTable)
-              .on(sublist.conditionForMultiset)
+  private fun joinFlattenedSublists(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
+    return flattenedSublists.fold(query) { joinedQuery, sublist ->
+      joinedQuery.leftJoin(sublist.namespace.searchTable.fromTable).on(sublist.conditionForMultiset)
     }
-
-    return joinedQuery
   }
 
   /**

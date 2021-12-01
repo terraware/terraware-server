@@ -37,12 +37,6 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
   abstract val primaryKey: TableField<out Record, out Any?>
 
   /**
-   * Adds a LEFT JOIN clause to a query to connect this table to the main table. The implementation
-   * can assume that the main table is already present in the SELECT statement.
-   */
-  abstract fun <T : Record> leftJoinWithMain(query: SelectJoinStep<T>): SelectJoinStep<T>
-
-  /**
    * Adds a LEFT JOIN clause to a query to connect this table to another table to calculate whether
    * the user is allowed to see a row in this table.
    *

@@ -37,10 +37,7 @@ class SearchService(private val dslContext: DSLContext) {
 
     val subquery =
         joinWithSecondaryTables(
-                DSL.select(primaryKey).from(searchTable.fromTable),
-                rootPrefix,
-                emptyList(),
-                criteria)
+                DSL.select(primaryKey).from(searchTable.fromTable), rootPrefix, criteria)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
@@ -256,17 +253,15 @@ class SearchService(private val dslContext: DSLContext) {
   private fun <T : Record> joinWithSecondaryTables(
       selectFrom: SelectJoinStep<T>,
       rootPrefix: SearchFieldPrefix,
-      fields: List<SearchField>,
       criteria: SearchNode,
-      sortOrder: List<SearchSortField> = emptyList(),
   ): SelectJoinStep<T> {
     var query = selectFrom
-    val directlyReferencedTables =
-        fields.map { it.table }.toSet() +
-            criteria.referencedTables() +
-            sortOrder.map { it.field.searchField.table }.toSet() - rootPrefix.namespace.searchTable
+    val directlyReferencedTables = criteria.referencedTables() - rootPrefix.namespace.searchTable
 
-    directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
+    criteria.referencedSublists().distinctBy { it.namespace }.forEach { sublist ->
+      query =
+          query.leftJoin(sublist.namespace.searchTable.fromTable).on(sublist.conditionForMultiset)
+    }
 
     return joinForPermissions(query, directlyReferencedTables, rootPrefix.root.searchTable)
   }
