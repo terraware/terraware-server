@@ -255,14 +255,14 @@ class SearchService(private val dslContext: DSLContext) {
       rootPrefix: SearchFieldPrefix,
       criteria: SearchNode,
   ): SelectJoinStep<T> {
-    var query = selectFrom
-    val directlyReferencedTables = criteria.referencedTables() - rootPrefix.namespace.searchTable
+    val referencedSublists = criteria.referencedSublists().distinctBy { it.namespace }
+    val referencedTables = referencedSublists.map { it.namespace.searchTable }.toSet()
 
-    criteria.referencedSublists().distinctBy { it.namespace }.forEach { sublist ->
-      query =
+    val joinedQuery =
+        referencedSublists.fold(selectFrom) { query, sublist ->
           query.leftJoin(sublist.namespace.searchTable.fromTable).on(sublist.conditionForMultiset)
-    }
+        }
 
-    return joinForPermissions(query, directlyReferencedTables, rootPrefix.root.searchTable)
+    return joinForPermissions(joinedQuery, referencedTables, rootPrefix.root.searchTable)
   }
 }
