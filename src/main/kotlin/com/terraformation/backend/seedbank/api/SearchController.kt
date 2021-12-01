@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController
 @SeedBankAppEndpoint
 class SearchController(
     private val clock: Clock,
-    private val searchService: AccessionSearchService
+    private val accessionSearchService: AccessionSearchService
 ) {
   @Operation(summary = "Searches for accessions based on filter criteria.")
   @PostMapping
@@ -84,7 +84,7 @@ class SearchController(
       payload: SearchRequestPayload
   ): SearchResponsePayload {
     return SearchResponsePayload(
-        searchService.search(
+        accessionSearchService.search(
             payload.facilityId,
             payload.fields,
             payload.toSearchNode(),
@@ -106,7 +106,7 @@ class SearchController(
     }
 
     val searchResults =
-        searchService.search(
+        accessionSearchService.search(
             payload.facilityId,
             payload.fields,
             payload.toSearchNode(),
