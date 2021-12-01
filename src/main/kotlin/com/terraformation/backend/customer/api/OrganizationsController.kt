@@ -19,8 +19,12 @@ import org.springframework.web.bind.annotation.RestController
 
 @CustomerEndpoint
 @RestController
-@RequestMapping("/api/v1/organization")
-class OrganizationController(private val organizationStore: OrganizationStore) {
+@RequestMapping(
+    // TODO: Remove this once clients have switched over to the plural name
+    "/api/v1/organization",
+    "/api/v1/organizations",
+)
+class OrganizationsController(private val organizationStore: OrganizationStore) {
   @GetMapping
   @Operation(
       summary = "Lists all organizations.",
