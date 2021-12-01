@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SearchFilterType
+import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
@@ -37,6 +38,10 @@ import org.jooq.impl.DSL
  */
 @ManagedBean
 class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace() {
+  private val bagsNamespace = BagsNamespace(searchTables, this)
+  private val facilitiesNamespace = FacilitiesNamespace(searchTables, this)
+  private val germinationTestsNamespace = GerminationTestsNamespace(searchTables, this)
+  private val withdrawalsNamespace = WithdrawalsNamespace(searchTables, this)
 
   override val fields =
       with(searchTables) {
@@ -180,23 +185,23 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
         )
       }
 
-  override val multiValueSublists: Map<String, SearchFieldNamespace> =
-      mapOf(
-          "bags" to BagsNamespace(searchTables, this),
-          "germinationTests" to GerminationTestsNamespace(searchTables, this),
-          "withdrawals" to WithdrawalsNamespace(searchTables, this),
+  override val sublists: List<SublistField> =
+      listOf(
+          bagsNamespace.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
+          facilitiesNamespace.asSingleValueSublist(
+              "facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
+          germinationTestsNamespace.asMultiValueSublist(
+              "germinationTests", ACCESSIONS.ID.eq(GERMINATION_TESTS.ACCESSION_ID)),
+          withdrawalsNamespace.asMultiValueSublist(
+              "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
       )
-
-  override val singleValueSublists: Map<String, SearchFieldNamespace> =
-      mapOf("facility" to FacilitiesNamespace(searchTables, this))
 
   class BagsNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
       SearchFieldNamespace() {
-    override val multiValueSublists: Map<String, SearchFieldNamespace>
-      get() = emptyMap()
-
-    override val singleValueSublists: Map<String, SearchFieldNamespace> =
-        mapOf("accession" to accessionsNamespace)
+    override val sublists: List<SublistField> =
+        listOf(
+            accessionsNamespace.asSingleValueSublist(
+                "accession", BAGS.ACCESSION_ID.eq(ACCESSIONS.ID)))
 
     override val fields: List<SearchField> =
         with(searchTables) {
@@ -208,12 +213,10 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
 
   class FacilitiesNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
       SearchFieldNamespace() {
-    override val multiValueSublists: Map<String, SearchFieldNamespace> by lazy {
-      mapOf("accessions" to accessionsNamespace)
-    }
-
-    override val singleValueSublists: Map<String, SearchFieldNamespace>
-      get() = emptyMap()
+    override val sublists: List<SublistField> =
+        listOf(
+            accessionsNamespace.asMultiValueSublist(
+                "accessions", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)))
 
     override val fields: List<SearchField> =
         with(searchTables) {
@@ -229,11 +232,10 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
       searchTables: SearchTables,
       germinationTestsNamespace: GerminationTestsNamespace
   ) : SearchFieldNamespace() {
-    override val multiValueSublists: Map<String, SearchFieldNamespace>
-      get() = emptyMap()
-
-    override val singleValueSublists: Map<String, SearchFieldNamespace> =
-        mapOf("germinationTest" to germinationTestsNamespace)
+    override val sublists: List<SublistField> =
+        listOf(
+            germinationTestsNamespace.asSingleValueSublist(
+                "germinationTest", GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID)))
 
     override val fields: List<SearchField> =
         with(searchTables) {
@@ -252,11 +254,14 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
       searchTables: SearchTables,
       accessionsNamespace: AccessionsNamespace
   ) : SearchFieldNamespace() {
-    override val multiValueSublists: Map<String, SearchFieldNamespace> =
-        mapOf("germinations" to GerminationsNamespace(searchTables, this))
+    private val germinationsNamespace = GerminationsNamespace(searchTables, this)
 
-    override val singleValueSublists: Map<String, SearchFieldNamespace> =
-        mapOf("accession" to accessionsNamespace)
+    override val sublists: List<SublistField> =
+        listOf(
+            accessionsNamespace.asSingleValueSublist(
+                "accession", GERMINATION_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID)),
+            germinationsNamespace.asMultiValueSublist(
+                "germinations", GERMINATION_TESTS.ID.eq(GERMINATIONS.TEST_ID)))
 
     override val fields: List<SearchField> =
         with(searchTables) {
@@ -284,11 +289,10 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
 
   class WithdrawalsNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
       SearchFieldNamespace() {
-    override val multiValueSublists: Map<String, SearchFieldNamespace>
-      get() = emptyMap()
-
-    override val singleValueSublists: Map<String, SearchFieldNamespace> =
-        mapOf("accession" to accessionsNamespace)
+    override val sublists: List<SublistField> =
+        listOf(
+            accessionsNamespace.asSingleValueSublist(
+                "accession", WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID)))
 
     override val fields: List<SearchField> =
         with(searchTables) {

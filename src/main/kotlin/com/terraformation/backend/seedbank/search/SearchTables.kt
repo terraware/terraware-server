@@ -34,8 +34,8 @@ import org.jooq.TableField
 class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val accessions =
       object : SearchTable(fuzzySearchOperators) {
-        override val fromTable
-          get() = ACCESSIONS
+        override val primaryKey: TableField<out Record, out Any?>
+          get() = ACCESSIONS.ID
 
         override val defaultOrderFields: List<OrderField<*>> =
             listOf(ACCESSIONS.NUMBER, ACCESSIONS.ID)
@@ -52,17 +52,15 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
         // Table has facility ID
         override val inheritsPermissionsFrom: SearchTable?
           get() = null
-
-        override fun conditionForMultiset(): Condition? {
-          // No-op; this is always the topmost table
-          return null
-        }
       }
 
   val accessionGerminationTestTypes =
-      object : AccessionChildTable(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID) {}
+      object :
+          AccessionChildTable(
+              ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID,
+              ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID) {}
 
-  val bags = object : AccessionChildTable(BAGS.ACCESSION_ID) {}
+  val bags = object : AccessionChildTable(BAGS.ID, BAGS.ACCESSION_ID) {}
 
   val facilities =
       object : AccessionParentTable<FacilityId>(FACILITIES.ID, ACCESSIONS.FACILITY_ID) {
@@ -74,12 +72,12 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
           get() = null
       }
 
-  val geolocations = object : AccessionChildTable(GEOLOCATIONS.ACCESSION_ID) {}
+  val geolocations = object : AccessionChildTable(GEOLOCATIONS.ID, GEOLOCATIONS.ACCESSION_ID) {}
 
   val germinations =
       object : SearchTable(fuzzySearchOperators) {
-        override val fromTable
-          get() = GERMINATIONS
+        override val primaryKey: TableField<out Record, out Any?>
+          get() = GERMINATIONS.ID
 
         override val parent
           get() = germinationTests
@@ -95,19 +93,16 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
           return query.join(GERMINATION_TESTS).on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
         }
 
-        override fun conditionForPermissions(): Condition {
-          return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+        override fun conditionForPermissions(): Condition? {
+          return null
         }
 
         override val inheritsPermissionsFrom: SearchTable
           get() = germinationTests
-
-        override fun conditionForMultiset(): Condition {
-          return GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID)
-        }
       }
 
-  val germinationTests = object : AccessionChildTable(GERMINATION_TESTS.ACCESSION_ID) {}
+  val germinationTests =
+      object : AccessionChildTable(GERMINATION_TESTS.ID, GERMINATION_TESTS.ACCESSION_ID) {}
 
   val primaryCollectors =
       object : AccessionParentTable<CollectorId>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID) {
@@ -152,7 +147,7 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
           get() = null
       }
 
-  val withdrawals = object : AccessionChildTable(WITHDRAWALS.ACCESSION_ID) {}
+  val withdrawals = object : AccessionChildTable(WITHDRAWALS.ID, WITHDRAWALS.ACCESSION_ID) {}
 
   /**
    * Base class for tables that act as parents of the accession table. That is, tables whose primary
@@ -160,25 +155,18 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
    * relationship with accessions. Typically these are tables that hold the list of choices for
    * enumerated accession fields.
    *
-   * @param parentTableIdField The field on the parent table that is referenced by the foreign key
-   * on the accession table.
+   * @param primaryKey The field on the parent table that is referenced by the foreign key on the
+   * accession table.
    * @param accessionForeignKeyField The foreign key field on the accession table that references
    * the parent table.
    */
   abstract inner class AccessionParentTable<T>(
-      private val parentTableIdField: TableField<*, T?>,
+      override val primaryKey: TableField<out Record, T?>,
       private val accessionForeignKeyField: TableField<AccessionsRecord, T?>
   ) : SearchTable(fuzzySearchOperators) {
-    override val fromTable
-      get() = parentTableIdField.table!!
-
     override fun <T : Record> leftJoinWithMain(query: SelectJoinStep<T>): SelectJoinStep<T> {
-      return query
-          .leftJoin(parentTableIdField.table!!)
-          .on(parentTableIdField.eq(accessionForeignKeyField))
+      return query.leftJoin(primaryKey.table!!).on(primaryKey.eq(accessionForeignKeyField))
     }
-
-    override fun conditionForMultiset(): Condition? = null
   }
 
   /**
@@ -189,11 +177,9 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
    * @param accessionIdField The field that contains the accession ID.
    */
   abstract inner class AccessionChildTable(
+      override val primaryKey: TableField<out Record, out Any?>,
       private val accessionIdField: TableField<*, AccessionId?>
   ) : SearchTable(fuzzySearchOperators) {
-    override val fromTable
-      get() = accessionIdField.table!!
-
     override fun <T : Record> leftJoinWithMain(query: SelectJoinStep<T>): SelectJoinStep<T> {
       return query.leftJoin(accessionIdField.table!!).on(accessionIdField.eq(ACCESSIONS.ID))
     }
@@ -208,9 +194,5 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
 
     override val inheritsPermissionsFrom: SearchTable?
       get() = accessions
-
-    override fun conditionForMultiset(): Condition? {
-      return accessionIdField.eq(ACCESSIONS.ID)
-    }
   }
 }

@@ -30,7 +30,11 @@ import org.jooq.TableField
  */
 abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperators) {
   /** The jOOQ Table object for the table in question. */
-  abstract val fromTable: Table<out Record>
+  open val fromTable: Table<out Record>
+    get() = primaryKey.table ?: throw IllegalStateException("$primaryKey has no table")
+
+  /** The primary key column for the table in question. */
+  abstract val primaryKey: TableField<out Record, out Any?>
 
   /**
    * Adds a LEFT JOIN clause to a query to connect this table to the main table. The implementation
@@ -89,12 +93,6 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
    * given row. In that case, [conditionForPermissions] must be non-null.
    */
   abstract val inheritsPermissionsFrom: SearchTable?
-
-  /**
-   * Returns a condition to add to the `WHERE` clause of a multiset subquery to correlate it with
-   * the current row from the parent table.
-   */
-  abstract fun conditionForMultiset(): Condition?
 
   /**
    * Returns the default fields to sort on. These are always included when querying the table; if
