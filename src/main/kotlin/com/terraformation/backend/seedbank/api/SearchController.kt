@@ -17,8 +17,9 @@ import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
+import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
-import com.terraformation.backend.seedbank.search.SearchService
+import com.terraformation.backend.seedbank.search.AccessionSearchService
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -47,7 +48,10 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/search")
 @RestController
 @SeedBankAppEndpoint
-class SearchController(private val clock: Clock, private val searchService: SearchService) {
+class SearchController(
+    private val clock: Clock,
+    private val accessionSearchService: AccessionSearchService
+) {
   @Operation(summary = "Searches for accessions based on filter criteria.")
   @PostMapping
   fun search(
@@ -80,7 +84,7 @@ class SearchController(private val clock: Clock, private val searchService: Sear
       payload: SearchRequestPayload
   ): SearchResponsePayload {
     return SearchResponsePayload(
-        searchService.search(
+        accessionSearchService.search(
             payload.facilityId,
             payload.fields,
             payload.toSearchNode(),
@@ -102,7 +106,7 @@ class SearchController(private val clock: Clock, private val searchService: Sear
     }
 
     val searchResults =
-        searchService.search(
+        accessionSearchService.search(
             payload.facilityId,
             payload.fields,
             payload.toSearchNode(),

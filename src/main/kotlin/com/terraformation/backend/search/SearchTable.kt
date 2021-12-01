@@ -12,7 +12,6 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
 import com.terraformation.backend.search.field.UpperCaseTextField
-import com.terraformation.backend.seedbank.search.SearchService
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
