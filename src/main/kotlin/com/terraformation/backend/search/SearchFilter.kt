@@ -24,6 +24,10 @@ class OrNode(private val children: List<SearchNode>) : SearchNode {
   override fun referencedSublists(): Set<SublistField> {
     return children.flatMap { it.referencedSublists() }.toSet()
   }
+
+  override fun toString(): String {
+    return "OrNode(${children.joinToString()})"
+  }
 }
 
 class AndNode(private val children: List<SearchNode>) : SearchNode {
@@ -35,6 +39,10 @@ class AndNode(private val children: List<SearchNode>) : SearchNode {
   override fun referencedSublists(): Set<SublistField> {
     return children.flatMap { it.referencedSublists() }.toSet()
   }
+
+  override fun toString(): String {
+    return "AndNode(${children.joinToString()})"
+  }
 }
 
 class NotNode(val child: SearchNode) : SearchNode {
@@ -44,6 +52,10 @@ class NotNode(val child: SearchNode) : SearchNode {
 
   override fun referencedSublists(): Set<SublistField> {
     return child.referencedSublists()
+  }
+
+  override fun toString(): String {
+    return "NotNode($child)"
   }
 }
 
@@ -64,6 +76,10 @@ class FieldNode(
       field.sublists.toSet()
     }
   }
+
+  override fun toString(): String {
+    return "FieldNode($field $type [${values.joinToString()}])"
+  }
 }
 
 class NoConditionNode : SearchNode {
@@ -73,5 +89,9 @@ class NoConditionNode : SearchNode {
 
   override fun referencedSublists(): Set<SublistField> {
     return emptySet()
+  }
+
+  override fun toString(): String {
+    return "NoConditionNode()"
   }
 }
