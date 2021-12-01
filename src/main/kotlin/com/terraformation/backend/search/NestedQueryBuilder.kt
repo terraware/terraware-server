@@ -463,7 +463,7 @@ class NestedQueryBuilder(
   private val sublistQueryBuilders = mutableMapOf<String, NestedQueryBuilder>()
 
   // TODO: Document
-  val flattenedSublists = mutableSetOf<SublistField>()
+  private val flattenedSublists = mutableSetOf<SublistField>()
 
   /**
    * Zero-indexed position of each field in the `SELECT` clause. Both scalar and sublist fields are
@@ -637,25 +637,18 @@ class NestedQueryBuilder(
     val relativeField = fieldPath.relativeTo(prefix)
 
     if (relativeField.searchField is AliasField) {
-      //      addSelectField(relativeField.searchField.targetPath)
-      val targetPath = relativeField.searchField.targetPath
-      flattenedSublists.addAll(targetPath.sublists)
+      addFlattenedSublists(relativeField.searchField.targetPath.sublists)
     }
 
     if (relativeField.isFlattened) {
-      val (sublists, remainingPath) = relativeField.splitFlattened()
-      flattenedSublists.addAll(sublists)
+      addFlattenedSublists(relativeField.sublists)
 
-      if (remainingPath.isNested) {
-        addSelectField(remainingPath)
-      } else {
-        val searchField = fieldPath.searchField
-        val fieldName = "$relativeField"
-        scalarFields[fieldName] = searchField
-        if (fieldName !in selectFieldPositions) {
-          selectFieldPositions[fieldName] = nextSelectFieldPosition
-          nextSelectFieldPosition += searchField.selectFields.size
-        }
+      val searchField = fieldPath.searchField
+      val fieldName = "$relativeField"
+      scalarFields[fieldName] = searchField
+      if (fieldName !in selectFieldPositions) {
+        selectFieldPositions[fieldName] = nextSelectFieldPosition
+        nextSelectFieldPosition += searchField.selectFields.size
       }
     } else if (relativeField.isNested) {
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
@@ -684,16 +677,21 @@ class NestedQueryBuilder(
     sortFields.add(sortField)
 
     if (relativeField.isFlattened) {
-      val (sublists, remainingPath) = relativeField.splitFlattened()
-      flattenedSublists.addAll(sublists)
-
-      if (remainingPath.isNested) {
-        addSortField(sortField.copy(field = remainingPath))
-      }
+      addFlattenedSublists(relativeField.sublists)
     } else {
       if (relativeField.isNested) {
         // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
         getSublistQuery(relativeField).addSortField(sortField)
+      }
+    }
+  }
+
+  private fun addFlattenedSublists(sublists: Collection<SublistField>) {
+    sublists.forEach { sublist ->
+      if (sublist.isFlattened) {
+        flattenedSublists.add(sublist)
+      } else {
+        throw IllegalArgumentException("BUG! Sublist $sublist is not flattened")
       }
     }
   }

@@ -57,11 +57,7 @@ data class SearchFieldPrefix(
         SearchFieldPath(prefix = this, searchField = field)
       }
     } else if (nextNestedAndRest[0].length < nextFlattenedAndRest[0].length) {
-      if (sublists.lastOrNull()?.isFlattened == true) {
-        throw IllegalArgumentException("Flattened sublists cannot contain nested sublists")
-      } else {
-        withSublistOrNull(nextNestedAndRest[0], false)?.resolveOrNull(nextNestedAndRest[1])
-      }
+      withSublistOrNull(nextNestedAndRest[0], false)?.resolveOrNull(nextNestedAndRest[1])
     } else {
       withSublistOrNull(nextFlattenedAndRest[0], true)?.resolveOrNull(nextFlattenedAndRest[1])
     }
@@ -89,6 +85,11 @@ data class SearchFieldPrefix(
 
     val sublist = namespace.getSublistOrNull(sublistName) ?: return null
     val possiblyFlattenedSublist = if (flatten) sublist.asFlattened() else sublist
+
+    if (isFlattened && !possiblyFlattenedSublist.isFlattened) {
+      throw IllegalArgumentException("Flattened sublists cannot contain nested sublists")
+    }
+
     val newSublists = sublists + possiblyFlattenedSublist
 
     return SearchFieldPrefix(root = root, sublists = newSublists)
@@ -188,19 +189,6 @@ class SearchFieldPath(private val prefix: SearchFieldPrefix, val searchField: Se
             root = otherPrefix.namespace,
             sublists = prefix.sublists.drop(otherPrefix.sublists.size)),
         searchField = searchField)
-  }
-
-  fun splitFlattened(): Pair<List<SublistField>, SearchFieldPath> {
-    val flattenedFields = sublists.takeWhile { it.isFlattened }
-    if (flattenedFields.isEmpty()) {
-      return Pair(emptyList(), this)
-    }
-
-    return Pair(
-        flattenedFields,
-        SearchFieldPath(
-            SearchFieldPrefix(root = prefix.root, sublists = sublists.drop(flattenedFields.size)),
-            searchField = searchField))
   }
 
   @JsonValue
