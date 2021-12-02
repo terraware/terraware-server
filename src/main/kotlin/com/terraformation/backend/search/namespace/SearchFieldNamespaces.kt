@@ -11,5 +11,10 @@ import javax.annotation.ManagedBean
  */
 @ManagedBean
 class SearchFieldNamespaces(val searchTables: SearchTables) {
-  val accessions = AccessionsNamespace(searchTables)
+  val collectors = CollectorsNamespace(searchTables)
+  val families = FamiliesNamespace(searchTables)
+  val species = SpeciesNamespace(searchTables)
+  val storageLocations = StorageLocationsNamespace(searchTables)
+  val accessions =
+      AccessionsNamespace(searchTables, collectors, families, species, storageLocations)
 }
