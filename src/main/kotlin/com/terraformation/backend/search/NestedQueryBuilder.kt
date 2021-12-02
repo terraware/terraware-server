@@ -615,6 +615,9 @@ class NestedQueryBuilder(
   /**
    * Returns a jOOQ query object for the currently-configured query. Once this method is called,
    * attempts to modify its field lists or conditions will throw [IllegalStateException].
+   *
+   * @param distinct Don't return duplicate results. This is used when querying the list of all
+   * values of a particular field, e.g., to populate a typeahead.
    */
   fun toSelectQuery(distinct: Boolean = false): SelectSeekStepN<Record> {
     return renderedQuery.get {
@@ -788,6 +791,12 @@ class NestedQueryBuilder(
    * a mix of JSONB array expressions (when sorting by a field in a sublist), numeric column indexes
    * (when sorting by the raw value of a column that already appears in the `SELECT` clause), and
    * computation expressions (when sorting by a derived value).
+   *
+   * @param includeDefaultFields Add a default set of fields to ensure that results are returned in
+   * a consistent order if the same query is run repeatedly and the caller didn't supply precise
+   * enough sort criteria. This needs to be `false` if the caller is asking for distinct search
+   * results, since a SQL `SELECT DISTINCT` query can't be ordered by fields that don't appear in
+   * the select list.
    */
   private fun getOrderBy(includeDefaultFields: Boolean): List<OrderField<*>> {
     val orderByFields = sortFields.map { getOrderByField(it) }
