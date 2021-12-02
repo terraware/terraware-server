@@ -50,5 +50,8 @@ data class SublistField(
     // TODO: Document
     val isFlattened: Boolean = false,
 ) {
+  val delimiter: Char
+    get() = if (isFlattened) FLATTENED_SUBLIST_DELIMITER else NESTED_SUBLIST_DELIMITER
+
   fun asFlattened(): SublistField = copy(isFlattened = true)
 }
