@@ -734,7 +734,7 @@ class NestedQueryBuilder(
 
   /**
    * Adds a field to the list of fields the caller wants to use to sort the search results. If the
-   * field is in a sublist, adds it to the sublist query's sort fields, creating the query if
+   * field is in a nested sublist, adds it to the sublist query's sort fields, creating the query if
    * needed.
    */
   private fun addSortField(sortField: SearchSortField) {
@@ -744,11 +744,9 @@ class NestedQueryBuilder(
 
     if (relativeField.isFlattened) {
       addFlattenedSublists(relativeField.sublists)
-    } else {
-      if (relativeField.isNested) {
-        // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
-        getSublistQuery(relativeField).addSortField(sortField)
-      }
+    } else if (relativeField.isNested) {
+      // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
+      getSublistQuery(relativeField).addSortField(sortField)
     }
   }
 
@@ -762,7 +760,7 @@ class NestedQueryBuilder(
     }
   }
 
-  /** Returns the [NestedQueryBuilder] for a sublist, creating it if needed. */
+  /** Returns the [NestedQueryBuilder] for a nested sublist, creating it if needed. */
   private fun getSublistQuery(relativeField: SearchFieldPath): NestedQueryBuilder {
     if (!relativeField.isNested) {
       throw IllegalArgumentException("Cannot get sublist for non-nested field $relativeField")
