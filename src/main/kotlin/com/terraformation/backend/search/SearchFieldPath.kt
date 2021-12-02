@@ -3,6 +3,8 @@ package com.terraformation.backend.search
 import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.search.field.SearchField
 
+const val NESTED_SUBLIST_DELIMITER: Char = '.'
+
 /**
  * A partial location of a search field in the application's data hierarchy.
  *
@@ -44,7 +46,7 @@ data class SearchFieldPrefix(
    * valid field name.
    */
   fun resolveOrNull(relativePath: String): SearchFieldPath? {
-    val nextAndRest = relativePath.split('.', limit = 2)
+    val nextAndRest = relativePath.split(NESTED_SUBLIST_DELIMITER, limit = 2)
 
     return if (nextAndRest.size == 1) {
       namespace[nextAndRest[0]]?.let { field ->
@@ -71,7 +73,7 @@ data class SearchFieldPrefix(
    * @param sublistName The name of a sublist field that's defined in this prefix's namespace.
    */
   private fun withSublistOrNull(sublistName: String): SearchFieldPrefix? {
-    if ('.' in sublistName) {
+    if (NESTED_SUBLIST_DELIMITER in sublistName) {
       throw IllegalArgumentException("Cannot resolve nested path: $sublistName")
     }
 
@@ -87,7 +89,8 @@ data class SearchFieldPrefix(
         ?: throw IllegalArgumentException("Unknown name $sublistName under $this")
   }
 
-  @JsonValue override fun toString() = sublists.joinToString(".") { it.name }
+  @JsonValue
+  override fun toString() = sublists.joinToString("$NESTED_SUBLIST_DELIMITER") { it.name }
 }
 
 /**

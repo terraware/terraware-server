@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
+import com.terraformation.backend.search.NESTED_SUBLIST_DELIMITER
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.namespace.AccessionsNamespace
 import com.terraformation.backend.search.namespace.SearchFieldNamespaces
@@ -145,14 +146,19 @@ class OpenApiConfig(namespaces: SearchFieldNamespaces) : OpenApiCustomiser {
     val relativeNames =
         fieldNames.filter { it.startsWith(prefix) }.map { it.substring(prefix.length) }
 
-    val scalarFields = relativeNames.filter { !it.contains('.') }.map { it to StringSchema() }
+    val scalarFields =
+        relativeNames.filter { !it.contains(NESTED_SUBLIST_DELIMITER) }.map { it to StringSchema() }
 
     val sublistFields =
-        relativeNames.filter { it.contains('.') }.map { it.substringBefore('.') }.distinct().map {
-            sublistName ->
-          val sublistFields = getSearchResultFields("$sublistName.", relativeNames)
-          sublistName to ArraySchema().items(ObjectSchema().properties(sublistFields))
-        }
+        relativeNames
+            .filter { it.contains(NESTED_SUBLIST_DELIMITER) }
+            .map { it.substringBefore(NESTED_SUBLIST_DELIMITER) }
+            .distinct()
+            .map { sublistName ->
+              val sublistFields =
+                  getSearchResultFields(sublistName + NESTED_SUBLIST_DELIMITER, relativeNames)
+              sublistName to ArraySchema().items(ObjectSchema().properties(sublistFields))
+            }
 
     return (sublistFields + scalarFields).toMap().toSortedMap()
   }
