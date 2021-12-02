@@ -4454,6 +4454,7 @@ components:
       - estimatedSeedsIncoming
       - family
       - geolocation
+      - geolocations.coordinates
       - germinationEndDate
       - germinationPercentGerminated
       - germinationSeedType
@@ -4505,6 +4506,7 @@ components:
       - totalViabilityPercent
       - treesCollectedFrom
       - viabilityTestType
+      - viabilityTestTypes.type
       - withdrawalDate
       - withdrawalDestination
       - withdrawalGrams
@@ -4657,6 +4659,13 @@ components:
                 type: string
               geolocation:
                 type: string
+              geolocations:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    coordinates:
+                      type: string
               germinationEndDate:
                 type: string
               germinationPercentGerminated:
@@ -4769,6 +4778,13 @@ components:
                 type: string
               viabilityTestType:
                 type: string
+              viabilityTestTypes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
               withdrawalDate:
                 type: string
               withdrawalDestination:
