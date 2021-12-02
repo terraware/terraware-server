@@ -149,43 +149,6 @@ import org.jooq.impl.DSL
  * ]
  * ```
  *
- * TODO: Fold the below into the flattened sublists section or the aliases section, or kill it
- *
- * Contrast this with the older non-nested fields, e.g.,
- *
- * ```kotlin
- * val rootPrefix = SearchFieldPathPrefix(accessionsNamespace)
- * val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
- *
- * queryBuilder.addSelectFields(
- *     listOf(
- *         rootPrefix.resolve("id"),
- *         rootPrefix.resolve("species"),
- *         rootPrefix.resolve("bagNumber")))
- * val results = queryBuilder.toSelectQuery().fetch()
- * ```
- *
- * which would result in multiple entries for the same accession:
- *
- * ```json
- * [
- *   {
- *     "id": "3",
- *     "species": "First Species",
- *     "bagNumber": "First bag for accession 3"
- *   },
- *   {
- *     "id": "3",
- *     "species": "First Species",
- *     "bagNumber": "Second bag for accession 3"
- *   },
- *   {
- *     "id": "4",
- *     "species": "Second Species"
- *   }
- * ]
- * ```
- *
  * # Implementation details
  *
  * ## Field paths
@@ -207,11 +170,14 @@ import org.jooq.impl.DSL
  * Sublist fields, as the name suggests, are containers with their own lists of fields. They come in
  * two flavors: "multi-value" and "single-value." A multi-value sublist turns into a list of JSON
  * objects in the search results, whereas a single-value sublist turns into a single JSON object.
- * Each of those objects can contain a mix of scalar fields and sublist fields.
+ * Each of those objects can contain a mix of scalar fields and sublist fields. (There is a way to
+ * specify that you don't want sublist fields to be returned as nested JSON objects; the "Flattened
+ * sublists" section describes how that works, but we'll ignore it for now and focus on nested
+ * sublist fields.)
  *
  * Sublist fields aren't directly searchable; they are just containers for scalar fields.
  *
- * A sublist field is identified by the presence of a `.` in its name. For example, the field
+ * A nested sublist field is identified by the presence of a `.` in its name. For example, the field
  * `germinationTests.germinations.recordingDate` represents a sublist field called
  * `germinationTests` each element of which contains a sublist field called `germinations` each
  * element of which contains a scalar field called `recordingDate`.
@@ -500,10 +466,34 @@ import org.jooq.impl.DSL
  * in the second pair of examples above.
  *
  * Constructing the SQL queries for flattened sublists is far simpler than for nested ones. Each
- * flattened sublist turns into a simple `LEFT JOIN` operation and there is no need for multisets at
- * all. The results of the SQL join already have the right structure: the columns from all the
- * joined tables are mixed together in a single result row, and there are separate results if one of
- * the joined tables has multiple rows that match the join criterion.
+ * flattened sublist turns into a simple `LEFT JOIN` and there is no need for multisets at all. The
+ * results of a SQL join already have the right structure: the columns from all the joined tables
+ * are mixed together in a single result row, and there are separate results if one of the joined
+ * tables has multiple rows that match the join criterion.
+ *
+ * ## Aliases
+ *
+ * There is a special "alias" field type, represented internally by an [AliasField]. It allows a
+ * given field to be referenced by an alternate name. The target of the alias is used to construct
+ * the database query, and the alias name is used as the name of the field in the search results.
+ *
+ * For example, the `bagNumber` field in the accessions namespace is an alias for `bags_number`. If
+ * you ask for `id` and `bagNumber`, you'll get back a flattened result like,
+ *
+ * ```json
+ * [
+ *   { "id": "1", "bagNumber": "200" },
+ *   { "id": "1", "bagNumber": "300" },
+ *   { "id": "2", "bagNumber": "400" },
+ * ]
+ * ```
+ *
+ * Aliases allow us to maintain backward compatibility with the original accession search API, which
+ * didn't have any concept of sublists and always flattened all search results. Flattened sublists
+ * are a more general implementation, and the old field names are now aliases for flattened field
+ * paths.
+ *
+ * The target of an alias can't contain nested sublists, just flattened ones.
  */
 class NestedQueryBuilder(
     private val dslContext: DSLContext,
@@ -525,13 +515,20 @@ class NestedQueryBuilder(
   private val scalarFields = mutableMapOf<String, SearchField>()
 
   /**
-   * Query builders for sublists indexed by the first element of their relative names. For example,
-   * if this node has a prefix of `a.b` and there are two fields whose full names are `a.b.c.d.e`
-   * and `a.b.f.g`, this map would contain keys `c` and `f`.
+   * Query builders for nested sublists indexed by the first element of their relative names. For
+   * example, if this node has a prefix of `a.b` and there are two fields whose full names are
+   * `a.b.c.d.e` and `a.b.f.g`, this map would contain keys `c` and `f`.
+   *
+   * Flattened sublists aren't added here; they're in [flattenedSublists] instead.
    */
   private val sublistQueryBuilders = mutableMapOf<String, NestedQueryBuilder>()
 
-  // TODO: Document
+  /**
+   * Sublists the caller wants to flatten in the search results or in sort criteria. If the caller
+   * asks for a field whose path has multiple flattened sublists, they are all included here. For
+   * example, if the caller asks for `germinationTests_germinations_recordingDate`, this set will
+   * include both `germinationTests` and `germinations`.
+   */
   private val flattenedSublists = mutableSetOf<SublistField>()
 
   /**
@@ -779,12 +776,8 @@ class NestedQueryBuilder(
   }
 
   /**
-   * For non-nested fields in child tables, joins the top-level query with those tables. This is not
-   * used when child tables are queried using sublist fields, but is required for backward
-   * compatibility with the existing search API that expects child table values to be returned as
-   * multiple top-level entries in the results list.
-   *
-   * TODO: Update docs
+   * Joins the top-level query with the tables referenced by flattened sublists. This is not used
+   * when child tables are queried using nested sublist fields.
    */
   private fun joinFlattenedSublists(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
     return flattenedSublists.fold(query) { joinedQuery, sublist ->
