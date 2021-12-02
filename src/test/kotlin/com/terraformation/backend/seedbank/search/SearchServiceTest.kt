@@ -61,11 +61,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var accessionsDao: AccessionsDao
   private lateinit var accessionGerminationTestTypesDao: AccessionGerminationTestTypesDao
+  private lateinit var accessionSearchService: AccessionSearchService
   private lateinit var bagsDao: BagsDao
   private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var germinationsDao: GerminationsDao
   private lateinit var searchService: SearchService
-  private lateinit var accessionSearchService: AccessionSearchService
 
   private val facilityId = FacilityId(100)
   private val checkedInTimeString = "2021-08-18T11:33:55Z"
@@ -100,8 +100,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     bagsDao = BagsDao(jooqConfig)
     germinationTestsDao = GerminationTestsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
-    searchService = SearchService(dslContext, accessionsNamespace, searchTables)
-    accessionSearchService = AccessionSearchService(searchService)
+    searchService = SearchService(dslContext)
+    accessionSearchService = AccessionSearchService(accessionsNamespace, searchService)
 
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
@@ -815,14 +815,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   inner class FetchValuesTest {
     @Test
     fun `no criteria for simple column value`() {
-      val values = searchService.fetchValues(speciesField, NoConditionNode())
+      val values = searchService.fetchValues(rootPrefix, speciesField, NoConditionNode())
       assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
     }
 
     @Test
     fun `renders null values as null, not as a string`() {
       accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
-      val values = searchService.fetchValues(speciesField, NoConditionNode())
+      val values = searchService.fetchValues(rootPrefix, speciesField, NoConditionNode())
       assertEquals(listOf("Other Dogwood", null), values)
     }
 
@@ -830,7 +830,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `fuzzy search of accession number`() {
       val values =
           searchService.fetchValues(
-              speciesField, FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy))
+              rootPrefix,
+              speciesField,
+              FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Kousa Dogwood"), values)
     }
 
@@ -838,7 +840,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `prefix search of accession number`() {
       val values =
           searchService.fetchValues(
-              speciesField, FieldNode(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy))
+              rootPrefix,
+              speciesField,
+              FieldNode(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Other Dogwood"), values)
     }
 
@@ -846,7 +850,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `fuzzy search of text field in secondary table`() {
       val values =
           searchService.fetchValues(
-              speciesField, FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
+              rootPrefix,
+              speciesField,
+              FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
     }
 
@@ -854,7 +860,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `fuzzy search of text field in secondary table not in field list`() {
       val values =
           searchService.fetchValues(
-              stateField, FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
+              rootPrefix,
+              stateField,
+              FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Processed", "Processing"), values)
     }
 
@@ -862,14 +870,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `exact search of integer column value`() {
       val values =
           searchService.fetchValues(
-              treesCollectedFromField, FieldNode(treesCollectedFromField, listOf("1")))
+              rootPrefix, treesCollectedFromField, FieldNode(treesCollectedFromField, listOf("1")))
 
       assertEquals(listOf("1"), values)
     }
 
     @Test
     fun `no criteria for computed column value`() {
-      val values = searchService.fetchValues(activeField, NoConditionNode())
+      val values = searchService.fetchValues(rootPrefix, activeField, NoConditionNode())
       assertEquals(listOf("Active"), values)
     }
 
@@ -890,7 +898,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected = listOf("1", "2")
 
-      val actual = searchService.fetchValues(treesCollectedFromField, NoConditionNode())
+      val actual = searchService.fetchValues(rootPrefix, treesCollectedFromField, NoConditionNode())
 
       assertEquals(expected, actual)
     }
@@ -915,7 +923,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected = listOf("1", "2", "3")
 
-      val actual = searchService.fetchValues(treesCollectedFromField, NoConditionNode())
+      val actual = searchService.fetchValues(rootPrefix, treesCollectedFromField, NoConditionNode())
 
       assertEquals(expected, actual)
     }
@@ -1176,7 +1184,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         rootPrefix.resolve("germinationTests.germinations.seedsGerminated")
     private val testTypeField = rootPrefix.resolve("germinationTests.type")
 
+    private val bagsNamespace = rootPrefix.withSublist("bags").namespace
+    private val germinationsNamespace =
+        rootPrefix.withSublist("germinationTests").withSublist("germinations").namespace
+
     private lateinit var testId: GerminationTestId
+
     @BeforeEach
     fun insertNestedData() {
       bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "1"))
@@ -1697,6 +1710,104 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       // Compare sorted versions of the result maps to make differences easier to spot.
       assertEquals(expected.map { it.toSortedMap() }, result.results.map { it.toSortedMap() })
       assertNull(result.cursor)
+    }
+
+    @Test
+    fun `can search a child table with a parent table field`() {
+      val prefix = SearchFieldPrefix(root = bagsNamespace)
+      val bagNumberField = prefix.resolve("number")
+      val accessionNumberField = prefix.resolve("accession.accessionNumber")
+      val fields = listOf(bagNumberField, accessionNumberField)
+      val criteria = FieldNode(bagNumberField, listOf("5"))
+
+      val expected =
+          SearchResults(
+              listOf(mapOf("number" to "5", "accession" to mapOf("accessionNumber" to "XYZ"))),
+              cursor = null)
+
+      val result = searchService.search(prefix, fields, criteria)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can search a child table without a parent`() {
+      val prefix = SearchFieldPrefix(root = bagsNamespace)
+      val bagNumberField = prefix.resolve("number")
+      val fields = listOf(bagNumberField)
+      val criteria = FieldNode(bagNumberField, listOf("5"))
+
+      val expected = SearchResults(listOf(mapOf("number" to "5")), cursor = null)
+
+      val result = searchService.search(prefix, fields, criteria)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `searching a child table only returns results the user has permission to see`() {
+      val prefix = SearchFieldPrefix(root = bagsNamespace)
+      val bagNumberField = prefix.resolve("number")
+      val fields = listOf(bagNumberField)
+      val criteria = NoConditionNode()
+      val order = listOf(SearchSortField(bagNumberField))
+
+      // A facility in an org the user isn't in
+      val otherFacilityId = FacilityId(2000)
+      insertOrganization(2)
+      insertProject(20)
+      insertSite(200)
+      insertFacility(otherFacilityId)
+
+      accessionsDao.update(
+          accessionsDao.fetchOneById(AccessionId(1000))!!.copy(facilityId = otherFacilityId))
+
+      val expected =
+          SearchResults(listOf(mapOf("number" to "2"), mapOf("number" to "6")), cursor = null)
+
+      val result = searchService.search(prefix, fields, criteria, order)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `permission check can join multiple parent tables`() {
+      val prefix = SearchFieldPrefix(root = germinationsNamespace)
+      val seedsGerminatedField = prefix.resolve("seedsGerminated")
+      val fields = listOf(seedsGerminatedField)
+      val criteria = NoConditionNode()
+      val order = listOf(SearchSortField(seedsGerminatedField))
+
+      // A facility in an org the user isn't in
+      val otherFacilityId = FacilityId(2000)
+      insertOrganization(2)
+      insertProject(20)
+      insertSite(200)
+      insertFacility(otherFacilityId)
+
+      accessionsDao.update(
+          accessionsDao.fetchOneById(AccessionId(1000))!!.copy(facilityId = otherFacilityId))
+
+      val germinationTestsRow =
+          GerminationTestsRow(
+              accessionId = AccessionId(1001),
+              testType = GerminationTestType.Lab,
+              seedsSown = 50,
+              remainingQuantity = BigDecimal(30),
+              remainingUnitsId = SeedQuantityUnits.Pounds)
+
+      germinationTestsDao.insert(germinationTestsRow)
+      germinationsDao.insert(
+          GerminationsRow(
+              testId = germinationTestsRow.id!!,
+              recordingDate = LocalDate.EPOCH,
+              seedsGerminated = 8))
+
+      val expected = SearchResults(listOf(mapOf("seedsGerminated" to "8")), cursor = null)
+
+      val result = searchService.search(prefix, fields, criteria, order)
+
+      assertEquals(expected, result)
     }
   }
 }

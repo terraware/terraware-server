@@ -1,18 +1,12 @@
 package com.terraformation.backend.search
 
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.seedbank.search.AccessionsNamespace
-import com.terraformation.backend.seedbank.search.SearchTables
 import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record
-import org.jooq.Record1
 import org.jooq.Select
 import org.jooq.SelectJoinStep
 import org.jooq.conf.ParamType
@@ -30,57 +24,64 @@ import org.jooq.impl.DSL
  * This maximizes the database's flexibility to optimize the query.
  */
 @ManagedBean
-class SearchService(
-    private val dslContext: DSLContext,
-    private val accessionsNamespace: AccessionsNamespace,
-    private val searchTables: SearchTables,
-) {
+class SearchService(private val dslContext: DSLContext) {
   private val log = perClassLogger()
 
-  /** Returns a query that selects the IDs of accessions that match a list of filter criteria. */
-  private fun selectAccessionIds(criteria: SearchNode): Select<Record1<AccessionId?>> {
+  /** Returns a condition that filters search results based on a list of criteria. */
+  private fun filterResults(rootPrefix: SearchFieldPrefix, criteria: SearchNode): Condition {
     // Filter out results the user doesn't have permission to see.
-    val conditions =
-        listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTables.accessions))
+    val searchTable = rootPrefix.root.searchTable
+    val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTable))
 
-    return joinWithSecondaryTables(
-            DSL.select(ACCESSIONS.ID).from(ACCESSIONS), emptyList(), criteria)
-        .where(conditions)
+    val primaryKey = searchTable.primaryKey
+
+    val subquery =
+        joinWithSecondaryTables(
+                DSL.select(primaryKey).from(searchTable.fromTable),
+                rootPrefix,
+                emptyList(),
+                criteria)
+            .where(conditions)
+
+    // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
+    // would require adding the primary key class as a type parameter in tons of places throughout
+    // the search code. (Try it if you're bored; you'll see it quickly spirals out of control!)
+    // The tiny amount of extra type safety we'd gain isn't worth the amount of boilerplate it'd
+    // require, especially since the primary key type isn't known at compile time anyway.
+    @Suppress("UNCHECKED_CAST") return primaryKey.`in`(subquery as Select<Nothing>)
   }
 
   /**
-   * Queries the values of a list of fields on accessions that match a list of filter criteria.
+   * Queries the values of a list of fields that match a list of filter criteria.
    *
    * The search results in the return value do not include fields with `null` values. That is, only
    * non-null values are included.
    *
    * If there are more search results than the requested limit, the return value includes a cursor
    * that can be used to view the next set of results.
+   *
+   * The [rootPrefix] defines the starting namespace for field paths (all the paths in [fields] are
+   * relative to the root prefix) and the top level of the search results. For example, if you have
+   * an accession with two bags:
+   *
+   * - Searching with a root prefix of `accessions` and a field name of `bags.number` will give you
+   * a result like `[{"bags":[{"number":"1"}, {"number":"2"}]}]`, that is, a single top-level result
+   * with a sublist that has two elements.
+   * - Searching with a root prefix of `bags` and a field name of `number` will give you a result
+   * like `[{"number":"1"},{"number":"2"}]`, that is, two top-level results with no sublists.
    */
   fun search(
-      facilityId: FacilityId,
-      fields: List<SearchFieldPath>,
+      rootPrefix: SearchFieldPrefix,
+      fields: Collection<SearchFieldPath>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
       limit: Int = Int.MAX_VALUE
   ): SearchResults {
-    val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
-    val mandatoryFields =
-        listOf("id", "accessionNumber")
-            .mapNotNull { accessionsNamespace[it] }
-            .map { SearchFieldPath(rootPrefix, it) }
-            .toSet()
-    val fieldObjects = mandatoryFields + fields.toSet()
-
-    val criteriaWithFacilityId =
-        AndNode(
-            listOf(criteria, FieldNode(rootPrefix.resolve("facility.id"), listOf("$facilityId"))))
-
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
-    queryBuilder.addSelectFields(fieldObjects)
+    queryBuilder.addSelectFields(fields)
     queryBuilder.addSortFields(sortOrder)
-    queryBuilder.addCondition(ACCESSIONS.ID.`in`(selectAccessionIds(criteriaWithFacilityId)))
+    queryBuilder.addCondition(filterResults(rootPrefix, criteria))
 
     val query = queryBuilder.toSelectQuery()
 
@@ -97,7 +98,6 @@ class SearchService(
           query
         }
 
-    log.debug("search criteria: fields=$fields criteria=$criteria sort=$sortOrder")
     log.debug("search SQL query: ${queryWithLimit.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
@@ -117,7 +117,7 @@ class SearchService(
   }
 
   /**
-   * Returns a list of all the values a single field has on accessions matching a set of filter
+   * Returns a list of all the values a single field has on entities matching a set of filter
    * criteria.
    *
    * @param limit Maximum number of results desired. The return value may be larger than this limit
@@ -127,22 +127,22 @@ class SearchService(
    * some of the matching accessions.
    */
   fun fetchValues(
+      rootPrefix: SearchFieldPrefix,
       fieldPath: SearchFieldPath,
       criteria: SearchNode,
-      limit: Int = 50
-  ): List<String?> {
+      limit: Int = 50,
+  ): List<String> {
     val field = fieldPath.searchField
     val selectFields =
         field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
 
-    var query: SelectJoinStep<out Record> = dslContext.selectDistinct(selectFields).from(ACCESSIONS)
+    val searchTable = rootPrefix.root.searchTable
+    var query: SelectJoinStep<out Record> =
+        dslContext.selectDistinct(selectFields).from(searchTable.fromTable)
 
-    query = joinWithSecondaryTables(query, listOf(field), criteria)
+    query = joinWithSecondaryTables(query, rootPrefix, listOf(field), criteria)
 
-    val conditions =
-        listOfNotNull(
-            criteria.toCondition(),
-            conditionForPermissions(accessionsNamespace.searchTables.accessions))
+    val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTable))
 
     val fullQuery =
         query
@@ -150,7 +150,6 @@ class SearchService(
             .orderBy(DSL.field("order_by_field").asc().nullsLast())
             .limit(limit + 1)
 
-    log.debug("fetchFieldValues ${field.fieldName} criteria $criteria")
     log.debug("fetchFieldValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
@@ -259,14 +258,15 @@ class SearchService(
   }
 
   /**
-   * Adds JOIN clauses to a query to join the accession table with any other tables referenced by a
-   * list of [SearchField] s.
+   * Adds JOIN clauses to a query to join the root table with any other tables referenced by a list
+   * of [SearchField] s. This is not used for nested fields.
    *
    * This handles indirect references; if a field is in a table that is two foreign-key hops away
    * from `accession`, the intermediate table is included here too.
    */
   private fun <T : Record> joinWithSecondaryTables(
       selectFrom: SelectJoinStep<T>,
+      rootPrefix: SearchFieldPrefix,
       fields: List<SearchField>,
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList()
@@ -275,10 +275,10 @@ class SearchService(
     val directlyReferencedTables =
         fields.map { it.table }.toSet() +
             criteria.referencedTables() +
-            sortOrder.map { it.field.searchField.table }.toSet()
+            sortOrder.map { it.field.searchField.table }.toSet() - rootPrefix.namespace.searchTable
 
     directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
 
-    return joinForPermissions(query, directlyReferencedTables, accessionsNamespace.searchTable)
+    return joinForPermissions(query, directlyReferencedTables, rootPrefix.root.searchTable)
   }
 }

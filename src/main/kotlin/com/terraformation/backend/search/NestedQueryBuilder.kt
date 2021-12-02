@@ -316,7 +316,7 @@ import org.jooq.impl.DSL
  *
  * Instead, user-supplied search criteria are turned into a subquery which is used to generate a
  * list of accession IDs. The nested query then selects the values of all the requested fields for
- * the accessions on that list. The subquery is constructed in [SearchService.selectAccessionIds].
+ * the accessions on that list. The subquery is constructed in [SearchService.filterResults].
  *
  * In the above example, the query is structured like this (pseudocode):
  *
@@ -684,7 +684,7 @@ class NestedQueryBuilder(
 
     var joinedQuery = query
 
-    val selectTables = scalarFields.values.map { it.table }.toSet()
+    val selectTables = scalarFields.values.map { it.table }.toSet() - getSearchTable()
 
     // SearchTable.leftJoinWithMain will join with parent tables, so no need to
     // add them a second time.

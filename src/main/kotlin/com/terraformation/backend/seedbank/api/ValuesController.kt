@@ -16,8 +16,10 @@ import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.seedbank.db.StorageLocationStore
+import com.terraformation.backend.seedbank.search.AccessionsNamespace
 import com.terraformation.backend.species.db.SpeciesStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -36,12 +38,15 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class ValuesController(
+    accessionsNamespace: AccessionsNamespace,
     private val config: TerrawareServerConfig,
     private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService,
     private val speciesDao: SpeciesDao,
     private val speciesStore: SpeciesStore,
 ) {
+  private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
+
   @Operation(deprecated = true, description = "Use /api/v1/species instead.")
   @GetMapping("/species")
   fun listSpecies(): ListSpeciesResponsePayload {
@@ -105,7 +110,8 @@ class ValuesController(
 
     val values =
         payload.fields.associateWith { searchField ->
-          val values = searchService.fetchValues(searchField, payload.toSearchNode(), limit)
+          val values =
+              searchService.fetchValues(rootPrefix, searchField, payload.toSearchNode(), limit)
           val partial = values.size > limit
           FieldValuesPayload(values.take(limit), partial)
         }
