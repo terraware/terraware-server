@@ -149,6 +149,8 @@ import org.jooq.impl.DSL
  * ]
  * ```
  *
+ * TODO: Fold the below into the flattened sublists section or the aliases section, or kill it
+ *
  * Contrast this with the older non-nested fields, e.g.,
  *
  * ```kotlin
@@ -435,6 +437,73 @@ import org.jooq.impl.DSL
  * When the user sorts by a field that maps to an enum, we want to order it based on the (possibly
  * localized) display name, not on the numeric ID. Currently, we do that by generating a `CASE`
  * expression to map the IDs to their display names so the database can sort on them.
+ *
+ * ## Flattened sublists
+ *
+ * Most of the discussion above was concerned with how we return search results in tree-structured
+ * form. But sometimes a tree structure isn't the right representation. Think, for example, of
+ * exporting search results to a CSV file: by definition there is no way to nest values, and if a
+ * sublist has multiple values for a field, they need to be represented as multiple rows. In short,
+ * the results need to be returned as a series of flat records where the values are always scalar.
+ *
+ * To support this use case, the search code has the ability to "flatten" a sublist. Flattening a
+ * sublist causes the sublist's fields to be merged into the parent. The sublist no longer appears
+ * explicitly as a field in the search results. If the sublist is multi-value and there's more than
+ * one list entry, there will be one copy of the parent for each entry of the sublist.
+ *
+ * A flattened sublist is specified by using an underscore `_` rather than a period `.` as the
+ * delimiter after the sublist name. Internally, a flattened sublist is distinguished from a nested
+ * one by the [SublistField.isFlattened] property.
+ *
+ * A simple pair of examples should help illustrate what flattening does. In the first search
+ * result, the caller asked for `id` and `bags.number` in the `accessions namespace.
+ *
+ * ```json
+ * [
+ *   { "id": "1", "bags": [ { "number": "200" }, { "number": "300" } ] },
+ *   { "id": "2", "bags": [ { "number": "400" } ] }
+ * ]
+ * ```
+ *
+ * In the second, the caller asked for `id` and `bags_number`, using an underscore to ask the system
+ * to flatten the `bags` sublist.
+ *
+ * ```json
+ * [
+ *   { "id": "1", "bags_number": "200" },
+ *   { "id": "1", "bags_number": "300" },
+ *   { "id": "2", "bags_number": "400" },
+ * ]
+ * ```
+ *
+ * Two things are happening here: the `number` field from the `bags` sublist is included as a
+ * top-level field in each result, and there are now two search results for ID 1 because there were
+ * two values in the `bags` sublist.
+ *
+ * Flattened sublists are potentially useful even when you don't need all the search results to be
+ * completely tabular. In particular, they can simplify the representation of fields from
+ * single-value sublists. For example, compare what happens when you ask for `facility.name`:
+ *
+ * ```json
+ * [ { "facility": { "name": "My Seed Bank" } } ]
+ * ```
+ *
+ * and `facility_name`:
+ *
+ * ```json
+ * [ { "facility_name": "My Seed Bank" } ]
+ * ```
+ *
+ * It is possible to mix nested and flattened sublists: nested sublists can contain flattened ones
+ * but not the other way around. Mixing the two styles is not useful for the "export to CSV" case
+ * (when you wouldn't want any nesting at all) but is useful for the single-value-sublist scenario
+ * in the second pair of examples above.
+ *
+ * Constructing the SQL queries for flattened sublists is far simpler than for nested ones. Each
+ * flattened sublist turns into a simple `LEFT JOIN` operation and there is no need for multisets at
+ * all. The results of the SQL join already have the right structure: the columns from all the
+ * joined tables are mixed together in a single result row, and there are separate results if one of
+ * the joined tables has multiple rows that match the join criterion.
  */
 class NestedQueryBuilder(
     private val dslContext: DSLContext,

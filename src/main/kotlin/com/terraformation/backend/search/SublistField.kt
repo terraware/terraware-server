@@ -47,7 +47,14 @@ data class SublistField(
      */
     val conditionForMultiset: Condition,
 
-    // TODO: Document
+    /**
+     * If true, the contents of this sublist should be included as if they were fields of the same
+     * namespace where this sublist is located. That is, the contents of the sublist should be
+     * pulled up one level so they are not nested any more. If false, this sublist should appear in
+     * the search results and its fields should be nested inside it.
+     *
+     * See [NestedQueryBuilder] for examples of how flattened sublists work.
+     */
     val isFlattened: Boolean = false,
 ) {
   val delimiter: Char
