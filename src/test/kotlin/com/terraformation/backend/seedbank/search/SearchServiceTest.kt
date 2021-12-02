@@ -262,6 +262,43 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `can query both an alias field and its target`() {
+    val fields = listOf(bagNumberField, bagNumberFlattenedField)
+    val sortOrder = fields.map { SearchSortField(it) }
+
+    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "A"))
+    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
+
+    val result =
+        accessionSearchService.search(
+            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1000",
+                    "bagNumber" to "A",
+                    "bags_number" to "A",
+                    "accessionNumber" to "XYZ",
+                ),
+                mapOf(
+                    "id" to "1000",
+                    "bagNumber" to "B",
+                    "bags_number" to "B",
+                    "accessionNumber" to "XYZ",
+                ),
+                mapOf(
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                ),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
   fun `honors sort order`() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it, SearchDirection.Descending) }
