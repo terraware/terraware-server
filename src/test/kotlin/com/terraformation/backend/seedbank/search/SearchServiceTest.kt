@@ -42,6 +42,7 @@ import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.search.SearchTables
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import io.mockk.every

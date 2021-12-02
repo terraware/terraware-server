@@ -15,11 +15,11 @@ import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFieldNamespace
+import com.terraformation.backend.search.SearchTables
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
-import com.terraformation.backend.seedbank.search.SearchTables
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record

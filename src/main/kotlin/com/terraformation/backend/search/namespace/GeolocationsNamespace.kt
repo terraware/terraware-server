@@ -4,9 +4,9 @@ import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SearchFilterType
+import com.terraformation.backend.search.SearchTables
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.seedbank.search.SearchTables
 import java.math.BigDecimal
 import org.jooq.Condition
 import org.jooq.Field

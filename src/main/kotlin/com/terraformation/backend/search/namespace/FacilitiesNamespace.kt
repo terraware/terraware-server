@@ -4,9 +4,9 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.search.SearchFieldNamespace
+import com.terraformation.backend.search.SearchTables
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.seedbank.search.SearchTables
 
 class FacilitiesNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
     SearchFieldNamespace() {

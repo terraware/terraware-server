@@ -3,9 +3,9 @@ package com.terraformation.backend.search.namespace
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.search.SearchFieldNamespace
+import com.terraformation.backend.search.SearchTables
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.seedbank.search.SearchTables
 
 class BagsNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
     SearchFieldNamespace() {

@@ -24,17 +24,29 @@ import org.jooq.Table
 import org.jooq.TableField
 
 /**
- * Defines a table whose columns can be declared as [SearchField] s. The methods here are used in
+ * Defines a table whose columns can be declared as [SearchField]s. The methods here are used in
  * [SearchService] when it dynamically constructs SQL queries based on a search request from a
  * client.
  */
-abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperators) {
+abstract class SearchTable(
+    private val fuzzySearchOperators: FuzzySearchOperators,
+
+    /** The primary key column for the table in question. */
+    val primaryKey: TableField<out Record, out Any?>,
+
+    /**
+     * If the user's permission to see rows in this table can't be determined directly from the
+     * contents of the table itself, the other table that the query needs to left join with in order
+     * to check permissions.
+     *
+     * Null if the current table has the required information to determine whether the user can see
+     * a given row. In that case, [conditionForPermissions] must be non-null.
+     */
+    val inheritsPermissionsFrom: SearchTable? = null,
+) {
   /** The jOOQ Table object for the table in question. */
   open val fromTable: Table<out Record>
     get() = primaryKey.table ?: throw IllegalStateException("$primaryKey has no table")
-
-  /** The primary key column for the table in question. */
-  abstract val primaryKey: TableField<out Record, out Any?>
 
   /**
    * Adds a LEFT JOIN clause to a query to connect this table to another table to calculate whether
@@ -64,17 +76,7 @@ abstract class SearchTable(private val fuzzySearchOperators: FuzzySearchOperator
    *
    * If this is null, [inheritsPermissionsFrom] must be non-null.
    */
-  abstract fun conditionForPermissions(): Condition?
-
-  /**
-   * If the user's permission to see rows in this table can't be determined directly from the
-   * contents of the table itself, the other table that the query needs to left join with in order
-   * to check permissions.
-   *
-   * Null if the current table has the required information to determine whether the user can see a
-   * given row. In that case, [conditionForPermissions] must be non-null.
-   */
-  abstract val inheritsPermissionsFrom: SearchTable?
+  open fun conditionForPermissions(): Condition? = null
 
   /**
    * Returns the default fields to sort on. These are included when doing non-distinct queries; if
