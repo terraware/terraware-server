@@ -15,9 +15,6 @@ import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
-import com.terraformation.backend.db.tables.references.ORGANIZATIONS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
@@ -31,13 +28,6 @@ import org.jooq.TableField
 /** Definitions of all the available search tables. */
 @ManagedBean
 class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
-  val organizations = object : PerOrganizationTable(ORGANIZATIONS.ID, ORGANIZATIONS.ID) {}
-
-  val projects = object : PerProjectTable(PROJECTS.ID, PROJECTS.ID) {}
-
-  val sites = object : PerProjectTable(SITES.ID, SITES.PROJECT_ID) {}
-
-  val facilities = object : PerFacilityTable(FACILITIES.ID, FACILITIES.ID) {}
 
   val accessions =
       object : PerFacilityTable(ACCESSIONS.ID, ACCESSIONS.FACILITY_ID) {
@@ -54,6 +44,8 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val bags = object : AccessionChildTable(BAGS.ID, BAGS.ACCESSION_ID) {}
 
   val collectors = object : PerFacilityTable(COLLECTORS.ID, COLLECTORS.FACILITY_ID) {}
+
+  val facilities = object : PerFacilityTable(FACILITIES.ID, FACILITIES.ID) {}
 
   val geolocations = object : AccessionChildTable(GEOLOCATIONS.ID, GEOLOCATIONS.ACCESSION_ID) {}
 

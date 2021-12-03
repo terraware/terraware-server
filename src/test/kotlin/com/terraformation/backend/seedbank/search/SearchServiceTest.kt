@@ -56,6 +56,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -162,7 +163,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val visited = mutableSetOf<SearchFieldNamespace>()
     val toVisit = LinkedList<SearchFieldNamespace>()
 
-    toVisit.add(namespaces.organizations)
+    toVisit.add(namespaces.facilities)
 
     while (toVisit.isNotEmpty()) {
       val namespace = toVisit.removeFirst()
@@ -180,6 +181,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         }
       }
     }
+
+    // Sanity-check that the test is actually walking the hierarchy
+    assertTrue(visited.size > 5, "Should have checked more than ${visited.size} namespaces")
   }
 
   @Test

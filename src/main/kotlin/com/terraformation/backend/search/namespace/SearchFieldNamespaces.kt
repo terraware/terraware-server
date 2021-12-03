@@ -8,9 +8,9 @@ import javax.annotation.ManagedBean
  * Manages the hierarchy of [SearchFieldNamespace]s.
  *
  * Namespace initialization is complicated by the fact that there are circular references among
- * namespaces. For example, the `projects` namespace has a multi-value sublist `sites` that refers
- * to the `sites` namespace, and the `sites` namespace has a single-value sublist `project` that
- * refers to the `projects` namespace.
+ * namespaces. For example, the `facilities` namespace has a multi-value sublist `accessions` that
+ * refers to the `facilities` namespace, and the `accessions` namespace has a single-value sublist
+ * `facility` that refers to the `facilities` namespace.
  *
  * To cope with that, we take a two-phase approach. The [SearchFieldNamespace] objects are all
  * created here, but their [SearchFieldNamespace.sublists] values aren't initialized at construction
@@ -31,9 +31,6 @@ class SearchFieldNamespaces(val searchTables: SearchTables) {
   val geolocations = GeolocationsNamespace(this)
   val germinations = GerminationsNamespace(this)
   val germinationTests = GerminationTestsNamespace(this)
-  val organizations = OrganizationsNamespace(this)
-  val projects = ProjectsNamespace(this)
-  val sites = SitesNamespace(this)
   val species = SpeciesNamespace(this)
   val storageLocations = StorageLocationsNamespace(this)
   val withdrawals = WithdrawalsNamespace(this)
