@@ -10,9 +10,9 @@ class AccessionGerminationTestTypesNamespace(searchTables: SearchTables) : Searc
   override val sublists: List<SublistField> = emptyList()
 
   override val fields: List<SearchField> =
-      with(searchTables) {
+      with(searchTables.accessionGerminationTestTypes) {
         listOf(
-            accessionGerminationTestTypes.enumField(
+            enumField(
                 "type",
                 "Viability test type (accession)",
                 ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID),

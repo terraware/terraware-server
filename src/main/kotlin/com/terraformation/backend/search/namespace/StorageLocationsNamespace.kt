@@ -10,9 +10,9 @@ class StorageLocationsNamespace(searchTables: SearchTables) : SearchFieldNamespa
   override val sublists: List<SublistField> = emptyList()
 
   override val fields: List<SearchField> =
-      with(searchTables) {
+      with(searchTables.storageLocations) {
         listOf(
-            storageLocations.textField("name", "Storage location name", STORAGE_LOCATIONS.NAME),
+            textField("name", "Storage location name", STORAGE_LOCATIONS.NAME),
         )
       }
 }

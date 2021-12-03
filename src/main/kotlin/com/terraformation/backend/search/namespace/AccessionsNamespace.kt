@@ -65,31 +65,27 @@ class AccessionsNamespace(
       )
 
   override val fields =
-      with(searchTables) {
+      with(searchTables.accessions) {
         listOf(
-            accessions.upperCaseTextField(
-                "accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
+            upperCaseTextField("accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
             ActiveField("active", "Active"),
             aliasField("bagNumber", "bags_number"),
-            accessions.timestampField(
-                "checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
-            accessions.dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
-            accessions.textField(
-                "collectionNotes", "Notes (collection)", ACCESSIONS.ENVIRONMENTAL_NOTES),
-            accessions.integerField(
+            timestampField("checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
+            dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
+            textField("collectionNotes", "Notes (collection)", ACCESSIONS.ENVIRONMENTAL_NOTES),
+            integerField(
                 "cutTestSeedsCompromised",
                 "Number of seeds compromised",
                 ACCESSIONS.CUT_TEST_SEEDS_COMPROMISED),
-            accessions.integerField(
+            integerField(
                 "cutTestSeedsEmpty", "Number of seeds empty", ACCESSIONS.CUT_TEST_SEEDS_EMPTY),
-            accessions.integerField(
+            integerField(
                 "cutTestSeedsFilled", "Number of seeds filled", ACCESSIONS.CUT_TEST_SEEDS_FILLED),
-            accessions.dateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
-            accessions.dateField("dryingMoveDate", "Drying move date", ACCESSIONS.DRYING_MOVE_DATE),
-            accessions.dateField(
-                "dryingStartDate", "Drying start date", ACCESSIONS.DRYING_START_DATE),
-            accessions.enumField("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
-            accessions.integerField(
+            dateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
+            dateField("dryingMoveDate", "Drying move date", ACCESSIONS.DRYING_MOVE_DATE),
+            dateField("dryingStartDate", "Drying start date", ACCESSIONS.DRYING_START_DATE),
+            enumField("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
+            integerField(
                 "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
             aliasField("family", "familyInfo_name"),
             aliasField("geolocation", "geolocations_coordinates"),
@@ -104,57 +100,46 @@ class AccessionsNamespace(
             aliasField("germinationTestNotes", "germinationTests_notes"),
             aliasField("germinationTestType", "germinationTests_type"),
             aliasField("germinationTreatment", "germinationTests_treatment"),
-            accessions.idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
-            accessions.textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
-            accessions.dateField(
+            idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
+            textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
+            dateField(
                 "latestGerminationTestDate",
                 "Most recent germination test date",
                 ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
-            accessions.integerField(
+            integerField(
                 "latestViabilityPercent",
                 "Most recent % viability",
                 ACCESSIONS.LATEST_VIABILITY_PERCENT),
-            accessions.dateField(
-                "nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
+            dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
             aliasField("primaryCollector", "primaryCollectorInfo_name"),
-            accessions.enumField(
-                "processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
-            accessions.textField(
-                "processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
-            accessions.dateField(
+            enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
+            textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
+            dateField(
                 "processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
-            accessions.enumField("rare", "Rare", ACCESSIONS.RARE_TYPE_ID),
-            accessions.dateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
-            accessions.gramsField(
-                "remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
-            accessions.bigDecimalField(
+            enumField("rare", "Rare", ACCESSIONS.RARE_TYPE_ID),
+            dateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
+            gramsField("remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
+            bigDecimalField(
                 "remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
-            accessions.enumField(
-                "remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
-            accessions.textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
-            accessions.enumField(
-                "sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
+            enumField("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
+            textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
+            enumField("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
             aliasField("species", "speciesInfo_name"),
-            accessions.enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
-            accessions.enumField(
-                "storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
+            enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
+            enumField("storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
             aliasField("storageLocation", "storageLocationInfo_name"),
-            accessions.textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
-            accessions.integerField(
-                "storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
-            accessions.dateField(
-                "storageStartDate", "Storing start date", ACCESSIONS.STORAGE_START_DATE),
-            accessions.enumField(
-                "targetStorageCondition", "Target %RH", ACCESSIONS.TARGET_STORAGE_CONDITION),
-            accessions.gramsField("totalGrams", "Total size (grams)", ACCESSIONS.TOTAL_GRAMS),
-            accessions.bigDecimalField(
-                "totalQuantity", "Total size (quantity)", ACCESSIONS.TOTAL_QUANTITY),
-            accessions.enumField("totalUnits", "Total size (units)", ACCESSIONS.TOTAL_UNITS_ID),
-            accessions.integerField(
+            textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
+            integerField("storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
+            dateField("storageStartDate", "Storing start date", ACCESSIONS.STORAGE_START_DATE),
+            enumField("targetStorageCondition", "Target %RH", ACCESSIONS.TARGET_STORAGE_CONDITION),
+            gramsField("totalGrams", "Total size (grams)", ACCESSIONS.TOTAL_GRAMS),
+            bigDecimalField("totalQuantity", "Total size (quantity)", ACCESSIONS.TOTAL_QUANTITY),
+            enumField("totalUnits", "Total size (units)", ACCESSIONS.TOTAL_UNITS_ID),
+            integerField(
                 "totalViabilityPercent",
                 "Total estimated % viability",
                 ACCESSIONS.TOTAL_VIABILITY_PERCENT),
-            accessions.integerField(
+            integerField(
                 "treesCollectedFrom",
                 "Number of trees collected from",
                 ACCESSIONS.TREES_COLLECTED_FROM),

@@ -17,13 +17,13 @@ class GerminationsNamespace(
               "germinationTest", GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID)))
 
   override val fields: List<SearchField> =
-      with(searchTables) {
+      with(searchTables.germinations) {
         listOf(
-            germinations.dateField(
+            dateField(
                 "recordingDate",
                 "Recording date of germination test result",
                 GERMINATIONS.RECORDING_DATE),
-            germinations.integerField(
+            integerField(
                 "seedsGerminated", "Number of seeds germinated", GERMINATIONS.SEEDS_GERMINATED),
         )
       }
