@@ -51,7 +51,6 @@ import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
-import java.util.LinkedList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -161,23 +160,21 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `namespaces initialize successfully`() {
     val visited = mutableSetOf<SearchFieldNamespace>()
-    val toVisit = LinkedList<SearchFieldNamespace>()
+    val toVisit = mutableListOf<SearchFieldNamespace>()
 
     toVisit.add(namespaces.facilities)
 
     while (toVisit.isNotEmpty()) {
-      val namespace = toVisit.removeFirst()
+      val namespace = toVisit.removeLast()
 
       assertDoesNotThrow("$namespace failed to initialize. Is it missing 'by lazy'?") {
-        val sublists = namespace.sublists
-        val fields = namespace.fields
-
         visited.add(namespace)
-        toVisit.addAll(sublists.map { it.namespace }.filter { it !in visited })
 
-        // Don't need to do anything with the fields, just make sure they're initialized.
-        fields.forEach { _ ->
-          // No-op; we just need to make sure we can iterate the field list.
+        // "map" has the side effect of making sure the list is initialized.
+        toVisit.addAll(namespace.sublists.map { it.namespace }.filter { it !in visited })
+
+        namespace.fields.forEach { _ ->
+          // No-op; we just need to make sure we can iterate over the field list.
         }
       }
     }
