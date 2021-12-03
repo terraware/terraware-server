@@ -76,16 +76,38 @@ class SearchService(private val dslContext: DSLContext) {
       limit: Int = Int.MAX_VALUE,
       distinct: Boolean = false,
   ): SearchResults {
+    // TODO: Better cursor support. Should remember the most recent values of the sort fields
+    //       and pass them to skip(). For now, just treat the cursor as an offset.
+    val offset = cursor?.toIntOrNull() ?: 0
+
+    val results =
+        runQuery(rootPrefix, fields, criteria, sortOrder, limit, offset, distinct).filterNotNull()
+
+    val newCursor =
+        if (results.size > limit) {
+          "${offset + limit}"
+        } else {
+          null
+        }
+
+    return SearchResults(results.take(limit), newCursor)
+  }
+
+  private fun runQuery(
+      rootPrefix: SearchFieldPrefix,
+      fields: Collection<SearchFieldPath>,
+      criteria: SearchNode,
+      sortOrder: List<SearchSortField>,
+      limit: Int,
+      offset: Int = 0,
+      distinct: Boolean,
+  ): List<Map<String, Any>?> {
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
     queryBuilder.addSelectFields(fields)
     queryBuilder.addSortFields(sortOrder)
     queryBuilder.addCondition(filterResults(rootPrefix, criteria))
 
     val query = queryBuilder.toSelectQuery(distinct)
-
-    // TODO: Better cursor support. Should remember the most recent values of the sort fields
-    //       and pass them to skip(). For now, just treat the cursor as an offset.
-    val offset = cursor?.toIntOrNull() ?: 0
 
     // Query one more row than the limit so we can tell the client whether or not there are
     // additional pages of results.
@@ -99,19 +121,11 @@ class SearchService(private val dslContext: DSLContext) {
     log.debug("search SQL query: ${queryWithLimit.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
-    val results = queryWithLimit.fetch(queryBuilder::convertToMap).filterNotNull()
+    val results = queryWithLimit.fetch(queryBuilder::convertToMap)
 
     val endTime = System.currentTimeMillis()
     log.debug("search query returned ${results.size} rows in ${endTime - startTime} ms")
-
-    val newCursor =
-        if (results.size > limit) {
-          "${offset + limit}"
-        } else {
-          null
-        }
-
-    return SearchResults(results.take(limit), newCursor)
+    return results
   }
 
   /**
@@ -134,19 +148,22 @@ class SearchService(private val dslContext: DSLContext) {
       throw IllegalArgumentException("Fetching nested field values is not supported.")
     }
 
-    val fieldPathName = "$fieldPath"
     val searchResults =
-        search(
+        runQuery(
             rootPrefix,
             listOf(fieldPath),
             criteria,
             listOf(SearchSortField(fieldPath)),
             limit = limit,
-            distinct = true)
+            distinct = true,
+        )
 
+    val fieldPathName = "$fieldPath"
+
+    // The distinct() call is needed here despite the "distinct = true" in the runQuery call because
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
-    return searchResults.results.map { it[fieldPathName] }.map { it?.toString() }.distinct()
+    return searchResults.map { it?.get(fieldPathName)?.toString() }.distinct()
   }
 
   /**
