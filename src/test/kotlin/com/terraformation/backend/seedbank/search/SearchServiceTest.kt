@@ -35,6 +35,7 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchDirection
+import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
@@ -50,6 +51,7 @@ import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.util.LinkedList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -57,6 +59,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
@@ -152,6 +155,31 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             facilityId = facilityId,
             speciesId = SpeciesId(10001),
             treesCollectedFrom = 2))
+  }
+
+  @Test
+  fun `namespaces initialize successfully`() {
+    val visited = mutableSetOf<SearchFieldNamespace>()
+    val toVisit = LinkedList<SearchFieldNamespace>()
+
+    toVisit.add(namespaces.organizations)
+
+    while (toVisit.isNotEmpty()) {
+      val namespace = toVisit.removeFirst()
+
+      assertDoesNotThrow("$namespace failed to initialize. Is it missing 'by lazy'?") {
+        val sublists = namespace.sublists
+        val fields = namespace.fields
+
+        visited.add(namespace)
+        toVisit.addAll(sublists.map { it.namespace }.filter { it !in visited })
+
+        // Don't need to do anything with the fields, just make sure they're initialized.
+        fields.forEach { _ ->
+          // No-op; we just need to make sure we can iterate the field list.
+        }
+      }
+    }
   }
 
   @Test
