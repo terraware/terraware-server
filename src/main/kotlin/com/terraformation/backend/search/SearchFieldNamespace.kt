@@ -1,5 +1,6 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 
@@ -55,6 +56,11 @@ abstract class SearchFieldNamespace {
   operator fun get(fieldName: String): SearchField? = fieldsByName[fieldName]
 
   fun getSublistOrNull(sublistName: String): SublistField? = sublistsByName[sublistName]
+
+  fun aliasField(fieldName: String, targetName: String): AliasField {
+    val targetPath = SearchFieldPrefix(this).resolve(targetName)
+    return AliasField(fieldName, targetPath)
+  }
 
   /**
    * Returns a [SublistField] pointing to this namespace for use in cases where there can be
