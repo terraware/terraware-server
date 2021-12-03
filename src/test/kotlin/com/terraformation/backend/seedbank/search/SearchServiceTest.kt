@@ -2029,6 +2029,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "active" to "Active",
                   "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
                   "species" to "Other Dogwood",
+                  "speciesName" to "Other Dogwood",
                   "state" to "Processing",
                   "treesCollectedFrom" to "2",
               ),
@@ -2053,6 +2054,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                               "seedsSown" to "15",
                           )),
                   "species" to "Kousa Dogwood",
+                  "speciesName" to "Kousa Dogwood",
                   "state" to "Processed",
                   "treesCollectedFrom" to "1",
               ))
