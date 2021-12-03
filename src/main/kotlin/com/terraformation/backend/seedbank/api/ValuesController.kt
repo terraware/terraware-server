@@ -18,8 +18,8 @@ import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
+import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import com.terraformation.backend.seedbank.db.StorageLocationStore
-import com.terraformation.backend.seedbank.search.AccessionsNamespace
 import com.terraformation.backend.species.db.SpeciesStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -38,13 +38,14 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class ValuesController(
-    accessionsNamespace: AccessionsNamespace,
     private val config: TerrawareServerConfig,
+    namespaces: SearchFieldNamespaces,
     private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService,
     private val speciesDao: SpeciesDao,
     private val speciesStore: SpeciesStore,
 ) {
+  private val accessionsNamespace = namespaces.accessions
   private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
 
   @Operation(deprecated = true, description = "Use /api/v1/species instead.")

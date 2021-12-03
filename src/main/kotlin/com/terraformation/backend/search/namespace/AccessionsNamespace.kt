@@ -1,8 +1,7 @@
-package com.terraformation.backend.seedbank.search
+package com.terraformation.backend.search.namespace
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
@@ -22,26 +21,30 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
+import com.terraformation.backend.seedbank.search.SearchTables
 import java.math.BigDecimal
-import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-/**
- * Contains a list of all the available [SearchField] s.
- *
- * The list is constructed at runtime rather than declared statically because some implementations
- * depend on Spring-managed services.
- */
-@ManagedBean
 class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace() {
   private val bagsNamespace = BagsNamespace(searchTables, this)
   private val facilitiesNamespace = FacilitiesNamespace(searchTables, this)
   private val germinationTestsNamespace = GerminationTestsNamespace(searchTables, this)
   private val withdrawalsNamespace = WithdrawalsNamespace(searchTables, this)
+
+  override val sublists: List<SublistField> =
+      listOf(
+          bagsNamespace.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
+          facilitiesNamespace.asSingleValueSublist(
+              "facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
+          germinationTestsNamespace.asMultiValueSublist(
+              "germinationTests", ACCESSIONS.ID.eq(GERMINATION_TESTS.ACCESSION_ID)),
+          withdrawalsNamespace.asMultiValueSublist(
+              "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
+      )
 
   override val fields =
       with(searchTables) {
@@ -184,146 +187,6 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
                 WITHDRAWALS.WITHDRAWN_UNITS_ID),
         )
       }
-
-  override val sublists: List<SublistField> =
-      listOf(
-          bagsNamespace.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
-          facilitiesNamespace.asSingleValueSublist(
-              "facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
-          germinationTestsNamespace.asMultiValueSublist(
-              "germinationTests", ACCESSIONS.ID.eq(GERMINATION_TESTS.ACCESSION_ID)),
-          withdrawalsNamespace.asMultiValueSublist(
-              "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
-      )
-
-  class BagsNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
-      SearchFieldNamespace() {
-    override val sublists: List<SublistField> =
-        listOf(
-            accessionsNamespace.asSingleValueSublist(
-                "accession", BAGS.ACCESSION_ID.eq(ACCESSIONS.ID)))
-
-    override val fields: List<SearchField> =
-        with(searchTables) {
-          listOf(
-              bags.textField("number", "Bag number", BAGS.BAG_NUMBER),
-          )
-        }
-  }
-
-  class FacilitiesNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
-      SearchFieldNamespace() {
-    override val sublists: List<SublistField> =
-        listOf(
-            accessionsNamespace.asMultiValueSublist(
-                "accessions", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)))
-
-    override val fields: List<SearchField> =
-        with(searchTables) {
-          listOf(
-              facilities.idWrapperField("id", "Facility ID", FACILITIES.ID) { FacilityId(it) },
-              facilities.textField("name", "Facility name", FACILITIES.NAME, nullable = false),
-              facilities.enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),
-          )
-        }
-  }
-
-  class GerminationsNamespace(
-      searchTables: SearchTables,
-      germinationTestsNamespace: GerminationTestsNamespace
-  ) : SearchFieldNamespace() {
-    override val sublists: List<SublistField> =
-        listOf(
-            germinationTestsNamespace.asSingleValueSublist(
-                "germinationTest", GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID)))
-
-    override val fields: List<SearchField> =
-        with(searchTables) {
-          listOf(
-              germinations.dateField(
-                  "recordingDate",
-                  "Recording date of germination test result",
-                  GERMINATIONS.RECORDING_DATE),
-              germinations.integerField(
-                  "seedsGerminated", "Number of seeds germinated", GERMINATIONS.SEEDS_GERMINATED),
-          )
-        }
-  }
-
-  class GerminationTestsNamespace(
-      searchTables: SearchTables,
-      accessionsNamespace: AccessionsNamespace
-  ) : SearchFieldNamespace() {
-    private val germinationsNamespace = GerminationsNamespace(searchTables, this)
-
-    override val sublists: List<SublistField> =
-        listOf(
-            accessionsNamespace.asSingleValueSublist(
-                "accession", GERMINATION_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID)),
-            germinationsNamespace.asMultiValueSublist(
-                "germinations", GERMINATION_TESTS.ID.eq(GERMINATIONS.TEST_ID)))
-
-    override val fields: List<SearchField> =
-        with(searchTables) {
-          listOf(
-              germinationTests.dateField(
-                  "endDate", "Germination end date", GERMINATION_TESTS.END_DATE),
-              germinationTests.textField(
-                  "notes", "Notes (germination test)", GERMINATION_TESTS.NOTES),
-              germinationTests.integerField(
-                  "percentGerminated", "% Viability", GERMINATION_TESTS.TOTAL_PERCENT_GERMINATED),
-              germinationTests.enumField("seedType", "Seed type", GERMINATION_TESTS.SEED_TYPE_ID),
-              germinationTests.integerField(
-                  "seedsSown", "Number of seeds sown", GERMINATION_TESTS.SEEDS_SOWN),
-              germinationTests.dateField(
-                  "startDate", "Germination start date", GERMINATION_TESTS.START_DATE),
-              germinationTests.enumField(
-                  "substrate", "Germination substrate", GERMINATION_TESTS.SUBSTRATE_ID),
-              germinationTests.enumField(
-                  "treatment", "Germination treatment", GERMINATION_TESTS.TREATMENT_ID),
-              germinationTests.enumField(
-                  "type", "Germination test type", GERMINATION_TESTS.TEST_TYPE),
-          )
-        }
-  }
-
-  class WithdrawalsNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsNamespace) :
-      SearchFieldNamespace() {
-    override val sublists: List<SublistField> =
-        listOf(
-            accessionsNamespace.asSingleValueSublist(
-                "accession", WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID)))
-
-    override val fields: List<SearchField> =
-        with(searchTables) {
-          listOf(
-              withdrawals.dateField("date", "Date of withdrawal", WITHDRAWALS.DATE),
-              withdrawals.textField("destination", "Destination", WITHDRAWALS.DESTINATION),
-              withdrawals.gramsField(
-                  "grams", "Weight of seeds withdrawn (g)", WITHDRAWALS.WITHDRAWN_GRAMS),
-              withdrawals.textField("notes", "Notes (withdrawal)", WITHDRAWALS.NOTES),
-              withdrawals.enumField("purpose", "Purpose", WITHDRAWALS.PURPOSE_ID),
-              withdrawals.bigDecimalField(
-                  "quantity", "Quantity of seeds withdrawn", WITHDRAWALS.WITHDRAWN_QUANTITY),
-              withdrawals.gramsField(
-                  "remainingGrams",
-                  "Weight in grams of seeds remaining (withdrawal)",
-                  WITHDRAWALS.REMAINING_GRAMS),
-              withdrawals.bigDecimalField(
-                  "remainingQuantity",
-                  "Weight or count of seeds remaining (withdrawal)",
-                  WITHDRAWALS.REMAINING_QUANTITY),
-              withdrawals.enumField(
-                  "remainingUnits",
-                  "Units of measurement of quantity remaining (withdrawal)",
-                  WITHDRAWALS.REMAINING_UNITS_ID),
-              withdrawals.enumField(
-                  "units",
-                  "Units of measurement of quantity withdrawn",
-                  WITHDRAWALS.WITHDRAWN_UNITS_ID),
-          )
-        }
-  }
 
   /**
    * Implements the `active` field. This field doesn't actually exist in the database; it is derived
