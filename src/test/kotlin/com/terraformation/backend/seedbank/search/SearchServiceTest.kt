@@ -9,6 +9,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -162,7 +163,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val visited = mutableSetOf<SearchFieldNamespace>()
     val toVisit = mutableListOf<SearchFieldNamespace>()
 
-    toVisit.add(namespaces.facilities)
+    toVisit.add(namespaces.organizations)
 
     while (toVisit.isNotEmpty()) {
       val namespace = toVisit.removeLast()
@@ -1393,6 +1394,135 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           SearchResults(
               listOf(mapOf("germinationTests" to listOf(mapOf("seedsSown" to "15")))),
               cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can get to accession sublists starting from organization`() {
+      val orgPrefix = SearchFieldPrefix(namespaces.organizations)
+      val fullyQualifiedField =
+          orgPrefix.resolve("projects.sites.facilities.accessions.bags.number")
+
+      every { user.organizationRoles } returns mapOf(OrganizationId(1) to Role.OWNER)
+
+      val result =
+          searchService.search(
+              orgPrefix, listOf(fullyQualifiedField), FieldNode(fullyQualifiedField, listOf("5")))
+
+      // Bags from both accessions appear here even though we're filtering on bag number because the
+      // filter criteria determine what top-level (root prefix) results are returned, and we always
+      // return the full set of data for top-level results that match the criteria.
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "projects" to
+                          listOf(
+                              mapOf(
+                                  "sites" to
+                                      listOf(
+                                          mapOf(
+                                              "facilities" to
+                                                  listOf(
+                                                      mapOf(
+                                                          "accessions" to
+                                                              listOf(
+                                                                  mapOf(
+                                                                      "bags" to
+                                                                          listOf(
+                                                                              mapOf(
+                                                                                  "number" to "1"),
+                                                                              mapOf(
+                                                                                  "number" to
+                                                                                      "5"))),
+                                                                  mapOf(
+                                                                      "bags" to
+                                                                          listOf(
+                                                                              mapOf(
+                                                                                  "number" to "2"),
+                                                                              mapOf(
+                                                                                  "number" to
+                                                                                      "6")))))))))))),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can get to organization from accession sublist`() {
+      val germinationsPrefix = SearchFieldPrefix(namespaces.germinations)
+      val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
+      val orgNameField =
+          germinationsPrefix.resolve(
+              "germinationTest.accession.facility.site.project.organization.name")
+      val orgName = "dev"
+
+      val result =
+          searchService.search(
+              germinationsPrefix,
+              listOf(orgNameField, rootSeedsGerminatedField),
+              FieldNode(orgNameField, listOf(orgName)))
+
+      val sublistValues =
+          mapOf(
+              "accession" to
+                  mapOf(
+                      "facility" to
+                          mapOf(
+                              "site" to
+                                  mapOf(
+                                      "project" to
+                                          mapOf("organization" to mapOf("name" to orgName))))))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf("germinationTest" to sublistValues, "seedsGerminated" to "5"),
+                  mapOf("germinationTest" to sublistValues, "seedsGerminated" to "10")),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can get to flattened organization from accession sublist`() {
+      val germinationsPrefix = SearchFieldPrefix(namespaces.germinations)
+      val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
+      val flattenedFieldName = "germinationTest_accession_facility_site_project_organization_name"
+      val orgNameField = germinationsPrefix.resolve(flattenedFieldName)
+      val orgName = "dev"
+
+      val result =
+          searchService.search(
+              germinationsPrefix,
+              listOf(orgNameField, rootSeedsGerminatedField),
+              FieldNode(orgNameField, listOf(orgName)))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(flattenedFieldName to orgName, "seedsGerminated" to "5"),
+                  mapOf(flattenedFieldName to orgName, "seedsGerminated" to "10")),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can filter across multiple single-value sublists`() {
+      val germinationsPrefix = SearchFieldPrefix(namespaces.germinations)
+      val orgNameField =
+          germinationsPrefix.resolve(
+              "germinationTest.accession.facility.site.project.organization.name")
+
+      val result =
+          searchService.search(
+              germinationsPrefix,
+              listOf(orgNameField),
+              FieldNode(orgNameField, listOf("Non-matching organization name")))
+
+      val expected = SearchResults(emptyList(), cursor = null)
 
       assertEquals(expected, result)
     }
