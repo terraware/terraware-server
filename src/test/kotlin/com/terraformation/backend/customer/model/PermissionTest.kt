@@ -179,6 +179,7 @@ internal class PermissionTest : DatabaseTest() {
         UserStore(
             clock,
             config,
+            dslContext,
             mockk(),
             mockk(),
             mockk(),
