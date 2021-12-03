@@ -4,8 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FuzzySearchOperators
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
@@ -28,7 +26,6 @@ import org.jooq.TableField
 /** Definitions of all the available search tables. */
 @ManagedBean
 class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
-
   val accessions =
       object : PerFacilityTable(ACCESSIONS.ID, ACCESSIONS.FACILITY_ID) {
         override val defaultOrderFields: List<OrderField<*>>
@@ -75,26 +72,6 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
       object : PerFacilityTable(STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID) {}
 
   val withdrawals = object : AccessionChildTable(WITHDRAWALS.ID, WITHDRAWALS.ACCESSION_ID) {}
-
-  /** Base class for tables with per-organization permissions. */
-  abstract inner class PerOrganizationTable(
-      primaryKey: TableField<out Record, out Any?>,
-      private val organizationIdField: TableField<*, OrganizationId?>
-  ) : SearchTable(fuzzySearchOperators, primaryKey) {
-    override fun conditionForPermissions(): Condition? {
-      return organizationIdField.`in`(currentUser().organizationRoles.keys)
-    }
-  }
-
-  /** Base class for tables with per-project permissions. */
-  abstract inner class PerProjectTable(
-      primaryKey: TableField<out Record, out Any?>,
-      private val projectIdField: TableField<*, ProjectId?>
-  ) : SearchTable(fuzzySearchOperators, primaryKey) {
-    override fun conditionForPermissions(): Condition? {
-      return projectIdField.`in`(currentUser().projectRoles.keys)
-    }
-  }
 
   /** Base class for tables with per-facility permissions. */
   abstract inner class PerFacilityTable(
