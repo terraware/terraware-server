@@ -75,6 +75,7 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
           integerField(
               "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
           aliasField("family", "familyInfo_name"),
+          aliasField("familyName", "familyInfo_name"),
           aliasField("geolocation", "geolocations_coordinates"),
           aliasField("germinationEndDate", "germinationTests_endDate"),
           aliasField("germinationPercentGerminated", "germinationTests_percentGerminated"),
@@ -98,6 +99,7 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
               ACCESSIONS.LATEST_VIABILITY_PERCENT),
           dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
           aliasField("primaryCollector", "primaryCollectorInfo_name"),
+          aliasField("primaryCollectorName", "primaryCollectorInfo_name"),
           enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
           textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
           dateField(
@@ -111,9 +113,11 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
           textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
           enumField("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
           aliasField("species", "speciesInfo_name"),
+          aliasField("speciesName", "speciesInfo_name"),
           enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
           enumField("storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
           aliasField("storageLocation", "storageLocationInfo_name"),
+          aliasField("storageLocationName", "storageLocationInfo_name"),
           textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
           integerField("storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
           dateField("storageStartDate", "Storing start date", ACCESSIONS.STORAGE_START_DATE),
