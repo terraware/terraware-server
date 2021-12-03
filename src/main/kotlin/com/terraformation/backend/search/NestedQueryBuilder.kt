@@ -579,8 +579,10 @@ class NestedQueryBuilder(
    * The result of that conversion becomes the value of the multiset field in the parent query. See
    * the jOOQ docs for a more detailed explanation of how ad-hoc converters and nested queries
    * interact with each other.
+   *
+   * Returns null rather than an empty map if there were no values in any fields.
    */
-  fun convertToMap(record: Record): Map<String, Any> {
+  fun convertToMap(record: Record): Map<String, Any>? {
     val fieldValues = mutableMapOf<String, Any>()
 
     scalarFields.forEach { (name, field) ->
@@ -606,7 +608,7 @@ class NestedQueryBuilder(
       }
     }
 
-    return fieldValues
+    return fieldValues.ifEmpty { null }
   }
 
   /**
@@ -837,7 +839,7 @@ class NestedQueryBuilder(
       prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
 
       DSL.multiset(toSelectQuery()).`as`(alias).convertFrom { result ->
-        result.map { record -> convertToMap(record) }
+        result.mapNotNull { record -> convertToMap(record) }
       }
     }
   }

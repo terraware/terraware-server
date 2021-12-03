@@ -1217,6 +1217,21 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `does not return empty top-level results when only selecting sublist fields`() {
+      // Use searchService rather than accessionSearchService; we don't want to include the
+      // accession ID/number fields because those would cause the results for accession 1001 to
+      // no longer be empty.
+      val result = searchService.search(rootPrefix, listOf(seedsSownField), NoConditionNode())
+
+      val expected =
+          SearchResults(
+              listOf(mapOf("germinationTests" to listOf(mapOf("seedsSown" to "15")))),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
     fun `can filter on nested field`() {
       val fields = listOf(bagsNumberField)
       val sortOrder = fields.map { SearchSortField(it) }

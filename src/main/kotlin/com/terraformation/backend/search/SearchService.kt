@@ -101,7 +101,7 @@ class SearchService(private val dslContext: DSLContext) {
     log.debug("search SQL query: ${queryWithLimit.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
-    val results = queryWithLimit.fetch(queryBuilder::convertToMap)
+    val results = queryWithLimit.fetch(queryBuilder::convertToMap).filterNotNull()
 
     val endTime = System.currentTimeMillis()
     log.debug("search query returned ${results.size} rows in ${endTime - startTime} ms")
