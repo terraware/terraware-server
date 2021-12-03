@@ -12,6 +12,7 @@ tags:
 - name: SeedBankApp
 - name: DeviceManager
 - name: GISApp
+- name: Search
 paths:
   /api/v1/devices:
     post:
@@ -1339,6 +1340,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/search:
+    post:
+      tags:
+      - Search
+      operationId: search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequestPayload'
+            examples:
+              example1:
+                description: Search for all accessions of species "Species Name" whose
+                  remaining seeds weigh between 100 and 200 milligrams or that have
+                  between 30 and 40 seeds remaining.
+                value:
+                  prefix: projects.sites.facilities.accessions
+                  fields:
+                  - accessionNumber
+                  - remainingQuantity
+                  - remainingUnits
+                  search:
+                    operation: and
+                    children:
+                    - operation: field
+                      field: species
+                      values:
+                      - Species Name
+                    - operation: or
+                      children:
+                      - operation: field
+                        field: remainingGrams
+                        type: Range
+                        values:
+                        - 100 Milligrams
+                        - 200 Milligrams
+                      - operation: and
+                        children:
+                        - operation: field
+                          field: remainingUnits
+                          values:
+                          - Seeds
+                        - operation: field
+                          field: remainingQuantity
+                          type: Range
+                          values:
+                          - "30"
+                          - "40"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponsePayload'
   /api/v1/seedbank/accession:
     post:
       tags:
@@ -4558,6 +4615,64 @@ components:
       - $ref: '#/components/schemas/FieldNodePayload'
       - $ref: '#/components/schemas/NotNodePayload'
       - $ref: '#/components/schemas/OrNodePayload'
+    SearchRequestPayload:
+      required:
+      - count
+      - fields
+      type: object
+      properties:
+        prefix:
+          type: string
+          description: "Prefix for field names. This determines how field names are\
+            \ interpreted, and also how results are structured. Each element in the\
+            \ \"results\" array in the response will be an instance of whatever entity\
+            \ the prefix points to. Always evaluated starting from the \"organizations\"\
+            \ level. If not present, the search will return a list of organizations."
+          example: projects.sites.facilities.accessions
+        fields:
+          type: array
+          description: List of fields to return. Field names should be relative to
+            the prefix. They may navigate the data hierarchy using '.' or '_' as delimiters.
+          example:
+          - processingStartDate
+          - germinationTests.seedsSown
+          - facility_name
+          items:
+            type: string
+            description: List of fields to return. Field names should be relative
+              to the prefix. They may navigate the data hierarchy using '.' or '_'
+              as delimiters.
+            example: "[\"processingStartDate\",\"germinationTests.seedsSown\",\"facility_name\"\
+              ]"
+        sortOrder:
+          type: array
+          description: How to sort the search results. This controls both the order
+            of the top-level results and the order of any lists of child objects.
+          items:
+            $ref: '#/components/schemas/SearchSortOrderElement'
+        search:
+          oneOf:
+          - $ref: '#/components/schemas/AndNodePayload'
+          - $ref: '#/components/schemas/FieldNodePayload'
+          - $ref: '#/components/schemas/NotNodePayload'
+          - $ref: '#/components/schemas/OrNodePayload'
+        count:
+          type: integer
+          description: Maximum number of top-level search results to return. The system
+            may impose a limit on this value. A separate system-imposed limit may
+            also be applied to lists of child objects inside the top-level results.
+          format: int32
+          default: 25
+        cursor:
+          type: string
+          description: "Starting point for search results. If present, a previous\
+            \ search will be continued from where it left off. This should be the\
+            \ value of the cursor that was returned in the response to a previous\
+            \ search."
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchFilter'
     SearchResponsePayload:
       required:
       - results

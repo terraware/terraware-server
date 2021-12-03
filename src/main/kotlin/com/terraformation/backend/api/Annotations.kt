@@ -27,6 +27,11 @@ annotation class DeviceManagerAppEndpoint
 annotation class CustomerEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "Search")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class SearchEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 @ApiResponse(
     responseCode = "404",
