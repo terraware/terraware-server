@@ -18,6 +18,9 @@ import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
+import com.terraformation.backend.search.api.HasSearchNode
+import com.terraformation.backend.search.api.SearchFilter
+import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import com.terraformation.backend.species.db.SpeciesStore
