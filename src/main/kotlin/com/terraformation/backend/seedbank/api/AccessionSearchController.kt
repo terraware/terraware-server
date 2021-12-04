@@ -3,14 +3,16 @@ package com.terraformation.backend.seedbank.api
 import com.opencsv.CSVWriter
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
+import com.terraformation.backend.search.api.HasSearchFields
 import com.terraformation.backend.search.api.HasSearchNode
 import com.terraformation.backend.search.api.HasSortOrder
 import com.terraformation.backend.search.api.SearchFilter
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.api.SearchResponsePayload
 import com.terraformation.backend.search.api.SearchSortOrderElement
+import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import com.terraformation.backend.seedbank.search.AccessionSearchService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -38,9 +40,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class AccessionSearchController(
+    private val accessionSearchService: AccessionSearchService,
     private val clock: Clock,
-    private val accessionSearchService: AccessionSearchService
+    namespaces: SearchFieldNamespaces,
 ) {
+  private val accessionsPrefix = SearchFieldPrefix(namespaces.accessions)
+
   @Operation(summary = "Searches for accessions based on filter criteria.")
   @PostMapping
   fun searchAccessions(
@@ -75,9 +80,9 @@ class AccessionSearchController(
     return SearchResponsePayload(
         accessionSearchService.search(
             payload.facilityId,
-            payload.fields,
-            payload.toSearchNode(),
-            payload.searchSortFields ?: emptyList(),
+            payload.getSearchFieldPaths(accessionsPrefix),
+            payload.toSearchNode(accessionsPrefix),
+            payload.getSearchSortFields(accessionsPrefix),
             payload.cursor,
             payload.count))
   }
@@ -92,16 +97,17 @@ class AccessionSearchController(
   fun exportAccessions(
       @RequestBody payload: ExportAccessionsRequestPayload
   ): ResponseEntity<ByteArray> {
-    if (payload.fields.any { it.isNested }) {
+    val fields = payload.getSearchFieldPaths(accessionsPrefix)
+    if (fields.any { it.isNested }) {
       throw BadRequestException("Nested fields are not supported for CSV export.")
     }
 
     val searchResults =
         accessionSearchService.search(
             payload.facilityId,
-            payload.fields,
-            payload.toSearchNode(),
-            payload.searchSortFields ?: emptyList())
+            fields,
+            payload.toSearchNode(accessionsPrefix),
+            payload.getSearchSortFields(accessionsPrefix))
     return exportCsv(payload, searchResults)
   }
 
@@ -121,12 +127,16 @@ class AccessionSearchController(
     byteArrayOutputStream.write(191)
 
     CSVWriter(OutputStreamWriter(byteArrayOutputStream, StandardCharsets.UTF_8)).use { csvWriter ->
-      val header = payload.fields.map { it.searchField.displayName }.toTypedArray()
-      val fieldNames = payload.fields.map { "$it" }
+      val header =
+          payload
+              .getSearchFieldPaths(accessionsPrefix)
+              .map { it.searchField.displayName }
+              .toTypedArray()
       csvWriter.writeNext(header, false)
 
       searchResults.results.forEach { result ->
-        val values = fieldNames.map { fieldName -> result[fieldName]?.toString() }.toTypedArray()
+        val values =
+            payload.fields.map { fieldName -> result[fieldName]?.toString() }.toTypedArray()
         csvWriter.writeNext(values, false)
       }
     }
@@ -143,7 +153,7 @@ class AccessionSearchController(
 
 data class SearchAccessionsRequestPayload(
     val facilityId: FacilityId,
-    @NotEmpty val fields: List<SearchFieldPath>,
+    @NotEmpty override val fields: List<String>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
@@ -152,12 +162,12 @@ data class SearchAccessionsRequestPayload(
         defaultValue = "10",
     )
     val count: Int = 10
-) : HasSearchNode, HasSortOrder
+) : HasSearchFields, HasSearchNode, HasSortOrder
 
 data class ExportAccessionsRequestPayload(
     val facilityId: FacilityId,
-    @NotEmpty val fields: List<SearchFieldPath>,
+    @NotEmpty override val fields: List<String>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
-) : HasSearchNode, HasSortOrder
+) : HasSearchFields, HasSearchNode, HasSortOrder

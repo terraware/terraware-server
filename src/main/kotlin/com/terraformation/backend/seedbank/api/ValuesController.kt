@@ -15,7 +15,6 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.api.HasSearchNode
@@ -113,14 +112,16 @@ class ValuesController(
   ): ListFieldValuesResponsePayload {
     val limit = 20
 
-    if (payload.fields.any { it.isNested }) {
+    val fields = payload.fields.associateWith { rootPrefix.resolve(it) }
+    if (fields.values.any { it.isNested }) {
       throw BadRequestException("Cannot list values of nested fields.")
     }
 
     val values =
-        payload.fields.associateWith { searchField ->
+        fields.mapValues { (_, searchField) ->
           val values =
-              searchService.fetchValues(rootPrefix, searchField, payload.toSearchNode(), limit)
+              searchService.fetchValues(
+                  rootPrefix, searchField, payload.toSearchNode(rootPrefix), limit)
           val partial = values.size > limit
           FieldValuesPayload(values.take(limit), partial)
         }
@@ -136,11 +137,12 @@ class ValuesController(
     val limit = 100
 
     val values =
-        payload.fields.associateWith { searchField ->
+        payload.fields.associateWith { fieldName ->
+          val searchField = rootPrefix.resolve(fieldName)
           var values = searchService.fetchAllValues(searchField, limit)
 
           // TODO: Remove this once front end is updated to know about Awaiting Check-In state
-          if ("$searchField" == "state" && !config.enableAwaitingCheckIn) {
+          if (fieldName == "state" && !config.enableAwaitingCheckIn) {
             values = values.filter { it != AccessionState.AwaitingCheckIn.displayName }
           }
 
@@ -187,12 +189,12 @@ data class FieldValuesPayload(
 
 data class ListFieldValuesRequestPayload(
     val facilityId: FacilityId,
-    val fields: List<SearchFieldPath>,
+    val fields: List<String>,
     override val filters: List<SearchFilter>?,
     override val search: SearchNodePayload?,
 ) : HasSearchNode
 
-data class ListFieldValuesResponsePayload(val results: Map<SearchFieldPath, FieldValuesPayload>) :
+data class ListFieldValuesResponsePayload(val results: Map<String, FieldValuesPayload>) :
     SuccessResponsePayload
 
 data class AllFieldValuesPayload(
@@ -212,11 +214,7 @@ data class AllFieldValuesPayload(
     val partial: Boolean
 )
 
-data class ListAllFieldValuesRequestPayload(
-    val facilityId: FacilityId,
-    val fields: List<SearchFieldPath>
-)
+data class ListAllFieldValuesRequestPayload(val facilityId: FacilityId, val fields: List<String>)
 
-data class ListAllFieldValuesResponsePayload(
-    val results: Map<SearchFieldPath, AllFieldValuesPayload>
-) : SuccessResponsePayload
+data class ListAllFieldValuesResponsePayload(val results: Map<String, AllFieldValuesPayload>) :
+    SuccessResponsePayload

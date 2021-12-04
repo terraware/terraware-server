@@ -11,47 +11,56 @@ import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchDirection
 import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
-import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotEmpty
 
+interface HasSearchFields {
+  val fields: List<String>?
+
+  fun getSearchFieldPaths(prefix: SearchFieldPrefix): List<SearchFieldPath> =
+      fields?.map { prefix.resolve(it) } ?: emptyList()
+}
+
 interface HasSortOrder {
   val sortOrder: List<SearchSortOrderElement>?
-  val searchSortFields: List<SearchSortField>?
-    @Hidden get() = sortOrder?.map { it.toSearchSortField() }
+
+  fun getSearchSortFields(prefix: SearchFieldPrefix): List<SearchSortField> =
+      sortOrder?.map { it.toSearchSortField(prefix) } ?: emptyList()
 }
 
 interface HasSearchNode {
   val filters: List<SearchFilter>?
   val search: SearchNodePayload?
 
-  fun toSearchNode(): SearchNode {
+  fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
     val filters = this.filters
     val search = this.search
 
     return when {
-      search != null -> search.toSearchNode()
+      search != null -> search.toSearchNode(prefix)
       filters.isNullOrEmpty() -> NoConditionNode()
-      else -> AndNode(filters.map { FieldNode(it.field, it.values, it.type) })
+      else -> AndNode(filters.map { FieldNode(prefix.resolve(it.field), it.values, it.type) })
     }
   }
 }
 
 data class SearchSortOrderElement(
-    val field: SearchFieldPath,
+    val field: String,
     @Schema(
         defaultValue = "Ascending",
     )
     val direction: SearchDirection?
 ) {
-  fun toSearchSortField() = SearchSortField(field, direction ?: SearchDirection.Ascending)
+  fun toSearchSortField(prefix: SearchFieldPrefix) =
+      SearchSortField(prefix.resolve(field), direction ?: SearchDirection.Ascending)
 }
 
 @JsonSubTypes(
@@ -81,7 +90,7 @@ data class SearchSortOrderElement(
             DiscriminatorMapping(value = "or", schema = NotNodePayload::class),
         ])
 interface SearchNodePayload {
-  fun toSearchNode(): SearchNode
+  fun toSearchNode(prefix: SearchFieldPrefix): SearchNode
 }
 
 @JsonTypeName("or")
@@ -92,8 +101,8 @@ interface SearchNodePayload {
 data class OrNodePayload(
     @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
 ) : SearchNodePayload {
-  override fun toSearchNode(): SearchNode {
-    return OrNode(children.map { it.toSearchNode() })
+  override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
+    return OrNode(children.map { it.toSearchNode(prefix) })
   }
 }
 
@@ -105,8 +114,8 @@ data class OrNodePayload(
 data class AndNodePayload(
     @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
 ) : SearchNodePayload {
-  override fun toSearchNode(): SearchNode {
-    return AndNode(children.map { it.toSearchNode() })
+  override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
+    return AndNode(children.map { it.toSearchNode(prefix) })
   }
 }
 
@@ -115,14 +124,14 @@ data class AndNodePayload(
     description =
         "Search criterion that matches results that do not match a set of search criteria.")
 data class NotNodePayload(val child: SearchNodePayload) : SearchNodePayload {
-  override fun toSearchNode(): SearchNode {
-    return NotNode(child.toSearchNode())
+  override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
+    return NotNode(child.toSearchNode(prefix))
   }
 }
 
 @JsonTypeName("field")
 data class FieldNodePayload(
-    val field: SearchFieldPath,
+    val field: String,
     @ArraySchema(
         schema = Schema(nullable = true),
         minItems = 1,
@@ -139,8 +148,8 @@ data class FieldNodePayload(
     val values: List<String?>,
     val type: SearchFilterType = SearchFilterType.Exact
 ) : SearchNodePayload {
-  override fun toSearchNode(): SearchNode {
-    return FieldNode(field, values, type)
+  override fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
+    return FieldNode(prefix.resolve(field), values, type)
   }
 }
 
@@ -150,7 +159,7 @@ data class FieldNodePayload(
  * @see SearchService
  */
 data class SearchFilter(
-    val field: SearchFieldPath,
+    val field: String,
     @ArraySchema(
         schema = Schema(nullable = true),
         arraySchema =
