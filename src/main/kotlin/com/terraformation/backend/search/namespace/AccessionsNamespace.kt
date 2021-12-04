@@ -16,32 +16,51 @@ import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFieldNamespace
-import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
 import com.terraformation.backend.seedbank.search.SearchTables
-import java.math.BigDecimal
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace() {
+class AccessionsNamespace(
+    val searchTables: SearchTables,
+    collectorsNamespace: CollectorsNamespace,
+    familiesNamespace: FamiliesNamespace,
+    speciesNamespace: SpeciesNamespace,
+    storageLocationsNamespace: StorageLocationsNamespace,
+) : SearchFieldNamespace() {
+  private val accessionGerminationTestTypesNamespace =
+      AccessionGerminationTestTypesNamespace(searchTables)
   private val bagsNamespace = BagsNamespace(searchTables, this)
   private val facilitiesNamespace = FacilitiesNamespace(searchTables, this)
+  private val geolocationsNamespace = GeolocationsNamespace(searchTables)
   private val germinationTestsNamespace = GerminationTestsNamespace(searchTables, this)
   private val withdrawalsNamespace = WithdrawalsNamespace(searchTables, this)
 
   override val sublists: List<SublistField> =
       listOf(
+          accessionGerminationTestTypesNamespace.asMultiValueSublist(
+              "viabilityTestTypes",
+              ACCESSIONS.ID.eq(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID)),
           bagsNamespace.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
+          collectorsNamespace.asSingleValueSublist(
+              "primaryCollectorInfo", ACCESSIONS.PRIMARY_COLLECTOR_ID.eq(COLLECTORS.ID)),
           facilitiesNamespace.asSingleValueSublist(
               "facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
+          familiesNamespace.asSingleValueSublist(
+              "familyInfo", ACCESSIONS.FAMILY_ID.eq(FAMILIES.ID)),
+          geolocationsNamespace.asMultiValueSublist(
+              "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
           germinationTestsNamespace.asMultiValueSublist(
               "germinationTests", ACCESSIONS.ID.eq(GERMINATION_TESTS.ACCESSION_ID)),
+          speciesNamespace.asSingleValueSublist(
+              "speciesInfo", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)),
+          storageLocationsNamespace.asSingleValueSublist(
+              "storageLocationInfo", ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID)),
           withdrawalsNamespace.asMultiValueSublist(
               "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
       )
@@ -74,8 +93,12 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
             accessions.integerField(
                 "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
             families.textField("family", "Family", FAMILIES.NAME),
-            GeolocationField(
-                "geolocation", "Geolocation", GEOLOCATIONS.LATITUDE, GEOLOCATIONS.LONGITUDE),
+            GeolocationsNamespace.GeolocationField(
+                "geolocation",
+                "Geolocation",
+                GEOLOCATIONS.LATITUDE,
+                GEOLOCATIONS.LONGITUDE,
+                geolocations),
             germinationTests.dateField(
                 "germinationEndDate", "Germination end date", GERMINATION_TESTS.END_DATE),
             germinationTests.integerField(
@@ -112,7 +135,7 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
                 ACCESSIONS.LATEST_VIABILITY_PERCENT),
             accessions.dateField(
                 "nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
-            primaryCollectors.textField("primaryCollector", "Primary collector", COLLECTORS.NAME),
+            collectors.textField("primaryCollector", "Primary collector", COLLECTORS.NAME),
             accessions.enumField(
                 "processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
             accessions.textField(
@@ -227,46 +250,5 @@ class AccessionsNamespace(val searchTables: SearchTables) : SearchFieldNamespace
     override fun toString() = fieldName
     override fun hashCode() = fieldName.hashCode()
     override fun equals(other: Any?) = other is ActiveField && other.fieldName == fieldName
-  }
-
-  /**
-   * Search field for geolocation data. Geolocation is represented in search results as a single
-   * string value that includes both latitude and longitude. But in the database, those two values
-   * are stored as separate columns.
-   */
-  inner class GeolocationField(
-      override val fieldName: String,
-      override val displayName: String,
-      private val latitudeField: TableField<*, BigDecimal?>,
-      private val longitudeField: TableField<*, BigDecimal?>,
-      override val nullable: Boolean = true
-  ) : SearchField {
-    override val table
-      get() = searchTables.geolocations
-
-    override val supportedFilterTypes: Set<SearchFilterType>
-      get() = emptySet()
-
-    override val selectFields: List<Field<*>>
-      get() = listOf(latitudeField, longitudeField)
-
-    override val orderByField: Field<*>
-      get() = DSL.jsonbArray(latitudeField, longitudeField)
-
-    override fun getConditions(fieldNode: FieldNode): List<Condition> {
-      throw IllegalArgumentException("Filters not supported for geolocation")
-    }
-
-    override fun computeValue(record: Record): String? {
-      return record[latitudeField]?.let { latitude ->
-        record[longitudeField]?.let { longitude ->
-          "${latitude.toPlainString()}, ${longitude.toPlainString()}"
-        }
-      }
-    }
-
-    override fun toString() = fieldName
-    override fun hashCode() = fieldName.hashCode()
-    override fun equals(other: Any?) = other is GeolocationField && other.fieldName == fieldName
   }
 }

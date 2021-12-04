@@ -62,6 +62,16 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
 
   val bags = object : AccessionChildTable(BAGS.ID, BAGS.ACCESSION_ID) {}
 
+  val collectors =
+      object : AccessionParentTable<CollectorId>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID) {
+        override fun conditionForPermissions(): Condition {
+          return COLLECTORS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
+        }
+
+        override val inheritsPermissionsFrom: SearchTable?
+          get() = null
+      }
+
   val facilities =
       object : AccessionParentTable<FacilityId>(FACILITIES.ID, ACCESSIONS.FACILITY_ID) {
         override fun conditionForPermissions(): Condition {
@@ -103,16 +113,6 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
 
   val germinationTests =
       object : AccessionChildTable(GERMINATION_TESTS.ID, GERMINATION_TESTS.ACCESSION_ID) {}
-
-  val primaryCollectors =
-      object : AccessionParentTable<CollectorId>(COLLECTORS.ID, ACCESSIONS.PRIMARY_COLLECTOR_ID) {
-        override fun conditionForPermissions(): Condition {
-          return COLLECTORS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
-        }
-
-        override val inheritsPermissionsFrom: SearchTable?
-          get() = null
-      }
 
   val species =
       object : AccessionParentTable<SpeciesId>(SPECIES.ID, ACCESSIONS.SPECIES_ID) {
