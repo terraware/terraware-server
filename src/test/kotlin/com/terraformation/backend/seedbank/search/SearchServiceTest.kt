@@ -1450,6 +1450,60 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `can select aliases for flattened sublist fields from within nested sublists`() {
+      val prefix = SearchFieldPrefix(namespaces.facilities)
+      val field = prefix.resolve("accessions.bagNumber")
+
+      val result =
+          searchService.search(
+              prefix, listOf(field), NoConditionNode(), listOf(SearchSortField(field)))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "accessions" to
+                          listOf(
+                              mapOf("bagNumber" to "1"),
+                              mapOf("bagNumber" to "2"),
+                              mapOf("bagNumber" to "5"),
+                              mapOf("bagNumber" to "6"),
+                          ))),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can sort by aliases for flattened sublist fields from within nested sublists`() {
+      val prefix = SearchFieldPrefix(namespaces.facilities)
+      val idField = prefix.resolve("accessions.id")
+      val aliasField = prefix.resolve("accessions.bagNumber")
+
+      val result =
+          searchService.search(
+              prefix, listOf(idField), NoConditionNode(), listOf(SearchSortField(aliasField)))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "accessions" to
+                          listOf(
+                              // 4 entries here because we're bringing a flattened sublist into the
+                              // picture, even though it's only on a sort field. Unclear if this is
+                              // the desirable result or not, but it's at least a predictable one.
+                              mapOf("id" to "1000"),
+                              mapOf("id" to "1001"),
+                              mapOf("id" to "1000"),
+                              mapOf("id" to "1001"),
+                          ))),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
     fun `can get to organization from accession sublist`() {
       val germinationsPrefix = SearchFieldPrefix(namespaces.germinations)
       val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")

@@ -705,7 +705,7 @@ class NestedQueryBuilder(
   private fun addSelectField(fieldPath: SearchFieldPath) {
     val relativeField = fieldPath.relativeTo(prefix)
 
-    if (relativeField.searchField is AliasField) {
+    if (relativeField.searchField is AliasField && !relativeField.isNested) {
       addFlattenedSublists(relativeField.searchField.targetPath.sublists)
     }
 
@@ -742,6 +742,10 @@ class NestedQueryBuilder(
    */
   private fun addSortField(sortField: SearchSortField) {
     val relativeField = sortField.field.relativeTo(prefix)
+
+    if (relativeField.searchField is AliasField && !relativeField.isNested) {
+      addFlattenedSublists(relativeField.searchField.targetPath.sublists)
+    }
 
     sortFields.add(sortField)
 
