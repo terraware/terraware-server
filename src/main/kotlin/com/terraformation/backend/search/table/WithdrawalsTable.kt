@@ -22,7 +22,7 @@ class WithdrawalsTable(private val tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          dateField("date", "Date of withdrawal", WITHDRAWALS.DATE),
+          dateField("date", "Date of withdrawal", WITHDRAWALS.DATE, nullable = false),
           textField("destination", "Destination", WITHDRAWALS.DESTINATION),
           gramsField("grams", "Weight of seeds withdrawn (g)", WITHDRAWALS.WITHDRAWN_GRAMS),
           textField("notes", "Notes (withdrawal)", WITHDRAWALS.NOTES),

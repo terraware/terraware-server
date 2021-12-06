@@ -10,6 +10,9 @@ import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
 class AccessionViabilityTestTypesTable(private val tables: SearchTables) : SearchTable() {
+  override val name: String
+    get() = "ViabilityTestTypes"
+
   override val primaryKey: TableField<out Record, out Any?>
     get() = ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID
 

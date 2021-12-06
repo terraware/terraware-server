@@ -59,6 +59,9 @@ abstract class SearchTable {
   /** The primary key column for the table in question. */
   abstract val primaryKey: TableField<out Record, out Any?>
 
+  /** The name to use for this namespace in schema documentation. */
+  open val name: String = javaClass.simpleName.substringBeforeLast("Table")
+
   /** The jOOQ Table object for the table in question. */
   open val fromTable: Table<out Record>
     get() = primaryKey.table ?: throw IllegalStateException("$primaryKey has no table")
@@ -208,7 +211,7 @@ abstract class SearchTable {
       fieldName: String,
       displayName: String,
       databaseField: TableField<*, LocalDate?>,
-      nullable: Boolean = false
+      nullable: Boolean = true
   ) = DateField(fieldName, displayName, databaseField, this, nullable)
 
   fun doubleField(

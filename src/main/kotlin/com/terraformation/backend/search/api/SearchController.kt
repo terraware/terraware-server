@@ -1,9 +1,12 @@
 package com.terraformation.backend.search.api
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.SearchEndpoint
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.csvResponse
 import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.search.SearchFieldPrefix
+import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import io.swagger.v3.oas.annotations.media.Content
@@ -16,6 +19,7 @@ import java.time.format.DateTimeFormatter
 import javax.validation.constraints.NotEmpty
 import javax.ws.rs.BadRequestException
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -26,11 +30,9 @@ import org.springframework.web.bind.annotation.RestController
 @SearchEndpoint
 class SearchController(
     private val clock: Clock,
-    tables: SearchTables,
+    private val tables: SearchTables,
     private val searchService: SearchService
 ) {
-  private val organizationsTable = tables.organizations
-
   @PostMapping
   fun search(
       @RequestBody
@@ -114,12 +116,54 @@ class SearchController(
   private fun resolvePrefix(prefix: String?): SearchFieldPrefix {
     val table =
         if (prefix != null) {
-          organizationsTable.resolveTable(prefix)
+          tables.organizations.resolveTable(prefix)
         } else {
-          organizationsTable
+          tables.organizations
         }
 
     return SearchFieldPrefix(table)
+  }
+
+  @GetMapping("/schema")
+  fun getSearchSchema(): SearchSchemaResponsePayload {
+    val schema =
+        tables.tables
+            .sortedBy { it.name.lowercase() }
+            .associate { namespace ->
+              val sublists =
+                  namespace.sublists.map { sublist ->
+                    val elementType =
+                        if (sublist.isMultiValue) {
+                          SearchSchemaElementShape.List
+                        } else {
+                          SearchSchemaElementShape.Object
+                        }
+                    SearchSchemaElement(
+                        sublist.name,
+                        elementType,
+                        null,
+                        sublist.searchTable.name,
+                        null,
+                        null,
+                        !sublist.isRequired)
+                  }
+              val fields =
+                  namespace.fields.map { field ->
+                    SearchSchemaElement(
+                        field.fieldName,
+                        SearchSchemaElementShape.Field,
+                        field.displayName,
+                        null,
+                        field.supportedFilterTypes,
+                        field.possibleValues,
+                        field.nullable,
+                    )
+                  }
+
+              namespace.name to sublists + fields
+            }
+
+    return SearchSchemaResponsePayload(tables.organizations.name, schema)
   }
 }
 
@@ -179,3 +223,25 @@ data class SearchRequestPayload(
                 "returned in the response to a previous search.")
     val cursor: String? = null,
 ) : HasSearchFields, HasSearchNode, HasSortOrder
+
+enum class SearchSchemaElementShape {
+  Object,
+  List,
+  Field
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SearchSchemaElement(
+    val name: String,
+    val shape: SearchSchemaElementShape,
+    val displayName: String?,
+    val references: String?,
+    val operations: Collection<SearchFilterType>?,
+    val possibleValues: Collection<String>?,
+    val optional: Boolean?,
+)
+
+data class SearchSchemaResponsePayload(
+    val root: String,
+    val schema: Map<String, List<SearchSchemaElement>>
+) : SuccessResponsePayload

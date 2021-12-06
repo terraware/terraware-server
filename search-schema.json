@@ -1,0 +1,1930 @@
+{
+  "root": "Organizations",
+  "schema": {
+    "Accessions": [
+      {
+        "name": "viabilityTestTypes",
+        "shape": "List",
+        "references": "ViabilityTestTypes",
+        "optional": true
+      },
+      {
+        "name": "secondaryCollectors",
+        "shape": "List",
+        "references": "AccessionSecondaryCollectors",
+        "optional": true
+      },
+      {
+        "name": "bags",
+        "shape": "List",
+        "references": "Bags",
+        "optional": true
+      },
+      {
+        "name": "facility",
+        "shape": "Object",
+        "references": "Facilities",
+        "optional": false
+      },
+      {
+        "name": "geolocations",
+        "shape": "List",
+        "references": "Geolocations",
+        "optional": true
+      },
+      {
+        "name": "germinationTests",
+        "shape": "List",
+        "references": "GerminationTests",
+        "optional": true
+      },
+      {
+        "name": "species",
+        "shape": "Object",
+        "references": "Species",
+        "optional": true
+      },
+      {
+        "name": "storageLocation",
+        "shape": "Object",
+        "references": "StorageLocations",
+        "optional": true
+      },
+      {
+        "name": "withdrawals",
+        "shape": "List",
+        "references": "Withdrawals",
+        "optional": true
+      },
+      {
+        "name": "accessionNumber",
+        "shape": "Field",
+        "displayName": "Accession",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": false
+      },
+      {
+        "name": "active",
+        "shape": "Field",
+        "displayName": "Active",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "possibleValues": [
+          "Inactive",
+          "Active"
+        ],
+        "optional": false
+      },
+      {
+        "name": "bagNumber",
+        "shape": "Field",
+        "displayName": "Bag number",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "checkedInTime",
+        "shape": "Field",
+        "displayName": "Checked-In Time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "collectedDate",
+        "shape": "Field",
+        "displayName": "Collected on",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "collectionNotes",
+        "shape": "Field",
+        "displayName": "Notes (collection)",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "cutTestSeedsCompromised",
+        "shape": "Field",
+        "displayName": "Number of seeds compromised",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "cutTestSeedsEmpty",
+        "shape": "Field",
+        "displayName": "Number of seeds empty",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "cutTestSeedsFilled",
+        "shape": "Field",
+        "displayName": "Number of seeds filled",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "dryingEndDate",
+        "shape": "Field",
+        "displayName": "Drying end date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "dryingMoveDate",
+        "shape": "Field",
+        "displayName": "Drying move date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "dryingStartDate",
+        "shape": "Field",
+        "displayName": "Drying start date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "endangered",
+        "shape": "Field",
+        "displayName": "Endangered",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "No",
+          "Yes",
+          "Unsure"
+        ],
+        "optional": true
+      },
+      {
+        "name": "estimatedSeedsIncoming",
+        "shape": "Field",
+        "displayName": "Estimated seeds incoming",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "familyName",
+        "shape": "Field",
+        "displayName": "Family name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "geolocation",
+        "shape": "Field",
+        "displayName": "Geolocation coordinates",
+        "operations": [],
+        "optional": true
+      },
+      {
+        "name": "germinationEndDate",
+        "shape": "Field",
+        "displayName": "Germination end date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationPercentGerminated",
+        "shape": "Field",
+        "displayName": "% Viability",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationSeedType",
+        "shape": "Field",
+        "displayName": "Seed type",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Fresh",
+          "Stored"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationSeedsGerminated",
+        "shape": "Field",
+        "displayName": "Number of seeds germinated",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationSeedsSown",
+        "shape": "Field",
+        "displayName": "Number of seeds sown",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationStartDate",
+        "shape": "Field",
+        "displayName": "Germination start date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationSubstrate",
+        "shape": "Field",
+        "displayName": "Germination substrate",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Nursery Media",
+          "Agar Petri Dish",
+          "Paper Petri Dish",
+          "Other"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationTestNotes",
+        "shape": "Field",
+        "displayName": "Notes (germination test)",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationTestType",
+        "shape": "Field",
+        "displayName": "Germination test type",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Lab",
+          "Nursery"
+        ],
+        "optional": true
+      },
+      {
+        "name": "germinationTreatment",
+        "shape": "Field",
+        "displayName": "Germination treatment",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Soak",
+          "Scarify",
+          "GA3",
+          "Stratification",
+          "Other"
+        ],
+        "optional": true
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "landowner",
+        "shape": "Field",
+        "displayName": "Landowner",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "latestGerminationTestDate",
+        "shape": "Field",
+        "displayName": "Most recent germination test date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "latestViabilityPercent",
+        "shape": "Field",
+        "displayName": "Most recent % viability",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "nurseryStartDate",
+        "shape": "Field",
+        "displayName": "Nursery start date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "primaryCollectorName",
+        "shape": "Field",
+        "displayName": "Primary collector name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "processingMethod",
+        "shape": "Field",
+        "displayName": "Processing method",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Count",
+          "Weight"
+        ],
+        "optional": true
+      },
+      {
+        "name": "processingNotes",
+        "shape": "Field",
+        "displayName": "Notes (processing)",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "processingStartDate",
+        "shape": "Field",
+        "displayName": "Processing start date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "rare",
+        "shape": "Field",
+        "displayName": "Rare",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "No",
+          "Yes",
+          "Unsure"
+        ],
+        "optional": true
+      },
+      {
+        "name": "receivedDate",
+        "shape": "Field",
+        "displayName": "Received on",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "remainingGrams",
+        "shape": "Field",
+        "displayName": "Remaining (grams)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "remainingQuantity",
+        "shape": "Field",
+        "displayName": "Remaining (quantity)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "remainingUnits",
+        "shape": "Field",
+        "displayName": "Remaining (units)",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Seeds",
+          "Grams",
+          "Milligrams",
+          "Kilograms",
+          "Ounces",
+          "Pounds"
+        ],
+        "optional": true
+      },
+      {
+        "name": "siteLocation",
+        "shape": "Field",
+        "displayName": "Site location",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "sourcePlantOrigin",
+        "shape": "Field",
+        "displayName": "Wild/Outplant",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Wild",
+          "Outplant"
+        ],
+        "optional": true
+      },
+      {
+        "name": "speciesName",
+        "shape": "Field",
+        "displayName": "Species scientific name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "state",
+        "shape": "Field",
+        "displayName": "State",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Awaiting Check-In",
+          "Pending",
+          "Processing",
+          "Processed",
+          "Drying",
+          "Dried",
+          "In Storage",
+          "Withdrawn",
+          "Nursery"
+        ],
+        "optional": false
+      },
+      {
+        "name": "storageCondition",
+        "shape": "Field",
+        "displayName": "Storage condition",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Refrigerator",
+          "Freezer"
+        ],
+        "optional": true
+      },
+      {
+        "name": "storageLocationName",
+        "shape": "Field",
+        "displayName": "Storage location name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "storageNotes",
+        "shape": "Field",
+        "displayName": "Notes (storage)",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "storagePackets",
+        "shape": "Field",
+        "displayName": "Number of storage packets",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "storageStartDate",
+        "shape": "Field",
+        "displayName": "Storing start date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "targetStorageCondition",
+        "shape": "Field",
+        "displayName": "Target %RH",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Refrigerator",
+          "Freezer"
+        ],
+        "optional": true
+      },
+      {
+        "name": "totalGrams",
+        "shape": "Field",
+        "displayName": "Total size (grams)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "totalQuantity",
+        "shape": "Field",
+        "displayName": "Total size (quantity)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "totalUnits",
+        "shape": "Field",
+        "displayName": "Total size (units)",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Seeds",
+          "Grams",
+          "Milligrams",
+          "Kilograms",
+          "Ounces",
+          "Pounds"
+        ],
+        "optional": true
+      },
+      {
+        "name": "totalViabilityPercent",
+        "shape": "Field",
+        "displayName": "Total estimated % viability",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "treesCollectedFrom",
+        "shape": "Field",
+        "displayName": "Number of trees collected from",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "viabilityTestType",
+        "shape": "Field",
+        "displayName": "Viability test type (accession)",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Lab",
+          "Nursery"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalDate",
+        "shape": "Field",
+        "displayName": "Date of withdrawal",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalDestination",
+        "shape": "Field",
+        "displayName": "Destination",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalGrams",
+        "shape": "Field",
+        "displayName": "Weight of seeds withdrawn (g)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalNotes",
+        "shape": "Field",
+        "displayName": "Notes (withdrawal)",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalPurpose",
+        "shape": "Field",
+        "displayName": "Purpose",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Propagation",
+          "Outreach or Education",
+          "Research",
+          "Broadcast",
+          "Share with Another Site",
+          "Other",
+          "Germination Testing"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalQuantity",
+        "shape": "Field",
+        "displayName": "Quantity of seeds withdrawn",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalRemainingGrams",
+        "shape": "Field",
+        "displayName": "Weight in grams of seeds remaining (withdrawal)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalRemainingQuantity",
+        "shape": "Field",
+        "displayName": "Weight or count of seeds remaining (withdrawal)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalRemainingUnits",
+        "shape": "Field",
+        "displayName": "Units of measurement of quantity remaining (withdrawal)",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Seeds",
+          "Grams",
+          "Milligrams",
+          "Kilograms",
+          "Ounces",
+          "Pounds"
+        ],
+        "optional": true
+      },
+      {
+        "name": "withdrawalUnits",
+        "shape": "Field",
+        "displayName": "Units of measurement of quantity withdrawn",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Seeds",
+          "Grams",
+          "Milligrams",
+          "Kilograms",
+          "Ounces",
+          "Pounds"
+        ],
+        "optional": true
+      }
+    ],
+    "AccessionSecondaryCollectors": [
+      {
+        "name": "accession",
+        "shape": "Object",
+        "references": "Accessions",
+        "optional": false
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Collector name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      }
+    ],
+    "Bags": [
+      {
+        "name": "accession",
+        "shape": "Object",
+        "references": "Accessions",
+        "optional": false
+      },
+      {
+        "name": "number",
+        "shape": "Field",
+        "displayName": "Bag number",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      }
+    ],
+    "Countries": [
+      {
+        "name": "organizations",
+        "shape": "List",
+        "references": "Organizations",
+        "optional": true
+      },
+      {
+        "name": "subdivisions",
+        "shape": "List",
+        "references": "CountrySubdivisions",
+        "optional": true
+      },
+      {
+        "name": "code",
+        "shape": "Field",
+        "displayName": "Country code",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Country name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      }
+    ],
+    "CountrySubdivisions": [
+      {
+        "name": "country",
+        "shape": "Object",
+        "references": "Countries",
+        "optional": false
+      },
+      {
+        "name": "organizations",
+        "shape": "List",
+        "references": "Organizations",
+        "optional": true
+      },
+      {
+        "name": "code",
+        "shape": "Field",
+        "displayName": "Country subdivision code",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Country subdivision name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      }
+    ],
+    "Facilities": [
+      {
+        "name": "accessions",
+        "shape": "List",
+        "references": "Accessions",
+        "optional": true
+      },
+      {
+        "name": "site",
+        "shape": "Object",
+        "references": "Sites",
+        "optional": false
+      },
+      {
+        "name": "storageLocations",
+        "shape": "List",
+        "references": "StorageLocations",
+        "optional": true
+      },
+      {
+        "name": "connectionState",
+        "shape": "Field",
+        "displayName": "Facility connection state",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Not Connected",
+          "Connected",
+          "Configured"
+        ],
+        "optional": false
+      },
+      {
+        "name": "createdTime",
+        "shape": "Field",
+        "displayName": "Facility created time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "description",
+        "shape": "Field",
+        "displayName": "Facility description",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "Facility ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Facility name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": false
+      },
+      {
+        "name": "type",
+        "shape": "Field",
+        "displayName": "Facility type",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Seed Bank",
+          "Desalination",
+          "Reverse Osmosis"
+        ],
+        "optional": false
+      }
+    ],
+    "Geolocations": [
+      {
+        "name": "accession",
+        "shape": "Object",
+        "references": "Accessions",
+        "optional": false
+      },
+      {
+        "name": "coordinates",
+        "shape": "Field",
+        "displayName": "Geolocation coordinates",
+        "operations": [],
+        "optional": true
+      }
+    ],
+    "Germinations": [
+      {
+        "name": "germinationTest",
+        "shape": "Object",
+        "references": "GerminationTests",
+        "optional": false
+      },
+      {
+        "name": "recordingDate",
+        "shape": "Field",
+        "displayName": "Recording date of germination test result",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "seedsGerminated",
+        "shape": "Field",
+        "displayName": "Number of seeds germinated",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      }
+    ],
+    "GerminationTests": [
+      {
+        "name": "accession",
+        "shape": "Object",
+        "references": "Accessions",
+        "optional": false
+      },
+      {
+        "name": "germinations",
+        "shape": "List",
+        "references": "Germinations",
+        "optional": true
+      },
+      {
+        "name": "endDate",
+        "shape": "Field",
+        "displayName": "Germination end date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "notes",
+        "shape": "Field",
+        "displayName": "Notes (germination test)",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "percentGerminated",
+        "shape": "Field",
+        "displayName": "% Viability",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "seedType",
+        "shape": "Field",
+        "displayName": "Seed type",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Fresh",
+          "Stored"
+        ],
+        "optional": true
+      },
+      {
+        "name": "seedsSown",
+        "shape": "Field",
+        "displayName": "Number of seeds sown",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "startDate",
+        "shape": "Field",
+        "displayName": "Germination start date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "substrate",
+        "shape": "Field",
+        "displayName": "Germination substrate",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Nursery Media",
+          "Agar Petri Dish",
+          "Paper Petri Dish",
+          "Other"
+        ],
+        "optional": true
+      },
+      {
+        "name": "treatment",
+        "shape": "Field",
+        "displayName": "Germination treatment",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Soak",
+          "Scarify",
+          "GA3",
+          "Stratification",
+          "Other"
+        ],
+        "optional": true
+      },
+      {
+        "name": "type",
+        "shape": "Field",
+        "displayName": "Germination test type",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Lab",
+          "Nursery"
+        ],
+        "optional": true
+      }
+    ],
+    "Organizations": [
+      {
+        "name": "country",
+        "shape": "Object",
+        "references": "Countries",
+        "optional": true
+      },
+      {
+        "name": "countrySubdivision",
+        "shape": "Object",
+        "references": "CountrySubdivisions",
+        "optional": true
+      },
+      {
+        "name": "projects",
+        "shape": "List",
+        "references": "Projects",
+        "optional": true
+      },
+      {
+        "name": "members",
+        "shape": "List",
+        "references": "OrganizationUsers",
+        "optional": true
+      },
+      {
+        "name": "species",
+        "shape": "List",
+        "references": "Species",
+        "optional": true
+      },
+      {
+        "name": "countryCode",
+        "shape": "Field",
+        "displayName": "Organization country code",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "countrySubdivisionCode",
+        "shape": "Field",
+        "displayName": "Organization country subdivision code",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "createdTime",
+        "shape": "Field",
+        "displayName": "Organization created time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "Organization ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Organization name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": false
+      }
+    ],
+    "OrganizationUsers": [
+      {
+        "name": "organization",
+        "shape": "Object",
+        "references": "Organizations",
+        "optional": false
+      },
+      {
+        "name": "projectMemberships",
+        "shape": "List",
+        "references": "ProjectUsers",
+        "optional": true
+      },
+      {
+        "name": "user",
+        "shape": "Object",
+        "references": "Users",
+        "optional": false
+      },
+      {
+        "name": "createdTime",
+        "shape": "Field",
+        "displayName": "Organization membership creation time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "roleName",
+        "shape": "Field",
+        "displayName": "User role name",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      }
+    ],
+    "Projects": [
+      {
+        "name": "organization",
+        "shape": "Object",
+        "references": "Organizations",
+        "optional": false
+      },
+      {
+        "name": "sites",
+        "shape": "List",
+        "references": "Sites",
+        "optional": true
+      },
+      {
+        "name": "types",
+        "shape": "List",
+        "references": "ProjectTypeSelections",
+        "optional": true
+      },
+      {
+        "name": "members",
+        "shape": "List",
+        "references": "ProjectUsers",
+        "optional": true
+      },
+      {
+        "name": "createdTime",
+        "shape": "Field",
+        "displayName": "Project created time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "description",
+        "shape": "Field",
+        "displayName": "Project description",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "hidden",
+        "shape": "Field",
+        "displayName": "Project is hidden",
+        "operations": [
+          "Exact"
+        ],
+        "optional": false
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "Project ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Project name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": false
+      },
+      {
+        "name": "organizationWide",
+        "shape": "Field",
+        "displayName": "Project is accessible organization-wide",
+        "operations": [
+          "Exact"
+        ],
+        "optional": false
+      },
+      {
+        "name": "startDate",
+        "shape": "Field",
+        "displayName": "Project start date",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "status",
+        "shape": "Field",
+        "displayName": "Project status",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Propagating",
+          "Planting",
+          "Completed/Monitoring"
+        ],
+        "optional": true
+      }
+    ],
+    "ProjectTypeSelections": [
+      {
+        "name": "type",
+        "shape": "Field",
+        "displayName": "Project type",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Native Forest Restoration",
+          "Agroforestry",
+          "Silvopasture",
+          "Sustainable Timber"
+        ],
+        "optional": true
+      }
+    ],
+    "ProjectUsers": [
+      {
+        "name": "project",
+        "shape": "Object",
+        "references": "Projects",
+        "optional": false
+      },
+      {
+        "name": "user",
+        "shape": "Object",
+        "references": "Users",
+        "optional": false
+      },
+      {
+        "name": "createdTime",
+        "shape": "Field",
+        "displayName": "Project membership creation time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      }
+    ],
+    "Sites": [
+      {
+        "name": "facilities",
+        "shape": "List",
+        "references": "Facilities",
+        "optional": true
+      },
+      {
+        "name": "project",
+        "shape": "Object",
+        "references": "Projects",
+        "optional": false
+      },
+      {
+        "name": "createdTime",
+        "shape": "Field",
+        "displayName": "Site created time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "description",
+        "shape": "Field",
+        "displayName": "Site description",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "Site ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "location",
+        "shape": "Field",
+        "displayName": "Site location",
+        "operations": [],
+        "optional": true
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Site name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": false
+      }
+    ],
+    "Species": [
+      {
+        "name": "organization",
+        "shape": "Object",
+        "references": "Organizations",
+        "optional": false
+      },
+      {
+        "name": "problems",
+        "shape": "List",
+        "references": "SpeciesProblems",
+        "optional": true
+      },
+      {
+        "name": "checkedTime",
+        "shape": "Field",
+        "displayName": "Species checked time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "commonName",
+        "shape": "Field",
+        "displayName": "Species common name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "endangered",
+        "shape": "Field",
+        "displayName": "Species is endangered",
+        "operations": [
+          "Exact"
+        ],
+        "optional": true
+      },
+      {
+        "name": "familyName",
+        "shape": "Field",
+        "displayName": "Species family name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": false
+      },
+      {
+        "name": "growthForm",
+        "shape": "Field",
+        "displayName": "Species growth form",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Tree",
+          "Shrub",
+          "Forb",
+          "Graminoid",
+          "Fern"
+        ],
+        "optional": true
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "Species ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "rare",
+        "shape": "Field",
+        "displayName": "Species is rare",
+        "operations": [
+          "Exact"
+        ],
+        "optional": true
+      },
+      {
+        "name": "scientificName",
+        "shape": "Field",
+        "displayName": "Species scientific name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": false
+      },
+      {
+        "name": "seedStorageBehavior",
+        "shape": "Field",
+        "displayName": "Species seed storage behavior",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Orthodox",
+          "Recalcitrant",
+          "Intermediate",
+          "Unknown"
+        ],
+        "optional": true
+      }
+    ],
+    "SpeciesProblems": [
+      {
+        "name": "species",
+        "shape": "Object",
+        "references": "Species",
+        "optional": false
+      },
+      {
+        "name": "field",
+        "shape": "Field",
+        "displayName": "Species problem field",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Scientific Name"
+        ],
+        "optional": true
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "Species problem ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "suggestedValue",
+        "shape": "Field",
+        "displayName": "Species problem suggested value",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "type",
+        "shape": "Field",
+        "displayName": "Species problem type",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Name Misspelled",
+          "Name Not Found",
+          "Name Is Synonym"
+        ],
+        "optional": true
+      }
+    ],
+    "StorageLocations": [
+      {
+        "name": "accessions",
+        "shape": "List",
+        "references": "Accessions",
+        "optional": true
+      },
+      {
+        "name": "facility",
+        "shape": "Object",
+        "references": "Facilities",
+        "optional": false
+      },
+      {
+        "name": "condition",
+        "shape": "Field",
+        "displayName": "Storage location condition",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Refrigerator",
+          "Freezer"
+        ],
+        "optional": true
+      },
+      {
+        "name": "name",
+        "shape": "Field",
+        "displayName": "Storage location name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      }
+    ],
+    "Users": [
+      {
+        "name": "organizationMemberships",
+        "shape": "List",
+        "references": "OrganizationUsers",
+        "optional": true
+      },
+      {
+        "name": "projectMemberships",
+        "shape": "List",
+        "references": "ProjectUsers",
+        "optional": true
+      },
+      {
+        "name": "createdTime",
+        "shape": "Field",
+        "displayName": "User creation time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "email",
+        "shape": "Field",
+        "displayName": "User email address",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "firstName",
+        "shape": "Field",
+        "displayName": "User first name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "id",
+        "shape": "Field",
+        "displayName": "User ID",
+        "operations": [
+          "Exact",
+          "Fuzzy",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "lastActivityTime",
+        "shape": "Field",
+        "displayName": "User last activity time",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "lastName",
+        "shape": "Field",
+        "displayName": "User last name",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      }
+    ],
+    "ViabilityTestTypes": [
+      {
+        "name": "type",
+        "shape": "Field",
+        "displayName": "Viability test type (accession)",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Lab",
+          "Nursery"
+        ],
+        "optional": true
+      }
+    ],
+    "Withdrawals": [
+      {
+        "name": "accession",
+        "shape": "Object",
+        "references": "Accessions",
+        "optional": false
+      },
+      {
+        "name": "date",
+        "shape": "Field",
+        "displayName": "Date of withdrawal",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": false
+      },
+      {
+        "name": "destination",
+        "shape": "Field",
+        "displayName": "Destination",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "grams",
+        "shape": "Field",
+        "displayName": "Weight of seeds withdrawn (g)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "notes",
+        "shape": "Field",
+        "displayName": "Notes (withdrawal)",
+        "operations": [
+          "Exact",
+          "Fuzzy"
+        ],
+        "optional": true
+      },
+      {
+        "name": "purpose",
+        "shape": "Field",
+        "displayName": "Purpose",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Propagation",
+          "Outreach or Education",
+          "Research",
+          "Broadcast",
+          "Share with Another Site",
+          "Other",
+          "Germination Testing"
+        ],
+        "optional": true
+      },
+      {
+        "name": "quantity",
+        "shape": "Field",
+        "displayName": "Quantity of seeds withdrawn",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "remainingGrams",
+        "shape": "Field",
+        "displayName": "Weight in grams of seeds remaining (withdrawal)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "remainingQuantity",
+        "shape": "Field",
+        "displayName": "Weight or count of seeds remaining (withdrawal)",
+        "operations": [
+          "Exact",
+          "Range"
+        ],
+        "optional": true
+      },
+      {
+        "name": "remainingUnits",
+        "shape": "Field",
+        "displayName": "Units of measurement of quantity remaining (withdrawal)",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Seeds",
+          "Grams",
+          "Milligrams",
+          "Kilograms",
+          "Ounces",
+          "Pounds"
+        ],
+        "optional": true
+      },
+      {
+        "name": "units",
+        "shape": "Field",
+        "displayName": "Units of measurement of quantity withdrawn",
+        "operations": [
+          "Exact"
+        ],
+        "possibleValues": [
+          "Seeds",
+          "Grams",
+          "Milligrams",
+          "Kilograms",
+          "Ounces",
+          "Pounds"
+        ],
+        "optional": true
+      }
+    ]
+  },
+  "status": "ok"
+}

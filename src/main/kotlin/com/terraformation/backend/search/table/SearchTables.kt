@@ -38,4 +38,29 @@ class SearchTables {
   val viabilityTestResults = ViabilityTestResultsTable(this)
   val viabilityTests = ViabilityTestsTable(this)
   val withdrawals = WithdrawalsTable(this)
+
+  val tables: List<SearchTable> =
+      listOf(
+          accessionGerminationTestTypes,
+          accessions,
+          accessionSecondaryCollectors,
+          bags,
+          countries,
+          countrySubdivisions,
+          facilities,
+          geolocations,
+          germinations,
+          germinationTests,
+          organizations,
+          organizationUsers,
+          projects,
+          projectTypeSelections,
+          projectUsers,
+          sites,
+          species,
+          speciesProblems,
+          storageLocations,
+          users,
+          withdrawals,
+      )
 }

@@ -27,7 +27,8 @@ class ViabilityTestResultsTable(private val tables: SearchTables) : SearchTable(
           dateField(
               "recordingDate",
               "Recording date of viability test result",
-              VIABILITY_TEST_RESULTS.RECORDING_DATE),
+              VIABILITY_TEST_RESULTS.RECORDING_DATE,
+              nullable = false),
           integerField(
               "seedsGerminated",
               "Number of seeds germinated",
