@@ -2,6 +2,7 @@ package com.terraformation.backend.search.namespace
 
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.search.SearchFieldNamespace
@@ -13,6 +14,7 @@ class SitesNamespace(namespaces: SearchFieldNamespaces) : SearchFieldNamespace()
     with(namespaces) {
       listOf(
           facilities.asMultiValueSublist("facilities", SITES.ID.eq(FACILITIES.SITE_ID)),
+          layers.asMultiValueSublist("layers", SITES.ID.eq(LAYERS.SITE_ID)),
           projects.asSingleValueSublist("project", SITES.PROJECT_ID.eq(PROJECTS.ID)),
       )
     }

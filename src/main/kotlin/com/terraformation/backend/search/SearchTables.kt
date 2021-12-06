@@ -12,10 +12,13 @@ import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FAMILIES
+import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
+import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
@@ -83,6 +86,28 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
       object : PerFacilityTable(STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID) {}
 
   val withdrawals = object : AccessionChildTable(WITHDRAWALS.ID, WITHDRAWALS.ACCESSION_ID) {}
+
+  val layers =
+      object : SearchTable(fuzzySearchOperators, LAYERS.ID, inheritsPermissionsFrom = sites) {
+        override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+          return query.join(SITES).on(LAYERS.SITE_ID.eq(SITES.ID))
+        }
+      }
+
+  val features =
+      object : SearchTable(fuzzySearchOperators, FEATURES.ID, inheritsPermissionsFrom = layers) {
+        override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+          return query.join(LAYERS).on(FEATURES.LAYER_ID.eq(LAYERS.ID))
+        }
+      }
+
+  val plants =
+      object :
+          SearchTable(fuzzySearchOperators, PLANTS.FEATURE_ID, inheritsPermissionsFrom = features) {
+        override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+          return query.join(FEATURES).on(PLANTS.FEATURE_ID.eq(FEATURES.ID))
+        }
+      }
 
   /** Base class for tables with per-organization permissions. */
   abstract inner class PerOrganizationTable(
