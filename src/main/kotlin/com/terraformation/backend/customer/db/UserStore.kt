@@ -32,12 +32,14 @@ import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 import kotlin.random.Random
 import org.apache.commons.codec.binary.Base32
+import org.jooq.DSLContext
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 
 /**
  * Data accessor for user information.
@@ -58,6 +60,7 @@ import org.springframework.http.HttpStatus
 class UserStore(
     private val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val dslContext: DSLContext,
     private val httpClient: HttpClient,
     private val keycloakProperties: KeycloakSpringBootProperties,
     private val objectMapper: ObjectMapper,
@@ -211,6 +214,36 @@ class UserStore(
     }
 
     return user
+  }
+
+  /**
+   * Updates a user's profile information. Applies changes to the `users` table as well as Keycloak.
+   * Currently, only the first and last name can be modified.
+   */
+  fun updateUser(model: UserModel) {
+    if (currentUser().userId != model.userId) {
+      throw AccessDeniedException("Cannot modify another user's profile information")
+    }
+
+    val usersRow =
+        usersDao.fetchOneById(model.userId)
+            ?: throw IllegalStateException("Current user not found in users table")
+
+    dslContext.transaction { _ ->
+      usersDao.update(usersRow.copy(firstName = model.firstName, lastName = model.lastName))
+
+      try {
+        val keycloakUser = usersResource.get(usersRow.authId)
+        val representation = keycloakUser.toRepresentation()
+
+        representation.firstName = model.firstName
+        representation.lastName = model.lastName
+
+        keycloakUser.update(representation)
+      } catch (e: Exception) {
+        throw KeycloakRequestFailedException("Failed to update user data in Keycloak", e)
+      }
+    }
   }
 
   /**

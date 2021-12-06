@@ -10,11 +10,14 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -114,6 +117,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
         UserStore(
             Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
             config,
+            dslContext,
             httpClient,
             keycloakProperties,
             ObjectMapper().registerModule(KotlinModule()),
@@ -334,6 +338,48 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     verify { keycloakUser.removeCredential(any()) }
 
     assertTrue(usersResource.credentials.isEmpty(), "Credentials should have been removed")
+  }
+
+  @Test
+  fun `updateUser updates profile information`() {
+    val newFirstName = "Testy"
+    val newLastName = "McTestalot"
+
+    insertUser()
+
+    val oldEmail = userRepresentation.email
+    val model = userStore.fetchByEmail(oldEmail)!!
+
+    val mockUserResource = usersResource.get(model.authId)!!
+    val representationSlot = slot<UserRepresentation>()
+    every { mockUserResource.update(capture(representationSlot)) } just Runs
+    every { user.userId } returns model.userId
+
+    val modelWithEdits =
+        model.copy(email = "newemail@x.com", firstName = newFirstName, lastName = newLastName)
+    userStore.updateUser(modelWithEdits)
+
+    val updatedModel = userStore.fetchById(model.userId)!!
+
+    assertEquals(oldEmail, updatedModel.email, "Email (DB)")
+    assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
+    assertEquals(newLastName, updatedModel.lastName, "Last name (DB)")
+
+    val updatedRepresentation = representationSlot.captured
+    assertEquals(oldEmail, updatedRepresentation.email, "Email (Keycloak)")
+    assertEquals(newFirstName, updatedRepresentation.firstName, "First name (Keycloak)")
+    assertEquals(newLastName, updatedRepresentation.lastName, "Last name (Keycloak)")
+  }
+
+  @Test
+  fun `updateUser does not allow updating other users`() {
+    insertUser()
+
+    every { user.userId } returns UserId(12345678)
+
+    val model = userStore.fetchByEmail(userRepresentation.email)!!
+
+    assertThrows<AccessDeniedException> { userStore.updateUser(model) }
   }
 
   private fun insertUser(

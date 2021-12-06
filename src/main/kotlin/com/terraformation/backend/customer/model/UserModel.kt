@@ -54,7 +54,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  * The first time you access that property, it will be fetched from the database, but it will be
  * cached afterwards.
  */
-class UserModel(
+data class UserModel(
     val userId: UserId,
     val authId: String,
     val email: String,

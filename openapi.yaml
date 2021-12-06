@@ -2350,6 +2350,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RecordTimeseriesValuesResponsePayload'
+  /api/v1/users/me:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about the current user.
+      operationId: getMyself
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserResponsePayload'
+    put:
+      tags:
+      - Customer
+      summary: Updates information about the current user.
+      operationId: updateMyself
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
 components:
   schemas:
     AccessionPayload:
@@ -3688,6 +3719,16 @@ components:
       properties:
         site:
           $ref: '#/components/schemas/SiteElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetUserResponsePayload:
+      required:
+      - status
+      - user
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserProfilePayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     LayerResponse:
@@ -5632,6 +5673,16 @@ components:
       properties:
         name:
           type: string
+    UpdateUserRequestPayload:
+      required:
+      - firstName
+      - lastName
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
     UploadPhotoMetadataPayload:
       required:
       - capturedTime
@@ -5654,6 +5705,17 @@ components:
           type: integer
           description: GPS accuracy in meters.
           format: int32
+    UserProfilePayload:
+      required:
+      - email
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
     WithdrawalPayload:
       required:
       - date

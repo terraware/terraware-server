@@ -1,6 +1,8 @@
 package com.terraformation.backend.customer.db
 
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import java.io.IOException
@@ -54,6 +56,7 @@ class InMemoryKeycloakUsersResource(private val stub: UsersResource = mockk()) :
     every { resource.remove() } answers { delete(user.id) }
     every { resource.removeCredential(any()) } answers { credentials.remove(user.id) }
     every { resource.toRepresentation() } returns user
+    every { resource.update(any()) } just Runs
 
     val passwordSlot = slot<CredentialRepresentation>()
     every { resource.resetPassword(capture(passwordSlot)) } answers
