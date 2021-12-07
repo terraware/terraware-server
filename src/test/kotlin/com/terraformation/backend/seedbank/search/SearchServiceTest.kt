@@ -2049,6 +2049,33 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `can include a computed field and its underlying raw field in a nested sublist`() {
+      val prefix = SearchFieldPrefix(namespaces.sites)
+      val activeField = prefix.resolve("facilities.accessions.active")
+      val stateField = prefix.resolve("facilities.accessions.state")
+
+      every { user.projectRoles } returns mapOf(ProjectId(2) to Role.OWNER)
+
+      val result = searchService.search(prefix, listOf(stateField, activeField), NoConditionNode())
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "facilities" to
+                          listOf(
+                              mapOf(
+                                  "accessions" to
+                                      listOf(
+                                          mapOf("active" to "Active", "state" to "Processing"),
+                                          mapOf("active" to "Active", "state" to "Processed"),
+                                      ))))),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
     fun `can search and sort all the fields`() {
       val fields = accessionsNamespace.getAllFieldNames().sorted().map { rootPrefix.resolve(it) }
       val sortOrder = fields.map { SearchSortField(it) }

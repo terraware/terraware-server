@@ -154,10 +154,11 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
    */
   inner class ActiveField(override val fieldName: String, override val displayName: String) :
       SearchField {
+    private val selectField = ACCESSIONS.STATE_ID.`as`("active_state")
     override val table
       get() = namespaces.searchTables.accessions
     override val selectFields
-      get() = listOf(ACCESSIONS.STATE_ID)
+      get() = listOf(selectField)
     override val possibleValues = AccessionActive::class.java.enumConstants!!.map { "$it" }
     override val nullable
       get() = false
@@ -171,12 +172,12 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
       } else {
         // Filter for all the states that map to a requested active value.
         val states = AccessionState.values().filter { it.toActiveEnum() in values }
-        listOf(ACCESSIONS.STATE_ID.`in`(states))
+        listOf(selectField.`in`(states))
       }
     }
 
     override fun computeValue(record: Record): String? {
-      return record[ACCESSIONS.STATE_ID]?.toActiveEnum()?.toString()
+      return record[selectField]?.toActiveEnum()?.toString()
     }
 
     override val orderByField: Field<*>
