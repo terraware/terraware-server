@@ -1668,6 +1668,27 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `can sort on grandchild field that is not in list of query fields`() {
+      val fields = listOf(accessionNumberField)
+
+      val result =
+          accessionSearchService.search(
+              facilityId,
+              fields,
+              NoConditionNode(),
+              listOf(SearchSortField(seedsGerminatedField, SearchDirection.Descending)))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                  mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
     fun `can specify duplicate sort fields`() {
       val fields = listOf(seedsGerminatedField)
 

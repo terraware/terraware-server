@@ -753,7 +753,9 @@ class NestedQueryBuilder(
       addFlattenedSublists(relativeField.sublists)
     } else if (relativeField.isNested) {
       // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
+      val sublistName = getSublistName(relativeField)
       getSublistQuery(relativeField).addSortField(sortField)
+      selectFieldPositions.computeIfAbsent(sublistName) { nextSelectFieldPosition++ }
     }
   }
 
