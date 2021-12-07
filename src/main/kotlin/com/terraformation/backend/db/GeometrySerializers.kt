@@ -3,6 +3,7 @@ package com.terraformation.backend.db
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
+import java.math.RoundingMode
 import net.postgis.jdbc.geometry.Geometry
 import net.postgis.jdbc.geometry.GeometryCollection
 import net.postgis.jdbc.geometry.LineString
@@ -20,6 +21,22 @@ abstract class BaseGeometrySerializer<T : Geometry>(
     private val handledType: Class<T>,
     private val type: String = handledType.simpleName
 ) : JsonSerializer<T>() {
+  companion object {
+    /**
+     * Number of digits after the decimal point to render in coordinates.
+     *
+     * We canonicalize most geometry values to spherical Mercator coordinates in the database, but
+     * the client can choose to send them to us in a different coordinate system. There can be
+     * inaccuracies introduced by the conversion: a client could store a longitude of 1 and then
+     * when we read it back from the database in long/lat form, it'll be 0.9999999999997.
+     *
+     * We can't eliminate floating-point inaccuracy in coordinate system conversion, but we can at
+     * least mask it by rounding the numbers to a fine-grained enough scale that they won't lose any
+     * relevant detail but will still give back whole numbers if the client sent us whole numbers.
+     */
+    const val COORDINATE_VALUE_SCALE = 8
+  }
+
   override fun serialize(value: T?, gen: JsonGenerator, serializers: SerializerProvider?) {
     with(gen) {
       if (value != null) {
@@ -87,7 +104,12 @@ abstract class BaseGeometrySerializer<T : Geometry>(
    * PostGIS's JSON format as possible.
    */
   protected fun JsonGenerator.writeCompactNumber(number: Double) {
-    writeRawValue(number.toBigDecimal().stripTrailingZeros().toPlainString())
+    writeRawValue(
+        number
+            .toBigDecimal()
+            .setScale(COORDINATE_VALUE_SCALE, RoundingMode.HALF_UP)
+            .stripTrailingZeros()
+            .toPlainString())
   }
 }
 
