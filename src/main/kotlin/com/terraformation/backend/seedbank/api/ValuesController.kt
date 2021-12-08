@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import javax.ws.rs.BadRequestException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -108,6 +109,10 @@ class ValuesController(
       @RequestBody payload: ListFieldValuesRequestPayload
   ): ListFieldValuesResponsePayload {
     val limit = 20
+
+    if (payload.fields.any { it.isNested }) {
+      throw BadRequestException("Cannot list values of nested fields.")
+    }
 
     val values =
         payload.fields.associateWith { searchField ->

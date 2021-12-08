@@ -9,7 +9,6 @@ import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
-import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
@@ -71,7 +70,7 @@ class AccessionsNamespace(
             accessions.upperCaseTextField(
                 "accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
             ActiveField("active", "Active"),
-            bags.textField("bagNumber", "Bag number", BAGS.BAG_NUMBER),
+            aliasField("bagNumber", "bags_number"),
             accessions.timestampField(
                 "checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
             accessions.dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
@@ -92,37 +91,19 @@ class AccessionsNamespace(
             accessions.enumField("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
             accessions.integerField(
                 "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
-            families.textField("family", "Family", FAMILIES.NAME),
-            GeolocationsNamespace.GeolocationField(
-                "geolocation",
-                "Geolocation",
-                GEOLOCATIONS.LATITUDE,
-                GEOLOCATIONS.LONGITUDE,
-                geolocations),
-            germinationTests.dateField(
-                "germinationEndDate", "Germination end date", GERMINATION_TESTS.END_DATE),
-            germinationTests.integerField(
-                "germinationPercentGerminated",
-                "% Viability",
-                GERMINATION_TESTS.TOTAL_PERCENT_GERMINATED),
-            germinationTests.enumField(
-                "germinationSeedType", "Seed type", GERMINATION_TESTS.SEED_TYPE_ID),
-            germinations.integerField(
-                "germinationSeedsGerminated",
-                "Number of seeds germinated",
-                GERMINATIONS.SEEDS_GERMINATED),
-            germinationTests.integerField(
-                "germinationSeedsSown", "Number of seeds sown", GERMINATION_TESTS.SEEDS_SOWN),
-            germinationTests.dateField(
-                "germinationStartDate", "Germination start date", GERMINATION_TESTS.START_DATE),
-            germinationTests.enumField(
-                "germinationSubstrate", "Germination substrate", GERMINATION_TESTS.SUBSTRATE_ID),
-            germinationTests.textField(
-                "germinationTestNotes", "Notes (germination test)", GERMINATION_TESTS.NOTES),
-            germinationTests.enumField(
-                "germinationTestType", "Germination test type", GERMINATION_TESTS.TEST_TYPE),
-            germinationTests.enumField(
-                "germinationTreatment", "Germination treatment", GERMINATION_TESTS.TREATMENT_ID),
+            aliasField("family", "familyInfo_name"),
+            aliasField("geolocation", "geolocations_coordinates"),
+            aliasField("germinationEndDate", "germinationTests_endDate"),
+            aliasField("germinationPercentGerminated", "germinationTests_percentGerminated"),
+            aliasField("germinationSeedType", "germinationTests_seedType"),
+            aliasField(
+                "germinationSeedsGerminated", "germinationTests_germinations_seedsGerminated"),
+            aliasField("germinationSeedsSown", "germinationTests_seedsSown"),
+            aliasField("germinationStartDate", "germinationTests_startDate"),
+            aliasField("germinationSubstrate", "germinationTests_substrate"),
+            aliasField("germinationTestNotes", "germinationTests_notes"),
+            aliasField("germinationTestType", "germinationTests_type"),
+            aliasField("germinationTreatment", "germinationTests_treatment"),
             accessions.idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
             accessions.textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
             accessions.dateField(
@@ -135,7 +116,7 @@ class AccessionsNamespace(
                 ACCESSIONS.LATEST_VIABILITY_PERCENT),
             accessions.dateField(
                 "nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
-            collectors.textField("primaryCollector", "Primary collector", COLLECTORS.NAME),
+            aliasField("primaryCollector", "primaryCollectorInfo_name"),
             accessions.enumField(
                 "processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
             accessions.textField(
@@ -153,12 +134,11 @@ class AccessionsNamespace(
             accessions.textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
             accessions.enumField(
                 "sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
-            species.textField("species", "Species", SPECIES.NAME),
+            aliasField("species", "speciesInfo_name"),
             accessions.enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
             accessions.enumField(
                 "storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
-            storageLocations.textField(
-                "storageLocation", "Storage location", STORAGE_LOCATIONS.NAME),
+            aliasField("storageLocation", "storageLocationInfo_name"),
             accessions.textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
             accessions.integerField(
                 "storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
@@ -178,36 +158,17 @@ class AccessionsNamespace(
                 "treesCollectedFrom",
                 "Number of trees collected from",
                 ACCESSIONS.TREES_COLLECTED_FROM),
-            accessionGerminationTestTypes.enumField(
-                "viabilityTestType",
-                "Viability test type (accession)",
-                ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID),
-            withdrawals.dateField("withdrawalDate", "Date of withdrawal", WITHDRAWALS.DATE),
-            withdrawals.textField("withdrawalDestination", "Destination", WITHDRAWALS.DESTINATION),
-            withdrawals.gramsField(
-                "withdrawalGrams", "Weight of seeds withdrawn (g)", WITHDRAWALS.WITHDRAWN_GRAMS),
-            withdrawals.textField("withdrawalNotes", "Notes (withdrawal)", WITHDRAWALS.NOTES),
-            withdrawals.enumField("withdrawalPurpose", "Purpose", WITHDRAWALS.PURPOSE_ID),
-            withdrawals.gramsField(
-                "withdrawalRemainingGrams",
-                "Weight in grams of seeds remaining (withdrawal)",
-                WITHDRAWALS.REMAINING_GRAMS),
-            withdrawals.bigDecimalField(
-                "withdrawalRemainingQuantity",
-                "Weight or count of seeds remaining (withdrawal)",
-                WITHDRAWALS.REMAINING_QUANTITY),
-            withdrawals.enumField(
-                "withdrawalRemainingUnits",
-                "Units of measurement of quantity remaining (withdrawal)",
-                WITHDRAWALS.REMAINING_UNITS_ID),
-            withdrawals.bigDecimalField(
-                "withdrawalQuantity",
-                "Quantity of seeds withdrawn",
-                WITHDRAWALS.WITHDRAWN_QUANTITY),
-            withdrawals.enumField(
-                "withdrawalUnits",
-                "Units of measurement of quantity withdrawn",
-                WITHDRAWALS.WITHDRAWN_UNITS_ID),
+            aliasField("viabilityTestType", "viabilityTestTypes_type"),
+            aliasField("withdrawalDate", "withdrawals_date"),
+            aliasField("withdrawalDestination", "withdrawals_destination"),
+            aliasField("withdrawalGrams", "withdrawals_grams"),
+            aliasField("withdrawalNotes", "withdrawals_notes"),
+            aliasField("withdrawalPurpose", "withdrawals_purpose"),
+            aliasField("withdrawalQuantity", "withdrawals_quantity"),
+            aliasField("withdrawalRemainingGrams", "withdrawals_remainingGrams"),
+            aliasField("withdrawalRemainingQuantity", "withdrawals_remainingQuantity"),
+            aliasField("withdrawalRemainingUnits", "withdrawals_remainingUnits"),
+            aliasField("withdrawalUnits", "withdrawals_units"),
         )
       }
 

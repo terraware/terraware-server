@@ -53,10 +53,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockk<UserModel>()
@@ -81,6 +81,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")
   private val activeField = rootPrefix.resolve("active")
   private val bagNumberField = rootPrefix.resolve("bagNumber")
+  private val bagNumberFlattenedField = rootPrefix.resolve("bags_number")
   private val checkedInTimeField = rootPrefix.resolve("checkedInTime")
   private val germinationSeedsGerminatedField = rootPrefix.resolve("germinationSeedsGerminated")
   private val germinationSeedsSownField = rootPrefix.resolve("germinationSeedsSown")
@@ -226,6 +227,78 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `returns multiple results for field in flattened sublist`() {
+    val fields = listOf(bagNumberFlattenedField)
+    val sortOrder = fields.map { SearchSortField(it) }
+
+    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "A"))
+    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
+
+    val result =
+        accessionSearchService.search(
+            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1000",
+                    "bags_number" to "A",
+                    "accessionNumber" to "XYZ",
+                ),
+                mapOf(
+                    "id" to "1000",
+                    "bags_number" to "B",
+                    "accessionNumber" to "XYZ",
+                ),
+                mapOf(
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                ),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `can query both an alias field and its target`() {
+    val fields = listOf(bagNumberField, bagNumberFlattenedField)
+    val sortOrder = fields.map { SearchSortField(it) }
+
+    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "A"))
+    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
+
+    val result =
+        accessionSearchService.search(
+            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "1000",
+                    "bagNumber" to "A",
+                    "bags_number" to "A",
+                    "accessionNumber" to "XYZ",
+                ),
+                mapOf(
+                    "id" to "1000",
+                    "bagNumber" to "B",
+                    "bags_number" to "B",
+                    "accessionNumber" to "XYZ",
+                ),
+                mapOf(
+                    "id" to "1001",
+                    "accessionNumber" to "ABCDEFG",
+                ),
+            ),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
   fun `honors sort order`() {
     val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it, SearchDirection.Descending) }
@@ -314,7 +387,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf(null, null), SearchFilterType.Range)
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       accessionSearchService.search(facilityId, fields, searchNode)
     }
   }
@@ -507,7 +580,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(totalGramsField, listOf("1000 baseballs"))
 
-    assertThrows(IllegalArgumentException::class.java) {
+    assertThrows<IllegalArgumentException> {
       accessionSearchService.search(facilityId, fields, searchNode)
     }
   }
@@ -858,7 +931,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(accessionNumberField)
       val searchNode = FieldNode(receivedDateField, listOf(null, null), SearchFilterType.Range)
 
-      assertThrows(IllegalArgumentException::class.java) {
+      assertThrows<IllegalArgumentException> {
         accessionSearchService.search(facilityId, fields, searchNode)
       }
     }
@@ -868,7 +941,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(accessionNumberField)
       val searchNode = FieldNode(receivedDateField, listOf("NOT_A_DATE"), SearchFilterType.Exact)
 
-      assertThrows(IllegalArgumentException::class.java) {
+      assertThrows<IllegalArgumentException> {
         accessionSearchService.search(facilityId, fields, searchNode)
       }
     }
@@ -1550,6 +1623,45 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `can specify a flattened sublist as a child of a nested sublist`() {
+      val field = rootPrefix.resolve("germinationTests.germinations_seedsGerminated")
+      val fields = listOf(field)
+      val sortOrder = fields.map { SearchSortField(it) }
+
+      val result =
+          accessionSearchService.search(
+              facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "1000",
+                      "accessionNumber" to "XYZ",
+                      "germinationTests" to
+                          listOf(
+                              mapOf("germinations_seedsGerminated" to "5"),
+                              mapOf("germinations_seedsGerminated" to "10"),
+                          ),
+                  ),
+                  mapOf(
+                      "id" to "1001",
+                      "accessionNumber" to "ABCDEFG",
+                  ),
+              ),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `cannot specify a flattened sublist with nested children`() {
+      assertThrows<IllegalArgumentException> {
+        rootPrefix.resolve("germinationTests_germinations.seedsGerminated")
+      }
+    }
+
+    @Test
     fun `can sort on nested field that is not in list of query fields`() {
       val sortOrder = listOf(SearchSortField(bagsNumberField, SearchDirection.Descending))
 
@@ -1560,6 +1672,30 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           SearchResults(
               listOf(
                   mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
+                  mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+              ),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
+    fun `can sort on flattened field that is not in list of query fields`() {
+      val sortOrder = listOf(SearchSortField(bagNumberFlattenedField, SearchDirection.Descending))
+
+      val result =
+          accessionSearchService.search(facilityId, emptyList(), NoConditionNode(), sortOrder)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  // Bag 6
+                  mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
+                  // Bag 5
+                  mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                  // Bag 2
+                  mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
+                  // Bag 1
                   mapOf("id" to "1000", "accessionNumber" to "XYZ"),
               ),
               cursor = null)

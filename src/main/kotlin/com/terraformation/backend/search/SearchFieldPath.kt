@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.search.field.SearchField
 
 const val NESTED_SUBLIST_DELIMITER: Char = '.'
+const val FLATTENED_SUBLIST_DELIMITER: Char = '_'
 
 /**
  * A partial location of a search field in the application's data hierarchy.
@@ -28,6 +29,22 @@ data class SearchFieldPrefix(
   val isRoot: Boolean
     get() = sublists.isEmpty()
 
+  /** True if this prefix contains at least one nested sublist. */
+  val isNested: Boolean
+    get() = sublists.isNotEmpty() && !sublists.first().isFlattened
+
+  /**
+   * True if this prefix only contains flattened sublists and there is at least one sublist. False
+   * if there are no sublists or if it contains nested sublists, even if there are flattened ones as
+   * well.
+   */
+  val isFlattened: Boolean
+    get() {
+      // Flattened sublists cannot come before nested ones in a prefix. So if the first sublist
+      // is flattened, all the remaining ones must also be.
+      return sublists.isNotEmpty() && sublists.first().isFlattened
+    }
+
   /** Which sublist this prefix refers to, or null if this is a root prefix. */
   val sublistField: SublistField?
     get() = sublists.lastOrNull()
@@ -46,14 +63,20 @@ data class SearchFieldPrefix(
    * valid field name.
    */
   fun resolveOrNull(relativePath: String): SearchFieldPath? {
-    val nextAndRest = relativePath.split(NESTED_SUBLIST_DELIMITER, limit = 2)
+    val nextNestedAndRest = relativePath.split(NESTED_SUBLIST_DELIMITER, limit = 2)
+    val nextFlattenedAndRest = relativePath.split(FLATTENED_SUBLIST_DELIMITER, limit = 2)
 
-    return if (nextAndRest.size == 1) {
-      namespace[nextAndRest[0]]?.let { field ->
+    return if (nextNestedAndRest.size == 1 && nextFlattenedAndRest.size == 1) {
+      // A plain field name with no sublist of either sort.
+      namespace[nextNestedAndRest[0]]?.let { field ->
         SearchFieldPath(prefix = this, searchField = field)
       }
+    } else if (nextNestedAndRest[0].length < nextFlattenedAndRest[0].length) {
+      // A nested sublist comes before the first flattened one, or there is no flattened one at all.
+      withSublistOrNull(nextNestedAndRest[0], false)?.resolveOrNull(nextNestedAndRest[1])
     } else {
-      withSublistOrNull(nextAndRest[0])?.resolveOrNull(nextAndRest[1])
+      // The first part of the relative path is a flattened sublist.
+      withSublistOrNull(nextFlattenedAndRest[0], true)?.resolveOrNull(nextFlattenedAndRest[1])
     }
   }
 
@@ -72,25 +95,30 @@ data class SearchFieldPrefix(
    *
    * @param sublistName The name of a sublist field that's defined in this prefix's namespace.
    */
-  private fun withSublistOrNull(sublistName: String): SearchFieldPrefix? {
-    if (NESTED_SUBLIST_DELIMITER in sublistName) {
-      throw IllegalArgumentException("Cannot resolve nested path: $sublistName")
+  private fun withSublistOrNull(sublistName: String, flatten: Boolean): SearchFieldPrefix? {
+    if (NESTED_SUBLIST_DELIMITER in sublistName || FLATTENED_SUBLIST_DELIMITER in sublistName) {
+      throw IllegalArgumentException("Cannot resolve multiple sublists at once: $sublistName")
     }
 
     val sublist = namespace.getSublistOrNull(sublistName) ?: return null
-    val newSublists = sublists + sublist
+    val possiblyFlattenedSublist = if (flatten) sublist.asFlattened() else sublist
+
+    if (isFlattened && !possiblyFlattenedSublist.isFlattened) {
+      throw IllegalArgumentException("Flattened sublists cannot contain nested sublists")
+    }
+
+    val newSublists = sublists + possiblyFlattenedSublist
 
     return SearchFieldPrefix(root = root, sublists = newSublists)
   }
 
   /** Returns a copy of this prefix with an additional sublist at the end. */
   fun withSublist(sublistName: String): SearchFieldPrefix {
-    return withSublistOrNull(sublistName)
+    return withSublistOrNull(sublistName, false)
         ?: throw IllegalArgumentException("Unknown name $sublistName under $this")
   }
 
-  @JsonValue
-  override fun toString() = sublists.joinToString("$NESTED_SUBLIST_DELIMITER") { it.name }
+  @JsonValue override fun toString() = sublists.joinToString("") { it.name + it.delimiter }
 }
 
 /**
@@ -129,14 +157,23 @@ data class SearchFieldPrefix(
  * controls how results are grouped together when there are multiple values for a particular field.
  */
 class SearchFieldPath(private val prefix: SearchFieldPrefix, val searchField: SearchField) {
-  val containers = prefix.sublists
+  val sublists: List<SublistField>
+    get() = prefix.sublists
 
   /**
-   * True if there are intermediate sublists between the root namespace and this field. False if
-   * this field is directly under the root namespace.
+   * True if there are nested sublists between the root namespace and this field. False if this
+   * field is directly under the root namespace or if all the sublists are flattened.
    */
   val isNested: Boolean
-    get() = prefix.sublists.isNotEmpty()
+    get() = prefix.isNested
+
+  /**
+   * True if all the sublists between the root namespace and this field are flattened, and there is
+   * at least one sublist. False if this field is directly under the root namespace or if there are
+   * nested sublists.
+   */
+  val isFlattened: Boolean
+    get() = prefix.isFlattened
 
   /**
    * Strips sublists from the beginning of this path's prefix. Returns a copy of this path that's
@@ -169,7 +206,6 @@ class SearchFieldPath(private val prefix: SearchFieldPrefix, val searchField: Se
 
   @JsonValue
   override fun toString(): String {
-    val prefix = "$prefix"
-    return if (prefix.isEmpty()) searchField.fieldName else "$prefix.${searchField.fieldName}"
+    return "$prefix${searchField.fieldName}"
   }
 }

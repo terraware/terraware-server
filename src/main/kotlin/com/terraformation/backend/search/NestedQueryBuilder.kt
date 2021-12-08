@@ -1,8 +1,10 @@
 package com.terraformation.backend.search
 
+import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.namespace.AccessionsNamespace
 import com.terraformation.backend.util.MemoizedValue
+import org.apache.naming.SelectorContext.prefix
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -147,41 +149,6 @@ import org.jooq.impl.DSL
  * ]
  * ```
  *
- * Contrast this with the older non-nested fields, e.g.,
- *
- * ```kotlin
- * val rootPrefix = SearchFieldPathPrefix(accessionsNamespace)
- * val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
- *
- * queryBuilder.addSelectFields(
- *     listOf(
- *         rootPrefix.resolve("id"),
- *         rootPrefix.resolve("species"),
- *         rootPrefix.resolve("bagNumber")))
- * val results = queryBuilder.toSelectQuery().fetch()
- * ```
- *
- * which would result in multiple entries for the same accession:
- *
- * ```json
- * [
- *   {
- *     "id": "3",
- *     "species": "First Species",
- *     "bagNumber": "First bag for accession 3"
- *   },
- *   {
- *     "id": "3",
- *     "species": "First Species",
- *     "bagNumber": "Second bag for accession 3"
- *   },
- *   {
- *     "id": "4",
- *     "species": "Second Species"
- *   }
- * ]
- * ```
- *
  * # Implementation details
  *
  * ## Field paths
@@ -203,11 +170,14 @@ import org.jooq.impl.DSL
  * Sublist fields, as the name suggests, are containers with their own lists of fields. They come in
  * two flavors: "multi-value" and "single-value." A multi-value sublist turns into a list of JSON
  * objects in the search results, whereas a single-value sublist turns into a single JSON object.
- * Each of those objects can contain a mix of scalar fields and sublist fields.
+ * Each of those objects can contain a mix of scalar fields and sublist fields. (There is a way to
+ * specify that you don't want sublist fields to be returned as nested JSON objects; the "Flattened
+ * sublists" section describes how that works, but we'll ignore it for now and focus on nested
+ * sublist fields.)
  *
  * Sublist fields aren't directly searchable; they are just containers for scalar fields.
  *
- * A sublist field is identified by the presence of a `.` in its name. For example, the field
+ * A nested sublist field is identified by the presence of a `.` in its name. For example, the field
  * `germinationTests.germinations.recordingDate` represents a sublist field called
  * `germinationTests` each element of which contains a sublist field called `germinations` each
  * element of which contains a scalar field called `recordingDate`.
@@ -433,6 +403,97 @@ import org.jooq.impl.DSL
  * When the user sorts by a field that maps to an enum, we want to order it based on the (possibly
  * localized) display name, not on the numeric ID. Currently, we do that by generating a `CASE`
  * expression to map the IDs to their display names so the database can sort on them.
+ *
+ * ## Flattened sublists
+ *
+ * Most of the discussion above was concerned with how we return search results in tree-structured
+ * form. But sometimes a tree structure isn't the right representation. Think, for example, of
+ * exporting search results to a CSV file: by definition there is no way to nest values, and if a
+ * sublist has multiple values for a field, they need to be represented as multiple rows. In short,
+ * the results need to be returned as a series of flat records where the values are always scalar.
+ *
+ * To support this use case, the search code has the ability to "flatten" a sublist. Flattening a
+ * sublist causes the sublist's fields to be merged into the parent. The sublist no longer appears
+ * explicitly as a field in the search results. If the sublist is multi-value and there's more than
+ * one list entry, there will be one copy of the parent for each entry of the sublist.
+ *
+ * A flattened sublist is specified by using an underscore `_` rather than a period `.` as the
+ * delimiter after the sublist name. Internally, a flattened sublist is distinguished from a nested
+ * one by the [SublistField.isFlattened] property.
+ *
+ * A simple pair of examples should help illustrate what flattening does. In the first search
+ * result, the caller asked for `id` and `bags.number` in the `accessions namespace.
+ *
+ * ```json
+ * [
+ *   { "id": "1", "bags": [ { "number": "200" }, { "number": "300" } ] },
+ *   { "id": "2", "bags": [ { "number": "400" } ] }
+ * ]
+ * ```
+ *
+ * In the second, the caller asked for `id` and `bags_number`, using an underscore to ask the system
+ * to flatten the `bags` sublist.
+ *
+ * ```json
+ * [
+ *   { "id": "1", "bags_number": "200" },
+ *   { "id": "1", "bags_number": "300" },
+ *   { "id": "2", "bags_number": "400" },
+ * ]
+ * ```
+ *
+ * Two things are happening here: the `number` field from the `bags` sublist is included as a
+ * top-level field in each result, and there are now two search results for ID 1 because there were
+ * two values in the `bags` sublist.
+ *
+ * Flattened sublists are potentially useful even when you don't need all the search results to be
+ * completely tabular. In particular, they can simplify the representation of fields from
+ * single-value sublists. For example, compare what happens when you ask for `facility.name`:
+ *
+ * ```json
+ * [ { "facility": { "name": "My Seed Bank" } } ]
+ * ```
+ *
+ * and `facility_name`:
+ *
+ * ```json
+ * [ { "facility_name": "My Seed Bank" } ]
+ * ```
+ *
+ * It is possible to mix nested and flattened sublists: nested sublists can contain flattened ones
+ * but not the other way around. Mixing the two styles is not useful for the "export to CSV" case
+ * (when you wouldn't want any nesting at all) but is useful for the single-value-sublist scenario
+ * in the second pair of examples above.
+ *
+ * Constructing the SQL queries for flattened sublists is far simpler than for nested ones. Each
+ * flattened sublist turns into a simple `LEFT JOIN` and there is no need for multisets at all. The
+ * results of a SQL join already have the right structure: the columns from all the joined tables
+ * are mixed together in a single result row, and there are separate results if one of the joined
+ * tables has multiple rows that match the join criterion.
+ *
+ * ## Aliases
+ *
+ * There is a special "alias" field type, represented internally by an [AliasField]. It allows a
+ * given field to be referenced by an alternate name. The target of the alias is used to construct
+ * the database query, and the alias name is used as the name of the field in the search results.
+ *
+ * For example, the `bagNumber` field in the accessions namespace is an alias for `bags_number`. If
+ * you ask for `id` and `bagNumber`, you'll get back a flattened result like,
+ *
+ * ```json
+ * [
+ *   { "id": "1", "bagNumber": "200" },
+ *   { "id": "1", "bagNumber": "300" },
+ *   { "id": "2", "bagNumber": "400" },
+ * ]
+ * ```
+ *
+ * Aliases allow us to maintain backward compatibility with the original accession search API, which
+ * didn't have any concept of sublists and always flattened all search results. Flattened sublists
+ * are a more general implementation, and the old field names are now aliases for flattened field
+ * paths.
+ *
+ * The target of an alias can't contain nested sublists, just flattened ones.
  */
 class NestedQueryBuilder(
     private val dslContext: DSLContext,
@@ -454,11 +515,21 @@ class NestedQueryBuilder(
   private val scalarFields = mutableMapOf<String, SearchField>()
 
   /**
-   * Query builders for sublists indexed by the first element of their relative names. For example,
-   * if this node has a prefix of `a.b` and there are two fields whose full names are `a.b.c.d.e`
-   * and `a.b.f.g`, this map would contain keys `c` and `f`.
+   * Query builders for nested sublists indexed by the first element of their relative names. For
+   * example, if this node has a prefix of `a.b` and there are two fields whose full names are
+   * `a.b.c.d.e` and `a.b.f.g`, this map would contain keys `c` and `f`.
+   *
+   * Flattened sublists aren't added here; they're in [flattenedSublists] instead.
    */
   private val sublistQueryBuilders = mutableMapOf<String, NestedQueryBuilder>()
+
+  /**
+   * Sublists the caller wants to flatten in the search results or in sort criteria. If the caller
+   * asks for a field whose path has multiple flattened sublists, they are all included here. For
+   * example, if the caller asks for `germinationTests_germinations_recordingDate`, this set will
+   * include both `germinationTests` and `germinations`.
+   */
+  private val flattenedSublists = mutableSetOf<SublistField>()
 
   /**
    * Zero-indexed position of each field in the `SELECT` clause. Both scalar and sublist fields are
@@ -544,12 +615,18 @@ class NestedQueryBuilder(
   /**
    * Returns a jOOQ query object for the currently-configured query. Once this method is called,
    * attempts to modify its field lists or conditions will throw [IllegalStateException].
+   *
+   * @param distinct Don't return duplicate results. This is used when querying the list of all
+   * values of a particular field, e.g., to populate a typeahead.
    */
-  fun toSelectQuery(): SelectSeekStepN<Record> {
+  fun toSelectQuery(distinct: Boolean = false): SelectSeekStepN<Record> {
     return renderedQuery.get {
-      val select = dslContext.select(getSelectFields()).from(getSearchTable().fromTable)
+      val select =
+          if (distinct) dslContext.selectDistinct(getSelectFields())
+          else dslContext.select(getSelectFields())
 
-      val selectWithParents = joinWithChildTables(select)
+      val selectFrom = select.from(getSearchTable().fromTable)
+      val selectWithParents = joinFlattenedSublists(selectFrom)
 
       // Add lateral joins for all the multiset subqueries.
       val selectWithLateral =
@@ -560,7 +637,7 @@ class NestedQueryBuilder(
 
       val selectWithConditions = selectWithLateral.where(conditions)
 
-      selectWithConditions.orderBy(getOrderBy())
+      selectWithConditions.orderBy(getOrderBy(!distinct))
     }
   }
 
@@ -628,7 +705,21 @@ class NestedQueryBuilder(
   private fun addSelectField(fieldPath: SearchFieldPath) {
     val relativeField = fieldPath.relativeTo(prefix)
 
-    if (relativeField.isNested) {
+    if (relativeField.searchField is AliasField) {
+      addFlattenedSublists(relativeField.searchField.targetPath.sublists)
+    }
+
+    if (relativeField.isFlattened) {
+      addFlattenedSublists(relativeField.sublists)
+
+      val searchField = fieldPath.searchField
+      val fieldName = "$relativeField"
+      scalarFields[fieldName] = searchField
+      if (fieldName !in selectFieldPositions) {
+        selectFieldPositions[fieldName] = nextSelectFieldPosition
+        nextSelectFieldPosition += searchField.selectFields.size
+      }
+    } else if (relativeField.isNested) {
       // Prefix = a.b, fieldName = a.b.c.d => make a sublist "c" to hold field "d"
       val sublistName = getSublistName(relativeField)
       getSublistQuery(relativeField).addSelectField(fieldPath)
@@ -646,27 +737,39 @@ class NestedQueryBuilder(
 
   /**
    * Adds a field to the list of fields the caller wants to use to sort the search results. If the
-   * field is in a sublist, adds it to the sublist query's sort fields, creating the query if
+   * field is in a nested sublist, adds it to the sublist query's sort fields, creating the query if
    * needed.
    */
   private fun addSortField(sortField: SearchSortField) {
-    sortFields.add(sortField)
-
     val relativeField = sortField.field.relativeTo(prefix)
 
-    if (relativeField.isNested) {
+    sortFields.add(sortField)
+
+    if (relativeField.isFlattened) {
+      addFlattenedSublists(relativeField.sublists)
+    } else if (relativeField.isNested) {
       // If we are sorting by field "a.b", then sublist "a" needs to be sorted by "b".
       getSublistQuery(relativeField).addSortField(sortField)
     }
   }
 
-  /** Returns the [NestedQueryBuilder] for a sublist, creating it if needed. */
+  private fun addFlattenedSublists(sublists: Collection<SublistField>) {
+    sublists.forEach { sublist ->
+      if (sublist.isFlattened) {
+        flattenedSublists.add(sublist)
+      } else {
+        throw IllegalArgumentException("BUG! Sublist $sublist is not flattened")
+      }
+    }
+  }
+
+  /** Returns the [NestedQueryBuilder] for a nested sublist, creating it if needed. */
   private fun getSublistQuery(relativeField: SearchFieldPath): NestedQueryBuilder {
     if (!relativeField.isNested) {
       throw IllegalArgumentException("Cannot get sublist for non-nested field $relativeField")
     }
 
-    val sublistName = relativeField.containers.first().name
+    val sublistName = relativeField.sublists.first().name
 
     return sublistQueryBuilders.computeIfAbsent(sublistName) {
       NestedQueryBuilder(dslContext, prefix.withSublist(sublistName))
@@ -674,29 +777,13 @@ class NestedQueryBuilder(
   }
 
   /**
-   * For non-nested fields in child tables, joins the top-level query with those tables. This is not
-   * used when child tables are queried using sublist fields, but is required for backward
-   * compatibility with the existing search API that expects child table values to be returned as
-   * multiple top-level entries in the results list.
+   * Joins the top-level query with the tables referenced by flattened sublists. This is not used
+   * when child tables are queried using nested sublist fields.
    */
-  private fun joinWithChildTables(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
-    if (!isRoot()) {
-      return query
+  private fun joinFlattenedSublists(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
+    return flattenedSublists.fold(query) { joinedQuery, sublist ->
+      joinedQuery.leftJoin(sublist.namespace.searchTable.fromTable).on(sublist.conditionForMultiset)
     }
-
-    var joinedQuery = query
-
-    val selectTables = scalarFields.values.map { it.table }.toSet() - getSearchTable()
-
-    // SearchTable.leftJoinWithMain will join with parent tables, so no need to
-    // add them a second time.
-    val selectTableParents = selectTables.mapNotNull { it.parent }.toSet()
-
-    val tablesToJoin = selectTables - selectTableParents
-
-    tablesToJoin.forEach { table -> joinedQuery = table.leftJoinWithMain(joinedQuery) }
-
-    return joinedQuery
   }
 
   /**
@@ -704,18 +791,28 @@ class NestedQueryBuilder(
    * a mix of JSONB array expressions (when sorting by a field in a sublist), numeric column indexes
    * (when sorting by the raw value of a column that already appears in the `SELECT` clause), and
    * computation expressions (when sorting by a derived value).
+   *
+   * @param includeDefaultFields Add a default set of fields to ensure that results are returned in
+   * a consistent order if the same query is run repeatedly and the caller didn't supply precise
+   * enough sort criteria. This needs to be `false` if the caller is asking for distinct search
+   * results, since a SQL `SELECT DISTINCT` query can't be ordered by fields that don't appear in
+   * the select list.
    */
-  private fun getOrderBy(): List<OrderField<*>> {
+  private fun getOrderBy(includeDefaultFields: Boolean): List<OrderField<*>> {
     val orderByFields = sortFields.map { getOrderByField(it) }
 
-    // Fall back on the default sort order for each table to ensure stable ordering of query results
-    // if the user doesn't specify precise sort criteria.
-    val defaultSortFields =
-        scalarFields.values.map { it.table }.distinct().flatMap { table ->
-          table.defaultOrderFields
-        }
+    return if (includeDefaultFields) {
+      // Fall back on the default sort order for each table to ensure stable ordering of query
+      // results if the user doesn't specify precise sort criteria.
+      val defaultSortFields =
+          scalarFields.values.map { it.table }.distinct().flatMap { table ->
+            table.defaultOrderFields
+          }
 
-    return orderByFields + defaultSortFields
+      orderByFields + defaultSortFields
+    } else {
+      orderByFields
+    }
   }
 
   /**
@@ -736,11 +833,11 @@ class NestedQueryBuilder(
     val sortFieldIndex = sortFieldPositions[relativeName]
 
     val orderByField =
-        if (relativeField.isNested) {
-          getOrderByFieldForSublist(sortField.field)
-        } else if (sortFieldIndex != null) {
+        if (sortFieldIndex != null) {
           // Sorting by a column that's in the `SELECT` clause.
           DSL.inline(sortFieldIndex + 1)
+        } else if (relativeField.isNested) {
+          getOrderByFieldForSublist(sortField.field)
         } else {
           // Sorting by a derived value.
           field.orderByField
@@ -771,38 +868,37 @@ class NestedQueryBuilder(
    * BY` clause of the parent query.
    */
   private fun getSortFieldsToExposeToParent(): List<Field<*>> {
-    return if (isRoot()) {
-      emptyList()
-    } else {
-      sortFields
-          .filterNot { it.field.relativeTo(prefix).isNested }
-          .distinctBy { it.field }
-          .mapNotNull { sortField ->
-            val field = sortField.field.searchField
-            val relativeField = sortField.field.relativeTo(prefix)
-            val relativeName = "$relativeField"
+    return sortFields
+        .filter {
+          val relativeField = it.field.relativeTo(prefix)
+          relativeField.isFlattened || !relativeField.isNested
+        }
+        .distinctBy { it.field }
+        .mapNotNull { sortField ->
+          val field = sortField.field.searchField
+          val relativeField = sortField.field.relativeTo(prefix)
+          val relativeName = "$relativeField"
 
-            if (relativeName !in sortFieldPositions) {
-              // If we are selecting and sorting on an enum field, the sortable value will be a CASE
-              // expression. We need to make that available in the multiset so the parent can order
-              // by
-              // it.
-              val selectFieldIndex = selectFieldPositions[relativeName]
-              val orderByField = field.orderByField
-              if (selectFieldIndex != null &&
-                  field.selectFields.size == 1 &&
-                  field.selectFields[0] == orderByField) {
-                sortFieldPositions[relativeName] = selectFieldIndex
-                null
-              } else {
-                sortFieldPositions[relativeName] = nextSelectFieldPosition++
-                orderByField
-              }
-            } else {
+          if (relativeName !in sortFieldPositions) {
+            // If we are selecting and sorting on an enum field, the sortable value will be a CASE
+            // expression. We need to make that available in the multiset so the parent can order
+            // by
+            // it.
+            val selectFieldIndex = selectFieldPositions[relativeName]
+            val orderByField = field.orderByField
+            if (selectFieldIndex != null &&
+                field.selectFields.size == 1 &&
+                field.selectFields[0] == orderByField) {
+              sortFieldPositions[relativeName] = selectFieldIndex
               null
+            } else {
+              sortFieldPositions[relativeName] = nextSelectFieldPosition++
+              orderByField
             }
+          } else {
+            null
           }
-    }
+        }
   }
 
   /**
@@ -834,7 +930,7 @@ class NestedQueryBuilder(
         throw IllegalStateException("BUG! Root node should never be rendered as a multiset")
       }
 
-      val alias = "$prefix".replace('.', '_').lowercase() + "_multiset"
+      val alias = "$prefix".replace('.', '_').lowercase() + "multiset"
 
       prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
 
@@ -921,7 +1017,7 @@ class NestedQueryBuilder(
   /** Returns the name of the sublist containing the given relative field. */
   private fun getSublistName(relativeField: SearchFieldPath): String {
     return if (relativeField.isNested) {
-      relativeField.containers.first().name
+      relativeField.sublists.first().name
     } else {
       throw IllegalArgumentException("BUG! $relativeField has no sublist")
     }

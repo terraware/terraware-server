@@ -37,10 +37,7 @@ class SearchService(private val dslContext: DSLContext) {
 
     val subquery =
         joinWithSecondaryTables(
-                DSL.select(primaryKey).from(searchTable.fromTable),
-                rootPrefix,
-                emptyList(),
-                criteria)
+                DSL.select(primaryKey).from(searchTable.fromTable), rootPrefix, criteria)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
@@ -76,18 +73,41 @@ class SearchService(private val dslContext: DSLContext) {
       criteria: SearchNode,
       sortOrder: List<SearchSortField> = emptyList(),
       cursor: String? = null,
-      limit: Int = Int.MAX_VALUE
+      limit: Int = Int.MAX_VALUE,
+      distinct: Boolean = false,
   ): SearchResults {
+    // TODO: Better cursor support. Should remember the most recent values of the sort fields
+    //       and pass them to skip(). For now, just treat the cursor as an offset.
+    val offset = cursor?.toIntOrNull() ?: 0
+
+    val results =
+        runQuery(rootPrefix, fields, criteria, sortOrder, limit, offset, distinct).filterNotNull()
+
+    val newCursor =
+        if (results.size > limit) {
+          "${offset + limit}"
+        } else {
+          null
+        }
+
+    return SearchResults(results.take(limit), newCursor)
+  }
+
+  private fun runQuery(
+      rootPrefix: SearchFieldPrefix,
+      fields: Collection<SearchFieldPath>,
+      criteria: SearchNode,
+      sortOrder: List<SearchSortField>,
+      limit: Int,
+      offset: Int = 0,
+      distinct: Boolean,
+  ): List<Map<String, Any>?> {
     val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
     queryBuilder.addSelectFields(fields)
     queryBuilder.addSortFields(sortOrder)
     queryBuilder.addCondition(filterResults(rootPrefix, criteria))
 
-    val query = queryBuilder.toSelectQuery()
-
-    // TODO: Better cursor support. Should remember the most recent values of the sort fields
-    //       and pass them to skip(). For now, just treat the cursor as an offset.
-    val offset = cursor?.toIntOrNull() ?: 0
+    val query = queryBuilder.toSelectQuery(distinct)
 
     // Query one more row than the limit so we can tell the client whether or not there are
     // additional pages of results.
@@ -101,19 +121,11 @@ class SearchService(private val dslContext: DSLContext) {
     log.debug("search SQL query: ${queryWithLimit.getSQL(ParamType.INLINED)}")
     val startTime = System.currentTimeMillis()
 
-    val results = queryWithLimit.fetch(queryBuilder::convertToMap).filterNotNull()
+    val results = queryWithLimit.fetch(queryBuilder::convertToMap)
 
     val endTime = System.currentTimeMillis()
     log.debug("search query returned ${results.size} rows in ${endTime - startTime} ms")
-
-    val newCursor =
-        if (results.size > limit) {
-          "${offset + limit}"
-        } else {
-          null
-        }
-
-    return SearchResults(results.take(limit), newCursor)
+    return results
   }
 
   /**
@@ -131,36 +143,27 @@ class SearchService(private val dslContext: DSLContext) {
       fieldPath: SearchFieldPath,
       criteria: SearchNode,
       limit: Int = 50,
-  ): List<String> {
-    val field = fieldPath.searchField
-    val selectFields =
-        field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
+  ): List<String?> {
+    if (fieldPath.isNested) {
+      throw IllegalArgumentException("Fetching nested field values is not supported.")
+    }
 
-    val searchTable = rootPrefix.root.searchTable
-    var query: SelectJoinStep<out Record> =
-        dslContext.selectDistinct(selectFields).from(searchTable.fromTable)
+    val searchResults =
+        runQuery(
+            rootPrefix,
+            listOf(fieldPath),
+            criteria,
+            listOf(SearchSortField(fieldPath)),
+            limit = limit,
+            distinct = true,
+        )
 
-    query = joinWithSecondaryTables(query, rootPrefix, listOf(field), criteria)
+    val fieldPathName = "$fieldPath"
 
-    val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTable))
-
-    val fullQuery =
-        query
-            .where(conditions)
-            .orderBy(DSL.field("order_by_field").asc().nullsLast())
-            .limit(limit + 1)
-
-    log.debug("fetchFieldValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
-    val startTime = System.currentTimeMillis()
-
-    val results = fullQuery.fetch { field.computeValue(it) }
-
-    val endTime = System.currentTimeMillis()
-    log.debug("fetchFieldValues query returned ${results.size} rows in ${endTime - startTime} ms")
-
+    // The distinct() call is needed here despite the "distinct = true" in the runQuery call because
     // SearchField.computeValue() can introduce duplicates that the query's SELECT DISTINCT has no
     // way of filtering out.
-    return results.distinct()
+    return searchResults.map { it?.get(fieldPathName)?.toString() }.distinct()
   }
 
   /**
@@ -267,18 +270,16 @@ class SearchService(private val dslContext: DSLContext) {
   private fun <T : Record> joinWithSecondaryTables(
       selectFrom: SelectJoinStep<T>,
       rootPrefix: SearchFieldPrefix,
-      fields: List<SearchField>,
       criteria: SearchNode,
-      sortOrder: List<SearchSortField> = emptyList()
   ): SelectJoinStep<T> {
-    var query = selectFrom
-    val directlyReferencedTables =
-        fields.map { it.table }.toSet() +
-            criteria.referencedTables() +
-            sortOrder.map { it.field.searchField.table }.toSet() - rootPrefix.namespace.searchTable
+    val referencedSublists = criteria.referencedSublists().distinctBy { it.namespace }
+    val referencedTables = referencedSublists.map { it.namespace.searchTable }.toSet()
 
-    directlyReferencedTables.forEach { table -> query = table.leftJoinWithMain(query) }
+    val joinedQuery =
+        referencedSublists.fold(selectFrom) { query, sublist ->
+          query.leftJoin(sublist.namespace.searchTable.fromTable).on(sublist.conditionForMultiset)
+        }
 
-    return joinForPermissions(query, directlyReferencedTables, rootPrefix.root.searchTable)
+    return joinForPermissions(joinedQuery, referencedTables, rootPrefix.root.searchTable)
   }
 }
