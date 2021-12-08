@@ -1,7 +1,7 @@
 package com.terraformation.backend.search.namespace
 
 import com.terraformation.backend.search.SearchFieldNamespace
-import com.terraformation.backend.seedbank.search.SearchTables
+import com.terraformation.backend.search.SearchTables
 import javax.annotation.ManagedBean
 
 /**
