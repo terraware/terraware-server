@@ -10,10 +10,10 @@ class CollectorsNamespace(searchTables: SearchTables) : SearchFieldNamespace() {
   override val sublists: List<SublistField> = emptyList()
 
   override val fields: List<SearchField> =
-      with(searchTables) {
+      with(searchTables.collectors) {
         listOf(
-            collectors.textField("name", "Collector name", COLLECTORS.NAME),
-            collectors.textField("notes", "Collector notes", COLLECTORS.NOTES),
+            textField("name", "Collector name", COLLECTORS.NAME),
+            textField("notes", "Collector notes", COLLECTORS.NOTES),
         )
       }
 }

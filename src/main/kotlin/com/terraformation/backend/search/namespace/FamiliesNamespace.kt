@@ -10,9 +10,9 @@ class FamiliesNamespace(searchTables: SearchTables) : SearchFieldNamespace() {
   override val sublists: List<SublistField> = emptyList()
 
   override val fields: List<SearchField> =
-      with(searchTables) {
+      with(searchTables.families) {
         listOf(
-            families.textField("name", "Family name", FAMILIES.NAME),
+            textField("name", "Family name", FAMILIES.NAME),
         )
       }
 }

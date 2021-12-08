@@ -15,9 +15,9 @@ class BagsNamespace(searchTables: SearchTables, accessionsNamespace: AccessionsN
               "accession", BAGS.ACCESSION_ID.eq(ACCESSIONS.ID)))
 
   override val fields: List<SearchField> =
-      with(searchTables) {
+      with(searchTables.bags) {
         listOf(
-            bags.textField("number", "Bag number", BAGS.BAG_NUMBER),
+            textField("number", "Bag number", BAGS.BAG_NUMBER),
         )
       }
 }

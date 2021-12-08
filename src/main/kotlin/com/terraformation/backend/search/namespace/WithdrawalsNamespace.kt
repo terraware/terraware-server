@@ -15,29 +15,28 @@ class WithdrawalsNamespace(searchTables: SearchTables, accessionsNamespace: Acce
               "accession", WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID)))
 
   override val fields: List<SearchField> =
-      with(searchTables) {
+      with(searchTables.withdrawals) {
         listOf(
-            withdrawals.dateField("date", "Date of withdrawal", WITHDRAWALS.DATE),
-            withdrawals.textField("destination", "Destination", WITHDRAWALS.DESTINATION),
-            withdrawals.gramsField(
-                "grams", "Weight of seeds withdrawn (g)", WITHDRAWALS.WITHDRAWN_GRAMS),
-            withdrawals.textField("notes", "Notes (withdrawal)", WITHDRAWALS.NOTES),
-            withdrawals.enumField("purpose", "Purpose", WITHDRAWALS.PURPOSE_ID),
-            withdrawals.bigDecimalField(
+            dateField("date", "Date of withdrawal", WITHDRAWALS.DATE),
+            textField("destination", "Destination", WITHDRAWALS.DESTINATION),
+            gramsField("grams", "Weight of seeds withdrawn (g)", WITHDRAWALS.WITHDRAWN_GRAMS),
+            textField("notes", "Notes (withdrawal)", WITHDRAWALS.NOTES),
+            enumField("purpose", "Purpose", WITHDRAWALS.PURPOSE_ID),
+            bigDecimalField(
                 "quantity", "Quantity of seeds withdrawn", WITHDRAWALS.WITHDRAWN_QUANTITY),
-            withdrawals.gramsField(
+            gramsField(
                 "remainingGrams",
                 "Weight in grams of seeds remaining (withdrawal)",
                 WITHDRAWALS.REMAINING_GRAMS),
-            withdrawals.bigDecimalField(
+            bigDecimalField(
                 "remainingQuantity",
                 "Weight or count of seeds remaining (withdrawal)",
                 WITHDRAWALS.REMAINING_QUANTITY),
-            withdrawals.enumField(
+            enumField(
                 "remainingUnits",
                 "Units of measurement of quantity remaining (withdrawal)",
                 WITHDRAWALS.REMAINING_UNITS_ID),
-            withdrawals.enumField(
+            enumField(
                 "units",
                 "Units of measurement of quantity withdrawn",
                 WITHDRAWALS.WITHDRAWN_UNITS_ID),
