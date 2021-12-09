@@ -172,7 +172,7 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
       } else {
         // Filter for all the states that map to a requested active value.
         val states = AccessionState.values().filter { it.toActiveEnum() in values }
-        listOf(selectField.`in`(states))
+        listOf(ACCESSIONS.STATE_ID.`in`(states))
       }
     }
 

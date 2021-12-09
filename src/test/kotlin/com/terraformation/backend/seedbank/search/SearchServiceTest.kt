@@ -433,6 +433,24 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `can filter on computed fields whose raw values are being queried`() {
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("XYZ")!!.copy(stateId = AccessionState.Withdrawn))
+
+    val fields = listOf(accessionNumberField, stateField)
+    val searchNode = FieldNode(activeField, listOf("Inactive"))
+
+    val result = accessionSearchService.search(facilityId, fields, searchNode)
+
+    val expected =
+        SearchResults(
+            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Withdrawn")),
+            cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
   fun `sorts enum fields by display name rather than ID`() {
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
@@ -1084,6 +1102,16 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `no criteria for computed column value`() {
       val values = searchService.fetchValues(rootPrefix, activeField, NoConditionNode())
       assertEquals(listOf("Active"), values)
+    }
+
+    @Test
+    fun `can filter on computed column value`() {
+      accessionsDao.update(
+          accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.Withdrawn))
+      val values =
+          searchService.fetchValues(
+              rootPrefix, activeField, FieldNode(activeField, listOf("Inactive")))
+      assertEquals(listOf("Inactive"), values)
     }
 
     @Test
