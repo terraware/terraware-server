@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
-import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
-import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
 import kotlin.reflect.KClass
@@ -43,7 +41,6 @@ class OpenApiConfig : OpenApiCustomiser {
   init {
     val config = SpringDocUtils.getConfig()
 
-    config.replaceWithSchema(SearchFieldPath::class.java, StringSchema())
     config.replaceWithClass(
         net.postgis.jdbc.geometry.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
     config.replaceWithClass(
