@@ -1,5 +1,8 @@
 package com.terraformation.backend.seedbank.search
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.UserModel
@@ -76,6 +79,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var germinationsDao: GerminationsDao
   private lateinit var searchService: SearchService
 
+  private val organizationId = OrganizationId(1)
+  private val projectId = ProjectId(2)
   private val facilityId = FacilityId(100)
   private val checkedInTimeString = "2021-08-18T11:33:55Z"
   private val checkedInTime = Instant.parse(checkedInTimeString)
@@ -116,6 +121,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     searchService = SearchService(dslContext)
     accessionSearchService = AccessionSearchService(namespaces, searchService)
 
+    every { user.organizationRoles } returns mapOf(organizationId to Role.MANAGER)
+    every { user.projectRoles } returns mapOf(projectId to Role.MANAGER)
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
     insertSiteData()
@@ -1405,11 +1412,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fullyQualifiedField =
           orgPrefix.resolve("projects.sites.facilities.accessions.bags.number")
 
-      every { user.organizationRoles } returns mapOf(OrganizationId(1) to Role.OWNER)
-
       val result =
           searchService.search(
-              orgPrefix, listOf(fullyQualifiedField), FieldNode(fullyQualifiedField, listOf("5")))
+              orgPrefix,
+              listOf(fullyQualifiedField),
+              FieldNode(fullyQualifiedField, listOf("5")),
+              listOf(SearchSortField(fullyQualifiedField)))
 
       // Bags from both accessions appear here even though we're filtering on bag number because the
       // filter criteria determine what top-level (root prefix) results are returned, and we always
@@ -2076,8 +2084,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val activeField = prefix.resolve("facilities.accessions.active")
       val stateField = prefix.resolve("facilities.accessions.state")
 
-      every { user.projectRoles } returns mapOf(ProjectId(2) to Role.OWNER)
-
       val result = searchService.search(prefix, listOf(stateField, activeField), NoConditionNode())
 
       val expected =
@@ -2098,9 +2104,16 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `can search and sort all the fields`() {
-      val fields = accessionsNamespace.getAllFieldNames().sorted().map { rootPrefix.resolve(it) }
-      val sortOrder = fields.map { SearchSortField(it) }
+    fun `can search all the fields`() {
+      val prefix = SearchFieldPrefix(namespaces.organizations)
+      val fields =
+          prefix
+              .namespace
+              .getAllFieldNames()
+              .sorted()
+              // Can't query both species and speciesName: https://github.com/jOOQ/jOOQ/issues/12704
+              .filterNot { it.endsWith(".speciesName") }
+              .map { prefix.resolve(it) }
 
       // We're querying a mix of nested fields and the old-style fields that put nested values
       // at the top level and return a separate top-level query result for each combination of rows
@@ -2124,20 +2137,18 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      val expected =
+      val expectedAccessions =
           listOf(
               mapOf(
-                  "id" to "1001",
                   "accessionNumber" to "ABCDEFG",
                   "active" to "Active",
                   "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
+                  "id" to "1001",
                   "species" to "Other Dogwood",
-                  "speciesName" to "Other Dogwood",
                   "state" to "Processing",
                   "treesCollectedFrom" to "2",
               ),
               mapOf(
-                  "id" to "1000",
                   "accessionNumber" to "XYZ",
                   "active" to "Active",
                   "checkedInTime" to "$checkedInTime",
@@ -2156,8 +2167,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                               "type" to "Lab",
                               "seedsSown" to "15",
                           )),
+                  "id" to "1000",
                   "species" to "Kousa Dogwood",
-                  "speciesName" to "Kousa Dogwood",
                   "state" to "Processed",
                   "treesCollectedFrom" to "1",
               ))
@@ -2184,11 +2195,71 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                     ?: listOf(base)
               }
 
-      val result = accessionSearchService.search(facilityId, fields, NoConditionNode(), sortOrder)
+      val expectedFacilities =
+          listOf(
+              mapOf(
+                  "accessions" to expectedAccessions,
+                  "id" to "100",
+                  "name" to "ohana",
+                  "type" to "Seed Bank",
+              ))
 
-      // Compare sorted versions of the result maps to make differences easier to spot.
-      assertEquals(expected.map { it.toSortedMap() }, result.results.map { it.toSortedMap() })
+      val expectedSites =
+          listOf(
+              mapOf(
+                  "facilities" to expectedFacilities,
+                  "id" to "10",
+                  "name" to "sim",
+              ))
+
+      val expectedProjects =
+          listOf(
+              mapOf(
+                  "id" to "2",
+                  "name" to "project",
+                  "sites" to expectedSites,
+              ))
+
+      val expected =
+          listOf(
+              mapOf(
+                  "id" to "1",
+                  "name" to "dev",
+                  "projects" to expectedProjects,
+              ))
+
+      val result = searchService.search(prefix, fields, NoConditionNode())
+
       assertNull(result.cursor)
+
+      if (expected != result.results) {
+        // Pretty-print both values so they are easy to diff.
+        val objectMapper =
+            ObjectMapper()
+                .registerKotlinModule()
+                .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                .enable(SerializationFeature.INDENT_OUTPUT)
+        assertEquals(
+            objectMapper.writeValueAsString(expected),
+            objectMapper.writeValueAsString(result.results))
+      }
+    }
+
+    @Test
+    fun `all fields are valid sort keys`() {
+      val prefix = SearchFieldPrefix(namespaces.organizations)
+
+      val expected = listOf(mapOf("id" to "1"))
+      val searchFields = listOf(prefix.resolve("id"))
+
+      prefix.namespace.getAllFieldNames().forEach { fieldName ->
+        val field = prefix.resolve(fieldName)
+        val sortFields = listOf(SearchSortField(field))
+        assertDoesNotThrow("Sort by $fieldName") {
+          val result = searchService.search(prefix, searchFields, NoConditionNode(), sortFields)
+          assertEquals(expected, result.results, "Sort by $fieldName")
+        }
+      }
     }
 
     @Test
