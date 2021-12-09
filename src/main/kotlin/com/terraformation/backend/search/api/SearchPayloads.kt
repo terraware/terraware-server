@@ -1,0 +1,174 @@
+package com.terraformation.backend.search.api
+
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
+import com.terraformation.backend.search.AndNode
+import com.terraformation.backend.search.FieldNode
+import com.terraformation.backend.search.NoConditionNode
+import com.terraformation.backend.search.NotNode
+import com.terraformation.backend.search.OrNode
+import com.terraformation.backend.search.SearchDirection
+import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.SearchFilterType
+import com.terraformation.backend.search.SearchNode
+import com.terraformation.backend.search.SearchResults
+import com.terraformation.backend.search.SearchService
+import com.terraformation.backend.search.SearchSortField
+import io.swagger.v3.oas.annotations.Hidden
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
+import io.swagger.v3.oas.annotations.media.Schema
+import javax.validation.constraints.NotEmpty
+
+interface HasSortOrder {
+  val sortOrder: List<SearchSortOrderElement>?
+  val searchSortFields: List<SearchSortField>?
+    @Hidden get() = sortOrder?.map { it.toSearchSortField() }
+}
+
+interface HasSearchNode {
+  val filters: List<SearchFilter>?
+  val search: SearchNodePayload?
+
+  fun toSearchNode(): SearchNode {
+    val filters = this.filters
+    val search = this.search
+
+    return when {
+      search != null -> search.toSearchNode()
+      filters.isNullOrEmpty() -> NoConditionNode()
+      else -> AndNode(filters.map { FieldNode(it.field, it.values, it.type) })
+    }
+  }
+}
+
+data class SearchSortOrderElement(
+    val field: SearchFieldPath,
+    @Schema(
+        defaultValue = "Ascending",
+    )
+    val direction: SearchDirection?
+) {
+  fun toSearchSortField() = SearchSortField(field, direction ?: SearchDirection.Ascending)
+}
+
+@JsonSubTypes(
+    JsonSubTypes.Type(name = "and", value = AndNodePayload::class),
+    JsonSubTypes.Type(name = "field", value = FieldNodePayload::class),
+    JsonSubTypes.Type(name = "not", value = NotNodePayload::class),
+    JsonSubTypes.Type(name = "or", value = OrNodePayload::class),
+)
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "operation")
+@Schema(
+    description =
+        "A search criterion. The search will return results that match this criterion. The " +
+            "criterion can be composed of other search criteria to form arbitrary Boolean " +
+            "search expressions. TYPESCRIPT-OVERRIDE-TYPE-WITH-ANY",
+    oneOf =
+        [
+            AndNodePayload::class,
+            FieldNodePayload::class,
+            NotNodePayload::class,
+            OrNodePayload::class],
+    discriminatorMapping =
+        [
+            DiscriminatorMapping(value = "and", schema = AndNodePayload::class),
+            DiscriminatorMapping(value = "field", schema = FieldNodePayload::class),
+            DiscriminatorMapping(value = "not", schema = NotNodePayload::class),
+            DiscriminatorMapping(value = "or", schema = NotNodePayload::class),
+        ])
+interface SearchNodePayload {
+  fun toSearchNode(): SearchNode
+}
+
+@JsonTypeName("or")
+@Schema(
+    description =
+        "Search criterion that matches results that meet any of a set of other search criteria. " +
+            "That is, if the list of children is x, y, and z, this will require x OR y OR z.")
+data class OrNodePayload(
+    @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
+) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return OrNode(children.map { it.toSearchNode() })
+  }
+}
+
+@JsonTypeName("and")
+@Schema(
+    description =
+        "Search criterion that matches results that meet all of a set of other search criteria. " +
+            "That is, if the list of children is x, y, and z, this will require x AND y AND z.")
+data class AndNodePayload(
+    @ArraySchema(minItems = 1) @NotEmpty val children: List<SearchNodePayload>
+) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return AndNode(children.map { it.toSearchNode() })
+  }
+}
+
+@JsonTypeName("not")
+@Schema(
+    description =
+        "Search criterion that matches results that do not match a set of search criteria.")
+data class NotNodePayload(val child: SearchNodePayload) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return NotNode(child.toSearchNode())
+  }
+}
+
+@JsonTypeName("field")
+data class FieldNodePayload(
+    val field: SearchFieldPath,
+    @ArraySchema(
+        schema = Schema(nullable = true),
+        minItems = 1,
+        arraySchema =
+            Schema(
+                description =
+                    "List of values to match. For exact and fuzzy searches, a list of at least " +
+                        "one value to search for; the list may include null to match accessions " +
+                        "where the field does not have a value. For range searches, the list " +
+                        "must contain exactly two values, the minimum and maximum; one of the " +
+                        "values may be null to search for all values above a minimum or below a " +
+                        "maximum."))
+    @NotEmpty
+    val values: List<String?>,
+    val type: SearchFilterType = SearchFilterType.Exact
+) : SearchNodePayload {
+  override fun toSearchNode(): SearchNode {
+    return FieldNode(field, values, type)
+  }
+}
+
+/**
+ * A filter criterion to apply to a search.
+ *
+ * @see SearchService
+ */
+data class SearchFilter(
+    val field: SearchFieldPath,
+    @ArraySchema(
+        schema = Schema(nullable = true),
+        arraySchema =
+            Schema(
+                minLength = 1,
+                description =
+                    "List of values to match. For exact and fuzzy searches, a list of at least " +
+                        "one value to search for; the list may include null to match accessions " +
+                        "where the field does not have a value. For range searches, the list " +
+                        "must contain exactly two values, the minimum and maximum; one of the " +
+                        "values may be null to search for all values above a minimum or below a " +
+                        "maximum."))
+    @NotEmpty
+    val values: List<String?>,
+    val type: SearchFilterType = SearchFilterType.Exact
+)
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor: String?) {
+  constructor(searchResults: SearchResults) : this(searchResults.results, searchResults.cursor)
+}

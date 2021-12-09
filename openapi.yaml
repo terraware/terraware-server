@@ -1755,12 +1755,12 @@ paths:
       tags:
       - SeedBankApp
       summary: Searches for accessions based on filter criteria.
-      operationId: search
+      operationId: searchAccessions
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearchRequestPayload'
+              $ref: '#/components/schemas/SearchAccessionsRequestPayload'
             examples:
               example1:
                 description: Search for all accessions of species "Species Name" whose
@@ -1811,12 +1811,12 @@ paths:
       tags:
       - SeedBankApp
       summary: Exports the results of a search as a downloadable CSV file.
-      operationId: export
+      operationId: exportAccessions
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExportRequestPayload'
+              $ref: '#/components/schemas/ExportAccessionsRequestPayload'
         required: true
       responses:
         "200":
@@ -3287,7 +3287,7 @@ components:
       properties:
         message:
           type: string
-    ExportRequestPayload:
+    ExportAccessionsRequestPayload:
       required:
       - facilityId
       - fields
@@ -4475,6 +4475,40 @@ components:
         error:
           $ref: '#/components/schemas/ErrorDetails'
       description: Results of a request to record timeseries values.
+    SearchAccessionsRequestPayload:
+      required:
+      - count
+      - facilityId
+      - fields
+      type: object
+      properties:
+        facilityId:
+          type: integer
+          format: int64
+        fields:
+          type: array
+          items:
+            type: string
+        sortOrder:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchSortOrderElement'
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchFilter'
+        search:
+          oneOf:
+          - $ref: '#/components/schemas/AndNodePayload'
+          - $ref: '#/components/schemas/FieldNodePayload'
+          - $ref: '#/components/schemas/NotNodePayload'
+          - $ref: '#/components/schemas/OrNodePayload'
+        cursor:
+          type: string
+        count:
+          type: integer
+          format: int32
+          default: 10
     SearchFilter:
       required:
       - field
@@ -4524,40 +4558,6 @@ components:
       - $ref: '#/components/schemas/FieldNodePayload'
       - $ref: '#/components/schemas/NotNodePayload'
       - $ref: '#/components/schemas/OrNodePayload'
-    SearchRequestPayload:
-      required:
-      - count
-      - facilityId
-      - fields
-      type: object
-      properties:
-        facilityId:
-          type: integer
-          format: int64
-        fields:
-          type: array
-          items:
-            type: string
-        sortOrder:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchSortOrderElement'
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchFilter'
-        search:
-          oneOf:
-          - $ref: '#/components/schemas/AndNodePayload'
-          - $ref: '#/components/schemas/FieldNodePayload'
-          - $ref: '#/components/schemas/NotNodePayload'
-          - $ref: '#/components/schemas/OrNodePayload'
-        cursor:
-          type: string
-        count:
-          type: integer
-          format: int32
-          default: 10
     SearchResponsePayload:
       required:
       - results

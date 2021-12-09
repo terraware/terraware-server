@@ -6,9 +6,9 @@ import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
 import com.terraformation.backend.search.SearchFieldPath
+import com.terraformation.backend.search.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
-import com.terraformation.backend.seedbank.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import io.swagger.v3.oas.annotations.media.Schema
