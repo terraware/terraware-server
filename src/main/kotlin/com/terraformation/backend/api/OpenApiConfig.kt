@@ -5,10 +5,7 @@ import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
-import com.terraformation.backend.search.NESTED_SUBLIST_DELIMITER
 import com.terraformation.backend.search.SearchFieldPath
-import com.terraformation.backend.search.namespace.AccessionsNamespace
-import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import com.terraformation.backend.seedbank.api.AccessionPayload
 import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.SearchResponsePayload
@@ -19,7 +16,6 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
-import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
 import javax.annotation.ManagedBean
@@ -36,25 +32,18 @@ import org.springframework.beans.factory.annotation.Autowired
 /**
  * Customizes generation of OpenAPI documentation.
  *
- * - SearchField is represented as an enum based on the list of field names in [AccessionsNamespace]
- * .
  * - The list of endpoints and the list of schemas is alphabetized by tag and then by endpoint path
  * so that the JSON/YAML documentation can be usefully diffed between code versions.
  * - PostGIS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  */
 @ManagedBean
-class OpenApiConfig(namespaces: SearchFieldNamespaces) : OpenApiCustomiser {
+class OpenApiConfig : OpenApiCustomiser {
   @Autowired(required = false) var dslContext: DSLContext? = null
-
-  private val accessionsNamespace = namespaces.accessions
 
   init {
     val config = SpringDocUtils.getConfig()
 
-    val schema = StringSchema()
-    schema.`$ref` = "#/components/schemas/SearchField"
-
-    config.replaceWithSchema(SearchFieldPath::class.java, schema)
+    config.replaceWithSchema(SearchFieldPath::class.java, StringSchema())
     config.replaceWithClass(
         net.postgis.jdbc.geometry.Geometry::class.java, GeoJsonOpenApiSchema.Geometry::class.java)
     config.replaceWithClass(
@@ -79,8 +68,6 @@ class OpenApiConfig(namespaces: SearchFieldNamespaces) : OpenApiCustomiser {
   }
 
   override fun customise(openApi: OpenAPI) {
-    renderSearchFieldAsEnum(openApi)
-    renderSearchResultProperties(openApi)
     sortEndpoints(openApi)
     sortResponseCodes(openApi)
     sortSchemas(openApi)
@@ -103,6 +90,10 @@ class OpenApiConfig(namespaces: SearchFieldNamespaces) : OpenApiCustomiser {
             ModifyAutomationRequestPayload::class.swaggerSchemaName to "configuration",
             UpdateDeviceRequestPayload::class.swaggerSchemaName to "settings",
         )
+    val listsToModify =
+        listOf(
+            SearchResponsePayload::class.swaggerSchemaName to "results",
+        )
 
     fieldsToModify.forEach { (schemaName, fieldName) ->
       val field =
@@ -110,57 +101,13 @@ class OpenApiConfig(namespaces: SearchFieldNamespaces) : OpenApiCustomiser {
               ?: throw IllegalStateException("Cannot find field $schemaName.$fieldName")
       field.additionalProperties = null
     }
-  }
 
-  private fun renderSearchFieldAsEnum(openApi: OpenAPI) {
-    val schema = StringSchema()
-    schema.enum = accessionsNamespace.getAllFieldNames().sorted()
-    schema.name = "SearchField"
-
-    openApi.components.addSchemas(schema.name, schema)
-  }
-
-  /**
-   * Renders the type of the array of search results as an object with a fixed set of possible
-   * property names, one for each search field name.
-   */
-  private fun renderSearchResultProperties(openApi: OpenAPI) {
-    val schemaName = SearchResponsePayload::class.swaggerSchemaName
-    val resultsField =
-        (openApi.components.schemas[schemaName]?.properties?.get("results")
-            ?: throw IllegalStateException("Cannot find search results schema")) as ArraySchema
-
-    resultsField.items = ObjectSchema().properties(getSearchResultFields())
-  }
-
-  /**
-   * Returns a map of search result payloads for fields whose names start with a prefix. Derives a
-   * tree structure from field names by looking for '.' delimiters. Any field name with a '.' is the
-   * name of a field of an array of child objects: a field name of `foo.bar` is interpreted as a
-   * field called `foo` which is an array of objects each of which has a field called `bar`.
-   */
-  private fun getSearchResultFields(
-      prefix: String = "",
-      fieldNames: Collection<String> = accessionsNamespace.getAllFieldNames()
-  ): Map<String, io.swagger.v3.oas.models.media.Schema<*>> {
-    val relativeNames =
-        fieldNames.filter { it.startsWith(prefix) }.map { it.substring(prefix.length) }
-
-    val scalarFields =
-        relativeNames.filter { !it.contains(NESTED_SUBLIST_DELIMITER) }.map { it to StringSchema() }
-
-    val sublistFields =
-        relativeNames
-            .filter { it.contains(NESTED_SUBLIST_DELIMITER) }
-            .map { it.substringBefore(NESTED_SUBLIST_DELIMITER) }
-            .distinct()
-            .map { sublistName ->
-              val sublistFields =
-                  getSearchResultFields(sublistName + NESTED_SUBLIST_DELIMITER, relativeNames)
-              sublistName to ArraySchema().items(ObjectSchema().properties(sublistFields))
-            }
-
-    return (sublistFields + scalarFields).toMap().toSortedMap()
+    listsToModify.forEach { (schemaName, listName) ->
+      val field =
+          openApi.components.schemas[schemaName]?.properties?.get(listName) as? ArraySchema
+              ?: throw IllegalStateException("Could not find array field $schemaName.$listName")
+      field.items.additionalProperties = null
+    }
   }
 
   private fun sortEndpoints(openApi: OpenAPI) {

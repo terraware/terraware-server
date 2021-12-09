@@ -3299,7 +3299,7 @@ components:
         fields:
           type: array
           items:
-            $ref: '#/components/schemas/SearchField'
+            type: string
         sortOrder:
           type: array
           items:
@@ -3422,7 +3422,7 @@ components:
       - type: object
         properties:
           field:
-            $ref: '#/components/schemas/SearchField'
+            type: string
           values:
             minItems: 1
             type: array
@@ -3807,7 +3807,7 @@ components:
         fields:
           type: array
           items:
-            $ref: '#/components/schemas/SearchField'
+            type: string
     ListAllFieldValuesResponsePayload:
       required:
       - results
@@ -3896,7 +3896,7 @@ components:
         fields:
           type: array
           items:
-            $ref: '#/components/schemas/SearchField'
+            type: string
         filters:
           type: array
           items:
@@ -4475,103 +4475,6 @@ components:
         error:
           $ref: '#/components/schemas/ErrorDetails'
       description: Results of a request to record timeseries values.
-    SearchField:
-      type: string
-      enum:
-      - accessionNumber
-      - active
-      - bagNumber
-      - bags.number
-      - checkedInTime
-      - collectedDate
-      - collectionNotes
-      - cutTestSeedsCompromised
-      - cutTestSeedsEmpty
-      - cutTestSeedsFilled
-      - dryingEndDate
-      - dryingMoveDate
-      - dryingStartDate
-      - endangered
-      - estimatedSeedsIncoming
-      - family
-      - familyName
-      - geolocation
-      - geolocations.coordinates
-      - germinationEndDate
-      - germinationPercentGerminated
-      - germinationSeedType
-      - germinationSeedsGerminated
-      - germinationSeedsSown
-      - germinationStartDate
-      - germinationSubstrate
-      - germinationTestNotes
-      - germinationTestType
-      - germinationTests.endDate
-      - germinationTests.germinations.recordingDate
-      - germinationTests.germinations.seedsGerminated
-      - germinationTests.notes
-      - germinationTests.percentGerminated
-      - germinationTests.seedType
-      - germinationTests.seedsSown
-      - germinationTests.startDate
-      - germinationTests.substrate
-      - germinationTests.treatment
-      - germinationTests.type
-      - germinationTreatment
-      - id
-      - landowner
-      - latestGerminationTestDate
-      - latestViabilityPercent
-      - nurseryStartDate
-      - primaryCollector
-      - primaryCollectorName
-      - processingMethod
-      - processingNotes
-      - processingStartDate
-      - rare
-      - receivedDate
-      - remainingGrams
-      - remainingQuantity
-      - remainingUnits
-      - siteLocation
-      - sourcePlantOrigin
-      - species
-      - speciesName
-      - state
-      - storageCondition
-      - storageLocation
-      - storageLocationName
-      - storageNotes
-      - storagePackets
-      - storageStartDate
-      - targetStorageCondition
-      - totalGrams
-      - totalQuantity
-      - totalUnits
-      - totalViabilityPercent
-      - treesCollectedFrom
-      - viabilityTestType
-      - viabilityTestTypes.type
-      - withdrawalDate
-      - withdrawalDestination
-      - withdrawalGrams
-      - withdrawalNotes
-      - withdrawalPurpose
-      - withdrawalQuantity
-      - withdrawalRemainingGrams
-      - withdrawalRemainingQuantity
-      - withdrawalRemainingUnits
-      - withdrawalUnits
-      - withdrawals.date
-      - withdrawals.destination
-      - withdrawals.grams
-      - withdrawals.notes
-      - withdrawals.purpose
-      - withdrawals.quantity
-      - withdrawals.remainingGrams
-      - withdrawals.remainingQuantity
-      - withdrawals.remainingUnits
-      - withdrawals.units
     SearchFilter:
       required:
       - field
@@ -4580,7 +4483,7 @@ components:
       type: object
       properties:
         field:
-          $ref: '#/components/schemas/SearchField'
+          type: string
         values:
           minLength: 1
           type: array
@@ -4634,7 +4537,7 @@ components:
         fields:
           type: array
           items:
-            $ref: '#/components/schemas/SearchField'
+            type: string
         sortOrder:
           type: array
           items:
@@ -4664,225 +4567,6 @@ components:
           type: array
           items:
             type: object
-            properties:
-              accessionNumber:
-                type: string
-              active:
-                type: string
-              bagNumber:
-                type: string
-              bags:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    number:
-                      type: string
-              checkedInTime:
-                type: string
-              collectedDate:
-                type: string
-              collectionNotes:
-                type: string
-              cutTestSeedsCompromised:
-                type: string
-              cutTestSeedsEmpty:
-                type: string
-              cutTestSeedsFilled:
-                type: string
-              dryingEndDate:
-                type: string
-              dryingMoveDate:
-                type: string
-              dryingStartDate:
-                type: string
-              endangered:
-                type: string
-              estimatedSeedsIncoming:
-                type: string
-              family:
-                type: string
-              familyName:
-                type: string
-              geolocation:
-                type: string
-              geolocations:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    coordinates:
-                      type: string
-              germinationEndDate:
-                type: string
-              germinationPercentGerminated:
-                type: string
-              germinationSeedType:
-                type: string
-              germinationSeedsGerminated:
-                type: string
-              germinationSeedsSown:
-                type: string
-              germinationStartDate:
-                type: string
-              germinationSubstrate:
-                type: string
-              germinationTestNotes:
-                type: string
-              germinationTestType:
-                type: string
-              germinationTests:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    endDate:
-                      type: string
-                    germinations:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          recordingDate:
-                            type: string
-                          seedsGerminated:
-                            type: string
-                    notes:
-                      type: string
-                    percentGerminated:
-                      type: string
-                    seedType:
-                      type: string
-                    seedsSown:
-                      type: string
-                    startDate:
-                      type: string
-                    substrate:
-                      type: string
-                    treatment:
-                      type: string
-                    type:
-                      type: string
-              germinationTreatment:
-                type: string
-              id:
-                type: string
-              landowner:
-                type: string
-              latestGerminationTestDate:
-                type: string
-              latestViabilityPercent:
-                type: string
-              nurseryStartDate:
-                type: string
-              primaryCollector:
-                type: string
-              primaryCollectorName:
-                type: string
-              processingMethod:
-                type: string
-              processingNotes:
-                type: string
-              processingStartDate:
-                type: string
-              rare:
-                type: string
-              receivedDate:
-                type: string
-              remainingGrams:
-                type: string
-              remainingQuantity:
-                type: string
-              remainingUnits:
-                type: string
-              siteLocation:
-                type: string
-              sourcePlantOrigin:
-                type: string
-              species:
-                type: string
-              speciesName:
-                type: string
-              state:
-                type: string
-              storageCondition:
-                type: string
-              storageLocation:
-                type: string
-              storageLocationName:
-                type: string
-              storageNotes:
-                type: string
-              storagePackets:
-                type: string
-              storageStartDate:
-                type: string
-              targetStorageCondition:
-                type: string
-              totalGrams:
-                type: string
-              totalQuantity:
-                type: string
-              totalUnits:
-                type: string
-              totalViabilityPercent:
-                type: string
-              treesCollectedFrom:
-                type: string
-              viabilityTestType:
-                type: string
-              viabilityTestTypes:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type:
-                      type: string
-              withdrawalDate:
-                type: string
-              withdrawalDestination:
-                type: string
-              withdrawalGrams:
-                type: string
-              withdrawalNotes:
-                type: string
-              withdrawalPurpose:
-                type: string
-              withdrawalQuantity:
-                type: string
-              withdrawalRemainingGrams:
-                type: string
-              withdrawalRemainingQuantity:
-                type: string
-              withdrawalRemainingUnits:
-                type: string
-              withdrawalUnits:
-                type: string
-              withdrawals:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    date:
-                      type: string
-                    destination:
-                      type: string
-                    grams:
-                      type: string
-                    notes:
-                      type: string
-                    purpose:
-                      type: string
-                    quantity:
-                      type: string
-                    remainingGrams:
-                      type: string
-                    remainingQuantity:
-                      type: string
-                    remainingUnits:
-                      type: string
-                    units:
-                      type: string
         cursor:
           type: string
     SearchSortOrderElement:
@@ -4891,7 +4575,7 @@ components:
       type: object
       properties:
         field:
-          $ref: '#/components/schemas/SearchField'
+          type: string
         direction:
           type: string
           default: Ascending
