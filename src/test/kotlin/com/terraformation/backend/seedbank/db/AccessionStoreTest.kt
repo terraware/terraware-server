@@ -33,8 +33,6 @@ import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.daos.BagsDao
-import com.terraformation.backend.db.tables.daos.FamiliesDao
-import com.terraformation.backend.db.tables.daos.FamilyNamesDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
 import com.terraformation.backend.db.tables.daos.GerminationTestsDao
 import com.terraformation.backend.db.tables.daos.GerminationsDao
@@ -108,7 +106,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             "app_device_id_seq",
             "bag_id_seq",
             "collection_event_id_seq",
-            "family_id_seq",
             "germination_test_id_seq",
             "species_id_seq",
             "withdrawal_id_seq",
@@ -134,8 +131,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var accessionPhotosDao: AccessionPhotosDao
   private lateinit var appDevicesDao: AppDevicesDao
   private lateinit var bagsDao: BagsDao
-  private lateinit var familiesDao: FamiliesDao
-  private lateinit var familyNamesDao: FamilyNamesDao
   private lateinit var geolocationsDao: GeolocationsDao
   private lateinit var germinationsDao: GerminationsDao
   private lateinit var germinationTestsDao: GerminationTestsDao
@@ -153,8 +148,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     accessionPhotosDao = AccessionPhotosDao(jooqConfig)
     appDevicesDao = AppDevicesDao(jooqConfig)
     bagsDao = BagsDao(jooqConfig)
-    familiesDao = FamiliesDao(jooqConfig)
-    familyNamesDao = FamilyNamesDao(jooqConfig)
     geolocationsDao = GeolocationsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
     germinationTestsDao = GerminationTestsDao(jooqConfig)
@@ -165,9 +158,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val support = StoreSupport(dslContext)
 
-    val speciesStore =
-        SpeciesStore(
-            clock, dslContext, familiesDao, familyNamesDao, speciesDao, speciesNamesDao, support)
+    val speciesStore = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, support)
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
@@ -175,7 +166,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { config.enableAwaitingCheckIn } returns true
 
     every { user.canCreateAccession(any()) } returns true
-    every { user.canCreateFamily() } returns true
     every { user.canCreateSpecies() } returns true
     every { user.canDeleteSpecies(any()) } returns true
     every { user.canReadAccession(any()) } returns true
@@ -239,18 +229,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `create with new family throws exception if user has no permission to create families`() {
-    every { user.canCreateFamily() } returns false
-
-    assertThrows<AccessDeniedException> {
-      store.create(AccessionModel(facilityId = facilityId, family = "newFamily"))
-    }
-
-    assertEquals(
-        emptyList<AccessionsRow>(), accessionsDao.findAll(), "Should not have inserted accession")
-  }
-
-  @Test
   fun `create with new species throws exception if user has no permission to create species`() {
     every { user.canCreateSpecies() } returns false
 
@@ -304,7 +282,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
     assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
-    assertEquals(initialRow.familyId, secondRow.familyId, "Family")
+    assertEquals(initialRow.familyName, secondRow.familyName, "Family")
     assertEquals(initialRow.primaryCollectorId, secondRow.primaryCollectorId, "Primary collector")
 
     assertEquals(2, getSecondaryCollectors(AccessionId(1)).size, "Number of secondary collectors")

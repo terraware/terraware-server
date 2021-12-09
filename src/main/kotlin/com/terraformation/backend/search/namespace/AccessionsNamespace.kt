@@ -7,7 +7,6 @@ import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.SPECIES
@@ -36,7 +35,6 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
           collectors.asSingleValueSublist(
               "primaryCollectorInfo", ACCESSIONS.PRIMARY_COLLECTOR_ID.eq(COLLECTORS.ID)),
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
-          families.asSingleValueSublist("familyInfo", ACCESSIONS.FAMILY_ID.eq(FAMILIES.ID)),
           geolocations.asMultiValueSublist(
               "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
           germinationTests.asMultiValueSublist(
@@ -74,8 +72,7 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
           enumField("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
           integerField(
               "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
-          aliasField("family", "familyInfo_name"),
-          aliasField("familyName", "familyInfo_name"),
+          textField("familyName", "Family name", ACCESSIONS.FAMILY_NAME),
           aliasField("geolocation", "geolocations_coordinates"),
           aliasField("germinationEndDate", "germinationTests_endDate"),
           aliasField("germinationPercentGerminated", "germinationTests_percentGerminated"),

@@ -369,12 +369,6 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
-  fun createFamily() {
-    if (!user.canCreateFamily()) {
-      throw AccessDeniedException("No permission to create families")
-    }
-  }
-
   fun createTimeseries(deviceId: DeviceId) {
     if (!user.canCreateTimeseries(deviceId)) {
       readDevice(deviceId)

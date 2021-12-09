@@ -350,8 +350,6 @@ data class UserModel(
   fun canUpdateSpecies(@Suppress("UNUSED_PARAMETER") speciesId: SpeciesId): Boolean =
       canCreateSpecies()
 
-  fun canCreateFamily(): Boolean = canCreateSpecies()
-
   fun canCreateTimeseries(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles

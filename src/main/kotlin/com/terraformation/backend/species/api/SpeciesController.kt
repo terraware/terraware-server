@@ -8,7 +8,6 @@ import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.FamilyId
 import com.terraformation.backend.db.PlantForm
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SpeciesId
@@ -37,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 /**
- * Species and family management endpoints.
+ * Species management endpoints.
  *
  * Implementation note: The names of the methods and payload classes are unusual here because there
  * are some existing species management endpoints in [ValuesController], and those endpoints are
@@ -197,7 +196,6 @@ class SpeciesController(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeciesResponseElement(
     val conservationStatus: String?,
-    val familyId: FamilyId?,
     val id: SpeciesId,
     @Schema(description = "True if name is the scientific name for the species.")
     val isScientific: Boolean,
@@ -215,7 +213,6 @@ data class SpeciesResponseElement(
       row: SpeciesRow
   ) : this(
       conservationStatus = row.conservationStatusId,
-      familyId = row.familyId,
       id = row.id!!,
       isScientific = row.isScientific!!,
       plantForm = row.plantFormId,
@@ -227,7 +224,6 @@ data class SpeciesResponseElement(
 
 data class SpeciesRequestPayload(
     val conservationStatus: String?,
-    val familyId: FamilyId?,
     @Schema(description = "True if name is the scientific name for the species.")
     val isScientific: Boolean?,
     val name: String,
@@ -243,7 +239,6 @@ data class SpeciesRequestPayload(
   fun toRow(id: SpeciesId? = null) =
       SpeciesRow(
           conservationStatusId = conservationStatus,
-          familyId = familyId,
           id = id,
           isScientific = isScientific == true,
           name = name,

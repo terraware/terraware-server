@@ -11,7 +11,6 @@ import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATIONS
@@ -75,11 +74,6 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val species =
       object : SearchTable(fuzzySearchOperators, SPECIES.ID) {
         // TODO: Add permission condition once we have per-org species.
-      }
-
-  val families =
-      object : SearchTable(fuzzySearchOperators, FAMILIES.ID) {
-        // TODO: Add permission condition once we have per-org species (if we're keeping this table)
       }
 
   val storageLocations =

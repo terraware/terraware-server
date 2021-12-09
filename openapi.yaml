@@ -4900,9 +4900,6 @@ components:
       properties:
         conservationStatus:
           type: string
-        familyId:
-          type: integer
-          format: int64
         isScientific:
           type: boolean
           description: True if name is the scientific name for the species.
@@ -4936,9 +4933,6 @@ components:
       properties:
         conservationStatus:
           type: string
-        familyId:
-          type: integer
-          format: int64
         id:
           type: integer
           format: int64

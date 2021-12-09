@@ -500,14 +500,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun createFamily() {
-    assertThrows<AccessDeniedException> { requirements.createFamily() }
-
-    grant { user.canCreateFamily() }
-    requirements.createFamily()
-  }
-
-  @Test
   fun createTimeseries() {
     assertThrows<DeviceNotFoundException> { requirements.createTimeseries(deviceId) }
 
