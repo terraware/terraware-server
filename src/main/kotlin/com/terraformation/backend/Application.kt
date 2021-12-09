@@ -23,7 +23,13 @@ import org.springframework.scheduling.annotation.EnableScheduling
             description = "Local server API for seed banks",
             license = License(name = "MIT"),
         ),
-    tags = [Tag(name = "SeedBankApp"), Tag(name = "DeviceManager"), Tag(name = "GISApp")])
+    tags =
+        [
+            Tag(name = "SeedBankApp"),
+            Tag(name = "DeviceManager"),
+            Tag(name = "GISApp"),
+            Tag(name = "Search"),
+        ])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @EnableScheduling
 @SpringBootApplication(

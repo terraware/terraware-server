@@ -89,4 +89,21 @@ abstract class SearchFieldNamespace {
         isMultiValue = false,
         conditionForMultiset = conditionForMultiset)
   }
+
+  private fun resolveNamespaceOrNull(relativePath: String): SearchFieldNamespace? {
+    val nextAndRest =
+        relativePath.split(NESTED_SUBLIST_DELIMITER, FLATTENED_SUBLIST_DELIMITER, limit = 2)
+    val nextNamespace = sublistsByName[nextAndRest[0]]?.namespace
+
+    return if (nextAndRest.size == 1) {
+      nextNamespace
+    } else {
+      nextNamespace?.resolveNamespaceOrNull(nextAndRest[1])
+    }
+  }
+
+  fun resolveNamespace(relativePath: String): SearchFieldNamespace {
+    return resolveNamespaceOrNull(relativePath)
+        ?: throw IllegalArgumentException("Sublist $relativePath not found")
+  }
 }
