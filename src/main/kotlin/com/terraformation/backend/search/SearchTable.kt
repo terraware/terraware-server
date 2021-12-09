@@ -3,8 +3,11 @@ package com.terraformation.backend.search
 import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.search.field.BigDecimalField
+import com.terraformation.backend.search.field.BooleanField
 import com.terraformation.backend.search.field.DateField
+import com.terraformation.backend.search.field.DoubleField
 import com.terraformation.backend.search.field.EnumField
+import com.terraformation.backend.search.field.GeometryField
 import com.terraformation.backend.search.field.GramsField
 import com.terraformation.backend.search.field.IdWrapperField
 import com.terraformation.backend.search.field.IntegerField
@@ -15,6 +18,7 @@ import com.terraformation.backend.search.field.UpperCaseTextField
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import net.postgis.jdbc.geometry.Geometry
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
@@ -94,6 +98,13 @@ abstract class SearchTable(
       databaseField: TableField<*, BigDecimal?>,
   ) = BigDecimalField(fieldName, displayName, databaseField, this)
 
+  fun booleanField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, Boolean?>,
+      nullable: Boolean = true
+  ) = BooleanField(fieldName, displayName, databaseField, this, nullable)
+
   fun dateField(
       fieldName: String,
       displayName: String,
@@ -101,12 +112,26 @@ abstract class SearchTable(
       nullable: Boolean = false
   ) = DateField(fieldName, displayName, databaseField, this, nullable)
 
+  fun doubleField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, Double?>,
+      nullable: Boolean = false
+  ) = DoubleField(fieldName, displayName, databaseField, this, nullable)
+
   inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<E>> enumField(
       fieldName: String,
       displayName: String,
       databaseField: TableField<*, T?>,
       nullable: Boolean = true
   ) = EnumField(fieldName, displayName, databaseField, this, T::class.java, nullable)
+
+  fun geometryField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, Geometry?>,
+      nullable: Boolean = true
+  ) = GeometryField(fieldName, displayName, databaseField, this, nullable)
 
   fun gramsField(
       fieldName: String,

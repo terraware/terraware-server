@@ -1,8 +1,8 @@
 package com.terraformation.backend.seedbank.search
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.UserModel
@@ -20,6 +20,7 @@ import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.BagsDao
@@ -718,6 +719,35 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         accessionSearchService.search(
             facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `returns geometry values as string-wrapped GeoJSON`() {
+    insertLayer(100)
+    insertFeature(1000, geom = mercatorPoint(1000.0, 2000.0, 3000.0))
+
+    val prefix = SearchFieldPrefix(namespaces.features)
+    val field = prefix.resolve("geom")
+
+    // We don't care about minor formatting differences in the GeoJSON; compare the contents
+    // rather than the string form to avoid bogus failures.
+    val expectedGeometry =
+        mapOf(
+            "type" to "Point",
+            "coordinates" to listOf(1000, 2000, 3000),
+            "crs" to mapOf("type" to "name", "properties" to mapOf("name" to "EPSG:3857")))
+
+    val actualGeometry =
+        searchService
+            .search(prefix, listOf(field), NoConditionNode())
+            .results
+            .firstOrNull()
+            ?.get("geom")
+            ?.let { geometryString ->
+              jacksonObjectMapper().readValue<Map<String, Any>>("$geometryString")
+            }
+
+    assertEquals(expectedGeometry, actualGeometry)
   }
 
   @Test
@@ -2235,8 +2265,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       if (expected != result.results) {
         // Pretty-print both values so they are easy to diff.
         val objectMapper =
-            ObjectMapper()
-                .registerKotlinModule()
+            jacksonObjectMapper()
                 .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
                 .enable(SerializationFeature.INDENT_OUTPUT)
         assertEquals(
