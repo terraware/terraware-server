@@ -35,6 +35,7 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchDirection
+import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
@@ -54,9 +55,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
@@ -152,6 +155,32 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             facilityId = facilityId,
             speciesId = SpeciesId(10001),
             treesCollectedFrom = 2))
+  }
+
+  @Test
+  fun `namespaces initialize successfully`() {
+    val visited = mutableSetOf<SearchFieldNamespace>()
+    val toVisit = mutableListOf<SearchFieldNamespace>()
+
+    toVisit.add(namespaces.facilities)
+
+    while (toVisit.isNotEmpty()) {
+      val namespace = toVisit.removeLast()
+
+      assertDoesNotThrow("$namespace failed to initialize. Is it missing 'by lazy'?") {
+        visited.add(namespace)
+
+        // "map" has the side effect of making sure the list is initialized.
+        toVisit.addAll(namespace.sublists.map { it.namespace }.filter { it !in visited })
+
+        namespace.fields.forEach { _ ->
+          // No-op; we just need to make sure we can iterate over the field list.
+        }
+      }
+    }
+
+    // Sanity-check that the test is actually walking the hierarchy
+    assertTrue(visited.size > 5, "Should have checked more than ${visited.size} namespaces")
   }
 
   @Test

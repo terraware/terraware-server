@@ -4,25 +4,22 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.search.SearchFieldNamespace
-import com.terraformation.backend.search.SearchTables
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 
-class GerminationTestsNamespace(
-    searchTables: SearchTables,
-    accessionsNamespace: AccessionsNamespace
-) : SearchFieldNamespace() {
-  private val germinationsNamespace = GerminationsNamespace(searchTables, this)
-
-  override val sublists: List<SublistField> =
+class GerminationTestsNamespace(namespaces: SearchFieldNamespaces) : SearchFieldNamespace() {
+  override val sublists: List<SublistField> by lazy {
+    with(namespaces) {
       listOf(
-          accessionsNamespace.asSingleValueSublist(
+          accessions.asSingleValueSublist(
               "accession", GERMINATION_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID)),
-          germinationsNamespace.asMultiValueSublist(
+          germinations.asMultiValueSublist(
               "germinations", GERMINATION_TESTS.ID.eq(GERMINATIONS.TEST_ID)))
+    }
+  }
 
   override val fields: List<SearchField> =
-      with(searchTables.germinationTests) {
+      with(namespaces.searchTables.germinationTests) {
         listOf(
             dateField("endDate", "Germination end date", GERMINATION_TESTS.END_DATE),
             textField("notes", "Notes (germination test)", GERMINATION_TESTS.NOTES),
