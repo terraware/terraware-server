@@ -4494,6 +4494,7 @@ components:
       - endangered
       - estimatedSeedsIncoming
       - family
+      - familyName
       - geolocation
       - geolocations.coordinates
       - germinationEndDate
@@ -4523,6 +4524,7 @@ components:
       - latestViabilityPercent
       - nurseryStartDate
       - primaryCollector
+      - primaryCollectorName
       - processingMethod
       - processingNotes
       - processingStartDate
@@ -4534,9 +4536,11 @@ components:
       - siteLocation
       - sourcePlantOrigin
       - species
+      - speciesName
       - state
       - storageCondition
       - storageLocation
+      - storageLocationName
       - storageNotes
       - storagePackets
       - storageStartDate
@@ -4698,6 +4702,8 @@ components:
                 type: string
               family:
                 type: string
+              familyName:
+                type: string
               geolocation:
                 type: string
               geolocations:
@@ -4771,6 +4777,8 @@ components:
                 type: string
               primaryCollector:
                 type: string
+              primaryCollectorName:
+                type: string
               processingMethod:
                 type: string
               processingNotes:
@@ -4793,11 +4801,15 @@ components:
                 type: string
               species:
                 type: string
+              speciesName:
+                type: string
               state:
                 type: string
               storageCondition:
                 type: string
               storageLocation:
+                type: string
+              storageLocationName:
                 type: string
               storageNotes:
                 type: string
