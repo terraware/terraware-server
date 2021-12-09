@@ -3,6 +3,7 @@ package com.terraformation.backend.search.namespace
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -12,6 +13,7 @@ class FacilitiesNamespace(namespaces: SearchFieldNamespaces) : SearchFieldNamesp
     with(namespaces) {
       listOf(
           accessions.asMultiValueSublist("accessions", FACILITIES.ID.eq(ACCESSIONS.FACILITY_ID)),
+          sites.asSingleValueSublist("site", FACILITIES.SITE_ID.eq(SITES.ID)),
       )
     }
   }
