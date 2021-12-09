@@ -64,7 +64,12 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
   }
 
   private fun readLineString(jp: JsonParser, tree: JsonNode): LineString {
-    return LineString(readPoints(jp, tree))
+    val points = readPoints(jp, tree)
+    if (points.size < 2) {
+      throw JsonParseException(jp, "Line must have at least 2 points", jp.currentLocation)
+    }
+
+    return LineString(points)
   }
 
   private fun readPoint(jp: JsonParser, tree: JsonNode): Point {
@@ -89,7 +94,16 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
   }
 
   private fun readLinearRing(jp: JsonParser, tree: JsonNode): LinearRing {
-    return LinearRing(readPoints(jp, tree))
+    val points = readPoints(jp, tree)
+    if (points.size < 4) {
+      throw JsonParseException(jp, "Polygon must have at least 4 points", jp.currentLocation)
+    }
+    if (points[0] != points[points.size - 1]) {
+      throw JsonParseException(
+          jp, "First and last points of polygon must be the same", jp.currentLocation)
+    }
+
+    return LinearRing(points)
   }
 
   private fun readLinearRings(jp: JsonParser, tree: JsonNode): Array<LinearRing> {
@@ -132,7 +146,8 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
       throw JsonParseException(jp, "Unrecognized CRS name format", jp.currentLocation)
     }
 
-    return crsName.split(":")[1].toInt()
+    return crsName.substringAfter(':').toIntOrNull()
+        ?: throw JsonParseException(jp, "SRID must be a number", jp.currentLocation)
   }
 
   inner class SubclassDeserializer<T : Geometry>(private val subclass: Class<T>) :

@@ -60,7 +60,11 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     val description = request.getDescription(false)
     controllerLogger(ex)
         .warn("Generic response exception thrown on $description use ClientFacingException", ex)
-    return simpleErrorResponse(ex.message ?: ex.status.reasonPhrase, ex.status, request)
+
+    @Suppress("USELESS_ELVIS") // ex.message can be null despite being annotated otherwise
+    val message = ex.message ?: ex.status.reasonPhrase
+
+    return simpleErrorResponse(message, ex.status, request)
   }
 
   /**
@@ -167,7 +171,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
             is MissingKotlinParameterException -> "Required field not present"
             is InvalidNullException -> "Field value cannot be null"
             is InvalidFormatException -> "Field value has incorrect format"
-            else -> "Field value invalid"
+            else -> cause.originalMessage ?: "Field value invalid"
           }
 
       return simpleErrorResponse("$message: $path", status, request)
