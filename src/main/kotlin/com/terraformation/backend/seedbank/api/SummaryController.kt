@@ -51,7 +51,8 @@ class SummaryController(
                 speciesStore.countSpecies(now), speciesStore.countSpecies(startOfWeek)),
         families =
             SummaryStatistic(
-                speciesStore.countFamilies(now), speciesStore.countFamilies(startOfWeek)),
+                accessionStore.countFamilies(facilityId, now),
+                accessionStore.countFamilies(facilityId, startOfWeek)),
         overduePendingAccessions =
             accessionStore.countInState(
                 facilityId, AccessionState.Pending, sinceBefore = oneWeekAgo),

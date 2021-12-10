@@ -1,6 +1,5 @@
 package com.terraformation.backend.species.db
 
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
@@ -11,16 +10,13 @@ import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
@@ -46,17 +42,6 @@ class SpeciesStore(
 
   fun countSpecies(asOf: TemporalAccessor): Int {
     return support.countEarlierThan(asOf, SPECIES.CREATED_TIME)
-  }
-
-  fun countFamilies(asOf: TemporalAccessor): Int {
-    return dslContext
-        .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
-        .from(ACCESSIONS)
-        .where(ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys))
-        .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
-        .fetchOne()
-        ?.value1()
-        ?: 0
   }
 
   fun findAllSortedByName(): List<SpeciesRow> {

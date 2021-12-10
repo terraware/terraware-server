@@ -707,6 +707,17 @@ class AccessionStore(
     return log.debugWithTiming("Accession state count query") { query.fetchOne()?.value1() ?: 0 }
   }
 
+  fun countFamilies(facilityId: FacilityId, asOf: TemporalAccessor): Int {
+    return dslContext
+        .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
+        .from(ACCESSIONS)
+        .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+        .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
+        .fetchOne()
+        ?.value1()
+        ?: 0
+  }
+
   fun fetchDryingMoveDue(
       facilityId: FacilityId,
       after: TemporalAccessor,
