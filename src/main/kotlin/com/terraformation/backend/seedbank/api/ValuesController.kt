@@ -1,20 +1,11 @@
 package com.terraformation.backend.seedbank.api
 
-import com.terraformation.backend.api.ApiResponse404
-import com.terraformation.backend.api.ApiResponseSimpleSuccess
-import com.terraformation.backend.api.DuplicateNameException
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
-import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageCondition
-import com.terraformation.backend.db.tables.daos.SpeciesDao
-import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.api.HasSearchNode
@@ -22,14 +13,10 @@ import com.terraformation.backend.search.api.SearchFilter
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import com.terraformation.backend.seedbank.db.StorageLocationStore
-import com.terraformation.backend.species.db.SpeciesStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.responses.ApiResponses
 import javax.ws.rs.BadRequestException
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -45,54 +32,9 @@ class ValuesController(
     namespaces: SearchFieldNamespaces,
     private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService,
-    private val speciesDao: SpeciesDao,
-    private val speciesStore: SpeciesStore,
 ) {
   private val accessionsNamespace = namespaces.accessions
   private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
-
-  @Operation(deprecated = true, description = "Use /api/v1/species instead.")
-  @GetMapping("/species")
-  fun listSpecies(): ListSpeciesResponsePayload {
-    return ListSpeciesResponsePayload(
-        speciesStore.findAllSortedByName().map { SpeciesDetails(it.id!!, it.name!!) })
-  }
-
-  @ApiResponses(
-      ApiResponse(responseCode = "200", description = "Species created."),
-      ApiResponse(
-          responseCode = "409", description = "A species with the requested name already exists."))
-  @Operation(deprecated = true, description = "Use /api/v1/species instead.")
-  @PostMapping("/species")
-  fun createSpecies(
-      @RequestBody payload: CreateSpeciesRequestPayload
-  ): CreateSpeciesResponsePayload {
-    try {
-      val row = SpeciesRow(name = payload.name)
-      val speciesId = speciesStore.createSpecies(row)
-      return CreateSpeciesResponsePayload(SpeciesDetails(speciesId, payload.name))
-    } catch (e: DuplicateKeyException) {
-      throw DuplicateNameException("A species with that name already exists.")
-    }
-  }
-
-  @ApiResponseSimpleSuccess
-  @ApiResponse404
-  @Operation(deprecated = true, description = "Use /api/v1/species instead.")
-  @PostMapping("/species/{id}")
-  fun updateSpecies(
-      @RequestBody payload: CreateSpeciesRequestPayload,
-      @PathVariable id: SpeciesId
-  ): SimpleSuccessResponsePayload {
-    try {
-      val existingSpecies =
-          speciesDao.fetchOneById(id) ?: throw NotFoundException("Species not found.")
-      speciesStore.updateSpecies(existingSpecies.copy(name = payload.name))
-      return SimpleSuccessResponsePayload()
-    } catch (e: SpeciesNotFoundException) {
-      throw NotFoundException("Species not found.")
-    }
-  }
 
   @GetMapping("/storageLocation/{facilityId}")
   fun getStorageLocations(@PathVariable facilityId: FacilityId): StorageLocationsResponsePayload {
@@ -153,14 +95,6 @@ class ValuesController(
     return ListAllFieldValuesResponsePayload(values)
   }
 }
-
-data class SpeciesDetails(val id: SpeciesId, val name: String)
-
-data class ListSpeciesResponsePayload(val values: List<SpeciesDetails>) : SuccessResponsePayload
-
-data class CreateSpeciesRequestPayload(val name: String)
-
-data class CreateSpeciesResponsePayload(val details: SpeciesDetails) : SuccessResponsePayload
 
 data class StorageLocationsResponsePayload(val locations: List<StorageLocationDetails>) :
     SuccessResponsePayload

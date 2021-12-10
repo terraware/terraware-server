@@ -1942,78 +1942,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListAllFieldValuesResponsePayload'
-  /api/v1/seedbank/values/species:
-    get:
-      tags:
-      - SeedBankApp
-      description: Use /api/v1/species instead.
-      operationId: listSpecies
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListSpeciesResponsePayload'
-      deprecated: true
-    post:
-      tags:
-      - SeedBankApp
-      description: Use /api/v1/species instead.
-      operationId: createSpecies
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateSpeciesRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: Species created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSpeciesResponsePayload'
-        "409":
-          description: A species with the requested name already exists.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSpeciesResponsePayload'
-      deprecated: true
-  /api/v1/seedbank/values/species/{id}:
-    post:
-      tags:
-      - SeedBankApp
-      description: Use /api/v1/species instead.
-      operationId: updateSpecies
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateSpeciesRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The requested operation succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-        "404":
-          description: The requested resource was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-      deprecated: true
   /api/v1/seedbank/values/storageLocation/{facilityId}:
     get:
       tags:
@@ -3149,23 +3077,6 @@ components:
         organizationId:
           type: integer
           format: int64
-    CreateSpeciesRequestPayload:
-      required:
-      - name
-      type: object
-      properties:
-        name:
-          type: string
-    CreateSpeciesResponsePayload:
-      required:
-      - details
-      - status
-      type: object
-      properties:
-        details:
-          $ref: '#/components/schemas/SpeciesDetails'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     CreateTimeseriesEntry:
       required:
       - deviceId
@@ -4128,18 +4039,6 @@ components:
             $ref: '#/components/schemas/SiteElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    ListSpeciesResponsePayload:
-      required:
-      - status
-      - values
-      type: object
-      properties:
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpeciesDetails'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     ModifyAutomationRequestPayload:
       required:
       - name
@@ -4792,17 +4691,6 @@ components:
           format: int64
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    SpeciesDetails:
-      required:
-      - id
-      - name
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
     SpeciesGetResponsePayload:
       required:
       - species
