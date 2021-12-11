@@ -11,7 +11,9 @@ import org.jooq.Record
 data class OrganizationModel(
     val id: OrganizationId,
     val name: String,
-    val location: String? = null,
+    val description: String? = null,
+    val countryCode: String? = null,
+    val countrySubdivisionCode: String? = null,
     val disabledTime: Instant? = null,
     val projects: List<ProjectModel>? = null,
 ) {
@@ -19,17 +21,22 @@ data class OrganizationModel(
       record: Record,
       projectsMultiset: Field<List<ProjectModel>?>
   ) : this(
-      record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
-      record[ORGANIZATIONS.NAME] ?: throw IllegalArgumentException("Name is required"),
-      record[ORGANIZATIONS.LOCATION],
-      record[ORGANIZATIONS.DISABLED_TIME],
-      record[projectsMultiset],
+      countryCode = record[ORGANIZATIONS.COUNTRY_CODE],
+      countrySubdivisionCode = record[ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE],
+      description = record[ORGANIZATIONS.DESCRIPTION],
+      disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
+      id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
+      name = record[ORGANIZATIONS.NAME] ?: throw IllegalArgumentException("Name is required"),
+      projects = record[projectsMultiset],
   )
 }
 
 fun OrganizationsRow.toModel(): OrganizationModel =
     OrganizationModel(
-        id ?: throw IllegalArgumentException("ID is required"),
-        name ?: throw IllegalArgumentException("Name is required"),
-        location,
-        disabledTime)
+        countryCode = countryCode,
+        countrySubdivisionCode = countrySubdivisionCode,
+        description = description,
+        disabledTime = disabledTime,
+        id = id ?: throw IllegalArgumentException("ID is required"),
+        name = name ?: throw IllegalArgumentException("Name is required"),
+    )

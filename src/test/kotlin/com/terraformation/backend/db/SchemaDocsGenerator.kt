@@ -121,6 +121,8 @@ class SchemaDocsGenerator : DatabaseTest() {
           "bags" to setOf(ALL, SEEDBANK),
           "collectors" to setOf(ALL, SEEDBANK),
           "conservation_statuses" to setOf(ALL, SPECIES),
+          "countries" to setOf(ALL, CUSTOMER),
+          "country_subdivisions" to setOf(ALL, CUSTOMER),
           "devices" to setOf(ALL, DEVICE),
           "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
           "facility_alert_recipients" to setOf(ALL, CUSTOMER, DEVICE),
