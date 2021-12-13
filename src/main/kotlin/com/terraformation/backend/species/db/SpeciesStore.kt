@@ -44,10 +44,6 @@ class SpeciesStore(
     return support.countEarlierThan(asOf, SPECIES.CREATED_TIME)
   }
 
-  fun findAllSortedByName(): List<SpeciesRow> {
-    return dslContext.selectFrom(SPECIES).orderBy(SPECIES.NAME).fetchInto(SpeciesRow::class.java)
-  }
-
   fun createSpecies(row: SpeciesRow): SpeciesId {
     requirePermissions { createSpecies() }
 
