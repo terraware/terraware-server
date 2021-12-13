@@ -246,6 +246,7 @@ internal class PermissionTest : DatabaseTest() {
         createProject = true,
         listProjects = true,
         readOrganization = true,
+        updateOrganization = true,
         deleteOrganization = true,
         removeOrganizationUser = true,
     )
@@ -336,6 +337,7 @@ internal class PermissionTest : DatabaseTest() {
         createProject = true,
         listProjects = true,
         readOrganization = true,
+        updateOrganization = true,
         deleteOrganization = true,
         removeOrganizationUser = true,
     )
@@ -355,6 +357,7 @@ internal class PermissionTest : DatabaseTest() {
         createProject = true,
         listProjects = true,
         readOrganization = true,
+        updateOrganization = true,
         removeOrganizationUser = true,
     )
 
@@ -750,6 +753,7 @@ internal class PermissionTest : DatabaseTest() {
         createProject: Boolean = false,
         listProjects: Boolean = false,
         readOrganization: Boolean = false,
+        updateOrganization: Boolean = false,
         deleteOrganization: Boolean = false,
         removeOrganizationUser: Boolean = false,
     ) {
@@ -770,6 +774,10 @@ internal class PermissionTest : DatabaseTest() {
             readOrganization,
             user.canReadOrganization(organizationId),
             "Can read organization $organizationId")
+        assertEquals(
+            updateOrganization,
+            user.canUpdateOrganization(organizationId),
+            "Can update organization $organizationId")
         assertEquals(
             deleteOrganization,
             user.canDeleteOrganization(organizationId),

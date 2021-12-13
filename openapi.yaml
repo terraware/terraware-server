@@ -1155,6 +1155,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOrganizationResponsePayload'
+    put:
+      tags:
+      - Customer
+      summary: Updates an existing organization.
+      operationId: updateOrganization
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
   /api/v1/organizations/{organizationId}/projects:
     get:
       tags:
