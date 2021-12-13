@@ -26,6 +26,8 @@ class SearchFieldNamespaces(val searchTables: SearchTables) {
   val accessions = AccessionsNamespace(this)
   val bags = BagsNamespace(this)
   val collectors = CollectorsNamespace(this)
+  val countries = CountriesNamespace(this)
+  val countrySubdivisions = CountrySubdivisionsNamespace(this)
   val facilities = FacilitiesNamespace(this)
   val features = FeaturesNamespace(this)
   val geolocations = GeolocationsNamespace(this)

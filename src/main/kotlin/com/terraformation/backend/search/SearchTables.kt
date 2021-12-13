@@ -10,6 +10,8 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.COLLECTORS
+import com.terraformation.backend.db.tables.references.COUNTRIES
+import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
@@ -48,6 +50,10 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val bags = object : AccessionChildTable(BAGS.ID, BAGS.ACCESSION_ID) {}
 
   val collectors = object : PerFacilityTable(COLLECTORS.ID, COLLECTORS.FACILITY_ID) {}
+
+  val countries = object : SearchTable(fuzzySearchOperators, COUNTRIES.CODE) {}
+
+  val countrySubdivisions = object : SearchTable(fuzzySearchOperators, COUNTRY_SUBDIVISIONS.CODE) {}
 
   val facilities = object : PerFacilityTable(FACILITIES.ID, FACILITIES.ID) {}
 
