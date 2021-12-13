@@ -19,11 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @CustomerEndpoint
 @RestController
-@RequestMapping(
-    // TODO: Remove this once clients have switched over to the plural name
-    "/api/v1/organization",
-    "/api/v1/organizations",
-)
+@RequestMapping("/api/v1/organizations")
 class OrganizationsController(private val organizationStore: OrganizationStore) {
   @GetMapping
   @Operation(
