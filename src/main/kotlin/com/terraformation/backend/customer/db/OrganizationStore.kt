@@ -115,7 +115,7 @@ class OrganizationStore(
 
           // If the user isn't in any projects, we still want to construct a properly-typed
           // multiset, but it should be empty.
-          val condition =
+          val projectsCondition =
               if (projectIds.isNotEmpty()) {
                 PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID).and(PROJECTS.ID.`in`(projectIds))
               } else {
@@ -125,7 +125,7 @@ class OrganizationStore(
           DSL.multiset(
                   DSL.select(PROJECTS.asterisk(), sitesMultiset)
                       .from(PROJECTS)
-                      .where(condition)
+                      .where(projectsCondition)
                       .orderBy(PROJECTS.ID))
               .convertFrom { result -> result.map { ProjectModel(it, sitesMultiset) } }
         } else {

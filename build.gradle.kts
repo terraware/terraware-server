@@ -212,6 +212,7 @@ sourceSets.main {
 
 tasks.withType<KotlinCompile> {
   dependsOn(generateVersionFile)
+  kotlinOptions.allWarningsAsErrors = true
   kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
 }
 
