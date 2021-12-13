@@ -133,49 +133,47 @@
             <parent column="id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="storage_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="storage_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="28" name="family_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="accession_species_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="families"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="29" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="processing_method_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="6" id="28" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="processing_method_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_processing_method_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="processing_methods"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="target_storage_condition" nullable="true" remarks="The intended storage condition of the accession as determined during initial processing." size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="target_storage_condition" nullable="true" remarks="The intended storage condition of the accession as determined during initial processing." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_target_storage_condition_fkey" implied="false" onDeleteCascade="false" schema="public" table="storage_conditions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="processing_staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="collection_site_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="collection_site_landowner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="35" name="storage_staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="36" name="latest_germination_recording_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="latest_viability_percent" nullable="true" remarks="Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="total_viability_percent" nullable="true" remarks="Percentage of viable seeds across all tests." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="species_endangered_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="processing_staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="collection_site_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="collection_site_landowner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="34" name="storage_staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="35" name="latest_germination_recording_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="36" name="latest_viability_percent" nullable="true" remarks="Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="total_viability_percent" nullable="true" remarks="Percentage of viable seeds across all tests." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="species_endangered_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_species_endangered_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_endangered_types"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="40" name="rare_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="rare_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_species_rare_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="rare_types"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="41" name="source_plant_origin_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="40" name="source_plant_origin_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_source_plant_origin_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="source_plant_origins"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="42" name="nursery_start_date" nullable="true" remarks="When the accession was moved to a nursery, or null if it is not in a nursery." size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="43" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="44" name="remaining_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="45" name="remaining_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="41" name="nursery_start_date" nullable="true" remarks="When the accession was moved to a nursery, or null if it is not in a nursery." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="42" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="43" name="remaining_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="44" name="remaining_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="46" name="subset_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="47" name="subset_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="48" name="subset_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="45" name="subset_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="46" name="subset_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="47" name="subset_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="49" name="total_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="50" name="total_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="51" name="total_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="48" name="total_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="49" name="total_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="50" name="total_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accession_total_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="52" name="checked_in_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="51" name="checked_in_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="52" name="family_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -356,43 +354,6 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_type_pkey" unique="true">
             <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="families" numRows="0" remarks="Taxonomic family that each species belongs to. For example, Cousa dogwood (Cornus kousa) is in family &quot;Cornaceae.&quot;" schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="family_id" foreignKey="accession_species_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-            <child column="family_id" foreignKey="family_names_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="family_names"/>
-            <child column="family_id" foreignKey="species_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="4" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="species_family_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="species_family_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="family_names" numRows="0" remarks="Alternate names for families. A family can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `families`." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="family_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="family_names_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="families"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="locale" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="6" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="family_names_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="family_names_unique" unique="true">
-            <column ascending="true" name="family_id"/>
-            <column ascending="true" name="name"/>
          </index>
       </table>
       <table name="feature_photos" numRows="0" remarks="Linking table between `features` and `photos`. Also optionally links `plant_observations` and `photos`." schema="public" type="TABLE">
@@ -926,21 +887,18 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="family_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="species_family_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="families"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="plant_form_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="plant_form_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="species_plant_form_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_forms"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="conservation_status_id" nullable="true" remarks="" size="2" type="varchar" typeCode="12">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="conservation_status_id" nullable="true" remarks="" size="2" type="varchar" typeCode="12">
             <parent column="id" foreignKey="species_conservation_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="conservation_statuses"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="rare_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="rare_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="species_rare_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="rare_types"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="native_range" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="tsn" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="10" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="native_range" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="tsn" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey" unique="true">
             <column ascending="true" name="id"/>

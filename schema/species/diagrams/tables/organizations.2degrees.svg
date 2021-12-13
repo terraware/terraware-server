@@ -171,7 +171,7 @@
 <text text-anchor="start" x="434" y="-237.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="431,-213 431,-231 455,-231 455,-213 431,-213"/>
 <polygon fill="none" stroke="black" points="431,-213 431,-231 455,-231 455,-213 431,-213"/>
-<text text-anchor="start" x="434" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<text text-anchor="start" x="434" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
 <polygon fill="#ffffff" stroke="none" points="455,-213 455,-231 497,-231 497,-213 455,-213"/>
 <polygon fill="none" stroke="black" points="455,-213 455,-231 497,-231 497,-213 455,-213"/>
 <text text-anchor="start" x="458" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>

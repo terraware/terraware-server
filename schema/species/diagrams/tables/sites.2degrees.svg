@@ -198,7 +198,7 @@
 <text text-anchor="start" x="422" y="-378.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="419,-354 419,-372 443,-372 443,-354 419,-354"/>
 <polygon fill="none" stroke="black" points="419,-354 419,-372 443,-372 443,-354 419,-354"/>
-<text text-anchor="start" x="422" y="-360.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<text text-anchor="start" x="422" y="-360.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
 <polygon fill="#ffffff" stroke="none" points="443,-354 443,-372 485,-372 485,-354 443,-354"/>
 <polygon fill="none" stroke="black" points="443,-354 443,-372 485,-372 485,-354 443,-354"/>
 <text text-anchor="start" x="446" y="-360.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>

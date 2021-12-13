@@ -14,9 +14,9 @@ storage_locations
 collectors
 facilities
 sites
-species
 projects
 withdrawal_purposes
+species
 source_plant_origins
 processing_methods
 organizations
@@ -28,6 +28,5 @@ app_devices
 storage_conditions
 photos
 germination_test_types
-families
 accession_states
 seed_quantity_units

@@ -1,6 +1,5 @@
 seed_quantity_units
 accession_states
-families
 germination_test_types
 photos
 storage_conditions
@@ -12,9 +11,9 @@ notification_types
 organizations
 processing_methods
 source_plant_origins
+species
 withdrawal_purposes
 projects
-species
 sites
 facilities
 collectors

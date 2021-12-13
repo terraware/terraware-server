@@ -15,7 +15,6 @@ timeseries_values
 thumbnails
 germinations
 geolocations
-family_names
 facility_alert_recipients
 bags
 automations
@@ -57,7 +56,6 @@ app_devices
 storage_conditions
 rare_types
 germination_test_types
-families
 organizations
 accession_states
 seed_quantity_units
