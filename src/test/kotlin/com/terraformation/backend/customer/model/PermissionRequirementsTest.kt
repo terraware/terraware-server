@@ -421,7 +421,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.updateOrganization(organizationId) }
 
-    grant { user.canUpdateOrganization(organizationId)}
+    grant { user.canUpdateOrganization(organizationId) }
     requirements.updateOrganization(organizationId)
   }
 
