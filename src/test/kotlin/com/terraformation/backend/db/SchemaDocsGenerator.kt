@@ -125,8 +125,6 @@ class SchemaDocsGenerator : DatabaseTest() {
           "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
           "facility_alert_recipients" to setOf(ALL, CUSTOMER, DEVICE),
           "facility_types" to setOf(ALL, CUSTOMER),
-          "families" to setOf(ALL, SEEDBANK, SPECIES),
-          "family_names" to setOf(ALL, SPECIES),
           "feature_photos" to setOf(ALL, GIS),
           "features" to setOf(ALL, GIS),
           "flyway_schema_history" to emptySet(),

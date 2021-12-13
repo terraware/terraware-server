@@ -91,7 +91,6 @@ class AccessionStore(
                 ACCESSIONS.asterisk(),
                 ACCESSIONS.collectors().NAME,
                 ACCESSIONS.species().NAME,
-                ACCESSIONS.families().NAME,
                 ACCESSIONS.STATE_ID,
                 ACCESSIONS.storageLocations().NAME,
                 ACCESSIONS.storageLocations().CONDITION_ID,
@@ -139,7 +138,7 @@ class AccessionStore(
           environmentalNotes = record[ENVIRONMENTAL_NOTES],
           estimatedSeedCount = record[EST_SEED_COUNT],
           facilityId = record[FACILITY_ID],
-          family = record[families().NAME],
+          family = record[FAMILY_NAME],
           fieldNotes = record[FIELD_NOTES],
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
@@ -206,7 +205,6 @@ class AccessionStore(
               val checkedInTime =
                   if (checkedIn) clock.instant().truncatedTo(ChronoUnit.SECONDS) else null
               val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
-              val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
               val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
               val state = if (checkedIn) AccessionState.Pending else AccessionState.AwaitingCheckIn
 
@@ -225,7 +223,7 @@ class AccessionStore(
                         .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                         .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                         .set(FACILITY_ID, facilityId)
-                        .set(FAMILY_ID, familyId)
+                        .set(FAMILY_NAME, accession.family)
                         .set(FIELD_NOTES, accession.fieldNotes)
                         .set(FOUNDER_ID, accession.founderId)
                         .set(
@@ -352,7 +350,6 @@ class AccessionStore(
       insertStateHistory(existing, accession)
 
       val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
-      val familyId = accession.family?.let { speciesStore.getFamilyId(it) }
       val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
 
       val rowsUpdated =
@@ -370,7 +367,7 @@ class AccessionStore(
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
-                .set(FAMILY_ID, familyId)
+                .set(FAMILY_NAME, accession.family)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
                 .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestGerminationTestDate)
@@ -708,6 +705,17 @@ class AccessionStore(
     log.debug("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
 
     return log.debugWithTiming("Accession state count query") { query.fetchOne()?.value1() ?: 0 }
+  }
+
+  fun countFamilies(facilityId: FacilityId, asOf: TemporalAccessor): Int {
+    return dslContext
+        .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
+        .from(ACCESSIONS)
+        .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+        .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
+        .fetchOne()
+        ?.value1()
+        ?: 0
   }
 
   fun fetchDryingMoveDue(

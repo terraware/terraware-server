@@ -44,10 +44,6 @@ COMMENT ON TABLE facility_alert_recipients IS 'Where to send notifications about
 
 COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be represented in the data model.';
 
-COMMENT ON TABLE families IS 'Taxonomic family that each species belongs to. For example, Cousa dogwood (Cornus kousa) is in family "Cornaceae."';
-
-COMMENT ON TABLE family_names IS 'Alternate names for families. A family can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `families`.';
-
 COMMENT ON TABLE feature_photos IS 'Linking table between `features` and `photos`. Also optionally links `plant_observations` and `photos`.';
 
 COMMENT ON TABLE features IS 'Physical features that appear on a map. For example, an individual tree whose location is being tracked is a map feature. This table only has generic information; child tables such as `plants` have more information about particular kinds of features.';

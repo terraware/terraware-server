@@ -1,21 +1,15 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.FamilyId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StoreSupport
-import com.terraformation.backend.db.tables.daos.FamiliesDao
-import com.terraformation.backend.db.tables.daos.FamilyNamesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
-import com.terraformation.backend.db.tables.pojos.FamiliesRow
-import com.terraformation.backend.db.tables.pojos.FamilyNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.db.tables.references.FAMILIES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.log.perClassLogger
@@ -31,8 +25,6 @@ import org.springframework.security.access.AccessDeniedException
 class SpeciesStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
-    private val familiesDao: FamiliesDao,
-    private val familyNamesDao: FamilyNamesDao,
     private val speciesDao: SpeciesDao,
     private val speciesNamesDao: SpeciesNamesDao,
     private val support: StoreSupport
@@ -48,21 +40,8 @@ class SpeciesStore(
         ?: createSpecies(SpeciesRow(name = speciesName))
   }
 
-  fun getFamilyId(familyName: String): FamilyId {
-    return dslContext
-        .select(FAMILIES.ID)
-        .from(FAMILIES)
-        .where(FAMILIES.NAME.eq(familyName))
-        .fetchOne(FAMILIES.ID)
-        ?: createFamily(FamiliesRow(name = familyName))
-  }
-
   fun countSpecies(asOf: TemporalAccessor): Int {
     return support.countEarlierThan(asOf, SPECIES.CREATED_TIME)
-  }
-
-  fun countFamilies(asOf: TemporalAccessor): Int {
-    return support.countEarlierThan(asOf, FAMILIES.CREATED_TIME)
   }
 
   fun findAllSortedByName(): List<SpeciesRow> {
@@ -85,24 +64,6 @@ class SpeciesStore(
             speciesId = speciesId))
 
     return speciesId
-  }
-
-  private fun createFamily(row: FamiliesRow): FamilyId {
-    requirePermissions { createFamily() }
-
-    val newRow = row.copy(id = null, createdTime = clock.instant(), modifiedTime = clock.instant())
-    familiesDao.insert(newRow)
-    val familyId = newRow.id!!
-
-    familyNamesDao.insert(
-        FamilyNamesRow(
-            createdTime = clock.instant(),
-            familyId = familyId,
-            isScientific = row.isScientific,
-            name = row.name,
-            modifiedTime = clock.instant()))
-
-    return familyId
   }
 
   /**

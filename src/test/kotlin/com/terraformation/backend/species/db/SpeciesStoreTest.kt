@@ -9,11 +9,8 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StoreSupport
-import com.terraformation.backend.db.tables.daos.FamiliesDao
-import com.terraformation.backend.db.tables.daos.FamilyNamesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
-import com.terraformation.backend.db.tables.pojos.FamiliesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import io.mockk.every
@@ -34,8 +31,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   override val user: UserModel = mockk()
 
-  private lateinit var familiesDao: FamiliesDao
-  private lateinit var familyNamesDao: FamilyNamesDao
   private lateinit var speciesDao: SpeciesDao
   private lateinit var speciesNamesDao: SpeciesNamesDao
   private lateinit var store: SpeciesStore
@@ -45,39 +40,23 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     val jooqConfig = dslContext.configuration()
 
-    familiesDao = FamiliesDao(jooqConfig)
-    familyNamesDao = FamilyNamesDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
     speciesNamesDao = SpeciesNamesDao(jooqConfig)
     storeSupport = StoreSupport(dslContext)
 
-    store =
-        SpeciesStore(
-            clock,
-            dslContext,
-            familiesDao,
-            familyNamesDao,
-            speciesDao,
-            speciesNamesDao,
-            storeSupport)
+    store = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, storeSupport)
 
     every { clock.instant() } returns Instant.EPOCH
 
     every { user.canCreateSpecies() } returns true
-    every { user.canCreateFamily() } returns true
     every { user.canUpdateSpecies(any()) } returns true
     every { user.canDeleteSpecies(any()) } returns true
   }
 
   @Test
   fun `createSpecies inserts species and name`() {
-    val familyRow =
-        FamiliesRow(createdTime = clock.instant(), modifiedTime = clock.instant(), name = "family")
-    familiesDao.insert(familyRow)
-
     val row =
         SpeciesRow(
-            familyId = familyRow.id,
             name = "test",
             plantFormId = PlantForm.Liana,
             conservationStatusId = "LC",
