@@ -17,6 +17,8 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.tables.daos.UsersDao
+import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -25,12 +27,16 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: UserModel = mockk()
+  override val sequencesToReset: List<String> = listOf("organizations_id_seq")
 
   private val clock: Clock = mockk()
   private lateinit var organizationsDao: OrganizationsDao
+  private lateinit var permissionStore: PermissionStore
+  private lateinit var usersDao: UsersDao
   private lateinit var store: OrganizationStore
 
   private val organizationId = OrganizationId(1)
@@ -67,6 +73,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   private val organizationModel =
       OrganizationModel(
           id = organizationId,
+          countryCode = "US",
+          countrySubdivisionCode = "US-HI",
           name = "Organization $organizationId",
           projects = listOf(projectModel))
 
@@ -75,7 +83,11 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val jooqConfig = dslContext.configuration()
 
     organizationsDao = OrganizationsDao(jooqConfig)
+    permissionStore = PermissionStore(dslContext)
+    usersDao = UsersDao(jooqConfig)
     store = OrganizationStore(clock, dslContext, organizationsDao)
+
+    every { clock.instant() } returns Instant.EPOCH
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadProject(any()) } returns true
@@ -86,7 +98,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
     every { user.userId } returns UserId(1)
 
-    insertOrganization(organizationId)
+    assertEquals(
+        organizationId,
+        insertOrganization(
+            name = organizationModel.name,
+            countryCode = organizationModel.countryCode,
+            countrySubdivisionCode = organizationModel.countrySubdivisionCode))
     insertProject(projectId)
     insertSite(siteId, location = location)
     insertFacility(facilityId)
@@ -176,5 +193,76 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchAll(OrganizationStore.FetchDepth.Project)
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `createWithAdmin populates organization details`() {
+    insertUser()
+
+    val row =
+        OrganizationsRow(
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI",
+            description = "Test description",
+            name = "Test Org",
+        )
+    val createdModel = store.createWithAdmin(row)
+
+    val expected =
+        row.copy(
+            createdTime = clock.instant(), id = OrganizationId(2), modifiedTime = clock.instant())
+    val actual = organizationsDao.fetchOneById(createdModel.id)!!
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `createWithAdmin folds country and subdivision codes to all-caps`() {
+    insertUser()
+
+    val createdModel =
+        store.createWithAdmin(
+            OrganizationsRow(
+                countryCode = "us",
+                countrySubdivisionCode = "us-hi",
+                name = "Test Org",
+            ))
+    val row = organizationsDao.fetchOneById(createdModel.id)!!
+
+    assertEquals("US", row.countryCode, "Country code")
+    assertEquals("US-HI", row.countrySubdivisionCode, "Subdivision code")
+  }
+
+  @Test
+  fun `createWithAdmin rejects invalid country codes`() {
+    assertThrows<IllegalArgumentException> {
+      store.createWithAdmin(OrganizationsRow(countryCode = "XX", name = "Test Org"))
+    }
+  }
+
+  @Test
+  fun `createWithAdmin rejects invalid country subdivision codes`() {
+    assertThrows<IllegalArgumentException> {
+      store.createWithAdmin(
+          OrganizationsRow(countryCode = "US", countrySubdivisionCode = "US-XX", name = "Test Org"))
+    }
+  }
+
+  @Test
+  fun `createWithAdmin rejects mismatched country and subdivision codes`() {
+    assertThrows<IllegalArgumentException> {
+      store.createWithAdmin(
+          OrganizationsRow(countryCode = "GB", countrySubdivisionCode = "US-HI", name = "Test Org"))
+    }
+  }
+
+  @Test
+  fun `createWithAdmin adds current user as admin`() {
+    insertUser()
+
+    val createdModel = store.createWithAdmin(OrganizationsRow(name = "Test Org"))
+    val roles = permissionStore.fetchOrganizationRoles(user.userId)
+
+    assertEquals(mapOf(createdModel.id to Role.OWNER), roles)
   }
 }

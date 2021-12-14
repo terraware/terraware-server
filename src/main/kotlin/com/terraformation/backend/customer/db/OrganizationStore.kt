@@ -15,6 +15,8 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.references.COUNTRIES
+import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
@@ -35,7 +37,7 @@ import org.springframework.security.access.AccessDeniedException
 class OrganizationStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
-    private val organizationsDao: OrganizationsDao
+    private val organizationsDao: OrganizationsDao,
 ) {
   private val log = perClassLogger()
 
@@ -141,15 +143,25 @@ class OrganizationStore(
   }
 
   /** Creates a new organization and makes the current user an owner. */
-  fun createWithAdmin(name: String): OrganizationModel {
-    val row =
-        OrganizationsRow(name = name, createdTime = clock.instant(), modifiedTime = clock.instant())
-    organizationsDao.insert(row)
+  fun createWithAdmin(row: OrganizationsRow): OrganizationModel {
+    validateCountryCode(row.countryCode, row.countrySubdivisionCode)
+
+    val fullRow =
+        OrganizationsRow(
+            countryCode = row.countryCode?.uppercase(),
+            countrySubdivisionCode = row.countrySubdivisionCode?.uppercase(),
+            createdTime = clock.instant(),
+            description = row.description,
+            modifiedTime = clock.instant(),
+            name = row.name,
+        )
+
+    organizationsDao.insert(fullRow)
 
     with(ORGANIZATION_USERS) {
       dslContext
           .insertInto(ORGANIZATION_USERS)
-          .set(ORGANIZATION_ID, row.id)
+          .set(ORGANIZATION_ID, fullRow.id)
           .set(USER_ID, currentUser().userId)
           .set(ROLE_ID, Role.OWNER.id)
           .set(CREATED_TIME, clock.instant())
@@ -157,7 +169,7 @@ class OrganizationStore(
           .execute()
     }
 
-    return row.toModel()
+    return fullRow.toModel()
   }
 
   fun fetchUsers(organizationIds: Collection<OrganizationId>): List<OrganizationUserModel> {
@@ -295,6 +307,48 @@ class OrganizationStore(
             .execute()
 
     return rowsUpdated > 0
+  }
+
+  /** Throws [IllegalArgumentException] if country and/or subdivision codes are invalid. */
+  private fun validateCountryCode(countryCode: String?, countrySubdivisionCode: String?) {
+    if (countryCode != null) {
+      if (countryCode.length != 2) {
+        throw IllegalArgumentException("Country code must be 2 characters long")
+      }
+
+      if (dslContext
+          .selectOne()
+          .from(COUNTRIES)
+          .where(COUNTRIES.CODE.eq(countryCode.uppercase()))
+          .fetch()
+          .isEmpty()) {
+        throw IllegalArgumentException("Country code not recognized")
+      }
+    }
+
+    if (countrySubdivisionCode != null) {
+      if (countryCode == null) {
+        throw IllegalArgumentException("Cannot set country subdivision code without country code")
+      }
+
+      if (!countrySubdivisionCode.startsWith("$countryCode-")) {
+        throw IllegalArgumentException("Country subdivision code must start with country code")
+      }
+
+      if (countrySubdivisionCode.length < 4 || countrySubdivisionCode.length > 6) {
+        throw IllegalArgumentException(
+            "Country subdivision code must be between 4 and 6 characters")
+      }
+
+      if (dslContext
+          .selectOne()
+          .from(COUNTRY_SUBDIVISIONS)
+          .where(COUNTRY_SUBDIVISIONS.CODE.eq(countrySubdivisionCode.uppercase()))
+          .fetch()
+          .isEmpty()) {
+        throw IllegalArgumentException("Country subdivision code not recognized")
+      }
+    }
   }
 
   enum class FetchDepth(val level: Int) {

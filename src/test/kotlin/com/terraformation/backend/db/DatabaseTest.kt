@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.tables.references.FACILITIES
@@ -11,6 +12,7 @@ import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
+import com.terraformation.backend.db.tables.references.USERS
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -100,15 +102,23 @@ abstract class DatabaseTest {
     }
   }
 
-  protected fun insertOrganization(id: Any, name: String = "Organization $id") {
-    with(ORGANIZATIONS) {
+  protected fun insertOrganization(
+      id: Any? = null,
+      name: String = "Organization $id",
+      countryCode: String? = null,
+      countrySubdivisionCode: String? = null,
+  ): OrganizationId {
+    return with(ORGANIZATIONS) {
       dslContext
           .insertInto(ORGANIZATIONS)
-          .set(ID, id.toIdWrapper { OrganizationId(it) })
-          .set(NAME, name)
+          .set(COUNTRY_CODE, countryCode)
+          .set(COUNTRY_SUBDIVISION_CODE, countrySubdivisionCode)
           .set(CREATED_TIME, Instant.EPOCH)
+          .apply { if (id != null) set(ID, id.toIdWrapper { OrganizationId(it) }) }
+          .set(NAME, name)
           .set(MODIFIED_TIME, Instant.EPOCH)
-          .execute()
+          .returning(ID)
+          .fetchOne(ID)!!
     }
   }
 
@@ -290,6 +300,30 @@ abstract class DatabaseTest {
     insertProject(2, 1, "project")
     insertSite(10, 2, "sim")
     insertFacility(100, 10, "ohana")
+  }
+
+  /** Creates a user that can be referenced by various tests. */
+  fun insertUser(
+      userId: Any = currentUser().userId,
+      authId: String = "XYZ",
+      email: String = "user@terraformation.com",
+      firstName: String = "First",
+      lastName: String = "Last",
+      type: UserType = UserType.Individual,
+  ) {
+    with(USERS) {
+      dslContext
+          .insertInto(USERS)
+          .set(AUTH_ID, authId)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(EMAIL, email)
+          .set(ID, userId.toIdWrapper { UserId(it) })
+          .set(FIRST_NAME, firstName)
+          .set(LAST_NAME, lastName)
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(USER_TYPE_ID, type)
+          .execute()
+    }
   }
 
   class DockerPostgresDataSourceInitializer :

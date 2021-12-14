@@ -22,6 +22,7 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.gis.db.LayerStore
 import com.terraformation.backend.gis.model.LayerModel
@@ -291,7 +292,7 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      val org = organizationStore.createWithAdmin(name)
+      val org = organizationStore.createWithAdmin(OrganizationsRow(name = name))
       redirectAttributes.addFlashAttribute("successMessage", "Created organization ${org.id}")
     } catch (e: Exception) {
       log.error("Failed to create organization $name", e)

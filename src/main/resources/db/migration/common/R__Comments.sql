@@ -36,6 +36,15 @@ COMMENT ON TABLE collectors IS 'People who participated in seed collection. Both
 
 COMMENT ON TABLE conservation_statuses IS '(Enum) UICN Red List categories defining the conservation status of a given species.';
 
+COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
+COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code.';
+COMMENT ON COLUMN countries.name IS 'Name of country in US English.';
+
+COMMENT ON TABLE country_subdivisions IS 'Country subdivision (state, province, region, etc.) information per ISO-3166-2.';
+COMMENT ON COLUMN country_subdivisions.code IS 'Full ISO-3166-2 subdivision code including country code prefix.';
+COMMENT ON COLUMN country_subdivisions.country_code IS 'ISO-3166 alpha-2 country code.';
+COMMENT ON COLUMN country_subdivisions.name IS 'Name of subdivision in US English.';
+
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
