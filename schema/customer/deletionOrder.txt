@@ -4,10 +4,12 @@ facility_alert_recipients
 facilities
 sites
 projects
+organizations
+country_subdivisions
 users
 user_types
 roles
 project_types
 project_statuses
 facility_types
-organizations
+countries

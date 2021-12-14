@@ -32,6 +32,8 @@ devices
 facilities
 sites
 projects
+organizations
+country_subdivisions
 species
 users
 withdrawal_purposes
@@ -56,6 +58,6 @@ app_devices
 storage_conditions
 rare_types
 germination_test_types
-organizations
+countries
 accession_states
 seed_quantity_units

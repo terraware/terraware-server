@@ -375,6 +375,11 @@
                                         <td>(((tile_set_name IS NULL) OR (length(tile_set_name) &gt; 0)))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>country_code_matches_subdivision</td>
+                                        <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/plants.html'>plants</a></td>
                                         <td>label_cannot_be_empty_string</td>
                                         <td>(((label IS NULL) OR (length(label) &gt; 0)))</td>

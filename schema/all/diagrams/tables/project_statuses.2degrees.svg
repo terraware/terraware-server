@@ -119,14 +119,14 @@
 <text text-anchor="start" x="144" y="-348.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="58,-322 58,-340 183,-340 183,-322 58,-322"/>
 <text text-anchor="start" x="61" y="-328.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="58,-304 58,-322 94,-322 94,-304 58,-304"/>
-<polygon fill="none" stroke="black" points="58,-304 58,-322 94,-322 94,-304 58,-304"/>
-<text text-anchor="start" x="61" y="-310.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="94,-304 94,-322 148,-322 148,-304 94,-304"/>
-<polygon fill="none" stroke="black" points="94,-304 94,-322 148,-322 148,-304 94,-304"/>
-<text text-anchor="start" x="109" y="-310.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="148,-304 148,-322 183,-322 183,-304 148,-304"/>
-<polygon fill="none" stroke="black" points="148,-304 148,-322 183,-322 183,-304 148,-304"/>
+<polygon fill="#ffffff" stroke="none" points="58,-304 58,-322 99,-322 99,-304 58,-304"/>
+<polygon fill="none" stroke="black" points="58,-304 58,-322 99,-322 99,-304 58,-304"/>
+<text text-anchor="start" x="61" y="-310.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="99,-304 99,-322 150,-322 150,-304 99,-304"/>
+<polygon fill="none" stroke="black" points="99,-304 99,-322 150,-322 150,-304 99,-304"/>
+<text text-anchor="start" x="111" y="-310.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="150,-304 150,-322 183,-322 183,-304 150,-304"/>
+<polygon fill="none" stroke="black" points="150,-304 150,-322 183,-322 183,-304 150,-304"/>
 <text text-anchor="start" x="163" y="-310.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
 </a>
 </g>

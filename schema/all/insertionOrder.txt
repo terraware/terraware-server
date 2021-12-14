@@ -1,6 +1,6 @@
 seed_quantity_units
 accession_states
-organizations
+countries
 germination_test_types
 rare_types
 storage_conditions
@@ -25,6 +25,8 @@ user_types
 withdrawal_purposes
 users
 species
+country_subdivisions
+organizations
 projects
 sites
 facilities

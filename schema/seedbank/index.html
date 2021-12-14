@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Mon Dec 13 22:19 GMT 2021</p>
+                                <p>Generated on Tue Dec 14 01:56 GMT 2021</p>
                             </div>
                         </div>
                     </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">226</span>
+                                    <span class="info-box-number">228</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -290,15 +290,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/germination_substrates.html">germination_substrates</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of substrate that can be used to test seeds for germination ability.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/germinations.html">germinations</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
@@ -308,10 +299,19 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/germination_substrates.html">germination_substrates</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of substrate that can be used to test seeds for germination ability.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/organizations.html">organizations</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">8</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Top-level information about organizations.</p></td>
@@ -362,15 +362,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Associates additional collectors with accessions. The primary collector is not included here, but is instead stored in <code>accessions.primary_collector_id</code>.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/notifications.html">notifications</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Notifications about tasks that need to be performed at a seed bank.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/source_plant_origins.html">source_plant_origins</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -378,6 +369,15 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of origins of plants from which seeds were collected. For example, &ldquo;Outplant&rdquo; represents a plant that was cultivated, as opposed to one growing in the wild.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/notifications.html">notifications</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Notifications about tasks that need to be performed at a seed bank.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/seed_quantity_units.html">seed_quantity_units</a></td>

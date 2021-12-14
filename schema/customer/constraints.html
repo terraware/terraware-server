@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">14 Foreign Key Constraints</h3>
+                            <h3 class="box-title">17 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -314,6 +314,60 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>organizations_country_code_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/organizations.html'>organizations</a><span>.country_code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/countries.html'>countries</a><span>.code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>organizations_country_subdivision_code_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/organizations.html'>organizations</a><span>.country_subdivision_code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/country_subdivisions.html'>country_subdivisions</a><span>.code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>country_subdivisions_country_code_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/country_subdivisions.html'>country_subdivisions</a><span>.country_code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/countries.html'>countries</a><span>.code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>sites_project_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -372,6 +426,31 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td><a href='tables/countries.html'>countries</a></td>
+                                        <td>countries_code_caps</td>
+                                        <td>((code = upper(code)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/countries.html'>countries</a></td>
+                                        <td>countries_code_length</td>
+                                        <td>((length(code) = 2))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/organizations.html'>organizations</a></td>
+                                        <td>country_code_matches_subdivision</td>
+                                        <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
+                                        <td>country_subdivisions_code_length</td>
+                                        <td>(((length(code) &gt;= 4) AND (length(code) &lt;= 6)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
+                                        <td>country_subdivisions_code_matches_country</td>
+                                        <td>((substr(code, 1, 2) = country_code))</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

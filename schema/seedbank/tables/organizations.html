@@ -154,23 +154,6 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="location">location</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
                                     <td><span id="created_time">created_time</span></td>
                                     <td>timestamptz</td>
                                     <td>35,6</td>
@@ -221,6 +204,57 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="country_code">country_code</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="country_subdivision_code">country_subdivision_code</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="description">description</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -257,6 +291,32 @@
                     </div>
                     <div class="box box-primary">
                         <div class="box-header with-border">
+                            <i class="fa fa-sitemap"></i>
+                            <h3 class="box-title">Check Constraints</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Constraint Name</th>
+                                    <th>Constraint</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
                             <i class="fa fa-code-fork"></i>
                             <h3 id="Relationships" class="box-title">Relationships</h3>
                             <div class="box-tools pull-right">
@@ -274,16 +334,16 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="355,5,525,152">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,32,311,277">
+<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="444,5,615,152">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,32,400,336">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/organizations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="355,5,525,152">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,32,311,277">
-<area shape="rect" id="node3" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="569,8,708,96">
+<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="444,5,615,152">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,32,400,336">
+<area shape="rect" id="node3" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="659,8,797,96">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/organizations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
