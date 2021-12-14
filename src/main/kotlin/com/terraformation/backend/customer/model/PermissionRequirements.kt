@@ -313,6 +313,13 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
+  fun updateOrganization(organizationId: OrganizationId) {
+    if (!user.canUpdateOrganization(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to update organization $organizationId")
+    }
+  }
+
   fun addOrganizationUser(organizationId: OrganizationId) {
     if (!user.canAddOrganizationUser(organizationId)) {
       readOrganization(organizationId)

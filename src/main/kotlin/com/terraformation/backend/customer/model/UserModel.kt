@@ -322,6 +322,13 @@ data class UserModel(
     return organizationId in organizationRoles
   }
 
+  fun canUpdateOrganization(organizationId: OrganizationId): Boolean {
+    return when (organizationRoles[organizationId]) {
+      Role.OWNER, Role.ADMIN -> true
+      else -> false
+    }
+  }
+
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.OWNER

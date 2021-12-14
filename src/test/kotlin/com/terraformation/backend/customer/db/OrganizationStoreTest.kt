@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: UserModel = mockk()
@@ -90,6 +91,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { clock.instant() } returns Instant.EPOCH
 
     every { user.canReadOrganization(any()) } returns true
+    every { user.canUpdateOrganization(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadSite(any()) } returns true
     every { user.canReadFacility(any()) } returns true
@@ -111,7 +113,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchAll honors fetch depth`() {
-
     assertEquals(
         listOf(organizationModel),
         store.fetchAll(OrganizationStore.FetchDepth.Facility),
@@ -264,5 +265,41 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val roles = permissionStore.fetchOrganizationRoles(user.userId)
 
     assertEquals(mapOf(createdModel.id to Role.OWNER), roles)
+  }
+
+  @Test
+  fun `update populates organization details`() {
+    val newTime = clock.instant().plusSeconds(1000)
+    every { clock.instant() } returns newTime
+
+    val updates =
+        OrganizationsRow(
+            id = organizationId,
+            name = "New Name",
+            description = "New Description",
+            countryCode = "ZA")
+    val expected = updates.copy(createdTime = Instant.EPOCH, modifiedTime = newTime)
+
+    store.update(updates)
+
+    val actual = organizationsDao.fetchOneById(organizationId)!!
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `update throws exception if user has no permission to update organization`() {
+    every { user.canUpdateOrganization(organizationId) } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.update(OrganizationsRow(id = organizationId, name = "New Name"))
+    }
+  }
+
+  @Test
+  fun `update rejects invalid country codes`() {
+    assertThrows<IllegalArgumentException> {
+      store.update(OrganizationsRow(id = organizationId, name = "X", countryCode = "XX"))
+    }
   }
 }

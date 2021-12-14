@@ -172,6 +172,26 @@ class OrganizationStore(
     return fullRow.toModel()
   }
 
+  fun update(row: OrganizationsRow) {
+    val organizationId = row.id ?: throw IllegalArgumentException("Organization ID must be set")
+
+    requirePermissions { updateOrganization(organizationId) }
+
+    validateCountryCode(row.countryCode, row.countrySubdivisionCode)
+
+    with(ORGANIZATIONS) {
+      dslContext
+          .update(ORGANIZATIONS)
+          .set(COUNTRY_CODE, row.countryCode)
+          .set(COUNTRY_SUBDIVISION_CODE, row.countrySubdivisionCode)
+          .set(DESCRIPTION, row.description)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(NAME, row.name)
+          .where(ID.eq(organizationId))
+          .execute()
+    }
+  }
+
   fun fetchUsers(organizationIds: Collection<OrganizationId>): List<OrganizationUserModel> {
     // Only admins and above can fetch an organization's user list.
     /*
@@ -325,7 +345,6 @@ class OrganizationStore(
         throw IllegalArgumentException("Country code not recognized")
       }
     }
-
     if (countrySubdivisionCode != null) {
       if (countryCode == null) {
         throw IllegalArgumentException("Cannot set country subdivision code without country code")
