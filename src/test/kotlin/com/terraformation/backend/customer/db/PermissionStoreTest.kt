@@ -57,6 +57,13 @@ internal class PermissionStoreTest : DatabaseTest() {
   }
 
   @Test
+  fun `fetchFacilityRoles does not include pending invitations`() {
+    insertTestData()
+    markAsInvitationPending(UserId(5), OrganizationId(1))
+    assertEquals(emptyMap<FacilityId, Role>(), permissionStore.fetchFacilityRoles(UserId(5)))
+  }
+
+  @Test
   fun `fetchFacilityRoles includes facilities from multiple organizations`() {
     insertTestData()
     assertEquals(
@@ -84,6 +91,14 @@ internal class PermissionStoreTest : DatabaseTest() {
   }
 
   @Test
+  fun `fetchOrganizationRoles does not include pending invitations`() {
+    insertTestData()
+    markAsInvitationPending(UserId(5), OrganizationId(1))
+    assertEquals(
+        emptyMap<OrganizationId, Role>(), permissionStore.fetchOrganizationRoles(UserId(5)))
+  }
+
+  @Test
   fun `fetchProjectRoles only includes projects the user is in`() {
     insertTestData()
     assertEquals(mapOf(ProjectId(10) to Role.MANAGER), permissionStore.fetchProjectRoles(UserId(5)))
@@ -98,6 +113,13 @@ internal class PermissionStoreTest : DatabaseTest() {
             ProjectId(11) to Role.CONTRIBUTOR,
             ProjectId(20) to Role.MANAGER),
         permissionStore.fetchProjectRoles(UserId(7)))
+  }
+
+  @Test
+  fun `fetchProjectRoles does not include pending invitations`() {
+    insertTestData()
+    markAsInvitationPending(UserId(5), OrganizationId(1))
+    assertEquals(emptyMap<ProjectId, Role>(), permissionStore.fetchProjectRoles(UserId(5)))
   }
 
   @Test
@@ -118,6 +140,13 @@ internal class PermissionStoreTest : DatabaseTest() {
             SiteId(110) to Role.CONTRIBUTOR,
             SiteId(200) to Role.MANAGER),
         permissionStore.fetchSiteRoles(UserId(7)))
+  }
+
+  @Test
+  fun `fetchSiteRoles does not include pending invitations`() {
+    insertTestData()
+    markAsInvitationPending(UserId(5), OrganizationId(1))
+    assertEquals(emptyMap<SiteId, Role>(), permissionStore.fetchSiteRoles(UserId(5)))
   }
 
   /**
@@ -260,6 +289,16 @@ internal class PermissionStoreTest : DatabaseTest() {
             .set(MODIFIED_TIME, Instant.EPOCH)
             .execute()
       }
+    }
+  }
+
+  private fun markAsInvitationPending(userId: UserId, organizationId: OrganizationId) {
+    with(ORGANIZATION_USERS) {
+      dslContext
+          .update(ORGANIZATION_USERS)
+          .set(PENDING_INVITATION_TIME, Instant.EPOCH)
+          .where(USER_ID.eq(userId).and(ORGANIZATION_ID.eq(organizationId)))
+          .execute()
     }
   }
 }

@@ -687,6 +687,19 @@ internal class PermissionTest : DatabaseTest() {
     PermissionsTracker().andNothingElse()
   }
 
+  @Test
+  fun `user with pending invitation has no access to organization or projects`() {
+    givenRole(org1Id, Role.ADMIN, *org1ProjectIds)
+
+    dslContext
+        .update(ORGANIZATION_USERS)
+        .set(ORGANIZATION_USERS.PENDING_INVITATION_TIME, Instant.EPOCH)
+        .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+        .execute()
+
+    PermissionsTracker().andNothingElse()
+  }
+
   private fun givenRole(organizationId: OrganizationId, role: Role, vararg projects: ProjectId) {
     with(ORGANIZATION_USERS) {
       dslContext
