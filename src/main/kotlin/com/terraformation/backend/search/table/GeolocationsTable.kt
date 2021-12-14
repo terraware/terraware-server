@@ -1,24 +1,30 @@
-package com.terraformation.backend.search.namespace
+package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.search.FieldNode
-import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SearchFilterType
+import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import java.math.BigDecimal
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.SelectJoinStep
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class GeolocationsNamespace(private val namespaces: SearchFieldNamespaces) :
-    SearchFieldNamespace() {
+class GeolocationsTable(
+    private val tables: SearchTables,
+    fuzzySearchOperators: FuzzySearchOperators
+) : SearchTable(fuzzySearchOperators) {
+  override val primaryKey: TableField<out Record, out Any?>
+    get() = GEOLOCATIONS.ID
 
   override val sublists: List<SublistField> by lazy {
-    with(namespaces) {
+    with(tables) {
       listOf(
           accessions.asSingleValueSublist("accession", GEOLOCATIONS.ACCESSION_ID.eq(ACCESSIONS.ID)),
       )
@@ -34,6 +40,13 @@ class GeolocationsNamespace(private val namespaces: SearchFieldNamespaces) :
               GEOLOCATIONS.LONGITUDE),
       )
 
+  override val inheritsPermissionsFrom: SearchTable
+    get() = tables.accessions
+
+  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+    return query.join(ACCESSIONS).on(GEOLOCATIONS.ACCESSION_ID.eq(ACCESSIONS.ID))
+  }
+
   /**
    * Search field for geolocation data. Geolocation is represented in search results as a single
    * string value that includes both latitude and longitude. But in the database, those two values
@@ -46,8 +59,8 @@ class GeolocationsNamespace(private val namespaces: SearchFieldNamespaces) :
       private val longitudeField: TableField<*, BigDecimal?>,
       override val nullable: Boolean = true
   ) : SearchField {
-    override val table
-      get() = namespaces.searchTables.geolocations
+    override val table: SearchTable
+      get() = this@GeolocationsTable
 
     override val supportedFilterTypes: Set<SearchFilterType>
       get() = emptySet()

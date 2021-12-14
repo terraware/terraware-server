@@ -4,7 +4,7 @@ import org.jooq.Condition
 
 /**
  * A container for related search fields. A sublist represents a relationship between two
- * [SearchFieldNamespace]s and may be an element of a [SearchFieldPrefix].
+ * [SearchTable]s and may be an element of a [SearchFieldPrefix].
  *
  * See the "Field paths" section of the class documentation for [NestedQueryBuilder] for a
  * discussion of how sublists work including some examples, but briefly, if you think of the data
@@ -18,10 +18,10 @@ data class SublistField(
     val name: String,
 
     /**
-     * Namespace that the sublist points to. This determines which field names are valid after this
+     * Table that the sublist points to. This determines which field names are valid after this
      * sublist in a field path.
      */
-    val namespace: SearchFieldNamespace,
+    val searchTable: SearchTable,
 
     /**
      * True if this sublist represents a one-to-many relationship such that the search results
@@ -38,20 +38,20 @@ data class SublistField(
 
     /**
      * A condition to add to the `WHERE` clause of a multiset subquery to correlate it with the
-     * table for the namespace that contains this field. This will generally be the condition you
-     * would put in the `ON` part of a `LEFT JOIN x ON Y` clause that connects this sublist to its
-     * parent.
+     * database table for the [SearchTable] that contains this field. This will generally be the
+     * condition you would put in the `ON` part of a `LEFT JOIN x ON Y` clause that connects this
+     * sublist to its parent.
      *
-     * For example, if this is the `sites` sublist field of the `projects` namespace, the condition
+     * For example, if this is the `sites` sublist field of the `projects` table, the condition
      * would be `SITES.PROJECT_ID.eq(PROJECTS.ID)`.
      */
     val conditionForMultiset: Condition,
 
     /**
      * If true, the contents of this sublist should be included as if they were fields of the same
-     * namespace where this sublist is located. That is, the contents of the sublist should be
-     * pulled up one level so they are not nested any more. If false, this sublist should appear in
-     * the search results and its fields should be nested inside it.
+     * table where this sublist is located. That is, the contents of the sublist should be pulled up
+     * one level so they are not nested any more. If false, this sublist should appear in the search
+     * results and its fields should be nested inside it.
      *
      * See [NestedQueryBuilder] for examples of how flattened sublists work.
      */

@@ -1,19 +1,27 @@
-package com.terraformation.backend.search.namespace
+package com.terraformation.backend.search.table
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
-import com.terraformation.backend.search.SearchFieldNamespace
+import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import org.jooq.Condition
+import org.jooq.Record
+import org.jooq.TableField
 
-class FacilitiesNamespace(namespaces: SearchFieldNamespaces) : SearchFieldNamespace() {
+class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperators) :
+    SearchTable(fuzzySearchOperators) {
+  override val primaryKey: TableField<out Record, out Any?>
+    get() = FACILITIES.ID
 
   override val sublists: List<SublistField> by lazy {
-    with(namespaces) {
+    with(tables) {
       listOf(
           accessions.asMultiValueSublist("accessions", FACILITIES.ID.eq(ACCESSIONS.FACILITY_ID)),
           collectors.asMultiValueSublist("collectors", FACILITIES.ID.eq(COLLECTORS.FACILITY_ID)),
@@ -25,11 +33,13 @@ class FacilitiesNamespace(namespaces: SearchFieldNamespaces) : SearchFieldNamesp
   }
 
   override val fields: List<SearchField> =
-      with(namespaces.searchTables.facilities) {
-        listOf(
-            idWrapperField("id", "Facility ID", FACILITIES.ID) { FacilityId(it) },
-            textField("name", "Facility name", FACILITIES.NAME, nullable = false),
-            enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),
-        )
-      }
+      listOf(
+          idWrapperField("id", "Facility ID", FACILITIES.ID) { FacilityId(it) },
+          textField("name", "Facility name", FACILITIES.NAME, nullable = false),
+          enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),
+      )
+
+  override fun conditionForPermissions(): Condition {
+    return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
+  }
 }

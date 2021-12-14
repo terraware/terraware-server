@@ -10,7 +10,7 @@ import com.terraformation.backend.search.api.HasSearchFilters
 import com.terraformation.backend.search.api.HasSearchNode
 import com.terraformation.backend.search.api.SearchFilter
 import com.terraformation.backend.search.api.SearchNodePayload
-import com.terraformation.backend.search.namespace.SearchFieldNamespaces
+import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.StorageLocationStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -27,12 +27,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SeedBankAppEndpoint
 class ValuesController(
-    namespaces: SearchFieldNamespaces,
+    tables: SearchTables,
     private val storageLocationStore: StorageLocationStore,
     private val searchService: SearchService,
 ) {
-  private val accessionsNamespace = namespaces.accessions
-  private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
+  private val accessionsTable = tables.accessions
+  private val rootPrefix = SearchFieldPrefix(root = accessionsTable)
 
   @GetMapping("/storageLocation/{facilityId}")
   fun getStorageLocations(@PathVariable facilityId: FacilityId): StorageLocationsResponsePayload {

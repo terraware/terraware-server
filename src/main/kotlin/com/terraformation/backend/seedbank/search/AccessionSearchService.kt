@@ -9,17 +9,14 @@ import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
-import com.terraformation.backend.search.namespace.AccessionsNamespace
-import com.terraformation.backend.search.namespace.SearchFieldNamespaces
+import com.terraformation.backend.search.table.AccessionsTable
+import com.terraformation.backend.search.table.SearchTables
 import javax.annotation.ManagedBean
 
 @ManagedBean
-class AccessionSearchService(
-    namespaces: SearchFieldNamespaces,
-    private val searchService: SearchService
-) {
-  private val accessionsNamespace: AccessionsNamespace = namespaces.accessions
-  private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
+class AccessionSearchService(tables: SearchTables, private val searchService: SearchService) {
+  private val accessionsTable: AccessionsTable = tables.accessions
+  private val rootPrefix = SearchFieldPrefix(root = accessionsTable)
   private val facilityIdField = rootPrefix.resolve("facility.id")
   private val mandatoryFields =
       setOf(

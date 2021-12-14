@@ -13,7 +13,7 @@ import com.terraformation.backend.search.api.SearchFilter
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.api.SearchResponsePayload
 import com.terraformation.backend.search.api.SearchSortOrderElement
-import com.terraformation.backend.search.namespace.SearchFieldNamespaces
+import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.search.AccessionSearchService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -37,9 +37,9 @@ import org.springframework.web.bind.annotation.RestController
 class AccessionSearchController(
     private val accessionSearchService: AccessionSearchService,
     private val clock: Clock,
-    namespaces: SearchFieldNamespaces,
+    tables: SearchTables,
 ) {
-  private val accessionsPrefix = SearchFieldPrefix(namespaces.accessions)
+  private val accessionsPrefix = SearchFieldPrefix(tables.accessions)
 
   @Operation(summary = "Searches for accessions based on filter criteria.")
   @PostMapping

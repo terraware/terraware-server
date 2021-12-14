@@ -5,7 +5,7 @@ import com.terraformation.backend.api.csvResponse
 import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
-import com.terraformation.backend.search.namespace.SearchFieldNamespaces
+import com.terraformation.backend.search.table.SearchTables
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController
 @SearchEndpoint
 class SearchController(
     private val clock: Clock,
-    namespaces: SearchFieldNamespaces,
+    tables: SearchTables,
     private val searchService: SearchService
 ) {
-  private val organizationsNamespace = namespaces.organizations
+  private val organizationsTable = tables.organizations
 
   @PostMapping
   fun search(
@@ -112,14 +112,14 @@ class SearchController(
   }
 
   private fun resolvePrefix(prefix: String?): SearchFieldPrefix {
-    val namespace =
+    val table =
         if (prefix != null) {
-          organizationsNamespace.resolveNamespace(prefix)
+          organizationsTable.resolveTable(prefix)
         } else {
-          organizationsNamespace
+          organizationsTable
         }
 
-    return SearchFieldPrefix(namespace)
+    return SearchFieldPrefix(table)
   }
 }
 
