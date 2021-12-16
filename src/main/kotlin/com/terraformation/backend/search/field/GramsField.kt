@@ -7,7 +7,6 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.seedbank.model.toGrams
 import java.math.BigDecimal
 import java.util.*
-import org.jetbrains.annotations.NotNull
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
@@ -32,7 +31,7 @@ class GramsField(
     return when (fieldNode.type) {
       SearchFilterType.Exact -> {
         DSL.or(
-            listOfNotNull<@NotNull Condition>(
+            listOfNotNull(
                 if (nonNullValues.isNotEmpty()) databaseField.`in`(nonNullValues) else null,
                 if (fieldNode.values.any { it == null }) databaseField.isNull else null))
       }
