@@ -102,7 +102,7 @@ class SecurityConfig(private val userStore: UserStore) : KeycloakWebSecurityConf
       // Add a request handling filter that uses the KeycloakAuthenticationToken to look up a
       // UserModel. This needs to come after the Keycloak client library has had a chance to
       // authenticate the request.
-      addFilterAfter(UserModelFilter(userStore), KeycloakAuthenticationProcessingFilter::class.java)
+      addFilterAfter<KeycloakAuthenticationProcessingFilter>(UserModelFilter(userStore))
     }
   }
 

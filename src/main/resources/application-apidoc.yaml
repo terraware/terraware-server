@@ -17,6 +17,10 @@ spring:
     lazy-initialization: true
     # Don't show the "Spring" logo.
     banner-mode: "off"
+  jooq:
+    sql-dialect: default
+  session:
+    store-type: none
 
 terraware:
   photo-dir: "/tmp"
