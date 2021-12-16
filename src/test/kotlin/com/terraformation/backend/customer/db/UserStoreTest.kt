@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.Role
@@ -120,7 +119,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             dslContext,
             httpClient,
             keycloakProperties,
-            ObjectMapper().registerModule(KotlinModule()),
+            jacksonObjectMapper(),
             organizationStore,
             parentStore,
             permissionStore,
