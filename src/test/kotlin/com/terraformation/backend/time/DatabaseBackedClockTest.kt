@@ -27,7 +27,7 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
   private val clock: DatabaseBackedClock by lazy { DatabaseBackedClock(dslContext, config) }
 
   private val applicationStartedEvent =
-      ApplicationStartedEvent(SpringApplication(Application::class.java), null, null)
+      ApplicationStartedEvent(SpringApplication(Application::class.java), null, null, Duration.ZERO)
 
   @BeforeEach
   fun setup() {
