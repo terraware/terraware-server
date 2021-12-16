@@ -47,7 +47,11 @@ group = "com.terraformation"
 
 version = computeGitVersion("0.1")
 
-java.targetCompatibility = JavaVersion.VERSION_15
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
+}
 
 repositories { mavenCentral() }
 
@@ -213,7 +217,7 @@ sourceSets.main {
 tasks.withType<KotlinCompile> {
   dependsOn(generateVersionFile)
   kotlinOptions.allWarningsAsErrors = true
-  kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
+  kotlinOptions.jvmTarget = "17"
 }
 
 tasks.withType<KaptGenerateStubsTask> {

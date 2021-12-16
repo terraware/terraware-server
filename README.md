@@ -13,8 +13,8 @@ The server does not depend on the Balena or Raspberry Pi environments and should
 ### Prerequisites
 
 * Docker (used by the build process and by automated tests)
-* Java version 15 or higher ([AdoptOpenJDK](https://adoptopenjdk.net/) is a convenient place to get it)
-* PostgreSQL (version 12 or higher recommended)
+* Java version 17 or higher ([AdoptOpenJDK](https://adoptopenjdk.net/) is a convenient place to get it)
+* PostgreSQL (version 13 or higher recommended)
 * PostGIS (version 3.1 or higher recommended)
 
 ### Initial setup
