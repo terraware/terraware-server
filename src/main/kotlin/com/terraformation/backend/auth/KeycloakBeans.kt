@@ -2,6 +2,7 @@ package com.terraformation.backend.auth
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import org.keycloak.OAuth2Constants
+import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.admin.client.KeycloakBuilder
@@ -41,4 +42,10 @@ class KeycloakBeans {
   ): RealmResource? {
     return keycloak.realm(keycloakProperties.realm)
   }
+
+  /**
+   * Allows Keycloak config settings to be specified in `application.yaml` rather than in a separate
+   * config file.
+   */
+  @Bean fun keycloakConfigResolver() = KeycloakSpringBootConfigResolver()
 }

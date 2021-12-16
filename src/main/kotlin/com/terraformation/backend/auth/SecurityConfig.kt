@@ -3,7 +3,6 @@ package com.terraformation.backend.auth
 import com.terraformation.backend.VERSION
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.UserModel
-import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider
@@ -142,12 +141,6 @@ class SecurityConfig(private val userStore: UserStore) : KeycloakWebSecurityConf
     source.registerCorsConfiguration("/**", configuration)
     return source
   }
-
-  /**
-   * Allows Keycloak config settings to be specified in `application.yaml` rather than in a separate
-   * config file.
-   */
-  @Bean fun keycloakConfigResolver() = KeycloakSpringBootConfigResolver()
 
   /** Notifies Keycloak when sessions are created and destroyed. */
   @Bean
