@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: Terraware Seed Bank
-  description: Local server API for seed banks
+  title: Terraware Server
+  description: Back end for Terraware applications
   license:
     name: MIT
   version: 0.1-SNAPSHOT
@@ -9,10 +9,11 @@ servers:
 - url: http://localhost:32109
   description: Generated server url
 tags:
-- name: SeedBankApp
-- name: DeviceManager
-- name: GISApp
+- name: Customer
 - name: Search
+- name: DeviceManager
+- name: SeedBankApp
+- name: GISApp
 paths:
   /api/v1/devices:
     post:
