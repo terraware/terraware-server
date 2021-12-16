@@ -76,7 +76,7 @@ dependencies {
 
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-  implementation("com.opencsv:opencsv:5.3")
+  implementation("com.opencsv:opencsv:5.5.2")
   implementation("io.swagger.core.v3:swagger-annotations:2.1.11")
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.14")
