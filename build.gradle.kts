@@ -84,7 +84,7 @@ dependencies {
   implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("org.apache.tika:tika-core:2.1.0")
   implementation("org.codehaus.janino:janino:3.1.6")
-  implementation("org.flywaydb:flyway-core:7.5.4")
+  implementation("org.flywaydb:flyway-core:8.2.2")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
   implementation("org.keycloak:keycloak-spring-boot-starter")
