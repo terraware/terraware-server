@@ -90,7 +90,6 @@ dependencies {
   implementation("org.keycloak:keycloak-spring-boot-starter")
   implementation("org.keycloak:keycloak-admin-client:$keycloakVersion")
   implementation(kotlin("reflect"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
   implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
   implementation("software.amazon.awssdk:sesv2")
