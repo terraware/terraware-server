@@ -145,6 +145,28 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchByAuthId adds auth ID and name to existing user with matching email address`() {
+    val row =
+        UsersRow(
+            email = userRepresentation.email,
+            userTypeId = UserType.Individual,
+            createdTime = clock.instant(),
+            modifiedTime = clock.instant())
+
+    usersDao.insert(row)
+
+    val user = userStore.fetchByAuthId(authId)
+
+    assertEquals(row.id, user.userId, "Should use existing user ID")
+
+    val updatedRow = usersDao.fetchOneById(user.userId)!!
+
+    assertEquals(userRepresentation.firstName, updatedRow.firstName, "First name")
+    assertEquals(userRepresentation.lastName, updatedRow.lastName, "Last name")
+    assertEquals(authId, updatedRow.authId, "Auth ID")
+  }
+
+  @Test
   fun `fetchByAuthId throws exception if user not found in Keycloak`() {
     assertThrows<KeycloakUserNotFoundException> { userStore.fetchByAuthId("nonexistent") }
   }

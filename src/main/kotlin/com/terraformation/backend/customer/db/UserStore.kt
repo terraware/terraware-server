@@ -469,19 +469,38 @@ class UserStore(
       keycloakUser: UserRepresentation,
       type: UserType = UserType.Individual
   ): UsersRow {
-    val usersRow =
-        UsersRow(
-            authId = keycloakUser.id,
-            email = keycloakUser.email,
-            firstName = keycloakUser.firstName,
-            lastName = keycloakUser.lastName,
-            userTypeId = type,
-            createdTime = clock.instant(),
-            modifiedTime = clock.instant(),
-        )
+    val existingUser = usersDao.fetchByEmail(keycloakUser.email).firstOrNull()
 
-    usersDao.insert(usersRow)
-    return usersRow
+    return if (existingUser != null && existingUser.authId == null) {
+      log.info("Pending user ${existingUser.id} has registered with auth ID ${keycloakUser.id}")
+
+      val updatedRow =
+          existingUser.copy(
+              authId = keycloakUser.id,
+              firstName = keycloakUser.firstName,
+              lastName = keycloakUser.lastName,
+              modifiedTime = clock.instant())
+
+      usersDao.update(updatedRow)
+      updatedRow
+    } else {
+      val usersRow =
+          UsersRow(
+              authId = keycloakUser.id,
+              email = keycloakUser.email,
+              firstName = keycloakUser.firstName,
+              lastName = keycloakUser.lastName,
+              userTypeId = type,
+              createdTime = clock.instant(),
+              modifiedTime = clock.instant(),
+          )
+
+      usersDao.insert(usersRow)
+
+      log.info("New user ${usersRow.id} has registered with auth ID ${keycloakUser.id}")
+
+      usersRow
+    }
   }
 
   /** Relevant parts of the payload of a valid response to an OpenID Connect token request. */
