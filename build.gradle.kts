@@ -101,7 +101,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-security:$springDocVersion")
   implementation("org.springdoc:springdoc-openapi-ui:$springDocVersion")
 
-  runtimeOnly("net.logstash.logback:logstash-logback-encoder:6.6")
+  runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.0.1")
 
   testImplementation("io.mockk:mockk:1.10.6")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
