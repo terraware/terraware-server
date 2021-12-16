@@ -79,7 +79,7 @@ dependencies {
   implementation("com.opencsv:opencsv:5.5.2")
   implementation("io.swagger.core.v3:swagger-annotations:2.1.11")
   implementation("javax.inject:javax.inject:1")
-  implementation("net.coobird:thumbnailator:0.4.14")
+  implementation("net.coobird:thumbnailator:0.4.15")
   implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:2.7.1")
   implementation("org.apache.tika:tika-core:2.1.0")
