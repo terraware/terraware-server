@@ -426,6 +426,19 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun listOrganizationUsers() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.listOrganizationUsers(organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.listOrganizationUsers(organizationId) }
+
+    grant { user.canListOrganizationUsers(organizationId) }
+    requirements.listOrganizationUsers(organizationId)
+  }
+
+  @Test
   fun addOrganizationUser() {
     assertThrows<OrganizationNotFoundException> { requirements.addOrganizationUser(organizationId) }
 

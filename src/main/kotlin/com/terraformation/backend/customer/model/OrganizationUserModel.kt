@@ -8,7 +8,7 @@ import java.time.Instant
 
 data class OrganizationUserModel(
     val userId: UserId,
-    val authId: String,
+    val authId: String?,
     val email: String,
     val firstName: String?,
     val lastName: String?,
@@ -16,5 +16,6 @@ data class OrganizationUserModel(
     val createdTime: Instant,
     val organizationId: OrganizationId,
     val role: Role,
-    val projectIds: List<ProjectId>
+    val pendingInvitationTime: Instant?,
+    val projectIds: List<ProjectId>,
 )

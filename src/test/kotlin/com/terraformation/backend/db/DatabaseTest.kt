@@ -3,14 +3,17 @@ package com.terraformation.backend.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
 import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.USERS
 import java.net.URI
@@ -305,10 +308,10 @@ abstract class DatabaseTest {
   /** Creates a user that can be referenced by various tests. */
   fun insertUser(
       userId: Any = currentUser().userId,
-      authId: String = "XYZ",
+      authId: String? = "XYZ",
       email: String = "user@terraformation.com",
-      firstName: String = "First",
-      lastName: String = "Last",
+      firstName: String? = "First",
+      lastName: String? = "Last",
       type: UserType = UserType.Individual,
   ) {
     with(USERS) {
@@ -322,6 +325,42 @@ abstract class DatabaseTest {
           .set(LAST_NAME, lastName)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(USER_TYPE_ID, type)
+          .execute()
+    }
+  }
+
+  /** Adds a user to an organization. */
+  fun insertOrganizationUser(
+      userId: Any = currentUser().userId,
+      organizationId: Any,
+      role: Role = Role.CONTRIBUTOR,
+      pendingInvitationTime: Instant? = null,
+  ) {
+    with(ORGANIZATION_USERS) {
+      dslContext
+          .insertInto(ORGANIZATION_USERS)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
+          .set(PENDING_INVITATION_TIME, pendingInvitationTime)
+          .set(ROLE_ID, role.id)
+          .set(USER_ID, userId.toIdWrapper { UserId(it) })
+          .execute()
+    }
+  }
+
+  /** Adds a user to a project. */
+  fun insertProjectUser(
+      userId: Any = currentUser().userId,
+      projectId: Any,
+  ) {
+    with(PROJECT_USERS) {
+      dslContext
+          .insertInto(PROJECT_USERS)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
+          .set(USER_ID, userId.toIdWrapper { UserId(it) })
           .execute()
     }
   }

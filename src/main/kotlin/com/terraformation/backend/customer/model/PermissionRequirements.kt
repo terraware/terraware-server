@@ -320,6 +320,13 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
+  fun listOrganizationUsers(organizationId: OrganizationId) {
+    if (!user.canListOrganizationUsers(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to list users in organization $organizationId")
+    }
+  }
+
   fun addOrganizationUser(organizationId: OrganizationId) {
     if (!user.canAddOrganizationUser(organizationId)) {
       readOrganization(organizationId)

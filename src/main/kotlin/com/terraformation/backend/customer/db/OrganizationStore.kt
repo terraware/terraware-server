@@ -12,6 +12,7 @@ import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
@@ -192,17 +193,35 @@ class OrganizationStore(
     }
   }
 
-  fun fetchUsers(organizationIds: Collection<OrganizationId>): List<OrganizationUserModel> {
-    // Only admins and above can fetch an organization's user list.
-    /*
-    organizationIds.forEach { organizationId ->
-      val role = currentUser().organizationRoles[organizationId]
-      if (role != Role.OWNER && role != Role.ADMIN) {
-        throw AccessDeniedException("No permission to list organization users")
-      }
-    }
+  fun fetchUsers(organizationId: OrganizationId): List<OrganizationUserModel> {
+    requirePermissions { listOrganizationUsers(organizationId) }
 
-     */
+    return queryOrganizationUsers(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+  }
+
+  fun fetchUser(organizationId: OrganizationId, userId: UserId): OrganizationUserModel {
+    requirePermissions { listOrganizationUsers(organizationId) }
+
+    return queryOrganizationUsers(
+            ORGANIZATION_USERS
+                .ORGANIZATION_ID
+                .eq(organizationId)
+                .and(ORGANIZATION_USERS.USER_ID.eq(userId)))
+        .firstOrNull()
+        ?: throw UserNotFoundException(userId)
+  }
+
+  private fun queryOrganizationUsers(condition: Condition): List<OrganizationUserModel> {
+    val projectIdsField =
+        DSL.array(
+            DSL.select(PROJECT_USERS.PROJECT_ID)
+                .from(PROJECT_USERS)
+                .join(PROJECTS)
+                .on(PROJECT_USERS.PROJECT_ID.eq(PROJECTS.ID))
+                .where(PROJECT_USERS.USER_ID.eq(USERS.ID))
+                .and(PROJECT_USERS.PROJECT_ID.eq(PROJECTS.ID))
+                .and(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID)),
+        )
 
     return dslContext
         .select(
@@ -215,47 +234,50 @@ class OrganizationStore(
             USERS.CREATED_TIME,
             ORGANIZATION_USERS.ORGANIZATION_ID,
             ORGANIZATION_USERS.ROLE_ID,
-            PROJECT_USERS.PROJECT_ID)
+            ORGANIZATION_USERS.PENDING_INVITATION_TIME,
+            projectIdsField,
+        )
         .from(ORGANIZATION_USERS)
         .join(USERS)
         .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
-        .leftJoin(PROJECTS)
-        .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-        .leftJoin(PROJECT_USERS)
-        .on(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
-        .and(ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID))
-        .where(ORGANIZATION_USERS.ORGANIZATION_ID.`in`(organizationIds))
-        .fetchGroups(arrayOf(USERS.ID, ORGANIZATION_USERS.ORGANIZATION_ID))
-        .mapNotNull { (_, rows) ->
-          val firstRow = rows.first()
-          val userId = firstRow[USERS.ID]
-          val authId = firstRow[USERS.AUTH_ID]
-          val userType = firstRow[USERS.USER_TYPE_ID]
-          val createdTime = firstRow[USERS.CREATED_TIME]
-          val email = firstRow[USERS.EMAIL]
-          val orgId = firstRow[ORGANIZATION_USERS.ORGANIZATION_ID]
-          val role = firstRow[ORGANIZATION_USERS.ROLE_ID]?.let { Role.of(it) }
+        .where(condition)
+        .orderBy(USERS.ID)
+        .fetch()
+        .mapNotNull { record ->
+          val userId = record[USERS.ID]
+          val organizationId = record[ORGANIZATION_USERS.ORGANIZATION_ID]
+          val authId = record[USERS.AUTH_ID]
+          val userType = record[USERS.USER_TYPE_ID]
+          val createdTime = record[USERS.CREATED_TIME]
+          val email = record[USERS.EMAIL]
+          val invitationTime = record[ORGANIZATION_USERS.PENDING_INVITATION_TIME]
+
+          val firstName = if (invitationTime == null) record[USERS.FIRST_NAME] else null
+          val lastName = if (invitationTime == null) record[USERS.LAST_NAME] else null
+          val projectIds = record[projectIdsField]?.toList()?.filterNotNull() ?: emptyList()
+          val role = record[ORGANIZATION_USERS.ROLE_ID]?.let { Role.of(it) }
 
           if (userId != null &&
-              authId != null &&
+              organizationId != null &&
               userType != null &&
               createdTime != null &&
               email != null &&
-              orgId != null &&
               role != null) {
             OrganizationUserModel(
                 userId,
                 authId,
                 email,
-                firstRow[USERS.FIRST_NAME],
-                firstRow[USERS.LAST_NAME],
+                firstName,
+                lastName,
                 userType,
                 createdTime,
-                orgId,
+                organizationId,
                 role,
-                rows.mapNotNull { it[PROJECT_USERS.PROJECT_ID] })
+                invitationTime,
+                projectIds,
+            )
           } else {
-            log.error("Missing required fields for $userId: $rows")
+            log.error("Missing required fields for $userId: $record")
             null
           }
         }

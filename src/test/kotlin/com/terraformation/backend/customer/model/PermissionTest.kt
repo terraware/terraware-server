@@ -242,12 +242,13 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        addOrganizationUser = true,
         createProject = true,
         listProjects = true,
         readOrganization = true,
         updateOrganization = true,
         deleteOrganization = true,
+        listOrganizationUsers = true,
+        addOrganizationUser = true,
         removeOrganizationUser = true,
     )
 
@@ -333,12 +334,13 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         OrganizationId(3),
-        addOrganizationUser = true,
         createProject = true,
         listProjects = true,
         readOrganization = true,
         updateOrganization = true,
         deleteOrganization = true,
+        listOrganizationUsers = true,
+        addOrganizationUser = true,
         removeOrganizationUser = true,
     )
 
@@ -353,11 +355,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        addOrganizationUser = true,
         createProject = true,
         listProjects = true,
         readOrganization = true,
         updateOrganization = true,
+        listOrganizationUsers = true,
+        addOrganizationUser = true,
         removeOrganizationUser = true,
     )
 
@@ -445,6 +448,7 @@ internal class PermissionTest : DatabaseTest() {
         org1Id,
         listProjects = true,
         readOrganization = true,
+        listOrganizationUsers = true,
     )
 
     permissions.expect(
@@ -762,19 +766,16 @@ internal class PermissionTest : DatabaseTest() {
     // All checks keyed on organization IDs go here
     fun expect(
         vararg organizations: OrganizationId,
-        addOrganizationUser: Boolean = false,
         createProject: Boolean = false,
         listProjects: Boolean = false,
         readOrganization: Boolean = false,
         updateOrganization: Boolean = false,
         deleteOrganization: Boolean = false,
+        listOrganizationUsers: Boolean = false,
+        addOrganizationUser: Boolean = false,
         removeOrganizationUser: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
-        assertEquals(
-            addOrganizationUser,
-            user.canAddOrganizationUser(organizationId),
-            "Can add organization $organizationId user")
         assertEquals(
             createProject,
             user.canCreateProject(organizationId),
@@ -795,6 +796,14 @@ internal class PermissionTest : DatabaseTest() {
             deleteOrganization,
             user.canDeleteOrganization(organizationId),
             "Can delete organization $organizationId")
+        assertEquals(
+            listOrganizationUsers,
+            user.canListOrganizationUsers(organizationId),
+            "Can list users in organization $organizationId")
+        assertEquals(
+            addOrganizationUser,
+            user.canAddOrganizationUser(organizationId),
+            "Can add organization $organizationId user")
         assertEquals(
             removeOrganizationUser,
             user.canRemoveOrganizationUser(organizationId),

@@ -90,7 +90,7 @@ class AdminController(
         organizationStore.fetchById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
     val projects = projectStore.fetchByOrganization(organizationId).sortedBy { it.name }
-    val users = organizationStore.fetchUsers(listOf(organizationId)).sortedBy { it.email }
+    val users = organizationStore.fetchUsers(organizationId).sortedBy { it.email }
 
     if (currentUser().canListApiKeys(organizationId)) {
       val apiClients =
@@ -129,8 +129,7 @@ class AdminController(
   fun getProject(@PathVariable projectId: ProjectId, model: Model): String {
     val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
     val organization = organizationStore.fetchById(project.organizationId)
-    val orgUsers =
-        organizationStore.fetchUsers(listOf(project.organizationId)).sortedBy { it.email }
+    val orgUsers = organizationStore.fetchUsers(project.organizationId).sortedBy { it.email }
     val projectUsers = orgUsers.filter { projectId in it.projectIds }
     val availableUsers = orgUsers.filter { projectId !in it.projectIds }
     val sites = siteStore.fetchByProjectId(projectId).sortedBy { it.name }
