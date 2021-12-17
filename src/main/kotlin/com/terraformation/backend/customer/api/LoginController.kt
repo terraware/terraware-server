@@ -4,9 +4,7 @@ import com.terraformation.backend.api.CustomerEndpoint
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import javax.ws.rs.BadRequestException
 import javax.ws.rs.QueryParam
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint
 import org.keycloak.adapters.springsecurity.authentication.KeycloakCookieBasedRedirect
@@ -39,22 +37,10 @@ class LoginController {
               "URL to redirect to after login. The list of valid redirect URLs is restricted; " +
                   "this must be the URL of a Terraware web application.")
       redirect: String,
-      request: HttpServletRequest,
       response: HttpServletResponse,
   ) {
     val keycloakLoginUri = KeycloakAuthenticationEntryPoint.DEFAULT_LOGIN_URI
     response.addCookie(KeycloakCookieBasedRedirect.createCookieFromRedirectUrl(redirect))
-
-    // If we're behind a load balancer that does SSL termination, we will be receiving the request
-    // as HTTP rather than HTTPS, but the redirect needs to be to the HTTPS URL.
-    val scheme = request.getHeader("X-Forwarded-Proto") ?: request.scheme
-    if (scheme != "http" && scheme != "https") {
-      throw BadRequestException("Unsupported URL scheme")
-    }
-
-    val host = request.getHeader("Host")?.let { "//$it" } ?: ""
-    val url = "$scheme:$host$keycloakLoginUri"
-
-    response.sendRedirect(url)
+    response.sendRedirect(keycloakLoginUri)
   }
 }
