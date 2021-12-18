@@ -1181,6 +1181,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/organizations/{organizationId}/invitations:
+    post:
+      tags:
+      - Customer
+      summary: Invites a user to an organization.
+      operationId: inviteOrganizationUser
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteOrganizationUserRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
   /api/v1/organizations/{organizationId}/projects:
     get:
       tags:
@@ -3739,6 +3765,26 @@ components:
           $ref: '#/components/schemas/UserProfilePayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    InviteOrganizationUserRequestPayload:
+      required:
+      - email
+      - role
+      type: object
+      properties:
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+          - Contributor
+          - Manager
+          - Admin
+          - Owner
+        projectIds:
+          type: array
+          items:
+            type: integer
+            format: int64
     LayerResponse:
       required:
       - hidden

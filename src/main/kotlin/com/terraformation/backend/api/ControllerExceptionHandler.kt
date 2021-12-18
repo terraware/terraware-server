@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import com.terraformation.backend.db.DuplicateEntityException
 import com.terraformation.backend.db.EntityNotFoundException
 import javax.ws.rs.QueryParam
+import javax.ws.rs.WebApplicationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -36,6 +38,14 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   }
 
   @ExceptionHandler
+  fun handleDuplicateEntityException(
+      ex: DuplicateEntityException,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(ex.message, HttpStatus.CONFLICT, request)
+  }
+
+  @ExceptionHandler
   fun handleEntityNotFoundException(
       ex: EntityNotFoundException,
       request: WebRequest
@@ -50,6 +60,17 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   ): ResponseEntity<*> {
     return simpleErrorResponse(
         ex.message ?: "An internal error has occurred.", HttpStatus.BAD_REQUEST, request)
+  }
+
+  @ExceptionHandler
+  fun handleWebApplicationException(
+      ex: WebApplicationException,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(
+        ex.message ?: "An internal error has occurred.",
+        HttpStatus.valueOf(ex.response.status),
+        request)
   }
 
   @ExceptionHandler

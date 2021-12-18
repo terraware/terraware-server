@@ -6,6 +6,7 @@ import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.OrganizationService
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
@@ -19,6 +20,8 @@ import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import javax.ws.rs.BadRequestException
+import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -31,7 +34,12 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RestController
 @RequestMapping("/api/v1/organizations")
-class OrganizationsController(private val organizationStore: OrganizationStore) {
+class OrganizationsController(
+    private val organizationService: OrganizationService,
+    private val organizationStore: OrganizationStore,
+) {
+  private val emailValidator = EmailValidator.getInstance()
+
   @GetMapping
   @Operation(
       summary = "Lists all organizations.",
@@ -84,6 +92,21 @@ class OrganizationsController(private val organizationStore: OrganizationStore) 
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(summary = "Invites a user to an organization.")
+  @PostMapping("/{organizationId}/invitations")
+  fun inviteOrganizationUser(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+      @RequestBody payload: InviteOrganizationUserRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    if (!emailValidator.isValid(payload.email)) {
+      throw BadRequestException("Invalid email address")
+    }
+
+    organizationService.invite(
+        payload.email, organizationId, payload.role, payload.projectIds ?: emptyList())
+    return SimpleSuccessResponsePayload()
+  }
+
   @GetMapping("/{organizationId}/users")
   @Operation(summary = "Lists the users in an organization.")
   fun listOrganizationUsers(
@@ -115,6 +138,12 @@ class OrganizationsController(private val organizationStore: OrganizationStore) 
         ?: throw OrganizationNotFoundException(model.id)
   }
 }
+
+data class InviteOrganizationUserRequestPayload(
+    val email: String,
+    val role: Role,
+    val projectIds: List<ProjectId>?,
+)
 
 data class UpdateOrganizationRequestPayload(
     @Schema(

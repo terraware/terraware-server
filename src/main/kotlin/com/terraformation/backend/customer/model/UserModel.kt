@@ -56,7 +56,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  */
 data class UserModel(
     val userId: UserId,
-    val authId: String,
+    val authId: String?,
     val email: String,
     val firstName: String?,
     val lastName: String?,
@@ -388,8 +388,8 @@ data class UserModel(
     return ""
   }
 
-  override fun getName(): String = authId
-  override fun getUsername(): String = authId
+  override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
+  override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")
   override fun isAccountNonExpired(): Boolean = true
   override fun isAccountNonLocked(): Boolean = true
   override fun isCredentialsNonExpired(): Boolean = true

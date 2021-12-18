@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.forMultiset
@@ -32,6 +33,7 @@ import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
@@ -280,22 +282,44 @@ class OrganizationStore(
         }
   }
 
-  fun addUser(organizationId: OrganizationId, userId: UserId, role: Role) {
+  /**
+   * Adds a user to an organization.
+   *
+   * @param pending If true, add the user with a pending invitation. The user will have to accept
+   * the invitation before they can access the organization. If false, add the user as a regular
+   * member.
+   * @throws UserAlreadyInOrganizationException The user was already a member of the organization.
+   */
+  fun addUser(
+      organizationId: OrganizationId,
+      userId: UserId,
+      role: Role,
+      pending: Boolean = false,
+  ) {
     requirePermissions {
       addOrganizationUser(organizationId)
       setOrganizationUserRole(organizationId, role)
     }
 
-    with(ORGANIZATION_USERS) {
-      dslContext
-          .insertInto(ORGANIZATION_USERS)
-          .set(ORGANIZATION_ID, organizationId)
-          .set(USER_ID, userId)
-          .set(ROLE_ID, role.id)
-          .set(CREATED_TIME, clock.instant())
-          .set(MODIFIED_TIME, clock.instant())
-          .execute()
+    val pendingInvitationTime = if (pending) clock.instant() else null
+
+    try {
+      with(ORGANIZATION_USERS) {
+        dslContext
+            .insertInto(ORGANIZATION_USERS)
+            .set(ORGANIZATION_ID, organizationId)
+            .set(USER_ID, userId)
+            .set(ROLE_ID, role.id)
+            .set(CREATED_TIME, clock.instant())
+            .set(MODIFIED_TIME, clock.instant())
+            .set(PENDING_INVITATION_TIME, pendingInvitationTime)
+            .execute()
+      }
+    } catch (e: DuplicateKeyException) {
+      throw UserAlreadyInOrganizationException(userId, organizationId)
     }
+
+    log.info("Added user $userId to organization $organizationId with role $role")
   }
 
   /**
