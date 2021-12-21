@@ -251,3 +251,10 @@ openApi {
   outputFileName.set("openapi.yaml")
   forkProperties.set(properties)
 }
+
+tasks.register<JavaExec>("generateFrontEndTestSession") {
+  group = "Execution"
+  description = "Generates a fake login session for the frontend integration test suite."
+  classpath = sourceSets.test.get().runtimeClasspath
+  mainClass.set("com.terraformation.backend.customer.FrontEndTestSessionGeneratorKt")
+}
