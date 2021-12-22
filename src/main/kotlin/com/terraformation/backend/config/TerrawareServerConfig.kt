@@ -65,12 +65,6 @@ class TerrawareServerConfig(
      */
     val allowAdminUiForNonAdmins: Boolean = false,
 
-    /**
-     * If true, put new accessions in the "Awaiting Check-In" state. If false (default), put new
-     * accessions in the "Pending" state.
-     */
-    val enableAwaitingCheckIn: Boolean = false,
-
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),
 
