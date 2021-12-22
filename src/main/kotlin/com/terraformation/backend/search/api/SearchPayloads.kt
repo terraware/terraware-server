@@ -37,11 +37,10 @@ interface HasSortOrder {
 }
 
 interface HasSearchNode {
-  val filters: List<SearchFilter>?
   val search: SearchNodePayload?
 
   fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
-    val filters = this.filters
+    val filters = if (this is HasSearchFilters) this.filters else null
     val search = this.search
 
     return when {
@@ -50,6 +49,14 @@ interface HasSearchNode {
       else -> AndNode(filters.map { FieldNode(prefix.resolve(it.field), it.values, it.type) })
     }
   }
+}
+
+/**
+ * Backward-compatibility interface for accession search payloads that use a list of search filters
+ * rather than [SearchNodePayload].
+ */
+interface HasSearchFilters {
+  val filters: List<SearchFilter>?
 }
 
 data class SearchSortOrderElement(

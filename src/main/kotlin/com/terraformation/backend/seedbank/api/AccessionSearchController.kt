@@ -6,6 +6,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.api.HasSearchFields
+import com.terraformation.backend.search.api.HasSearchFilters
 import com.terraformation.backend.search.api.HasSearchNode
 import com.terraformation.backend.search.api.HasSortOrder
 import com.terraformation.backend.search.api.SearchFilter
@@ -162,7 +163,7 @@ data class SearchAccessionsRequestPayload(
         defaultValue = "10",
     )
     val count: Int = 10
-) : HasSearchFields, HasSearchNode, HasSortOrder
+) : HasSearchFields, HasSearchNode, HasSortOrder, HasSearchFilters
 
 data class ExportAccessionsRequestPayload(
     val facilityId: FacilityId,
@@ -170,4 +171,4 @@ data class ExportAccessionsRequestPayload(
     override val sortOrder: List<SearchSortOrderElement>? = null,
     override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
-) : HasSearchFields, HasSearchNode, HasSortOrder
+) : HasSearchFields, HasSearchNode, HasSortOrder, HasSearchFilters

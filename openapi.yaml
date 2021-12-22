@@ -4762,10 +4762,6 @@ components:
             \ search will be continued from where it left off. This should be the\
             \ value of the cursor that was returned in the response to a previous\
             \ search."
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchFilter'
     SearchResponsePayload:
       required:
       - results
