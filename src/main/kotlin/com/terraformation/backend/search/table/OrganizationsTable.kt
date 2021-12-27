@@ -22,10 +22,12 @@ class OrganizationsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearch
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          countries.asSingleValueSublist("country", ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
+          countries.asSingleValueSublist(
+              "country", ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE), isRequired = false),
           countrySubdivisions.asSingleValueSublist(
               "countrySubdivision",
-              ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE.eq(COUNTRY_SUBDIVISIONS.CODE)),
+              ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE.eq(COUNTRY_SUBDIVISIONS.CODE),
+              isRequired = false),
           projects.asMultiValueSublist("projects", ORGANIZATIONS.ID.eq(PROJECTS.ORGANIZATION_ID)),
       )
     }

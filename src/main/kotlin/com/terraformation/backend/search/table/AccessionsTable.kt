@@ -42,15 +42,20 @@ class AccessionsTable(
               ACCESSIONS.ID.eq(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID)),
           bags.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
           collectors.asSingleValueSublist(
-              "primaryCollector", ACCESSIONS.PRIMARY_COLLECTOR_ID.eq(COLLECTORS.ID)),
+              "primaryCollector",
+              ACCESSIONS.PRIMARY_COLLECTOR_ID.eq(COLLECTORS.ID),
+              isRequired = false),
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
           geolocations.asMultiValueSublist(
               "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
           germinationTests.asMultiValueSublist(
               "germinationTests", ACCESSIONS.ID.eq(GERMINATION_TESTS.ACCESSION_ID)),
-          species.asSingleValueSublist("species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)),
+          species.asSingleValueSublist(
+              "species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
           storageLocations.asSingleValueSublist(
-              "storageLocation", ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID)),
+              "storageLocation",
+              ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID),
+              isRequired = false),
           withdrawals.asMultiValueSublist(
               "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
       )

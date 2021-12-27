@@ -156,11 +156,16 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
    * another table and this one. For example, `site` is a single-value sublist of `facilities`
    * because each facility is only associated with one site.
    */
-  fun asSingleValueSublist(name: String, conditionForMultiset: Condition): SublistField {
+  fun asSingleValueSublist(
+      name: String,
+      conditionForMultiset: Condition,
+      isRequired: Boolean = true
+  ): SublistField {
     return SublistField(
         name = name,
         searchTable = this,
         isMultiValue = false,
+        isRequired = isRequired,
         conditionForMultiset = conditionForMultiset)
   }
 
