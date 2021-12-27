@@ -99,9 +99,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val germinationSeedsSownField = rootPrefix.resolve("germinationSeedsSown")
   private val germinationTestTypeField = rootPrefix.resolve("germinationTestType")
   private val receivedDateField = rootPrefix.resolve("receivedDate")
-  private val speciesField = rootPrefix.resolve("species")
+  private val speciesNameField = rootPrefix.resolve("speciesName")
   private val stateField = rootPrefix.resolve("state")
-  private val storageLocationField = rootPrefix.resolve("storageLocation")
+  private val storageLocationNameField = rootPrefix.resolve("storageLocationName")
   private val storageNotesField = rootPrefix.resolve("storageNotes")
   private val targetStorageConditionField = rootPrefix.resolve("targetStorageCondition")
   private val totalGramsField = rootPrefix.resolve("totalGrams")
@@ -197,7 +197,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `finds example rows`() {
     val fields =
         listOf(
-            speciesField,
+            speciesNameField,
             accessionNumberField,
             treesCollectedFromField,
             activeField,
@@ -212,7 +212,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf(
-                    "species" to "Kousa Dogwood",
+                    "speciesName" to "Kousa Dogwood",
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
                     "treesCollectedFrom" to "1",
@@ -220,7 +220,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                     "checkedInTime" to checkedInTimeString,
                 ),
                 mapOf(
-                    "species" to "Other Dogwood",
+                    "speciesName" to "Other Dogwood",
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                     "treesCollectedFrom" to "2",
@@ -340,7 +340,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `honors sort order`() {
-    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
+    val fields =
+        listOf(speciesNameField, accessionNumberField, treesCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it, SearchDirection.Descending) }
 
     val result =
@@ -351,14 +352,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf(
-                    "species" to "Other Dogwood",
+                    "speciesName" to "Other Dogwood",
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                     "treesCollectedFrom" to "2",
                     "active" to "Active",
                 ),
                 mapOf(
-                    "species" to "Kousa Dogwood",
+                    "speciesName" to "Kousa Dogwood",
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
                     "treesCollectedFrom" to "1",
@@ -668,13 +669,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can use cursor to get next page of results`() {
-    val fields = listOf(speciesField, accessionNumberField, treesCollectedFromField, activeField)
+    val fields =
+        listOf(speciesNameField, accessionNumberField, treesCollectedFromField, activeField)
     val sortOrder = fields.map { SearchSortField(it) }
 
     val expectedFirstPageResults =
         listOf(
             mapOf(
-                "species" to "Kousa Dogwood",
+                "speciesName" to "Kousa Dogwood",
                 "id" to "1000",
                 "accessionNumber" to "XYZ",
                 "treesCollectedFrom" to "1",
@@ -693,7 +695,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf(
-                    "species" to "Other Dogwood",
+                    "speciesName" to "Other Dogwood",
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                     "treesCollectedFrom" to "2",
@@ -1038,14 +1040,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   inner class FetchValuesTest {
     @Test
     fun `no criteria for simple column value`() {
-      val values = searchService.fetchValues(rootPrefix, speciesField, NoConditionNode())
+      val values = searchService.fetchValues(rootPrefix, speciesNameField, NoConditionNode())
       assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
     }
 
     @Test
     fun `renders null values as null, not as a string`() {
       accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(speciesId = null))
-      val values = searchService.fetchValues(rootPrefix, speciesField, NoConditionNode())
+      val values = searchService.fetchValues(rootPrefix, speciesNameField, NoConditionNode())
       assertEquals(listOf("Other Dogwood", null), values)
     }
 
@@ -1054,7 +1056,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val values =
           searchService.fetchValues(
               rootPrefix,
-              speciesField,
+              speciesNameField,
               FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Kousa Dogwood"), values)
     }
@@ -1064,7 +1066,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val values =
           searchService.fetchValues(
               rootPrefix,
-              speciesField,
+              speciesNameField,
               FieldNode(accessionNumberField, listOf("a"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Other Dogwood"), values)
     }
@@ -1074,8 +1076,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val values =
           searchService.fetchValues(
               rootPrefix,
-              speciesField,
-              FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
+              speciesNameField,
+              FieldNode(speciesNameField, listOf("dogwod"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Kousa Dogwood", "Other Dogwood"), values)
     }
 
@@ -1085,7 +1087,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           searchService.fetchValues(
               rootPrefix,
               stateField,
-              FieldNode(speciesField, listOf("dogwod"), SearchFilterType.Fuzzy))
+              FieldNode(speciesNameField, listOf("dogwod"), SearchFilterType.Fuzzy))
       assertEquals(listOf("Processed", "Processing"), values)
     }
 
@@ -1180,7 +1182,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns values for free-text field on accession table`() {
       val expected = listOf(null, "Kousa Dogwood", "Other Dogwood")
-      val values = searchService.fetchAllValues(speciesField)
+      val values = searchService.fetchAllValues(speciesNameField)
       assertEquals(expected, values)
     }
 
@@ -1207,7 +1209,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               conditionId = StorageCondition.Freezer))
 
       val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
-      val values = searchService.fetchAllValues(storageLocationField)
+      val values = searchService.fetchAllValues(storageLocationNameField)
       assertEquals(expected, values)
     }
 
@@ -1233,7 +1235,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected = listOf(null, "Facility 100 fridge")
 
-      val actual = searchService.fetchAllValues(storageLocationField)
+      val actual = searchService.fetchAllValues(storageLocationNameField)
 
       assertEquals(expected, actual)
     }
@@ -2164,14 +2166,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `can search all the fields`() {
       val prefix = SearchFieldPrefix(namespaces.organizations)
-      val fields =
-          prefix
-              .namespace
-              .getAllFieldNames()
-              .sorted()
-              // Can't query both species and speciesName: https://github.com/jOOQ/jOOQ/issues/12704
-              .filterNot { it.endsWith(".speciesName") }
-              .map { prefix.resolve(it) }
+      val fields = prefix.namespace.getAllFieldNames().sorted().map { prefix.resolve(it) }
 
       // We're querying a mix of nested fields and the old-style fields that put nested values
       // at the top level and return a separate top-level query result for each combination of rows
@@ -2202,7 +2197,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "active" to "Active",
                   "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
                   "id" to "1001",
-                  "species" to "Other Dogwood",
+                  "speciesName" to "Other Dogwood",
                   "state" to "Processing",
                   "treesCollectedFrom" to "2",
               ),
@@ -2226,7 +2221,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                               "seedsSown" to "15",
                           )),
                   "id" to "1000",
-                  "species" to "Kousa Dogwood",
+                  "speciesName" to "Kousa Dogwood",
                   "state" to "Processed",
                   "treesCollectedFrom" to "1",
               ))

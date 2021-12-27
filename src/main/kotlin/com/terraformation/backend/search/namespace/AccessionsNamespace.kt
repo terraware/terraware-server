@@ -33,15 +33,15 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
               ACCESSIONS.ID.eq(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID)),
           bags.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
           collectors.asSingleValueSublist(
-              "primaryCollectorInfo", ACCESSIONS.PRIMARY_COLLECTOR_ID.eq(COLLECTORS.ID)),
+              "primaryCollector", ACCESSIONS.PRIMARY_COLLECTOR_ID.eq(COLLECTORS.ID)),
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
           geolocations.asMultiValueSublist(
               "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
           germinationTests.asMultiValueSublist(
               "germinationTests", ACCESSIONS.ID.eq(GERMINATION_TESTS.ACCESSION_ID)),
-          species.asSingleValueSublist("speciesInfo", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)),
+          species.asSingleValueSublist("species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)),
           storageLocations.asSingleValueSublist(
-              "storageLocationInfo", ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID)),
+              "storageLocation", ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID)),
           withdrawals.asMultiValueSublist(
               "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
       )
@@ -95,8 +95,7 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
               "Most recent % viability",
               ACCESSIONS.LATEST_VIABILITY_PERCENT),
           dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
-          aliasField("primaryCollector", "primaryCollectorInfo_name"),
-          aliasField("primaryCollectorName", "primaryCollectorInfo_name"),
+          aliasField("primaryCollectorName", "primaryCollector_name"),
           enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
           textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
           dateField(
@@ -109,12 +108,10 @@ class AccessionsNamespace(private val namespaces: SearchFieldNamespaces) : Searc
           enumField("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
           textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
           enumField("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
-          aliasField("species", "speciesInfo_name"),
-          aliasField("speciesName", "speciesInfo_name"),
+          aliasField("speciesName", "species_name"),
           enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
           enumField("storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
-          aliasField("storageLocation", "storageLocationInfo_name"),
-          aliasField("storageLocationName", "storageLocationInfo_name"),
+          aliasField("storageLocationName", "storageLocation_name"),
           textField("storageNotes", "Notes (storage)", ACCESSIONS.STORAGE_NOTES),
           integerField("storagePackets", "Number of storage packets", ACCESSIONS.STORAGE_PACKETS),
           dateField("storageStartDate", "Storing start date", ACCESSIONS.STORAGE_START_DATE),
