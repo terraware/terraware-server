@@ -1,13 +1,21 @@
 package com.terraformation.backend.search.api
 
 import com.terraformation.backend.api.SearchEndpoint
+import com.terraformation.backend.api.csvResponse
+import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.namespace.SearchFieldNamespaces
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import java.time.Clock
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.validation.constraints.NotEmpty
+import javax.ws.rs.BadRequestException
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -17,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SearchEndpoint
 class SearchController(
+    private val clock: Clock,
     namespaces: SearchFieldNamespaces,
     private val searchService: SearchService
 ) {
@@ -53,14 +62,8 @@ class SearchController(
                                                        { "operation": "field", "field": "remainingQuantity", "type": "Range", "values": ["30", "40"] } ] } ] } ] } }""")])])
       payload: SearchRequestPayload
   ): SearchResponsePayload {
-    val namespace =
-        if (payload.prefix != null) {
-          organizationsNamespace.resolveNamespace(payload.prefix)
-        } else {
-          organizationsNamespace
-        }
-
-    val rootPrefix = SearchFieldPrefix(namespace)
+    val rootPrefix = resolvePrefix(payload.prefix)
+    val count = if (payload.count > 0) payload.count else Int.MAX_VALUE
 
     return SearchResponsePayload(
         searchService.search(
@@ -69,7 +72,54 @@ class SearchController(
             payload.toSearchNode(rootPrefix),
             payload.getSearchSortFields(rootPrefix),
             payload.cursor,
-            payload.count))
+            count))
+  }
+
+  @ApiResponse(
+      responseCode = "200",
+      content =
+          [Content(mediaType = "text/csv", schema = Schema(type = "string", format = "binary"))])
+  @PostMapping(produces = ["text/csv"])
+  fun export(@RequestBody payload: SearchRequestPayload): ResponseEntity<ByteArray> {
+    val rootPrefix = resolvePrefix(payload.prefix)
+    val count = if (payload.count > 0) payload.count else Int.MAX_VALUE
+    val fields = payload.fields.map { rootPrefix.resolve(it) }
+
+    if (fields.any { it.isNested }) {
+      throw BadRequestException("Nested fields are not supported for CSV export.")
+    }
+
+    val searchResults =
+        searchService.search(
+            rootPrefix,
+            fields,
+            payload.toSearchNode(rootPrefix),
+            payload.getSearchSortFields(rootPrefix),
+            payload.cursor,
+            count)
+
+    val dateAndTime =
+        DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now(clock))
+    val filename = "terraware-$dateAndTime.csv"
+
+    val columnNames = payload.getSearchFieldPaths(rootPrefix).map { it.searchField.displayName }
+
+    return csvResponse(filename, columnNames) { csvWriter ->
+      searchResults.results.forEach { result ->
+        csvWriter.writeNext(payload.fields.map { result[it] })
+      }
+    }
+  }
+
+  private fun resolvePrefix(prefix: String?): SearchFieldPrefix {
+    val namespace =
+        if (prefix != null) {
+          organizationsNamespace.resolveNamespace(prefix)
+        } else {
+          organizationsNamespace
+        }
+
+    return SearchFieldPrefix(namespace)
   }
 }
 
@@ -89,7 +139,7 @@ data class SearchRequestPayload(
             "List of fields to return. Field names should be relative to the prefix. They may " +
                 "navigate the data hierarchy using '.' or '_' as delimiters.",
         example = """["processingStartDate","germinationTests.seedsSown","facility_name"]""")
-    val fields: List<String>,
+    override val fields: List<String>,
     @Schema(
         description =
             "How to sort the search results. This controls both the order of the top-level " +
@@ -117,7 +167,8 @@ data class SearchRequestPayload(
         description =
             "Maximum number of top-level search results to return. The system may impose a limit " +
                 "on this value. A separate system-imposed limit may also be applied to lists of " +
-                "child objects inside the top-level results.",
+                "child objects inside the top-level results. Use a value of 0 to return the " +
+                "maximum number of allowed results.",
         defaultValue = "25",
     )
     val count: Int = 25,
@@ -127,4 +178,4 @@ data class SearchRequestPayload(
                 "from where it left off. This should be the value of the cursor that was " +
                 "returned in the response to a previous search.")
     val cursor: String? = null,
-) : HasSearchNode, HasSortOrder
+) : HasSearchFields, HasSearchNode, HasSortOrder
