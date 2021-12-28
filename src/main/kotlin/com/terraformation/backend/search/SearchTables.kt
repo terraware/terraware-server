@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
@@ -74,6 +75,10 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val organizations = object : PerOrganizationTable(ORGANIZATIONS.ID, ORGANIZATIONS.ID) {}
 
   val projects = object : PerProjectTable(PROJECTS.ID, PROJECTS.ID) {}
+
+  val projectTypeSelections =
+      object :
+          PerProjectTable(PROJECT_TYPE_SELECTIONS.PROJECT_ID, PROJECT_TYPE_SELECTIONS.PROJECT_ID) {}
 
   val sites = object : PerProjectTable(SITES.ID, SITES.PROJECT_ID) {}
 

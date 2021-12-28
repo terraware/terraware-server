@@ -3128,11 +3128,32 @@ components:
       - organizationId
       type: object
       properties:
+        description:
+          type: string
         name:
           type: string
         organizationId:
           type: integer
           format: int64
+        startDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - Propagating
+          - Planting
+          - Completed/Monitoring
+        types:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - Native Forest Restoration
+            - Agroforestry
+            - Silvopasture
+            - Sustainable Timber
     CreateTimeseriesEntry:
       required:
       - deviceId
@@ -4543,6 +4564,8 @@ components:
       - organizationId
       type: object
       properties:
+        description:
+          type: string
         id:
           type: integer
           format: int64
@@ -4555,6 +4578,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SiteElement'
+        startDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - Propagating
+          - Planting
+          - Completed/Monitoring
+        types:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - Native Forest Restoration
+            - Agroforestry
+            - Silvopasture
+            - Sustainable Timber
     RecordTimeseriesValuesRequestPayload:
       required:
       - timeseries
@@ -5536,8 +5578,29 @@ components:
       - name
       type: object
       properties:
+        description:
+          type: string
         name:
           type: string
+        startDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - Propagating
+          - Planting
+          - Completed/Monitoring
+        types:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - Native Forest Restoration
+            - Agroforestry
+            - Silvopasture
+            - Sustainable Timber
     UpdateUserRequestPayload:
       required:
       - firstName

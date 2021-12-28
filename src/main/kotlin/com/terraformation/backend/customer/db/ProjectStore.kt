@@ -7,36 +7,50 @@ import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.ProjectStatus
+import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.UserAlreadyInProjectException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
+import com.terraformation.backend.db.tables.pojos.ProjectTypeSelectionsRow
 import com.terraformation.backend.db.tables.pojos.ProjectsRow
+import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
+import java.time.LocalDate
 import javax.annotation.ManagedBean
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
 class ProjectStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
-    private val projectsDao: ProjectsDao
+    private val projectsDao: ProjectsDao,
+    private val projectTypeSelectionsDao: ProjectTypeSelectionsDao,
 ) {
   private val log = perClassLogger()
 
   /** Returns all the projects the user has access to. */
   fun fetchAll(): List<ProjectModel> {
-    val user = currentUser()
-    val projectIds = user.projectRoles.keys
-    return projectsDao.fetchById(*projectIds.toTypedArray()).map { it.toModel() }
+    val projectIds = currentUser().projectRoles.keys
+
+    return if (projectIds.isEmpty()) {
+      emptyList()
+    } else {
+      fetch(PROJECTS.ID.`in`(projectIds))
+    }
   }
 
   /** Returns a project if the user has access to it. */
   fun fetchById(projectId: ProjectId): ProjectModel? {
     return if (projectId in currentUser().projectRoles) {
-      projectsDao.fetchOneById(projectId)?.toModel()
+      fetch(PROJECTS.ID.eq(projectId)).firstOrNull()
     } else {
       log.warn("User ${currentUser().userId} attempted to fetch project $projectId")
       null
@@ -47,33 +61,103 @@ class ProjectStore(
   fun fetchByOrganization(organizationId: OrganizationId): List<ProjectModel> {
     requirePermissions { listProjects(organizationId) }
 
-    val accessibleProjects = currentUser().projectRoles
-    return projectsDao
-        .fetchByOrganizationId(organizationId)
-        .filter { it.id in accessibleProjects }
-        .map { it.toModel() }
+    val projectIds = currentUser().projectRoles.keys
+
+    return if (projectIds.isEmpty()) {
+      emptyList()
+    } else {
+      fetch(PROJECTS.ORGANIZATION_ID.eq(organizationId).and(PROJECTS.ID.`in`(projectIds)))
+    }
   }
 
-  fun create(organizationId: OrganizationId, name: String): ProjectModel {
+  private fun fetch(condition: Condition): List<ProjectModel> {
+    val projectTypesMultiset =
+        DSL.multiset(
+                DSL.select(PROJECT_TYPE_SELECTIONS.PROJECT_TYPE_ID)
+                    .from(PROJECT_TYPE_SELECTIONS)
+                    .where(PROJECT_TYPE_SELECTIONS.PROJECT_ID.eq(PROJECTS.ID)))
+            .convertFrom { result -> result.map { it.value1() } }
+
+    return dslContext
+        .select(PROJECTS.asterisk(), projectTypesMultiset)
+        .from(PROJECTS)
+        .where(condition)
+        .fetch { row -> ProjectModel(row, null, projectTypesMultiset) }
+  }
+
+  fun create(
+      organizationId: OrganizationId,
+      name: String,
+      description: String? = null,
+      startDate: LocalDate? = null,
+      status: ProjectStatus? = null,
+      types: Collection<ProjectType> = emptyList()
+  ): ProjectModel {
     requirePermissions { createProject(organizationId) }
 
     val projectsRow =
         ProjectsRow(
-            organizationId = organizationId,
-            name = name,
             createdTime = clock.instant(),
-            modifiedTime = clock.instant())
+            description = description,
+            modifiedTime = clock.instant(),
+            name = name,
+            organizationId = organizationId,
+            startDate = startDate,
+            statusId = status,
+        )
 
-    projectsDao.insert(projectsRow)
-    return projectsRow.toModel()
+    dslContext.transaction { _ ->
+      projectsDao.insert(projectsRow)
+      types.forEach { type ->
+        projectTypeSelectionsDao.insert(ProjectTypeSelectionsRow(projectsRow.id, type))
+      }
+    }
+
+    return projectsRow.toModel(types.toSet())
   }
 
-  fun update(projectId: ProjectId, name: String) {
+  fun update(
+      projectId: ProjectId,
+      description: String?,
+      name: String,
+      startDate: LocalDate?,
+      status: ProjectStatus?,
+      types: Collection<ProjectType>
+  ) {
     requirePermissions { updateProject(projectId) }
 
-    val existing = projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val existing = fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val typesSet = types.toSet()
 
-    projectsDao.update(existing.copy(name = name))
+    dslContext.transaction { _ ->
+      with(PROJECTS) {
+        dslContext
+            .update(PROJECTS)
+            .set(DESCRIPTION, description)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(NAME, name)
+            .set(START_DATE, startDate)
+            .set(STATUS_ID, status)
+            .where(ID.eq(projectId))
+            .execute()
+      }
+
+      with(PROJECT_TYPE_SELECTIONS) {
+        val typesToRemove = existing.types - typesSet
+        if (typesToRemove.isNotEmpty()) {
+          dslContext
+              .deleteFrom(PROJECT_TYPE_SELECTIONS)
+              .where(PROJECT_ID.eq(projectId))
+              .and(PROJECT_TYPE_ID.`in`(typesToRemove))
+              .execute()
+        }
+
+        val typesToInsert = typesSet - existing.types
+        typesToInsert.forEach { type ->
+          projectTypeSelectionsDao.insert(ProjectTypeSelectionsRow(projectId, type))
+        }
+      }
+    }
   }
 
   fun addUser(projectId: ProjectId, userId: UserId) {

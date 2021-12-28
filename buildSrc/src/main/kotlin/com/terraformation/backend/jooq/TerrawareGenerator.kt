@@ -57,7 +57,7 @@ class TerrawareGenerator : KotlinGenerator() {
           val id = rs.getInt(1)
           val name = rs.getString(2)
           if (name != null) {
-            val capitalizedName = name.replace(Regex("[- ]"), "").capitalize()
+            val capitalizedName = name.replace(Regex("[-/ ]"), "").capitalize()
             values.add("$capitalizedName($id, \"$name\")")
           }
         }

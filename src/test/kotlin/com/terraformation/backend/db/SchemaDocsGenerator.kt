@@ -150,6 +150,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "plants" to setOf(ALL, GIS),
           "processing_methods" to setOf(ALL, SEEDBANK),
           "project_statuses" to setOf(ALL, CUSTOMER),
+          "project_type_selections" to setOf(ALL, CUSTOMER),
           "project_types" to setOf(ALL, CUSTOMER),
           "project_users" to setOf(ALL, CUSTOMER),
           "projects" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK, SPECIES),

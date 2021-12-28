@@ -14,6 +14,8 @@ import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectStatus
+import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
@@ -26,6 +28,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -70,10 +73,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           facilities = listOf(facilityModel))
   private val projectModel =
       ProjectModel(
+          description = "Project description $projectId",
           id = projectId,
           organizationId = organizationId,
           name = "Project $projectId",
-          sites = listOf(siteModel))
+          sites = listOf(siteModel),
+          startDate = LocalDate.EPOCH.plusDays(projectId.value),
+          status = ProjectStatus.Planting,
+          types = setOf(ProjectType.Agroforestry, ProjectType.SustainableTimber))
   private val organizationModel =
       OrganizationModel(
           id = organizationId,
@@ -110,7 +117,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             name = organizationModel.name,
             countryCode = organizationModel.countryCode,
             countrySubdivisionCode = organizationModel.countrySubdivisionCode))
-    insertProject(projectId)
+    insertProject(
+        projectId,
+        description = projectModel.description,
+        startDate = projectModel.startDate,
+        status = projectModel.status,
+        types = projectModel.types)
     insertSite(siteId, location = location)
     insertFacility(facilityId)
   }
