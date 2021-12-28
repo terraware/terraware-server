@@ -67,6 +67,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           id = siteId,
           projectId = projectId,
           name = "Site $siteId",
+          description = "Description $siteId",
           location = location,
           createdTime = Instant.EPOCH,
           modifiedTime = Instant.EPOCH,
@@ -123,7 +124,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         startDate = projectModel.startDate,
         status = projectModel.status,
         types = projectModel.types)
-    insertSite(siteId, location = location)
+    insertSite(siteId, description = siteModel.description, location = location)
     insertFacility(facilityId)
   }
 

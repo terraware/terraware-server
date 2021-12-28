@@ -81,6 +81,7 @@ class ProjectSitesController(private val siteStore: SiteStore) {
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SiteElement(
+    val description: String?,
     val id: SiteId,
     val name: String,
     val projectId: ProjectId,
@@ -92,6 +93,7 @@ data class SiteElement(
   constructor(
       model: SiteModel
   ) : this(
+      description = model.description,
       id = model.id,
       name = model.name,
       projectId = model.projectId,

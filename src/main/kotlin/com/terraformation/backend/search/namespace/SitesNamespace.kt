@@ -23,6 +23,7 @@ class SitesNamespace(namespaces: SearchFieldNamespaces) : SearchFieldNamespace()
   override val fields: List<SearchField> =
       with(namespaces.searchTables.sites) {
         listOf(
+            textField("description", "Site description", SITES.DESCRIPTION),
             idWrapperField("id", "Site ID", SITES.ID) { SiteId(it) },
             textField("name", "Site name", SITES.NAME, nullable = false),
         )
