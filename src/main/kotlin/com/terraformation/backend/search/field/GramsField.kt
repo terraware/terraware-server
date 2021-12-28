@@ -6,7 +6,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.seedbank.model.toGrams
 import java.math.BigDecimal
-import java.util.*
+import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
@@ -58,9 +58,7 @@ class GramsField(
 
     val units =
         if (unitsName.isEmpty()) SeedQuantityUnits.Grams
-        else
-            SeedQuantityUnits.forDisplayName(unitsName)
-                ?: throw IllegalArgumentException("Unrecognized weight unit in $value")
+        else SeedQuantityUnits.forDisplayName(unitsName)
 
     return units.toGrams(number)
   }

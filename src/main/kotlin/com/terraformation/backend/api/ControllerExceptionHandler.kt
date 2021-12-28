@@ -3,6 +3,7 @@ package com.terraformation.backend.api
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.terraformation.backend.db.DuplicateEntityException
 import com.terraformation.backend.db.EntityNotFoundException
@@ -192,6 +193,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
             is MissingKotlinParameterException -> "Required field not present"
             is InvalidNullException -> "Field value cannot be null"
             is InvalidFormatException -> "Field value has incorrect format"
+            is ValueInstantiationException -> "Field value invalid"
             else -> cause.originalMessage ?: "Field value invalid"
           }
 
