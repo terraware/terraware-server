@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SiteModel
@@ -11,10 +12,12 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
@@ -92,6 +95,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
+    every { user.canListOrganizationUsers(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadSite(any()) } returns true
     every { user.canReadFacility(any()) } returns true
@@ -301,5 +305,110 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<IllegalArgumentException> {
       store.update(OrganizationsRow(id = organizationId, name = "X", countryCode = "XX"))
     }
+  }
+
+  @Test
+  fun `fetchUsers returns information about members`() {
+    val otherProjectId = ProjectId(11)
+    val expected =
+        listOf(
+            OrganizationUserModel(
+                UserId(100),
+                "user1@x.com",
+                "First1",
+                "Last1",
+                UserType.Individual,
+                clock.instant(),
+                organizationId,
+                Role.ADMIN,
+                null,
+                emptyList()),
+            OrganizationUserModel(
+                UserId(101),
+                "user2@x.com",
+                "First2",
+                "Last2",
+                UserType.Individual,
+                clock.instant(),
+                organizationId,
+                Role.CONTRIBUTOR,
+                null,
+                listOf(projectId, otherProjectId)),
+        )
+
+    insertProject(otherProjectId)
+    expected.forEach { configureUser(it) }
+
+    val actual = store.fetchUsers(organizationId)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchUsers hides real name of user with pending invitation`() {
+    val model =
+        OrganizationUserModel(
+            UserId(100),
+            "x@y.com",
+            "First",
+            "Last",
+            UserType.Individual,
+            clock.instant(),
+            organizationId,
+            Role.CONTRIBUTOR,
+            Instant.EPOCH,
+            emptyList())
+    configureUser(model)
+
+    val expected = listOf(model.copy(firstName = null, lastName = null))
+    val actual = store.fetchUsers(organizationId)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchUsers throws exception if member has no permission to list users`() {
+    every { user.canListOrganizationUsers(organizationId) } returns false
+
+    assertThrows<AccessDeniedException> { store.fetchUsers(organizationId) }
+  }
+
+  @Test
+  fun `fetchUsers throws exception if member has no permission to see organization`() {
+    every { user.canReadOrganization(organizationId) } returns false
+    every { user.canListOrganizationUsers(organizationId) } returns false
+
+    assertThrows<OrganizationNotFoundException> { store.fetchUsers(organizationId) }
+  }
+
+  @Test
+  fun `fetchUsers only requires permission to list users, not to read other organization data`() {
+    every { user.canReadOrganization(organizationId) } returns false
+
+    val model =
+        OrganizationUserModel(
+            UserId(100),
+            "x@y.com",
+            "First",
+            "Last",
+            UserType.Individual,
+            clock.instant(),
+            organizationId,
+            Role.CONTRIBUTOR,
+            null,
+            emptyList())
+    configureUser(model)
+
+    val expected = listOf(model)
+    val actual = store.fetchUsers(organizationId)
+
+    assertEquals(expected, actual)
+  }
+
+  private fun configureUser(model: OrganizationUserModel) {
+    insertUser(model.userId, null, model.email, model.firstName, model.lastName, model.userType)
+    insertOrganizationUser(
+        model.userId, model.organizationId, model.role, model.pendingInvitationTime)
+    model.projectIds.forEach { insertProjectUser(model.userId, it) }
   }
 }

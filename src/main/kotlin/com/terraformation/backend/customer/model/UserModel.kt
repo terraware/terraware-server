@@ -299,6 +299,11 @@ data class UserModel(
     return canAddProjectUser(projectId)
   }
 
+  fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
+    val role = organizationRoles[organizationId]
+    return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
+  }
+
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.ADMIN || role == Role.OWNER

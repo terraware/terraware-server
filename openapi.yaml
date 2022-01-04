@@ -1209,6 +1209,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/organizations/{organizationId}/users:
+    get:
+      tags:
+      - Customer
+      summary: Lists the users in an organization.
+      operationId: listOrganizationUsers
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrganizationUsersResponsePayload'
+  /api/v1/organizations/{organizationId}/users/{userId}:
+    get:
+      tags:
+      - Customer
+      summary: Gets information about a user's membership in an organization.
+      operationId: getOrganizationUser
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrganizationUserResponsePayload'
   /api/v1/projects:
     get:
       tags:
@@ -3643,6 +3689,16 @@ components:
           $ref: '#/components/schemas/OrganizationPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetOrganizationUserResponsePayload:
+      required:
+      - status
+      - user
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/OrganizationUserPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetPlantResponsePayload:
       required:
       - plant
@@ -3893,6 +3949,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ObservationResponse'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListOrganizationUsersResponsePayload:
+      required:
+      - status
+      - users
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationUserPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListOrganizationsResponsePayload:
@@ -4279,6 +4347,41 @@ components:
         role:
           type: string
           description: The current user's role in the organization.
+          enum:
+          - Contributor
+          - Manager
+          - Admin
+          - Owner
+    OrganizationUserPayload:
+      required:
+      - email
+      - id
+      - projectIds
+      - role
+      type: object
+      properties:
+        email:
+          type: string
+        id:
+          type: integer
+          format: int64
+        firstName:
+          type: string
+          description: The user's first name. Not visible for users who have been
+            invited but have not yet accepted the invitation.
+        lastName:
+          type: string
+          description: The user's last name. Not visible for users who have been invited
+            but have not yet accepted the invitation.
+        projectIds:
+          type: array
+          description: IDs of projects the user is in. Users with admin and owner
+            roles always have access to all projects.
+          items:
+            type: integer
+            format: int64
+        role:
+          type: string
           enum:
           - Contributor
           - Manager

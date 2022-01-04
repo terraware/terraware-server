@@ -69,3 +69,5 @@ class TimeseriesNotFoundException(
 ) : EntityNotFoundException(message) {
   constructor(deviceId: DeviceId) : this(deviceId, null, "Timeseries not found on device $deviceId")
 }
+
+class UserNotFoundException(val userId: UserId) : EntityNotFoundException("User $userId not found")

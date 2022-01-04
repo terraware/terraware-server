@@ -2,16 +2,22 @@ package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.CustomerEndpoint
+import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -76,6 +82,32 @@ class OrganizationsController(private val organizationStore: OrganizationStore) 
   ): SimpleSuccessResponsePayload {
     organizationStore.update(payload.toRow().copy(id = organizationId))
     return SimpleSuccessResponsePayload()
+  }
+
+  @GetMapping("/{organizationId}/users")
+  @Operation(summary = "Lists the users in an organization.")
+  fun listOrganizationUsers(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+  ): ListOrganizationUsersResponsePayload {
+    val users = organizationStore.fetchUsers(organizationId)
+    return ListOrganizationUsersResponsePayload(users.map { OrganizationUserPayload(it) })
+  }
+
+  @GetMapping("/{organizationId}/users/{userId}")
+  @Operation(summary = "Gets information about a user's membership in an organization.")
+  fun getOrganizationUser(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+      @PathVariable("userId") userId: UserId,
+  ): GetOrganizationUserResponsePayload {
+    val model =
+        try {
+          organizationStore.fetchUser(organizationId, userId)
+        } catch (e: UserNotFoundException) {
+          throw NotFoundException(
+              "User $userId does not exist or is not a member of organization $organizationId")
+        }
+
+    return GetOrganizationUserResponsePayload(OrganizationUserPayload(model))
   }
 
   private fun getRole(model: OrganizationModel): Role {
@@ -154,7 +186,48 @@ data class OrganizationPayload(
   )
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class OrganizationUserPayload(
+    val email: String,
+    val id: UserId,
+    @Schema(
+        description =
+            "The user's first name. Not visible for users who have been invited but have not yet " +
+                "accepted the invitation.")
+    val firstName: String?,
+    @Schema(
+        description =
+            "The user's last name. Not visible for users who have been invited but have not yet " +
+                "accepted the invitation.")
+    val lastName: String?,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "IDs of projects the user is in. Users with admin and owner roles always " +
+                        "have access to all projects."))
+    val projectIds: List<ProjectId>,
+    val role: Role,
+) {
+  constructor(
+      model: OrganizationUserModel
+  ) : this(
+      email = model.email,
+      firstName = model.firstName,
+      id = model.userId,
+      lastName = model.lastName,
+      projectIds = model.projectIds,
+      role = model.role,
+  )
+}
+
 data class GetOrganizationResponsePayload(val organization: OrganizationPayload) :
+    SuccessResponsePayload
+
+data class GetOrganizationUserResponsePayload(val user: OrganizationUserPayload) :
+    SuccessResponsePayload
+
+data class ListOrganizationUsersResponsePayload(val users: List<OrganizationUserPayload>) :
     SuccessResponsePayload
 
 data class ListOrganizationsResponsePayload(val organizations: List<OrganizationPayload>) :
