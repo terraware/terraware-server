@@ -5,14 +5,19 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import com.opencsv.CSVWriter
 import com.terraformation.backend.db.DuplicateEntityException
 import com.terraformation.backend.db.EntityNotFoundException
+import java.io.ByteArrayOutputStream
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import javax.ws.rs.QueryParam
 import javax.ws.rs.WebApplicationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
@@ -30,6 +35,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  */
 @ControllerAdvice
 class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
+
+  private val csvMediaType = MediaType("text", "csv", StandardCharsets.UTF_8)
+
   @ExceptionHandler
   fun handleClientFacingException(
       ex: ClientFacingException,
@@ -209,9 +217,13 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   }
 
   /**
-   * Returns an error in the server's documented JSON error format unless the request only accepts
-   * text/plain responses, in which case it just returns the error message. This is needed to work
-   * with rhizo-client which only accepts text/plain responses.
+   * Returns an error response in a format the client has indicated it is willing to accept. This
+   * uses the first acceptable content type from the following list:
+   *
+   * 1. `application/json`. The response uses the server's documented JSON error format.
+   * 2. `text/plain`. The response body is the error message.
+   * 3. `text/csv`. The response is a CSV document with `status` and `message` columns.
+   * 4. None of the above. The response has an empty body.
    *
    * TODO: For clients that want HTML, render this using a custom error template.
    */
@@ -220,10 +232,25 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       status: HttpStatus,
       request: WebRequest
   ): ResponseEntity<Any> {
-    return if (request.getHeader("Accept") == "text/plain") {
-      ResponseEntity(message, status)
-    } else {
+    val acceptHeaders = request.getHeaderValues(HttpHeaders.ACCEPT) ?: emptyArray()
+    val acceptedTypes = MediaType.parseMediaTypes(acceptHeaders.toList())
+    val headers = HttpHeaders()
+
+    return if (acceptedTypes.any { it.isCompatibleWith(MediaType.APPLICATION_JSON) }) {
       ResponseEntity(SimpleErrorResponsePayload(ErrorDetails(message = message)), status)
+    } else if (acceptedTypes.any { it.isCompatibleWith(MediaType.TEXT_PLAIN) }) {
+      headers.contentType = MediaType.TEXT_PLAIN
+      ResponseEntity(message, headers, status)
+    } else if (acceptedTypes.any { it.isCompatibleWith(csvMediaType) }) {
+      headers.contentType = csvMediaType
+      val outputStream = ByteArrayOutputStream()
+      CSVWriter(OutputStreamWriter(outputStream)).use { csvWriter ->
+        csvWriter.writeNext(arrayOf("status", "message"))
+        csvWriter.writeNext(arrayOf("error", message))
+      }
+      ResponseEntity(outputStream.toByteArray(), headers, status)
+    } else {
+      ResponseEntity(byteArrayOf(), status)
     }
   }
 }
