@@ -226,7 +226,6 @@ class OrganizationStore(
     return dslContext
         .select(
             USERS.ID,
-            USERS.AUTH_ID,
             USERS.EMAIL,
             USERS.FIRST_NAME,
             USERS.LAST_NAME,
@@ -246,7 +245,6 @@ class OrganizationStore(
         .mapNotNull { record ->
           val userId = record[USERS.ID]
           val organizationId = record[ORGANIZATION_USERS.ORGANIZATION_ID]
-          val authId = record[USERS.AUTH_ID]
           val userType = record[USERS.USER_TYPE_ID]
           val createdTime = record[USERS.CREATED_TIME]
           val email = record[USERS.EMAIL]
@@ -265,7 +263,6 @@ class OrganizationStore(
               role != null) {
             OrganizationUserModel(
                 userId,
-                authId,
                 email,
                 firstName,
                 lastName,

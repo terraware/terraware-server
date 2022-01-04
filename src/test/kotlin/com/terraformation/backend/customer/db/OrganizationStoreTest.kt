@@ -314,7 +314,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         listOf(
             OrganizationUserModel(
                 UserId(100),
-                "auth1",
                 "user1@x.com",
                 "First1",
                 "Last1",
@@ -326,7 +325,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 emptyList()),
             OrganizationUserModel(
                 UserId(101),
-                "auth2",
                 "user2@x.com",
                 "First2",
                 "Last2",
@@ -351,7 +349,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val model =
         OrganizationUserModel(
             UserId(100),
-            "auth",
             "x@y.com",
             "First",
             "Last",
@@ -384,9 +381,32 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<OrganizationNotFoundException> { store.fetchUsers(organizationId) }
   }
 
+  @Test
+  fun `fetchUsers only requires permission to list users, not to read other organization data`() {
+    every { user.canReadOrganization(organizationId) } returns false
+
+    val model =
+        OrganizationUserModel(
+            UserId(100),
+            "x@y.com",
+            "First",
+            "Last",
+            UserType.Individual,
+            clock.instant(),
+            organizationId,
+            Role.CONTRIBUTOR,
+            null,
+            emptyList())
+    configureUser(model)
+
+    val expected = listOf(model)
+    val actual = store.fetchUsers(organizationId)
+
+    assertEquals(expected, actual)
+  }
+
   private fun configureUser(model: OrganizationUserModel) {
-    insertUser(
-        model.userId, model.authId, model.email, model.firstName, model.lastName, model.userType)
+    insertUser(model.userId, null, model.email, model.firstName, model.lastName, model.userType)
     insertOrganizationUser(
         model.userId, model.organizationId, model.role, model.pendingInvitationTime)
     model.projectIds.forEach { insertProjectUser(model.userId, it) }

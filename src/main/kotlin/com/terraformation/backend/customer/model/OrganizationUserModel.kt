@@ -8,7 +8,6 @@ import java.time.Instant
 
 data class OrganizationUserModel(
     val userId: UserId,
-    val authId: String?,
     val email: String,
     val firstName: String?,
     val lastName: String?,
