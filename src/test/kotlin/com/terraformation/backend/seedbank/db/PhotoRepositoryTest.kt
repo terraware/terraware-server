@@ -105,7 +105,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
             clock,
             StoreSupport(dslContext),
-            config,
         )
 
     tempDir = Files.createTempDirectory(javaClass.simpleName)

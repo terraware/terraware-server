@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
@@ -57,7 +56,6 @@ class AccessionStore(
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val support: StoreSupport,
-    private val config: TerrawareServerConfig,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -187,7 +185,6 @@ class AccessionStore(
   }
 
   fun create(accession: AccessionModel): AccessionModel {
-    val checkedIn = !config.enableAwaitingCheckIn
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
     requirePermissions { createAccession(facilityId) }
@@ -202,18 +199,15 @@ class AccessionStore(
             dslContext.transactionResult { _ ->
               val appDeviceId =
                   accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
-              val checkedInTime =
-                  if (checkedIn) clock.instant().truncatedTo(ChronoUnit.SECONDS) else null
               val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
               val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
-              val state = if (checkedIn) AccessionState.Pending else AccessionState.AwaitingCheckIn
+              val state = AccessionState.AwaitingCheckIn
 
               val accessionId =
                   with(ACCESSIONS) {
                     dslContext
                         .insertInto(ACCESSIONS)
                         .set(APP_DEVICE_ID, appDeviceId)
-                        .set(CHECKED_IN_TIME, checkedInTime)
                         .set(COLLECTED_DATE, accession.collectedDate)
                         .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
                         .set(COLLECTION_SITE_NAME, accession.siteLocation)
