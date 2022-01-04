@@ -62,6 +62,11 @@ class ProjectsController(private val projectStore: ProjectStore) {
     return GetProjectResponsePayload(ProjectPayload(project))
   }
 
+  @Operation(
+      summary = "Updates information about an existing project.",
+      description =
+          "Overwrites existing values; if a payload field is null, any existing value is removed " +
+              "from the project.")
   @PutMapping("/{id}")
   fun updateProject(
       @PathVariable("id") projectId: ProjectId,
