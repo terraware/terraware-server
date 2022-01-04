@@ -71,6 +71,9 @@ class TerrawareGenerator : KotlinGenerator() {
     // here needs to take the trimIndent() call into account.
     val valuesCodeSnippet = values.joinToString(",\n          ")
 
+    // https://youtrack.jetbrains.com/issue/KT-2425
+    val dollarSign = '$'
+
     out.println(
         """
       enum class $enumName(
@@ -88,6 +91,7 @@ class TerrawareGenerator : KotlinGenerator() {
               @JsonCreator
               @JvmStatic
               fun forDisplayName(name: String) = byDisplayName[name]
+                  ?: throw IllegalArgumentException("Unrecognized value: ${dollarSign}name")
               
               fun forId(id: Int) = byId[id]
           }
