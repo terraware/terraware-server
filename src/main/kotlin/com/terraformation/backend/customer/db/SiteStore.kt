@@ -71,6 +71,7 @@ class SiteStore(
     return dslContext
         .select(
             SITES.CREATED_TIME,
+            SITES.DESCRIPTION,
             SITES.ENABLED,
             SITES.ID,
             SITES.LOCALE,

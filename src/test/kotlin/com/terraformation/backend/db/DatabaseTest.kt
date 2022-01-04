@@ -167,6 +167,7 @@ abstract class DatabaseTest {
       projectId: Any = "$id".toLong() / 10,
       name: String = "Site $id",
       location: Point = mercatorPoint(1.0, 2.0, 0.0),
+      description: String? = null,
   ) {
     with(SITES) {
       dslContext
@@ -174,6 +175,7 @@ abstract class DatabaseTest {
           .set(ID, id.toIdWrapper { SiteId(it) })
           .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
           .set(NAME, name)
+          .set(DESCRIPTION, description)
           .set(LOCATION, location)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
