@@ -1,4 +1,6 @@
 terraware:
+  # By default, the frontend dev service listens on HTTP port 3000.
+  web-app-url: "http://localhost:3000/"
   photo-dir: "/tmp/terraware-server-photos"
   use-test-clock: true
   allow-admin-ui-for-non-admins: true

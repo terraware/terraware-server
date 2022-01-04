@@ -108,11 +108,11 @@ class UserStore(
           }
         }
 
-    return rowToDetails(user)
+    return rowToModel(user)
   }
 
   /**
-   * Returns the details for the user with a given email address. Pulls the user's information frmo
+   * Returns the details for the user with a given email address. Pulls the user's information from
    * Keycloak if they don't exist in our users table yet.
    *
    * @return null if no Keycloak user has the requested email address.
@@ -138,7 +138,7 @@ class UserStore(
           }
         }
 
-    return user?.let { rowToDetails(it) }
+    return user?.let { rowToModel(it) }
   }
 
   /**
@@ -148,7 +148,32 @@ class UserStore(
    * @return null if the user doesn't exist.
    */
   fun fetchById(userId: UserId): UserModel? {
-    return usersDao.fetchOneById(userId)?.let { rowToDetails(it) }
+    return usersDao.fetchOneById(userId)?.let { rowToModel(it) }
+  }
+
+  /**
+   * Fetches the user with a particular email address, or creates one without any authentication
+   * information. This is used when inviting users who don't have accounts yet. When they register
+   * on Keycloak, their Keycloak identity will be linked to the user that's created here.
+   */
+  fun fetchOrCreateByEmail(email: String): UserModel {
+    val existingUser = fetchByEmail(email)
+    if (existingUser != null) {
+      return existingUser
+    }
+
+    val row =
+        UsersRow(
+            createdTime = clock.instant(),
+            email = email,
+            modifiedTime = clock.instant(),
+            userTypeId = UserType.Individual)
+
+    usersDao.insert(row)
+
+    log.info("Created unregistered user ${row.id} for email $email")
+
+    return rowToModel(row)
   }
 
   /**
@@ -195,7 +220,7 @@ class UserStore(
             lastName,
             requiredActions = setOf(KeycloakRequiredActions.UpdatePassword))
     val usersRow = insertKeycloakUser(keycloakUser)
-    val user = rowToDetails(usersRow)
+    val user = rowToModel(usersRow)
 
     organizationStore.addUser(organizationId, user.userId, role)
 
@@ -265,7 +290,7 @@ class UserStore(
 
     val keycloakUser = registerKeycloakUser(username, description, lastName, UserType.APIClient)
     val usersRow = insertKeycloakUser(keycloakUser, UserType.APIClient)
-    val user = rowToDetails(usersRow)
+    val user = rowToModel(usersRow)
 
     organizationStore.addUser(organizationId, user.userId, Role.CONTRIBUTOR)
 
@@ -452,10 +477,10 @@ class UserStore(
     }
   }
 
-  private fun rowToDetails(usersRow: UsersRow): UserModel {
+  private fun rowToModel(usersRow: UsersRow): UserModel {
     return UserModel(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
-        usersRow.authId ?: throw IllegalArgumentException("Auth ID should never be null"),
+        usersRow.authId,
         usersRow.email ?: throw IllegalArgumentException("Email should never be null"),
         usersRow.firstName,
         usersRow.lastName,

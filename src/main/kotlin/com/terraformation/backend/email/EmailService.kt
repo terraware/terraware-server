@@ -2,8 +2,14 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.log.perClassLogger
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -11,8 +17,11 @@ import javax.annotation.ManagedBean
 import javax.mail.Message
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
+import org.apache.commons.validator.routines.EmailValidator
+import org.springframework.core.io.ResourceLoader
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.web.util.HtmlUtils
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.sesv2.SesV2Client
 import software.amazon.awssdk.services.sesv2.model.Destination
@@ -23,9 +32,13 @@ import software.amazon.awssdk.services.sesv2.model.RawMessage
 class EmailService(
     private val config: TerrawareServerConfig,
     private val facilityStore: FacilityStore,
-    private val sender: JavaMailSender
+    private val organizationStore: OrganizationStore,
+    private val resourceLoader: ResourceLoader,
+    private val sender: JavaMailSender,
+    private val userStore: UserStore,
 ) {
   private lateinit var sesClient: SesV2Client
+  private val emailValidator = EmailValidator.getInstance()
   private val log = perClassLogger()
 
   init {
@@ -60,9 +73,58 @@ class EmailService(
     send(message)
   }
 
+  fun sendInvitation(organizationId: OrganizationId, userId: UserId) {
+    requirePermissions { addOrganizationUser(organizationId) }
+
+    val organization =
+        organizationStore.fetchById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
+    val user = userStore.fetchById(userId) ?: throw UserNotFoundException(userId)
+
+    val message = sender.createMimeMessage()
+    val helper = MimeMessageHelper(message, true)
+
+    val webAppUrl = "${config.webAppUrl}"
+
+    val textBody =
+        getResourceAsString("classpath:templates/email/invitation/body.txt")
+            ?.replace("\${organization.name}", organization.name)
+            ?.replace("\${webAppUrl}", webAppUrl)
+            ?: throw IllegalStateException("Couldn't find plaintext invitation email template")
+
+    val htmlBody =
+        getResourceAsString("classpath:templates/email/invitation/body.html")
+            ?.replace("\${organization.name}", HtmlUtils.htmlEscape(organization.name))
+            ?.replace("\${webAppUrl}", webAppUrl)
+            ?: throw IllegalStateException("Couldn't find HTML invitation email template")
+
+    helper.setSubject("You've been invited to ${organization.name} on Terraware!")
+    helper.setTo(user.email)
+    helper.setText(textBody, htmlBody)
+
+    send(message)
+  }
+
+  private fun getResourceAsString(name: String): String? {
+    val resource = resourceLoader.getResource(name)
+    return if (resource.isReadable)
+        resource.inputStream.use { it.readAllBytes().toString(StandardCharsets.UTF_8) }
+    else {
+      null
+    }
+  }
+
   /** Sends an email message. Overrides the recipient and subject line in dev/test environments. */
   private fun send(message: MimeMessage) {
     val helper = MimeMessageHelper(message)
+
+    // Validate the caller-supplied recipient(s) even if we're going to override, so we can test
+    // validation in dev environments.
+    message.allRecipients.forEach { address ->
+      if (!emailValidator.isValid("$address")) {
+        throw IllegalArgumentException("Invalid email address $address")
+      }
+    }
 
     config.email.senderAddress?.let { senderAddress -> helper.setFrom(senderAddress) }
 

@@ -12,6 +12,16 @@ abstract class EntityNotFoundException(message: String) : RuntimeException(messa
     get() = super.message!!
 }
 
+/**
+ * Thrown when the system detects a duplicate piece of data that needs to be unique.
+ *
+ * Subclasses of this are mapped to HTTP 409 Conflict if they are thrown by a controller method.
+ */
+abstract class DuplicateEntityException(message: String) : RuntimeException(message) {
+  override val message: String
+    get() = super.message!!
+}
+
 class AccessionNotFoundException(val accessionId: AccessionId) :
     EntityNotFoundException("Accession $accessionId not found")
 
@@ -69,5 +79,11 @@ class TimeseriesNotFoundException(
 ) : EntityNotFoundException(message) {
   constructor(deviceId: DeviceId) : this(deviceId, null, "Timeseries not found on device $deviceId")
 }
+
+class UserAlreadyInOrganizationException(val userId: UserId, val organizationId: OrganizationId) :
+    DuplicateEntityException("User is already in organization")
+
+class UserAlreadyInProjectException(val userId: UserId, val projectId: ProjectId) :
+    DuplicateEntityException("User is already in project")
 
 class UserNotFoundException(val userId: UserId) : EntityNotFoundException("User $userId not found")

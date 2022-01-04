@@ -26,6 +26,12 @@ import org.springframework.validation.annotation.Validated
 @Validated
 class TerrawareServerConfig(
     /**
+     * URL of the web application for this server. This is used when the server needs to generate a
+     * link for a user to follow, e.g., in invitation email messages.
+     */
+    val webAppUrl: URI,
+
+    /**
      * Name of S3 bucket to use for storage of files such as photos. If not specified, files won't
      * be stored on S3.
      */

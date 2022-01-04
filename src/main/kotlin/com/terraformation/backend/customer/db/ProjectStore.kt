@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.UserAlreadyInProjectException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.pojos.ProjectsRow
@@ -15,6 +16,7 @@ import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
 class ProjectStore(
@@ -77,15 +79,21 @@ class ProjectStore(
   fun addUser(projectId: ProjectId, userId: UserId) {
     requirePermissions { addProjectUser(projectId) }
 
-    with(PROJECT_USERS) {
-      dslContext
-          .insertInto(PROJECT_USERS)
-          .set(PROJECT_ID, projectId)
-          .set(USER_ID, userId)
-          .set(CREATED_TIME, clock.instant())
-          .set(MODIFIED_TIME, clock.instant())
-          .execute()
+    try {
+      with(PROJECT_USERS) {
+        dslContext
+            .insertInto(PROJECT_USERS)
+            .set(PROJECT_ID, projectId)
+            .set(USER_ID, userId)
+            .set(CREATED_TIME, clock.instant())
+            .set(MODIFIED_TIME, clock.instant())
+            .execute()
+      }
+    } catch (e: DuplicateKeyException) {
+      throw UserAlreadyInProjectException(userId, projectId)
     }
+
+    log.info("Added user $userId to project $projectId")
   }
 
   fun removeUser(projectId: ProjectId, userId: UserId): Boolean {

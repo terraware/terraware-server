@@ -6,6 +6,7 @@ spring:
       - "classpath:db/migration/common"
 
 terraware:
+  web-app-url: "http://dummy/"
   photo-dir: "/dummy-directory"
   keycloak:
     apiClientId: "dummyClientForApiClients"

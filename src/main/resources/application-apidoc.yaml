@@ -23,6 +23,7 @@ spring:
     store-type: none
 
 terraware:
+  web-app-url: http://dummy
   photo-dir: "/tmp"
   daily-tasks:
     enabled: false

@@ -1,0 +1,6 @@
+You've been invited to join ${organization.name}!
+
+Please follow the link below to go to your Terraware account
+where you can view and accept your invitation.
+
+${webAppUrl}
