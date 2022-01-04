@@ -8,6 +8,7 @@ feature_photos
 accession_state_history
 species_names
 project_users
+project_type_selections
 accession_secondary_collectors
 accession_photos
 accession_germination_test_types

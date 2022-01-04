@@ -51,6 +51,7 @@ timeseries_values
 accession_germination_test_types
 accession_photos
 accession_secondary_collectors
+project_type_selections
 project_users
 species_names
 accession_state_history

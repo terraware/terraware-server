@@ -11,5 +11,6 @@ projects
 sites
 facilities
 facility_alert_recipients
+project_type_selections
 project_users
 organization_users

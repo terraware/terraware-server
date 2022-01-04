@@ -639,6 +639,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="pending_invitation_time" nullable="true" remarks="When the most recent invitation was sent to a user who has not yet joined the organization. Null if the user is a regular member of the organization (i.e., they have accepted the invitation)." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="user_id" sequenceNumberInPK="1"/>
          <primaryKey column="organization_id" sequenceNumberInPK="2"/>
          <index name="organization_users_pkey" unique="true">
@@ -768,7 +769,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="project_statuses" numRows="0" remarks="(Enum) Statuses of projects recognized by the application." schema="public" type="TABLE">
+      <table name="project_statuses" numRows="3" remarks="(Enum) Statuses of projects recognized by the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="status_id" foreignKey="projects_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
@@ -781,9 +782,23 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="project_types" numRows="0" remarks="(Enum) Types of projects recognized by the application." schema="public" type="TABLE">
+      <table name="project_type_selections" numRows="0" remarks="Which project types are selected for which projects." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_type_selections_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_type_selections_project_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_types"/>
+         </column>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="project_type_id" sequenceNumberInPK="2"/>
+         <index name="project_type_selections_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="project_type_id"/>
+         </index>
+      </table>
+      <table name="project_types" numRows="4" remarks="(Enum) Types of projects recognized by the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="type_id" foreignKey="projects_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="project_type_id" foreignKey="project_type_selections_project_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_type_selections"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -812,6 +827,7 @@
       </table>
       <table name="projects" numRows="0" remarks="Information about a single restoration project. A project can span multiple sites." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="project_id" foreignKey="project_type_selections_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_type_selections"/>
             <child column="project_id" foreignKey="project_users_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
             <child column="project_id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
             <child column="project_id" foreignKey="species_options_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
@@ -822,18 +838,15 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="location" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="projects_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="projects_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_statuses"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="disabled_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="pm_user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="disabled_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pm_user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="projects_pm_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
