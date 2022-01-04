@@ -23,6 +23,7 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.USERS
@@ -127,12 +128,21 @@ class OrganizationStore(
                 DSL.falseCondition()
               }
 
+          val projectTypesMultiset =
+              DSL.multiset(
+                      DSL.select(PROJECT_TYPE_SELECTIONS.PROJECT_TYPE_ID)
+                          .from(PROJECT_TYPE_SELECTIONS)
+                          .where(PROJECT_TYPE_SELECTIONS.PROJECT_ID.eq(PROJECTS.ID)))
+                  .convertFrom { result -> result.map { it.value1() } }
+
           DSL.multiset(
-                  DSL.select(PROJECTS.asterisk(), sitesMultiset)
+                  DSL.select(PROJECTS.asterisk(), sitesMultiset, projectTypesMultiset)
                       .from(PROJECTS)
                       .where(projectsCondition)
                       .orderBy(PROJECTS.ID))
-              .convertFrom { result -> result.map { ProjectModel(it, sitesMultiset) } }
+              .convertFrom { result ->
+                result.map { ProjectModel(it, sitesMultiset, projectTypesMultiset) }
+              }
         } else {
           DSL.value(null as List<ProjectModel>?)
         }

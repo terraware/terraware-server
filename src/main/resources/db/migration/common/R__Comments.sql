@@ -105,6 +105,8 @@ COMMENT ON TABLE project_statuses IS '(Enum) Statuses of projects recognized by 
 
 COMMENT ON TABLE project_types IS '(Enum) Types of projects recognized by the application.';
 
+COMMENT ON TABLE project_type_selections IS 'Which project types are selected for which projects.';
+
 COMMENT ON TABLE project_users IS 'Linking table between `projects` and `users` defining which users are allowed to access which projects.';
 
 COMMENT ON TABLE projects IS 'Information about a single restoration project. A project can span multiple sites.';

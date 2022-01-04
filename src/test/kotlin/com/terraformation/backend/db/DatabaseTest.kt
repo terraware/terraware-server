@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.USERS
@@ -128,17 +129,36 @@ abstract class DatabaseTest {
   protected fun insertProject(
       id: Any,
       organizationId: Any = "$id".toLong() / 10,
-      name: String = "Project $id"
+      name: String = "Project $id",
+      description: String? = null,
+      startDate: LocalDate? = null,
+      status: ProjectStatus? = null,
+      types: Collection<ProjectType> = emptySet(),
   ) {
+    val projectId = id.toIdWrapper { ProjectId(it) }
+
     with(PROJECTS) {
       dslContext
           .insertInto(PROJECTS)
-          .set(ID, id.toIdWrapper { ProjectId(it) })
+          .set(DESCRIPTION, description)
+          .set(ID, projectId)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
+          .set(START_DATE, startDate)
+          .set(STATUS_ID, status)
           .execute()
+    }
+
+    types.forEach { type ->
+      with(PROJECT_TYPE_SELECTIONS) {
+        dslContext
+            .insertInto(PROJECT_TYPE_SELECTIONS)
+            .set(PROJECT_ID, projectId)
+            .set(PROJECT_TYPE_ID, type)
+            .execute()
+      }
     }
   }
 

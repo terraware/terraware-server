@@ -37,6 +37,7 @@ class SearchFieldNamespaces(val searchTables: SearchTables) {
   val organizations = OrganizationsNamespace(this)
   val plants = PlantsNamespace(this)
   val projects = ProjectsNamespace(this)
+  val projectTypeSelections = ProjectTypeSelectionsNamespace(this)
   val sites = SitesNamespace(this)
   val species = SpeciesNamespace(this)
   val storageLocations = StorageLocationsNamespace(this)
