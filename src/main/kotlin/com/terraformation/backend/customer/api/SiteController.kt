@@ -3,13 +3,13 @@ package com.terraformation.backend.customer.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SiteNotFoundException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -51,7 +51,8 @@ class SiteController(private val siteStore: SiteStore) {
           defaultValue = "4326")
       srid: Int? = null
   ): GetSiteResponsePayload {
-    val site = siteStore.fetchById(siteId, srid ?: SRID.LONG_LAT) ?: throw NotFoundException()
+    val site =
+        siteStore.fetchById(siteId, srid ?: SRID.LONG_LAT) ?: throw SiteNotFoundException(siteId)
 
     return GetSiteResponsePayload(SiteElement(site))
   }

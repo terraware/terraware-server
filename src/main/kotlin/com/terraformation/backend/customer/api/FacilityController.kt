@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
-import com.terraformation.backend.api.InternalErrorException
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.AutomationStore
@@ -15,6 +13,7 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.email.EmailService
@@ -22,6 +21,7 @@ import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import javax.ws.rs.InternalServerErrorException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -60,7 +60,8 @@ class FacilityController(
   @GetMapping("/{facilityId}")
   @Operation(summary = "Gets information about a single facility")
   fun getFacility(@PathVariable facilityId: FacilityId): GetFacilityResponse {
-    val facility = facilityStore.fetchById(facilityId) ?: throw NotFoundException()
+    val facility =
+        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     return GetFacilityResponse(
         FacilityPayload(facilityId, facility.siteId, facility.name, facility.type))
@@ -156,7 +157,7 @@ class FacilityController(
       emailService.sendAlert(facilityId, payload.subject, payload.body)
     } catch (e: Exception) {
       log.error("Unable to send alert email", e)
-      throw InternalErrorException("Unable to send email message.")
+      throw InternalServerErrorException("Unable to send email message.")
     }
 
     return SimpleSuccessResponsePayload()

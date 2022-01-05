@@ -2,7 +2,6 @@ package com.terraformation.backend.gis.api
 
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.GISAppEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerNotFoundException
@@ -12,6 +11,7 @@ import com.terraformation.backend.gis.db.LayerStore
 import com.terraformation.backend.gis.model.LayerModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import javax.ws.rs.NotFoundException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -41,10 +41,7 @@ class LayerController(private val layerStore: LayerStore) {
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @GetMapping("/{layerId}")
   fun read(@PathVariable layerId: LayerId): GetLayerResponsePayload {
-    val layerModel =
-        layerStore.fetchLayer(layerId)
-            ?: throw NotFoundException("The layer with id $layerId doesn't exist.")
-
+    val layerModel = layerStore.fetchLayer(layerId) ?: throw LayerNotFoundException(layerId)
     return GetLayerResponsePayload(LayerResponse(layerModel))
   }
 
@@ -79,12 +76,8 @@ class LayerController(private val layerStore: LayerStore) {
   @ApiResponse404(description = "The specified layer doesn't exist.")
   @DeleteMapping("/{layerId}")
   fun delete(@PathVariable layerId: LayerId): DeleteLayerResponsePayload {
-    try {
-      val layerModel = layerStore.deleteLayer(layerId)
-      return DeleteLayerResponsePayload(DeleteLayerResponse(layerModel))
-    } catch (e: LayerNotFoundException) {
-      throw NotFoundException("The layer with id $layerId doesn't exist.")
-    }
+    val layerModel = layerStore.deleteLayer(layerId)
+    return DeleteLayerResponsePayload(DeleteLayerResponse(layerModel))
   }
 }
 

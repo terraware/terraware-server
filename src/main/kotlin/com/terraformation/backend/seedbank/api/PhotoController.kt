@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DuplicateNameException
-import com.terraformation.backend.api.InternalErrorException
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
@@ -14,7 +12,6 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.api.UnsupportedPhotoFormatException
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.SRID
@@ -31,6 +28,9 @@ import java.math.BigDecimal
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.time.Instant
+import javax.ws.rs.InternalServerErrorException
+import javax.ws.rs.NotFoundException
+import javax.ws.rs.NotSupportedException
 import javax.ws.rs.QueryParam
 import net.postgis.jdbc.geometry.Point
 import org.springframework.core.io.InputStreamResource
@@ -76,7 +76,7 @@ class PhotoController(private val photoRepository: PhotoRepository) {
   ): SimpleSuccessResponsePayload {
     val contentType = file.contentType?.substringBefore(';')
     if (contentType != MediaType.IMAGE_JPEG_VALUE) {
-      throw UnsupportedPhotoFormatException()
+      throw NotSupportedException("Photos must be of type image/jpeg")
     }
 
     val location =
@@ -100,14 +100,14 @@ class PhotoController(private val photoRepository: PhotoRepository) {
               location,
               metadata.gpsAccuracy))
     } catch (e: AccessionNotFoundException) {
-      throw NotFoundException("Accession $accessionId does not exist.")
+      throw e
     } catch (e: FileAlreadyExistsException) {
       log.info("Rejecting duplicate photo $photoFilename for accession $accessionId")
       throw DuplicateNameException(
           "Photo $photoFilename already exists for accession $accessionId.")
     } catch (e: Exception) {
       log.error("Unable to store photo $photoFilename for accession $accessionId", e)
-      throw InternalErrorException("Unable to store the photo.")
+      throw InternalServerErrorException("Unable to store the photo.")
     }
 
     return SimpleSuccessResponsePayload()
@@ -157,12 +157,7 @@ class PhotoController(private val photoRepository: PhotoRepository) {
   @GetMapping
   @Operation(summary = "List all the available photos for an accession.")
   fun listPhotos(@PathVariable("id") accessionId: AccessionId): ListPhotosResponsePayload {
-    val photos =
-        try {
-          photoRepository.listPhotos(accessionId)
-        } catch (e: AccessionNotFoundException) {
-          throw NotFoundException("Accession $accessionId does not exist.")
-        }
+    val photos = photoRepository.listPhotos(accessionId)
 
     val elements = photos.map { ListPhotosResponseElement(it) }
 

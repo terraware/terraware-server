@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.GISAppEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -12,7 +11,6 @@ import com.terraformation.backend.db.PlantForm
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
-import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
@@ -24,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import javax.ws.rs.NotFoundException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -142,8 +141,6 @@ class SpeciesController(
       return SpeciesNameCreateResponsePayload(speciesNameId)
     } catch (e: DataIntegrityViolationException) {
       throw DuplicateNameException("The species already has the requested name.")
-    } catch (e: SpeciesNotFoundException) {
-      throw NotFoundException("The species does not exist.")
     }
   }
 
@@ -151,12 +148,8 @@ class SpeciesController(
   @ApiResponse404("The species does not exist.")
   @GetMapping("/{speciesId}/names")
   fun speciesNamesList(@PathVariable speciesId: SpeciesId): SpeciesNamesListResponsePayload {
-    try {
-      val names = speciesStore.listAllSpeciesNames(speciesId)
-      return SpeciesNamesListResponsePayload(names.map { SpeciesNamesResponseElement(it) })
-    } catch (e: SpeciesNotFoundException) {
-      throw NotFoundException("The species does not exist.")
-    }
+    val names = speciesStore.listAllSpeciesNames(speciesId)
+    return SpeciesNamesListResponsePayload(names.map { SpeciesNamesResponseElement(it) })
   }
 
   @ApiResponse(responseCode = "200", description = "Species name retrieved.")
