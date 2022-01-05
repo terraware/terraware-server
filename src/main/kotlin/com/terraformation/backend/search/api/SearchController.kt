@@ -127,8 +127,4 @@ data class SearchRequestPayload(
                 "from where it left off. This should be the value of the cursor that was " +
                 "returned in the response to a previous search.")
     val cursor: String? = null,
-) : HasSearchNode, HasSortOrder {
-  // This was for backward compatibility with earlier versions of the accession search API.
-  override val filters: List<SearchFilter>?
-    get() = null
-}
+) : HasSearchNode, HasSortOrder
