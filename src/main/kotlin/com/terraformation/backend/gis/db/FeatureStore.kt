@@ -6,11 +6,14 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.LayerId
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.PlantNotFoundException
 import com.terraformation.backend.db.PlantObservationId
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UsesFuzzySearchOperators
 import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
@@ -22,9 +25,12 @@ import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.PlantsRow
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
+import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PLANT_OBSERVATIONS
+import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -366,12 +372,13 @@ class FeatureStore(
     return plant.copy()
   }
 
-  fun fetchPlantSummary(
-      layerId: LayerId,
+  private fun fetchPlantSummary(
+      layerIds: List<LayerId>,
       minEnteredTime: Instant? = null,
       maxEnteredTime: Instant? = null,
   ): Map<SpeciesId, Int> {
-    if (!currentUser().canReadLayer(layerId)) {
+    val readableLayerIds = layerIds.filter { currentUser().canReadLayer(it) }
+    if (readableLayerIds.isEmpty()) {
       return emptyMap()
     }
 
@@ -383,11 +390,85 @@ class FeatureStore(
         .on(PLANTS.FEATURE_ID.eq(FEATURES.ID))
         .where(
             listOfNotNull(
-                FEATURES.LAYER_ID.eq(layerId),
+                FEATURES.LAYER_ID.`in`(readableLayerIds),
                 minEnteredTime?.let { FEATURES.ENTERED_TIME.greaterOrEqual(it) },
                 maxEnteredTime?.let { FEATURES.ENTERED_TIME.lessOrEqual(it) }))
         .groupBy(PLANTS.SPECIES_ID)
         .fetchMap({ it.value1() }, { it.value2() })
+  }
+
+  fun fetchPlantSummary(
+      layerId: LayerId,
+      minEnteredTime: Instant? = null,
+      maxEnteredTime: Instant? = null,
+  ): Map<SpeciesId, Int> {
+    return fetchPlantSummary(listOf(layerId), minEnteredTime, maxEnteredTime)
+  }
+
+  fun fetchPlantSummary(
+      siteId: SiteId,
+      minEnteredTime: Instant? = null,
+      maxEnteredTime: Instant? = null,
+  ): Map<SpeciesId, Int> {
+    if (!currentUser().canReadSite(siteId)) {
+      return emptyMap()
+    }
+
+    val layerIds =
+        dslContext
+            .select(LAYERS.ID)
+            .from(LAYERS)
+            .where(LAYERS.SITE_ID.eq(siteId))
+            .fetch(LAYERS.ID)
+            .filterNotNull()
+
+    return fetchPlantSummary(layerIds, minEnteredTime, maxEnteredTime)
+  }
+
+  fun fetchPlantSummary(
+      projectId: ProjectId,
+      minEnteredTime: Instant? = null,
+      maxEnteredTime: Instant? = null,
+  ): Map<SpeciesId, Int> {
+    if (!currentUser().canReadProject(projectId)) {
+      return emptyMap()
+    }
+
+    val layerIds =
+        dslContext
+            .select(LAYERS.ID)
+            .from(LAYERS)
+            .join(SITES)
+            .on(LAYERS.SITE_ID.eq(SITES.ID))
+            .where(SITES.PROJECT_ID.eq(projectId))
+            .fetch(LAYERS.ID)
+            .filterNotNull()
+
+    return fetchPlantSummary(layerIds, minEnteredTime, maxEnteredTime)
+  }
+
+  fun fetchPlantSummary(
+      organizationId: OrganizationId,
+      minEnteredTime: Instant? = null,
+      maxEnteredTime: Instant? = null,
+  ): Map<SpeciesId, Int> {
+    if (!currentUser().canReadOrganization(organizationId)) {
+      return emptyMap()
+    }
+
+    val layerIds =
+        dslContext
+            .select(LAYERS.ID)
+            .from(LAYERS)
+            .join(SITES)
+            .on(LAYERS.SITE_ID.eq(SITES.ID))
+            .join(PROJECTS)
+            .on(SITES.PROJECT_ID.eq(PROJECTS.ID))
+            .where(PROJECTS.ORGANIZATION_ID.eq(organizationId))
+            .fetch(LAYERS.ID)
+            .filterNotNull()
+
+    return fetchPlantSummary(layerIds, minEnteredTime, maxEnteredTime)
   }
 
   private fun noPermissionsCheckFetch(id: FeatureId): FeatureModel? {

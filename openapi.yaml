@@ -997,6 +997,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListPlantsResponsePayload'
+  /api/v1/gis/plants/summary:
+    get:
+      tags:
+      - GISApp
+      summary: "Gets the number of plants and species in all the layers across a site,\
+        \ project, or organization."
+      description: "Optionally also gets the plants and species counts as of a previous\
+        \ time, which clients can use to compute the amount of change over time."
+      operationId: getPlantsAndSpeciesSummary
+      parameters:
+      - name: organizationId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "ID of organization to summarize. If not present, either projectId\
+            \ or siteId must be present. Ignored if projectId or siteId is present."
+          format: int64
+      - name: projectId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "ID of project to summarize. If not present, either organizationId\
+            \ or siteId must be present. Ignored if siteId is present."
+          format: int64
+      - name: siteId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "ID of site to summarize. If not present, either organizationId\
+            \ or projectId must be present."
+          format: int64
+      - name: previousTime
+        in: query
+        required: false
+        schema:
+          type: string
+          description: "If present, the response will include data for plants entered\
+            \ at or before this time."
+          format: date-time
+          example: 2021-01-05T11:22:33Z
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlantsAndSpeciesSummaryResponsePayload'
   /api/v1/gis/plants/{featureId}:
     get:
       tags:
@@ -3366,6 +3416,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CreateTimeseriesEntry'
+    CurrentAndPreviousCounts:
+      required:
+      - current
+      type: object
+      properties:
+        current:
+          type: integer
+          description: The current value of the quantity in question.
+          format: int32
+        previous:
+          type: integer
+          description: The value of the quantity in question as of a previous point
+            in time. Will not be present if no previousTime value was specified in
+            the request.
+          format: int32
+      description: "Represents the current, and optionally a previous, count of a\
+        \ quantity such as the number of plants or species."
     DeleteFeatureResponsePayload:
       required:
       - id
@@ -4714,6 +4781,22 @@ components:
           additionalProperties:
             type: integer
             format: int32
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    PlantsAndSpeciesSummaryResponsePayload:
+      required:
+      - plants
+      - species
+      - status
+      type: object
+      properties:
+        previousTime:
+          type: string
+          format: date-time
+        plants:
+          $ref: '#/components/schemas/CurrentAndPreviousCounts'
+        species:
+          $ref: '#/components/schemas/CurrentAndPreviousCounts'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     Point:

@@ -7,10 +7,12 @@ import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerType
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.PostgresFuzzySearchOperators
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
@@ -125,6 +127,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFeature(any()) } returns true
     every { user.canReadFeaturePhoto(any()) } returns true
     every { user.canReadLayer(any()) } returns true
+    every { user.canReadOrganization(any()) } returns true
+    every { user.canReadProject(any()) } returns true
+    every { user.canReadSite(any()) } returns true
     every { user.canUpdateFeature(any()) } returns true
     every { user.canUpdateLayer(any()) } returns true
     every { user.canDeleteFeature(any()) } returns true
@@ -710,17 +715,20 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
     private fun insertSeveralPlants(
         speciesIdsToCount: Map<SpeciesId, Int>,
-        enteredTime: Instant = time1
+        enteredTime: Instant = time1,
+        layerIdToInsert: LayerId = layerId,
     ): Map<SpeciesId, List<FeatureId>> {
       val speciesIdToFeatureIds = mutableMapOf<SpeciesId, List<FeatureId>>()
       speciesIdsToCount.forEach { (currSpeciesId, count) ->
-        speciesDao.insert(
-            SpeciesRow(
-                id = currSpeciesId,
-                createdTime = time1,
-                modifiedTime = time1,
-                // Make the speciesName the same as the species id to simplify testing
-                name = currSpeciesId.toString()))
+        if (!speciesDao.existsById(currSpeciesId)) {
+          speciesDao.insert(
+              SpeciesRow(
+                  id = currSpeciesId,
+                  createdTime = time1,
+                  modifiedTime = time1,
+                  // Make the speciesName the same as the species id to simplify testing
+                  name = currSpeciesId.toString()))
+        }
 
         val featureIds = mutableListOf<FeatureId>()
 
@@ -729,7 +737,7 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
           featureIds.add(randomFeatureId)
 
           // All features are associated with the class variable layerId
-          insertFeature(id = randomFeatureId, layerId = layerId, enteredTime = enteredTime)
+          insertFeature(id = randomFeatureId, layerId = layerIdToInsert, enteredTime = enteredTime)
 
           plantsDao.insert(PlantsRow(featureId = randomFeatureId, speciesId = currSpeciesId))
         }
@@ -1028,6 +1036,68 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `fetchPlantSummary returns an empty map if there are no plants in the layer`() {
       assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(layerId))
+    }
+
+    @Test
+    fun `fetchPlantSummary by site ID aggregates results across accessible layers`() {
+      val secondLayerId = LayerId(200)
+      val inaccessibleLayerId = LayerId(201)
+
+      insertLayer(secondLayerId, siteId, LayerType.PlantsPlanted)
+      insertLayer(inaccessibleLayerId, siteId, LayerType.PlantsPlanted)
+
+      insertSeveralPlants(mapOf(SpeciesId(1) to 4, SpeciesId(2) to 4))
+      insertSeveralPlants(
+          mapOf(SpeciesId(1) to 2, SpeciesId(3) to 2), layerIdToInsert = secondLayerId)
+      insertSeveralPlants(
+          mapOf(SpeciesId(1) to 1, SpeciesId(4) to 1), layerIdToInsert = inaccessibleLayerId)
+
+      every { user.canReadLayer(inaccessibleLayerId) } returns false
+
+      val expected = mapOf(SpeciesId(1) to 6, SpeciesId(2) to 4, SpeciesId(3) to 2)
+      val actual = store.fetchPlantSummary(siteId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `fetchPlantSummary by project ID aggregates results across sites`() {
+      val projectId = ProjectId(2)
+      val secondSiteId = SiteId(2)
+      val secondLayerId = LayerId(200)
+
+      insertSite(secondSiteId, projectId)
+      insertLayer(secondLayerId, secondSiteId, LayerType.PlantsPlanted)
+
+      insertSeveralPlants(mapOf(SpeciesId(1) to 4, SpeciesId(2) to 4))
+      insertSeveralPlants(
+          mapOf(SpeciesId(1) to 2, SpeciesId(3) to 2), layerIdToInsert = secondLayerId)
+
+      val expected = mapOf(SpeciesId(1) to 6, SpeciesId(2) to 4, SpeciesId(3) to 2)
+      val actual = store.fetchPlantSummary(projectId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `fetchPlantSummary by organization ID aggregates results across projects`() {
+      val organizationId = OrganizationId(1)
+      val secondProjectId = ProjectId(3)
+      val secondSiteId = SiteId(2)
+      val secondLayerId = LayerId(200)
+
+      insertProject(secondProjectId, organizationId)
+      insertSite(secondSiteId, secondProjectId)
+      insertLayer(secondLayerId, secondSiteId, LayerType.PlantsPlanted)
+
+      insertSeveralPlants(mapOf(SpeciesId(1) to 4, SpeciesId(2) to 4))
+      insertSeveralPlants(
+          mapOf(SpeciesId(1) to 2, SpeciesId(3) to 2), layerIdToInsert = secondLayerId)
+
+      val expected = mapOf(SpeciesId(1) to 6, SpeciesId(2) to 4, SpeciesId(3) to 2)
+      val actual = store.fetchPlantSummary(organizationId)
+
+      assertEquals(expected, actual)
     }
 
     @Test
