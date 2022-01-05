@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
+import com.terraformation.backend.db.InvitationTooRecentException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
@@ -30,9 +31,11 @@ import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
+import java.time.Duration
 import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
@@ -364,6 +367,86 @@ class OrganizationStore(
     }
 
     return result
+  }
+
+  /**
+   * Performs work only if there is a pending invitation with a timestamp earlier than a particular
+   * time. Before calling the supplied function, sets the timestamp on the invitation to the current
+   * time. This prevents the same invitation from being updated twice in parallel.
+   *
+   * @param func Function to call if enough time has passed since the most recent update. This will
+   * be called with an open transaction that has a lock on the invitation.
+   * @throws DataAccessException An error occurred while updating the invitation. Exceptions thrown
+   * by [func] will be wrapped in [DataAccessException] as well.
+   * @throws InvitationTooRecentException There is a pending invitation but less than
+   * [minimumPendingTime] has passed since it was created or updated.
+   * @throws UserNotFoundException There is no pending invitation for the user.
+   * @throws UserAlreadyInOrganizationException The user is in the organization and doesn't have a
+   * pending invitation.
+   */
+  fun updatePendingInvitation(
+      organizationId: OrganizationId,
+      userId: UserId,
+      minimumPendingTime: Duration,
+      func: () -> Unit
+  ) {
+    requirePermissions { addOrganizationUser(organizationId) }
+
+    val latestExistingTime = clock.instant() - minimumPendingTime
+
+    try {
+      dslContext.transaction { _ ->
+        val current =
+            with(ORGANIZATION_USERS) {
+              dslContext
+                  .select(PENDING_INVITATION_TIME)
+                  .from(ORGANIZATION_USERS)
+                  .where(ORGANIZATION_ID.eq(organizationId))
+                  .and(USER_ID.eq(userId))
+                  .forUpdate()
+                  .fetchOne()
+                  ?: throw UserNotFoundException(userId)
+            }
+
+        val existingTime =
+            current[ORGANIZATION_USERS.PENDING_INVITATION_TIME]
+                ?: throw UserAlreadyInOrganizationException(userId, organizationId)
+
+        if (existingTime.isBefore(latestExistingTime)) {
+          val rowsUpdated =
+              with(ORGANIZATION_USERS) {
+                dslContext
+                    .update(ORGANIZATION_USERS)
+                    .set(PENDING_INVITATION_TIME, clock.instant())
+                    .where(ORGANIZATION_ID.eq(organizationId))
+                    .and(USER_ID.eq(userId))
+                    .and(PENDING_INVITATION_TIME.eq(existingTime))
+                    .execute()
+              }
+
+          if (rowsUpdated == 1) {
+            func()
+          } else {
+            throw RuntimeException(
+                "Failed to update invitation while holding lock. userId $userId organizationId " +
+                    "$organizationId existingTime $existingTime")
+          }
+        } else {
+          throw InvitationTooRecentException(
+              userId, organizationId, existingTime + minimumPendingTime)
+        }
+      }
+    } catch (e: DataAccessException) {
+      // dslContext.transaction() wraps exceptions thrown by the transactional code.
+      val cause = e.cause
+      if (cause is InvitationTooRecentException ||
+          cause is UserAlreadyInOrganizationException ||
+          cause is UserNotFoundException) {
+        throw cause
+      } else {
+        throw e
+      }
+    }
   }
 
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role): Boolean {

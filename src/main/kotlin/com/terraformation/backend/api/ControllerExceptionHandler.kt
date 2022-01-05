@@ -21,6 +21,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.util.MultiValueMap
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.PathVariable
@@ -68,10 +69,15 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: WebApplicationException,
       request: WebRequest
   ): ResponseEntity<*> {
+    // WebApplicationException can optionally include response data including headers.
+    val headers = HttpHeaders()
+    ex.response?.stringHeaders?.forEach { (name, values) -> headers[name] = values }
+
     return simpleErrorResponse(
         ex.message ?: "An internal error has occurred.",
         HttpStatus.valueOf(ex.response.status),
-        request)
+        request,
+        headers)
   }
 
   @ExceptionHandler
@@ -222,14 +228,19 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   private fun simpleErrorResponse(
       message: String,
       status: HttpStatus,
-      request: WebRequest
+      request: WebRequest,
+      additionalHeaders: MultiValueMap<String, String>? = null
   ): ResponseEntity<Any> {
     val acceptHeaders = request.getHeaderValues(HttpHeaders.ACCEPT) ?: emptyArray()
     val acceptedTypes = MediaType.parseMediaTypes(acceptHeaders.toList())
     val headers = HttpHeaders()
 
+    if (additionalHeaders != null) {
+      headers.addAll(additionalHeaders)
+    }
+
     return if (acceptedTypes.any { it.isCompatibleWith(MediaType.APPLICATION_JSON) }) {
-      ResponseEntity(SimpleErrorResponsePayload(ErrorDetails(message = message)), status)
+      ResponseEntity(SimpleErrorResponsePayload(ErrorDetails(message = message)), headers, status)
     } else if (acceptedTypes.any { it.isCompatibleWith(MediaType.TEXT_PLAIN) }) {
       headers.contentType = MediaType.TEXT_PLAIN
       ResponseEntity(message, headers, status)
@@ -242,7 +253,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       }
       ResponseEntity(outputStream.toByteArray(), headers, status)
     } else {
-      ResponseEntity(byteArrayOf(), status)
+      ResponseEntity(byteArrayOf(), headers, status)
     }
   }
 }

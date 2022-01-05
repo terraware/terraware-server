@@ -13,3 +13,10 @@ class NotAuthenticatedException(message: String = "Client is not authenticated")
 
 class ResourceInUseException(message: String = "The resource is currently in use") :
     ClientErrorException(message, Response.Status.CONFLICT)
+
+class TooManyRequestsException(message: String = "Rate limit reached", retryAfter: Long? = null) :
+    ClientErrorException(
+        message,
+        Response.status(Response.Status.TOO_MANY_REQUESTS)
+            .apply { if (retryAfter != null) header("Retry-After", "$retryAfter") }
+            .build())

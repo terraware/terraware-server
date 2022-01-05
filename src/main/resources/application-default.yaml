@@ -4,6 +4,9 @@ terraware:
   photo-dir: "/tmp/terraware-server-photos"
   use-test-clock: true
   allow-admin-ui-for-non-admins: true
+  # Don't make developers wait around too long while working on invitation code, but do allow
+  # testing of the rate-limiting logic.
+  minimum-invitation-interval: PT10S
   email:
     always-send-to-override-address: true
     subject-prefix: "[DEV]"

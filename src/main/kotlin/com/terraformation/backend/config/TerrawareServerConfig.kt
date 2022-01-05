@@ -2,6 +2,7 @@ package com.terraformation.backend.config
 
 import java.net.URI
 import java.nio.file.Path
+import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -70,6 +71,9 @@ class TerrawareServerConfig(
      * access the UI.
      */
     val allowAdminUiForNonAdmins: Boolean = false,
+
+    /** Minimum amount of time to require before resending an invitation to an organization. */
+    val minimumInvitationInterval: Duration = Duration.ofMinutes(30),
 
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),

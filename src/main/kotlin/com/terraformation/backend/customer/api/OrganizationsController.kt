@@ -1,15 +1,20 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
+import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.TooManyRequestsException
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.OrganizationService
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.db.InvitationTooRecentException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
@@ -17,8 +22,14 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.headers.Header
 import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.NotFoundException
@@ -36,6 +47,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/organizations")
 class OrganizationsController(
+    private val clock: Clock,
     private val organizationService: OrganizationService,
     private val organizationStore: OrganizationStore,
 ) {
@@ -108,6 +120,41 @@ class OrganizationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponseSimpleSuccess(description = "Invitation resent.")
+  @ApiResponses(
+      ApiResponse(
+          responseCode = "409",
+          description =
+              "The user is already a member of the organization. This may mean they have already " +
+                  "accepted the invitation.",
+          content = [Content(schema = Schema(implementation = SimpleErrorResponsePayload::class))]),
+      ApiResponse(
+          responseCode = "429",
+          description = "Too soon since the last invitation was sent.",
+          content = [Content(schema = Schema(implementation = SimpleErrorResponsePayload::class))],
+          headers =
+              [
+                  Header(
+                      name = "Retry-After",
+                      description =
+                          "Number of seconds remaining before the invitation can be resent.",
+                      schema = Schema(type = "integer"))]))
+  @ApiResponse404(description = "There is no pending invitation for the user.")
+  @Operation(summary = "Resends an invitation message to a user with a pending invitation.")
+  @PostMapping("/{organizationId}/invitations/resend")
+  fun resendOrganizationUserInvitation(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+      @RequestBody payload: ResendOrganizationUserInvitationRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    try {
+      organizationService.resendInvitation(payload.email, organizationId)
+      return SimpleSuccessResponsePayload()
+    } catch (e: InvitationTooRecentException) {
+      val retryAfterSeconds = Duration.between(clock.instant(), e.retryAfter).seconds
+      throw TooManyRequestsException("Too soon since most recent invitation", retryAfterSeconds)
+    }
+  }
+
   @GetMapping("/{organizationId}/users")
   @Operation(summary = "Lists the users in an organization.")
   fun listOrganizationUsers(
@@ -145,6 +192,8 @@ data class InviteOrganizationUserRequestPayload(
     val role: Role,
     val projectIds: List<ProjectId>?,
 )
+
+data class ResendOrganizationUserInvitationRequestPayload(val email: String)
 
 data class UpdateOrganizationRequestPayload(
     @Schema(

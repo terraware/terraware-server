@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.InvitationTooRecentException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
@@ -18,7 +19,9 @@ import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
@@ -27,10 +30,13 @@ import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -101,6 +107,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { clock.instant() } returns Instant.EPOCH
 
+    every { user.canAddOrganizationUser(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
@@ -325,28 +332,20 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val otherProjectId = ProjectId(11)
     val expected =
         listOf(
-            OrganizationUserModel(
-                UserId(100),
-                "user1@x.com",
-                "First1",
-                "Last1",
-                UserType.Individual,
-                clock.instant(),
-                organizationId,
-                Role.ADMIN,
-                null,
-                emptyList()),
-            OrganizationUserModel(
-                UserId(101),
-                "user2@x.com",
-                "First2",
-                "Last2",
-                UserType.Individual,
-                clock.instant(),
-                organizationId,
-                Role.CONTRIBUTOR,
-                null,
-                listOf(projectId, otherProjectId)),
+            organizationUserModel(
+                userId = UserId(100),
+                email = "user1@x.com",
+                firstName = "First1",
+                lastName = "Last1",
+                role = Role.ADMIN,
+            ),
+            organizationUserModel(
+                userId = UserId(101),
+                email = "user2@x.com",
+                firstName = "First2",
+                lastName = "Last2",
+                role = Role.CONTRIBUTOR,
+                projectIds = listOf(projectId, otherProjectId)),
         )
 
     insertProject(otherProjectId)
@@ -359,18 +358,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchUsers hides real name of user with pending invitation`() {
-    val model =
-        OrganizationUserModel(
-            UserId(100),
-            "x@y.com",
-            "First",
-            "Last",
-            UserType.Individual,
-            clock.instant(),
-            organizationId,
-            Role.CONTRIBUTOR,
-            Instant.EPOCH,
-            emptyList())
+    val model = organizationUserModel(pendingInvitationTime = Instant.EPOCH)
     configureUser(model)
 
     val expected = listOf(model.copy(firstName = null, lastName = null))
@@ -398,24 +386,111 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchUsers only requires permission to list users, not to read other organization data`() {
     every { user.canReadOrganization(organizationId) } returns false
 
-    val model =
-        OrganizationUserModel(
-            UserId(100),
-            "x@y.com",
-            "First",
-            "Last",
-            UserType.Individual,
-            clock.instant(),
-            organizationId,
-            Role.CONTRIBUTOR,
-            null,
-            emptyList())
+    val model = organizationUserModel()
     configureUser(model)
 
     val expected = listOf(model)
     val actual = store.fetchUsers(organizationId)
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `updatePendingInvitation calls callback function if invitation is old enough`() {
+    val model = organizationUserModel(pendingInvitationTime = clock.instant())
+    configureUser(model)
+
+    every { clock.instant() } returns Instant.EPOCH.plusSeconds(30)
+
+    var callbackCalled = false
+
+    store.updatePendingInvitation(organizationId, model.userId, Duration.ofSeconds(29)) {
+      callbackCalled = true
+    }
+
+    assertTrue(callbackCalled, "Callback function should have been called")
+
+    val updatedModel = store.fetchUser(organizationId, model.userId)
+    assertEquals(clock.instant(), updatedModel.pendingInvitationTime, "Updated invitation time")
+  }
+
+  @Test
+  fun `updatePendingInvitation does not update timestamp if callback throws exception`() {
+    val model = organizationUserModel(pendingInvitationTime = clock.instant())
+    configureUser(model)
+
+    every { clock.instant() } returns Instant.EPOCH.plusSeconds(30)
+
+    assertThrows<DataAccessException> {
+      store.updatePendingInvitation(organizationId, model.userId, Duration.ofSeconds(29)) {
+        throw Exception("Failed!")
+      }
+    }
+
+    val updatedModel = store.fetchUser(organizationId, model.userId)
+    assertEquals(
+        Instant.EPOCH,
+        updatedModel.pendingInvitationTime,
+        "Should not have updated invitation time")
+  }
+
+  @Test
+  fun `updatePendingInvitation throws exception if invitation is too new`() {
+    val model = organizationUserModel(pendingInvitationTime = clock.instant())
+    configureUser(model)
+
+    every { clock.instant() } returns Instant.EPOCH.plusSeconds(30)
+
+    assertThrows<InvitationTooRecentException> {
+      store.updatePendingInvitation(organizationId, model.userId, Duration.ofSeconds(31)) {}
+    }
+  }
+
+  @Test
+  fun `updatePendingInvitation throws exception if user is a regular member of organization`() {
+    val model = organizationUserModel()
+    configureUser(model)
+
+    every { clock.instant() } returns Instant.EPOCH.plusSeconds(30)
+
+    assertThrows<UserAlreadyInOrganizationException> {
+      store.updatePendingInvitation(organizationId, model.userId, Duration.ofSeconds(31)) {}
+    }
+  }
+
+  @Test
+  fun `updatePendingInvitation throws exception if user not associated with organization`() {
+    val userId = UserId(200)
+    insertUser(userId)
+
+    assertThrows<UserNotFoundException> {
+      store.updatePendingInvitation(organizationId, userId, Duration.ZERO) {}
+    }
+  }
+
+  private fun organizationUserModel(
+      userId: UserId = UserId(100),
+      email: String = "x@y.com",
+      firstName: String = "First",
+      lastName: String = "Last",
+      userType: UserType = UserType.Individual,
+      createdTime: Instant = clock.instant(),
+      organizationId: OrganizationId = this.organizationId,
+      role: Role = Role.CONTRIBUTOR,
+      pendingInvitationTime: Instant? = null,
+      projectIds: List<ProjectId> = emptyList()
+  ): OrganizationUserModel {
+    return OrganizationUserModel(
+        userId,
+        email,
+        firstName,
+        lastName,
+        userType,
+        createdTime,
+        organizationId,
+        role,
+        pendingInvitationTime,
+        projectIds)
   }
 
   private fun configureUser(model: OrganizationUserModel) {

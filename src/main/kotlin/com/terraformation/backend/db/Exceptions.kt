@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
 import java.io.IOException
+import java.time.Instant
 
 /**
  * Thrown when an entity wasn't found when it should have been.
@@ -36,6 +37,18 @@ class FacilityNotFoundException(val facilityId: FacilityId) :
 
 class FeatureNotFoundException(val featureId: FeatureId) :
     EntityNotFoundException("Feature $featureId not found")
+
+class InvitationNotFoundException(val email: String, val organizationId: OrganizationId) :
+    EntityNotFoundException("Invitation of $email to organization $organizationId not found")
+
+class InvitationTooRecentException(
+    val userId: UserId,
+    val organizationId: OrganizationId,
+    val retryAfter: Instant
+) :
+    Exception(
+        "Too soon to resend organization $organizationId invitation to $userId; must wait " +
+            "until $retryAfter")
 
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(

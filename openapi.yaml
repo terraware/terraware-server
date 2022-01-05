@@ -1207,6 +1207,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/organizations/{organizationId}/invitations/resend:
+    post:
+      tags:
+      - Customer
+      summary: Resends an invitation message to a user with a pending invitation.
+      operationId: resendOrganizationUserInvitation
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendOrganizationUserInvitationRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: Invitation resent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: There is no pending invitation for the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+        "409":
+          description: The user is already a member of the organization. This may
+            mean they have already accepted the invitation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+        "429":
+          description: Too soon since the last invitation was sent.
+          headers:
+            Retry-After:
+              description: Number of seconds remaining before the invitation can be
+                resent.
+              style: simple
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/organizations/{organizationId}/projects:
     get:
       tags:
@@ -4742,6 +4794,13 @@ components:
         error:
           $ref: '#/components/schemas/ErrorDetails'
       description: Results of a request to record timeseries values.
+    ResendOrganizationUserInvitationRequestPayload:
+      required:
+      - email
+      type: object
+      properties:
+        email:
+          type: string
     SearchAccessionsRequestPayload:
       required:
       - count
