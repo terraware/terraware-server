@@ -2,7 +2,9 @@ package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
+import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.ProjectStore
@@ -12,9 +14,15 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
+import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.LocalDate
+import javax.ws.rs.NotFoundException
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -77,6 +85,41 @@ class ProjectsController(private val projectStore: ProjectStore) {
         payload.startDate,
         payload.status,
         payload.types ?: emptyList())
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404("The user does not exist or is not a member of the organization.")
+  @ApiResponse(
+      responseCode = "409",
+      description = "The user is already a member of the project.",
+      content = [Content(schema = Schema(implementation = SimpleErrorResponsePayload::class))])
+  @Operation(
+      summary = "Adds a user to a project.",
+      description =
+          "The user must already be a member of, or already be invited to, the organization.")
+  @PostMapping("/{projectId}/users/{userId}")
+  fun addProjectUser(
+      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable("userId") userId: UserId
+  ): SimpleSuccessResponsePayload {
+    projectStore.addUser(projectId, userId)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404("The user does not exist or is not a member of the project.")
+  @Operation(summary = "Removes a user from a project.")
+  @DeleteMapping("/{projectId}/users/{userId}")
+  fun deleteProjectUser(
+      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable("userId") userId: UserId
+  ): SimpleSuccessResponsePayload {
+    try {
+      projectStore.removeUser(projectId, userId)
+    } catch (e: UserNotFoundException) {
+      throw NotFoundException("User is not a member of the project")
+    }
     return SimpleSuccessResponsePayload()
   }
 }

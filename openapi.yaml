@@ -1431,6 +1431,77 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/projects/{projectId}/users/{userId}:
+    post:
+      tags:
+      - Customer
+      summary: Adds a user to a project.
+      description: "The user must already be a member of, or already be invited to,\
+        \ the organization."
+      operationId: addProjectUser
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The user does not exist or is not a member of the organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+        "409":
+          description: The user is already a member of the project.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    delete:
+      tags:
+      - Customer
+      summary: Removes a user from a project.
+      operationId: deleteProjectUser
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The user does not exist or is not a member of the project.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/search:
     post:
       tags:

@@ -11,10 +11,12 @@ import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.UserAlreadyInProjectException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.pojos.ProjectTypeSelectionsRow
 import com.terraformation.backend.db.tables.pojos.ProjectsRow
+import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
@@ -160,8 +162,28 @@ class ProjectStore(
     }
   }
 
+  /**
+   * Adds a user to a project. The user must already be a member of the project's organization.
+   *
+   * @throws UserAlreadyInProjectException The user is already a member of the project.
+   * @throws UserNotFoundException The user is not in the organization.
+   */
   fun addUser(projectId: ProjectId, userId: UserId) {
     requirePermissions { addProjectUser(projectId) }
+
+    val isInOrganization =
+        dslContext
+            .selectOne()
+            .from(ORGANIZATION_USERS)
+            .join(PROJECTS)
+            .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+            .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+            .and(PROJECTS.ID.eq(projectId))
+            .fetch()
+            .isNotEmpty
+    if (!isInOrganization) {
+      throw UserNotFoundException(userId)
+    }
 
     try {
       with(PROJECT_USERS) {
@@ -180,7 +202,12 @@ class ProjectStore(
     log.info("Added user $userId to project $projectId")
   }
 
-  fun removeUser(projectId: ProjectId, userId: UserId): Boolean {
+  /**
+   * Removes a user from a project.
+   *
+   * @throws UserNotFoundException The user is not a member of the project.
+   */
+  fun removeUser(projectId: ProjectId, userId: UserId) {
     requirePermissions { removeProjectUser(projectId) }
 
     val rowsDeleted =
@@ -189,6 +216,8 @@ class ProjectStore(
             .where(PROJECT_USERS.USER_ID.eq(userId))
             .and(PROJECT_USERS.PROJECT_ID.eq(projectId))
             .execute()
-    return rowsDeleted > 0
+    if (rowsDeleted < 1) {
+      throw UserNotFoundException(userId)
+    }
   }
 }
