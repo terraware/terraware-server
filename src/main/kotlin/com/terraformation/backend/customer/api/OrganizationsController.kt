@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.NotFoundException
 import org.apache.commons.validator.routines.EmailValidator
@@ -229,6 +230,12 @@ data class OrganizationUserPayload(
             "The user's last name. Not visible for users who have been invited but have not yet " +
                 "accepted the invitation.")
     val lastName: String?,
+    @Schema(
+        description =
+            "If the user has been invited to the organization but has not yet accepted the " +
+                "invitation, the time when the most recent invitation was sent. Not present if " +
+                "there is no pending invitation.")
+    val pendingInvitationTime: Instant?,
     @ArraySchema(
         arraySchema =
             Schema(
@@ -245,6 +252,7 @@ data class OrganizationUserPayload(
       firstName = model.firstName,
       id = model.userId,
       lastName = model.lastName,
+      pendingInvitationTime = model.pendingInvitationTime,
       projectIds = model.projectIds,
       role = model.role,
   )

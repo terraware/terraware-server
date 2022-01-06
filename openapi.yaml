@@ -4554,6 +4554,12 @@ components:
           type: string
           description: The user's last name. Not visible for users who have been invited
             but have not yet accepted the invitation.
+        pendingInvitationTime:
+          type: string
+          description: "If the user has been invited to the organization but has not\
+            \ yet accepted the invitation, the time when the most recent invitation\
+            \ was sent. Not present if there is no pending invitation."
+          format: date-time
         projectIds:
           type: array
           description: IDs of projects the user is in. Users with admin and owner
