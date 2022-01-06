@@ -35,7 +35,6 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
-import org.springframework.security.access.AccessDeniedException
 
 @ManagedBean
 class OrganizationStore(
@@ -369,10 +368,8 @@ class OrganizationStore(
     }
   }
 
-  fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role): Boolean {
-    if (!currentUser().canSetOrganizationUserRole(organizationId, role)) {
-      throw AccessDeniedException("No permission to set this role on an organization user")
-    }
+  fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
+    requirePermissions { setOrganizationUserRole(organizationId, role) }
 
     val rowsUpdated =
         dslContext
@@ -383,7 +380,9 @@ class OrganizationStore(
             .and(ORGANIZATION_USERS.USER_ID.eq(userId))
             .execute()
 
-    return rowsUpdated > 0
+    if (rowsUpdated < 1) {
+      throw UserNotFoundException(userId)
+    }
   }
 
   /** Throws [IllegalArgumentException] if country and/or subdivision codes are invalid. */
