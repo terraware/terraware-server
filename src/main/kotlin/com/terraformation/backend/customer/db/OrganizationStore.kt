@@ -336,11 +336,14 @@ class OrganizationStore(
   /**
    * Removes a user from an organization. Also removes the user from all the organization's
    * projects.
+   *
+   * The user may still be referenced in the organization's data. For example, if they uploaded
+   * photos, `photos.user_id` will still refer to them.
+   *
+   * @throws UserNotFoundException The user was not a member of the organization.
    */
-  fun removeUser(organizationId: OrganizationId, userId: UserId): Boolean {
+  fun removeUser(organizationId: OrganizationId, userId: UserId) {
     requirePermissions { removeOrganizationUser(organizationId) }
-
-    var result = false
 
     dslContext.transaction { _ ->
       dslContext
@@ -360,10 +363,10 @@ class OrganizationStore(
               .and(ORGANIZATION_USERS.USER_ID.eq(userId))
               .execute()
 
-      result = rowsDeleted > 0
+      if (rowsDeleted < 1) {
+        throw UserNotFoundException(userId)
+      }
     }
-
-    return result
   }
 
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role): Boolean {
