@@ -139,15 +139,15 @@ class OrganizationsController(
                       description =
                           "Number of seconds remaining before the invitation can be resent.",
                       schema = Schema(type = "integer"))]))
-  @ApiResponse404(description = "There is no pending invitation for the user.")
+  @ApiResponse404(description = "The user does not exist or does not have a pending invitation.")
   @Operation(summary = "Resends an invitation message to a user with a pending invitation.")
-  @PostMapping("/{organizationId}/invitations/resend")
+  @PostMapping("/{organizationId}/invitations/{userId}/resend")
   fun resendOrganizationUserInvitation(
       @PathVariable("organizationId") organizationId: OrganizationId,
-      @RequestBody payload: ResendOrganizationUserInvitationRequestPayload,
+      @PathVariable("userId") userId: UserId,
   ): SimpleSuccessResponsePayload {
     try {
-      organizationService.resendInvitation(payload.email, organizationId)
+      organizationService.resendInvitation(organizationId, userId)
       return SimpleSuccessResponsePayload()
     } catch (e: InvitationTooRecentException) {
       val retryAfterSeconds = Duration.between(clock.instant(), e.retryAfter).seconds
@@ -192,8 +192,6 @@ data class InviteOrganizationUserRequestPayload(
     val role: Role,
     val projectIds: List<ProjectId>?,
 )
-
-data class ResendOrganizationUserInvitationRequestPayload(val email: String)
 
 data class UpdateOrganizationRequestPayload(
     @Schema(

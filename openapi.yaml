@@ -1207,7 +1207,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-  /api/v1/organizations/{organizationId}/invitations/resend:
+  /api/v1/organizations/{organizationId}/invitations/{userId}/resend:
     post:
       tags:
       - Customer
@@ -1220,12 +1220,12 @@ paths:
         schema:
           type: integer
           format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResendOrganizationUserInvitationRequestPayload'
+      - name: userId
+        in: path
         required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "200":
           description: Invitation resent.
@@ -1234,7 +1234,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
         "404":
-          description: There is no pending invitation for the user.
+          description: The user does not exist or does not have a pending invitation.
           content:
             application/json:
               schema:
@@ -4794,13 +4794,6 @@ components:
         error:
           $ref: '#/components/schemas/ErrorDetails'
       description: Results of a request to record timeseries values.
-    ResendOrganizationUserInvitationRequestPayload:
-      required:
-      - email
-      type: object
-      properties:
-        email:
-          type: string
     SearchAccessionsRequestPayload:
       required:
       - count

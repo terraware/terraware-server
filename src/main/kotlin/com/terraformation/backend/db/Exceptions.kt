@@ -38,8 +38,9 @@ class FacilityNotFoundException(val facilityId: FacilityId) :
 class FeatureNotFoundException(val featureId: FeatureId) :
     EntityNotFoundException("Feature $featureId not found")
 
-class InvitationNotFoundException(val email: String, val organizationId: OrganizationId) :
-    EntityNotFoundException("Invitation of $email to organization $organizationId not found")
+class InvitationNotFoundException(val userId: UserId, val organizationId: OrganizationId) :
+    EntityNotFoundException(
+        "User $userId has no pending invitation to organization $organizationId")
 
 class InvitationTooRecentException(
     val userId: UserId,

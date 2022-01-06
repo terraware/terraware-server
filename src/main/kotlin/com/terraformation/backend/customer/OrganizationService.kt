@@ -12,6 +12,7 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.log.perClassLogger
@@ -70,21 +71,17 @@ class OrganizationService(
    * @throws UserAlreadyInOrganizationException The user is in the organization and doesn't have a
    * pending invitation.
    */
-  fun resendInvitation(email: String, organizationId: OrganizationId) {
+  fun resendInvitation(organizationId: OrganizationId, userId: UserId) {
     requirePermissions { addOrganizationUser(organizationId) }
-
-    val userId =
-        userStore.fetchByEmail(email)?.userId
-            ?: throw InvitationNotFoundException(email, organizationId)
 
     try {
       organizationStore.updatePendingInvitation(
           organizationId, userId, config.minimumInvitationInterval) {
-        log.info("Resending organization $organizationId invitation to $email")
+        log.info("Resending organization $organizationId invitation to user $userId")
         emailService.sendInvitation(organizationId, userId)
       }
     } catch (e: UserNotFoundException) {
-      throw InvitationNotFoundException(email, organizationId)
+      throw InvitationNotFoundException(userId, organizationId)
     }
   }
 }
