@@ -1,5 +1,6 @@
 package com.terraformation.backend.search.namespace
 
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFieldNamespace
@@ -15,7 +16,14 @@ import org.jooq.impl.DSL
 
 class GeolocationsNamespace(private val namespaces: SearchFieldNamespaces) :
     SearchFieldNamespace() {
-  override val sublists: List<SublistField> = emptyList()
+
+  override val sublists: List<SublistField> by lazy {
+    with(namespaces) {
+      listOf(
+          accessions.asSingleValueSublist("accession", GEOLOCATIONS.ACCESSION_ID.eq(ACCESSIONS.ID)),
+      )
+    }
+  }
 
   override val fields: List<SearchField> =
       listOf(
