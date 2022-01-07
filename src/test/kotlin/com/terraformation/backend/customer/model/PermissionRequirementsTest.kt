@@ -22,6 +22,9 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.SpeciesNameNotFoundException
+import com.terraformation.backend.db.SpeciesNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -60,6 +63,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val role = Role.CONTRIBUTOR
   private val siteId = SiteId(1)
   private val speciesId = SpeciesId(1)
+  private val speciesNameId = SpeciesNameId(1)
 
   /**
    * Grants permission to perform a particular operation. This is a simple wrapper around a MockK
@@ -523,26 +527,84 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSpecies() {
-    assertThrows<AccessDeniedException> { requirements.createSpecies() }
+    assertThrows<OrganizationNotFoundException> { requirements.deleteApiKey(organizationId) }
 
-    grant { user.canCreateSpecies() }
-    requirements.createSpecies()
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.createSpecies(organizationId) }
+
+    grant { user.canCreateSpecies(organizationId) }
+    requirements.createSpecies(organizationId)
+  }
+
+  @Test
+  fun readSpecies() {
+    assertThrows<SpeciesNotFoundException> { requirements.readSpecies(organizationId, speciesId) }
+
+    grant { user.canReadSpecies(organizationId) }
+    requirements.readSpecies(organizationId, speciesId)
   }
 
   @Test
   fun deleteSpecies() {
-    assertThrows<AccessDeniedException> { requirements.deleteSpecies(speciesId) }
+    assertThrows<SpeciesNotFoundException> { requirements.deleteSpecies(organizationId, speciesId) }
 
-    grant { user.canDeleteSpecies(speciesId) }
-    requirements.deleteSpecies(speciesId)
+    grant { user.canReadSpecies(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.deleteSpecies(organizationId, speciesId) }
+
+    grant { user.canDeleteSpecies(organizationId) }
+    requirements.deleteSpecies(organizationId, speciesId)
   }
 
   @Test
   fun updateSpecies() {
-    assertThrows<AccessDeniedException> { requirements.updateSpecies(speciesId) }
+    assertThrows<SpeciesNotFoundException> { requirements.updateSpecies(organizationId, speciesId) }
 
-    grant { user.canUpdateSpecies(speciesId) }
-    requirements.updateSpecies(speciesId)
+    grant { user.canReadSpecies(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.updateSpecies(organizationId, speciesId) }
+
+    grant { user.canUpdateSpecies(organizationId) }
+    requirements.updateSpecies(organizationId, speciesId)
+  }
+
+  @Test
+  fun createSpeciesName() {
+    assertThrows<OrganizationNotFoundException> { requirements.createSpeciesName(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.createSpeciesName(organizationId) }
+
+    grant { user.canCreateSpeciesName(organizationId) }
+    requirements.createSpeciesName(organizationId)
+  }
+
+  @Test
+  fun readSpeciesName() {
+    assertThrows<SpeciesNameNotFoundException> { requirements.readSpeciesName(speciesNameId) }
+
+    grant { user.canReadSpeciesName(speciesNameId) }
+    requirements.readSpeciesName(speciesNameId)
+  }
+
+  @Test
+  fun updateSpeciesName() {
+    assertThrows<SpeciesNameNotFoundException> { requirements.updateSpeciesName(speciesNameId) }
+
+    grant { user.canReadSpeciesName(speciesNameId) }
+    assertThrows<AccessDeniedException> { requirements.updateSpeciesName(speciesNameId) }
+
+    grant { user.canUpdateSpeciesName(speciesNameId) }
+    requirements.updateSpeciesName(speciesNameId)
+  }
+
+  @Test
+  fun deleteSpeciesName() {
+    assertThrows<SpeciesNameNotFoundException> { requirements.deleteSpeciesName(speciesNameId) }
+
+    grant { user.canReadSpeciesName(speciesNameId) }
+    assertThrows<AccessDeniedException> { requirements.deleteSpeciesName(speciesNameId) }
+
+    grant { user.canDeleteSpeciesName(speciesNameId) }
+    requirements.deleteSpeciesName(speciesNameId)
   }
 
   @Test

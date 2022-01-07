@@ -17,6 +17,8 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
@@ -40,6 +42,9 @@ import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
+import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.SPECIES_NAMES
+import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
 import com.terraformation.backend.db.tables.references.TIMESERIES
 import io.mockk.every
 import io.mockk.mockk
@@ -164,6 +169,11 @@ internal class PermissionTest : DatabaseTest() {
   private val org1AccessionIds = accessionIds.toTypedArray()
   private val project10AccessionIds = accessionIds.take(4).toTypedArray()
 
+  private val speciesIds = organizationIds.map { SpeciesId(it.value) }
+
+  private val speciesNameIds = speciesIds.map { SpeciesNameId(it.value) }
+  private val org1SpeciesNameIds = speciesNameIds.take(1).toTypedArray()
+
   @BeforeEach
   fun setUp() {
     every { realmResource.users() } returns mockk()
@@ -224,6 +234,7 @@ internal class PermissionTest : DatabaseTest() {
       insertPhoto(it)
       insertFeaturePhoto(it)
     }
+    speciesIds.forEach { insertSpecies(it, organizationId = it.value) }
 
     usersDao.insert(
         UsersRow(
@@ -250,6 +261,10 @@ internal class PermissionTest : DatabaseTest() {
         listOrganizationUsers = true,
         addOrganizationUser = true,
         removeOrganizationUser = true,
+        createSpecies = true,
+        updateSpecies = true,
+        deleteSpecies = true,
+        createSpeciesName = true,
     )
 
     permissions.expect(
@@ -323,6 +338,13 @@ internal class PermissionTest : DatabaseTest() {
         updateTimeseries = true,
         readDevice = true,
         updateDevice = true,
+    )
+
+    permissions.expect(
+        *org1SpeciesNameIds,
+        readSpeciesName = true,
+        updateSpeciesName = true,
+        deleteSpeciesName = true,
     )
 
     permissions.andNothingElse()
@@ -344,6 +366,17 @@ internal class PermissionTest : DatabaseTest() {
         listOrganizationUsers = true,
         addOrganizationUser = true,
         removeOrganizationUser = true,
+        createSpecies = true,
+        updateSpecies = true,
+        deleteSpecies = true,
+        createSpeciesName = true,
+    )
+
+    permissions.expect(
+        SpeciesNameId(3),
+        readSpeciesName = true,
+        updateSpeciesName = true,
+        deleteSpeciesName = true,
     )
 
     permissions.andNothingElse()
@@ -364,6 +397,10 @@ internal class PermissionTest : DatabaseTest() {
         listOrganizationUsers = true,
         addOrganizationUser = true,
         removeOrganizationUser = true,
+        createSpecies = true,
+        updateSpecies = true,
+        deleteSpecies = true,
+        createSpeciesName = true,
     )
 
     permissions.expect(
@@ -439,6 +476,13 @@ internal class PermissionTest : DatabaseTest() {
         updateDevice = true,
     )
 
+    permissions.expect(
+        *org1SpeciesNameIds,
+        readSpeciesName = true,
+        updateSpeciesName = true,
+        deleteSpeciesName = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -453,6 +497,10 @@ internal class PermissionTest : DatabaseTest() {
         listProjects = true,
         readOrganization = true,
         listOrganizationUsers = true,
+        createSpecies = true,
+        updateSpecies = true,
+        deleteSpecies = true,
+        createSpeciesName = true,
     )
 
     permissions.expect(
@@ -522,6 +570,13 @@ internal class PermissionTest : DatabaseTest() {
         updateTimeseries = true,
         readDevice = true,
         updateDevice = true,
+    )
+
+    permissions.expect(
+        *org1SpeciesNameIds,
+        readSpeciesName = true,
+        updateSpeciesName = true,
+        deleteSpeciesName = true,
     )
 
     permissions.andNothingElse()
@@ -603,6 +658,11 @@ internal class PermissionTest : DatabaseTest() {
         updateTimeseries = true,
         readDevice = true,
         updateDevice = true,
+    )
+
+    permissions.expect(
+        *org1SpeciesNameIds,
+        readSpeciesName = true,
     )
 
     permissions.andNothingElse()
@@ -687,6 +747,11 @@ internal class PermissionTest : DatabaseTest() {
         updateDevice = true,
     )
 
+    permissions.expect(
+        *org1SpeciesNameIds,
+        readSpeciesName = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -737,6 +802,9 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(SITES).execute()
     dslContext.deleteFrom(PROJECT_USERS).execute()
     dslContext.deleteFrom(PROJECTS).execute()
+    dslContext.deleteFrom(SPECIES_OPTIONS).execute()
+    dslContext.deleteFrom(SPECIES_NAMES).execute()
+    dslContext.deleteFrom(SPECIES).execute()
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
     dslContext.deleteFrom(ORGANIZATIONS).execute()
 
@@ -754,6 +822,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedPhotos = photoIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
+    private val uncheckedSpeciesNames = speciesNameIds.toMutableSet()
 
     // All checks keyed on organization IDs go here
     fun expect(
@@ -766,6 +835,10 @@ internal class PermissionTest : DatabaseTest() {
         listOrganizationUsers: Boolean = false,
         addOrganizationUser: Boolean = false,
         removeOrganizationUser: Boolean = false,
+        createSpecies: Boolean = false,
+        updateSpecies: Boolean = false,
+        deleteSpecies: Boolean = false,
+        createSpeciesName: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
         assertEquals(
@@ -800,6 +873,22 @@ internal class PermissionTest : DatabaseTest() {
             removeOrganizationUser,
             user.canRemoveOrganizationUser(organizationId),
             "Can remove user from organization $organizationId")
+        assertEquals(
+            createSpecies,
+            user.canCreateSpecies(organizationId),
+            "Can create species in organization $organizationId")
+        assertEquals(
+            updateSpecies,
+            user.canUpdateSpecies(organizationId),
+            "Can update species in organization $organizationId")
+        assertEquals(
+            deleteSpecies,
+            user.canDeleteSpecies(organizationId),
+            "Can delete species from organization $organizationId")
+        assertEquals(
+            createSpeciesName,
+            user.canCreateSpeciesName(organizationId),
+            "Can create species name in organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
       }
@@ -1023,6 +1112,31 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    // All checks keyed on species name IDs go here
+    fun expect(
+        vararg speciesNameIds: SpeciesNameId,
+        readSpeciesName: Boolean = false,
+        updateSpeciesName: Boolean = false,
+        deleteSpeciesName: Boolean = false,
+    ) {
+      speciesNameIds.forEach { speciesNameId ->
+        assertEquals(
+            readSpeciesName,
+            user.canReadSpeciesName(speciesNameId),
+            "Can read species name $speciesNameId")
+        assertEquals(
+            updateSpeciesName,
+            user.canUpdateSpeciesName(speciesNameId),
+            "Can update species name $speciesNameId")
+        assertEquals(
+            deleteSpeciesName,
+            user.canDeleteSpeciesName(speciesNameId),
+            "Can delete species name $speciesNameId")
+
+        uncheckedSpeciesNames.remove(speciesNameId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedProjects.toTypedArray())
@@ -1034,6 +1148,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedPhotos.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
+      expect(*uncheckedSpeciesNames.toTypedArray())
     }
   }
 }

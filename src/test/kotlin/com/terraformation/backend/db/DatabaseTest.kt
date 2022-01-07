@@ -16,6 +16,9 @@ import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
+import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.SPECIES_NAMES
+import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
 import com.terraformation.backend.db.tables.references.USERS
 import java.net.URI
 import java.time.Instant
@@ -320,6 +323,59 @@ abstract class DatabaseTest {
           .set(NATURAL_REGEN, naturalRegen)
           .set(DATE_PLANTED, datePlanted)
           .execute()
+    }
+  }
+
+  protected fun insertSpecies(
+      speciesId: Any,
+      name: String = "Species $speciesId",
+      createdTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = Instant.EPOCH,
+      organizationId: Any? = null,
+      insertName: Boolean = organizationId != null,
+      insertOption: Boolean = organizationId != null,
+      speciesNameId: Any? = null,
+  ) {
+    val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
+    val organizationIdWrapper = organizationId?.toIdWrapper { OrganizationId(it) }
+
+    with(SPECIES) {
+      dslContext
+          .insertInto(SPECIES)
+          .set(CREATED_TIME, createdTime)
+          .set(ID, speciesIdWrapper)
+          .set(MODIFIED_TIME, modifiedTime)
+          .set(NAME, name)
+          .execute()
+    }
+
+    if (insertName) {
+      val speciesNameIdWrapper =
+          speciesNameId?.toIdWrapper { SpeciesNameId(it) } ?: SpeciesNameId(speciesIdWrapper.value)
+
+      with(SPECIES_NAMES) {
+        dslContext
+            .insertInto(SPECIES_NAMES)
+            .set(CREATED_TIME, createdTime)
+            .set(ID, speciesNameIdWrapper)
+            .set(SPECIES_ID, speciesIdWrapper)
+            .set(ORGANIZATION_ID, organizationIdWrapper)
+            .set(MODIFIED_TIME, modifiedTime)
+            .set(NAME, name)
+            .execute()
+      }
+    }
+
+    if (insertOption) {
+      with(SPECIES_OPTIONS) {
+        dslContext
+            .insertInto(SPECIES_OPTIONS)
+            .set(CREATED_TIME, createdTime)
+            .set(MODIFIED_TIME, modifiedTime)
+            .set(ORGANIZATION_ID, organizationIdWrapper)
+            .set(SPECIES_ID, speciesIdWrapper)
+            .execute()
+      }
     }
   }
 

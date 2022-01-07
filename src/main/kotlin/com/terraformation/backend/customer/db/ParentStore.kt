@@ -11,16 +11,22 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
+import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
 import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
+import com.terraformation.backend.db.tables.references.SPECIES_NAMES
+import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.Record
 import org.jooq.TableField
 
@@ -49,12 +55,27 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getLayerId(featureId: FeatureId): LayerId? =
       fetchFieldById(featureId, FEATURES.ID, FEATURES.LAYER_ID)
 
+  fun getSiteId(layerId: LayerId): SiteId? = fetchFieldById(layerId, LAYERS.ID, LAYERS.SITE_ID)
+
   fun getProjectId(siteId: SiteId): ProjectId? = fetchFieldById(siteId, SITES.ID, SITES.PROJECT_ID)
 
   fun getOrganizationId(projectId: ProjectId): OrganizationId? =
       fetchFieldById(projectId, PROJECTS.ID, PROJECTS.ORGANIZATION_ID)
 
-  fun getSiteId(layerId: LayerId): SiteId? = fetchFieldById(layerId, LAYERS.ID, LAYERS.SITE_ID)
+  fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
+      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.sites().projects().ORGANIZATION_ID)
+
+  fun getOrganizationIds(speciesId: SpeciesId): List<OrganizationId> {
+    return dslContext
+        .select(SPECIES_OPTIONS.ORGANIZATION_ID)
+        .from(SPECIES_OPTIONS)
+        .where(SPECIES_OPTIONS.SPECIES_ID.eq(speciesId))
+        .fetch(SPECIES_OPTIONS.ORGANIZATION_ID)
+        .filterNotNull()
+  }
+
+  fun getOrganizationId(speciesNameId: SpeciesNameId): OrganizationId? =
+      fetchFieldById(speciesNameId, SPECIES_NAMES.ID, SPECIES_NAMES.ORGANIZATION_ID)
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
@@ -63,7 +84,7 @@ class ParentStore(private val dslContext: DSLContext) {
   private fun <C, P, R : Record> fetchFieldById(
       id: C,
       idField: TableField<R, C>,
-      fieldToFetch: TableField<R, P>
+      fieldToFetch: Field<P>
   ): P? {
     return dslContext
         .select(fieldToFetch)

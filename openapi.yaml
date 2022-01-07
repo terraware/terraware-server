@@ -2350,7 +2350,7 @@ paths:
         required: true
         schema:
           type: integer
-          description: Organization whose species should be listed. (Currently ignored.)
+          description: Organization whose species should be listed.
           format: int64
       responses:
         "200":
@@ -2387,7 +2387,7 @@ paths:
     get:
       tags:
       - GISApp
-      summary: Lists all species names.
+      summary: Lists all of an organization's species names.
       operationId: listAllSpeciesNames
       parameters:
       - name: organizationId
@@ -2395,8 +2395,7 @@ paths:
         required: true
         schema:
           type: integer
-          description: Organization whose species names should be listed. (Currently
-            ignored.)
+          description: Organization whose species names should be listed.
           format: int64
       responses:
         "200":
@@ -2414,7 +2413,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SpeciesNameRequestPayload'
+              $ref: '#/components/schemas/CreateSpeciesNameRequestPayload'
         required: true
       responses:
         "200":
@@ -2477,7 +2476,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SpeciesNameRequestPayload'
+              $ref: '#/components/schemas/UpdateSpeciesNameRequestPayload'
         required: true
       responses:
         "200":
@@ -2535,8 +2534,8 @@ paths:
         required: true
         schema:
           type: integer
-          description: Gets information about how the species is listed at this organization.
-            (Currently ignored.)
+          description: Organization whose information about the species should be
+            returned.
           format: int64
       responses:
         "200":
@@ -2586,6 +2585,9 @@ paths:
       tags:
       - GISApp
       summary: Deletes an existing species.
+      description: "The species will no longer appear in the organization's list of\
+        \ species, but existing data (plants, seeds, etc.) that refer to the species\
+        \ will still refer to it."
       operationId: deleteSpecies
       parameters:
       - name: speciesId
@@ -2599,8 +2601,7 @@ paths:
         required: true
         schema:
           type: integer
-          description: Organization from which the species should be deleted. (Currently
-            ignored.)
+          description: Organization from which the species should be deleted.
           format: int64
       responses:
         "200":
@@ -2639,7 +2640,6 @@ paths:
         schema:
           type: integer
           description: Organization whose names for the species should be listed.
-            (Currently ignored.)
           format: int64
       responses:
         "200":
@@ -3538,6 +3538,27 @@ components:
           format: int64
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateSpeciesNameRequestPayload:
+      required:
+      - name
+      - organizationId
+      - speciesId
+      type: object
+      properties:
+        isScientific:
+          type: boolean
+          description: True if name is a scientific name for the species.
+        locale:
+          type: string
+        name:
+          type: string
+        organizationId:
+          type: integer
+          description: Which organization's species list to update.
+          format: int64
+        speciesId:
+          type: integer
+          format: int64
     CreateSpeciesNameResponsePayload:
       required:
       - id
@@ -5371,32 +5392,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FacilityPayload'
-    SpeciesNameRequestPayload:
-      required:
-      - name
-      - organizationId
-      - speciesId
-      type: object
-      properties:
-        isScientific:
-          type: boolean
-          description: True if name is a scientific name for the species.
-        locale:
-          type: string
-        name:
-          type: string
-        organizationId:
-          type: integer
-          description: Which organization's species list to update. (Currently ignored.)
-          format: int64
-        speciesId:
-          type: integer
-          format: int64
     SpeciesNamesResponseElement:
       required:
       - id
       - isScientific
       - name
+      - organizationId
       - speciesId
       type: object
       properties:
@@ -5408,6 +5409,9 @@ components:
           description: True if name is the scientific name for the species.
         name:
           type: string
+        organizationId:
+          type: integer
+          format: int64
         speciesId:
           type: integer
           format: int64
@@ -5426,7 +5430,7 @@ components:
           type: string
         organizationId:
           type: integer
-          description: Which organization's species list to update. (Currently ignored.)
+          description: Which organization's species list to update.
           format: int64
         plantForm:
           type: string
@@ -6078,6 +6082,18 @@ components:
             \ the existing one."
           format: int64
         timezone:
+          type: string
+    UpdateSpeciesNameRequestPayload:
+      required:
+      - name
+      type: object
+      properties:
+        isScientific:
+          type: boolean
+          description: True if name is a scientific name for the species.
+        locale:
+          type: string
+        name:
           type: string
     UpdateUserRequestPayload:
       required:
