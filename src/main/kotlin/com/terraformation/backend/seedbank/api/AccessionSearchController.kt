@@ -1,10 +1,10 @@
 package com.terraformation.backend.seedbank.api
 
-import com.opencsv.CSVWriter
 import com.terraformation.backend.api.SeedBankAppEndpoint
+import com.terraformation.backend.api.csvResponse
+import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.search.SearchFieldPrefix
-import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.api.HasSearchFields
 import com.terraformation.backend.search.api.HasSearchFilters
 import com.terraformation.backend.search.api.HasSearchNode
@@ -20,17 +20,11 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import java.io.ByteArrayOutputStream
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.validation.constraints.NotEmpty
 import javax.ws.rs.BadRequestException
-import org.springframework.http.ContentDisposition
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -109,46 +103,19 @@ class AccessionSearchController(
             fields,
             payload.toSearchNode(accessionsPrefix),
             payload.getSearchSortFields(accessionsPrefix))
-    return exportCsv(payload, searchResults)
-  }
 
-  private fun exportCsv(
-      payload: ExportAccessionsRequestPayload,
-      searchResults: SearchResults
-  ): ResponseEntity<ByteArray> {
     val dateAndTime =
         DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now(clock))
     val filename = "seedbank-$dateAndTime.csv"
-    val byteArrayOutputStream = ByteArrayOutputStream()
 
-    // Write a UTF-8 BOM so Excel won't screw up the character encoding if there are non-ASCII
-    // characters.
-    byteArrayOutputStream.write(239)
-    byteArrayOutputStream.write(187)
-    byteArrayOutputStream.write(191)
+    val columnNames =
+        payload.getSearchFieldPaths(accessionsPrefix).map { it.searchField.displayName }
 
-    CSVWriter(OutputStreamWriter(byteArrayOutputStream, StandardCharsets.UTF_8)).use { csvWriter ->
-      val header =
-          payload
-              .getSearchFieldPaths(accessionsPrefix)
-              .map { it.searchField.displayName }
-              .toTypedArray()
-      csvWriter.writeNext(header, false)
-
+    return csvResponse(filename, columnNames) { csvWriter ->
       searchResults.results.forEach { result ->
-        val values =
-            payload.fields.map { fieldName -> result[fieldName]?.toString() }.toTypedArray()
-        csvWriter.writeNext(values, false)
+        csvWriter.writeNext(payload.fields.map { result[it] })
       }
     }
-
-    val value = byteArrayOutputStream.toByteArray()
-    val headers = HttpHeaders()
-    headers.contentLength = value.size.toLong()
-    headers["Content-type"] = "text/csv;charset=UTF-8"
-    headers.contentDisposition = ContentDisposition.attachment().filename(filename).build()
-
-    return ResponseEntity(value, headers, HttpStatus.OK)
   }
 }
 

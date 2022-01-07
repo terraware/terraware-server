@@ -1403,7 +1403,7 @@ paths:
     post:
       tags:
       - Search
-      operationId: search
+      operationId: search_1
       requestBody:
         content:
           application/json:
@@ -1455,6 +1455,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponsePayload'
+            text/csv:
+              schema:
+                type: string
+                format: binary
   /api/v1/seedbank/accession:
     post:
       tags:
@@ -4754,6 +4758,7 @@ components:
           description: Maximum number of top-level search results to return. The system
             may impose a limit on this value. A separate system-imposed limit may
             also be applied to lists of child objects inside the top-level results.
+            Use a value of 0 to return the maximum number of allowed results.
           format: int32
           default: 25
         cursor:
