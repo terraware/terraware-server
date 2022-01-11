@@ -24,7 +24,6 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
-import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
@@ -154,9 +153,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     speciesNamesDao = SpeciesNamesDao(jooqConfig)
     storageLocationsDao = StorageLocationsDao(jooqConfig)
 
-    val support = StoreSupport(dslContext)
-
-    val speciesStore = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, support)
+    val speciesStore = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao)
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
@@ -178,7 +175,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             speciesStore,
             WithdrawalStore(dslContext, clock),
             clock,
-            support,
         )
 
     insertSiteData()

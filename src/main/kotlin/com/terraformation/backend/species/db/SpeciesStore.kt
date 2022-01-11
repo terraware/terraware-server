@@ -5,7 +5,6 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
@@ -13,6 +12,7 @@ import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
@@ -27,7 +27,6 @@ class SpeciesStore(
     private val dslContext: DSLContext,
     private val speciesDao: SpeciesDao,
     private val speciesNamesDao: SpeciesNamesDao,
-    private val support: StoreSupport
 ) {
   private val log = perClassLogger()
 
@@ -41,7 +40,13 @@ class SpeciesStore(
   }
 
   fun countSpecies(asOf: TemporalAccessor): Int {
-    return support.countEarlierThan(asOf, SPECIES.CREATED_TIME)
+    return dslContext
+        .selectCount()
+        .from(SPECIES)
+        .where(SPECIES.CREATED_TIME.le(asOf.toInstant()))
+        .fetchOne()
+        ?.value1()
+        ?: 0
   }
 
   fun createSpecies(row: SpeciesRow): SpeciesId {

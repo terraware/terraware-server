@@ -10,7 +10,6 @@ import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
-import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
@@ -55,7 +54,6 @@ class AccessionStore(
     private val speciesStore: SpeciesStore,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
-    private val support: StoreSupport,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -599,12 +597,17 @@ class AccessionStore(
   }
 
   private fun getStorageLocationId(facilityId: FacilityId, name: String?): StorageLocationId? {
-    return support.getId(
-        name,
-        STORAGE_LOCATIONS.ID,
-        STORAGE_LOCATIONS.NAME,
-        STORAGE_LOCATIONS.FACILITY_ID,
-        facilityId)
+    return if (name == null) {
+      null
+    } else {
+      dslContext
+          .select(STORAGE_LOCATIONS.ID)
+          .from(STORAGE_LOCATIONS.ID.table)
+          .where(STORAGE_LOCATIONS.NAME.eq(name))
+          .and(STORAGE_LOCATIONS.FACILITY_ID.eq(facilityId))
+          .fetchOne(STORAGE_LOCATIONS.ID)
+          ?: throw IllegalArgumentException("Unable to find storage location $name")
+    }
   }
 
   /**
