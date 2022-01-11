@@ -16,6 +16,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -51,6 +52,9 @@ import org.testcontainers.utility.DockerImageName
  * foreign key reference to it, because the existence of that reference table is not relevant for
  * someone who's focused on seed banking or tree tracking.
  *
+ * If you want to generate docs for a subset of the slices, set the `SCHEMA_DOCS_SLICES` environment
+ * variable to a comma-delimited list of the ones you want.
+ *
  * ## Implementation notes
  *
  * Doc generation isn't super fast, so we skip it by default and only enable it if an environment
@@ -77,6 +81,13 @@ class SchemaDocsGenerator : DatabaseTest() {
    * set, doc generation is skipped.
    */
   private val docsDirEnvVar = "SCHEMA_DOCS_DIR"
+
+  /**
+   * Name of environment variable specifying the list of slices to generate. Value is a
+   * comma-separated list of slice subdirectory names, e.g., `customer,device`. If not set, all
+   * slices are generated.
+   */
+  private val slicesEnvVar = "SCHEMA_DOCS_SLICES"
 
   /**
    * How long to let doc generation run. This should be long enough to account for slow GitHub
@@ -190,6 +201,11 @@ class SchemaDocsGenerator : DatabaseTest() {
     val docsDir = Path(docsDirValue).toAbsolutePath()
 
     assertTrue(docsDir.exists(), "$docsDir doesn't exist")
+
+    val slicesList = System.getenv(slicesEnvVar)
+    assumeTrue(
+        slicesList == null || slice.subdirectory in slicesList.split(','),
+        "Skipping slice $slice because it is not in $slicesEnvVar")
 
     // SchemaSpy matches table names against a regex. Construct one that has all the tables in the
     // current slice. Table names should never include regex special characters.
