@@ -2086,6 +2086,14 @@ paths:
       - GISApp
       summary: Lists all known species.
       operationId: listSpecies
+      parameters:
+      - name: organizationId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Organization whose species should be listed. (Currently ignored.)
+          format: int64
       responses:
         "200":
           description: OK
@@ -2123,6 +2131,15 @@ paths:
       - GISApp
       summary: Lists all species names.
       operationId: listAllSpeciesNames
+      parameters:
+      - name: organizationId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Organization whose species names should be listed. (Currently
+            ignored.)
+          format: int64
       responses:
         "200":
           description: OK
@@ -2255,6 +2272,14 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: organizationId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Gets information about how the species is listed at this organization.
+            (Currently ignored.)
+          format: int64
       responses:
         "200":
           description: Species retrieved.
@@ -2302,7 +2327,7 @@ paths:
     delete:
       tags:
       - GISApp
-      summary: Delete an existing species.
+      summary: Deletes an existing species.
       operationId: deleteSpecies
       parameters:
       - name: speciesId
@@ -2310,6 +2335,14 @@ paths:
         required: true
         schema:
           type: integer
+          format: int64
+      - name: organizationId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Organization from which the species should be deleted. (Currently
+            ignored.)
           format: int64
       responses:
         "200":
@@ -2341,6 +2374,14 @@ paths:
         required: true
         schema:
           type: integer
+          format: int64
+      - name: organizationId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: Organization whose names for the species should be listed.
+            (Currently ignored.)
           format: int64
       responses:
         "200":
@@ -4956,6 +4997,10 @@ components:
           type: string
         name:
           type: string
+        organizationId:
+          type: integer
+          description: Which organization's species list to update. (Currently ignored.)
+          format: int64
         speciesId:
           type: integer
           format: int64
@@ -4990,6 +5035,10 @@ components:
           description: True if name is the scientific name for the species.
         name:
           type: string
+        organizationId:
+          type: integer
+          description: Which organization's species list to update. (Currently ignored.)
+          format: int64
         plantForm:
           type: string
           enum:

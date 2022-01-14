@@ -7,6 +7,7 @@ import com.terraformation.backend.api.GISAppEndpoint
 import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PlantForm
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SpeciesId
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -58,7 +60,11 @@ class SpeciesController(
 ) {
   @GetMapping
   @Operation(summary = "Lists all known species.")
-  fun listSpecies(): ListSpeciesResponsePayload {
+  fun listSpecies(
+      @RequestParam("organizationId")
+      @Schema(description = "Organization whose species should be listed. (Currently ignored.)")
+      organizationId: OrganizationId? = null
+  ): ListSpeciesResponsePayload {
     val species = speciesDao.findAll()
     return ListSpeciesResponsePayload(species.map { SpeciesResponseElement(it) })
   }
@@ -82,7 +88,15 @@ class SpeciesController(
   @ApiResponse404
   @GetMapping("/{speciesId}")
   @Operation(summary = "Gets information about a single species.")
-  fun getSpecies(@PathVariable speciesId: SpeciesId): GetSpeciesResponsePayload {
+  fun getSpecies(
+      @PathVariable speciesId: SpeciesId,
+      @RequestParam("organizationId")
+      @Schema(
+          description =
+              "Gets information about how the species is listed at this organization. " +
+                  "(Currently ignored.)")
+      organizationId: OrganizationId? = null,
+  ): GetSpeciesResponsePayload {
     val row =
         speciesDao.fetchOneById(speciesId)
             ?: throw NotFoundException("Species $speciesId not found.")
@@ -109,8 +123,15 @@ class SpeciesController(
           description = "Cannot delete the species because it is currently in use."))
   @ApiResponse404
   @DeleteMapping("/{speciesId}")
-  @Operation(summary = "Delete an existing species.")
-  fun deleteSpecies(@PathVariable speciesId: SpeciesId): SimpleSuccessResponsePayload {
+  @Operation(summary = "Deletes an existing species.")
+  fun deleteSpecies(
+      @PathVariable speciesId: SpeciesId,
+      @RequestParam("organizationId")
+      @Schema(
+          description =
+              "Organization from which the species should be deleted. (Currently ignored.)")
+      organizationId: OrganizationId? = null,
+  ): SimpleSuccessResponsePayload {
     try {
       speciesStore.deleteSpecies(speciesId)
       return SimpleSuccessResponsePayload()
@@ -121,7 +142,12 @@ class SpeciesController(
 
   @GetMapping("/names")
   @Operation(summary = "Lists all species names.")
-  fun listAllSpeciesNames(): ListSpeciesNamesResponsePayload {
+  fun listAllSpeciesNames(
+      @RequestParam("organizationId")
+      @Schema(
+          description = "Organization whose species names should be listed. (Currently ignored.)")
+      organizationId: OrganizationId? = null,
+  ): ListSpeciesNamesResponsePayload {
     val names = speciesNamesDao.findAll()
     return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
   }
@@ -147,7 +173,14 @@ class SpeciesController(
   @ApiResponse(responseCode = "200", description = "Species names retrieved.")
   @ApiResponse404("The species does not exist.")
   @GetMapping("/{speciesId}/names")
-  fun listSpeciesNames(@PathVariable speciesId: SpeciesId): ListSpeciesNamesResponsePayload {
+  fun listSpeciesNames(
+      @PathVariable speciesId: SpeciesId,
+      @RequestParam("organizationId")
+      @Schema(
+          description =
+              "Organization whose names for the species should be listed. (Currently ignored.)")
+      organizationId: OrganizationId? = null,
+  ): ListSpeciesNamesResponsePayload {
     val names = speciesStore.listAllSpeciesNames(speciesId)
     return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
   }
@@ -220,6 +253,8 @@ data class SpeciesRequestPayload(
     @Schema(description = "True if name is the scientific name for the species.")
     val isScientific: Boolean?,
     val name: String,
+    @Schema(description = "Which organization's species list to update. (Currently ignored.)")
+    val organizationId: OrganizationId? = null,
     val plantForm: PlantForm?,
     val rare: RareType?,
     @Schema(
@@ -263,6 +298,8 @@ data class SpeciesNameRequestPayload(
     val isScientific: Boolean?,
     val locale: String?,
     val name: String,
+    @Schema(description = "Which organization's species list to update. (Currently ignored.)")
+    val organizationId: OrganizationId? = null,
     val speciesId: SpeciesId,
 ) {
   fun toRow() =
