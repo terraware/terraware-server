@@ -415,15 +415,14 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      if (projectStore.removeUser(projectId, userId)) {
-        redirectAttributes.addFlashAttribute("successMessage", "User removed from project.")
-      } else {
-        redirectAttributes.addFlashAttribute(
-            "failureMessage", "User was not a member of the project.")
-      }
+      projectStore.removeUser(projectId, userId)
+      redirectAttributes.addFlashAttribute("successMessage", "User removed from project.")
     } catch (e: AccessDeniedException) {
       redirectAttributes.addFlashAttribute(
           "failureMessage", "No permission to remove users from this project.")
+    } catch (e: UserNotFoundException) {
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "User was not a member of the project.")
     }
 
     return project(projectId)
