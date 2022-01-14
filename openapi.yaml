@@ -2085,19 +2085,19 @@ paths:
       tags:
       - GISApp
       summary: Lists all known species.
-      operationId: speciesList
+      operationId: listSpecies
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesListResponsePayload'
+                $ref: '#/components/schemas/ListSpeciesResponsePayload'
     post:
       tags:
       - GISApp
       summary: Creates a new species.
-      operationId: speciesCreate
+      operationId: createSpecies
       requestBody:
         content:
           application/json:
@@ -2110,31 +2110,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesCreateResponsePayload'
+                $ref: '#/components/schemas/CreateSpeciesResponsePayload'
         "409":
           description: A species with the requested name already exists.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesCreateResponsePayload'
+                $ref: '#/components/schemas/CreateSpeciesResponsePayload'
   /api/v1/species/names:
     get:
       tags:
       - GISApp
       summary: Lists all species names.
-      operationId: speciesNamesListAll
+      operationId: listAllSpeciesNames
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesNamesListResponsePayload'
+                $ref: '#/components/schemas/ListSpeciesNamesResponsePayload'
     post:
       tags:
       - GISApp
       summary: Adds a new name for an existing species.
-      operationId: speciesNameCreate
+      operationId: createSpeciesName
       requestBody:
         content:
           application/json:
@@ -2147,7 +2147,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesNameCreateResponsePayload'
+                $ref: '#/components/schemas/CreateSpeciesNameResponsePayload'
         "404":
           description: The species does not exist.
           content:
@@ -2159,13 +2159,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesNameCreateResponsePayload'
+                $ref: '#/components/schemas/CreateSpeciesNameResponsePayload'
   /api/v1/species/names/{speciesNameId}:
     get:
       tags:
       - GISApp
       description: Gets information about a single species name.
-      operationId: speciesNameGet
+      operationId: getSpeciesName
       parameters:
       - name: speciesNameId
         in: path
@@ -2179,7 +2179,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesNameGetResponsePayload'
+                $ref: '#/components/schemas/GetSpeciesNameResponsePayload'
         "404":
           description: The requested resource was not found.
           content:
@@ -2190,7 +2190,7 @@ paths:
       tags:
       - GISApp
       description: Updates one of the names of a species.
-      operationId: speciesNameUpdate
+      operationId: updateSpeciesName
       parameters:
       - name: speciesNameId
         in: path
@@ -2215,7 +2215,7 @@ paths:
       tags:
       - GISApp
       description: Deletes one of the secondary names of a species.
-      operationId: speciesNameDelete
+      operationId: deleteSpeciesName
       parameters:
       - name: speciesNameId
         in: path
@@ -2247,7 +2247,7 @@ paths:
       tags:
       - GISApp
       summary: Gets information about a single species.
-      operationId: speciesRead
+      operationId: getSpecies
       parameters:
       - name: speciesId
         in: path
@@ -2261,7 +2261,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesGetResponsePayload'
+                $ref: '#/components/schemas/GetSpeciesResponsePayload'
         "404":
           description: The requested resource was not found.
           content:
@@ -2272,7 +2272,7 @@ paths:
       tags:
       - GISApp
       summary: Updates an existing species.
-      operationId: speciesUpdate
+      operationId: updateSpecies
       parameters:
       - name: speciesId
         in: path
@@ -2303,7 +2303,7 @@ paths:
       tags:
       - GISApp
       summary: Delete an existing species.
-      operationId: speciesDelete
+      operationId: deleteSpecies
       parameters:
       - name: speciesId
         in: path
@@ -2334,7 +2334,7 @@ paths:
     get:
       tags:
       - GISApp
-      operationId: speciesNamesList
+      operationId: listSpeciesNames
       parameters:
       - name: speciesId
         in: path
@@ -2348,7 +2348,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpeciesNamesListResponsePayload'
+                $ref: '#/components/schemas/ListSpeciesNamesResponsePayload'
         "404":
           description: The species does not exist.
           content:
@@ -3161,6 +3161,28 @@ components:
             - Agroforestry
             - Silvopasture
             - Sustainable Timber
+    CreateSpeciesNameResponsePayload:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    CreateSpeciesResponsePayload:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     CreateTimeseriesEntry:
       required:
       - deviceId
@@ -3783,6 +3805,26 @@ components:
           $ref: '#/components/schemas/SiteElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetSpeciesNameResponsePayload:
+      required:
+      - speciesName
+      - status
+      type: object
+      properties:
+        speciesName:
+          $ref: '#/components/schemas/SpeciesNamesResponseElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetSpeciesResponsePayload:
+      required:
+      - species
+      - status
+      type: object
+      properties:
+        species:
+          $ref: '#/components/schemas/SpeciesResponseElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetUserResponsePayload:
       required:
       - status
@@ -4163,6 +4205,30 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SiteElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListSpeciesNamesResponsePayload:
+      required:
+      - speciesNames
+      - status
+      type: object
+      properties:
+        speciesNames:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpeciesNamesResponseElement'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    ListSpeciesResponsePayload:
+      required:
+      - species
+      - status
+      type: object
+      properties:
+        species:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpeciesResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ModifyAutomationRequestPayload:
@@ -4877,60 +4943,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FacilityPayload'
-    SpeciesCreateResponsePayload:
-      required:
-      - id
-      - status
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    SpeciesGetResponsePayload:
-      required:
-      - species
-      - status
-      type: object
-      properties:
-        species:
-          $ref: '#/components/schemas/SpeciesResponseElement'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    SpeciesListResponsePayload:
-      required:
-      - species
-      - status
-      type: object
-      properties:
-        species:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpeciesResponseElement'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    SpeciesNameCreateResponsePayload:
-      required:
-      - id
-      - status
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    SpeciesNameGetResponsePayload:
-      required:
-      - speciesName
-      - status
-      type: object
-      properties:
-        speciesName:
-          $ref: '#/components/schemas/SpeciesNamesResponseElement'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     SpeciesNameRequestPayload:
       required:
       - name
@@ -4947,18 +4959,6 @@ components:
         speciesId:
           type: integer
           format: int64
-    SpeciesNamesListResponsePayload:
-      required:
-      - speciesNames
-      - status
-      type: object
-      properties:
-        speciesNames:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpeciesNamesResponseElement'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     SpeciesNamesResponseElement:
       required:
       - id

@@ -58,9 +58,9 @@ class SpeciesController(
 ) {
   @GetMapping
   @Operation(summary = "Lists all known species.")
-  fun speciesList(): SpeciesListResponsePayload {
+  fun listSpecies(): ListSpeciesResponsePayload {
     val species = speciesDao.findAll()
-    return SpeciesListResponsePayload(species.map { SpeciesResponseElement(it) })
+    return ListSpeciesResponsePayload(species.map { SpeciesResponseElement(it) })
   }
 
   @ApiResponses(
@@ -69,10 +69,10 @@ class SpeciesController(
           responseCode = "409", description = "A species with the requested name already exists."))
   @Operation(summary = "Creates a new species.")
   @PostMapping
-  fun speciesCreate(@RequestBody payload: SpeciesRequestPayload): SpeciesCreateResponsePayload {
+  fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
     try {
       val speciesId = speciesStore.createSpecies(payload.toRow())
-      return SpeciesCreateResponsePayload(speciesId)
+      return CreateSpeciesResponsePayload(speciesId)
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
     }
@@ -82,11 +82,11 @@ class SpeciesController(
   @ApiResponse404
   @GetMapping("/{speciesId}")
   @Operation(summary = "Gets information about a single species.")
-  fun speciesRead(@PathVariable speciesId: SpeciesId): SpeciesGetResponsePayload {
+  fun getSpecies(@PathVariable speciesId: SpeciesId): GetSpeciesResponsePayload {
     val row =
         speciesDao.fetchOneById(speciesId)
             ?: throw NotFoundException("Species $speciesId not found.")
-    return SpeciesGetResponsePayload(SpeciesResponseElement(row))
+    return GetSpeciesResponsePayload(SpeciesResponseElement(row))
   }
 
   @ApiResponse(
@@ -94,7 +94,7 @@ class SpeciesController(
   @ApiResponse404
   @Operation(summary = "Updates an existing species.")
   @PutMapping("/{speciesId}")
-  fun speciesUpdate(
+  fun updateSpecies(
       @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
@@ -110,7 +110,7 @@ class SpeciesController(
   @ApiResponse404
   @DeleteMapping("/{speciesId}")
   @Operation(summary = "Delete an existing species.")
-  fun speciesDelete(@PathVariable speciesId: SpeciesId): SimpleSuccessResponsePayload {
+  fun deleteSpecies(@PathVariable speciesId: SpeciesId): SimpleSuccessResponsePayload {
     try {
       speciesStore.deleteSpecies(speciesId)
       return SimpleSuccessResponsePayload()
@@ -121,9 +121,9 @@ class SpeciesController(
 
   @GetMapping("/names")
   @Operation(summary = "Lists all species names.")
-  fun speciesNamesListAll(): SpeciesNamesListResponsePayload {
+  fun listAllSpeciesNames(): ListSpeciesNamesResponsePayload {
     val names = speciesNamesDao.findAll()
-    return SpeciesNamesListResponsePayload(names.map { SpeciesNamesResponseElement(it) })
+    return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
   }
 
   @ApiResponses(
@@ -133,12 +133,12 @@ class SpeciesController(
   @ApiResponse404("The species does not exist.")
   @Operation(summary = "Adds a new name for an existing species.")
   @PostMapping("/names")
-  fun speciesNameCreate(
+  fun createSpeciesName(
       @RequestBody payload: SpeciesNameRequestPayload
-  ): SpeciesNameCreateResponsePayload {
+  ): CreateSpeciesNameResponsePayload {
     try {
       val speciesNameId = speciesStore.createSpeciesName(payload.toRow())
-      return SpeciesNameCreateResponsePayload(speciesNameId)
+      return CreateSpeciesNameResponsePayload(speciesNameId)
     } catch (e: DataIntegrityViolationException) {
       throw DuplicateNameException("The species already has the requested name.")
     }
@@ -147,20 +147,20 @@ class SpeciesController(
   @ApiResponse(responseCode = "200", description = "Species names retrieved.")
   @ApiResponse404("The species does not exist.")
   @GetMapping("/{speciesId}/names")
-  fun speciesNamesList(@PathVariable speciesId: SpeciesId): SpeciesNamesListResponsePayload {
+  fun listSpeciesNames(@PathVariable speciesId: SpeciesId): ListSpeciesNamesResponsePayload {
     val names = speciesStore.listAllSpeciesNames(speciesId)
-    return SpeciesNamesListResponsePayload(names.map { SpeciesNamesResponseElement(it) })
+    return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
   }
 
   @ApiResponse(responseCode = "200", description = "Species name retrieved.")
   @ApiResponse404
   @GetMapping("/names/{speciesNameId}")
   @Operation(description = "Gets information about a single species name.")
-  fun speciesNameGet(@PathVariable speciesNameId: SpeciesNameId): SpeciesNameGetResponsePayload {
+  fun getSpeciesName(@PathVariable speciesNameId: SpeciesNameId): GetSpeciesNameResponsePayload {
     val row =
         speciesNamesDao.fetchOneById(speciesNameId)
             ?: throw NotFoundException("Species name not found")
-    return SpeciesNameGetResponsePayload(SpeciesNamesResponseElement(row))
+    return GetSpeciesNameResponsePayload(SpeciesNamesResponseElement(row))
   }
 
   @ApiResponses(
@@ -170,14 +170,14 @@ class SpeciesController(
   @ApiResponse404
   @DeleteMapping("/names/{speciesNameId}")
   @Operation(description = "Deletes one of the secondary names of a species.")
-  fun speciesNameDelete(@PathVariable speciesNameId: SpeciesNameId): SimpleSuccessResponsePayload {
+  fun deleteSpeciesName(@PathVariable speciesNameId: SpeciesNameId): SimpleSuccessResponsePayload {
     speciesStore.deleteSpeciesName(speciesNameId)
     return SimpleSuccessResponsePayload()
   }
 
   @Operation(description = "Updates one of the names of a species.")
   @PutMapping("/names/{speciesNameId}")
-  fun speciesNameUpdate(
+  fun updateSpeciesName(
       @PathVariable speciesNameId: SpeciesNameId,
       @RequestBody payload: SpeciesNameRequestPayload
   ): SimpleSuccessResponsePayload {
@@ -270,17 +270,17 @@ data class SpeciesNameRequestPayload(
           speciesId = speciesId, name = name, isScientific = isScientific == true, locale = locale)
 }
 
-data class SpeciesCreateResponsePayload(val id: SpeciesId) : SuccessResponsePayload
+data class CreateSpeciesResponsePayload(val id: SpeciesId) : SuccessResponsePayload
 
-data class SpeciesNameCreateResponsePayload(val id: SpeciesNameId) : SuccessResponsePayload
+data class CreateSpeciesNameResponsePayload(val id: SpeciesNameId) : SuccessResponsePayload
 
-data class SpeciesGetResponsePayload(val species: SpeciesResponseElement) : SuccessResponsePayload
+data class GetSpeciesResponsePayload(val species: SpeciesResponseElement) : SuccessResponsePayload
 
-data class SpeciesNameGetResponsePayload(val speciesName: SpeciesNamesResponseElement) :
+data class GetSpeciesNameResponsePayload(val speciesName: SpeciesNamesResponseElement) :
     SuccessResponsePayload
 
-data class SpeciesListResponsePayload(val species: List<SpeciesResponseElement>) :
+data class ListSpeciesResponsePayload(val species: List<SpeciesResponseElement>) :
     SuccessResponsePayload
 
-data class SpeciesNamesListResponsePayload(val speciesNames: List<SpeciesNamesResponseElement>) :
+data class ListSpeciesNamesResponsePayload(val speciesNames: List<SpeciesNamesResponseElement>) :
     SuccessResponsePayload
