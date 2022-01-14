@@ -21,6 +21,7 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.email.EmailService
@@ -348,15 +349,14 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      if (organizationStore.removeUser(organizationId, userId)) {
-        redirectAttributes.addFlashAttribute("successMessage", "User removed from organization.")
-      } else {
-        redirectAttributes.addFlashAttribute(
-            "failureMessage", "User was not a member of the organization.")
-      }
+      organizationStore.removeUser(organizationId, userId)
+      redirectAttributes.addFlashAttribute("successMessage", "User removed from organization.")
     } catch (e: AccessDeniedException) {
       redirectAttributes.addFlashAttribute(
           "failureMessage", "No permission to remove users from this organization.")
+    } catch (e: UserNotFoundException) {
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "User was not a member of the organization.")
     }
 
     return organization(organizationId)

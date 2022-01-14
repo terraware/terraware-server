@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
@@ -19,17 +20,20 @@ import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -103,7 +107,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
+    every { user.canAddOrganizationUser(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
+    every { user.canRemoveOrganizationUser(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadSite(any()) } returns true
     every { user.canReadFacility(any()) } returns true
@@ -416,6 +422,72 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val actual = store.fetchUsers(organizationId)
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `removeUser throws exception if no permission to remove users`() {
+    every { user.canRemoveOrganizationUser(organizationId) } returns false
+
+    assertThrows<AccessDeniedException> { store.removeUser(organizationId, currentUser().userId) }
+  }
+
+  @Test
+  fun `removeUser throws exception if user is not in the organization`() {
+    insertUser()
+
+    assertThrows<UserNotFoundException> { store.removeUser(organizationId, currentUser().userId) }
+  }
+
+  @Test
+  fun `removeUser removes user from requested organization and projects`() {
+    val model = organizationUserModel(projectIds = listOf(projectId))
+    configureUser(model)
+
+    val otherOrgId = OrganizationId(5)
+    val otherProjectId = ProjectId(50)
+    insertOrganization(otherOrgId)
+    insertProject(otherProjectId, organizationId = otherOrgId)
+    insertOrganizationUser(model.userId, otherOrgId)
+    insertProjectUser(model.userId, otherProjectId)
+
+    store.removeUser(organizationId, model.userId)
+
+    val projects =
+        dslContext
+            .select(PROJECT_USERS.PROJECT_ID)
+            .from(PROJECT_USERS)
+            .where(PROJECT_USERS.USER_ID.eq(model.userId))
+            .fetch(PROJECT_USERS.PROJECT_ID)
+    assertEquals(
+        listOf(otherProjectId), projects, "User should still belong to project in other org")
+
+    assertThrows<UserNotFoundException> { store.fetchUser(organizationId, model.userId) }
+    assertNotNull(store.fetchUser(otherOrgId, model.userId))
+  }
+
+  private fun organizationUserModel(
+      userId: UserId = UserId(100),
+      email: String = "x@y.com",
+      firstName: String = "First",
+      lastName: String = "Last",
+      userType: UserType = UserType.Individual,
+      createdTime: Instant = clock.instant(),
+      organizationId: OrganizationId = this.organizationId,
+      role: Role = Role.CONTRIBUTOR,
+      pendingInvitationTime: Instant? = null,
+      projectIds: List<ProjectId> = emptyList()
+  ): OrganizationUserModel {
+    return OrganizationUserModel(
+        userId,
+        email,
+        firstName,
+        lastName,
+        userType,
+        createdTime,
+        organizationId,
+        role,
+        pendingInvitationTime,
+        projectIds)
   }
 
   private fun configureUser(model: OrganizationUserModel) {

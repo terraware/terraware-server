@@ -1281,6 +1281,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOrganizationUserResponsePayload'
+    delete:
+      tags:
+      - Customer
+      summary: Removes a user from an organization and all its projects.
+      description: Does not remove any data created by the user.
+      operationId: deleteOrganizationUser
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The user is not a member of the organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/projects:
     get:
       tags:

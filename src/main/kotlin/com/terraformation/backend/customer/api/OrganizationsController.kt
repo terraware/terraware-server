@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.NotFoundException
 import org.apache.commons.validator.routines.EmailValidator
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -131,6 +132,20 @@ class OrganizationsController(
         }
 
     return GetOrganizationUserResponsePayload(OrganizationUserPayload(model))
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404("The user is not a member of the organization.")
+  @DeleteMapping("/{organizationId}/users/{userId}")
+  @Operation(
+      summary = "Removes a user from an organization and all its projects.",
+      description = "Does not remove any data created by the user.")
+  fun deleteOrganizationUser(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+      @PathVariable("userId") userId: UserId,
+  ): SimpleSuccessResponsePayload {
+    organizationStore.removeUser(organizationId, userId)
+    return SimpleSuccessResponsePayload()
   }
 
   private fun getRole(model: OrganizationModel): Role {
