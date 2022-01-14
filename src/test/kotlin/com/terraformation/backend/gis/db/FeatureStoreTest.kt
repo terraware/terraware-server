@@ -736,7 +736,6 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
           val randomFeatureId = FeatureId(Random.nextLong())
           featureIds.add(randomFeatureId)
 
-          // All features are associated with the class variable layerId
           insertFeature(id = randomFeatureId, layerId = layerIdToInsert, enteredTime = enteredTime)
 
           plantsDao.insert(PlantsRow(featureId = randomFeatureId, speciesId = currSpeciesId))
