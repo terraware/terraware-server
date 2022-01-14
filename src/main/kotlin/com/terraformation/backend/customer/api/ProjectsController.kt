@@ -3,14 +3,13 @@ package com.terraformation.backend.customer.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import io.swagger.v3.oas.annotations.Operation
@@ -41,8 +40,7 @@ class ProjectsController(private val projectStore: ProjectStore) {
   @GetMapping("/{id}")
   @Operation(summary = "Gets information about a single project.")
   fun getProject(@PathVariable("id") projectId: ProjectId): GetProjectResponsePayload {
-    val project = projectStore.fetchById(projectId) ?: throw NotFoundException()
-
+    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
     return GetProjectResponsePayload(ProjectPayload(project))
   }
 
@@ -98,13 +96,9 @@ class OrganizationProjectsController(private val projectStore: ProjectStore) {
   fun listOrganizationProjects(
       @PathVariable organizationId: OrganizationId
   ): ListProjectsResponsePayload {
-    try {
-      val projects = projectStore.fetchByOrganization(organizationId)
+    val projects = projectStore.fetchByOrganization(organizationId)
 
-      return ListProjectsResponsePayload(projects.map { ProjectPayload(it) })
-    } catch (e: OrganizationNotFoundException) {
-      throw NotFoundException()
-    }
+    return ListProjectsResponsePayload(projects.map { ProjectPayload(it) })
   }
 }
 

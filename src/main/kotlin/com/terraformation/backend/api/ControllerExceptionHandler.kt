@@ -39,14 +39,6 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   private val csvMediaType = MediaType("text", "csv", StandardCharsets.UTF_8)
 
   @ExceptionHandler
-  fun handleClientFacingException(
-      ex: ClientFacingException,
-      request: WebRequest
-  ): ResponseEntity<*> {
-    return simpleErrorResponse(ex.message, ex.status, request)
-  }
-
-  @ExceptionHandler
   fun handleDuplicateEntityException(
       ex: DuplicateEntityException,
       request: WebRequest

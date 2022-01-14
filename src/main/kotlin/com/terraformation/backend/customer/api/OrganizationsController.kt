@@ -2,7 +2,6 @@ package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.CustomerEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
@@ -21,6 +20,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.ws.rs.BadRequestException
+import javax.ws.rs.NotFoundException
 import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

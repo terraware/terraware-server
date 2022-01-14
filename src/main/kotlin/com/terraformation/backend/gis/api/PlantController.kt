@@ -2,7 +2,6 @@ package com.terraformation.backend.gis.api
 
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.GISAppEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
@@ -16,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.LocalDate
+import javax.ws.rs.NotFoundException
 import javax.ws.rs.QueryParam
 import net.postgis.jdbc.geometry.Geometry
 import org.springframework.web.bind.annotation.GetMapping

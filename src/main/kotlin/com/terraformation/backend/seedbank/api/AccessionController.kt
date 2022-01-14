@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.terraformation.backend.api.ApiResponse404
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.AppDeviceModel
@@ -88,17 +87,13 @@ class AccessionController(private val accessionStore: AccessionStore, private va
                   "have been returned if it had been saved.")
       simulate: Boolean?
   ): UpdateAccessionResponsePayload {
-    try {
-      val updatedModel =
-          if (simulate == true) {
-            accessionStore.dryRun(payload.toModel(accessionId))
-          } else {
-            accessionStore.updateAndFetch(payload.toModel(accessionId))
-          }
-      return UpdateAccessionResponsePayload(AccessionPayload(updatedModel, clock))
-    } catch (e: AccessionNotFoundException) {
-      throw NotFoundException()
-    }
+    val updatedModel =
+        if (simulate == true) {
+          accessionStore.dryRun(payload.toModel(accessionId))
+        } else {
+          accessionStore.updateAndFetch(payload.toModel(accessionId))
+        }
+    return UpdateAccessionResponsePayload(AccessionPayload(updatedModel, clock))
   }
 
   @ApiResponse(responseCode = "200")
@@ -107,8 +102,7 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @Operation(summary = "Retrieve an existing accession.")
   fun read(@PathVariable("id") accessionId: AccessionId): GetAccessionResponsePayload {
     val accession =
-        accessionStore.fetchById(accessionId)
-            ?: throw NotFoundException("The specified accession doesn't exist.")
+        accessionStore.fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
     return GetAccessionResponsePayload(AccessionPayload(accession, clock))
   }
 

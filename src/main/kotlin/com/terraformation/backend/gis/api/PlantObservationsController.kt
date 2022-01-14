@@ -2,7 +2,6 @@ package com.terraformation.backend.gis.api
 
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.GISAppEndpoint
-import com.terraformation.backend.api.NotFoundException
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.HealthState
@@ -46,8 +45,7 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
   fun get(@PathVariable plantObservationId: PlantObservationId): GetObservationResponsePayload {
     val observation =
         observStore.fetch(plantObservationId)
-            ?: throw NotFoundException(
-                "The plant observation with id $plantObservationId doesn't exist.")
+            ?: throw PlantObservationNotFoundException(plantObservationId)
     return GetObservationResponsePayload(ObservationResponse(observation))
   }
 
@@ -71,12 +69,8 @@ class PlantObservationsController(private val observStore: PlantObservationsStor
       @RequestBody payload: UpdateObservationRequestPayload,
       @PathVariable plantObservationId: PlantObservationId
   ): UpdateObservationResponsePayload {
-    try {
-      val updated = observStore.update(payload.toRow(plantObservationId))
-      return UpdateObservationResponsePayload(ObservationResponse(updated))
-    } catch (e: PlantObservationNotFoundException) {
-      throw NotFoundException("The plant observation with id $plantObservationId doesn't exist.")
-    }
+    val updated = observStore.update(payload.toRow(plantObservationId))
+    return UpdateObservationResponsePayload(ObservationResponse(updated))
   }
 
   // To delete a plant observation, the caller must delete the entire feature
