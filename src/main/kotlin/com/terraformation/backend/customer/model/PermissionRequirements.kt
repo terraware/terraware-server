@@ -265,6 +265,13 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
+  fun updateSite(siteId: SiteId) {
+    if (!user.canUpdateSite(siteId)) {
+      readSite(siteId)
+      throw AccessDeniedException("No permission to update site $siteId")
+    }
+  }
+
   fun createProject(organizationId: OrganizationId) {
     if (!user.canCreateProject(organizationId)) {
       readOrganization(organizationId)

@@ -267,6 +267,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility = true,
         listFacilities = true,
         readSite = true,
+        updateSite = true,
         createLayer = true,
     )
 
@@ -379,6 +380,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility = true,
         listFacilities = true,
         readSite = true,
+        updateSite = true,
         createLayer = true,
     )
 
@@ -848,6 +850,7 @@ internal class PermissionTest : DatabaseTest() {
         createFacility: Boolean = false,
         listFacilities: Boolean = false,
         readSite: Boolean = false,
+        updateSite: Boolean = false,
         createLayer: Boolean = false,
     ) {
       sites.forEach { siteId ->
@@ -856,6 +859,7 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             listFacilities, user.canListFacilities(siteId), "Can list site $siteId facilities")
         assertEquals(readSite, user.canReadSite(siteId), "Can read site $siteId")
+        assertEquals(updateSite, user.canUpdateSite(siteId), "Can update site $siteId")
         assertEquals(createLayer, user.canCreateLayer(siteId), "Can create layer at site $siteId")
 
         uncheckedSites.remove(siteId)

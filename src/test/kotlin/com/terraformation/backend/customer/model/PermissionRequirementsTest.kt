@@ -344,6 +344,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun updateSite() {
+    assertThrows<SiteNotFoundException> { requirements.updateSite(siteId) }
+
+    grant { user.canReadSite(siteId) }
+    assertThrows<AccessDeniedException> { requirements.updateSite(siteId) }
+
+    grant { user.canUpdateSite(siteId) }
+    requirements.updateSite(siteId)
+  }
+
+  @Test
   fun createProject() {
     assertThrows<OrganizationNotFoundException> { requirements.createProject(organizationId) }
 
