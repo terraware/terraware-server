@@ -1060,17 +1060,22 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetchPlantSummary by project ID aggregates results across sites`() {
+    fun `fetchPlantSummary by project ID aggregates results across accessible layers`() {
       val projectId = ProjectId(2)
       val secondSiteId = SiteId(2)
       val secondLayerId = LayerId(200)
+      val inaccessibleLayerId = LayerId(201)
 
       insertSite(secondSiteId, projectId)
       insertLayer(secondLayerId, secondSiteId, LayerType.PlantsPlanted)
+      insertLayer(inaccessibleLayerId, siteId, LayerType.PlantsPlanted)
 
       insertSeveralPlants(mapOf(SpeciesId(1) to 4, SpeciesId(2) to 4))
       insertSeveralPlants(
           mapOf(SpeciesId(1) to 2, SpeciesId(3) to 2), layerIdToInsert = secondLayerId)
+      insertSeveralPlants(mapOf(SpeciesId(1) to 2), layerIdToInsert = inaccessibleLayerId)
+
+      every { user.canReadLayer(inaccessibleLayerId) } returns false
 
       val expected = mapOf(SpeciesId(1) to 6, SpeciesId(2) to 4, SpeciesId(3) to 2)
       val actual = store.fetchPlantSummary(projectId)
@@ -1079,24 +1084,49 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetchPlantSummary by organization ID aggregates results across projects`() {
+    fun `fetchPlantSummary by project ID returns empty result if project is inaccessible`() {
+      val projectId = ProjectId(2)
+
+      insertSeveralPlants(mapOf(SpeciesId(1) to 4, SpeciesId(2) to 4))
+
+      every { user.canReadProject(projectId) } returns false
+
+      assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(projectId))
+    }
+
+    @Test
+    fun `fetchPlantSummary by organization ID aggregates results across accessible layers`() {
       val organizationId = OrganizationId(1)
       val secondProjectId = ProjectId(3)
       val secondSiteId = SiteId(2)
       val secondLayerId = LayerId(200)
+      val inaccessibleLayerId = LayerId(201)
 
       insertProject(secondProjectId, organizationId)
       insertSite(secondSiteId, secondProjectId)
       insertLayer(secondLayerId, secondSiteId, LayerType.PlantsPlanted)
+      insertLayer(inaccessibleLayerId, secondSiteId, LayerType.PlantsPlanted)
 
       insertSeveralPlants(mapOf(SpeciesId(1) to 4, SpeciesId(2) to 4))
       insertSeveralPlants(
           mapOf(SpeciesId(1) to 2, SpeciesId(3) to 2), layerIdToInsert = secondLayerId)
+      insertSeveralPlants(mapOf(SpeciesId(1) to 2), layerIdToInsert = inaccessibleLayerId)
+
+      every { user.canReadLayer(inaccessibleLayerId) } returns false
 
       val expected = mapOf(SpeciesId(1) to 6, SpeciesId(2) to 4, SpeciesId(3) to 2)
       val actual = store.fetchPlantSummary(organizationId)
 
       assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `fetchPlantSummary by organization ID returns empty list if organization is inaccessible`() {
+      val organizationId = OrganizationId(1)
+
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertEquals(emptyMap<SpeciesId, Int>(), store.fetchPlantSummary(organizationId))
     }
 
     @Test
