@@ -377,15 +377,14 @@ class AdminController(
     }
 
     try {
-      if (organizationStore.setUserRole(organizationId, userId, role)) {
-        redirectAttributes.addFlashAttribute("successMessage", "User role updated.")
-      } else {
-        redirectAttributes.addFlashAttribute(
-            "failureMessage", "User was not a member of the organization.")
-      }
+      organizationStore.setUserRole(organizationId, userId, role)
+      redirectAttributes.addFlashAttribute("successMessage", "User role updated.")
     } catch (e: AccessDeniedException) {
       redirectAttributes.addFlashAttribute(
           "failureMessage", "No permission to set user roles for this organization.")
+    } catch (e: UserNotFoundException) {
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "User was not a member of the organization.")
     }
 
     return organization(organizationId)

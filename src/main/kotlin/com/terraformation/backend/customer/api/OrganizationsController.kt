@@ -150,6 +150,30 @@ class OrganizationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponseSimpleSuccess
+  @ApiResponse404("The user is not a member of the organization.")
+  @PutMapping("/{organizationId}/users/{userId}")
+  @Operation(
+      summary = "Updates the user's organization information.",
+      description =
+          "Only includes organization-level information that can be modified by organization " +
+              "administrators. Use /api/v1/projects/{projectId}/users/{userId} to change the " +
+              "user's projects.")
+  fun updateOrganizationUser(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+      @PathVariable("userId") userId: UserId,
+      @RequestBody payload: UpdateOrganizationUserRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    // Currently, the only setting is the user's role.
+    try {
+      organizationStore.setUserRole(organizationId, userId, payload.role)
+    } catch (e: UserNotFoundException) {
+      throw NotFoundException(
+          "User $userId does not exist or is not a member of organization $organizationId")
+    }
+    return SimpleSuccessResponsePayload()
+  }
+
   private fun getRole(model: OrganizationModel): Role {
     return currentUser().organizationRoles[model.id]
         ?: throw OrganizationNotFoundException(model.id)
@@ -160,6 +184,10 @@ data class InviteOrganizationUserRequestPayload(
     val email: String,
     val role: Role,
     val projectIds: List<ProjectId>?,
+)
+
+data class UpdateOrganizationUserRequestPayload(
+    val role: Role,
 )
 
 data class UpdateOrganizationRequestPayload(
