@@ -30,14 +30,14 @@ class SearchService(private val dslContext: DSLContext) {
   /** Returns a condition that filters search results based on a list of criteria. */
   private fun filterResults(rootPrefix: SearchFieldPrefix, criteria: SearchNode): Condition {
     // Filter out results the user doesn't have permission to see.
-    val searchTable = rootPrefix.root.searchTable
-    val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(searchTable))
+    val rootTable = rootPrefix.root
+    val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(rootTable))
 
-    val primaryKey = searchTable.primaryKey
+    val primaryKey = rootTable.primaryKey
 
     val subquery =
         joinWithSecondaryTables(
-                DSL.select(primaryKey).from(searchTable.fromTable), rootPrefix, criteria)
+                DSL.select(primaryKey).from(rootTable.fromTable), rootPrefix, criteria)
             .where(conditions)
 
     // Ideally we'd preserve the type of the primary key column returned by the subquery, but that
@@ -57,7 +57,7 @@ class SearchService(private val dslContext: DSLContext) {
    * If there are more search results than the requested limit, the return value includes a cursor
    * that can be used to view the next set of results.
    *
-   * The [rootPrefix] defines the starting namespace for field paths (all the paths in [fields] are
+   * The [rootPrefix] defines the starting table for field paths (all the paths in [fields] are
    * relative to the root prefix) and the top level of the search results. For example, if you have
    * an accession with two bags:
    *
@@ -183,34 +183,34 @@ class SearchService(private val dslContext: DSLContext) {
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
     val field = fieldPath.searchField
-    val values = field.possibleValues ?: queryAllValues(field, limit)
+    val possibleValues = field.possibleValues
+
+    val values =
+        if (possibleValues != null) {
+          possibleValues
+        } else {
+          val selectFields =
+              field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
+          val searchTable = fieldPath.searchTable
+          val permsCondition = conditionForPermissions(fieldPath.searchTable)
+          val fullQuery =
+              dslContext
+                  .selectDistinct(selectFields)
+                  .from(searchTable.fromTable)
+                  .let { joinForPermissions(it, setOf(searchTable), searchTable) }
+                  .let { if (permsCondition != null) it.where(permsCondition) else it }
+                  .orderBy(DSL.field("order_by_field").asc().nullsLast())
+                  .limit(limit + 1)
+          log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
+          log.debugWithTiming("queryAllValues") {
+            fullQuery.fetch { field.computeValue(it) }.filterNotNull()
+          }
+        }
 
     return if (field.nullable) {
       listOf(null) + values.take(limit)
     } else {
       values
-    }
-  }
-
-  private fun queryAllValues(field: SearchField, limit: Int): List<String> {
-    val selectFields =
-        field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
-
-    val searchTable = field.table
-    val permsCondition = conditionForPermissions(searchTable)
-
-    val fullQuery =
-        dslContext
-            .selectDistinct(selectFields)
-            .from(searchTable.fromTable)
-            .let { joinForPermissions(it, setOf(searchTable), searchTable) }
-            .let { if (permsCondition != null) it.where(permsCondition) else it }
-            .orderBy(DSL.field("order_by_field").asc().nullsLast())
-            .limit(limit + 1)
-
-    log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")
-    return log.debugWithTiming("queryAllValues") {
-      fullQuery.fetch { field.computeValue(it) }.filterNotNull()
     }
   }
 
@@ -272,14 +272,14 @@ class SearchService(private val dslContext: DSLContext) {
       rootPrefix: SearchFieldPrefix,
       criteria: SearchNode,
   ): SelectJoinStep<T> {
-    val referencedSublists = criteria.referencedSublists().distinctBy { it.namespace }
-    val referencedTables = referencedSublists.map { it.namespace.searchTable }.toSet()
+    val referencedSublists = criteria.referencedSublists().distinctBy { it.searchTable }
+    val referencedTables = referencedSublists.map { it.searchTable }.toSet()
 
     val joinedQuery =
         referencedSublists.fold(selectFrom) { query, sublist ->
-          query.leftJoin(sublist.namespace.searchTable.fromTable).on(sublist.conditionForMultiset)
+          query.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
         }
 
-    return joinForPermissions(joinedQuery, referencedTables, rootPrefix.root.searchTable)
+    return joinForPermissions(joinedQuery, referencedTables, rootPrefix.root)
   }
 }

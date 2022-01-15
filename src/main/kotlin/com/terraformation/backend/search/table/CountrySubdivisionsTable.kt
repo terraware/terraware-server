@@ -1,15 +1,22 @@
-package com.terraformation.backend.search.namespace
+package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.COUNTRIES
 import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
-import com.terraformation.backend.search.SearchFieldNamespace
+import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import org.jooq.Record
+import org.jooq.TableField
 
-class CountrySubdivisionsNamespace(namespaces: SearchFieldNamespaces) : SearchFieldNamespace() {
+class CountrySubdivisionsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperators) :
+    SearchTable(fuzzySearchOperators) {
+  override val primaryKey: TableField<out Record, out Any?>
+    get() = COUNTRY_SUBDIVISIONS.CODE
+
   override val sublists: List<SublistField> by lazy {
-    with(namespaces) {
+    with(tables) {
       listOf(
           countries.asSingleValueSublist(
               "country", COUNTRY_SUBDIVISIONS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
@@ -21,10 +28,8 @@ class CountrySubdivisionsNamespace(namespaces: SearchFieldNamespaces) : SearchFi
   }
 
   override val fields: List<SearchField> =
-      with(namespaces.searchTables.countrySubdivisions) {
-        listOf(
-            textField("code", "Country subdivision code", COUNTRY_SUBDIVISIONS.CODE),
-            textField("name", "Country subdivision name", COUNTRY_SUBDIVISIONS.NAME),
-        )
-      }
+      listOf(
+          textField("code", "Country subdivision code", COUNTRY_SUBDIVISIONS.CODE),
+          textField("name", "Country subdivision name", COUNTRY_SUBDIVISIONS.NAME),
+      )
 }

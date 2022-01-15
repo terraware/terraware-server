@@ -2,6 +2,7 @@ package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.FuzzySearchOperators
+import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.BigDecimalField
 import com.terraformation.backend.search.field.BooleanField
 import com.terraformation.backend.search.field.DateField
@@ -28,29 +29,50 @@ import org.jooq.Table
 import org.jooq.TableField
 
 /**
- * Defines a table whose columns can be declared as [SearchField]s. The methods here are used in
- * [SearchService] when it dynamically constructs SQL queries based on a search request from a
- * client.
+ * Defines which search fields exist at a particular point in the application's hierarchical data
+ * model.
+ *
+ * The search API allows clients to navigate data in the form of a tree-structured hierarchy of
+ * fields that starts at "organizations". For example, accession data is tied to facilities. So when
+ * you search for accessions, you are actually asking for a subset of an organization's data. Of
+ * that organization's data, you're asking for data associated with a specific project, with one of
+ * that's project sites, and one of that site's facilities.
+ *
+ * We abstract this into a "path" that specifies how to navigate the hierarchy. See
+ * [SearchFieldPath] for the implementation details of paths.
+ *
+ * Given a partial path, the system needs to know what names are valid to add to the path, and
+ * whether those names refer to fields with scalar values (numbers, text, etc) or to additional
+ * intermediate levels of the hierarchy (e.g., a site or a facility).
+ *
+ * Each non-leaf node in the hierarchy is associated with a [SearchTable], which is where the search
+ * code goes to look up names when it is turning a client-specified field name into a
+ * [SearchFieldPath].
  */
-abstract class SearchTable(
-    private val fuzzySearchOperators: FuzzySearchOperators,
+abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
+  /** Scalar fields that are valid in this table. Subclasses must supply this. */
+  abstract val fields: List<SearchField>
 
-    /** The primary key column for the table in question. */
-    val primaryKey: TableField<out Record, out Any?>,
+  /** Sublist fields that are valid in this table. Subclasses must supply this. */
+  abstract val sublists: List<SublistField>
 
-    /**
-     * If the user's permission to see rows in this table can't be determined directly from the
-     * contents of the table itself, the other table that the query needs to left join with in order
-     * to check permissions.
-     *
-     * Null if the current table has the required information to determine whether the user can see
-     * a given row. In that case, [conditionForPermissions] must be non-null.
-     */
-    val inheritsPermissionsFrom: SearchTable? = null,
-) {
+  /** The primary key column for the table in question. */
+  abstract val primaryKey: TableField<out Record, out Any?>
+
   /** The jOOQ Table object for the table in question. */
   open val fromTable: Table<out Record>
     get() = primaryKey.table ?: throw IllegalStateException("$primaryKey has no table")
+
+  /**
+   * If the user's permission to see rows in this table can't be determined directly from the
+   * contents of the table itself, the other table that the query needs to left join with in order
+   * to check permissions.
+   *
+   * Null if the current table has the required information to determine whether the user can see a
+   * given row. In that case, [conditionForPermissions] must be non-null.
+   */
+  open val inheritsPermissionsFrom: SearchTable?
+    get() = null
 
   /**
    * Adds a LEFT JOIN clause to a query to connect this table to another table to calculate whether
@@ -83,14 +105,81 @@ abstract class SearchTable(
   open fun conditionForPermissions(): Condition? = null
 
   /**
-   * Returns the default fields to sort on. These are included when doing non-distinct queries; if
-   * there are user-supplied sort criteria, these come at the end. This allows us to return stable
-   * query results if the user-requested sort fields have duplicate values.
+   * The default fields to sort on. These are included when doing non-distinct queries; if there are
+   * user-supplied sort criteria, these come at the end. This allows us to return stable query
+   * results if the user-requested sort fields have duplicate values.
    */
   open val defaultOrderFields: List<OrderField<*>>
     get() =
         fromTable.primaryKey?.fields
             ?: throw IllegalStateException("BUG! No primary key fields found for $fromTable")
+
+  private val fieldsByName: Map<String, SearchField> by lazy { fields.associateBy { it.fieldName } }
+  private val sublistsByName: Map<String, SublistField> by lazy { sublists.associateBy { it.name } }
+
+  fun getAllFieldNames(prefix: String = ""): Set<String> {
+    val myFieldNames = fields.map { prefix + it.fieldName }
+    val sublistFieldNames =
+        sublistsByName.filterValues { it.isMultiValue }.flatMap { (name, sublist) ->
+          sublist.searchTable.getAllFieldNames("${prefix}$name.")
+        }
+
+    return (myFieldNames + sublistFieldNames).toSet()
+  }
+
+  operator fun get(fieldName: String): SearchField? = fieldsByName[fieldName]
+
+  fun getSublistOrNull(sublistName: String): SublistField? = sublistsByName[sublistName]
+
+  fun aliasField(fieldName: String, targetName: String): AliasField {
+    val targetPath = SearchFieldPrefix(this).resolve(targetName)
+    return AliasField(fieldName, targetPath)
+  }
+
+  /**
+   * Returns a [SublistField] pointing to this table for use in cases where there can be multiple
+   * values. In other words, returns a [SublistField] that defines a 1:N relationship between
+   * another table and this one. For example, `facilities` is a multi-value sublist of `sites`
+   * because each site can have multiple facilities.
+   */
+  fun asMultiValueSublist(name: String, conditionForMultiset: Condition): SublistField {
+    return SublistField(
+        name = name,
+        searchTable = this,
+        isMultiValue = true,
+        conditionForMultiset = conditionForMultiset)
+  }
+
+  /**
+   * Returns a [SublistField] pointing to this table for use in cases where there is only a single
+   * value. In other words, returns a [SublistField] that defines a 1:1 or N:1 relationship between
+   * another table and this one. For example, `site` is a single-value sublist of `facilities`
+   * because each facility is only associated with one site.
+   */
+  fun asSingleValueSublist(name: String, conditionForMultiset: Condition): SublistField {
+    return SublistField(
+        name = name,
+        searchTable = this,
+        isMultiValue = false,
+        conditionForMultiset = conditionForMultiset)
+  }
+
+  private fun resolveTableOrNull(relativePath: String): SearchTable? {
+    val nextAndRest =
+        relativePath.split(NESTED_SUBLIST_DELIMITER, FLATTENED_SUBLIST_DELIMITER, limit = 2)
+    val nextTable = sublistsByName[nextAndRest[0]]?.searchTable
+
+    return if (nextAndRest.size == 1) {
+      nextTable
+    } else {
+      nextTable?.resolveTableOrNull(nextAndRest[1])
+    }
+  }
+
+  fun resolveTable(relativePath: String): SearchTable {
+    return resolveTableOrNull(relativePath)
+        ?: throw IllegalArgumentException("Sublist $relativePath not found")
+  }
 
   fun bigDecimalField(
       fieldName: String,

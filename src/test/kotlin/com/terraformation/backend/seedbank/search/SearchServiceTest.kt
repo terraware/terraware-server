@@ -41,7 +41,6 @@ import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchDirection
-import com.terraformation.backend.search.SearchFieldNamespace
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
@@ -49,9 +48,9 @@ import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
-import com.terraformation.backend.search.SearchTables
+import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.field.AliasField
-import com.terraformation.backend.search.namespace.SearchFieldNamespaces
+import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -86,10 +85,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val checkedInTimeString = "2021-08-18T11:33:55Z"
   private val checkedInTime = Instant.parse(checkedInTimeString)
 
-  private val searchTables = SearchTables(PostgresFuzzySearchOperators())
-  private val namespaces = SearchFieldNamespaces(searchTables)
-  private val accessionsNamespace = namespaces.accessions
-  private val rootPrefix = SearchFieldPrefix(root = accessionsNamespace)
+  private val tables = SearchTables(PostgresFuzzySearchOperators())
+  private val accessionsTable = tables.accessions
+  private val rootPrefix = SearchFieldPrefix(root = accessionsTable)
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")
   private val activeField = rootPrefix.resolve("active")
   private val bagNumberField = rootPrefix.resolve("bagNumber")
@@ -120,7 +118,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     germinationTestsDao = GerminationTestsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
     searchService = SearchService(dslContext)
-    accessionSearchService = AccessionSearchService(namespaces, searchService)
+    accessionSearchService = AccessionSearchService(tables, searchService)
 
     every { user.organizationRoles } returns mapOf(organizationId to Role.MANAGER)
     every { user.projectRoles } returns mapOf(projectId to Role.MANAGER)
@@ -168,29 +166,29 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `namespaces initialize successfully`() {
-    val visited = mutableSetOf<SearchFieldNamespace>()
-    val toVisit = mutableListOf<SearchFieldNamespace>()
+  fun `tables initialize successfully`() {
+    val visited = mutableSetOf<SearchTable>()
+    val toVisit = mutableListOf<SearchTable>()
 
-    toVisit.add(namespaces.organizations)
+    toVisit.add(tables.organizations)
 
     while (toVisit.isNotEmpty()) {
-      val namespace = toVisit.removeLast()
+      val table = toVisit.removeLast()
 
-      assertDoesNotThrow("$namespace failed to initialize. Is it missing 'by lazy'?") {
-        visited.add(namespace)
+      assertDoesNotThrow("$table failed to initialize. Is it missing 'by lazy'?") {
+        visited.add(table)
 
         // "map" has the side effect of making sure the list is initialized.
-        toVisit.addAll(namespace.sublists.map { it.namespace }.filter { it !in visited })
+        toVisit.addAll(table.sublists.map { it.searchTable }.filter { it !in visited })
 
-        namespace.fields.forEach { _ ->
+        table.fields.forEach { _ ->
           // No-op; we just need to make sure we can iterate over the field list.
         }
       }
     }
 
     // Sanity-check that the test is actually walking the hierarchy
-    assertTrue(visited.size > 5, "Should have checked more than ${visited.size} namespaces")
+    assertTrue(visited.size > 5, "Should have checked more than ${visited.size} tables")
   }
 
   @Test
@@ -746,7 +744,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     insertLayer(100)
     insertFeature(1000, geom = mercatorPoint(1000.0, 2000.0, 3000.0))
 
-    val prefix = SearchFieldPrefix(namespaces.features)
+    val prefix = SearchFieldPrefix(tables.features)
     val field = prefix.resolve("geom")
 
     // We don't care about minor formatting differences in the GeoJSON; compare the contents
@@ -1419,9 +1417,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         rootPrefix.resolve("germinationTests.germinations.seedsGerminated")
     private val testTypeField = rootPrefix.resolve("germinationTests.type")
 
-    private val bagsNamespace = rootPrefix.withSublist("bags").namespace
-    private val germinationsNamespace =
-        rootPrefix.withSublist("germinationTests").withSublist("germinations").namespace
+    private val bagsTable = tables.bags
+    private val germinationsTable = tables.germinations
 
     private lateinit var testId: GerminationTestId
 
@@ -1468,7 +1465,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can get to accession sublists starting from organization`() {
-      val orgPrefix = SearchFieldPrefix(namespaces.organizations)
+      val orgPrefix = SearchFieldPrefix(tables.organizations)
       val fullyQualifiedField =
           orgPrefix.resolve("projects.sites.facilities.accessions.bags.number")
 
@@ -1520,7 +1517,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can select aliases for flattened sublist fields from within nested sublists`() {
-      val prefix = SearchFieldPrefix(namespaces.facilities)
+      val prefix = SearchFieldPrefix(tables.facilities)
       val field = prefix.resolve("accessions.bagNumber")
 
       val result =
@@ -1545,7 +1542,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can sort by aliases for flattened sublist fields from within nested sublists`() {
-      val prefix = SearchFieldPrefix(namespaces.facilities)
+      val prefix = SearchFieldPrefix(tables.facilities)
       val idField = prefix.resolve("accessions.id")
       val aliasField = prefix.resolve("accessions.bagNumber")
 
@@ -1574,7 +1571,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can get to organization from accession sublist`() {
-      val germinationsPrefix = SearchFieldPrefix(namespaces.germinations)
+      val germinationsPrefix = SearchFieldPrefix(tables.germinations)
       val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
       val orgNameField =
           germinationsPrefix.resolve(
@@ -1610,7 +1607,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can get to flattened organization from accession sublist`() {
-      val germinationsPrefix = SearchFieldPrefix(namespaces.germinations)
+      val germinationsPrefix = SearchFieldPrefix(tables.germinations)
       val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
       val flattenedFieldName = "germinationTest_accession_facility_site_project_organization_name"
       val orgNameField = germinationsPrefix.resolve(flattenedFieldName)
@@ -1634,7 +1631,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can filter across multiple single-value sublists`() {
-      val germinationsPrefix = SearchFieldPrefix(namespaces.germinations)
+      val germinationsPrefix = SearchFieldPrefix(tables.germinations)
       val orgNameField =
           germinationsPrefix.resolve(
               "germinationTest.accession.facility.site.project.organization.name")
@@ -2069,7 +2066,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `can navigate up and down namespace hierarchy`() {
+    fun `can navigate up and down table hierarchy`() {
       val seedsSownViaGerminations =
           rootPrefix.resolve("germinationTests.germinations.germinationTest.seedsSown")
       val fields = listOf(seedsSownViaGerminations)
@@ -2140,7 +2137,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can include a computed field and its underlying raw field in a nested sublist`() {
-      val prefix = SearchFieldPrefix(namespaces.sites)
+      val prefix = SearchFieldPrefix(tables.sites)
       val activeField = prefix.resolve("facilities.accessions.active")
       val stateField = prefix.resolve("facilities.accessions.state")
 
@@ -2165,8 +2162,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can search all the fields`() {
-      val prefix = SearchFieldPrefix(namespaces.organizations)
-      val fields = prefix.namespace.getAllFieldNames().sorted().map { prefix.resolve(it) }
+      val prefix = SearchFieldPrefix(tables.organizations)
+      val fields = prefix.searchTable.getAllFieldNames().sorted().map { prefix.resolve(it) }
 
       // We're querying a mix of nested fields and the old-style fields that put nested values
       // at the top level and return a separate top-level query result for each combination of rows
@@ -2299,12 +2296,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `all fields are valid sort keys`() {
-      val prefix = SearchFieldPrefix(namespaces.organizations)
+      val prefix = SearchFieldPrefix(tables.organizations)
 
       val expected = listOf(mapOf("id" to "1"))
       val searchFields = listOf(prefix.resolve("id"))
 
-      prefix.namespace.getAllFieldNames().forEach { fieldName ->
+      prefix.searchTable.getAllFieldNames().forEach { fieldName ->
         val field = prefix.resolve(fieldName)
         val sortFields = listOf(SearchSortField(field))
         assertDoesNotThrow("Sort by $fieldName") {
@@ -2316,7 +2313,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can search a child table with a parent table field`() {
-      val prefix = SearchFieldPrefix(root = bagsNamespace)
+      val prefix = SearchFieldPrefix(root = bagsTable)
       val bagNumberField = prefix.resolve("number")
       val accessionNumberField = prefix.resolve("accession.accessionNumber")
       val fields = listOf(bagNumberField, accessionNumberField)
@@ -2334,7 +2331,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can search a child table without a parent`() {
-      val prefix = SearchFieldPrefix(root = bagsNamespace)
+      val prefix = SearchFieldPrefix(root = bagsTable)
       val bagNumberField = prefix.resolve("number")
       val fields = listOf(bagNumberField)
       val criteria = FieldNode(bagNumberField, listOf("5"))
@@ -2348,7 +2345,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `searching a child table only returns results the user has permission to see`() {
-      val prefix = SearchFieldPrefix(root = bagsNamespace)
+      val prefix = SearchFieldPrefix(root = bagsTable)
       val bagNumberField = prefix.resolve("number")
       val fields = listOf(bagNumberField)
       val criteria = NoConditionNode()
@@ -2374,7 +2371,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `permission check can join multiple parent tables`() {
-      val prefix = SearchFieldPrefix(root = germinationsNamespace)
+      val prefix = SearchFieldPrefix(root = germinationsTable)
       val seedsGerminatedField = prefix.resolve("seedsGerminated")
       val fields = listOf(seedsGerminatedField)
       val criteria = NoConditionNode()

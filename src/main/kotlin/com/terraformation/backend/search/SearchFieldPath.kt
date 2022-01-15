@@ -1,6 +1,7 @@
 package com.terraformation.backend.search
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 
 const val NESTED_SUBLIST_DELIMITER: Char = '.'
@@ -15,7 +16,7 @@ const val FLATTENED_SUBLIST_DELIMITER: Char = '_'
  * See [SearchFieldPath] for more details about how prefixes are used.
  */
 data class SearchFieldPrefix(
-    val root: SearchFieldNamespace,
+    val root: SearchTable,
     val sublists: List<SublistField> = emptyList()
 ) {
   /**
@@ -50,11 +51,11 @@ data class SearchFieldPrefix(
     get() = sublists.lastOrNull()
 
   /**
-   * The namespace of this prefix as a whole. This is the namespace of the last sublist, or the root
-   * namespace if this is a root prefix and there thus aren't any sublists.
+   * The search table of this prefix as a whole. This is the table of the last sublist, or the root
+   * table if this is a root prefix and there thus aren't any sublists.
    */
-  val namespace: SearchFieldNamespace
-    get() = sublistField?.namespace ?: root
+  val searchTable: SearchTable
+    get() = sublistField?.searchTable ?: root
 
   /**
    * Resolves a period-delimited path string relative to this prefix
@@ -68,7 +69,7 @@ data class SearchFieldPrefix(
 
     return if (nextNestedAndRest.size == 1 && nextFlattenedAndRest.size == 1) {
       // A plain field name with no sublist of either sort.
-      namespace[nextNestedAndRest[0]]?.let { field ->
+      searchTable[nextNestedAndRest[0]]?.let { field ->
         SearchFieldPath(prefix = this, searchField = field)
       }
     } else if (nextNestedAndRest[0].length < nextFlattenedAndRest[0].length) {
@@ -93,14 +94,14 @@ data class SearchFieldPrefix(
   /**
    * Returns a new [SearchFieldPrefix] with an additional sublist at the end.
    *
-   * @param sublistName The name of a sublist field that's defined in this prefix's namespace.
+   * @param sublistName The name of a sublist field that's defined in this prefix's table.
    */
   private fun withSublistOrNull(sublistName: String, flatten: Boolean): SearchFieldPrefix? {
     if (NESTED_SUBLIST_DELIMITER in sublistName || FLATTENED_SUBLIST_DELIMITER in sublistName) {
       throw IllegalArgumentException("Cannot resolve multiple sublists at once: $sublistName")
     }
 
-    val sublist = namespace.getSublistOrNull(sublistName) ?: return null
+    val sublist = searchTable.getSublistOrNull(sublistName) ?: return null
     val possiblyFlattenedSublist = if (flatten) sublist.asFlattened() else sublist
 
     if (isFlattened && !possiblyFlattenedSublist.isFlattened) {
@@ -161,19 +162,27 @@ class SearchFieldPath(private val prefix: SearchFieldPrefix, val searchField: Se
     get() = prefix.sublists
 
   /**
-   * True if there are nested sublists between the root namespace and this field. False if this
-   * field is directly under the root namespace or if all the sublists are flattened.
+   * True if there are nested sublists between the root table and this field. False if this field is
+   * directly under the root table or if all the sublists are flattened.
    */
   val isNested: Boolean
     get() = prefix.isNested
 
   /**
-   * True if all the sublists between the root namespace and this field are flattened, and there is
-   * at least one sublist. False if this field is directly under the root namespace or if there are
-   * nested sublists.
+   * True if all the sublists between the root table and this field are flattened, and there is at
+   * least one sublist. False if this field is directly under the root table or if there are nested
+   * sublists.
    */
   val isFlattened: Boolean
     get() = prefix.isFlattened
+
+  val searchTable: SearchTable
+    get() =
+        if (searchField is AliasField) {
+          searchField.targetPath.searchTable
+        } else {
+          prefix.searchTable
+        }
 
   /**
    * Strips sublists from the beginning of this path's prefix. Returns a copy of this path that's
@@ -199,7 +208,7 @@ class SearchFieldPath(private val prefix: SearchFieldPrefix, val searchField: Se
 
     return SearchFieldPath(
         SearchFieldPrefix(
-            root = otherPrefix.namespace,
+            root = otherPrefix.searchTable,
             sublists = prefix.sublists.drop(otherPrefix.sublists.size)),
         searchField = searchField)
   }

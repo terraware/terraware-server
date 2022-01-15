@@ -15,7 +15,7 @@ private constructor(
     override val fieldName: String,
 
     /**
-     * Which underlying field this alias refers to. The path must be relative to the namespace that
+     * Which underlying field this alias refers to. The path must be relative to the table that
      * contains this alias field. It can refer to flattened sublists but not nested ones.
      */
     val targetPath: SearchFieldPath,

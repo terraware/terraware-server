@@ -2,7 +2,7 @@ package com.terraformation.backend.search
 
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
-import com.terraformation.backend.search.namespace.AccessionsNamespace
+import com.terraformation.backend.search.table.AccessionsTable
 import com.terraformation.backend.util.MemoizedValue
 import org.apache.naming.SelectorContext.prefix
 import org.jooq.Condition
@@ -73,10 +73,10 @@ import org.jooq.impl.DSL
  *   - Accession ID 4, species 2 "Second Species", no bags or tests
  * ```
  *
- * Now you construct a query like this, referencing the search fields in [AccessionsNamespace].
+ * Now you construct a query like this, referencing the search fields in [AccessionsTable].
  *
  * ```kotlin
- * val rootPrefix = SearchFieldPathPrefix(accessionsNamespace)
+ * val rootPrefix = SearchFieldPathPrefix(accessionsTable)
  * val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
  *
  * queryBuilder.addSelectFields(
@@ -185,15 +185,14 @@ import org.jooq.impl.DSL
  * A field name is represented as a [SearchFieldPath] which consists of a prefix and a scalar field.
  * The prefix is represented as a [SearchFieldPrefix] and includes a list of sublist fields which
  * form a path to the location of the scalar field (`germinationTests` and `germinations` in the
- * above example). The prefix also includes a "root namespace" (in the form of a
- * [SearchFieldNamespace]) that identifies where in the application's data model the prefix begins.
- * In the example, the root namespace would indicate that the fields are all under the "accessions"
- * part of the data model.
+ * above example). The prefix also includes a "root table" (in the form of a [SearchTable]) that
+ * identifies where in the application's data model the prefix begins. In the example, the root
+ * table would indicate that the fields are all under the "accessions" part of the data model.
  *
  * A filesystem analogy might make the pieces easier to understand:
  *
  * ```
- * # This is the root namespace; everything else is relative to it.
+ * # This is the root table; everything else is relative to it.
  * cd /organizations/projects/sites/facilities/accessions
  * # This is two sublist fields followed by a scalar field.
  * cat germinationTests/germinations/recordingDate
@@ -205,8 +204,8 @@ import org.jooq.impl.DSL
  * as a whole, and each child node represents the query for a sublist field. Each node has a
  * [SearchFieldPrefix].
  *
- * For example, a search field of `germinationTests.germinations.recordingDate` with a root
- * namespace of `accessions` would be turned into a structure something like this YAML document:
+ * For example, a search field of `germinationTests.germinations.recordingDate` with a root table of
+ * `accessions` would be turned into a structure something like this YAML document:
  *
  * ```yaml
  * prefix:
@@ -253,8 +252,8 @@ import org.jooq.impl.DSL
  * introducing the feature.
  *
  * Conceptually, this works kind of like the examples in the docs: it constructs a query on the
- * table for the root namespace where the list of fields includes [DSL.multiset] values that hold
- * child records. Those child records can, in turn, have their own multiset fields if they
+ * database table for the root [SearchTable] where the list of fields includes [DSL.multiset] values
+ * that hold child records. Those child records can, in turn, have their own multiset fields if they
  * themselves have children, e.g., an accession has germination tests each of which has
  * germinations.
  *
@@ -267,8 +266,8 @@ import org.jooq.impl.DSL
  *
  * ## Search criteria
  *
- * Say you have an accession with two bags, "A" and "B". The user does a search with a root
- * namespace of `accessions` and asks for results containing bag "A".
+ * Say you have an accession with two bags, "A" and "B". The user does a search with a root table of
+ * `accessions` and asks for results containing bag "A".
  *
  * There are two ways that could work, neither of them wrong: treat the search criterion as a filter
  * on bag numbers (returning a result with a single bag) or treat it as a filter on accessions
@@ -422,7 +421,7 @@ import org.jooq.impl.DSL
  * one by the [SublistField.isFlattened] property.
  *
  * A simple pair of examples should help illustrate what flattening does. In the first search
- * result, the caller asked for `id` and `bags.number` in the `accessions namespace.
+ * result, the caller asked for `id` and `bags.number` in the `accessions table.
  *
  * ```json
  * [
@@ -477,8 +476,8 @@ import org.jooq.impl.DSL
  * given field to be referenced by an alternate name. The target of the alias is used to construct
  * the database query, and the alias name is used as the name of the field in the search results.
  *
- * For example, the `bagNumber` field in the accessions namespace is an alias for `bags_number`. If
- * you ask for `id` and `bagNumber`, you'll get back a flattened result like,
+ * For example, the `bagNumber` field in the accessions table is an alias for `bags_number`. If you
+ * ask for `id` and `bagNumber`, you'll get back a flattened result like,
  *
  * ```json
  * [
@@ -625,7 +624,7 @@ class NestedQueryBuilder(
           if (distinct) dslContext.selectDistinct(getSelectFields())
           else dslContext.select(getSelectFields())
 
-      val selectFrom = select.from(getSearchTable().fromTable)
+      val selectFrom = select.from(prefix.searchTable.fromTable)
       val selectWithParents = joinFlattenedSublists(selectFrom)
 
       // Add lateral joins for all the multiset subqueries.
@@ -788,7 +787,7 @@ class NestedQueryBuilder(
    */
   private fun joinFlattenedSublists(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
     return flattenedSublists.fold(query) { joinedQuery, sublist ->
-      joinedQuery.leftJoin(sublist.namespace.searchTable.fromTable).on(sublist.conditionForMultiset)
+      joinedQuery.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
     }
   }
 
@@ -905,14 +904,6 @@ class NestedQueryBuilder(
             null
           }
         }
-  }
-
-  /**
-   * Returns the table to use in the `FROM` clause of this query. This will usually be the table
-   * that contains most of the scalar fields for the namespace of the current prefix.
-   */
-  private fun getSearchTable(): SearchTable {
-    return prefix.namespace.searchTable
   }
 
   /**

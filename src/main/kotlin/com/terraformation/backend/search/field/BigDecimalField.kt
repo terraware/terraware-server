@@ -15,7 +15,7 @@ class BigDecimalField(
     override val fieldName: String,
     override val displayName: String,
     override val databaseField: TableField<*, BigDecimal?>,
-    override val table: SearchTable
+    override val table: SearchTable,
 ) : SingleColumnSearchField<BigDecimal>() {
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)
