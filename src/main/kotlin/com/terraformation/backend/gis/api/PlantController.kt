@@ -153,8 +153,8 @@ class PlantController(private val featureStore: FeatureStore) {
       @RequestParam("previousTime")
       @Schema(
           description =
-              "If present, the response will include data for plants entered at or before this " +
-                  "time.",
+              "If present, the response will also include data for plants entered at or before " +
+                  "this time, in addition to the most recent data.",
           example = "2021-01-05T11:22:33Z")
       previousTime: Instant? = null,
   ): PlantsAndSpeciesSummaryResponsePayload {

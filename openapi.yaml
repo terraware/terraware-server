@@ -1036,8 +1036,8 @@ paths:
         required: false
         schema:
           type: string
-          description: "If present, the response will include data for plants entered\
-            \ at or before this time."
+          description: "If present, the response will also include data for plants\
+            \ entered at or before this time, in addition to the most recent data."
           format: date-time
           example: 2021-01-05T11:22:33Z
       responses:
