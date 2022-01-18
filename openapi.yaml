@@ -4745,12 +4745,17 @@ components:
           - Owner
     OrganizationUserPayload:
       required:
+      - addedTime
       - email
       - id
       - projectIds
       - role
       type: object
       properties:
+        addedTime:
+          type: string
+          description: Date and time the user was added to the organization.
+          format: date-time
         email:
           type: string
         id:
