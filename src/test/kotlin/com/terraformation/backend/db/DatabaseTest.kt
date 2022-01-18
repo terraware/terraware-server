@@ -358,7 +358,6 @@ abstract class DatabaseTest {
       userId: Any = currentUser().userId,
       organizationId: Any,
       role: Role = Role.CONTRIBUTOR,
-      pendingInvitationTime: Instant? = null,
   ) {
     with(ORGANIZATION_USERS) {
       dslContext
@@ -366,7 +365,6 @@ abstract class DatabaseTest {
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
-          .set(PENDING_INVITATION_TIME, pendingInvitationTime)
           .set(ROLE_ID, role.id)
           .set(USER_ID, userId.toIdWrapper { UserId(it) })
           .execute()

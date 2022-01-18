@@ -344,7 +344,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 clock.instant(),
                 organizationId,
                 Role.ADMIN,
-                null,
                 emptyList()),
             OrganizationUserModel(
                 UserId(101),
@@ -355,35 +354,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 clock.instant(),
                 organizationId,
                 Role.CONTRIBUTOR,
-                null,
                 listOf(projectId, otherProjectId)),
         )
 
     insertProject(otherProjectId)
     expected.forEach { configureUser(it) }
 
-    val actual = store.fetchUsers(organizationId)
-
-    assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `fetchUsers hides real name of user with pending invitation`() {
-    val model =
-        OrganizationUserModel(
-            UserId(100),
-            "x@y.com",
-            "First",
-            "Last",
-            UserType.Individual,
-            clock.instant(),
-            organizationId,
-            Role.CONTRIBUTOR,
-            Instant.EPOCH,
-            emptyList())
-    configureUser(model)
-
-    val expected = listOf(model.copy(firstName = null, lastName = null))
     val actual = store.fetchUsers(organizationId)
 
     assertEquals(expected, actual)
@@ -418,7 +394,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             clock.instant(),
             organizationId,
             Role.CONTRIBUTOR,
-            null,
             emptyList())
     configureUser(model)
 
@@ -478,26 +453,15 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       createdTime: Instant = clock.instant(),
       organizationId: OrganizationId = this.organizationId,
       role: Role = Role.CONTRIBUTOR,
-      pendingInvitationTime: Instant? = null,
       projectIds: List<ProjectId> = emptyList()
   ): OrganizationUserModel {
     return OrganizationUserModel(
-        userId,
-        email,
-        firstName,
-        lastName,
-        userType,
-        createdTime,
-        organizationId,
-        role,
-        pendingInvitationTime,
-        projectIds)
+        userId, email, firstName, lastName, userType, createdTime, organizationId, role, projectIds)
   }
 
   private fun configureUser(model: OrganizationUserModel) {
     insertUser(model.userId, null, model.email, model.firstName, model.lastName, model.userType)
-    insertOrganizationUser(
-        model.userId, model.organizationId, model.role, model.pendingInvitationTime)
+    insertOrganizationUser(model.userId, model.organizationId, model.role)
     model.projectIds.forEach { insertProjectUser(model.userId, it) }
   }
 }
