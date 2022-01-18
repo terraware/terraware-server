@@ -95,21 +95,6 @@ class OrganizationsController(
     return SimpleSuccessResponsePayload()
   }
 
-  @Operation(summary = "Invites a user to an organization.")
-  @PostMapping("/{organizationId}/invitations")
-  fun inviteOrganizationUser(
-      @PathVariable("organizationId") organizationId: OrganizationId,
-      @RequestBody payload: InviteOrganizationUserRequestPayload,
-  ): SimpleSuccessResponsePayload {
-    if (!emailValidator.isValid(payload.email)) {
-      throw BadRequestException("Invalid email address")
-    }
-
-    organizationService.invite(
-        payload.email, organizationId, payload.role, payload.projectIds ?: emptyList())
-    return SimpleSuccessResponsePayload()
-  }
-
   @GetMapping("/{organizationId}/users")
   @Operation(summary = "Lists the users in an organization.")
   fun listOrganizationUsers(
@@ -117,6 +102,21 @@ class OrganizationsController(
   ): ListOrganizationUsersResponsePayload {
     val users = organizationStore.fetchUsers(organizationId)
     return ListOrganizationUsersResponsePayload(users.map { OrganizationUserPayload(it) })
+  }
+
+  @PostMapping("/{organizationId}/users")
+  @Operation(summary = "Adds a user to an organization.")
+  fun addOrganizationUser(
+      @PathVariable("organizationId") organizationId: OrganizationId,
+      @RequestBody payload: AddOrganizationUserRequestPayload
+  ): SimpleSuccessResponsePayload {
+    if (!emailValidator.isValid(payload.email)) {
+      throw BadRequestException("Invalid email address")
+    }
+
+    organizationService.addUser(
+        payload.email, organizationId, payload.role, payload.projectIds ?: emptyList())
+    return SimpleSuccessResponsePayload()
   }
 
   @GetMapping("/{organizationId}/users/{userId}")
@@ -180,7 +180,7 @@ class OrganizationsController(
   }
 }
 
-data class InviteOrganizationUserRequestPayload(
+data class AddOrganizationUserRequestPayload(
     val email: String,
     val role: Role,
     val projectIds: List<ProjectId>?,
@@ -266,13 +266,13 @@ data class OrganizationUserPayload(
     val id: UserId,
     @Schema(
         description =
-            "The user's first name. Not visible for users who have been invited but have not yet " +
-                "accepted the invitation.")
+            "The user's first name. Not present if the user has been added to the organization " +
+                "but has not signed up for an account yet.")
     val firstName: String?,
     @Schema(
         description =
-            "The user's last name. Not visible for users who have been invited but have not yet " +
-                "accepted the invitation.")
+            "The user's last name. Not present if the user has been added to the organization " +
+                "but has not signed up for an account yet.")
     val lastName: String?,
     @ArraySchema(
         arraySchema =

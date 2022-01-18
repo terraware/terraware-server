@@ -1,5 +1,6 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -10,6 +11,7 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -32,6 +34,7 @@ import software.amazon.awssdk.services.sesv2.model.RawMessage
 class EmailService(
     private val config: TerrawareServerConfig,
     private val facilityStore: FacilityStore,
+    private val messages: Messages,
     private val organizationStore: OrganizationStore,
     private val resourceLoader: ResourceLoader,
     private val sender: JavaMailSender,
@@ -73,8 +76,10 @@ class EmailService(
     send(message)
   }
 
-  fun sendInvitation(organizationId: OrganizationId, userId: UserId) {
+  fun sendUserAddedToOrganization(organizationId: OrganizationId, userId: UserId) {
     requirePermissions { addOrganizationUser(organizationId) }
+
+    val admin = currentUser()
 
     val organization =
         organizationStore.fetchById(organizationId)
@@ -86,23 +91,41 @@ class EmailService(
 
     val webAppUrl = "${config.webAppUrl}"
 
+    val replacements =
+        mapOf(
+            "\${admin.email}" to admin.email,
+            "\${admin.fullName}" to (admin.fullName ?: ""),
+            "\${organization.name}" to organization.name,
+        )
+
     val textBody =
-        getResourceAsString("classpath:templates/email/invitation/body.txt")
-            ?.replace("\${organization.name}", organization.name)
+        getResourceAsString("classpath:templates/email/userAddedToOrganization/body.txt")
+            ?.replaceMultiple(replacements)
             ?.replace("\${webAppUrl}", webAppUrl)
-            ?: throw IllegalStateException("Couldn't find plaintext invitation email template")
+            ?: throw IllegalStateException(
+                "Couldn't find plaintext organizationAdded email template")
 
     val htmlBody =
-        getResourceAsString("classpath:templates/email/invitation/body.html")
-            ?.replace("\${organization.name}", HtmlUtils.htmlEscape(organization.name))
+        getResourceAsString("classpath:templates/email/userAddedToOrganization/body.html")
+            ?.replaceMultiple(replacements, htmlEscape = true)
             ?.replace("\${webAppUrl}", webAppUrl)
-            ?: throw IllegalStateException("Couldn't find HTML invitation email template")
+            ?: throw IllegalStateException("Couldn't find HTML organizationAdded email template")
 
-    helper.setSubject("You've been invited to ${organization.name} on Terraware!")
+    helper.setSubject(messages.userAddedToOrganizationSubject(admin.fullName, organization.name))
     helper.setTo(user.email)
     helper.setText(textBody, htmlBody)
 
     send(message)
+  }
+
+  private fun String.replaceMultiple(
+      replacements: Map<String, String>,
+      htmlEscape: Boolean = false
+  ): String {
+    return replacements.entries.fold(this) { str, (token, rawValue) ->
+      val replacement = if (htmlEscape) HtmlUtils.htmlEscape(rawValue) else rawValue
+      str.replace(token, replacement)
+    }
   }
 
   private fun getResourceAsString(name: String): String? {
