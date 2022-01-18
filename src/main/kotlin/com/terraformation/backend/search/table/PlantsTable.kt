@@ -21,7 +21,8 @@ class PlantsTable(private val tables: SearchTables, fuzzySearchOperators: FuzzyS
     with(tables) {
       listOf(
           features.asSingleValueSublist("feature", PLANTS.FEATURE_ID.eq(FEATURES.ID)),
-          species.asSingleValueSublist("species", PLANTS.SPECIES_ID.eq(SPECIES.ID)),
+          species.asSingleValueSublist(
+              "species", PLANTS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
       )
     }
   }

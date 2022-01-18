@@ -46,6 +46,15 @@ data class SearchFieldPrefix(
       return sublists.isNotEmpty() && sublists.first().isFlattened
     }
 
+  /**
+   * True if the sublist represented by this prefix is guaranteed to have at least one value if the
+   * root has a value. For example, if the root namespace is `sites`, then a prefix with a prefix of
+   * `project` and `organization` is required because every site must have a project and every
+   * project must have an organization.
+   */
+  val isRequired: Boolean
+    get() = isRoot || sublists.all { it.isRequired }
+
   /** Which sublist this prefix refers to, or null if this is a root prefix. */
   val sublistField: SublistField?
     get() = sublists.lastOrNull()
@@ -157,7 +166,7 @@ data class SearchFieldPrefix(
  * structure would be `[{"file":"contents"}]`. This is very significant to the client because it
  * controls how results are grouped together when there are multiple values for a particular field.
  */
-class SearchFieldPath(private val prefix: SearchFieldPrefix, val searchField: SearchField) {
+class SearchFieldPath(val prefix: SearchFieldPrefix, val searchField: SearchField) {
   val sublists: List<SublistField>
     get() = prefix.sublists
 

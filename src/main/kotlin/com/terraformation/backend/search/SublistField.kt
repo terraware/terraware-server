@@ -56,6 +56,13 @@ data class SublistField(
      * See [NestedQueryBuilder] for examples of how flattened sublists work.
      */
     val isFlattened: Boolean = false,
+
+    /**
+     * If true, this sublist always contains a value. For example, this is true for a single-value
+     * sublist that represents a parent-child relationship from the child's point of view. It is
+     * used to determine whether fields are nullable.
+     */
+    val isRequired: Boolean = false,
 ) {
   val delimiter: Char
     get() = if (isFlattened) FLATTENED_SUBLIST_DELIMITER else NESTED_SUBLIST_DELIMITER
