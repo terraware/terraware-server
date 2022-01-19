@@ -4757,12 +4757,12 @@ components:
           format: int64
         firstName:
           type: string
-          description: The user's first name. Not visible for users who have been
-            invited but have not yet accepted the invitation.
+          description: The user's first name. Not present if the user has been added
+            to the organization but has not signed up for an account yet.
         lastName:
           type: string
-          description: The user's last name. Not visible for users who have been invited
-            but have not yet accepted the invitation.
+          description: The user's last name. Not present if the user has been added
+            to the organization but has not signed up for an account yet.
         projectIds:
           type: array
           description: IDs of projects the user is in. Users with admin and owner
