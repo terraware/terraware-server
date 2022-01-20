@@ -159,6 +159,29 @@ val generateVersionFile by tasks.registering {
   }
 }
 
+val generatePostgresDockerConfig by tasks.registering {
+  val postgresDockerRepository: String by project
+  val postgresDockerTag: String by project
+
+  val generatedPath =
+      File("$buildDir/generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt").toPath()
+
+  inputs.property("postgresDockerRepository", postgresDockerRepository)
+  inputs.property("postgresDockerTag", postgresDockerTag)
+  outputs.file(generatedPath)
+
+  doLast {
+    Files.createDirectories(generatedPath.parent)
+    Files.writeString(
+        generatedPath,
+        """package com.terraformation.backend.db
+          |const val POSTGRES_DOCKER_REPOSITORY = "$postgresDockerRepository"
+          |const val POSTGRES_DOCKER_TAG = "$postgresDockerTag"
+          |""".trimMargin()
+    )
+  }
+}
+
 tasks {
   generateJooqClasses {
     basePackageName = "com.terraformation.backend.db"
@@ -206,8 +229,11 @@ tasks {
 
 jooq {
   image {
-    repository = "postgis/postgis"
-    tag = "12-3.0"
+    val postgresDockerRepository: String by project
+    val postgresDockerTag: String by project
+
+    repository = postgresDockerRepository
+    tag = postgresDockerTag
   }
 }
 
@@ -215,10 +241,18 @@ sourceSets.main {
   java.srcDir("build/generated/kotlin")
 }
 
+sourceSets.test {
+  java.srcDir("build/generated-test/kotlin")
+}
+
 tasks.withType<KotlinCompile> {
   dependsOn(generateVersionFile)
   kotlinOptions.allWarningsAsErrors = true
   kotlinOptions.jvmTarget = "17"
+
+  if (name == "compileTestKotlin") {
+    dependsOn(generatePostgresDockerConfig)
+  }
 }
 
 tasks.withType<KaptGenerateStubsTask> {
