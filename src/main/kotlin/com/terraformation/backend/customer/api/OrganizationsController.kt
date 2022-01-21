@@ -21,6 +21,8 @@ import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.NotFoundException
 import org.apache.commons.validator.routines.EmailValidator
@@ -262,6 +264,8 @@ data class OrganizationPayload(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class OrganizationUserPayload(
+    @Schema(description = "Date and time the user was added to the organization.")
+    val addedTime: Instant,
     val email: String,
     val id: UserId,
     @Schema(
@@ -286,6 +290,7 @@ data class OrganizationUserPayload(
   constructor(
       model: OrganizationUserModel
   ) : this(
+      addedTime = model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       email = model.email,
       firstName = model.firstName,
       id = model.userId,
