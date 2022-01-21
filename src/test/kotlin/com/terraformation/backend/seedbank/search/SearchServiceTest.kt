@@ -2268,6 +2268,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               mapOf(
                   "createdTime" to "1970-01-01T00:00:00Z",
+                  "hidden" to "false",
                   "id" to "2",
                   "name" to "project",
                   "organizationWide" to "false",

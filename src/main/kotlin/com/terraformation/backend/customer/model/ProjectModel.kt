@@ -14,6 +14,7 @@ import org.jooq.Record
 data class ProjectModel(
     val createdTime: Instant,
     val description: String?,
+    val hidden: Boolean,
     val id: ProjectId,
     val organizationId: OrganizationId,
     val organizationWide: Boolean,
@@ -31,6 +32,7 @@ data class ProjectModel(
       createdTime = record[PROJECTS.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
       description = record[PROJECTS.DESCRIPTION],
+      hidden = record[PROJECTS.HIDDEN] ?: throw IllegalArgumentException("Hidden is required"),
       id = record[PROJECTS.ID] ?: throw IllegalArgumentException("ID is required"),
       organizationId = record[PROJECTS.ORGANIZATION_ID]
               ?: throw IllegalArgumentException("Organization is required"),
@@ -48,6 +50,7 @@ fun ProjectsRow.toModel(types: Set<ProjectType> = emptySet()) =
     ProjectModel(
         createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
         description = description,
+        hidden = hidden ?: throw IllegalArgumentException("Hidden is required"),
         id = id ?: throw IllegalArgumentException("ID is required"),
         organizationId = organizationId
                 ?: throw IllegalArgumentException("Organization is required"),
