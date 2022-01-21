@@ -3660,12 +3660,16 @@ components:
           - $ref: '#/components/schemas/OrNodePayload'
     FacilityPayload:
       required:
+      - createdTime
       - id
       - name
       - siteId
       - type
       type: object
       properties:
+        createdTime:
+          type: string
+          format: date-time
         id:
           type: integer
           format: int64
@@ -4703,6 +4707,7 @@ components:
       - $ref: '#/components/schemas/SearchNodePayload'
     OrganizationPayload:
       required:
+      - createdTime
       - id
       - name
       - role
@@ -4722,6 +4727,9 @@ components:
             \ province, region, etc.) This is the full ISO 3166-2 code including the\
             \ country prefix. If this is set, countryCode will also be set."
           example: US-HI
+        createdTime:
+          type: string
+          format: date-time
         description:
           type: string
         id:
@@ -4903,11 +4911,15 @@ components:
                   format: double
     ProjectPayload:
       required:
+      - createdTime
       - id
       - name
       - organizationId
       type: object
       properties:
+        createdTime:
+          type: string
+          format: date-time
         description:
           type: string
         id:
@@ -5188,12 +5200,16 @@ components:
           $ref: '#/components/schemas/SuccessOrError'
     SiteElement:
       required:
+      - createdTime
       - id
       - location
       - name
       - projectId
       type: object
       properties:
+        createdTime:
+          type: string
+          format: date-time
         description:
           type: string
         id:

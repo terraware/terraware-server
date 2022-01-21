@@ -21,6 +21,8 @@ import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.ws.rs.InternalServerErrorException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -49,11 +51,7 @@ class FacilityController(
   fun listAllFacilities(): ListFacilitiesResponse {
     val facilities = facilityStore.fetchAll()
 
-    val elements =
-        facilities.map { facility ->
-          FacilityPayload(facility.id, facility.siteId, facility.name, facility.type)
-        }
-
+    val elements = facilities.map { FacilityPayload(it) }
     return ListFacilitiesResponse(elements)
   }
 
@@ -63,8 +61,7 @@ class FacilityController(
     val facility =
         facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    return GetFacilityResponse(
-        FacilityPayload(facilityId, facility.siteId, facility.name, facility.type))
+    return GetFacilityResponse(FacilityPayload(facility))
   }
 
   @ApiResponse(responseCode = "200", description = "Success")
@@ -183,12 +180,20 @@ data class AutomationPayload(
 }
 
 data class FacilityPayload(
+    val createdTime: Instant,
     val id: FacilityId,
     val siteId: SiteId,
     val name: String,
     val type: FacilityType,
 ) {
-  constructor(model: FacilityModel) : this(model.id, model.siteId, model.name, model.type)
+  constructor(
+      model: FacilityModel
+  ) : this(
+      model.createdTime.truncatedTo(ChronoUnit.SECONDS),
+      model.id,
+      model.siteId,
+      model.name,
+      model.type)
 }
 
 data class ModifyAutomationRequestPayload(

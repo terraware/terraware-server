@@ -192,10 +192,12 @@ abstract class DatabaseTest {
     with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
+          .set(CREATED_TIME, Instant.EPOCH)
           .set(ID, id.toIdWrapper { FacilityId(it) })
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(NAME, name)
           .set(SITE_ID, siteId.toIdWrapper { SiteId(it) })
           .set(TYPE_ID, type)
-          .set(NAME, name)
           .execute()
     }
   }

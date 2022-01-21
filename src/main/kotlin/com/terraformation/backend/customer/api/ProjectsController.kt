@@ -20,7 +20,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import java.time.Instant
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import javax.ws.rs.NotFoundException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -147,6 +149,7 @@ class OrganizationProjectsController(private val projectStore: ProjectStore) {
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ProjectPayload(
+    val createdTime: Instant,
     val description: String?,
     val id: ProjectId,
     val name: String,
@@ -159,6 +162,7 @@ data class ProjectPayload(
   constructor(
       model: ProjectModel
   ) : this(
+      createdTime = model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       description = model.description,
       id = model.id,
       name = model.name,

@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.tables.pojos.FacilityAlertRecipientsRow
 import com.terraformation.backend.db.tables.references.FACILITY_ALERT_RECIPIENTS
 import com.terraformation.backend.log.perClassLogger
+import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.springframework.security.access.AccessDeniedException
@@ -21,6 +22,7 @@ import org.springframework.security.access.AccessDeniedException
 /** Permission-aware accessors for facility information. */
 @ManagedBean
 class FacilityStore(
+    private val clock: Clock,
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao,
     private val facilityAlertRecipientsDao: FacilityAlertRecipientsDao
@@ -63,7 +65,14 @@ class FacilityStore(
   fun create(siteId: SiteId, name: String, type: FacilityType): FacilityModel {
     requirePermissions { createFacility(siteId) }
 
-    val row = FacilitiesRow(name = name, siteId = siteId, typeId = type)
+    val row =
+        FacilitiesRow(
+            createdTime = clock.instant(),
+            modifiedTime = clock.instant(),
+            name = name,
+            siteId = siteId,
+            typeId = type,
+        )
 
     facilitiesDao.insert(row)
 
@@ -77,7 +86,8 @@ class FacilityStore(
     val existingRow =
         facilitiesDao.fetchOneById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    facilitiesDao.update(existingRow.copy(name = name, typeId = type))
+    facilitiesDao.update(
+        existingRow.copy(modifiedTime = clock.instant(), name = name, typeId = type))
   }
 
   fun getAlertRecipients(facilityId: FacilityId): List<String> {

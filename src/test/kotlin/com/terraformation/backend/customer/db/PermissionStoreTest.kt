@@ -243,7 +243,9 @@ internal class PermissionStoreTest : DatabaseTest() {
                     siteId = siteId,
                     name = "Facility $facilityId",
                     typeId = FacilityType.SeedBank,
-                    enabled = true))
+                    enabled = true,
+                    createdTime = Instant.EPOCH,
+                    modifiedTime = Instant.EPOCH))
           }
         }
       }

@@ -31,6 +31,7 @@ class SitesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperator
 
   override val fields: List<SearchField> =
       listOf(
+          timestampField("createdTime", "Site created time", SITES.CREATED_TIME, nullable = false),
           textField("description", "Site description", SITES.DESCRIPTION),
           idWrapperField("id", "Site ID", SITES.ID) { SiteId(it) },
           textField("name", "Site name", SITES.NAME, nullable = false),

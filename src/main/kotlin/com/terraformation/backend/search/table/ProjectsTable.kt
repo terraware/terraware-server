@@ -33,6 +33,8 @@ class ProjectsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpera
 
   override val fields: List<SearchField> =
       listOf(
+          timestampField(
+              "createdTime", "Project created time", PROJECTS.CREATED_TIME, nullable = false),
           textField("description", "Project description", PROJECTS.DESCRIPTION),
           idWrapperField("id", "Project ID", PROJECTS.ID) { ProjectId(it) },
           textField("name", "Project name", PROJECTS.NAME, nullable = false),
