@@ -109,6 +109,7 @@ COMMENT ON TABLE project_type_selections IS 'Which project types are selected fo
 COMMENT ON TABLE project_users IS 'Linking table between `projects` and `users` defining which users are allowed to access which projects.';
 
 COMMENT ON TABLE projects IS 'Information about a single restoration project. A project can span multiple sites.';
+COMMENT ON COLUMN projects.per_user IS 'If true, the project is only accessible to users who are added to it. If false, the project is accessible to the entire organization.';
 
 COMMENT ON TABLE rare_types IS '(Enum) Possible values of the "Rare" attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.';
 

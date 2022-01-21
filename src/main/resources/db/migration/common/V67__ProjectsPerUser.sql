@@ -1,0 +1,1 @@
+ALTER TABLE projects ADD COLUMN per_user BOOLEAN NOT NULL DEFAULT true;

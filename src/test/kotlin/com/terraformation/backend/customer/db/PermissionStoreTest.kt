@@ -49,10 +49,23 @@ internal class PermissionStoreTest : DatabaseTest() {
   }
 
   @Test
-  fun `fetchFacilityRoles only includes projects the user is in`() {
+  fun `fetchFacilityRoles only includes per-user projects the user is in`() {
     insertTestData()
     assertEquals(
         mapOf(FacilityId(1000) to Role.MANAGER, FacilityId(1001) to Role.MANAGER),
+        permissionStore.fetchFacilityRoles(UserId(5)))
+  }
+
+  @Test
+  fun `fetchFacilityRoles includes non-per-user projects`() {
+    insertTestData()
+    projectsDao.update(projectsDao.fetchOneById(ProjectId(11))!!.copy(perUser = false))
+
+    assertEquals(
+        mapOf(
+            FacilityId(1000) to Role.MANAGER,
+            FacilityId(1001) to Role.MANAGER,
+            FacilityId(1100) to Role.MANAGER),
         permissionStore.fetchFacilityRoles(UserId(5)))
   }
 
@@ -84,9 +97,21 @@ internal class PermissionStoreTest : DatabaseTest() {
   }
 
   @Test
-  fun `fetchProjectRoles only includes projects the user is in`() {
+  fun `fetchProjectRoles only includes per-user projects the user is in`() {
     insertTestData()
     assertEquals(mapOf(ProjectId(10) to Role.MANAGER), permissionStore.fetchProjectRoles(UserId(5)))
+  }
+
+  @Test
+  fun `fetchProjectRoles includes non-per-user projects`() {
+    val nonPerUserProjectId = ProjectId(11)
+
+    insertTestData()
+    projectsDao.update(projectsDao.fetchOneById(nonPerUserProjectId)!!.copy(perUser = false))
+
+    assertEquals(
+        mapOf(ProjectId(10) to Role.MANAGER, nonPerUserProjectId to Role.MANAGER),
+        permissionStore.fetchProjectRoles(UserId(5)))
   }
 
   @Test
@@ -101,10 +126,21 @@ internal class PermissionStoreTest : DatabaseTest() {
   }
 
   @Test
-  fun `fetchSiteRoles only includes sites from projects the user is in`() {
+  fun `fetchSiteRoles only includes sites from per-user projects the user is in`() {
     insertTestData()
     assertEquals(
         mapOf(SiteId(100) to Role.MANAGER, SiteId(101) to Role.MANAGER),
+        permissionStore.fetchSiteRoles(UserId(5)))
+  }
+
+  @Test
+  fun `fetchSiteRoles includes sites from non-per-user projects`() {
+    insertTestData()
+    projectsDao.update(projectsDao.fetchOneById(ProjectId(11))!!.copy(perUser = false))
+
+    assertEquals(
+        mapOf(
+            SiteId(100) to Role.MANAGER, SiteId(101) to Role.MANAGER, SiteId(110) to Role.MANAGER),
         permissionStore.fetchSiteRoles(UserId(5)))
   }
 

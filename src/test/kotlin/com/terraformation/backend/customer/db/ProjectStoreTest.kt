@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectNotPerUserException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
@@ -84,6 +85,17 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     insertUser(userId)
 
     assertThrows<UserNotFoundException> { store.addUser(projectId, userId) }
+  }
+
+  @Test
+  fun `addProjectUser throws exception if project is not per-user`() {
+    val userId = UserId(100)
+    insertUser(userId)
+    insertOrganizationUser(userId, organizationId)
+
+    projectsDao.update(projectsDao.fetchOneById(projectId)!!.copy(perUser = false))
+
+    assertThrows<ProjectNotPerUserException> { store.addUser(projectId, userId) }
   }
 
   @Test
