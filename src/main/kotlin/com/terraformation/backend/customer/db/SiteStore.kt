@@ -13,7 +13,6 @@ import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.transformSrid
 import java.time.Clock
 import javax.annotation.ManagedBean
-import net.postgis.jdbc.geometry.Point
 import org.jooq.Condition
 import org.jooq.DSLContext
 
@@ -51,20 +50,50 @@ class SiteStore(
     }
   }
 
-  fun create(projectId: ProjectId, name: String, location: Point): SiteModel {
+  /**
+   * Creates a new site.
+   *
+   * @param row Initial site information. Project ID is required; ID and timestamps are ignored.
+   */
+  fun create(row: SitesRow): SiteModel {
+    val projectId = row.projectId ?: throw IllegalArgumentException("Must specify project ID")
+
     requirePermissions { createSite(projectId) }
 
-    val row =
-        SitesRow(
+    val rowWithTimestamps =
+        row.copy(
             createdTime = clock.instant(),
-            location = location,
+            id = null,
             modifiedTime = clock.instant(),
-            name = name,
-            projectId = projectId)
+        )
 
-    sitesDao.insert(row)
+    sitesDao.insert(rowWithTimestamps)
 
-    return row.toModel()
+    return rowWithTimestamps.toModel()
+  }
+
+  /**
+   * Updates an existing site.
+   *
+   * @param row New site information. ID is required; project ID and timestamps are ignored.
+   */
+  fun update(row: SitesRow) {
+    val siteId = row.id ?: throw IllegalArgumentException("Must specify site ID")
+
+    requirePermissions { updateSite(siteId) }
+
+    with(SITES) {
+      dslContext
+          .update(SITES)
+          .set(DESCRIPTION, row.description)
+          .set(LOCALE, row.locale)
+          .set(LOCATION, row.location)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(NAME, row.name)
+          .set(TIMEZONE, row.timezone)
+          .where(ID.eq(siteId))
+          .execute()
+    }
   }
 
   private fun fetchModelsWhere(srid: Int, condition: Condition): List<SiteModel> {

@@ -58,6 +58,9 @@ abstract class GeoJsonOpenApiSchema {
   }
 
   @Schema(
+      // This should happen automatically, but for some reason the docs generator sometimes fails to
+      // add Geometry as a $ref and instead inlines Geometry's properties here.
+      allOf = [Geometry::class],
       externalDocs =
           ExternalDocumentation(
               url = "https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.2"))

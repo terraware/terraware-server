@@ -2238,6 +2238,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListSitesResponsePayload'
+    post:
+      tags:
+      - Customer
+      summary: Creates a new site.
+      operationId: createSite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSiteRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: Site created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSiteResponsePayload'
   /api/v1/sites/{siteId}:
     get:
       tags:
@@ -2272,6 +2290,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - Customer
+      summary: Updates information about a site.
+      operationId: updateSite
+      parameters:
+      - name: siteId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSiteRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: The requested operation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
   /api/v1/species:
     get:
       tags:
@@ -3414,6 +3457,37 @@ components:
             - Agroforestry
             - Silvopasture
             - Sustainable Timber
+    CreateSiteRequestPayload:
+      required:
+      - location
+      - name
+      - projectId
+      type: object
+      properties:
+        description:
+          type: string
+        location:
+          $ref: '#/components/schemas/Point'
+        locale:
+          type: string
+        name:
+          type: string
+        projectId:
+          type: integer
+          format: int64
+        timezone:
+          type: string
+    CreateSiteResponsePayload:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     CreateSpeciesNameResponsePayload:
       required:
       - id
@@ -5914,6 +5988,22 @@ components:
             - Agroforestry
             - Silvopasture
             - Sustainable Timber
+    UpdateSiteRequestPayload:
+      required:
+      - location
+      - name
+      type: object
+      properties:
+        description:
+          type: string
+        location:
+          $ref: '#/components/schemas/Point'
+        locale:
+          type: string
+        name:
+          type: string
+        timezone:
+          type: string
     UpdateUserRequestPayload:
       required:
       - firstName

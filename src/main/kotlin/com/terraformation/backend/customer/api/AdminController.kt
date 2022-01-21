@@ -24,6 +24,7 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.gis.db.LayerStore
 import com.terraformation.backend.gis.model.LayerModel
@@ -457,7 +458,7 @@ class AdminController(
   ): String {
     val location =
         Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
-    val site = siteStore.create(projectId, name, location)
+    val site = siteStore.create(SitesRow(projectId = projectId, name = name, location = location))
 
     try {
       layerTypes?.forEach { layerType ->

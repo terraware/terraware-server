@@ -277,7 +277,14 @@ data class UserModel(
   }
 
   fun canReadSite(siteId: SiteId): Boolean {
-    return siteRoles[siteId] != null
+    return siteId in siteRoles
+  }
+
+  fun canUpdateSite(siteId: SiteId): Boolean {
+    return when (siteRoles[siteId]) {
+      Role.MANAGER, Role.ADMIN, Role.OWNER -> true
+      else -> false
+    }
   }
 
   fun canCreateProject(organizationId: OrganizationId): Boolean {
