@@ -62,9 +62,11 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   private val facilityModel =
       FacilityModel(
+          createdTime = Instant.EPOCH,
           id = facilityId,
-          siteId = siteId,
+          modifiedTime = Instant.EPOCH,
           name = "Facility $facilityId",
+          siteId = siteId,
           type = FacilityType.SeedBank)
   private val siteModel =
       SiteModel(
@@ -78,6 +80,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           facilities = listOf(facilityModel))
   private val projectModel =
       ProjectModel(
+          createdTime = Instant.EPOCH,
           description = "Project description $projectId",
           id = projectId,
           organizationId = organizationId,
@@ -88,9 +91,10 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           types = setOf(ProjectType.Agroforestry, ProjectType.SustainableTimber))
   private val organizationModel =
       OrganizationModel(
-          id = organizationId,
+          createdTime = Instant.EPOCH,
           countryCode = "US",
           countrySubdivisionCode = "US-HI",
+          id = organizationId,
           name = "Organization $organizationId",
           projects = listOf(projectModel))
 

@@ -2249,6 +2249,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               mapOf(
                   "accessions" to expectedAccessions,
+                  "createdTime" to "1970-01-01T00:00:00Z",
                   "id" to "100",
                   "name" to "ohana",
                   "type" to "Seed Bank",
@@ -2257,6 +2258,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val expectedSites =
           listOf(
               mapOf(
+                  "createdTime" to "1970-01-01T00:00:00Z",
                   "facilities" to expectedFacilities,
                   "id" to "10",
                   "name" to "sim",
@@ -2265,6 +2267,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val expectedProjects =
           listOf(
               mapOf(
+                  "createdTime" to "1970-01-01T00:00:00Z",
                   "id" to "2",
                   "name" to "project",
                   "sites" to expectedSites,
@@ -2273,6 +2276,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val expected =
           listOf(
               mapOf(
+                  "createdTime" to "1970-01-01T00:00:00Z",
                   "id" to "1",
                   "name" to "dev",
                   "projects" to expectedProjects,

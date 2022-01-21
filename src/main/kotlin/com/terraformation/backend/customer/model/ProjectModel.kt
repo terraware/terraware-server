@@ -6,11 +6,13 @@ import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.tables.references.PROJECTS
+import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
 import org.jooq.Record
 
 data class ProjectModel(
+    val createdTime: Instant,
     val description: String?,
     val id: ProjectId,
     val organizationId: OrganizationId,
@@ -25,6 +27,8 @@ data class ProjectModel(
       sitesMultiset: Field<List<SiteModel>?>? = null,
       typesMultiset: Field<List<ProjectType>?>,
   ) : this(
+      createdTime = record[PROJECTS.CREATED_TIME]
+              ?: throw IllegalArgumentException("Created time is required"),
       description = record[PROJECTS.DESCRIPTION],
       id = record[PROJECTS.ID] ?: throw IllegalArgumentException("ID is required"),
       organizationId = record[PROJECTS.ORGANIZATION_ID]
@@ -39,6 +43,7 @@ data class ProjectModel(
 
 fun ProjectsRow.toModel(types: Set<ProjectType> = emptySet()) =
     ProjectModel(
+        createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
         description = description,
         id = id ?: throw IllegalArgumentException("ID is required"),
         organizationId = organizationId

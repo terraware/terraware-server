@@ -34,6 +34,8 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
 
   override val fields: List<SearchField> =
       listOf(
+          timestampField(
+              "createdTime", "Facility created time", FACILITIES.CREATED_TIME, nullable = false),
           idWrapperField("id", "Facility ID", FACILITIES.ID) { FacilityId(it) },
           textField("name", "Facility name", FACILITIES.NAME, nullable = false),
           enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),

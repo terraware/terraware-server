@@ -13,6 +13,8 @@ import com.terraformation.backend.db.SiteNotFoundException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import net.postgis.jdbc.geometry.Point
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -82,6 +84,7 @@ class ProjectSitesController(private val siteStore: SiteStore) {
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SiteElement(
+    val createdTime: Instant,
     val description: String?,
     val id: SiteId,
     val name: String,
@@ -94,6 +97,7 @@ data class SiteElement(
   constructor(
       model: SiteModel
   ) : this(
+      createdTime = model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       description = model.description,
       id = model.id,
       name = model.name,

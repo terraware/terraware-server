@@ -40,6 +40,11 @@ class OrganizationsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearch
               "countrySubdivisionCode",
               "Organization country subdivision code",
               ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE),
+          timestampField(
+              "createdTime",
+              "Organization created time",
+              ORGANIZATIONS.CREATED_TIME,
+              nullable = false),
           idWrapperField("id", "Organization ID", ORGANIZATIONS.ID) { OrganizationId(it) },
           textField("name", "Organization name", ORGANIZATIONS.NAME, nullable = false),
       )

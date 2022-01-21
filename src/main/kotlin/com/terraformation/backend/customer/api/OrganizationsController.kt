@@ -238,6 +238,7 @@ data class OrganizationPayload(
         minLength = 4,
         maxLength = 6)
     val countrySubdivisionCode: String?,
+    val createdTime: Instant,
     val description: String?,
     val id: OrganizationId,
     val name: String,
@@ -254,6 +255,7 @@ data class OrganizationPayload(
   ) : this(
       model.countryCode,
       model.countrySubdivisionCode,
+      model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       model.description,
       model.id,
       model.name,
