@@ -93,7 +93,6 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="pending_invitation_time" nullable="true" remarks="When the most recent invitation was sent to a user who has not yet joined the organization. Null if the user is a regular member of the organization (i.e., they have accepted the invitation)." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="user_id" sequenceNumberInPK="1"/>
          <primaryKey column="organization_id" sequenceNumberInPK="2"/>
          <index name="organization_users_pkey" unique="true">
