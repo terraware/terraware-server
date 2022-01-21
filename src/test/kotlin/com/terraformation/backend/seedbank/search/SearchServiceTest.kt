@@ -2270,6 +2270,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "createdTime" to "1970-01-01T00:00:00Z",
                   "id" to "2",
                   "name" to "project",
+                  "perUser" to "true",
                   "sites" to expectedSites,
               ))
 
