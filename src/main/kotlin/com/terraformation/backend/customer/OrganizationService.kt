@@ -1,14 +1,21 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.email.EmailService
+import com.terraformation.backend.i18n.Messages
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
@@ -17,8 +24,11 @@ import org.jooq.DSLContext
 class OrganizationService(
     private val dslContext: DSLContext,
     private val emailService: EmailService,
+    private val facilityStore: FacilityStore,
+    private val messages: Messages,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
+    private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
   fun addUser(
@@ -49,6 +59,28 @@ class OrganizationService(
       // Send email in the transaction so the user will be rolled back if we couldn't notify them
       // about being added, e.g., because the email address was malformed.
       emailService.sendUserAddedToOrganization(organizationId, userModel.userId)
+    }
+  }
+
+  fun createOrganization(row: OrganizationsRow, createSeedBank: Boolean): OrganizationModel {
+    return dslContext.transactionResult { _ ->
+      val orgModel = organizationStore.createWithAdmin(row)
+      val name = messages.seedBankDefaultName()
+
+      if (createSeedBank) {
+        val projectModel =
+            projectStore.create(orgModel.id, name, hidden = true, organizationWide = true)
+        val siteModel = siteStore.create(SitesRow(projectId = projectModel.id, name = name))
+        val facilityModel = facilityStore.create(siteModel.id, name, FacilityType.SeedBank)
+
+        orgModel.copy(
+            projects =
+                listOf(
+                    projectModel.copy(
+                        sites = listOf(siteModel.copy(facilities = listOf(facilityModel))))))
+      } else {
+        orgModel
+      }
     }
   }
 }

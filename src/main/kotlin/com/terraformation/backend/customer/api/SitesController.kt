@@ -114,7 +114,7 @@ data class SiteElement(
     val id: SiteId,
     val name: String,
     val projectId: ProjectId,
-    val location: Point,
+    val location: Point?,
     val locale: String?,
     val timezone: String?,
     val facilities: List<FacilityPayload>?,
@@ -140,7 +140,7 @@ data class GetSiteResponsePayload(val site: SiteElement) : SuccessResponsePayloa
 
 data class CreateSiteRequestPayload(
     val description: String?,
-    val location: Point,
+    val location: Point?,
     val locale: String?,
     val name: String,
     val projectId: ProjectId,
@@ -162,7 +162,7 @@ data class CreateSiteResponsePayload(val id: SiteId) : SuccessResponsePayload
 
 data class UpdateSiteRequestPayload(
     val description: String?,
-    val location: Point,
+    val location: Point?,
     val locale: String?,
     val name: String,
     val timezone: String?,

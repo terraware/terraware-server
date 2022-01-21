@@ -47,4 +47,10 @@ class Messages {
   fun userAddedToOrganizationSubject(adminName: String?, organizationName: String) =
       if (adminName != null) "$adminName has added you to $organizationName on Terraware"
       else "An admin has added you to $organizationName on Terraware"
+
+  /**
+   * The name to use for the project, site, and facility that's automatically created when a new
+   * organization is created.
+   */
+  fun seedBankDefaultName() = "Seed Bank"
 }

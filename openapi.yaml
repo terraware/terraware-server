@@ -1164,7 +1164,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateOrganizationRequestPayload'
+              $ref: '#/components/schemas/CreateOrganizationRequestPayload'
         required: true
       responses:
         "200":
@@ -3398,6 +3398,34 @@ components:
           $ref: '#/components/schemas/ObservationResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    CreateOrganizationRequestPayload:
+      required:
+      - name
+      type: object
+      properties:
+        countryCode:
+          maxLength: 2
+          minLength: 2
+          type: string
+          description: ISO 3166 alpha-2 code of organization's country.
+          example: AU
+        countrySubdivisionCode:
+          maxLength: 6
+          minLength: 4
+          type: string
+          description: "ISO 3166-2 code of organization's country subdivision (state,\
+            \ province, region, etc.) This is the full ISO 3166-2 code including the\
+            \ country prefix. If this is set, countryCode must also be set."
+          example: US-HI
+        createSeedBank:
+          type: boolean
+          description: "If true or not specified, create a project, site, and seed\
+            \ bank facility automatically."
+          default: true
+        description:
+          type: string
+        name:
+          type: string
     CreatePlantRequestPayload:
       required:
       - featureId
@@ -3460,7 +3488,6 @@ components:
             - Sustainable Timber
     CreateSiteRequestPayload:
       required:
-      - location
       - name
       - projectId
       type: object
@@ -5289,7 +5316,6 @@ components:
       required:
       - createdTime
       - id
-      - location
       - name
       - projectId
       type: object
@@ -6003,7 +6029,6 @@ components:
             - Sustainable Timber
     UpdateSiteRequestPayload:
       required:
-      - location
       - name
       type: object
       properties:
