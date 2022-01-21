@@ -21,7 +21,7 @@ class OrganizationService(
     private val projectStore: ProjectStore,
     private val userStore: UserStore,
 ) {
-  fun invite(
+  fun addUser(
       email: String,
       organizationId: OrganizationId,
       role: Role,
@@ -36,19 +36,19 @@ class OrganizationService(
     val projects =
         projectIds.map { projectStore.fetchById(it) ?: throw ProjectNotFoundException(it) }
     if (projects.any { it.organizationId != organizationId }) {
-      throw IllegalArgumentException("Cannot invite user to projects from a different organization")
+      throw IllegalArgumentException("Cannot add user to projects from a different organization")
     }
 
     dslContext.transaction { _ ->
       val userModel = userStore.fetchOrCreateByEmail(email)
 
-      organizationStore.addUser(organizationId, userModel.userId, role, pending = true)
+      organizationStore.addUser(organizationId, userModel.userId, role)
 
       projectIds.forEach { projectStore.addUser(it, userModel.userId) }
 
       // Send email in the transaction so the user will be rolled back if we couldn't notify them
-      // about being invited, e.g., because the email address was malformed.
-      emailService.sendInvitation(organizationId, userModel.userId)
+      // about being added, e.g., because the email address was malformed.
+      emailService.sendUserAddedToOrganization(organizationId, userModel.userId)
     }
   }
 }

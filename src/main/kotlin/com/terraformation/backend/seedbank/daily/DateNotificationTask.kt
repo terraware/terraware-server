@@ -6,10 +6,10 @@ import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.NotificationStore
-import com.terraformation.backend.seedbank.i18n.Messages
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean

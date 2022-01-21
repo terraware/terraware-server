@@ -90,6 +90,14 @@ data class UserModel(
   val facilityRoles: Map<FacilityId, Role> by lazy { permissionStore.fetchFacilityRoles(userId) }
 
   /**
+   * The user's full name, if available. Currently this is just the first and last name if both are
+   * set. Eventually this will need logic to deal with users in locales where names aren't rendered
+   * the same way they are in English.
+   */
+  val fullName: String?
+    get() = if (firstName != null && lastName != null) "$firstName $lastName" else null
+
+  /**
    * Runs some code as this user.
    *
    * This is useful in two scenarios. First, if the code isn't running on a request handler thread

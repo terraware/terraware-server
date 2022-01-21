@@ -1,4 +1,4 @@
-package com.terraformation.backend.seedbank.i18n
+package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.GerminationTestType
 import javax.annotation.ManagedBean
@@ -43,4 +43,8 @@ class Messages {
 
   fun withdrawalDateNotification(accessionNumber: String) =
       "$accessionNumber is scheduled for a withdrawal today!"
+
+  fun userAddedToOrganizationSubject(adminName: String?, organizationName: String) =
+      if (adminName != null) "$adminName has added you to $organizationName on Terraware"
+      else "An admin has added you to $organizationName on Terraware"
 }
