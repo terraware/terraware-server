@@ -407,7 +407,9 @@ abstract class DatabaseTest {
   @Suppress("UPPER_BOUND_VIOLATED_WARNING")
   companion object {
     private val imageName: DockerImageName =
-        DockerImageName.parse("postgis/postgis:12-3.1").asCompatibleSubstituteFor("postgres")
+        DockerImageName.parse("$POSTGRES_DOCKER_REPOSITORY:$POSTGRES_DOCKER_TAG")
+            .asCompatibleSubstituteFor("postgres")
+
     val postgresContainer: PostgreSQLContainer<*> =
         PostgreSQLContainer<PostgreSQLContainer<*>>(imageName)
             .withDatabaseName("terraware")
