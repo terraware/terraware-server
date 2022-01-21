@@ -465,6 +465,7 @@ internal class PermissionTest : DatabaseTest() {
         *project10SiteIds,
         listFacilities = true,
         readSite = true,
+        updateSite = true,
         createLayer = true,
     )
 

@@ -281,8 +281,10 @@ data class UserModel(
   }
 
   fun canUpdateSite(siteId: SiteId): Boolean {
-    val role = siteRoles[siteId]
-    return role == Role.ADMIN || role == Role.OWNER
+    return when (siteRoles[siteId]) {
+      Role.MANAGER, Role.ADMIN, Role.OWNER -> true
+      else -> false
+    }
   }
 
   fun canCreateProject(organizationId: OrganizationId): Boolean {
