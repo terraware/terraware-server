@@ -52,7 +52,6 @@ class PermissionStore(private val dslContext: DSLContext) {
         .on(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
         .and(ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .and(ORGANIZATION_USERS.PENDING_INVITATION_TIME.isNull)
         .and(
             ORGANIZATION_USERS
                 .ROLE_ID
@@ -68,7 +67,6 @@ class PermissionStore(private val dslContext: DSLContext) {
         .select(ORGANIZATION_USERS.ORGANIZATION_ID, ORGANIZATION_USERS.ROLE_ID)
         .from(ORGANIZATION_USERS)
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .and(ORGANIZATION_USERS.PENDING_INVITATION_TIME.isNull)
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
 
@@ -93,7 +91,6 @@ class PermissionStore(private val dslContext: DSLContext) {
         .on(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
         .and(ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .and(ORGANIZATION_USERS.PENDING_INVITATION_TIME.isNull)
         .and(
             ORGANIZATION_USERS
                 .ROLE_ID
@@ -126,7 +123,6 @@ class PermissionStore(private val dslContext: DSLContext) {
         .on(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
         .and(ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .and(ORGANIZATION_USERS.PENDING_INVITATION_TIME.isNull)
         .and(
             ORGANIZATION_USERS
                 .ROLE_ID

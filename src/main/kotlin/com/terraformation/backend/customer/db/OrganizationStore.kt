@@ -245,7 +245,6 @@ class OrganizationStore(
             USERS.CREATED_TIME,
             ORGANIZATION_USERS.ORGANIZATION_ID,
             ORGANIZATION_USERS.ROLE_ID,
-            ORGANIZATION_USERS.PENDING_INVITATION_TIME,
             projectIdsField,
         )
         .from(ORGANIZATION_USERS)
@@ -260,10 +259,9 @@ class OrganizationStore(
           val userType = record[USERS.USER_TYPE_ID]
           val createdTime = record[USERS.CREATED_TIME]
           val email = record[USERS.EMAIL]
-          val invitationTime = record[ORGANIZATION_USERS.PENDING_INVITATION_TIME]
 
-          val firstName = if (invitationTime == null) record[USERS.FIRST_NAME] else null
-          val lastName = if (invitationTime == null) record[USERS.LAST_NAME] else null
+          val firstName = record[USERS.FIRST_NAME]
+          val lastName = record[USERS.LAST_NAME]
           val projectIds = record[projectIdsField]?.toList()?.filterNotNull() ?: emptyList()
           val role = record[ORGANIZATION_USERS.ROLE_ID]?.let { Role.of(it) }
 
@@ -282,7 +280,6 @@ class OrganizationStore(
                 createdTime,
                 organizationId,
                 role,
-                invitationTime,
                 projectIds,
             )
           } else {
@@ -295,23 +292,13 @@ class OrganizationStore(
   /**
    * Adds a user to an organization.
    *
-   * @param pending If true, add the user with a pending invitation. The user will have to accept
-   * the invitation before they can access the organization. If false, add the user as a regular
-   * member.
    * @throws UserAlreadyInOrganizationException The user was already a member of the organization.
    */
-  fun addUser(
-      organizationId: OrganizationId,
-      userId: UserId,
-      role: Role,
-      pending: Boolean = false,
-  ) {
+  fun addUser(organizationId: OrganizationId, userId: UserId, role: Role) {
     requirePermissions {
       addOrganizationUser(organizationId)
       setOrganizationUserRole(organizationId, role)
     }
-
-    val pendingInvitationTime = if (pending) clock.instant() else null
 
     try {
       with(ORGANIZATION_USERS) {
@@ -322,7 +309,6 @@ class OrganizationStore(
             .set(ROLE_ID, role.id)
             .set(CREATED_TIME, clock.instant())
             .set(MODIFIED_TIME, clock.instant())
-            .set(PENDING_INVITATION_TIME, pendingInvitationTime)
             .execute()
       }
     } catch (e: DuplicateKeyException) {

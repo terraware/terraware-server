@@ -15,6 +15,5 @@ data class OrganizationUserModel(
     val createdTime: Instant,
     val organizationId: OrganizationId,
     val role: Role,
-    val pendingInvitationTime: Instant?,
     val projectIds: List<ProjectId>,
 )

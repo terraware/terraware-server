@@ -86,7 +86,6 @@ COMMENT ON COLUMN notifications.accession_id IS 'Null if this notification is no
 COMMENT ON COLUMN notifications.accession_state_id IS 'For state notifications, which state is being notified about. Null otherwise.';
 
 COMMENT ON TABLE organization_users IS 'Organization membership and role information.';
-COMMENT ON COLUMN organization_users.pending_invitation_time IS 'When the most recent invitation was sent to a user who has not yet joined the organization. Null if the user is a regular member of the organization (i.e., they have accepted the invitation).';
 
 COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
