@@ -16,7 +16,7 @@ data class ProjectModel(
     val description: String?,
     val id: ProjectId,
     val organizationId: OrganizationId,
-    val perUser: Boolean,
+    val organizationWide: Boolean,
     val name: String,
     val sites: List<SiteModel>? = null,
     val startDate: LocalDate?,
@@ -34,7 +34,8 @@ data class ProjectModel(
       id = record[PROJECTS.ID] ?: throw IllegalArgumentException("ID is required"),
       organizationId = record[PROJECTS.ORGANIZATION_ID]
               ?: throw IllegalArgumentException("Organization is required"),
-      perUser = record[PROJECTS.PER_USER] ?: throw IllegalArgumentException("Per-user is required"),
+      organizationWide = record[PROJECTS.ORGANIZATION_WIDE]
+              ?: throw IllegalArgumentException("Organization-wide is required"),
       name = record[PROJECTS.NAME] ?: throw IllegalArgumentException("Name is required"),
       sites = sitesMultiset?.let { record[it] },
       startDate = record[PROJECTS.START_DATE],
@@ -50,7 +51,8 @@ fun ProjectsRow.toModel(types: Set<ProjectType> = emptySet()) =
         id = id ?: throw IllegalArgumentException("ID is required"),
         organizationId = organizationId
                 ?: throw IllegalArgumentException("Organization is required"),
-        perUser = perUser ?: throw IllegalArgumentException("Per-user is required"),
+        organizationWide = organizationWide
+                ?: throw IllegalArgumentException("Organization-wide is required"),
         name = name ?: throw IllegalArgumentException("Name is required"),
         startDate = startDate,
         status = statusId,

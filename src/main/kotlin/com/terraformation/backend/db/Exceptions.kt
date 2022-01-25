@@ -64,8 +64,8 @@ class PlantObservationNotFoundException(val id: PlantObservationId) :
 class ProjectNotFoundException(val projectId: ProjectId) :
     EntityNotFoundException("Project $projectId not found")
 
-class ProjectNotPerUserException(val projectId: ProjectId) :
-    Exception("Project $projectId is not per-user")
+class ProjectOrganizationWideException(val projectId: ProjectId) :
+    Exception("Project $projectId is organization-wide")
 
 class SiteNotFoundException(val siteId: SiteId) : EntityNotFoundException("Site $siteId not found")
 

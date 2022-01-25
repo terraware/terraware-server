@@ -7,7 +7,7 @@ import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.ProjectNotPerUserException
+import com.terraformation.backend.db.ProjectOrganizationWideException
 import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.UserAlreadyInProjectException
@@ -92,7 +92,7 @@ class ProjectStore(
       organizationId: OrganizationId,
       name: String,
       description: String? = null,
-      perUser: Boolean = true,
+      organizationWide: Boolean = false,
       startDate: LocalDate? = null,
       status: ProjectStatus? = null,
       types: Collection<ProjectType> = emptyList()
@@ -106,7 +106,7 @@ class ProjectStore(
             modifiedTime = clock.instant(),
             name = name,
             organizationId = organizationId,
-            perUser = perUser,
+            organizationWide = organizationWide,
             startDate = startDate,
             statusId = status,
         )
@@ -175,22 +175,22 @@ class ProjectStore(
     requirePermissions { addProjectUser(projectId) }
 
     // This query gets two pieces of information: whether the user is a member of the organization
-    // (if not, it will return no rows) and whether the project has per-user permissions. We already
-    // know the project exists thanks to the permission check above.
-    val perUser =
+    // (if not, it will return no rows) and whether the project has organization-wide accessibility.
+    // We already know the project exists thanks to the permission check above.
+    val organizationWide =
         dslContext
-            .select(PROJECTS.PER_USER)
+            .select(PROJECTS.ORGANIZATION_WIDE)
             .from(ORGANIZATION_USERS)
             .join(PROJECTS)
             .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
             .where(ORGANIZATION_USERS.USER_ID.eq(userId))
             .and(PROJECTS.ID.eq(projectId))
             .fetch()
-    if (perUser.isEmpty()) {
+    if (organizationWide.isEmpty()) {
       throw UserNotFoundException(userId)
     }
-    if (perUser.first().value1() == false) {
-      throw ProjectNotPerUserException(projectId)
+    if (organizationWide.first().value1() == true) {
+      throw ProjectOrganizationWideException(projectId)
     }
 
     try {

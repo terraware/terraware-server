@@ -84,7 +84,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           description = "Project description $projectId",
           id = projectId,
           organizationId = organizationId,
-          perUser = true,
+          organizationWide = false,
           name = "Project $projectId",
           sites = listOf(siteModel),
           startDate = LocalDate.EPOCH.plusDays(projectId.value),

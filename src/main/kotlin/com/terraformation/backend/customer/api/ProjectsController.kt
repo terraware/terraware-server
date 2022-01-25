@@ -12,7 +12,7 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.ProjectNotPerUserException
+import com.terraformation.backend.db.ProjectOrganizationWideException
 import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.UserId
@@ -97,7 +97,8 @@ class ProjectsController(private val projectStore: ProjectStore) {
   @ApiResponse404("The user does not exist or is not a member of the organization.")
   @ApiResponse(
       responseCode = "409",
-      description = "The user is already a member of the project, or the project is not per-user.",
+      description =
+          "The user is already a member of the project, or the project is organization-wide.",
       content = [Content(schema = Schema(implementation = SimpleErrorResponsePayload::class))])
   @Operation(
       summary = "Adds a user to a project.",
@@ -110,8 +111,8 @@ class ProjectsController(private val projectStore: ProjectStore) {
   ): SimpleSuccessResponsePayload {
     try {
       projectStore.addUser(projectId, userId)
-    } catch (e: ProjectNotPerUserException) {
-      throw ClientErrorException("Project is not per-user", Response.Status.CONFLICT)
+    } catch (e: ProjectOrganizationWideException) {
+      throw ClientErrorException("Project is organization-wide", Response.Status.CONFLICT)
     }
 
     return SimpleSuccessResponsePayload()
@@ -164,10 +165,11 @@ data class ProjectPayload(
     val organizationId: OrganizationId,
     @Schema(
         description =
-            "If true, the project is only accessible by users who are specifically added to it " +
-                "(as well as to admins and owners). If false, the project is accessible by the " +
-                "entire organization and users may not be added.")
-    val perUser: Boolean,
+            "If false, the project is accessible by the entire organization and users may not " +
+                "be added. If true, the project is only accessible by users who are specifically " +
+                "added to it (as well as to admins and owners).",
+    )
+    val organizationWide: Boolean,
     val sites: List<SiteElement>?,
     val startDate: LocalDate?,
     val status: ProjectStatus?,
@@ -181,7 +183,7 @@ data class ProjectPayload(
       id = model.id,
       name = model.name,
       organizationId = model.organizationId,
-      perUser = model.perUser,
+      organizationWide = model.organizationWide,
       sites = model.sites?.map { SiteElement(it) },
       startDate = model.startDate,
       status = model.status,

@@ -131,7 +131,7 @@ abstract class DatabaseTest {
       organizationId: Any = "$id".toLong() / 10,
       name: String = "Project $id",
       description: String? = null,
-      perUser: Boolean = true,
+      organizationWide: Boolean = false,
       startDate: LocalDate? = null,
       status: ProjectStatus? = null,
       types: Collection<ProjectType> = emptySet(),
@@ -147,7 +147,7 @@ abstract class DatabaseTest {
           .set(CREATED_TIME, Instant.EPOCH)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
-          .set(PER_USER, perUser)
+          .set(ORGANIZATION_WIDE, organizationWide)
           .set(START_DATE, startDate)
           .set(STATUS_ID, status)
           .execute()
