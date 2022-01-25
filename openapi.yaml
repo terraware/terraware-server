@@ -6040,6 +6040,13 @@ components:
           type: string
         name:
           type: string
+        projectId:
+          type: integer
+          description: "If present, move the site to this project. Project must be\
+            \ owned by the same organization as the site's current project. User must\
+            \ have permission to add sites to the new project and remove them from\
+            \ the existing one."
+          format: int64
         timezone:
           type: string
     UpdateUserRequestPayload:
