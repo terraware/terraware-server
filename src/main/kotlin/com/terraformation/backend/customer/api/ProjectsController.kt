@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @CustomerEndpoint
@@ -42,19 +43,41 @@ import org.springframework.web.bind.annotation.RestController
 class ProjectsController(private val projectStore: ProjectStore) {
   @GetMapping
   @Operation(summary = "Gets a list of all projects the user can access.")
-  fun listAllProjects(): ListProjectsResponsePayload {
+  fun listAllProjects(
+      @RequestParam("totalUsers", defaultValue = "false")
+      @Schema(description = "If true, include the total number of users in the project.")
+      totalUsers: Boolean?,
+  ): ListProjectsResponsePayload {
     val projects = projectStore.fetchAll()
+    val userTotals =
+        if (totalUsers == true) {
+          projectStore.countUsers(projects.map { it.id })
+        } else {
+          emptyMap()
+        }
 
-    return ListProjectsResponsePayload(projects.map { ProjectPayload(it) })
+    return ListProjectsResponsePayload(
+        projects.map { model -> ProjectPayload(model, userTotals[model.id]) })
   }
 
   @ApiResponse(responseCode = "200", description = "Project retrieved.")
   @ApiResponse404
   @GetMapping("/{id}")
   @Operation(summary = "Gets information about a single project.")
-  fun getProject(@PathVariable("id") projectId: ProjectId): GetProjectResponsePayload {
+  fun getProject(
+      @PathVariable("id") projectId: ProjectId,
+      @RequestParam("totalUsers", defaultValue = "false")
+      @Schema(description = "If true, include the total number of users in the project.")
+      totalUsers: Boolean?,
+  ): GetProjectResponsePayload {
     val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
-    return GetProjectResponsePayload(ProjectPayload(project))
+    val count =
+        if (totalUsers == true) {
+          projectStore.countUsers(projectId)
+        } else {
+          null
+        }
+    return GetProjectResponsePayload(ProjectPayload(project, count))
   }
 
   @ApiResponse(responseCode = "200", description = "Project created.")
@@ -148,11 +171,21 @@ class OrganizationProjectsController(private val projectStore: ProjectStore) {
       summary = "Gets a list of the projects in an organization.",
       description = "Only projects that are accessible by the current user are included.")
   fun listOrganizationProjects(
-      @PathVariable organizationId: OrganizationId
+      @PathVariable organizationId: OrganizationId,
+      @RequestParam("totalUsers", defaultValue = "false")
+      @Schema(description = "If true, include the total number of users in each project.")
+      totalUsers: Boolean?,
   ): ListProjectsResponsePayload {
     val projects = projectStore.fetchByOrganization(organizationId)
+    val userTotals =
+        if (totalUsers == true) {
+          projectStore.countUsers(projects.map { it.id })
+        } else {
+          emptyMap()
+        }
 
-    return ListProjectsResponsePayload(projects.map { ProjectPayload(it) })
+    return ListProjectsResponsePayload(
+        projects.map { model -> ProjectPayload(model, userTotals[model.id]) })
   }
 }
 
@@ -178,10 +211,17 @@ data class ProjectPayload(
     val sites: List<SiteElement>?,
     val startDate: LocalDate?,
     val status: ProjectStatus?,
+    @Schema(
+        description =
+            "Total number of users with access to the project. This includes administrators, " +
+                "who have access to all the organization's projects. Only included if the client " +
+                "specifically requested it.")
+    val totalUsers: Int?,
     val types: Set<ProjectType>?,
 ) {
   constructor(
-      model: ProjectModel
+      model: ProjectModel,
+      totalUsers: Int? = null,
   ) : this(
       createdTime = model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       description = model.description,
@@ -193,6 +233,7 @@ data class ProjectPayload(
       sites = model.sites?.map { SiteElement(it) },
       startDate = model.startDate,
       status = model.status,
+      totalUsers = totalUsers,
       types = model.types,
   )
 }

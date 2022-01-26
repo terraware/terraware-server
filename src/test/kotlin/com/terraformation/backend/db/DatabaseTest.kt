@@ -334,8 +334,8 @@ abstract class DatabaseTest {
   /** Creates a user that can be referenced by various tests. */
   fun insertUser(
       userId: Any = currentUser().userId,
-      authId: String? = "XYZ",
-      email: String = "user@terraformation.com",
+      authId: String? = "$userId",
+      email: String = "$userId@terraformation.com",
       firstName: String? = "First",
       lastName: String? = "Last",
       type: UserType = UserType.Individual,

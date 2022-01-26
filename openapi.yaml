@@ -1245,6 +1245,13 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: totalUsers
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: "If true, include the total number of users in each project."
+          default: false
       responses:
         "200":
           description: Projects retrieved.
@@ -1408,6 +1415,14 @@ paths:
       - Customer
       summary: Gets a list of all projects the user can access.
       operationId: listAllProjects
+      parameters:
+      - name: totalUsers
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: "If true, include the total number of users in the project."
+          default: false
       responses:
         "200":
           description: OK
@@ -1446,6 +1461,13 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: totalUsers
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: "If true, include the total number of users in the project."
+          default: false
       responses:
         "200":
           description: Project retrieved.
@@ -5057,6 +5079,12 @@ components:
           - Propagating
           - Planting
           - Completed/Monitoring
+        totalUsers:
+          type: integer
+          description: "Total number of users with access to the project. This includes\
+            \ administrators, who have access to all the organization's projects.\
+            \ Only included if the client specifically requested it."
+          format: int32
         types:
           uniqueItems: true
           type: array
