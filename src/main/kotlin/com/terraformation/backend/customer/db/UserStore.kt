@@ -17,6 +17,7 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
+import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.log.perClassLogger
 import java.net.URI
 import java.net.URLEncoder
@@ -26,6 +27,7 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.time.Clock
 import java.time.Duration
+import java.time.Instant
 import java.util.Base64
 import javax.annotation.ManagedBean
 import javax.ws.rs.core.MediaType
@@ -37,9 +39,11 @@ import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
+import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.web.context.support.ServletRequestHandledEvent
 
 /**
  * Data accessor for user information.
@@ -466,6 +470,24 @@ class UserStore(
           // around afterwards should be harmless.
         }
       }
+    }
+  }
+
+  /**
+   * Updates a user's last activity time when an API request is processed.
+   *
+   * @param[event] Event published by Spring's request-handling layer after each request. It
+   * includes a `userName` field which in our case is set to the user's authentication ID; for
+   * unauthenticated requests, that field is null and this method is a no-op.
+   */
+  @EventListener
+  fun updateLastActivityTime(event: ServletRequestHandledEvent) {
+    event.userName?.let { authId ->
+      dslContext
+          .update(USERS)
+          .set(USERS.LAST_ACTIVITY_TIME, Instant.ofEpochMilli(event.timestamp))
+          .where(USERS.AUTH_ID.eq(authId))
+          .execute()
     }
   }
 
