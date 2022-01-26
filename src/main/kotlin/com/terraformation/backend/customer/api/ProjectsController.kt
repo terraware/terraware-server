@@ -63,9 +63,9 @@ class ProjectsController(private val projectStore: ProjectStore) {
   fun createProject(@RequestBody payload: CreateProjectRequestPayload): GetProjectResponsePayload {
     val project =
         projectStore.create(
-            payload.organizationId,
-            payload.name,
-            payload.description,
+            description = payload.description,
+            name = payload.name,
+            organizationId = payload.organizationId,
             startDate = payload.startDate,
             status = payload.status,
             types = payload.types ?: emptyList())
@@ -84,12 +84,12 @@ class ProjectsController(private val projectStore: ProjectStore) {
       @RequestBody payload: UpdateProjectRequestPayload
   ): SimpleSuccessResponsePayload {
     projectStore.update(
-        projectId,
-        payload.description,
-        payload.name,
-        payload.startDate,
-        payload.status,
-        payload.types ?: emptyList())
+        description = payload.description,
+        name = payload.name,
+        projectId = projectId,
+        startDate = payload.startDate,
+        status = payload.status,
+        types = payload.types ?: emptyList())
     return SimpleSuccessResponsePayload()
   }
 
