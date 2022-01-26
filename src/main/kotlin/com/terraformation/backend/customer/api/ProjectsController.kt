@@ -160,6 +160,11 @@ class OrganizationProjectsController(private val projectStore: ProjectStore) {
 data class ProjectPayload(
     val createdTime: Instant,
     val description: String?,
+    @Schema(
+        description =
+            "If true, the project and its associated sites and facilities should not be " +
+                "displayed to end users.")
+    val hidden: Boolean,
     val id: ProjectId,
     val name: String,
     val organizationId: OrganizationId,
@@ -180,6 +185,7 @@ data class ProjectPayload(
   ) : this(
       createdTime = model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       description = model.description,
+      hidden = model.hidden,
       id = model.id,
       name = model.name,
       organizationId = model.organizationId,

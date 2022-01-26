@@ -4987,6 +4987,7 @@ components:
     ProjectPayload:
       required:
       - createdTime
+      - hidden
       - id
       - name
       - organizationId
@@ -4998,6 +4999,10 @@ components:
           format: date-time
         description:
           type: string
+        hidden:
+          type: boolean
+          description: "If true, the project and its associated sites and facilities\
+            \ should not be displayed to end users."
         id:
           type: integer
           format: int64

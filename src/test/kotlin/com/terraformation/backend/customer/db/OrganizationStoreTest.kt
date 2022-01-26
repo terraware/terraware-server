@@ -82,6 +82,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       ProjectModel(
           createdTime = Instant.EPOCH,
           description = "Project description $projectId",
+          hidden = false,
           id = projectId,
           organizationId = organizationId,
           organizationWide = false,

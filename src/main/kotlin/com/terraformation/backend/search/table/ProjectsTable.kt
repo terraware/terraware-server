@@ -36,6 +36,7 @@ class ProjectsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpera
           timestampField(
               "createdTime", "Project created time", PROJECTS.CREATED_TIME, nullable = false),
           textField("description", "Project description", PROJECTS.DESCRIPTION),
+          booleanField("hidden", "Project is hidden", PROJECTS.HIDDEN, nullable = false),
           idWrapperField("id", "Project ID", PROJECTS.ID) { ProjectId(it) },
           textField("name", "Project name", PROJECTS.NAME, nullable = false),
           booleanField(
