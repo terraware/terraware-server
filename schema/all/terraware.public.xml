@@ -851,6 +851,7 @@
             <parent column="id" foreignKey="projects_pm_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="organization_wide" nullable="false" remarks="If true, the project is accessible to the entire organization. If true, the project is only accessible to users who are added to it." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="13" name="hidden" nullable="false" remarks="If true, the project and its associated sites and facilities should not be displayed to end users." size="1" type="bool" typeCode="-7"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>

@@ -489,7 +489,7 @@
 <!-- projects -->
 <g id="node10" class="node"><title>projects</title>
 <g id="a_node10"><a xlink:href="../../tables/projects.html" xlink:title="projects" target="_top">
-<polygon fill="#ffffff" stroke="none" points="231,-228 231,-554 361,-554 361,-228 231,-228"/>
+<polygon fill="#ffffff" stroke="none" points="231,-206 231,-554 361,-554 361,-206 231,-206"/>
 <polygon fill="#f5f5f5" stroke="none" points="231,-532 231,-554 361,-554 361,-532 231,-532"/>
 <polygon fill="none" stroke="black" points="231,-532 231,-554 361,-554 361,-532 231,-532"/>
 <text text-anchor="start" x="236" y="-541.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">projects</text>
@@ -522,15 +522,17 @@
 <text text-anchor="start" x="251" y="-276.2" font-family="Helvetica,sans-Serif" font-size="11.00">pm_user_id</text>
 <polygon fill="none" stroke="black" points="231,-246 231,-268 361,-268 361,-246 231,-246"/>
 <text text-anchor="start" x="251" y="-254.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_wide</text>
-<polygon fill="#ffffff" stroke="none" points="231,-228 231,-246 275,-246 275,-228 231,-228"/>
-<polygon fill="none" stroke="black" points="231,-228 231,-246 275,-246 275,-228 231,-228"/>
-<text text-anchor="start" x="234" y="-234.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="275,-228 275,-246 327,-246 327,-228 275,-228"/>
-<polygon fill="none" stroke="black" points="275,-228 275,-246 327,-246 327,-228 275,-228"/>
-<text text-anchor="start" x="288" y="-234.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="327,-228 327,-246 361,-246 361,-228 327,-228"/>
-<polygon fill="none" stroke="black" points="327,-228 327,-246 361,-246 361,-228 327,-228"/>
-<text text-anchor="start" x="341" y="-234.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="none" stroke="black" points="231,-224 231,-246 361,-246 361,-224 231,-224"/>
+<text text-anchor="start" x="251" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">hidden</text>
+<polygon fill="#ffffff" stroke="none" points="231,-206 231,-224 275,-224 275,-206 231,-206"/>
+<polygon fill="none" stroke="black" points="231,-206 231,-224 275,-224 275,-206 231,-206"/>
+<text text-anchor="start" x="234" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="275,-206 275,-224 327,-224 327,-206 275,-206"/>
+<polygon fill="none" stroke="black" points="275,-206 275,-224 327,-224 327,-206 275,-206"/>
+<text text-anchor="start" x="288" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="327,-206 327,-224 361,-224 361,-206 327,-206"/>
+<polygon fill="none" stroke="black" points="327,-206 327,-224 361,-224 361,-206 327,-206"/>
+<text text-anchor="start" x="341" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
