@@ -38,6 +38,11 @@ class ProjectsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpera
           textField("description", "Project description", PROJECTS.DESCRIPTION),
           idWrapperField("id", "Project ID", PROJECTS.ID) { ProjectId(it) },
           textField("name", "Project name", PROJECTS.NAME, nullable = false),
+          booleanField(
+              "organizationWide",
+              "Project is accessible organization-wide",
+              PROJECTS.ORGANIZATION_WIDE,
+              nullable = false),
           dateField("startDate", "Project start date", PROJECTS.START_DATE),
           enumField("status", "Project status", PROJECTS.STATUS_ID),
       )

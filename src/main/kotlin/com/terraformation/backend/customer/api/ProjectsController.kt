@@ -12,6 +12,7 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.ProjectOrganizationWideException
 import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.UserId
@@ -23,7 +24,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import javax.ws.rs.ClientErrorException
 import javax.ws.rs.NotFoundException
+import javax.ws.rs.core.Response
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -60,12 +63,12 @@ class ProjectsController(private val projectStore: ProjectStore) {
   fun createProject(@RequestBody payload: CreateProjectRequestPayload): GetProjectResponsePayload {
     val project =
         projectStore.create(
-            payload.organizationId,
-            payload.name,
-            payload.description,
-            payload.startDate,
-            payload.status,
-            payload.types ?: emptyList())
+            description = payload.description,
+            name = payload.name,
+            organizationId = payload.organizationId,
+            startDate = payload.startDate,
+            status = payload.status,
+            types = payload.types ?: emptyList())
 
     return GetProjectResponsePayload(ProjectPayload(project))
   }
@@ -81,12 +84,12 @@ class ProjectsController(private val projectStore: ProjectStore) {
       @RequestBody payload: UpdateProjectRequestPayload
   ): SimpleSuccessResponsePayload {
     projectStore.update(
-        projectId,
-        payload.description,
-        payload.name,
-        payload.startDate,
-        payload.status,
-        payload.types ?: emptyList())
+        description = payload.description,
+        name = payload.name,
+        projectId = projectId,
+        startDate = payload.startDate,
+        status = payload.status,
+        types = payload.types ?: emptyList())
     return SimpleSuccessResponsePayload()
   }
 
@@ -94,7 +97,8 @@ class ProjectsController(private val projectStore: ProjectStore) {
   @ApiResponse404("The user does not exist or is not a member of the organization.")
   @ApiResponse(
       responseCode = "409",
-      description = "The user is already a member of the project.",
+      description =
+          "The user is already a member of the project, or the project is organization-wide.",
       content = [Content(schema = Schema(implementation = SimpleErrorResponsePayload::class))])
   @Operation(
       summary = "Adds a user to a project.",
@@ -105,7 +109,12 @@ class ProjectsController(private val projectStore: ProjectStore) {
       @PathVariable("projectId") projectId: ProjectId,
       @PathVariable("userId") userId: UserId
   ): SimpleSuccessResponsePayload {
-    projectStore.addUser(projectId, userId)
+    try {
+      projectStore.addUser(projectId, userId)
+    } catch (e: ProjectOrganizationWideException) {
+      throw ClientErrorException("Project is organization-wide", Response.Status.CONFLICT)
+    }
+
     return SimpleSuccessResponsePayload()
   }
 
@@ -154,6 +163,13 @@ data class ProjectPayload(
     val id: ProjectId,
     val name: String,
     val organizationId: OrganizationId,
+    @Schema(
+        description =
+            "If false, the project is accessible by the entire organization and users may not " +
+                "be added. If true, the project is only accessible by users who are specifically " +
+                "added to it (as well as to admins and owners).",
+    )
+    val organizationWide: Boolean,
     val sites: List<SiteElement>?,
     val startDate: LocalDate?,
     val status: ProjectStatus?,
@@ -167,6 +183,7 @@ data class ProjectPayload(
       id = model.id,
       name = model.name,
       organizationId = model.organizationId,
+      organizationWide = model.organizationWide,
       sites = model.sites?.map { SiteElement(it) },
       startDate = model.startDate,
       status = model.status,

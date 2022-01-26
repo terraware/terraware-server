@@ -57,6 +57,7 @@ class PermissionStore(private val dslContext: DSLContext) {
                 .ROLE_ID
                 .`in`(Role.OWNER.id, Role.ADMIN.id)
                 .or(PROJECT_USERS.USER_ID.isNotNull)
+                .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
                 .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
@@ -96,6 +97,7 @@ class PermissionStore(private val dslContext: DSLContext) {
                 .ROLE_ID
                 .`in`(Role.OWNER.id, Role.ADMIN.id)
                 .or(PROJECT_USERS.USER_ID.isNotNull)
+                .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
                 .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
@@ -128,6 +130,7 @@ class PermissionStore(private val dslContext: DSLContext) {
                 .ROLE_ID
                 .`in`(Role.OWNER.id, Role.ADMIN.id)
                 .or(PROJECT_USERS.USER_ID.isNotNull)
+                .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
                 .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }

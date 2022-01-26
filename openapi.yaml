@@ -1555,7 +1555,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
         "409":
-          description: The user is already a member of the project.
+          description: "The user is already a member of the project, or the project\
+            \ is organization-wide."
           content:
             application/json:
               schema:
@@ -4989,6 +4990,7 @@ components:
       - id
       - name
       - organizationId
+      - organizationWide
       type: object
       properties:
         createdTime:
@@ -5004,6 +5006,12 @@ components:
         organizationId:
           type: integer
           format: int64
+        organizationWide:
+          type: boolean
+          description: "If false, the project is accessible by the entire organization\
+            \ and users may not be added. If true, the project is only accessible\
+            \ by users who are specifically added to it (as well as to admins and\
+            \ owners)."
         sites:
           type: array
           items:
