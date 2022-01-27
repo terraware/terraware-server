@@ -52,6 +52,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private val emailService: EmailService = mockk()
   private lateinit var facilityStore: FacilityStore
+  private val messages: Messages = mockk()
   private lateinit var organizationStore: OrganizationStore
   private lateinit var projectStore: ProjectStore
   private val realmResource: RealmResource = mockk()
@@ -59,6 +60,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var userStore: UserStore
 
   private lateinit var service: OrganizationService
+
+  private val seedBankDefaultName = "Seed Bank"
 
   @BeforeEach
   fun setUp() {
@@ -93,13 +96,14 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             dslContext,
             emailService,
             facilityStore,
-            Messages(),
+            messages,
             organizationStore,
             projectStore,
             siteStore,
             userStore)
 
     every { clock.instant() } returns Instant.EPOCH
+    every { messages.seedBankDefaultName() } returns seedBankDefaultName
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateProject(any()) } returns true
     every { user.canCreateSite(any()) } returns true
@@ -123,7 +127,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                         id = ProjectId(1),
                         organizationId = OrganizationId(1),
                         organizationWide = true,
-                        name = "Seed Bank",
+                        name = seedBankDefaultName,
                         description = null,
                         startDate = null,
                         status = null,
@@ -135,7 +139,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                                     id = SiteId(1),
                                     location = null,
                                     modifiedTime = clock.instant(),
-                                    name = "Seed Bank",
+                                    name = seedBankDefaultName,
                                     projectId = ProjectId(1),
                                     facilities =
                                         listOf(
@@ -143,7 +147,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                                                 createdTime = clock.instant(),
                                                 id = FacilityId(1),
                                                 modifiedTime = clock.instant(),
-                                                name = "Seed Bank",
+                                                name = seedBankDefaultName,
                                                 siteId = SiteId(1),
                                                 type = FacilityType.SeedBank)))))))
     val actual =
