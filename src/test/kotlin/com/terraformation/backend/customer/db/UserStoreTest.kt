@@ -14,6 +14,7 @@ import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
+import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -50,7 +51,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val httpClient: HttpClient = mockk()
   private val realmResource: RealmResource = mockk()
   private val usersResource = InMemoryKeycloakUsersResource()
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
 
   private lateinit var organizationsDao: OrganizationsDao
   private lateinit var organizationStore: OrganizationStore

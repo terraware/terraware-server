@@ -41,6 +41,7 @@ import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.gis.model.FeatureModel
+import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -65,7 +66,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
   private val siteId = SiteId(10)
   private val layerId = LayerId(100)
   private val nonExistentLayerId = LayerId(401)

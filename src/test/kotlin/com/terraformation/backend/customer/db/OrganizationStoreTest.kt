@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
+import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -41,7 +42,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
   override val sequencesToReset: List<String> = listOf("organizations_id_seq")
 
   private val clock: Clock = mockk()
@@ -122,7 +123,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
-    every { user.userId } returns UserId(2)
 
     assertEquals(
         organizationId,

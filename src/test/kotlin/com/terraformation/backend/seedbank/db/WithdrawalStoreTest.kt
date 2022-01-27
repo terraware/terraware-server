@@ -1,5 +1,7 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
@@ -14,6 +16,7 @@ import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.WithdrawalModel
@@ -29,7 +32,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class WithdrawalStoreTest : DatabaseTest() {
+internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
+  override val user: TerrawareUser = mockUser()
+
   private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var store: WithdrawalStore
   private lateinit var withdrawalsDao: WithdrawalsDao

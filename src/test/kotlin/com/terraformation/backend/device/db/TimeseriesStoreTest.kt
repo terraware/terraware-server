@@ -14,8 +14,8 @@ import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.pojos.TimeseriesValuesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
+import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -26,7 +26,7 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
 
   private lateinit var devicesDao: DevicesDao
   private lateinit var store: TimeseriesStore

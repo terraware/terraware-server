@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tables.daos.SpeciesOptionsDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
+import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -41,7 +42,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   private val organizationId = OrganizationId(1)
 
   private val clock: Clock = mockk()
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
 
   private lateinit var speciesDao: SpeciesDao
   private lateinit var speciesNamesDao: SpeciesNamesDao

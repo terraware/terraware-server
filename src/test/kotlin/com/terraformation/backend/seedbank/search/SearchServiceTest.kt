@@ -35,6 +35,7 @@ import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.pojos.GerminationsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
@@ -52,7 +53,6 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
-import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -68,7 +68,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
   override val sequencesToReset: List<String> = listOf("accession_id_seq")
 
   private lateinit var accessionsDao: AccessionsDao

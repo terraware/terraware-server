@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
 import com.terraformation.backend.db.tables.daos.ProjectUsersDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.pojos.ProjectUsersRow
+import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -26,7 +27,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
   private lateinit var projectsDao: ProjectsDao

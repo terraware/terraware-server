@@ -53,6 +53,7 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
 import com.terraformation.backend.seedbank.api.GerminationPayload
@@ -97,7 +98,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
 
   override val sequencesToReset
     get() =
