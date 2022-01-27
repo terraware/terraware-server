@@ -92,6 +92,7 @@ class ProjectStore(
       organizationId: OrganizationId,
       name: String,
       description: String? = null,
+      hidden: Boolean = false,
       organizationWide: Boolean = false,
       startDate: LocalDate? = null,
       status: ProjectStatus? = null,
@@ -103,6 +104,7 @@ class ProjectStore(
         ProjectsRow(
             createdTime = clock.instant(),
             description = description,
+            hidden = hidden,
             modifiedTime = clock.instant(),
             name = name,
             organizationId = organizationId,
