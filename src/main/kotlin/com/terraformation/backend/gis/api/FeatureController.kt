@@ -8,7 +8,6 @@ import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
 import com.terraformation.backend.db.LayerId
@@ -164,7 +163,6 @@ class FeatureController(private val featureStore: FeatureStore) {
             location = payload.location,
             orientation = payload.orientation,
             size = file.size,
-            userId = currentUser().userId,
         )
 
     val photoId = featureStore.createPhoto(featureId, photosRow, file.inputStream)
