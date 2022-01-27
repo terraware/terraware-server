@@ -81,9 +81,10 @@ class OrganizationsController(
   @Operation(summary = "Creates a new organization.")
   @PostMapping
   fun createOrganization(
-      @RequestBody payload: UpdateOrganizationRequestPayload
+      @RequestBody payload: CreateOrganizationRequestPayload
   ): GetOrganizationResponsePayload {
-    val model = organizationStore.createWithAdmin(payload.toRow())
+    val model =
+        organizationService.createOrganization(payload.toRow(), payload.createSeedBank ?: true)
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.OWNER))
   }
 
@@ -191,6 +192,41 @@ data class AddOrganizationUserRequestPayload(
 data class UpdateOrganizationUserRequestPayload(
     val role: Role,
 )
+
+data class CreateOrganizationRequestPayload(
+    @Schema(
+        description = "ISO 3166 alpha-2 code of organization's country.",
+        example = "AU",
+        minLength = 2,
+        maxLength = 2)
+    val countryCode: String?,
+    @Schema(
+        description =
+            "ISO 3166-2 code of organization's country subdivision (state, province, region, " +
+                "etc.) This is the full ISO 3166-2 code including the country prefix. If this is " +
+                "set, countryCode must also be set.",
+        example = "US-HI",
+        minLength = 4,
+        maxLength = 6)
+    val countrySubdivisionCode: String?,
+    @Schema(
+        description =
+            "If true or not specified, create a project, site, and seed bank facility " +
+                "automatically.",
+        defaultValue = "true")
+    val createSeedBank: Boolean?,
+    val description: String?,
+    val name: String,
+) {
+  fun toRow(): OrganizationsRow {
+    return OrganizationsRow(
+        countryCode = countryCode,
+        countrySubdivisionCode = countrySubdivisionCode,
+        description = description,
+        name = name,
+    )
+  }
+}
 
 data class UpdateOrganizationRequestPayload(
     @Schema(
