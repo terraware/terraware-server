@@ -1,10 +1,12 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ProjectOrganizationWideException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
@@ -130,5 +132,71 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     insertUser(userId)
 
     assertThrows<UserNotFoundException> { store.removeUser(projectId, userId) }
+  }
+
+  @Test
+  fun `countUsers includes admins and project members`() {
+    val adminUserId = UserId(100)
+    val contributorUserId = UserId(101)
+    val otherProjectId = ProjectId(3)
+
+    insertProject(otherProjectId, organizationId)
+    insertUser(adminUserId)
+    insertUser(contributorUserId)
+    insertOrganizationUser(adminUserId, organizationId, Role.ADMIN)
+    insertOrganizationUser(contributorUserId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(contributorUserId, projectId)
+
+    val expected = mapOf(projectId to 2, otherProjectId to 1)
+    val actual = store.countUsers(listOf(projectId, otherProjectId))
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `countUsers returns organization user count for organization-wide projects`() {
+    val adminUserId = UserId(100)
+    val contributorUserId = UserId(101)
+    val orgWideProjectId = ProjectId(3)
+
+    insertProject(orgWideProjectId, organizationId, organizationWide = true)
+    insertUser(adminUserId)
+    insertUser(contributorUserId)
+    insertOrganizationUser(adminUserId, organizationId, Role.ADMIN)
+    insertOrganizationUser(contributorUserId, organizationId, Role.CONTRIBUTOR)
+
+    val expected = mapOf(projectId to 1, orgWideProjectId to 2)
+    val actual = store.countUsers(listOf(projectId, orgWideProjectId))
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `countUsers does not double-count admins who were added to project`() {
+    val adminUserId = UserId(100)
+    val contributorUserId = UserId(101)
+
+    insertUser(adminUserId)
+    insertUser(contributorUserId)
+    insertOrganizationUser(adminUserId, organizationId, Role.ADMIN)
+    insertOrganizationUser(contributorUserId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(adminUserId, projectId)
+    insertProjectUser(contributorUserId, projectId)
+
+    val actual = store.countUsers(projectId)
+
+    assertEquals(2, actual)
+  }
+
+  @Test
+  fun `countUsers throws exception if user does not have permission to read projects`() {
+    every { user.canReadProject(projectId) } returns false
+
+    assertThrows<ProjectNotFoundException>("countUsers with single project ID") {
+      store.countUsers(projectId)
+    }
+    assertThrows<ProjectNotFoundException>("countUsers with project ID list") {
+      store.countUsers(listOf(projectId))
+    }
   }
 }

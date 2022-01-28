@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.ProjectModel
+import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.OrganizationId
@@ -229,5 +230,55 @@ class ProjectStore(
     if (rowsDeleted < 1) {
       throw UserNotFoundException(userId)
     }
+  }
+
+  /**
+   * Returns the number of users in a list of projects. Administrators and owners are considered
+   * users of all projects in the organization.
+   */
+  fun countUsers(projectIds: Collection<ProjectId>): Map<ProjectId, Int> {
+    requirePermissions { projectIds.forEach { readProject(it) } }
+
+    if (projectIds.isEmpty()) {
+      return emptyMap()
+    }
+
+    val projectIdField = DSL.field(DSL.name("project_id"), ProjectId::class.java)
+    val countField = DSL.count()
+
+    // For each project ID, a list of the users who have access to the project without needing to be
+    // explicitly added, either because they have a privileged role or because the project is
+    // organization-wide.
+    val implicitUsersQuery =
+        DSL.select(PROJECTS.ID.`as`(projectIdField), ORGANIZATION_USERS.USER_ID)
+            .from(PROJECTS)
+            .join(ORGANIZATION_USERS)
+            .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID))
+            .where(ORGANIZATION_USERS.ROLE_ID.`in`(Role.OWNER.id, Role.ADMIN.id))
+            .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
+
+    // For each project ID, a list of the users who have been explicitly added to the project.
+    val projectUsersQuery =
+        DSL.select(PROJECT_USERS.PROJECT_ID.`as`(projectIdField), PROJECT_USERS.USER_ID)
+            .from(PROJECT_USERS)
+            .where(PROJECT_USERS.PROJECT_ID.`in`(projectIds))
+
+    // The union of the two queries above, with duplicate entries removed so we don't double-count
+    // admins who were explicitly added to projects.
+    val combinedQuery = projectUsersQuery.union(implicitUsersQuery)
+
+    return dslContext
+        .select(projectIdField, countField)
+        .from(combinedQuery)
+        .groupBy(projectIdField)
+        .fetchMap(projectIdField, countField)
+  }
+
+  /**
+   * Returns the number of users in a single project. Administrators and owners are considered users
+   * of all projects in the organization.
+   */
+  fun countUsers(projectId: ProjectId): Int {
+    return countUsers(listOf(projectId))[projectId] ?: 0
   }
 }
