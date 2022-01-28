@@ -246,13 +246,16 @@ class ProjectStore(
     val projectIdField = DSL.field(DSL.name("project_id"), ProjectId::class.java)
     val countField = DSL.count()
 
-    // For each project ID, a list of the organization's admin users.
-    val adminUsersQuery =
+    // For each project ID, a list of the users who have access to the project without needing to be
+    // explicitly added, either because they have a privileged role or because the project is
+    // organization-wide.
+    val implicitUsersQuery =
         DSL.select(PROJECTS.ID.`as`(projectIdField), ORGANIZATION_USERS.USER_ID)
             .from(PROJECTS)
             .join(ORGANIZATION_USERS)
             .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID))
             .where(ORGANIZATION_USERS.ROLE_ID.`in`(Role.OWNER.id, Role.ADMIN.id))
+            .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
 
     // For each project ID, a list of the users who have been explicitly added to the project.
     val projectUsersQuery =
@@ -262,7 +265,7 @@ class ProjectStore(
 
     // The union of the two queries above, with duplicate entries removed so we don't double-count
     // admins who were explicitly added to projects.
-    val combinedQuery = projectUsersQuery.union(adminUsersQuery)
+    val combinedQuery = projectUsersQuery.union(implicitUsersQuery)
 
     return dslContext
         .select(projectIdField, countField)

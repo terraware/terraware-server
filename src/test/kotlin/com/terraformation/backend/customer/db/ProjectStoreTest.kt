@@ -154,6 +154,24 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `countUsers returns organization user count for organization-wide projects`() {
+    val adminUserId = UserId(100)
+    val contributorUserId = UserId(101)
+    val orgWideProjectId = ProjectId(3)
+
+    insertProject(orgWideProjectId, organizationId, organizationWide = true)
+    insertUser(adminUserId)
+    insertUser(contributorUserId)
+    insertOrganizationUser(adminUserId, organizationId, Role.ADMIN)
+    insertOrganizationUser(contributorUserId, organizationId, Role.CONTRIBUTOR)
+
+    val expected = mapOf(projectId to 1, orgWideProjectId to 2)
+    val actual = store.countUsers(listOf(projectId, orgWideProjectId))
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
   fun `countUsers does not double-count admins who were added to project`() {
     val adminUserId = UserId(100)
     val contributorUserId = UserId(101)
