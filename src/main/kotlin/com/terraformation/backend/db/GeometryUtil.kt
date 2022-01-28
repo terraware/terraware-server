@@ -31,4 +31,6 @@ fun Field<Geometry?>.transformSrid(srid: Int): Field<Geometry?> =
  * geometry column in a multiset.
  */
 fun Field<Geometry?>.forMultiset(): Field<Geometry?> =
-    cast(String::class.java).convertFrom { GeometryBuilder.geomFromString(it) }
+    cast(String::class.java).convertFrom { value ->
+      value?.let { GeometryBuilder.geomFromString(it) }
+    }
