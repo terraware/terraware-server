@@ -1162,6 +1162,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="user_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="users_user_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_types"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="last_activity_time" nullable="true" remarks="When the user most recently interacted with the system." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="users_pkey" unique="true">
             <column ascending="true" name="id"/>
