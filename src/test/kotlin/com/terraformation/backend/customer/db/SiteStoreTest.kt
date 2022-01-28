@@ -101,7 +101,7 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update throws exception if user has no permission to update site`() {
-    every { user.canUpdateSite(any()) } returns false
+    every { user.canUpdateSite(siteId) } returns false
 
     val rowWithNewName = sitesDao.fetchOneById(siteId)!!.copy(name = "New Name")
 
@@ -113,7 +113,7 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
     val newProjectId = ProjectId(3)
     insertProject(newProjectId, organizationId)
 
-    every { user.canDeleteSite(any()) } returns false
+    every { user.canDeleteSite(siteId) } returns false
 
     val rowWithNewProject = sitesDao.fetchOneById(siteId)!!.copy(projectId = newProjectId)
 
@@ -125,7 +125,7 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
     val newProjectId = ProjectId(3)
     insertProject(newProjectId, organizationId)
 
-    every { user.canCreateSite(any()) } returns false
+    every { user.canCreateSite(newProjectId) } returns false
 
     val rowWithNewProject = sitesDao.fetchOneById(siteId)!!.copy(projectId = newProjectId)
 
