@@ -355,6 +355,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun deleteSite() {
+    assertThrows<SiteNotFoundException> { requirements.deleteSite(siteId) }
+
+    grant { user.canReadSite(siteId) }
+    assertThrows<AccessDeniedException> { requirements.deleteSite(siteId) }
+
+    grant { user.canDeleteSite(siteId) }
+    requirements.deleteSite(siteId)
+  }
+
+  @Test
   fun createProject() {
     assertThrows<OrganizationNotFoundException> { requirements.createProject(organizationId) }
 

@@ -287,6 +287,13 @@ data class UserModel(
     }
   }
 
+  fun canDeleteSite(siteId: SiteId): Boolean {
+    return when (siteRoles[siteId]) {
+      Role.ADMIN, Role.OWNER -> true
+      else -> false
+    }
+  }
+
   fun canCreateProject(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.ADMIN || role == Role.OWNER

@@ -54,6 +54,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var facilityStore: FacilityStore
   private val messages: Messages = mockk()
   private lateinit var organizationStore: OrganizationStore
+  private lateinit var parentStore: ParentStore
   private lateinit var projectStore: ProjectStore
   private val realmResource: RealmResource = mockk()
   private lateinit var siteStore: SiteStore
@@ -73,10 +74,11 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
         FacilityStore(
             clock, dslContext, FacilitiesDao(jooqConfig), FacilityAlertRecipientsDao(jooqConfig))
     organizationStore = OrganizationStore(clock, dslContext, OrganizationsDao(jooqConfig))
+    parentStore = ParentStore(dslContext)
     projectStore =
         ProjectStore(
             clock, dslContext, ProjectsDao(jooqConfig), ProjectTypeSelectionsDao(jooqConfig))
-    siteStore = SiteStore(clock, dslContext, SitesDao(jooqConfig))
+    siteStore = SiteStore(clock, dslContext, parentStore, SitesDao(jooqConfig))
     userStore =
         UserStore(
             clock,
@@ -86,7 +88,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             mockk(),
             jacksonObjectMapper(),
             organizationStore,
-            ParentStore(dslContext),
+            parentStore,
             PermissionStore(dslContext),
             realmResource,
             UsersDao(jooqConfig))

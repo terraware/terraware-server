@@ -5,8 +5,10 @@ import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.db.tables.references.SITES
@@ -20,6 +22,7 @@ import org.jooq.DSLContext
 class SiteStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
+    private val parentStore: ParentStore,
     private val sitesDao: SitesDao
 ) {
   fun fetchById(siteId: SiteId, srid: Int = SRID.LONG_LAT): SiteModel? {
@@ -75,12 +78,32 @@ class SiteStore(
   /**
    * Updates an existing site.
    *
-   * @param row New site information. ID is required; project ID and timestamps are ignored.
+   * @param[row] New site information. `id` is required. Timestamps are ignored. If `projectId` is
+   * null, the site's existing project ID is not modified.
    */
   fun update(row: SitesRow) {
     val siteId = row.id ?: throw IllegalArgumentException("Must specify site ID")
+    val newProjectId = row.projectId
 
     requirePermissions { updateSite(siteId) }
+
+    val existingProjectId = parentStore.getProjectId(siteId) ?: throw SiteNotFoundException(siteId)
+    if (newProjectId != null && newProjectId != existingProjectId) {
+      val newOrganizationId =
+          parentStore.getOrganizationId(newProjectId)
+              ?: throw ProjectNotFoundException(newProjectId)
+      val existingOrganizationId = parentStore.getOrganizationId(existingProjectId)
+      if (newOrganizationId != existingOrganizationId) {
+        throw IllegalArgumentException("Cannot move sites between organizations")
+      }
+
+      requirePermissions {
+        // For permission-checking purposes, model moving a site between projects as "delete from
+        // the old project and create in the new one." You need to be able to do both.
+        deleteSite(siteId)
+        createSite(newProjectId)
+      }
+    }
 
     with(SITES) {
       dslContext
@@ -90,6 +113,7 @@ class SiteStore(
           .set(LOCATION, row.location)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, row.name)
+          .apply { if (newProjectId != null) set(PROJECT_ID, newProjectId) }
           .set(TIMEZONE, row.timezone)
           .where(ID.eq(siteId))
           .execute()

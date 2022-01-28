@@ -165,6 +165,12 @@ data class UpdateSiteRequestPayload(
     val location: Point?,
     val locale: String?,
     val name: String,
+    @Schema(
+        description =
+            "If present, move the site to this project. Project must be owned by the same " +
+                "organization as the site's current project. User must have permission to add " +
+                "sites to the new project and remove them from the existing one.")
+    val projectId: ProjectId?,
     val timezone: String?,
 ) {
   fun toRow(id: SiteId): SitesRow {
@@ -174,6 +180,7 @@ data class UpdateSiteRequestPayload(
         location = location,
         locale = locale,
         name = name,
+        projectId = projectId,
         timezone = timezone,
     )
   }

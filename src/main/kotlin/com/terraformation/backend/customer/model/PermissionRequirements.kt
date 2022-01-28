@@ -272,6 +272,13 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
+  fun deleteSite(siteId: SiteId) {
+    if (!user.canDeleteSite(siteId)) {
+      readSite(siteId)
+      throw AccessDeniedException("No permission to delete site $siteId")
+    }
+  }
+
   fun createProject(organizationId: OrganizationId) {
     if (!user.canCreateProject(organizationId)) {
       readOrganization(organizationId)

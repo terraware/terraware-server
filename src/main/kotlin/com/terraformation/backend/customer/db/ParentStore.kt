@@ -7,7 +7,9 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.LayerId
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PhotoId
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
@@ -15,6 +17,8 @@ import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
 import com.terraformation.backend.db.tables.references.LAYERS
+import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.SITES
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -44,6 +48,11 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getLayerId(featureId: FeatureId): LayerId? =
       fetchFieldById(featureId, FEATURES.ID, FEATURES.LAYER_ID)
+
+  fun getProjectId(siteId: SiteId): ProjectId? = fetchFieldById(siteId, SITES.ID, SITES.PROJECT_ID)
+
+  fun getOrganizationId(projectId: ProjectId): OrganizationId? =
+      fetchFieldById(projectId, PROJECTS.ID, PROJECTS.ORGANIZATION_ID)
 
   fun getSiteId(layerId: LayerId): SiteId? = fetchFieldById(layerId, LAYERS.ID, LAYERS.SITE_ID)
 
