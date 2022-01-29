@@ -67,7 +67,9 @@ class FacilityStore(
 
     val row =
         FacilitiesRow(
+            createdBy = currentUser().userId,
             createdTime = clock.instant(),
+            modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
             siteId = siteId,
@@ -87,7 +89,11 @@ class FacilityStore(
         facilitiesDao.fetchOneById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     facilitiesDao.update(
-        existingRow.copy(modifiedTime = clock.instant(), name = name, typeId = type))
+        existingRow.copy(
+            modifiedBy = currentUser().userId,
+            modifiedTime = clock.instant(),
+            name = name,
+            typeId = type))
   }
 
   fun getAlertRecipients(facilityId: FacilityId): List<String> {
