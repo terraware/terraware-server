@@ -65,8 +65,10 @@ class SiteStore(
 
     val rowWithTimestamps =
         row.copy(
+            createdBy = currentUser().userId,
             createdTime = clock.instant(),
             id = null,
+            modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
         )
 
@@ -111,6 +113,7 @@ class SiteStore(
           .set(DESCRIPTION, row.description)
           .set(LOCALE, row.locale)
           .set(LOCATION, row.location)
+          .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, row.name)
           .apply { if (newProjectId != null) set(PROJECT_ID, newProjectId) }
