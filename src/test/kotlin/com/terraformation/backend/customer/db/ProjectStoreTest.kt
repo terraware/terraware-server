@@ -57,6 +57,7 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     projectUsersDao = ProjectUsersDao(jooqConfig)
     store = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
 
+    insertUser()
     insertOrganization(organizationId)
     insertProject(projectId, organizationId = organizationId)
   }
@@ -69,7 +70,15 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     store.addUser(projectId, userId)
 
-    val expected = listOf(ProjectUsersRow(userId, projectId, Instant.EPOCH, Instant.EPOCH))
+    val expected =
+        listOf(
+            ProjectUsersRow(
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH,
+                projectId = projectId,
+                userId = userId))
     val actual = projectUsersDao.fetchByProjectId(projectId)
 
     assertEquals(expected, actual)
@@ -114,7 +123,15 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     store.removeUser(projectId, userId)
 
-    val expected = listOf(ProjectUsersRow(userId, otherProjectId, Instant.EPOCH, Instant.EPOCH))
+    val expected =
+        listOf(
+            ProjectUsersRow(
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH,
+                projectId = otherProjectId,
+                userId = userId))
     val actual = projectUsersDao.fetchByUserId(userId)
 
     assertEquals(expected, actual)
