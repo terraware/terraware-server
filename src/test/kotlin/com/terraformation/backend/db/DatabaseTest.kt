@@ -114,15 +114,18 @@ abstract class DatabaseTest {
       name: String = "Organization $id",
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
+      createdBy: UserId = currentUser().userId,
   ): OrganizationId {
     return with(ORGANIZATIONS) {
       dslContext
           .insertInto(ORGANIZATIONS)
           .set(COUNTRY_CODE, countryCode)
           .set(COUNTRY_SUBDIVISION_CODE, countrySubdivisionCode)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .apply { if (id != null) set(ID, id.toIdWrapper { OrganizationId(it) }) }
           .set(NAME, name)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .returning(ID)
           .fetchOne(ID)!!
@@ -133,6 +136,7 @@ abstract class DatabaseTest {
       id: Any,
       organizationId: Any = "$id".toLong() / 10,
       name: String = "Project $id",
+      createdBy: UserId = currentUser().userId,
       description: String? = null,
       organizationWide: Boolean = false,
       startDate: LocalDate? = null,
@@ -147,7 +151,9 @@ abstract class DatabaseTest {
           .set(DESCRIPTION, description)
           .set(ID, projectId)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
           .set(ORGANIZATION_WIDE, organizationWide)
@@ -172,6 +178,7 @@ abstract class DatabaseTest {
       projectId: Any = "$id".toLong() / 10,
       name: String = "Site $id",
       location: Point = mercatorPoint(1.0, 2.0, 0.0),
+      createdBy: UserId = currentUser().userId,
       description: String? = null,
   ) {
     with(SITES) {
@@ -182,7 +189,9 @@ abstract class DatabaseTest {
           .set(NAME, name)
           .set(DESCRIPTION, description)
           .set(LOCATION, location)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .execute()
     }
@@ -192,13 +201,16 @@ abstract class DatabaseTest {
       id: Any,
       siteId: Any = "$id".toLong() / 10,
       name: String = "Facility $id",
-      type: FacilityType = FacilityType.SeedBank
+      createdBy: UserId = currentUser().userId,
+      type: FacilityType = FacilityType.SeedBank,
   ) {
     with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(ID, id.toIdWrapper { FacilityId(it) })
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
           .set(SITE_ID, siteId.toIdWrapper { SiteId(it) })
@@ -215,8 +227,9 @@ abstract class DatabaseTest {
       proposed: Boolean = false,
       hidden: Boolean = false,
       deleted: Boolean = false,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      modifiedTime: Instant = Instant.EPOCH
+      modifiedTime: Instant = Instant.EPOCH,
   ) {
 
     with(LAYERS) {
@@ -229,7 +242,9 @@ abstract class DatabaseTest {
           .set(PROPOSED, proposed)
           .set(HIDDEN, hidden)
           .set(DELETED, deleted)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, modifiedTime)
           .execute()
     }
@@ -244,6 +259,7 @@ abstract class DatabaseTest {
       attrib: String? = null,
       notes: String? = null,
       enteredTime: Instant = Instant.EPOCH,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH,
   ) {
@@ -258,7 +274,9 @@ abstract class DatabaseTest {
           .set(ATTRIB, attrib)
           .set(NOTES, notes)
           .set(ENTERED_TIME, enteredTime)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, modifiedTime)
           .execute()
     }
@@ -270,6 +288,7 @@ abstract class DatabaseTest {
       fileName: String = "$id.jpg",
       contentType: String = MediaType.IMAGE_JPEG_VALUE,
       size: Long = 1L,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       capturedTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH,
@@ -279,9 +298,11 @@ abstract class DatabaseTest {
           .insertInto(PHOTOS)
           .set(CAPTURED_TIME, capturedTime)
           .set(CONTENT_TYPE, contentType)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
           .set(FILE_NAME, fileName)
           .set(ID, id.toIdWrapper { PhotoId(it) })
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, modifiedTime)
           .set(SIZE, size)
           .set(STORAGE_URL, storageUrl)
@@ -329,6 +350,7 @@ abstract class DatabaseTest {
   protected fun insertSpecies(
       speciesId: Any,
       name: String = "Species $speciesId",
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH,
       organizationId: Any? = null,
@@ -356,10 +378,12 @@ abstract class DatabaseTest {
       with(SPECIES_NAMES) {
         dslContext
             .insertInto(SPECIES_NAMES)
+            .set(CREATED_BY, createdBy)
             .set(CREATED_TIME, createdTime)
             .set(ID, speciesNameIdWrapper)
             .set(SPECIES_ID, speciesIdWrapper)
             .set(ORGANIZATION_ID, organizationIdWrapper)
+            .set(MODIFIED_BY, createdBy)
             .set(MODIFIED_TIME, modifiedTime)
             .set(NAME, name)
             .execute()
@@ -370,7 +394,9 @@ abstract class DatabaseTest {
       with(SPECIES_OPTIONS) {
         dslContext
             .insertInto(SPECIES_OPTIONS)
+            .set(CREATED_BY, createdBy)
             .set(CREATED_TIME, createdTime)
+            .set(MODIFIED_BY, createdBy)
             .set(MODIFIED_TIME, modifiedTime)
             .set(ORGANIZATION_ID, organizationIdWrapper)
             .set(SPECIES_ID, speciesIdWrapper)
@@ -417,11 +443,14 @@ abstract class DatabaseTest {
       userId: Any = currentUser().userId,
       organizationId: Any,
       role: Role = Role.CONTRIBUTOR,
+      createdBy: UserId = currentUser().userId,
   ) {
     with(ORGANIZATION_USERS) {
       dslContext
           .insertInto(ORGANIZATION_USERS)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(ROLE_ID, role.id)
@@ -434,11 +463,14 @@ abstract class DatabaseTest {
   fun insertProjectUser(
       userId: Any = currentUser().userId,
       projectId: Any,
+      createdBy: UserId = currentUser().userId,
   ) {
     with(PROJECT_USERS) {
       dslContext
           .insertInto(PROJECT_USERS)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
           .set(USER_ID, userId.toIdWrapper { UserId(it) })
