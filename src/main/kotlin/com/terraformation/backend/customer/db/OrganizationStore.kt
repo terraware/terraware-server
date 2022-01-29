@@ -163,8 +163,10 @@ class OrganizationStore(
         OrganizationsRow(
             countryCode = row.countryCode?.uppercase(),
             countrySubdivisionCode = row.countrySubdivisionCode?.uppercase(),
+            createdBy = currentUser().userId,
             createdTime = clock.instant(),
             description = row.description,
+            modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = row.name,
         )
@@ -174,11 +176,13 @@ class OrganizationStore(
     with(ORGANIZATION_USERS) {
       dslContext
           .insertInto(ORGANIZATION_USERS)
-          .set(ORGANIZATION_ID, fullRow.id)
-          .set(USER_ID, currentUser().userId)
-          .set(ROLE_ID, Role.OWNER.id)
+          .set(CREATED_BY, currentUser().userId)
           .set(CREATED_TIME, clock.instant())
+          .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
+          .set(ORGANIZATION_ID, fullRow.id)
+          .set(ROLE_ID, Role.OWNER.id)
+          .set(USER_ID, currentUser().userId)
           .execute()
     }
 
@@ -198,6 +202,7 @@ class OrganizationStore(
           .set(COUNTRY_CODE, row.countryCode)
           .set(COUNTRY_SUBDIVISION_CODE, row.countrySubdivisionCode)
           .set(DESCRIPTION, row.description)
+          .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, row.name)
           .where(ID.eq(organizationId))
@@ -307,7 +312,9 @@ class OrganizationStore(
             .set(ORGANIZATION_ID, organizationId)
             .set(USER_ID, userId)
             .set(ROLE_ID, role.id)
+            .set(CREATED_BY, currentUser().userId)
             .set(CREATED_TIME, clock.instant())
+            .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .execute()
       }
@@ -361,6 +368,7 @@ class OrganizationStore(
         dslContext
             .update(ORGANIZATION_USERS)
             .set(ORGANIZATION_USERS.ROLE_ID, role.id)
+            .set(ORGANIZATION_USERS.MODIFIED_BY, currentUser().userId)
             .set(ORGANIZATION_USERS.MODIFIED_TIME, clock.instant())
             .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
             .and(ORGANIZATION_USERS.USER_ID.eq(userId))

@@ -117,6 +117,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canAddOrganizationUser(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
     every { user.canRemoveOrganizationUser(any()) } returns true
+    every { user.canSetOrganizationUserRole(any(), any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadSite(any()) } returns true
     every { user.canReadFacility(any()) } returns true
@@ -124,6 +125,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
 
+    insertUser()
     assertEquals(
         organizationId,
         insertOrganization(
@@ -227,8 +229,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createWithAdmin populates organization details`() {
-    insertUser()
-
     val row =
         OrganizationsRow(
             countryCode = "US",
@@ -240,7 +240,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     val expected =
         row.copy(
-            createdTime = clock.instant(), id = OrganizationId(2), modifiedTime = clock.instant())
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            id = OrganizationId(2),
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+        )
     val actual = organizationsDao.fetchOneById(createdModel.id)!!
 
     assertEquals(expected, actual)
@@ -248,8 +253,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createWithAdmin folds country and subdivision codes to all-caps`() {
-    insertUser()
-
     val createdModel =
         store.createWithAdmin(
             OrganizationsRow(
@@ -288,8 +291,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createWithAdmin adds current user as admin`() {
-    insertUser()
-
     val createdModel = store.createWithAdmin(OrganizationsRow(name = "Test Org"))
     val roles = permissionStore.fetchOrganizationRoles(user.userId)
 
@@ -301,13 +302,24 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val newTime = clock.instant().plusSeconds(1000)
     every { clock.instant() } returns newTime
 
+    val newUserId = UserId(101)
+    insertUser(newUserId)
+
     val updates =
         OrganizationsRow(
             id = organizationId,
             name = "New Name",
             description = "New Description",
             countryCode = "ZA")
-    val expected = updates.copy(createdTime = Instant.EPOCH, modifiedTime = newTime)
+    val expected =
+        updates.copy(
+            createdBy = user.userId,
+            createdTime = Instant.EPOCH,
+            modifiedBy = newUserId,
+            modifiedTime = newTime,
+        )
+
+    every { user.userId } returns newUserId
 
     store.update(updates)
 
@@ -406,6 +418,26 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `addUser sets user role`() {
+    val newUserId = UserId(2)
+    insertUser(newUserId)
+
+    store.addUser(organizationId, newUserId, Role.CONTRIBUTOR)
+
+    val model = store.fetchUser(organizationId, newUserId)
+    assertEquals(Role.CONTRIBUTOR, model.role)
+  }
+
+  @Test
+  fun `addUser throws exception if no permission to add users`() {
+    every { user.canAddOrganizationUser(organizationId) } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.addUser(organizationId, currentUser().userId, Role.CONTRIBUTOR)
+    }
+  }
+
+  @Test
   fun `removeUser throws exception if no permission to remove users`() {
     every { user.canRemoveOrganizationUser(organizationId) } returns false
 
@@ -414,8 +446,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser throws exception if user is not in the organization`() {
-    insertUser()
-
     assertThrows<UserNotFoundException> { store.removeUser(organizationId, currentUser().userId) }
   }
 
