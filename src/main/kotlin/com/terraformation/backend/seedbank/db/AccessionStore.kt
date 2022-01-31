@@ -216,6 +216,7 @@ class AccessionStore(
                         .set(COLLECTED_DATE, accession.collectedDate)
                         .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
                         .set(COLLECTION_SITE_NAME, accession.siteLocation)
+                        .set(CREATED_BY, currentUser().userId)
                         .set(CREATED_TIME, clock.instant())
                         .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                         .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
@@ -229,6 +230,8 @@ class AccessionStore(
                             LATEST_GERMINATION_RECORDING_DATE,
                             accession.calculateLatestGerminationRecordingDate())
                         .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
+                        .set(MODIFIED_BY, currentUser().userId)
+                        .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
                         .set(NURSERY_START_DATE, accession.nurseryStartDate)
                         .set(PRIMARY_COLLECTOR_ID, collectorId)
@@ -373,6 +376,8 @@ class AccessionStore(
                 .set(FOUNDER_ID, accession.founderId)
                 .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestGerminationTestDate)
                 .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)
                 .set(PRIMARY_COLLECTOR_ID, collectorId)
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
@@ -489,13 +494,17 @@ class AccessionStore(
         accession.copy(checkedInTime = checkedInTime).withCalculatedValues(clock, accession)
 
     dslContext.transaction { _ ->
-      dslContext
-          .update(ACCESSIONS)
-          .set(ACCESSIONS.CHECKED_IN_TIME, checkedInTime)
-          .set(ACCESSIONS.STATE_ID, withCheckedInTime.state)
-          .where(ACCESSIONS.ID.eq(accessionId))
-          .and(ACCESSIONS.CHECKED_IN_TIME.isNull)
-          .execute()
+      with(ACCESSIONS) {
+        dslContext
+            .update(ACCESSIONS)
+            .set(CHECKED_IN_TIME, checkedInTime)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .set(STATE_ID, withCheckedInTime.state)
+            .where(ID.eq(accessionId))
+            .and(CHECKED_IN_TIME.isNull)
+            .execute()
+      }
 
       insertStateHistory(accession, withCheckedInTime)
     }
