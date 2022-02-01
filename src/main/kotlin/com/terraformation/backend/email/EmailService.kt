@@ -5,6 +5,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
@@ -23,6 +24,7 @@ import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.core.io.ResourceLoader
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.util.HtmlUtils
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.sesv2.SesV2Client
@@ -79,7 +81,9 @@ class EmailService(
   fun sendUserAddedToOrganization(organizationId: OrganizationId, userId: UserId) {
     requirePermissions { addOrganizationUser(organizationId) }
 
-    val admin = currentUser()
+    val admin =
+        currentUser() as? IndividualUser
+            ?: throw AccessDeniedException("Notification email must be sent by a regular user")
 
     val organization =
         organizationStore.fetchById(organizationId)

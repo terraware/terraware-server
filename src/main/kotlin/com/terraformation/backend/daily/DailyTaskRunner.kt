@@ -1,6 +1,7 @@
 package com.terraformation.backend.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.tables.pojos.TaskProcessedTimesRow
 import com.terraformation.backend.db.tables.references.TASK_PROCESSED_TIMES
 import com.terraformation.backend.log.perClassLogger
@@ -33,7 +34,8 @@ class DailyTaskRunner(
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
-    private val publisher: ApplicationEventPublisher
+    private val publisher: ApplicationEventPublisher,
+    private val systemUser: SystemUser,
 ) : Runnable {
   private var thread = Thread(this, "DailyTasksThread")
   private var nextRunTime = Instant.EPOCH
@@ -61,7 +63,8 @@ class DailyTaskRunner(
         log.info("Running daily tasks")
 
         try {
-          publisher.publishEvent(DailyTaskTimeArrivedEvent())
+          // Run tasks as the system user by default. Individual tasks can override this if needed.
+          systemUser.run { publisher.publishEvent(DailyTaskTimeArrivedEvent()) }
         } catch (e: Exception) {
           log.error("An error occurred while running daily tasks", e)
         }

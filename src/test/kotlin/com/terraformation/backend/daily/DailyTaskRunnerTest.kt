@@ -1,8 +1,11 @@
 package com.terraformation.backend.daily
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
+import com.terraformation.backend.db.tables.daos.UsersDao
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.justRun
@@ -24,6 +27,7 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
   private val publisher: ApplicationEventPublisher = mockk()
 
   private lateinit var dailyTaskRunner: DailyTaskRunner
+  private lateinit var systemUser: SystemUser
   private lateinit var taskProcessedTimesDao: TaskProcessedTimesDao
 
   private lateinit var task: TimePeriodTask
@@ -40,7 +44,8 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
 
     task = makeMockTask()
 
-    dailyTaskRunner = DailyTaskRunner(clock, config, dslContext, publisher)
+    systemUser = SystemUser(UsersDao(dslContext.configuration()))
+    dailyTaskRunner = DailyTaskRunner(clock, config, dslContext, publisher, systemUser)
     taskProcessedTimesDao = TaskProcessedTimesDao(dslContext.configuration())
   }
 
@@ -109,5 +114,17 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
 
     verify(exactly = 1) { task.processPeriod(any(), any()) }
     verify(exactly = 1) { otherTask.processPeriod(any(), any()) }
+  }
+
+  @Test
+  fun `runs tasks as system user`() {
+    every { task.processPeriod(any(), any()) } answers
+        {
+          assertEquals(systemUser.userId, currentUser().userId)
+        }
+
+    dailyTaskRunner.runTask(task)
+
+    verify(exactly = 1) { task.processPeriod(any(), any()) }
   }
 }

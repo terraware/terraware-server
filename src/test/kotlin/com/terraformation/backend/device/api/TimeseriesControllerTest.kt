@@ -1,7 +1,7 @@
 package com.terraformation.backend.device.api
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.dao.DuplicateKeyException
 
 internal class TimeseriesControllerTest : RunsAsUser {
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
   private val store: TimeseriesStore = mockk()
 
   private val controller = TimeseriesController(store)

@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
@@ -68,7 +68,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private lateinit var repository: PhotoRepository
   private val thumbnailStore: ThumbnailStore = mockk()
 
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
 
   private lateinit var photoPath: Path
   private lateinit var photoStorageUrl: URI

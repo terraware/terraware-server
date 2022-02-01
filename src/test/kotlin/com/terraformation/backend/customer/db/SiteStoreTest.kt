@@ -1,7 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
 
   private val clock: Clock = mockk()
   private lateinit var parentStore: ParentStore

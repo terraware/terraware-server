@@ -14,7 +14,7 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.SiteModel
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
@@ -43,7 +43,7 @@ import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.beans.factory.annotation.Autowired
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
   override val sequencesToReset: List<String> =
       listOf("organizations_id_seq", "projects_id_seq", "site_id_seq", "site_module_id_seq")
 

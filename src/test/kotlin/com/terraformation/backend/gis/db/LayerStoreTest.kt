@@ -1,7 +1,7 @@
 package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerNotFoundException
@@ -25,7 +25,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
-  override val user = mockk<UserModel>()
+  override val user: TerrawareUser = mockk()
   private lateinit var store: LayerStore
   private lateinit var layersDao: LayersDao
 

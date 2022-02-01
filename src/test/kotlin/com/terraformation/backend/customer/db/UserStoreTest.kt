@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
@@ -50,7 +50,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val httpClient: HttpClient = mockk()
   private val realmResource: RealmResource = mockk()
   private val usersResource = InMemoryKeycloakUsersResource()
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
 
   private lateinit var organizationsDao: OrganizationsDao
   private lateinit var organizationStore: OrganizationStore

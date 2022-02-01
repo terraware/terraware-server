@@ -1,7 +1,7 @@
 package com.terraformation.backend.device.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
@@ -26,7 +26,7 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
 
   private lateinit var devicesDao: DevicesDao
   private lateinit var store: TimeseriesStore

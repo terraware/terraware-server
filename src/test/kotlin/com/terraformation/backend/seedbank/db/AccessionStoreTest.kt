@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.AppDeviceModel
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AppDeviceId
@@ -97,7 +97,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
-  override val user = mockk<UserModel>()
+  override val user: TerrawareUser = mockk()
 
   override val sequencesToReset
     get() =

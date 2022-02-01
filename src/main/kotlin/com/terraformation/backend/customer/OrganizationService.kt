@@ -50,15 +50,15 @@ class OrganizationService(
     }
 
     dslContext.transaction { _ ->
-      val userModel = userStore.fetchOrCreateByEmail(email)
+      val user = userStore.fetchOrCreateByEmail(email)
 
-      organizationStore.addUser(organizationId, userModel.userId, role)
+      organizationStore.addUser(organizationId, user.userId, role)
 
-      projectIds.forEach { projectStore.addUser(it, userModel.userId) }
+      projectIds.forEach { projectStore.addUser(it, user.userId) }
 
       // Send email in the transaction so the user will be rolled back if we couldn't notify them
       // about being added, e.g., because the email address was malformed.
-      emailService.sendUserAddedToOrganization(organizationId, userModel.userId)
+      emailService.sendUserAddedToOrganization(organizationId, user.userId)
     }
   }
 

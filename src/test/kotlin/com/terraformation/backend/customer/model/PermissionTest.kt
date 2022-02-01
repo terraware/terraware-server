@@ -123,7 +123,7 @@ internal class PermissionTest : DatabaseTest() {
   private val realmResource: RealmResource = mockk()
 
   private val userId = UserId(1234)
-  private val user: UserModel by lazy { userStore.fetchById(userId)!! }
+  private val user: IndividualUser by lazy { userStore.fetchById(userId)!! }
 
   /*
    * Test data set; see class docs for a prettier version. This takes advantage of the default
