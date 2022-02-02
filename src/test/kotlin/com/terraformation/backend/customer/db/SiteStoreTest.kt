@@ -64,7 +64,7 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
             timezone = "US/Hawaii",
         )
 
-    val newUserId = UserId(2)
+    val newUserId = UserId(3)
     insertUser(newUserId)
 
     val expected =

@@ -2,7 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: UserModel = mockUser()
+  override val user: TerrawareUser = mockUser()
 
   private lateinit var permissionStore: PermissionStore
   private lateinit var projectsDao: ProjectsDao

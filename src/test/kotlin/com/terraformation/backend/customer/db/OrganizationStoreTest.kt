@@ -419,7 +419,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `addUser sets user role`() {
-    val newUserId = UserId(2)
+    val newUserId = UserId(3)
     insertUser(newUserId)
 
     store.addUser(organizationId, newUserId, Role.CONTRIBUTOR)
