@@ -150,8 +150,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             number = "XYZ",
             stateId = AccessionState.Processed,
             checkedInTime = checkedInTime,
+            createdBy = user.userId,
             createdTime = now,
             facilityId = facilityId,
+            modifiedBy = user.userId,
+            modifiedTime = now,
             speciesId = SpeciesId(10000),
             treesCollectedFrom = 1))
     accessionsDao.insert(
@@ -159,8 +162,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             id = AccessionId(1001),
             number = "ABCDEFG",
             stateId = AccessionState.Processing,
+            createdBy = user.userId,
             createdTime = now,
             facilityId = facilityId,
+            modifiedBy = user.userId,
+            modifiedTime = now,
             speciesId = SpeciesId(10001),
             treesCollectedFrom = 2))
   }
@@ -530,9 +536,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `can do exact search for null values`() {
     accessionsDao.insert(
         AccessionsRow(
+            createdBy = user.userId,
             createdTime = Instant.now(),
             number = "MISSING",
             facilityId = facilityId,
+            modifiedBy = user.userId,
+            modifiedTime = Instant.now(),
             stateId = AccessionState.Processing))
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(
@@ -564,9 +573,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `can do fuzzy search for null values`() {
     accessionsDao.insert(
         AccessionsRow(
+            createdBy = user.userId,
             createdTime = Instant.now(),
             number = "MISSING",
             facilityId = facilityId,
+            modifiedBy = user.userId,
+            modifiedTime = Instant.now(),
             stateId = AccessionState.Processing))
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
@@ -832,9 +844,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       (10..20).forEach { value ->
         accessionsDao.insert(
             AccessionsRow(
+                createdBy = user.userId,
                 createdTime = Instant.now(),
                 number = "$value",
                 facilityId = facilityId,
+                modifiedBy = user.userId,
+                modifiedTime = Instant.now(),
                 stateId = AccessionState.Processing,
                 treesCollectedFrom = value))
       }
@@ -926,9 +941,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       listOf(1, 2, 8).forEach { day ->
         accessionsDao.insert(
             AccessionsRow(
+                createdBy = user.userId,
                 createdTime = Instant.now(),
                 number = "JAN$day",
                 facilityId = facilityId,
+                modifiedBy = user.userId,
+                modifiedTime = Instant.now(),
                 stateId = AccessionState.Processing,
                 receivedDate = LocalDate.of(2021, 1, day)))
       }
@@ -1125,8 +1143,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               id = AccessionId(1100),
               number = "OtherProject",
               stateId = AccessionState.Processed,
+              createdBy = user.userId,
               createdTime = Instant.EPOCH,
               facilityId = FacilityId(1100),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
               treesCollectedFrom = 3))
 
       val expected = listOf("1", "2")
@@ -1150,8 +1171,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               id = AccessionId(1100),
               number = "OtherProject",
               stateId = AccessionState.Processed,
+              createdBy = user.userId,
               createdTime = Instant.EPOCH,
               facilityId = FacilityId(1100),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
               treesCollectedFrom = 3))
 
       val expected = listOf("1", "2", "3")
@@ -1192,19 +1216,34 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               id = StorageLocationId(1000),
               facilityId = FacilityId(100),
               name = "Refrigerator 1",
-              conditionId = StorageCondition.Refrigerator))
+              conditionId = StorageCondition.Refrigerator,
+              createdBy = user.userId,
+              createdTime = Instant.now(),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
       storageLocationDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1001),
               facilityId = FacilityId(100),
               name = "Freezer 1",
-              conditionId = StorageCondition.Freezer))
+              conditionId = StorageCondition.Freezer,
+              createdBy = user.userId,
+              createdTime = Instant.now(),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
       storageLocationDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1002),
               facilityId = FacilityId(100),
               name = "Freezer 2",
-              conditionId = StorageCondition.Freezer))
+              conditionId = StorageCondition.Freezer,
+              createdBy = user.userId,
+              createdTime = Instant.now(),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
 
       val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
       val values = searchService.fetchAllValues(storageLocationNameField)
@@ -1223,13 +1262,23 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               id = StorageLocationId(1000),
               facilityId = FacilityId(100),
               name = "Facility 100 fridge",
-              conditionId = StorageCondition.Refrigerator))
+              conditionId = StorageCondition.Refrigerator,
+              createdBy = user.userId,
+              createdTime = Instant.now(),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
       storageLocationDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1001),
               facilityId = FacilityId(1100),
               name = "Facility 1100 fridge",
-              conditionId = StorageCondition.Refrigerator))
+              conditionId = StorageCondition.Refrigerator,
+              createdBy = user.userId,
+              createdTime = Instant.now(),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
 
       val expected = listOf(null, "Facility 100 fridge")
 
@@ -1249,8 +1298,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               id = AccessionId(1100),
               number = "OtherProject",
               stateId = AccessionState.Processed,
+              createdBy = user.userId,
               createdTime = Instant.EPOCH,
               facilityId = FacilityId(1100),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
               treesCollectedFrom = 3))
 
       val expected = listOf(null, "1", "2")
@@ -1276,8 +1328,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               id = hiddenAccessionId,
               number = "OtherProject",
               stateId = AccessionState.Processed,
+              createdBy = user.userId,
               createdTime = Instant.EPOCH,
               facilityId = FacilityId(1100),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
               treesCollectedFrom = 3))
 
       listOf(1000, 1100).forEach { id ->
@@ -1328,16 +1383,24 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             id = AccessionId(2000),
             number = "OtherOrg",
             stateId = AccessionState.Processed,
+            createdBy = user.userId,
             createdTime = Instant.EPOCH,
-            facilityId = FacilityId(2000)))
+            facilityId = FacilityId(2000),
+            modifiedBy = user.userId,
+            modifiedTime = Instant.now(),
+        ))
 
     accessionsDao.insert(
         AccessionsRow(
             id = AccessionId(1100),
             number = "OtherProject",
             stateId = AccessionState.Processed,
+            createdBy = user.userId,
             createdTime = Instant.EPOCH,
-            facilityId = FacilityId(1100)))
+            facilityId = FacilityId(1100),
+            modifiedBy = user.userId,
+            modifiedTime = Instant.now(),
+        ))
 
     val fields = listOf(accessionNumberField)
     val sortOrder = fields.map { SearchSortField(it) }
@@ -1387,8 +1450,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             id = AccessionId(1100),
             number = "OtherProject",
             stateId = AccessionState.Processed,
+            createdBy = user.userId,
             createdTime = Instant.EPOCH,
-            facilityId = FacilityId(1100)))
+            facilityId = FacilityId(1100),
+            modifiedBy = user.userId,
+            modifiedTime = Instant.now(),
+        ))
 
     val fields = listOf(accessionNumberField)
     val sortOrder = fields.map { SearchSortField(it) }
