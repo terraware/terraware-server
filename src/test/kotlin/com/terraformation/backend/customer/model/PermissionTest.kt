@@ -28,7 +28,6 @@ import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
-import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
@@ -199,51 +198,50 @@ internal class PermissionTest : DatabaseTest() {
             realmResource,
             usersDao)
 
-    organizationIds.forEach { insertOrganization(it) }
-    projectIds.forEach { insertProject(it) }
-    siteIds.forEach { insertSite(it) }
+    insertUser(userId)
+    organizationIds.forEach { insertOrganization(it, createdBy = userId) }
+    projectIds.forEach { insertProject(it, createdBy = userId) }
+    siteIds.forEach { insertSite(it, createdBy = userId) }
 
     facilityIds.forEach { facilityId ->
-      insertFacility(facilityId)
+      insertFacility(facilityId, createdBy = userId)
       accessionsDao.insert(
           AccessionsRow(
               id = AccessionId(facilityId.value),
               facilityId = facilityId,
               stateId = AccessionState.Pending,
-              createdTime = Instant.EPOCH))
+              createdBy = userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = userId,
+              modifiedTime = Instant.EPOCH))
       automationsDao.insert(
           AutomationsRow(
               id = AutomationId(facilityId.value),
               facilityId = facilityId,
               name = "Automation $facilityId",
+              createdBy = userId,
               createdTime = Instant.EPOCH,
+              modifiedBy = userId,
               modifiedTime = Instant.EPOCH))
       devicesDao.insert(
           DevicesRow(
               id = DeviceId(facilityId.value),
               facilityId = facilityId,
               name = "Device $facilityId",
+              createdBy = userId,
               deviceType = "type",
               make = "make",
-              model = "model"))
+              model = "model",
+              modifiedBy = userId))
     }
 
-    layerIds.forEach { insertLayer(it) }
-    featureIds.forEach { insertFeature(it) }
+    layerIds.forEach { insertLayer(it, createdBy = userId) }
+    featureIds.forEach { insertFeature(it, createdBy = userId) }
     photoIds.forEach {
-      insertPhoto(it)
+      insertPhoto(it, createdBy = userId)
       insertFeaturePhoto(it)
     }
-    speciesIds.forEach { insertSpecies(it, organizationId = it.value) }
-
-    usersDao.insert(
-        UsersRow(
-            id = userId,
-            authId = "dummyAuthId",
-            email = "test@domain.com",
-            userTypeId = UserType.Individual,
-            createdTime = Instant.EPOCH,
-            modifiedTime = Instant.EPOCH))
+    speciesIds.forEach { insertSpecies(it, organizationId = it.value, createdBy = userId) }
   }
 
   @Test
@@ -768,7 +766,9 @@ internal class PermissionTest : DatabaseTest() {
           .set(USER_ID, userId)
           .set(ORGANIZATION_ID, organizationId)
           .set(ROLE_ID, role.id)
+          .set(CREATED_BY, userId)
           .set(CREATED_TIME, Instant.EPOCH)
+          .set(MODIFIED_BY, userId)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .execute()
     }
@@ -779,7 +779,9 @@ internal class PermissionTest : DatabaseTest() {
             .insertInto(PROJECT_USERS)
             .set(USER_ID, userId)
             .set(PROJECT_ID, projectId)
+            .set(CREATED_BY, userId)
             .set(CREATED_TIME, Instant.EPOCH)
+            .set(MODIFIED_BY, userId)
             .set(MODIFIED_TIME, Instant.EPOCH)
             .execute()
       }
