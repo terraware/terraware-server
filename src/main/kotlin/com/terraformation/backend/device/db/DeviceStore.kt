@@ -39,7 +39,9 @@ class DeviceStore(private val devicesDao: DevicesDao) {
       requirePermissions { updateDevice(parentId) }
     }
 
-    val newRow = devicesRow.copy(id = null)
+    val newRow =
+        devicesRow.copy(
+            id = null, createdBy = currentUser().userId, modifiedBy = currentUser().userId)
     devicesDao.insert(newRow)
 
     return newRow.id ?: throw IllegalStateException("Insert succeeded but no ID returned")
@@ -66,6 +68,10 @@ class DeviceStore(private val devicesDao: DevicesDao) {
     }
 
     // Devices can't be moved between facilities.
-    devicesDao.update(devicesRow.copy(facilityId = existing.facilityId))
+    devicesDao.update(
+        devicesRow.copy(
+            createdBy = existing.createdBy,
+            facilityId = existing.facilityId,
+            modifiedBy = currentUser().userId))
   }
 }

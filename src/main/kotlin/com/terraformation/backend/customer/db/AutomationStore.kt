@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AutomationId
@@ -32,9 +33,11 @@ class AutomationStore(
     val row =
         AutomationsRow(
             configuration = toJsonb(configuration),
+            createdBy = currentUser().userId,
             createdTime = clock.instant(),
             description = description,
             facilityId = facilityId,
+            modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
         )
@@ -72,6 +75,7 @@ class AutomationStore(
         row.copy(
             configuration = toJsonb(model.configuration),
             description = model.description,
+            modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = model.name,
         )
