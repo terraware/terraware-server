@@ -11,6 +11,7 @@ import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.PlantObservationNotFoundException
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
@@ -90,11 +91,17 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create adds a new row to the Plant Observations table, returns server generated id and timestamps`() {
     val observation = store.create(validCreateRequest)
-    assertNotNull(observation.id)
-    assertEquals(
-        validCreateRequest.copy(id = observation.id, createdTime = time1, modifiedTime = time1),
-        observation)
-    assertEquals(observation, observDao.fetchOneById(observation.id!!))
+    val observationId = observation.id!!
+    assertNotNull(observationId)
+    val expected =
+        validCreateRequest.copy(
+            id = observationId,
+            createdBy = user.userId,
+            createdTime = time1,
+            modifiedBy = user.userId,
+            modifiedTime = time1)
+    assertEquals(expected, observation)
+    assertEquals(observation, observDao.fetchOneById(observationId))
   }
 
   @Test
@@ -108,10 +115,23 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create ignores 'created' and 'modified' timestamps if they are set`() {
-    val request = validCreateRequest.copy(createdTime = clientTime, modifiedTime = clientTime)
+    val nonexistentUserId = UserId(999)
+    val request =
+        validCreateRequest.copy(
+            createdBy = nonexistentUserId,
+            createdTime = clientTime,
+            modifiedBy = nonexistentUserId,
+            modifiedTime = clientTime)
     val observation = store.create(request)
-    assertEquals(time1, observation.createdTime)
-    assertEquals(time1, observation.modifiedTime)
+
+    val expected =
+        observation.copy(
+            createdBy = user.userId,
+            createdTime = time1,
+            modifiedBy = user.userId,
+            modifiedTime = time1)
+
+    assertEquals(expected, observation)
   }
 
   @Test
@@ -192,13 +212,25 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update changes the row in the database, returns row with updated timestamps`() {
+    val otherUser = mockUser(UserId(3))
+    insertUser(otherUser.userId)
+    every { otherUser.canUpdateFeature(any()) } returns true
+
     val created = store.create(validCreateRequest)
     every { clock.instant() } returns time2
     val plannedUpdate = created.copy(pests = "bugs in code")
-    val updated = store.update(plannedUpdate)
 
-    assertEquals(plannedUpdate.copy(createdTime = time1, modifiedTime = time2), updated)
-    assertEquals(updated, observDao.fetchOneById(created.id!!))
+    val updated = otherUser.run { store.update(plannedUpdate) }
+
+    val expected =
+        plannedUpdate.copy(
+            createdBy = user.userId,
+            createdTime = time1,
+            modifiedBy = otherUser.userId,
+            modifiedTime = time2)
+
+    assertEquals(expected, updated)
+    assertEquals(expected, observDao.fetchOneById(created.id!!))
   }
 
   @Test
@@ -225,12 +257,26 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update ignores created and modified timestamps if they are set`() {
+    val nonexistentUserId = UserId(999)
     val created = store.create(validCreateRequest)
-    val toUpdate = created.copy(pests = "bugs", createdTime = clientTime, modifiedTime = clientTime)
+    val toUpdate =
+        created.copy(
+            pests = "bugs",
+            createdBy = nonexistentUserId,
+            createdTime = clientTime,
+            modifiedBy = nonexistentUserId,
+            modifiedTime = clientTime)
     every { clock.instant() } returns time2
     val updated = store.update(toUpdate)
-    assertEquals(time1, updated.createdTime)
-    assertEquals(time2, updated.modifiedTime)
+
+    val expected =
+        updated.copy(
+            createdBy = user.userId,
+            createdTime = time1,
+            modifiedBy = user.userId,
+            modifiedTime = time2)
+
+    assertEquals(expected, updated)
   }
 
   @Test
