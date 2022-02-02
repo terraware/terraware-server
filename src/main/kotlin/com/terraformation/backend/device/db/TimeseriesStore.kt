@@ -7,12 +7,13 @@ import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
+import java.time.Clock
 import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
 @ManagedBean
-class TimeseriesStore(private val dslContext: DSLContext) {
+class TimeseriesStore(private val clock: Clock, private val dslContext: DSLContext) {
 
   fun fetchOneByName(deviceId: DeviceId, name: String): TimeseriesRow? {
     if (!currentUser().canReadTimeseries(deviceId)) {
@@ -36,19 +37,27 @@ class TimeseriesStore(private val dslContext: DSLContext) {
 
     requirePermissions { createTimeseries(deviceId) }
 
+    val userId = currentUser().userId
+
     return with(TIMESERIES) {
       dslContext
           .insertInto(TIMESERIES)
-          .set(NAME, row.name)
-          .set(DEVICE_ID, row.deviceId)
-          .set(UNITS, row.units)
+          .set(CREATED_BY, userId)
+          .set(CREATED_TIME, clock.instant())
           .set(DECIMAL_PLACES, row.decimalPlaces)
+          .set(DEVICE_ID, row.deviceId)
+          .set(MODIFIED_BY, userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(NAME, row.name)
           .set(TYPE_ID, row.typeId)
+          .set(UNITS, row.units)
           .onConflict(DEVICE_ID, NAME)
           .doUpdate()
-          .set(UNITS, row.units)
           .set(DECIMAL_PLACES, row.decimalPlaces)
+          .set(MODIFIED_BY, userId)
+          .set(MODIFIED_TIME, clock.instant())
           .set(TYPE_ID, row.typeId)
+          .set(UNITS, row.units)
           .returning(ID)
           .fetchOne()
           ?.id!!
