@@ -66,7 +66,10 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(false, layer.deleted)
     assertEquals(time1, layer.createdTime)
     assertEquals(time1, layer.modifiedTime)
-    assertNotNull(layersDao.fetchOneById(layer.id!!))
+
+    val layersRow = layersDao.fetchOneById(layer.id!!)
+    assertEquals(user.userId, layersRow?.createdBy, "createdBy")
+    assertEquals(user.userId, layersRow?.modifiedBy, "modifiedBy")
   }
 
   @Test
