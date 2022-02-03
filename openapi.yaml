@@ -2342,12 +2342,12 @@ paths:
     get:
       tags:
       - GISApp
-      summary: Lists all known species.
+      summary: Lists all the species available in an organization.
       operationId: listSpecies
       parameters:
       - name: organizationId
         in: query
-        required: false
+        required: true
         schema:
           type: integer
           description: Organization whose species should be listed. (Currently ignored.)
@@ -2392,7 +2392,7 @@ paths:
       parameters:
       - name: organizationId
         in: query
-        required: false
+        required: true
         schema:
           type: integer
           description: Organization whose species names should be listed. (Currently
@@ -2532,7 +2532,7 @@ paths:
           format: int64
       - name: organizationId
         in: query
-        required: false
+        required: true
         schema:
           type: integer
           description: Gets information about how the species is listed at this organization.
@@ -2596,7 +2596,7 @@ paths:
           format: int64
       - name: organizationId
         in: query
-        required: false
+        required: true
         schema:
           type: integer
           description: Organization from which the species should be deleted. (Currently
@@ -2635,7 +2635,7 @@ paths:
           format: int64
       - name: organizationId
         in: query
-        required: false
+        required: true
         schema:
           type: integer
           description: Organization whose names for the species should be listed.
@@ -5374,6 +5374,7 @@ components:
     SpeciesNameRequestPayload:
       required:
       - name
+      - organizationId
       - speciesId
       type: object
       properties:
@@ -5413,6 +5414,7 @@ components:
     SpeciesRequestPayload:
       required:
       - name
+      - organizationId
       type: object
       properties:
         conservationStatus:
