@@ -8,7 +8,6 @@ import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
@@ -34,7 +33,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var speciesDao: SpeciesDao
   private lateinit var speciesNamesDao: SpeciesNamesDao
   private lateinit var store: SpeciesStore
-  private lateinit var storeSupport: StoreSupport
 
   @BeforeEach
   fun setUp() {
@@ -42,9 +40,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     speciesDao = SpeciesDao(jooqConfig)
     speciesNamesDao = SpeciesNamesDao(jooqConfig)
-    storeSupport = StoreSupport(dslContext)
 
-    store = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, storeSupport)
+    store = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao)
 
     every { clock.instant() } returns Instant.EPOCH
 

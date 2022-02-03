@@ -9,7 +9,6 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.StoreSupport
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
@@ -104,7 +103,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
             mockk(),
             clock,
-            StoreSupport(dslContext),
         )
 
     tempDir = Files.createTempDirectory(javaClass.simpleName)
