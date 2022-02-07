@@ -1,0 +1,12 @@
+{
+  "name": "terraware-server-email",
+  "version": "1.0.0",
+  "description": "Terraware-themed email templates",
+  "main": "index.js",
+  "repository": "https://github.com/terraware/terraware-server.git",
+  "author": "Steven Grimm <steven@terraformation.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "mjml": "^4.12.0"
+  }
+}
