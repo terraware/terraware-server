@@ -51,6 +51,9 @@ jobs:
     - name: Generate jOOQ classes
       run: ./gradlew generateJooqClasses
 
+    - name: Generate HTML email templates
+      run: make -C email
+
     - name: Check code style
       run: ./gradlew spotlessCheck
 
@@ -63,12 +66,6 @@ jobs:
     - name: Verify that OpenAPI docs are up to date in repo
       # This will exit with code 1 if the file is modified.
       run: git diff --exit-code openapi.yaml
-
-    - name: Generate HTML email
-      run: make -C email
-
-    - name: Verify that HTML email files are up to date in repo
-      run: git diff --exit-code src/main/resources/templates/email
 
     - name: Compile tests
       run: ./gradlew testClasses
