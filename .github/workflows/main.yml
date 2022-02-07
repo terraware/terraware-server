@@ -65,7 +65,7 @@ jobs:
       run: git diff --exit-code openapi.yaml
 
     - name: Generate HTML email
-      run: cd email && make
+      run: make -C email
 
     - name: Verify that HTML email files are up to date in repo
       run: git diff --exit-code src/main/resources/templates/email
