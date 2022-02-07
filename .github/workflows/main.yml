@@ -35,7 +35,8 @@ jobs:
         path: |
           ~/.gradle
           ~/.m2
-        key: 3-${{ hashFiles('*.gradle.kts', 'gradle.properties') }}
+          email/node_modules
+        key: 3-${{ hashFiles('*.gradle.kts', 'gradle.properties', 'email/yarn.lock') }}
 
     # The build/test process is broken out into individual steps here so it's easier to watch
     # the progress of the build in the GitHub UI and so it's clearer what failed if the build
@@ -45,6 +46,7 @@ jobs:
       run: |
         docker pull postgres:12
         ./gradlew downloadDependencies
+        (cd email && yarn)
 
     - name: Generate jOOQ classes
       run: ./gradlew generateJooqClasses
@@ -61,6 +63,12 @@ jobs:
     - name: Verify that OpenAPI docs are up to date in repo
       # This will exit with code 1 if the file is modified.
       run: git diff --exit-code openapi.yaml
+
+    - name: Generate HTML email
+      run: cd email && make
+
+    - name: Verify that HTML email files are up to date in repo
+      run: git diff --exit-code src/main/resources/templates/email
 
     - name: Compile tests
       run: ./gradlew testClasses
