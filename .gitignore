@@ -4,5 +4,6 @@ __pycache__
 .venv
 application-dev*.yaml
 build
+node_modules
 out
 .idea
