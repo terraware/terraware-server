@@ -11,8 +11,6 @@ import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
-import com.terraformation.backend.db.tables.daos.GerminationTestsDao
-import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
@@ -35,9 +33,7 @@ import org.junit.jupiter.api.assertThrows
 internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var store: WithdrawalStore
-  private lateinit var withdrawalsDao: WithdrawalsDao
 
   private val clock: Clock = mockk()
 
@@ -50,9 +46,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setup() {
-    germinationTestsDao = GerminationTestsDao(dslContext.configuration())
     store = WithdrawalStore(dslContext, clock)
-    withdrawalsDao = WithdrawalsDao(dslContext.configuration())
 
     every { clock.instant() } returns Instant.now()
 

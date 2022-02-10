@@ -9,8 +9,6 @@ import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.pojos.TimeseriesValuesRow
@@ -32,9 +30,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
-  private lateinit var devicesDao: DevicesDao
   private lateinit var store: TimeseriesStore
-  private lateinit var timeseriesDao: TimeseriesDao
 
   private val deviceId = DeviceId(1)
   private val facilityId = FacilityId(100)
@@ -43,9 +39,6 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    devicesDao = DevicesDao(dslContext.configuration())
-    timeseriesDao = TimeseriesDao(dslContext.configuration())
-
     store = TimeseriesStore(clock, dslContext)
 
     insertSiteData()

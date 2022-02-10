@@ -8,9 +8,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
-import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
@@ -29,7 +26,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
-  private lateinit var storageLocationsDao: StorageLocationsDao
   private lateinit var store: FacilityStore
 
   private val facilityId = FacilityId(100)
@@ -37,16 +33,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    val jooqConfig = dslContext.configuration()
-
-    storageLocationsDao = StorageLocationsDao(jooqConfig)
     store =
         FacilityStore(
-            clock,
-            dslContext,
-            FacilitiesDao(jooqConfig),
-            FacilityAlertRecipientsDao(jooqConfig),
-            storageLocationsDao)
+            clock, dslContext, facilitiesDao, facilityAlertRecipientsDao, storageLocationsDao)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateStorageLocation(any()) } returns true

@@ -9,7 +9,6 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.mockUser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -19,14 +18,9 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private lateinit var permissionStore: PermissionStore
-  private lateinit var projectsDao: ProjectsDao
 
   @BeforeEach
   fun setUp() {
-    val config = dslContext.configuration()
-
-    projectsDao = ProjectsDao(config)
-
     permissionStore = PermissionStore(dslContext)
   }
 

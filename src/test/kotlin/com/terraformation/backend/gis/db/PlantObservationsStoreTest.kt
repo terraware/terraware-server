@@ -12,11 +12,6 @@ import com.terraformation.backend.db.PlantObservationId
 import com.terraformation.backend.db.PlantObservationNotFoundException
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.daos.FeaturesDao
-import com.terraformation.backend.db.tables.daos.LayersDao
-import com.terraformation.backend.db.tables.daos.PlantObservationsDao
-import com.terraformation.backend.db.tables.daos.PlantsDao
-import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -60,23 +55,10 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
       )
 
   private lateinit var store: PlantObservationsStore
-  private lateinit var featuresDao: FeaturesDao
-  private lateinit var layersDao: LayersDao
-  private lateinit var plantsDao: PlantsDao
-  private lateinit var observDao: PlantObservationsDao
-  private lateinit var speciesDao: SpeciesDao
 
   @BeforeEach
   fun init() {
-    val jooqConfig = dslContext.configuration()
-
-    featuresDao = FeaturesDao(jooqConfig)
-    layersDao = LayersDao(jooqConfig)
-    plantsDao = PlantsDao(jooqConfig)
-    observDao = PlantObservationsDao(jooqConfig)
-    speciesDao = SpeciesDao(jooqConfig)
-
-    store = PlantObservationsStore(clock, plantsDao, observDao)
+    store = PlantObservationsStore(clock, plantsDao, plantObservationsDao)
     every { clock.instant() } returns time1
     every { user.canReadFeature(any()) } returns true
     every { user.canReadLayer(any()) } returns true
@@ -101,7 +83,7 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
             modifiedBy = user.userId,
             modifiedTime = time1)
     assertEquals(expected, observation)
-    assertEquals(observation, observDao.fetchOneById(observationId))
+    assertEquals(observation, plantObservationsDao.fetchOneById(observationId))
   }
 
   @Test
@@ -230,7 +212,7 @@ internal class PlantObservationsStoreTest : DatabaseTest(), RunsAsUser {
             modifiedTime = time2)
 
     assertEquals(expected, updated)
-    assertEquals(expected, observDao.fetchOneById(created.id!!))
+    assertEquals(expected, plantObservationsDao.fetchOneById(created.id!!))
   }
 
   @Test

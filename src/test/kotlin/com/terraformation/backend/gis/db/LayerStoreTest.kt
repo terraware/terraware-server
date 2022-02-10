@@ -7,7 +7,6 @@ import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerNotFoundException
 import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.gis.model.LayerModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -28,7 +27,6 @@ import org.springframework.security.access.AccessDeniedException
 internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private lateinit var store: LayerStore
-  private lateinit var layersDao: LayersDao
 
   private val clock = mockk<Clock>()
   private val time1 = Instant.EPOCH
@@ -47,7 +45,6 @@ internal class LayerStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun init() {
-    layersDao = LayersDao(dslContext.configuration())
     store = LayerStore(clock, dslContext)
     every { clock.instant() } returns time1
     every { user.canCreateLayer(any()) } returns true

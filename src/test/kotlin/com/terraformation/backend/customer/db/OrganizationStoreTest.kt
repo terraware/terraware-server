@@ -23,8 +23,6 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.newPoint
-import com.terraformation.backend.db.tables.daos.OrganizationsDao
-import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.mockUser
@@ -46,9 +44,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   override val sequencesToReset: List<String> = listOf("organizations_id_seq")
 
   private val clock: Clock = mockk()
-  private lateinit var organizationsDao: OrganizationsDao
   private lateinit var permissionStore: PermissionStore
-  private lateinit var usersDao: UsersDao
   private lateinit var store: OrganizationStore
 
   private val organizationId = OrganizationId(1)
@@ -103,11 +99,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    val jooqConfig = dslContext.configuration()
-
-    organizationsDao = OrganizationsDao(jooqConfig)
     permissionStore = PermissionStore(dslContext)
-    usersDao = UsersDao(jooqConfig)
     store = OrganizationStore(clock, dslContext, organizationsDao)
 
     every { clock.instant() } returns Instant.EPOCH

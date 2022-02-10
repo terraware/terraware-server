@@ -4,6 +4,37 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
+import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
+import com.terraformation.backend.db.tables.daos.AccessionsDao
+import com.terraformation.backend.db.tables.daos.AppDevicesDao
+import com.terraformation.backend.db.tables.daos.AutomationsDao
+import com.terraformation.backend.db.tables.daos.BagsDao
+import com.terraformation.backend.db.tables.daos.DevicesDao
+import com.terraformation.backend.db.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
+import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
+import com.terraformation.backend.db.tables.daos.FeaturesDao
+import com.terraformation.backend.db.tables.daos.GeolocationsDao
+import com.terraformation.backend.db.tables.daos.GerminationTestsDao
+import com.terraformation.backend.db.tables.daos.GerminationsDao
+import com.terraformation.backend.db.tables.daos.LayersDao
+import com.terraformation.backend.db.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.tables.daos.PhotosDao
+import com.terraformation.backend.db.tables.daos.PlantObservationsDao
+import com.terraformation.backend.db.tables.daos.PlantsDao
+import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
+import com.terraformation.backend.db.tables.daos.ProjectUsersDao
+import com.terraformation.backend.db.tables.daos.ProjectsDao
+import com.terraformation.backend.db.tables.daos.SitesDao
+import com.terraformation.backend.db.tables.daos.SpeciesDao
+import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
+import com.terraformation.backend.db.tables.daos.SpeciesOptionsDao
+import com.terraformation.backend.db.tables.daos.StorageLocationsDao
+import com.terraformation.backend.db.tables.daos.ThumbnailsDao
+import com.terraformation.backend.db.tables.daos.TimeseriesDao
+import com.terraformation.backend.db.tables.daos.UsersDao
+import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
@@ -24,9 +55,13 @@ import com.terraformation.backend.db.tables.references.USERS
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
+import kotlin.reflect.full.createType
+import kotlin.reflect.full.isSupertypeOf
 import net.postgis.jdbc.geometry.Geometry
 import net.postgis.jdbc.geometry.Point
+import org.jooq.Configuration
 import org.jooq.DSLContext
+import org.jooq.impl.DAOImpl
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -34,6 +69,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
@@ -74,8 +110,9 @@ import org.testcontainers.utility.DockerImageName
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @JooqTest
 @Testcontainers
+@ComponentScan(basePackageClasses = [UsersDao::class])
 abstract class DatabaseTest {
-  @Autowired protected lateinit var dslContext: DSLContext
+  @Autowired lateinit var dslContext: DSLContext
 
   /**
    * List of sequences to reset before each test method. Test classes can use this to get
@@ -109,6 +146,54 @@ abstract class DatabaseTest {
       else -> throw IllegalArgumentException("Unsupported ID type ${javaClass.name}")
     }
   }
+
+  /**
+   * Creates a lazily-instantiated jOOQ DAO object. In most cases, type inference will figure out
+   * which DAO class to instantiate.
+   */
+  private final inline fun <reified T : DAOImpl<*, *, *>> lazyDao(): Lazy<T> {
+    return lazy {
+      val singleArgConstructor =
+          T::class.constructors.first {
+            it.parameters.size == 1 &&
+                it.parameters[0].type.isSupertypeOf(Configuration::class.createType())
+          }
+
+      singleArgConstructor.call(dslContext.configuration())
+    }
+  }
+
+  protected val accessionGerminationTestTypesDao: AccessionGerminationTestTypesDao by lazyDao()
+  protected val accessionPhotosDao: AccessionPhotosDao by lazyDao()
+  protected val accessionsDao: AccessionsDao by lazyDao()
+  protected val appDevicesDao: AppDevicesDao by lazyDao()
+  protected val automationsDao: AutomationsDao by lazyDao()
+  protected val bagsDao: BagsDao by lazyDao()
+  protected val devicesDao: DevicesDao by lazyDao()
+  protected val facilitiesDao: FacilitiesDao by lazyDao()
+  protected val facilityAlertRecipientsDao: FacilityAlertRecipientsDao by lazyDao()
+  protected val featurePhotosDao: FeaturePhotosDao by lazyDao()
+  protected val featuresDao: FeaturesDao by lazyDao()
+  protected val geolocationsDao: GeolocationsDao by lazyDao()
+  protected val germinationsDao: GerminationsDao by lazyDao()
+  protected val germinationTestsDao: GerminationTestsDao by lazyDao()
+  protected val layersDao: LayersDao by lazyDao()
+  protected val organizationsDao: OrganizationsDao by lazyDao()
+  protected val photosDao: PhotosDao by lazyDao()
+  protected val plantObservationsDao: PlantObservationsDao by lazyDao()
+  protected val plantsDao: PlantsDao by lazyDao()
+  protected val projectsDao: ProjectsDao by lazyDao()
+  protected val projectTypeSelectionsDao: ProjectTypeSelectionsDao by lazyDao()
+  protected val projectUsersDao: ProjectUsersDao by lazyDao()
+  protected val sitesDao: SitesDao by lazyDao()
+  protected val speciesDao: SpeciesDao by lazyDao()
+  protected val speciesNamesDao: SpeciesNamesDao by lazyDao()
+  protected val speciesOptionsDao: SpeciesOptionsDao by lazyDao()
+  protected val storageLocationsDao: StorageLocationsDao by lazyDao()
+  protected val thumbnailsDao: ThumbnailsDao by lazyDao()
+  protected val timeseriesDao: TimeseriesDao by lazyDao()
+  protected val usersDao: UsersDao by lazyDao()
+  protected val withdrawalsDao: WithdrawalsDao by lazyDao()
 
   protected fun insertOrganization(
       id: Any? = null,

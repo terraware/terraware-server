@@ -22,14 +22,6 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
-import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
-import com.terraformation.backend.db.tables.daos.OrganizationsDao
-import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
-import com.terraformation.backend.db.tables.daos.ProjectsDao
-import com.terraformation.backend.db.tables.daos.SitesDao
-import com.terraformation.backend.db.tables.daos.StorageLocationsDao
-import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.i18n.Messages
@@ -68,23 +60,15 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    val jooqConfig = dslContext.configuration()
-
     every { realmResource.users() } returns mockk()
 
     facilityStore =
         FacilityStore(
-            clock,
-            dslContext,
-            FacilitiesDao(jooqConfig),
-            FacilityAlertRecipientsDao(jooqConfig),
-            StorageLocationsDao(jooqConfig))
-    organizationStore = OrganizationStore(clock, dslContext, OrganizationsDao(jooqConfig))
+            clock, dslContext, facilitiesDao, facilityAlertRecipientsDao, storageLocationsDao)
+    organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     parentStore = ParentStore(dslContext)
-    projectStore =
-        ProjectStore(
-            clock, dslContext, ProjectsDao(jooqConfig), ProjectTypeSelectionsDao(jooqConfig))
-    siteStore = SiteStore(clock, dslContext, parentStore, SitesDao(jooqConfig))
+    projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
+    siteStore = SiteStore(clock, dslContext, parentStore, sitesDao)
     userStore =
         UserStore(
             clock,
@@ -97,7 +81,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             PermissionStore(dslContext),
             realmResource,
-            UsersDao(jooqConfig))
+            usersDao)
 
     service =
         OrganizationService(

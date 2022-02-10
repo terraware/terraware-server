@@ -10,9 +10,6 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ProjectOrganizationWideException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
-import com.terraformation.backend.db.tables.daos.ProjectUsersDao
-import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.pojos.ProjectUsersRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -30,9 +27,6 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
-  private lateinit var projectsDao: ProjectsDao
-  private lateinit var projectTypeSelectionsDao: ProjectTypeSelectionsDao
-  private lateinit var projectUsersDao: ProjectUsersDao
   private lateinit var store: ProjectStore
 
   private val organizationId = OrganizationId(1)
@@ -50,11 +44,6 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canAddProjectUser(any()) } returns true
     every { user.canRemoveProjectUser(any()) } returns true
 
-    val jooqConfig = dslContext.configuration()
-
-    projectsDao = ProjectsDao(jooqConfig)
-    projectTypeSelectionsDao = ProjectTypeSelectionsDao(jooqConfig)
-    projectUsersDao = ProjectUsersDao(jooqConfig)
     store = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
 
     insertUser()

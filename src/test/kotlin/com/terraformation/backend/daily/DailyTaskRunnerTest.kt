@@ -4,8 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.tables.daos.TaskProcessedTimesDao
-import com.terraformation.backend.db.tables.daos.UsersDao
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.justRun
@@ -28,7 +26,6 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
 
   private lateinit var dailyTaskRunner: DailyTaskRunner
   private lateinit var systemUser: SystemUser
-  private lateinit var taskProcessedTimesDao: TaskProcessedTimesDao
 
   private lateinit var task: TimePeriodTask
 
@@ -44,9 +41,8 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
 
     task = makeMockTask()
 
-    systemUser = SystemUser(UsersDao(dslContext.configuration()))
+    systemUser = SystemUser(usersDao)
     dailyTaskRunner = DailyTaskRunner(clock, config, dslContext, publisher, systemUser)
-    taskProcessedTimesDao = TaskProcessedTimesDao(dslContext.configuration())
   }
 
   /**

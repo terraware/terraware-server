@@ -3,7 +3,6 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.pojos.AppDevicesRow
 import com.terraformation.backend.db.tables.references.APP_DEVICES
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Test
 internal class AppDeviceStoreTest : DatabaseTest() {
   private val clock: Clock = mockk()
 
-  private lateinit var appDevicesDao: AppDevicesDao
   private lateinit var store: AppDeviceStore
 
   override val sequencesToReset: List<String>
@@ -28,7 +26,6 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
   @BeforeEach
   fun setup() {
-    appDevicesDao = AppDevicesDao(dslContext.configuration())
     store = AppDeviceStore(dslContext, clock)
 
     every { clock.instant() } returns Instant.ofEpochMilli(50000)
