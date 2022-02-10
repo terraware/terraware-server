@@ -6,6 +6,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
+import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -27,6 +28,7 @@ class ProjectsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpera
           sites.asMultiValueSublist("sites", PROJECTS.ID.eq(SITES.PROJECT_ID)),
           projectTypeSelections.asMultiValueSublist(
               "types", PROJECTS.ID.eq(PROJECT_TYPE_SELECTIONS.PROJECT_ID)),
+          projectUsers.asMultiValueSublist("users", PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID)),
       )
     }
   }

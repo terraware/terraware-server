@@ -29,9 +29,13 @@ class SearchService(private val dslContext: DSLContext) {
 
   /** Returns a condition that filters search results based on a list of criteria. */
   private fun filterResults(rootPrefix: SearchFieldPrefix, criteria: SearchNode): Condition {
-    // Filter out results the user doesn't have permission to see.
+    // Filter out results the user doesn't have permission to see. NestedQueryBuilder will include
+    // the permissions check on the root table, but not on parent tables.
     val rootTable = rootPrefix.root
-    val conditions = listOfNotNull(criteria.toCondition(), conditionForPermissions(rootTable))
+    val conditions =
+        listOfNotNull(
+            criteria.toCondition(),
+            rootTable.inheritsPermissionsFrom?.let { conditionForPermissions(it) })
 
     val primaryKey = rootTable.primaryKey
 

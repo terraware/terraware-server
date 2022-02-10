@@ -20,6 +20,7 @@ import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.pojos.AccessionGerminationTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
@@ -106,6 +107,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
     insertSiteData()
+
+    insertOrganizationUser(user.userId, organizationId, role = Role.MANAGER)
+    insertProjectUser(user.userId, projectId)
 
     val now = Instant.now()
 
@@ -1451,6 +1455,160 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class UserSearchTest {
+    private val organizationsPrefix = SearchFieldPrefix(tables.organizations)
+    private val usersPrefix = SearchFieldPrefix(tables.users)
+
+    private val otherOrganizationId = OrganizationId(2)
+    private val sameOrgProjectId = ProjectId(11)
+    private val otherOrgProjectId = ProjectId(20)
+    private val bothOrgsUserId = UserId(4)
+    private val otherOrgUserId = UserId(5)
+
+    @BeforeEach
+    fun insertOtherUsers() {
+      insertUser(bothOrgsUserId)
+      insertUser(otherOrgUserId)
+
+      insertOrganization(otherOrganizationId)
+
+      insertOrganizationUser(bothOrgsUserId, organizationId)
+      insertOrganizationUser(bothOrgsUserId, otherOrganizationId)
+      insertOrganizationUser(otherOrgUserId, otherOrganizationId)
+
+      insertProject(sameOrgProjectId)
+      insertProject(otherOrgProjectId)
+
+      insertProjectUser(bothOrgsUserId, projectId)
+      insertProjectUser(bothOrgsUserId, sameOrgProjectId)
+      insertProjectUser(bothOrgsUserId, otherOrgProjectId)
+      insertProjectUser(otherOrgUserId, otherOrgProjectId)
+    }
+
+    @Test
+    fun `should not see inaccessible organizations of other users`() {
+      val roleField = organizationsPrefix.resolve("users.roleName")
+      val userIdField = organizationsPrefix.resolve("users.user.id")
+      val userOrganizationIdField =
+          organizationsPrefix.resolve("users.user.organizations.organization.id")
+
+      val fields = listOf(userIdField, userOrganizationIdField, roleField)
+      val sortOrder = fields.map { SearchSortField(it) }
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "users" to
+                          listOf(
+                              mapOf(
+                                  "roleName" to "Manager",
+                                  "user" to
+                                      mapOf(
+                                          "id" to "${user.userId}",
+                                          "organizations" to
+                                              listOf(
+                                                  mapOf(
+                                                      "organization" to
+                                                          mapOf("id" to "$organizationId"),
+                                                  ),
+                                              ),
+                                      ),
+                              ),
+                              mapOf(
+                                  "roleName" to "Contributor",
+                                  "user" to
+                                      mapOf(
+                                          "id" to "$bothOrgsUserId",
+                                          "organizations" to
+                                              listOf(
+                                                  mapOf(
+                                                      "organization" to
+                                                          mapOf("id" to "$organizationId")))))))),
+              null)
+
+      val actual = searchService.search(organizationsPrefix, fields, NoConditionNode(), sortOrder)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `should not see inaccessible organizations of other users via flattened sublists`() {
+      val userIdField = usersPrefix.resolve("id")
+      val userOrganizationIdField = usersPrefix.resolve("organizations_organization_id")
+
+      val fields = listOf(userIdField, userOrganizationIdField)
+      val sortOrder = fields.map { SearchSortField(it) }
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "${user.userId}",
+                      "organizations_organization_id" to "$organizationId",
+                  ),
+                  mapOf(
+                      "id" to "$bothOrgsUserId",
+                      "organizations_organization_id" to "$organizationId",
+                  )),
+              null)
+
+      val actual = searchService.search(usersPrefix, fields, NoConditionNode(), sortOrder)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `should not see users with no mutual organizations`() {
+      val userIdField = usersPrefix.resolve("id")
+      val fields = listOf(userIdField)
+      val sortOrder = fields.map { SearchSortField(it) }
+
+      val expected =
+          SearchResults(
+              listOf(mapOf("id" to "${user.userId}"), mapOf("id" to "$bothOrgsUserId")), null)
+
+      val actual = searchService.search(usersPrefix, fields, NoConditionNode(), sortOrder)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `should not see inaccessible projects of other users in same organization`() {
+      val userIdField = usersPrefix.resolve("id")
+      val userProjectIdField = usersPrefix.resolve("projects.project.id")
+
+      val fields = listOf(userIdField, userProjectIdField)
+      val sortOrder = fields.map { SearchSortField(it) }
+
+      // bothOrgsUserId is in two projects in the current user's organization (projectId and
+      // sameOrgProjectId) but the current user is only in the projectId one, so we shouldn't see
+      // sameOrgProjectId in the search results.
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "${user.userId}",
+                      "projects" to
+                          listOf(
+                              mapOf("project" to mapOf("id" to "$projectId")),
+                          )),
+                  mapOf(
+                      "id" to "$bothOrgsUserId",
+                      "projects" to
+                          listOf(
+                              mapOf("project" to mapOf("id" to "$projectId")),
+                          )),
+              ),
+              null)
+
+      val actual = searchService.search(usersPrefix, fields, NoConditionNode(), sortOrder)
+
+      assertEquals(expected, actual)
+    }
+  }
+
+  @Nested
   inner class NestedFieldsTest {
     private val bagsNumberField = rootPrefix.resolve("bags.number")
     private val facilityNameField = rootPrefix.resolve("facility.name")
@@ -2205,7 +2363,17 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `can search all the fields`() {
       val prefix = SearchFieldPrefix(tables.organizations)
-      val fields = prefix.searchTable.getAllFieldNames().sorted().map { prefix.resolve(it) }
+      val organizationFieldNames = tables.organizations.getAllFieldNames()
+
+      // getAllFieldNames() doesn't visit single-value sublists since they are usually parent
+      // entities and we want to avoid infinite recursion. But the "user" sublists under
+      // the organization/project users tables is a special case: a single-value sublist that
+      // refers to a child, not a parent. Include them explicitly.
+      val usersFieldNames =
+          tables.users.getAllFieldNames("users.user.") +
+              tables.users.getAllFieldNames("projects.users.user.")
+
+      val fields = (organizationFieldNames + usersFieldNames).sorted().map { prefix.resolve(it) }
 
       // We're querying a mix of nested fields and the old-style fields that put nested values
       // at the top level and return a separate top-level query result for each combination of rows
@@ -2306,6 +2474,32 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "name" to "sim",
               ))
 
+      val expectedUser =
+          mapOf(
+              "createdTime" to "1970-01-01T00:00:00Z",
+              "email" to "2@terraformation.com",
+              "firstName" to "First",
+              "id" to "2",
+              "lastName" to "Last",
+              "organizations" to
+                  listOf(
+                      mapOf(
+                          "createdTime" to "1970-01-01T00:00:00Z",
+                          "projects" to
+                              listOf(
+                                  mapOf(
+                                      "createdTime" to "1970-01-01T00:00:00Z",
+                                  )),
+                          "roleName" to "Manager",
+                      )),
+              "projects" to
+                  listOf(
+                      mapOf("createdTime" to "1970-01-01T00:00:00Z"),
+                  ))
+
+      val expectedProjectUsers =
+          listOf(mapOf("createdTime" to "1970-01-01T00:00:00Z", "user" to expectedUser))
+
       val expectedProjects =
           listOf(
               mapOf(
@@ -2315,6 +2509,20 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "name" to "project",
                   "organizationWide" to "false",
                   "sites" to expectedSites,
+                  "users" to expectedProjectUsers,
+              ))
+
+      val expectedOrganizationUsers =
+          listOf(
+              mapOf(
+                  "createdTime" to "1970-01-01T00:00:00Z",
+                  "projects" to
+                      listOf(
+                          mapOf(
+                              "createdTime" to "1970-01-01T00:00:00Z",
+                          )),
+                  "roleName" to "Manager",
+                  "user" to expectedUser,
               ))
 
       val expected =
@@ -2324,6 +2532,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "id" to "1",
                   "name" to "dev",
                   "projects" to expectedProjects,
+                  "users" to expectedOrganizationUsers,
               ))
 
       val result = searchService.search(prefix, fields, NoConditionNode())
