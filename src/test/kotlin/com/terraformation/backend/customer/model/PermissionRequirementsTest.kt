@@ -48,7 +48,7 @@ import org.springframework.security.access.AccessDeniedException
  * 4. Call the permission checking method again; the test will fail if it throws an exception
  */
 internal class PermissionRequirementsTest : RunsAsUser {
-  override val user: UserModel = mockk(relaxed = true)
+  override val user: TerrawareUser = mockk(relaxed = true)
   private val requirements = PermissionRequirements(user)
 
   private val accessionId = AccessionId(1)

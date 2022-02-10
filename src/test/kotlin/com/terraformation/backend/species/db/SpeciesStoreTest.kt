@@ -1,7 +1,7 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.LayerNotFoundException
@@ -41,7 +41,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   private val organizationId = OrganizationId(1)
 
   private val clock: Clock = mockk()
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
 
   private lateinit var speciesDao: SpeciesDao
   private lateinit var speciesNamesDao: SpeciesNamesDao

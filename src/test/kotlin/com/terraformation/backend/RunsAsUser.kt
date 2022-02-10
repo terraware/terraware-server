@@ -1,7 +1,7 @@
 package com.terraformation.backend
 
 import com.terraformation.backend.auth.CurrentUserHolder
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import io.mockk.mockk
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -22,12 +22,12 @@ interface RunsAsUser {
    * User to masquerade as while running tests. Typically, you'll want to define this as
    *
    * ```
-   * override val user: UserModel = mockk()
+   * override val user: TerrawareUser = mockk()
    * ```
    *
    * and then use the MockK API to control the behavior of the stubbed-out user.
    */
-  val user: UserModel
+  val user: TerrawareUser
 
   @BeforeEach
   fun setupSecurityContextWithMockUser() {

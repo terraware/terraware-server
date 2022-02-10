@@ -1,7 +1,7 @@
 package com.terraformation.backend.customer.db
 
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
@@ -21,7 +21,7 @@ import org.jooq.DSLContext
  * Stores and retrieves user permission information.
  *
  * If you want to read the current user's roles, you will usually want to use the properties on
- * [UserModel] instead of the `fetch` methods on this class.
+ * [IndividualUser] instead of the `fetch` methods on this class.
  */
 @ManagedBean
 class PermissionStore(private val dslContext: DSLContext) {
@@ -133,12 +133,5 @@ class PermissionStore(private val dslContext: DSLContext) {
                 .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
                 .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
-  }
-
-  private companion object {
-    @Suppress("unused")
-    fun dummyFunctionToImportSymbolsReferredToInComments(): UserModel? {
-      return null
-    }
   }
 }

@@ -19,14 +19,12 @@ import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.log.perClassLogger
-import java.security.Principal
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
 /**
- * Details about the user who is making the current request and the permissions they have.
+ * Details about the user who is making the current request and the permissions they have. This
+ * always represents a regular (presumably human) user or an API client.
  *
  * To get the current user's details, call [currentUser]. See that function's docs for some caveats,
  * but this is usually what you'll want to do.
@@ -54,26 +52,23 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  * The first time you access that property, it will be fetched from the database, but it will be
  * cached afterwards.
  */
-data class UserModel(
-    val userId: UserId,
+data class IndividualUser(
+    override val userId: UserId,
     val authId: String?,
     val email: String,
     val firstName: String?,
     val lastName: String?,
-    val userType: UserType,
+    override val userType: UserType,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
-) : UserDetails, Principal {
-  /** The user's role in each organization they belong to. */
-  val organizationRoles: Map<OrganizationId, Role> by lazy {
+) : TerrawareUser, UserDetails {
+  override val organizationRoles: Map<OrganizationId, Role> by lazy {
     permissionStore.fetchOrganizationRoles(userId)
   }
 
-  /**
-   * The user's role in each project they have access to. Currently, roles are assigned
-   * per-organization, so this is really the user's role in the organization that owns each project.
-   */
-  val projectRoles: Map<ProjectId, Role> by lazy { permissionStore.fetchProjectRoles(userId) }
+  override val projectRoles: Map<ProjectId, Role> by lazy {
+    permissionStore.fetchProjectRoles(userId)
+  }
 
   /**
    * The user's role at each site they have access to. Currently, roles are assigned
@@ -82,12 +77,9 @@ data class UserModel(
    */
   private val siteRoles: Map<SiteId, Role> by lazy { permissionStore.fetchSiteRoles(userId) }
 
-  /**
-   * The user's role in each facility they have access to. Currently, roles are assigned
-   * per-organization, so this is really the user's role in the organization that owns the project
-   * and site of each facility.
-   */
-  val facilityRoles: Map<FacilityId, Role> by lazy { permissionStore.fetchFacilityRoles(userId) }
+  override val facilityRoles: Map<FacilityId, Role> by lazy {
+    permissionStore.fetchFacilityRoles(userId)
+  }
 
   /**
    * The user's full name, if available. Currently this is just the first and last name if both are
@@ -97,48 +89,23 @@ data class UserModel(
   val fullName: String?
     get() = if (firstName != null && lastName != null) "$firstName $lastName" else null
 
-  /**
-   * Runs some code as this user.
-   *
-   * This is useful in two scenarios. First, if the code isn't running on a request handler thread
-   * (e.g., in a unit test or on a thread pool), any calls to [currentUser] will fail because there
-   * won't be a current user.
-   *
-   * Second, less common, is masquerading: if there is already a current user, it will be replaced
-   * with this user for the duration of the function, and then the current user will be restored
-   * afterwards.
-   */
-  fun run(func: () -> Unit) {
-    val context = SecurityContextHolder.getContext()
-    val oldAuthentication = context.authentication
-    val oldUserModel = CurrentUserHolder.getCurrentUser()
-    val newAuthentication = PreAuthenticatedAuthenticationToken(this, "N/A", authorities)
-    try {
-      context.authentication = newAuthentication
-      CurrentUserHolder.setCurrentUser(this)
-      func()
-    } finally {
-      try {
-        context.authentication = oldAuthentication
-      } finally {
-        CurrentUserHolder.setCurrentUser(oldUserModel)
-      }
-    }
+  override fun <T> run(func: () -> T): T {
+    return CurrentUserHolder.runAs(this, func, authorities)
   }
 
-  fun canCreateAccession(facilityId: FacilityId): Boolean {
+  override fun canCreateAccession(facilityId: FacilityId): Boolean {
     // All users in a project can create accessions.
     return facilityId in facilityRoles
   }
 
-  fun canReadAccession(accessionId: AccessionId): Boolean {
+  override fun canReadAccession(accessionId: AccessionId): Boolean {
     val facilityId = parentStore.getFacilityId(accessionId) ?: return false
 
     // All users in a project can read all accessions in the project's facilities.
     return facilityId in facilityRoles
   }
 
-  fun canUpdateAccession(accessionId: AccessionId): Boolean {
+  override fun canUpdateAccession(accessionId: AccessionId): Boolean {
     // All users in a project can write all accessions in the project's facilities, so this
     // is the same as the read permission check.
     return canReadAccession(accessionId)
@@ -150,11 +117,11 @@ data class UserModel(
     return facilityId in facilityRoles
   }
 
-  fun canCreateAutomation(facilityId: FacilityId): Boolean {
+  override fun canCreateAutomation(facilityId: FacilityId): Boolean {
     return canAccessAutomations(facilityId)
   }
 
-  fun canListAutomations(facilityId: FacilityId): Boolean {
+  override fun canListAutomations(facilityId: FacilityId): Boolean {
     return canAccessAutomations(facilityId)
   }
 
@@ -163,54 +130,54 @@ data class UserModel(
     return canAccessAutomations(facilityId)
   }
 
-  fun canReadAutomation(automationId: AutomationId): Boolean {
+  override fun canReadAutomation(automationId: AutomationId): Boolean {
     return canAccessAutomation(automationId)
   }
 
-  fun canUpdateAutomation(automationId: AutomationId): Boolean {
+  override fun canUpdateAutomation(automationId: AutomationId): Boolean {
     return canAccessAutomation(automationId)
   }
 
-  fun canDeleteAutomation(automationId: AutomationId): Boolean {
+  override fun canDeleteAutomation(automationId: AutomationId): Boolean {
     return canAccessAutomation(automationId)
   }
 
-  fun canCreateFacility(siteId: SiteId): Boolean {
+  override fun canCreateFacility(siteId: SiteId): Boolean {
     val role = siteRoles[siteId]
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  fun canListFacilities(siteId: SiteId): Boolean {
+  override fun canListFacilities(siteId: SiteId): Boolean {
     // Any user who has access to a site can list its facilities.
     return siteRoles[siteId] != null
   }
 
-  fun canReadFacility(facilityId: FacilityId): Boolean {
+  override fun canReadFacility(facilityId: FacilityId): Boolean {
     return facilityId in facilityRoles
   }
 
-  fun canUpdateFacility(facilityId: FacilityId): Boolean {
+  override fun canUpdateFacility(facilityId: FacilityId): Boolean {
     return facilityId in facilityRoles
   }
 
-  fun canSendAlert(facilityId: FacilityId): Boolean {
+  override fun canSendAlert(facilityId: FacilityId): Boolean {
     return facilityId in facilityRoles
   }
 
-  fun canCreateDevice(facilityId: FacilityId): Boolean {
+  override fun canCreateDevice(facilityId: FacilityId): Boolean {
     // Any user with access to the facility can create a new device.
     // TODO: Revisit this once we can set roles on API clients
     return facilityId in facilityRoles
   }
 
-  fun canReadDevice(deviceId: DeviceId): Boolean {
+  override fun canReadDevice(deviceId: DeviceId): Boolean {
     // Any user with access to the facility can read a device.
     // TODO: Revisit this once we can set roles on API clients (settings may contain sensitive data)
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
   }
 
-  fun canUpdateDevice(deviceId: DeviceId): Boolean {
+  override fun canUpdateDevice(deviceId: DeviceId): Boolean {
     // TODO: Revisit this once we can set roles on API clients
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
@@ -222,120 +189,120 @@ data class UserModel(
     return siteId in siteRoles
   }
 
-  fun canCreateLayer(siteId: SiteId): Boolean {
+  override fun canCreateLayer(siteId: SiteId): Boolean {
     return siteId in siteRoles
   }
 
-  fun canReadLayer(layerId: LayerId): Boolean {
+  override fun canReadLayer(layerId: LayerId): Boolean {
     return canAccessLayer(layerId)
   }
 
-  fun canUpdateLayer(layerId: LayerId): Boolean {
+  override fun canUpdateLayer(layerId: LayerId): Boolean {
     return canAccessLayer(layerId)
   }
 
-  fun canDeleteLayer(layerId: LayerId): Boolean {
+  override fun canDeleteLayer(layerId: LayerId): Boolean {
     return canAccessLayer(layerId)
   }
 
-  fun canCreateFeature(layerId: LayerId): Boolean {
+  override fun canCreateFeature(layerId: LayerId): Boolean {
     return canUpdateLayer(layerId)
   }
 
-  fun canReadFeature(featureId: FeatureId): Boolean {
+  override fun canReadFeature(featureId: FeatureId): Boolean {
     val layerId = parentStore.getLayerId(featureId) ?: return false
     return canReadLayer(layerId)
   }
 
-  fun canUpdateFeature(featureId: FeatureId): Boolean {
+  override fun canUpdateFeature(featureId: FeatureId): Boolean {
     val layerId = parentStore.getLayerId(featureId) ?: return false
     return canUpdateLayer(layerId)
   }
 
-  fun canDeleteFeature(featureId: FeatureId): Boolean {
+  override fun canDeleteFeature(featureId: FeatureId): Boolean {
     return canUpdateFeature(featureId)
   }
 
-  fun canReadFeaturePhoto(photoId: PhotoId): Boolean {
+  override fun canReadFeaturePhoto(photoId: PhotoId): Boolean {
     val featureId = parentStore.getFeatureId(photoId) ?: return false
     return canReadFeature(featureId)
   }
 
-  fun canDeleteFeaturePhoto(photoId: PhotoId): Boolean {
+  override fun canDeleteFeaturePhoto(photoId: PhotoId): Boolean {
     val featureId = parentStore.getFeatureId(photoId) ?: return false
     return canUpdateFeature(featureId)
   }
 
-  fun canCreateSite(projectId: ProjectId): Boolean {
+  override fun canCreateSite(projectId: ProjectId): Boolean {
     val role = projectRoles[projectId]
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  fun canListSites(projectId: ProjectId): Boolean {
+  override fun canListSites(projectId: ProjectId): Boolean {
     // Any user who has access to a project can list its sites.
     return projectRoles[projectId] != null
   }
 
-  fun canReadSite(siteId: SiteId): Boolean {
+  override fun canReadSite(siteId: SiteId): Boolean {
     return siteId in siteRoles
   }
 
-  fun canUpdateSite(siteId: SiteId): Boolean {
+  override fun canUpdateSite(siteId: SiteId): Boolean {
     return when (siteRoles[siteId]) {
       Role.MANAGER, Role.ADMIN, Role.OWNER -> true
       else -> false
     }
   }
 
-  fun canDeleteSite(siteId: SiteId): Boolean {
+  override fun canDeleteSite(siteId: SiteId): Boolean {
     return when (siteRoles[siteId]) {
       Role.ADMIN, Role.OWNER -> true
       else -> false
     }
   }
 
-  fun canCreateProject(organizationId: OrganizationId): Boolean {
+  override fun canCreateProject(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  fun canListProjects(organizationId: OrganizationId): Boolean {
+  override fun canListProjects(organizationId: OrganizationId): Boolean {
     return organizationId in organizationRoles
   }
 
-  fun canReadProject(projectId: ProjectId): Boolean {
+  override fun canReadProject(projectId: ProjectId): Boolean {
     return projectId in projectRoles
   }
 
-  fun canUpdateProject(projectId: ProjectId): Boolean {
+  override fun canUpdateProject(projectId: ProjectId): Boolean {
     val role = projectRoles[projectId]
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  fun canAddProjectUser(projectId: ProjectId): Boolean {
+  override fun canAddProjectUser(projectId: ProjectId): Boolean {
     val role = projectRoles[projectId]
     return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
   }
 
-  fun canRemoveProjectUser(projectId: ProjectId): Boolean {
+  override fun canRemoveProjectUser(projectId: ProjectId): Boolean {
     return canAddProjectUser(projectId)
   }
 
-  fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
+  override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
   }
 
-  fun canAddOrganizationUser(organizationId: OrganizationId): Boolean {
+  override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  fun canRemoveOrganizationUser(organizationId: OrganizationId): Boolean {
+  override fun canRemoveOrganizationUser(organizationId: OrganizationId): Boolean {
     return canAddOrganizationUser(organizationId)
   }
 
-  fun canSetOrganizationUserRole(
+  override fun canSetOrganizationUserRole(
       organizationId: OrganizationId,
       @Suppress("UNUSED_PARAMETER") role: Role
   ): Boolean {
@@ -345,78 +312,83 @@ data class UserModel(
     }
   }
 
-  fun canReadOrganization(organizationId: OrganizationId): Boolean {
+  override fun canReadOrganization(organizationId: OrganizationId): Boolean {
     return organizationId in organizationRoles
   }
 
-  fun canUpdateOrganization(organizationId: OrganizationId): Boolean {
+  override fun canUpdateOrganization(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
       Role.OWNER, Role.ADMIN -> true
       else -> false
     }
   }
 
-  fun canDeleteOrganization(organizationId: OrganizationId): Boolean {
+  override fun canDeleteOrganization(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
     return role == Role.OWNER
   }
 
-  fun canCreateApiKey(organizationId: OrganizationId): Boolean {
+  override fun canCreateApiKey(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
       Role.OWNER, Role.ADMIN -> true
       else -> false
     }
   }
 
-  fun canDeleteApiKey(organizationId: OrganizationId): Boolean = canCreateApiKey(organizationId)
+  override fun canDeleteApiKey(organizationId: OrganizationId): Boolean =
+      canCreateApiKey(organizationId)
 
-  fun canListApiKeys(organizationId: OrganizationId): Boolean = canCreateApiKey(organizationId)
+  override fun canListApiKeys(organizationId: OrganizationId): Boolean =
+      canCreateApiKey(organizationId)
 
-  fun canCreateSpecies(organizationId: OrganizationId): Boolean {
+  override fun canCreateSpecies(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
       Role.OWNER, Role.ADMIN, Role.MANAGER -> true
       else -> false
     }
   }
 
-  fun canReadSpecies(organizationId: OrganizationId): Boolean = canReadOrganization(organizationId)
+  override fun canReadSpecies(organizationId: OrganizationId): Boolean =
+      canReadOrganization(organizationId)
 
-  fun canDeleteSpecies(organizationId: OrganizationId): Boolean = canCreateSpecies(organizationId)
+  override fun canDeleteSpecies(organizationId: OrganizationId): Boolean =
+      canCreateSpecies(organizationId)
 
-  fun canUpdateSpecies(organizationId: OrganizationId): Boolean = canCreateSpecies(organizationId)
+  override fun canUpdateSpecies(organizationId: OrganizationId): Boolean =
+      canCreateSpecies(organizationId)
 
-  fun canCreateSpeciesName(organizationId: OrganizationId): Boolean {
+  override fun canCreateSpeciesName(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
       Role.OWNER, Role.ADMIN, Role.MANAGER -> true
       else -> false
     }
   }
 
-  fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean {
+  override fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean {
     val organizationId = parentStore.getOrganizationId(speciesNameId) ?: return false
     return organizationId in organizationRoles.keys
   }
 
-  fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean {
+  override fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean {
     val organizationId = parentStore.getOrganizationId(speciesNameId) ?: return false
     return canCreateSpeciesName(organizationId)
   }
 
-  fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean {
+  override fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean {
     return canUpdateSpeciesName(speciesNameId)
   }
 
-  fun canCreateTimeseries(deviceId: DeviceId): Boolean {
+  override fun canCreateTimeseries(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
   }
 
-  fun canReadTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
+  override fun canReadTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
 
-  fun canUpdateTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
+  override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
 
   /** Returns true if the user is an admin or owner of any organizations. */
-  fun hasAnyAdminRole(): Boolean =
+  override fun hasAnyAdminRole(): Boolean =
       organizationRoles.values.any { it == Role.OWNER || it == Role.ADMIN }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {

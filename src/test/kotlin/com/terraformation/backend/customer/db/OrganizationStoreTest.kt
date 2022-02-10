@@ -8,7 +8,7 @@ import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SiteModel
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: UserModel = mockk()
+  override val user: TerrawareUser = mockk()
   override val sequencesToReset: List<String> = listOf("organizations_id_seq")
 
   private val clock: Clock = mockk()
@@ -122,7 +122,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
-    every { user.userId } returns UserId(1)
+    every { user.userId } returns UserId(2)
 
     assertEquals(
         organizationId,

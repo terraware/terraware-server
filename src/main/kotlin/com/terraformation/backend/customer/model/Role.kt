@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonValue
  * Represents a user's role in an organization.
  *
  * In general, application code should not concern itself with specific roles and shouldn't
- * reference this enum. Instead, it should call the permission checking methods on [UserModel] which
- * has the logic to map roles to specific permissions.
+ * reference this enum. Instead, it should call the permission checking methods on [TerrawareUser]
+ * which has the logic to map roles to specific permissions.
  *
  * In the future, it is possible we will support user-defined roles, at which point there will no
  * longer be a fixed list of roles hardwired in the code.

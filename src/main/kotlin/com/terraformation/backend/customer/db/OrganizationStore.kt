@@ -55,7 +55,7 @@ class OrganizationStore(
   ): OrganizationModel? {
     val user = currentUser()
 
-    return if (organizationId in user.organizationRoles) {
+    return if (user.canReadOrganization(organizationId)) {
       selectForDepth(depth, ORGANIZATIONS.ID.eq(organizationId)).firstOrNull()
     } else {
       log.warn("User ${user.userId} attempted to fetch organization $organizationId")

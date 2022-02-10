@@ -40,7 +40,7 @@ import org.springframework.security.access.AccessDeniedException
  * ```
  *
  * This class should not do any data access of its own; it should call the various `canX` methods on
- * [UserModel] to determine whether the user has permission to do something.
+ * [TerrawareUser] to determine whether the user has permission to do something.
  *
  * ## Exception behavior
  *
@@ -58,7 +58,7 @@ import org.springframework.security.access.AccessDeniedException
  * have permission to operate on.
  *
  * - For read actions, if the object doesn't exist, throw [EntityNotFoundException]. Note that the
- * permission checking methods in [UserModel] are required to return false if the target object
+ * permission checking methods in [TerrawareUser] are required to return false if the target object
  * doesn't exist, so in most cases, it should suffice to just check for read permission.
  *
  * - For read actions, if the user doesn't have permission to see the object at all, throw
@@ -86,7 +86,7 @@ import org.springframework.security.access.AccessDeniedException
  * you'll always be calling this code from inside a [requirePermissions] block, so the context
  * should make it clear what's going on.
  */
-class PermissionRequirements(private val user: UserModel) {
+class PermissionRequirements(private val user: TerrawareUser) {
   fun createAccession(facilityId: FacilityId) {
     if (!user.canCreateAccession(facilityId)) {
       readFacility(facilityId)

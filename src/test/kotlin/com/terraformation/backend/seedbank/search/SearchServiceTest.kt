@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
@@ -68,7 +68,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 class SearchServiceTest : DatabaseTest(), RunsAsUser {
-  override val user = mockk<UserModel>()
+  override val user: TerrawareUser = mockk()
   override val sequencesToReset: List<String> = listOf("accession_id_seq")
 
   private lateinit var accessionsDao: AccessionsDao

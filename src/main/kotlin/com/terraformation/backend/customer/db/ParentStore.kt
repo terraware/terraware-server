@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.db
 
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
@@ -33,10 +33,10 @@ import org.jooq.TableField
 /**
  * Lookup methods to get the IDs of the parents of various objects.
  *
- * This is mostly called by [UserModel] to evaluate permissions on child objects in cases where the
- * children inherit permissions from parents. Putting all these lookups in one place reduces the
- * number of dependencies in [UserModel], and also gives us a clean place to introduce caching if
- * parent ID lookups in permission checks become a performance bottleneck.
+ * This is mostly called by [IndividualUser] to evaluate permissions on child objects in cases where
+ * the children inherit permissions from parents. Putting all these lookups in one place reduces the
+ * number of dependencies in [IndividualUser], and also gives us a clean place to introduce caching
+ * if parent ID lookups in permission checks become a performance bottleneck.
  */
 @ManagedBean
 class ParentStore(private val dslContext: DSLContext) {

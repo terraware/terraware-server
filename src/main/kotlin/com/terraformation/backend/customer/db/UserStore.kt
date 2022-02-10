@@ -7,8 +7,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.KeycloakRequiredActions
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
@@ -92,7 +92,7 @@ class UserStore(
    * implies that the user didn't exist in the users table.
    * @throws KeycloakUserNotFoundException There is no user with that ID in the Keycloak database.
    */
-  fun fetchByAuthId(authId: String): UserModel {
+  fun fetchByAuthId(authId: String): IndividualUser {
     val existingUser = usersDao.fetchByAuthId(authId).firstOrNull()
     val user =
         if (existingUser != null) {
@@ -122,7 +122,7 @@ class UserStore(
    * @return null if no Keycloak user has the requested email address.
    * @throws KeycloakRequestFailedException Could not request user information from Keycloak.
    */
-  fun fetchByEmail(email: String): UserModel? {
+  fun fetchByEmail(email: String): IndividualUser? {
     val existingUser = usersDao.fetchByEmail(email).firstOrNull()
     val user =
         if (existingUser != null) {
@@ -151,7 +151,7 @@ class UserStore(
    *
    * @return null if the user doesn't exist.
    */
-  fun fetchById(userId: UserId): UserModel? {
+  fun fetchById(userId: UserId): IndividualUser? {
     return usersDao.fetchOneById(userId)?.let { rowToModel(it) }
   }
 
@@ -160,7 +160,7 @@ class UserStore(
    * information. This is used when inviting users who don't have accounts yet. When they register
    * on Keycloak, their Keycloak identity will be linked to the user that's created here.
    */
-  fun fetchOrCreateByEmail(email: String): UserModel {
+  fun fetchOrCreateByEmail(email: String): IndividualUser {
     val existingUser = fetchByEmail(email)
     if (existingUser != null) {
       return existingUser
@@ -201,7 +201,7 @@ class UserStore(
       sendPasswordEmail: Boolean = true,
       redirectUrl: URI? = null,
       linkLifetime: Duration = Duration.ofDays(3),
-  ): UserModel {
+  ): IndividualUser {
     requirePermissions { addOrganizationUser(organizationId) }
 
     val existingUser = fetchByEmail(email)
@@ -249,7 +249,7 @@ class UserStore(
    * Updates a user's profile information. Applies changes to the `users` table as well as Keycloak.
    * Currently, only the first and last name can be modified.
    */
-  fun updateUser(model: UserModel) {
+  fun updateUser(model: IndividualUser) {
     if (currentUser().userId != model.userId) {
       throw AccessDeniedException("Cannot modify another user's profile information")
     }
@@ -284,7 +284,7 @@ class UserStore(
    * - The last name includes the organization ID
    * - The first name is the admin-supplied description
    */
-  fun createApiClient(organizationId: OrganizationId, description: String?): UserModel {
+  fun createApiClient(organizationId: OrganizationId, description: String?): IndividualUser {
     requirePermissions { createApiKey(organizationId) }
 
     // Use base32 instead of base64 so the username doesn't include "/" and "+".
@@ -499,8 +499,8 @@ class UserStore(
     }
   }
 
-  private fun rowToModel(usersRow: UsersRow): UserModel {
-    return UserModel(
+  private fun rowToModel(usersRow: UsersRow): IndividualUser {
+    return IndividualUser(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId,
         usersRow.email ?: throw IllegalArgumentException("Email should never be null"),

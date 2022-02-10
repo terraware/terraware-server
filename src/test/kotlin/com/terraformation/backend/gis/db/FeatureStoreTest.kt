@@ -1,7 +1,7 @@
 package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.UserModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FeatureId
 import com.terraformation.backend.db.FeatureNotFoundException
@@ -65,7 +65,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
-  override val user = mockk<UserModel>()
+  override val user: TerrawareUser = mockk()
   private val siteId = SiteId(10)
   private val layerId = LayerId(100)
   private val nonExistentLayerId = LayerId(401)
