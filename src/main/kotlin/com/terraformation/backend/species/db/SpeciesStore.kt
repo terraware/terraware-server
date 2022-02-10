@@ -149,6 +149,10 @@ class SpeciesStore(
   fun findAllSpeciesNames(organizationId: OrganizationId): List<SpeciesNamesRow> {
     requirePermissions { readOrganization(organizationId) }
 
+    // We want all the species names associated with an organization ID for which there is also
+    // a species option for the same species and the same organization. Checking the option is
+    // necessary to filter out species that have been deleted from the organization; deletion only
+    // removes the species_options row, not the names.
     return dslContext
         .selectFrom(SPECIES_NAMES)
         .where(SPECIES_NAMES.ORGANIZATION_ID.eq(organizationId))
@@ -188,19 +192,20 @@ class SpeciesStore(
           } else {
             val newRow = row.copy(createdTime = clock.instant(), modifiedTime = clock.instant())
             speciesDao.insert(newRow)
-            newRow.id ?: throw RuntimeException("BUG! Species ID not returned after insertion")
-          }
+            val newId =
+                newRow.id ?: throw RuntimeException("BUG! Species ID not returned after insertion")
 
-      if (existingSpeciesId == null) {
-        speciesNamesDao.insert(
-            SpeciesNamesRow(
-                createdTime = clock.instant(),
-                isScientific = row.isScientific,
-                name = row.name,
-                modifiedTime = clock.instant(),
-                organizationId = organizationId,
-                speciesId = speciesId))
-      }
+            speciesNamesDao.insert(
+                SpeciesNamesRow(
+                    createdTime = clock.instant(),
+                    isScientific = row.isScientific,
+                    name = row.name,
+                    modifiedTime = clock.instant(),
+                    organizationId = organizationId,
+                    speciesId = newId))
+
+            newId
+          }
 
       speciesOptionsDao.insert(
           SpeciesOptionsRow(
@@ -216,6 +221,11 @@ class SpeciesStore(
   /**
    * Updates the data for an existing species.
    *
+   * If the species name in [row] differs from the existing primary name, the new name also replaces
+   * the existing one in the species' list of names, to maintain the invariant that the primary name
+   * (the one on the `species` table) is always also included in the full list of names (the rows in
+   * the `species_names` table).
+   *
    * @throws DuplicateKeyException The requested name was already in use.
    * @throws SpeciesNotFoundException No species with the requested ID exists.
    */
@@ -229,6 +239,27 @@ class SpeciesStore(
     speciesDao.update(row.copy(createdTime = existing.createdTime, modifiedTime = clock.instant()))
 
     if (existing.name != row.name) {
+      // This update includes an edit to the name, so we need to make sure species_names also
+      // reflects the change.
+      //
+      // From the client's perspective, the desired behavior is that the new name appears in the
+      // list of species names and the current name no longer appears. There are two cases to cover,
+      // and the second case has two minor variations.
+      //
+      // 1. The new name is one that didn't previously exist on the species. This is probably going
+      //    to be the typical scenario: you are just renaming the species because the old name is
+      //    incorrect. In that case, we can update the species_names row that currently holds the
+      //    old name.
+      // 2. The new name is already one of the names for the species. For example, you have multiple
+      //    common names for a species and you want to use a different one as the primary. There are
+      //    arguably a couple different correct behaviors here, but for consistency with case #1,
+      //    we delete the old name from species_names. The new name already has a species_names row,
+      //    so we don't need to insert or update it.
+      //
+      // But the second case has one possible wrinkle: you can change the `isScientific` flag
+      // as part of the update. If that happens, we need to update the existing species_names row
+      // for the new name to set the flag to the correct value.
+
       val existingNamesRowForNewName =
           dslContext
               .selectFrom(SPECIES_NAMES)
@@ -237,22 +268,7 @@ class SpeciesStore(
               .and(SPECIES_NAMES.ORGANIZATION_ID.eq(organizationId))
               .fetchOneInto(SpeciesNamesRow::class.java)
 
-      if (existingNamesRowForNewName != null) {
-        // We are updating the primary name to a name that was previously added as a secondary.
-        // Use the existing secondary name so its creation time is preserved.
-        dslContext
-            .deleteFrom(SPECIES_NAMES)
-            .where(SPECIES_NAMES.SPECIES_ID.eq(speciesId))
-            .and(SPECIES_NAMES.NAME.eq(existing.name))
-            .and(SPECIES_NAMES.ORGANIZATION_ID.eq(organizationId))
-            .execute()
-
-        if (existingNamesRowForNewName.isScientific != row.isScientific) {
-          speciesNamesDao.update(
-              existingNamesRowForNewName.copy(
-                  isScientific = row.isScientific, modifiedTime = clock.instant()))
-        }
-      } else {
+      if (existingNamesRowForNewName == null) {
         val namesUpdated =
             dslContext
                 .update(SPECIES_NAMES)
@@ -268,6 +284,19 @@ class SpeciesStore(
           log.error(
               "Renaming species ${existing.name} to ${row.name}: expected to update 1 name, but " +
                   "was $namesUpdated")
+        }
+      } else {
+        dslContext
+            .deleteFrom(SPECIES_NAMES)
+            .where(SPECIES_NAMES.SPECIES_ID.eq(speciesId))
+            .and(SPECIES_NAMES.NAME.eq(existing.name))
+            .and(SPECIES_NAMES.ORGANIZATION_ID.eq(organizationId))
+            .execute()
+
+        if (existingNamesRowForNewName.isScientific != row.isScientific) {
+          speciesNamesDao.update(
+              existingNamesRowForNewName.copy(
+                  isScientific = row.isScientific, modifiedTime = clock.instant()))
         }
       }
     }
