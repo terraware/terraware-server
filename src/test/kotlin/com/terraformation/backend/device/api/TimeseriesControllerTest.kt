@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.device.db.TimeseriesStore
+import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.dao.DuplicateKeyException
 
 internal class TimeseriesControllerTest : RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
   private val store: TimeseriesStore = mockk()
 
   private val controller = TimeseriesController(store)

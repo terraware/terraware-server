@@ -9,6 +9,7 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
+import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
   private lateinit var parentStore: ParentStore

@@ -22,7 +22,7 @@ interface RunsAsUser {
    * User to masquerade as while running tests. Typically, you'll want to define this as
    *
    * ```
-   * override val user: TerrawareUser = mockk()
+   * override val user: TerrawareUser = mockUser()
    * ```
    *
    * and then use the MockK API to control the behavior of the stubbed-out user.

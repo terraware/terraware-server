@@ -381,6 +381,7 @@ abstract class DatabaseTest {
 
   /** Creates an organization, site, and facility that can be referenced by various tests. */
   fun insertSiteData() {
+    insertUser()
     insertOrganization(1, "dev")
     insertProject(2, 1, "project")
     insertSite(10, 2, "sim")

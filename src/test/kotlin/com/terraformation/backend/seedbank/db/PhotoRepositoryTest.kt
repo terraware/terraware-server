@@ -21,6 +21,7 @@ import com.terraformation.backend.file.LocalFileStore
 import com.terraformation.backend.file.PathGenerator
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
+import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.model.PhotoMetadata
 import io.mockk.every
 import io.mockk.mockk
@@ -68,7 +69,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private lateinit var repository: PhotoRepository
   private val thumbnailStore: ThumbnailStore = mockk()
 
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
 
   private lateinit var photoPath: Path
   private lateinit var photoStorageUrl: URI

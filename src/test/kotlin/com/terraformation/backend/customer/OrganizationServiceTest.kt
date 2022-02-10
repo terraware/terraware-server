@@ -21,7 +21,6 @@ import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
@@ -32,6 +31,7 @@ import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -43,7 +43,7 @@ import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.beans.factory.annotation.Autowired
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockk()
+  override val user: TerrawareUser = mockUser()
   override val sequencesToReset: List<String> =
       listOf("organizations_id_seq", "projects_id_seq", "site_id_seq", "site_module_id_seq")
 
@@ -109,12 +109,11 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateProject(any()) } returns true
     every { user.canCreateSite(any()) } returns true
-    every { user.userId } returns UserId(100)
   }
 
   @Test
   fun `createOrganization creates seed bank`() {
-    insertUser(user.userId)
+    insertUser()
 
     val expected =
         OrganizationModel(
@@ -161,7 +160,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createOrganization does not create seed bank if creation flag is false`() {
-    insertUser(user.userId)
+    insertUser()
 
     val expected =
         OrganizationModel(
