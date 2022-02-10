@@ -102,6 +102,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
             mockk(),
             mockk(),
+            mockk(),
             clock,
         )
 

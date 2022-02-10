@@ -126,13 +126,18 @@ COMMENT ON TABLE source_plant_origins IS '(Enum) Types of origins of plants from
 
 COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (coordinate) systems. Managed by the PostGIS extension, not the application.';
 
-COMMENT ON TABLE species IS 'Information about plant species.';
+COMMENT ON TABLE species IS 'Information about plant species that isn''t organization-specific. Currently, the application doesn''t have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it.';
+COMMENT ON COLUMN species.name IS 'Primary name of the species. Currently, this is always the same as `species_names.name`.';
+COMMENT ON COLUMN species.tsn IS '(Unused in current app version) Taxonomic Serial Number from the ITIS database, to link this species to its ITIS database entry.';
+COMMENT ON COLUMN species.is_scientific IS 'If true, the `name` column is a scientific name.';
 
 COMMENT ON TABLE species_endangered_types IS '(Enum) Possible values for the "Endangered" attribute of an accession. This is not used for plants whose locations are being tracked; see `conservation_statuses` instead.';
 
-COMMENT ON TABLE species_names IS 'Alternate names for species. A species can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `species`.';
+COMMENT ON TABLE species_names IS 'Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in `species`. If multiple organizations use the same species, each one will have a separate row in this table.';
+COMMENT ON COLUMN species_names.name IS 'Species name. This can be a scientific name or an arbitrary organization-supplied name in any language.';
+COMMENT ON COLUMN species_names.is_scientific IS 'If true, the `name` column is a scientific name. There can be more than one scientific name for a species, though the app currently does not provide a way to add multiple names.';
 
-COMMENT ON TABLE species_options IS 'Linking table between `species` and `organizations` that represents which species are in use by which organizations. Can also link a species to a project and/or a site.';
+COMMENT ON TABLE species_options IS 'Linking table between `species` and `organizations` that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted.';
 
 COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Session, not the application.';
 

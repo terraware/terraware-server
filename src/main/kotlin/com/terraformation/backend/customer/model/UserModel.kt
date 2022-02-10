@@ -15,7 +15,7 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.log.perClassLogger
@@ -372,17 +372,39 @@ data class UserModel(
 
   fun canListApiKeys(organizationId: OrganizationId): Boolean = canCreateApiKey(organizationId)
 
-  fun canCreateSpecies(): Boolean {
-    return organizationRoles.values.any {
-      it == Role.OWNER || it == Role.ADMIN || it == Role.MANAGER
+  fun canCreateSpecies(organizationId: OrganizationId): Boolean {
+    return when (organizationRoles[organizationId]) {
+      Role.OWNER, Role.ADMIN, Role.MANAGER -> true
+      else -> false
     }
   }
 
-  fun canDeleteSpecies(@Suppress("UNUSED_PARAMETER") speciesId: SpeciesId): Boolean =
-      canCreateSpecies()
+  fun canReadSpecies(organizationId: OrganizationId): Boolean = canReadOrganization(organizationId)
 
-  fun canUpdateSpecies(@Suppress("UNUSED_PARAMETER") speciesId: SpeciesId): Boolean =
-      canCreateSpecies()
+  fun canDeleteSpecies(organizationId: OrganizationId): Boolean = canCreateSpecies(organizationId)
+
+  fun canUpdateSpecies(organizationId: OrganizationId): Boolean = canCreateSpecies(organizationId)
+
+  fun canCreateSpeciesName(organizationId: OrganizationId): Boolean {
+    return when (organizationRoles[organizationId]) {
+      Role.OWNER, Role.ADMIN, Role.MANAGER -> true
+      else -> false
+    }
+  }
+
+  fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean {
+    val organizationId = parentStore.getOrganizationId(speciesNameId) ?: return false
+    return organizationId in organizationRoles.keys
+  }
+
+  fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean {
+    val organizationId = parentStore.getOrganizationId(speciesNameId) ?: return false
+    return canCreateSpeciesName(organizationId)
+  }
+
+  fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean {
+    return canUpdateSpeciesName(speciesNameId)
+  }
 
   fun canCreateTimeseries(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false

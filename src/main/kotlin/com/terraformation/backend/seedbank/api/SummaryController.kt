@@ -2,8 +2,10 @@ package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.atMostRecent
@@ -24,6 +26,7 @@ class SummaryController(
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val parentStore: ParentStore,
     private val speciesStore: SpeciesStore,
 ) {
   @GetMapping("/{facilityId}")
@@ -41,6 +44,9 @@ class SummaryController(
     val oneWeekAgo = startOfDay.minusDays(6)
     val twoWeeksAgo = startOfDay.minusDays(13)
 
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+
     return SummaryResponse(
         activeAccessions =
             SummaryStatistic(
@@ -48,7 +54,8 @@ class SummaryController(
                 accessionStore.countActive(facilityId, startOfWeek)),
         species =
             SummaryStatistic(
-                speciesStore.countSpecies(now), speciesStore.countSpecies(startOfWeek)),
+                speciesStore.countSpecies(organizationId, now),
+                speciesStore.countSpecies(organizationId, startOfWeek)),
         families =
             SummaryStatistic(
                 accessionStore.countFamilies(facilityId, now),

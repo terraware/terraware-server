@@ -22,6 +22,9 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.SpeciesNameNotFoundException
+import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
@@ -379,21 +382,57 @@ class PermissionRequirements(private val user: UserModel) {
     }
   }
 
-  fun createSpecies() {
-    if (!user.canCreateSpecies()) {
+  fun createSpecies(organizationId: OrganizationId) {
+    if (!user.canCreateSpecies(organizationId)) {
+      readOrganization(organizationId)
       throw AccessDeniedException("No permission to create species")
     }
   }
 
-  fun deleteSpecies(speciesId: SpeciesId) {
-    if (!user.canDeleteSpecies(speciesId)) {
+  fun readSpecies(organizationId: OrganizationId, speciesId: SpeciesId) {
+    if (!user.canReadSpecies(organizationId)) {
+      throw SpeciesNotFoundException(speciesId)
+    }
+  }
+
+  fun deleteSpecies(organizationId: OrganizationId, speciesId: SpeciesId) {
+    if (!user.canDeleteSpecies(organizationId)) {
+      readSpecies(organizationId, speciesId)
       throw AccessDeniedException("No permission to delete species $speciesId")
     }
   }
 
-  fun updateSpecies(speciesId: SpeciesId) {
-    if (!user.canUpdateSpecies(speciesId)) {
+  fun updateSpecies(organizationId: OrganizationId, speciesId: SpeciesId) {
+    if (!user.canUpdateSpecies(organizationId)) {
+      readSpecies(organizationId, speciesId)
       throw AccessDeniedException("No permission to update species $speciesId")
+    }
+  }
+
+  fun createSpeciesName(organizationId: OrganizationId) {
+    if (!user.canCreateSpeciesName(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to create species name")
+    }
+  }
+
+  fun readSpeciesName(speciesNameId: SpeciesNameId) {
+    if (!user.canReadSpeciesName(speciesNameId)) {
+      throw SpeciesNameNotFoundException(speciesNameId)
+    }
+  }
+
+  fun deleteSpeciesName(speciesNameId: SpeciesNameId) {
+    if (!user.canDeleteSpeciesName(speciesNameId)) {
+      readSpeciesName(speciesNameId)
+      throw AccessDeniedException("No permission to delete species name")
+    }
+  }
+
+  fun updateSpeciesName(speciesNameId: SpeciesNameId) {
+    if (!user.canUpdateSpeciesName(speciesNameId)) {
+      readSpeciesName(speciesNameId)
+      throw AccessDeniedException("No permission to update species name")
     }
   }
 

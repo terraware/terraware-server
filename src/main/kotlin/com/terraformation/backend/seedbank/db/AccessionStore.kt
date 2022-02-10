@@ -2,12 +2,14 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.AppDeviceStore
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
@@ -51,6 +53,7 @@ class AccessionStore(
     private val bagStore: BagStore,
     private val geolocationStore: GeolocationStore,
     private val germinationStore: GerminationStore,
+    private val parentStore: ParentStore,
     private val speciesStore: SpeciesStore,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
@@ -185,6 +188,9 @@ class AccessionStore(
   fun create(accession: AccessionModel): AccessionModel {
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+
     requirePermissions { createAccession(facilityId) }
 
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
@@ -198,7 +204,8 @@ class AccessionStore(
               val appDeviceId =
                   accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
               val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
-              val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
+              val speciesId =
+                  accession.species?.let { speciesStore.getOrCreateSpecies(organizationId, it) }
               val state = AccessionState.AwaitingCheckIn
 
               val accessionId =
@@ -284,6 +291,8 @@ class AccessionStore(
     val accessionId = updated.id ?: return false
     val existing = fetchById(accessionId) ?: return false
     val facilityId = existing.facilityId ?: return false
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     requirePermissions { updateAccession(accessionId) }
 
@@ -342,7 +351,7 @@ class AccessionStore(
       insertStateHistory(existing, accession)
 
       val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
-      val speciesId = accession.species?.let { speciesStore.getSpeciesId(it) }
+      val speciesId = accession.species?.let { speciesStore.getOrCreateSpecies(organizationId, it) }
 
       val rowsUpdated =
           with(ACCESSIONS) {

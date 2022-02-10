@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.AppDeviceStore
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.customer.model.UserModel
 import com.terraformation.backend.db.AccessionId
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.GerminationSubstrate
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -37,6 +39,7 @@ import com.terraformation.backend.db.tables.daos.GerminationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
+import com.terraformation.backend.db.tables.daos.SpeciesOptionsDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
@@ -131,12 +134,15 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var geolocationsDao: GeolocationsDao
   private lateinit var germinationsDao: GerminationsDao
   private lateinit var germinationTestsDao: GerminationTestsDao
+  private lateinit var parentStore: ParentStore
   private lateinit var photosDao: PhotosDao
   private lateinit var speciesDao: SpeciesDao
   private lateinit var speciesNamesDao: SpeciesNamesDao
+  private lateinit var speciesOptionsDao: SpeciesOptionsDao
   private lateinit var storageLocationsDao: StorageLocationsDao
 
   private val facilityId = FacilityId(100)
+  private val organizationId = OrganizationId(1)
 
   @BeforeEach
   fun init() {
@@ -148,20 +154,24 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     geolocationsDao = GeolocationsDao(jooqConfig)
     germinationsDao = GerminationsDao(jooqConfig)
     germinationTestsDao = GerminationTestsDao(jooqConfig)
+    parentStore = ParentStore(dslContext)
     photosDao = PhotosDao(jooqConfig)
     speciesDao = SpeciesDao(jooqConfig)
     speciesNamesDao = SpeciesNamesDao(jooqConfig)
+    speciesOptionsDao = SpeciesOptionsDao(jooqConfig)
     storageLocationsDao = StorageLocationsDao(jooqConfig)
 
-    val speciesStore = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao)
+    val speciesStore =
+        SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, speciesOptionsDao)
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
 
     every { user.canCreateAccession(any()) } returns true
-    every { user.canCreateSpecies() } returns true
+    every { user.canCreateSpecies(organizationId) } returns true
     every { user.canDeleteSpecies(any()) } returns true
     every { user.canReadAccession(any()) } returns true
+    every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateAccession(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
 
@@ -172,6 +182,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
+            parentStore,
             speciesStore,
             WithdrawalStore(dslContext, clock),
             clock,
@@ -221,7 +232,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create with new species throws exception if user has no permission to create species`() {
-    every { user.canCreateSpecies() } returns false
+    every { user.canCreateSpecies(organizationId) } returns false
 
     assertThrows<AccessDeniedException> {
       store.create(AccessionModel(facilityId = facilityId, species = "newSpecies"))

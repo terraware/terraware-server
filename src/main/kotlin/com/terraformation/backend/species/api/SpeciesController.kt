@@ -12,8 +12,6 @@ import com.terraformation.backend.db.PlantForm
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
-import com.terraformation.backend.db.tables.daos.SpeciesDao
-import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.seedbank.api.ValuesController
@@ -53,20 +51,16 @@ import org.springframework.web.bind.annotation.RestController
 @GISAppEndpoint
 @RequestMapping("/api/v1/species")
 @RestController
-class SpeciesController(
-    private val speciesDao: SpeciesDao,
-    private val speciesNamesDao: SpeciesNamesDao,
-    private val speciesStore: SpeciesStore,
-) {
+class SpeciesController(private val speciesStore: SpeciesStore) {
   @GetMapping
   @Operation(summary = "Lists all the species available in an organization.")
   fun listSpecies(
       @RequestParam("organizationId", required = true)
-      @Schema(description = "Organization whose species should be listed. (Currently ignored.)")
+      @Schema(description = "Organization whose species should be listed.")
       organizationId: OrganizationId
   ): ListSpeciesResponsePayload {
-    val species = speciesDao.findAll()
-    return ListSpeciesResponsePayload(species.map { SpeciesResponseElement(it) })
+    val elements = speciesStore.findAllSpecies(organizationId).map { SpeciesResponseElement(it) }
+    return ListSpeciesResponsePayload(elements)
   }
 
   @ApiResponses(
@@ -77,7 +71,7 @@ class SpeciesController(
   @PostMapping
   fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
     try {
-      val speciesId = speciesStore.createSpecies(payload.toRow())
+      val speciesId = speciesStore.createSpecies(payload.organizationId, payload.toRow())
       return CreateSpeciesResponsePayload(speciesId)
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
@@ -91,16 +85,15 @@ class SpeciesController(
   fun getSpecies(
       @PathVariable speciesId: SpeciesId,
       @RequestParam("organizationId", required = true)
-      @Schema(
-          description =
-              "Gets information about how the species is listed at this organization. " +
-                  "(Currently ignored.)")
+      @Schema(description = "Organization whose information about the species should be returned.")
       organizationId: OrganizationId,
   ): GetSpeciesResponsePayload {
-    val row =
-        speciesDao.fetchOneById(speciesId)
+    val speciesRow =
+        speciesStore.fetchSpeciesById(organizationId, speciesId)
             ?: throw NotFoundException("Species $speciesId not found.")
-    return GetSpeciesResponsePayload(SpeciesResponseElement(row))
+
+    val element = SpeciesResponseElement(speciesRow)
+    return GetSpeciesResponsePayload(element)
   }
 
   @ApiResponse(
@@ -112,7 +105,7 @@ class SpeciesController(
       @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesStore.updateSpecies(payload.toRow(speciesId))
+    speciesStore.updateSpecies(payload.organizationId, payload.toRow(speciesId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -123,17 +116,19 @@ class SpeciesController(
           description = "Cannot delete the species because it is currently in use."))
   @ApiResponse404
   @DeleteMapping("/{speciesId}")
-  @Operation(summary = "Deletes an existing species.")
+  @Operation(
+      summary = "Deletes an existing species.",
+      description =
+          "The species will no longer appear in the organization's list of species, but existing " +
+              "data (plants, seeds, etc.) that refer to the species will still refer to it.")
   fun deleteSpecies(
       @PathVariable speciesId: SpeciesId,
       @RequestParam("organizationId", required = true)
-      @Schema(
-          description =
-              "Organization from which the species should be deleted. (Currently ignored.)")
+      @Schema(description = "Organization from which the species should be deleted.")
       organizationId: OrganizationId,
   ): SimpleSuccessResponsePayload {
     try {
-      speciesStore.deleteSpecies(speciesId)
+      speciesStore.deleteSpecies(organizationId, speciesId)
       return SimpleSuccessResponsePayload()
     } catch (e: DataIntegrityViolationException) {
       throw ResourceInUseException("Species $speciesId is currently in use.")
@@ -141,14 +136,13 @@ class SpeciesController(
   }
 
   @GetMapping("/names")
-  @Operation(summary = "Lists all species names.")
+  @Operation(summary = "Lists all of an organization's species names.")
   fun listAllSpeciesNames(
       @RequestParam("organizationId", required = true)
-      @Schema(
-          description = "Organization whose species names should be listed. (Currently ignored.)")
+      @Schema(description = "Organization whose species names should be listed.")
       organizationId: OrganizationId,
   ): ListSpeciesNamesResponsePayload {
-    val names = speciesNamesDao.findAll()
+    val names = speciesStore.findAllSpeciesNames(organizationId)
     return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
   }
 
@@ -160,7 +154,7 @@ class SpeciesController(
   @Operation(summary = "Adds a new name for an existing species.")
   @PostMapping("/names")
   fun createSpeciesName(
-      @RequestBody payload: SpeciesNameRequestPayload
+      @RequestBody payload: CreateSpeciesNameRequestPayload
   ): CreateSpeciesNameResponsePayload {
     try {
       val speciesNameId = speciesStore.createSpeciesName(payload.toRow())
@@ -176,12 +170,10 @@ class SpeciesController(
   fun listSpeciesNames(
       @PathVariable speciesId: SpeciesId,
       @RequestParam("organizationId", required = true)
-      @Schema(
-          description =
-              "Organization whose names for the species should be listed. (Currently ignored.)")
+      @Schema(description = "Organization whose names for the species should be listed.")
       organizationId: OrganizationId,
   ): ListSpeciesNamesResponsePayload {
-    val names = speciesStore.listAllSpeciesNames(speciesId)
+    val names = speciesStore.listAllSpeciesNames(organizationId, speciesId)
     return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
   }
 
@@ -189,10 +181,13 @@ class SpeciesController(
   @ApiResponse404
   @GetMapping("/names/{speciesNameId}")
   @Operation(description = "Gets information about a single species name.")
-  fun getSpeciesName(@PathVariable speciesNameId: SpeciesNameId): GetSpeciesNameResponsePayload {
+  fun getSpeciesName(
+      @PathVariable speciesNameId: SpeciesNameId,
+  ): GetSpeciesNameResponsePayload {
     val row =
-        speciesNamesDao.fetchOneById(speciesNameId)
+        speciesStore.fetchSpeciesNameById(speciesNameId)
             ?: throw NotFoundException("Species name not found")
+
     return GetSpeciesNameResponsePayload(SpeciesNamesResponseElement(row))
   }
 
@@ -203,7 +198,9 @@ class SpeciesController(
   @ApiResponse404
   @DeleteMapping("/names/{speciesNameId}")
   @Operation(description = "Deletes one of the secondary names of a species.")
-  fun deleteSpeciesName(@PathVariable speciesNameId: SpeciesNameId): SimpleSuccessResponsePayload {
+  fun deleteSpeciesName(
+      @PathVariable speciesNameId: SpeciesNameId,
+  ): SimpleSuccessResponsePayload {
     speciesStore.deleteSpeciesName(speciesNameId)
     return SimpleSuccessResponsePayload()
   }
@@ -212,9 +209,9 @@ class SpeciesController(
   @PutMapping("/names/{speciesNameId}")
   fun updateSpeciesName(
       @PathVariable speciesNameId: SpeciesNameId,
-      @RequestBody payload: SpeciesNameRequestPayload
+      @RequestBody payload: UpdateSpeciesNameRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesStore.updateSpeciesName(payload.toRow().copy(id = speciesNameId))
+    speciesStore.updateSpeciesName(payload.toRow(speciesNameId))
     return SimpleSuccessResponsePayload()
   }
 }
@@ -253,7 +250,7 @@ data class SpeciesRequestPayload(
     @Schema(description = "True if name is the scientific name for the species.")
     val isScientific: Boolean?,
     val name: String,
-    @Schema(description = "Which organization's species list to update. (Currently ignored.)")
+    @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
     val plantForm: PlantForm?,
     val rare: RareType?,
@@ -281,6 +278,7 @@ data class SpeciesNamesResponseElement(
     @Schema(description = "True if name is the scientific name for the species.")
     val isScientific: Boolean,
     val name: String,
+    val organizationId: OrganizationId,
     val speciesId: SpeciesId,
 ) {
   constructor(
@@ -289,16 +287,17 @@ data class SpeciesNamesResponseElement(
       id = row.id!!,
       isScientific = row.isScientific == true,
       name = row.name!!,
+      organizationId = row.organizationId!!,
       speciesId = row.speciesId!!,
   )
 }
 
-data class SpeciesNameRequestPayload(
+data class CreateSpeciesNameRequestPayload(
     @Schema(description = "True if name is a scientific name for the species.")
     val isScientific: Boolean?,
     val locale: String?,
     val name: String,
-    @Schema(description = "Which organization's species list to update. (Currently ignored.)")
+    @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
     val speciesId: SpeciesId,
 ) {
@@ -321,3 +320,13 @@ data class ListSpeciesResponsePayload(val species: List<SpeciesResponseElement>)
 
 data class ListSpeciesNamesResponsePayload(val speciesNames: List<SpeciesNamesResponseElement>) :
     SuccessResponsePayload
+
+data class UpdateSpeciesNameRequestPayload(
+    @Schema(description = "True if name is a scientific name for the species.")
+    val isScientific: Boolean?,
+    val locale: String?,
+    val name: String,
+) {
+  fun toRow(id: SpeciesNameId) =
+      SpeciesNamesRow(id = id, name = name, isScientific = isScientific == true, locale = locale)
+}
