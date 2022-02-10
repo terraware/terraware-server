@@ -62,15 +62,10 @@ data class IndividualUser(
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser, UserDetails {
-  /** The user's role in each organization they belong to. */
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
     permissionStore.fetchOrganizationRoles(userId)
   }
 
-  /**
-   * The user's role in each project they have access to. Currently, roles are assigned
-   * per-organization, so this is really the user's role in the organization that owns each project.
-   */
   override val projectRoles: Map<ProjectId, Role> by lazy {
     permissionStore.fetchProjectRoles(userId)
   }
@@ -82,11 +77,6 @@ data class IndividualUser(
    */
   private val siteRoles: Map<SiteId, Role> by lazy { permissionStore.fetchSiteRoles(userId) }
 
-  /**
-   * The user's role in each facility they have access to. Currently, roles are assigned
-   * per-organization, so this is really the user's role in the organization that owns the project
-   * and site of each facility.
-   */
   override val facilityRoles: Map<FacilityId, Role> by lazy {
     permissionStore.fetchFacilityRoles(userId)
   }
@@ -99,17 +89,6 @@ data class IndividualUser(
   val fullName: String?
     get() = if (firstName != null && lastName != null) "$firstName $lastName" else null
 
-  /**
-   * Runs some code as this user.
-   *
-   * This is useful in two scenarios. First, if the code isn't running on a request handler thread
-   * (e.g., in a unit test or on a thread pool), any calls to [currentUser] will fail because there
-   * won't be a current user.
-   *
-   * Second, less common, is masquerading: if there is already a current user, it will be replaced
-   * with this user for the duration of the function, and then the current user will be restored
-   * afterwards.
-   */
   override fun <T> run(func: () -> T): T {
     return CurrentUserHolder.runAs(this, func, authorities)
   }
