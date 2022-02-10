@@ -54,11 +54,11 @@ accession_secondary_collectors
 project_type_selections
 project_users
 species_names
+species_options
 accession_state_history
 feature_photos
 organization_users
 notifications
-species_options
 withdrawals
 task_processed_times
 test_clock

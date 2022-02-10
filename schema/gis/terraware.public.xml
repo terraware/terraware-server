@@ -223,19 +223,19 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="species" numRows="0" remarks="Information about plant species." schema="public" type="TABLE">
+      <table name="species" numRows="0" remarks="Information about plant species that isn't organization-specific. Currently, the application doesn't have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="Primary name of the species. Currently, this is always the same as `species_names.name`." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="plant_form_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="conservation_status_id" nullable="true" remarks="" size="2" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="rare_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="native_range" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="tsn" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="tsn" nullable="true" remarks="(Unused in current app version) Taxonomic Serial Number from the ITIS database, to link this species to its ITIS database entry." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="is_scientific" nullable="false" remarks="If true, the `name` column is a scientific name." size="1" type="bool" typeCode="-7"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -243,7 +243,7 @@
          <index name="species_created_time_idx" unique="false">
             <column ascending="true" name="created_time"/>
          </index>
-         <index name="species_name_key" unique="true">
+         <index name="species_name_idx" unique="false">
             <column ascending="true" name="name"/>
          </index>
       </table>

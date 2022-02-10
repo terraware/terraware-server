@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Alternate names for species. A species can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in <code>species</code>.</p>
+                            <p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -157,7 +157,7 @@
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="organization_id">organization_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -189,7 +189,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Species name. This can be a scientific name or an arbitrary organization-supplied name in any language.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="is_scientific">is_scientific</span></td>
@@ -206,7 +206,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>If true, the <code>name</code> column is a scientific name. There can be more than one scientific name for a species, though the app currently does not provide a way to add multiple names.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="locale">locale</span></td>
@@ -293,7 +293,7 @@
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> species_names_unique</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>species_id + name</td>
+                                    <td>organization_id + name</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -326,19 +326,19 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1145,5,1311,93">
-<area shape="rect" id="node2" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="543,288,709,376">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="797,100,1028,364">
-<area shape="rect" id="node10" href="../../tables/conservation_statuses.html" target="_top" title="conservation_statuses" alt="" coords="499,183,753,271">
-<area shape="rect" id="node11" href="../../tables/plant_forms.html" target="_top" title="plant_forms" alt="" coords="537,77,715,165">
-<area shape="rect" id="node4" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="208,565,455,653">
-<area shape="rect" id="node5" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,529,164,617">
-<area shape="rect" id="node6" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="799,381,1026,469">
-<area shape="rect" id="node7" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="499,483,753,659">
-<area shape="rect" id="node8" href="../../tables/plants.html" target="_top" title="plants" alt="" coords="1159,111,1297,199">
-<area shape="rect" id="node9" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="839,523,987,611">
-<area shape="rect" id="node12" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="1072,216,1384,520">
-<area shape="rect" id="node13" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="1126,537,1330,625">
+<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="877,5,1043,93">
+<area shape="rect" id="node2" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="252,296,419,384">
+<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="518,108,749,372">
+<area shape="rect" id="node10" href="../../tables/conservation_statuses.html" target="_top" title="conservation_statuses" alt="" coords="208,191,463,279">
+<area shape="rect" id="node11" href="../../tables/plant_forms.html" target="_top" title="plant_forms" alt="" coords="247,85,424,173">
+<area shape="rect" id="node4" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="212,671,459,759">
+<area shape="rect" id="node5" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,635,164,723">
+<area shape="rect" id="node6" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="847,643,1073,731">
+<area shape="rect" id="node7" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="507,588,760,764">
+<area shape="rect" id="node8" href="../../tables/plants.html" target="_top" title="plants" alt="" coords="891,111,1029,199">
+<area shape="rect" id="node9" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="886,748,1034,836">
+<area shape="rect" id="node12" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="804,216,1116,520">
+<area shape="rect" id="node13" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="858,537,1062,625">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species_names.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

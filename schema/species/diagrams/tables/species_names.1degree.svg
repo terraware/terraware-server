@@ -23,12 +23,12 @@
 <text text-anchor="start" x="253" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="345,-211 345,-233 447,-233 447,-211 345,-211"/>
 <text text-anchor="start" x="348" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="none" points="233,-189 233,-211 345,-211 345,-189 233,-189"/>
 <polygon fill="none" stroke="black" points="233,-189 233,-211 345,-211 345,-189 233,-189"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="238" y="-206"/>
 <text text-anchor="start" x="253" y="-197.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
 <polygon fill="none" stroke="black" points="345,-189 345,-211 447,-211 447,-189 345,-189"/>
 <text text-anchor="start" x="348" y="-197.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="233,-167 233,-189 345,-189 345,-167 233,-167"/>
 <polygon fill="none" stroke="black" points="233,-167 233,-189 345,-189 345,-167 233,-167"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="238" y="-184"/>
 <text text-anchor="start" x="253" y="-175.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
@@ -89,7 +89,7 @@
 <text text-anchor="start" x="96" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
 <polygon fill="#ffffff" stroke="none" points="135,-37 135,-55 182,-55 182,-37 135,-37"/>
 <polygon fill="none" stroke="black" points="135,-37 135,-55 182,-55 182,-37 135,-37"/>
-<text text-anchor="start" x="162" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
+<text text-anchor="start" x="162" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>

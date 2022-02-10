@@ -2,9 +2,7 @@ organizations
 conservation_statuses
 plant_forms
 rare_types
-projects
 species
-sites
 species_names
 species_options
 species_endangered_types

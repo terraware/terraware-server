@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Fri Jan 28 01:13 GMT 2022</p>
+                                <p>Generated on Thu Feb 10 23:10 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">371</span>
+                                    <span class="info-box-number">369</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">89</span>
+                                    <span class="info-box-number">87</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -242,7 +242,7 @@
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Information about plant species.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Information about plant species that isn&rsquo;t organization-specific. Currently, the application doesn&rsquo;t have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/test_clock.html">test_clock</a></td>
@@ -274,11 +274,11 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/species_options.html">species_options</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>species</code> and <code>organizations</code> that represents which species are in use by which organizations. Can also link a species to a project and/or a site.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>species</code> and <code>organizations</code> that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_states.html">accession_states</a></td>
@@ -570,7 +570,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/sites.html">sites</a></td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
@@ -651,7 +651,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/projects.html">projects</a></td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">14</td>
                                         <td class="detail" align="right">0</td>
@@ -758,15 +758,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of facilities that can be represented in the data model.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Alternate names for species. A species can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in <code>species</code>.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries.html">timeseries</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">2</td>
@@ -774,6 +765,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Properties of a series of values collected from a device. Each device metric is represented as a timeseries.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
                                     </tr>
                             </table>
                         </div>

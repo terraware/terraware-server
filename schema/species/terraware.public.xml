@@ -19,7 +19,6 @@
       </table>
       <table name="organizations" numRows="0" remarks="Top-level information about organizations." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
-            <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="organization_id" foreignKey="species_names_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_names"/>
             <child column="organization_id" foreignKey="species_options_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
          </column>
@@ -49,31 +48,6 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="projects" numRows="0" remarks="Information about a single restoration project. A project can span multiple sites." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="project_id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
-            <child column="project_id" foreignKey="species_options_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="location" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="disabled_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pm_user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="organization_wide" nullable="false" remarks="If true, the project is accessible to the entire organization. If true, the project is only accessible to users who are added to it." size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="13" name="hidden" nullable="false" remarks="If true, the project and its associated sites and facilities should not be displayed to end users." size="1" type="bool" typeCode="-7"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="projects_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
       <table name="rare_types" numRows="3" remarks="(Enum) Possible values of the &quot;Rare&quot; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="rare_type_id" foreignKey="species_rare_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -84,34 +58,14 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="sites" numRows="0" remarks="Physical locations where facilities are located or plants are being tracked." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="site_id" foreignKey="species_options_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="locale" nullable="true" remarks="Default locale at the site; an IETF BCP 47 language tag such as en-US." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="timezone" nullable="true" remarks="Name of time zone at site; an IANA tz database zone name." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="true" digits="0" id="4" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="location" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="site_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="species" numRows="0" remarks="Information about plant species." schema="public" type="TABLE">
+      <table name="species" numRows="0" remarks="Information about plant species that isn't organization-specific. Currently, the application doesn't have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="species_names_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_names"/>
             <child column="species_id" foreignKey="species_options_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="Primary name of the species. Currently, this is always the same as `species_names.name`." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="plant_form_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="species_plant_form_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_forms"/>
          </column>
@@ -122,8 +76,8 @@
             <parent column="id" foreignKey="species_rare_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="rare_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="native_range" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="tsn" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="tsn" nullable="true" remarks="(Unused in current app version) Taxonomic Serial Number from the ITIS database, to link this species to its ITIS database entry." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="is_scientific" nullable="false" remarks="If true, the `name` column is a scientific name." size="1" type="bool" typeCode="-7"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -131,7 +85,7 @@
          <index name="species_created_time_idx" unique="false">
             <column ascending="true" name="created_time"/>
          </index>
-         <index name="species_name_key" unique="true">
+         <index name="species_name_idx" unique="false">
             <column ascending="true" name="name"/>
          </index>
       </table>
@@ -143,16 +97,16 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="species_names" numRows="0" remarks="Alternate names for species. A species can have multiple names, e.g., a scientific name and several common names. The primary name is stored here as well as in `species`." schema="public" type="TABLE">
+      <table name="species_names" numRows="0" remarks="Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in `species`. If multiple organizations use the same species, each one will have a separate row in this table." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_names_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_names_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="4" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="Species name. This can be a scientific name or an arbitrary organization-supplied name in any language." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="4" name="is_scientific" nullable="false" remarks="If true, the `name` column is a scientific name. There can be more than one scientific name for a species, though the app currently does not provide a way to add multiple names." size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="locale" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
@@ -161,11 +115,11 @@
             <column ascending="true" name="id"/>
          </index>
          <index name="species_names_unique" unique="true">
-            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="organization_id"/>
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="species_options" numRows="0" remarks="Linking table between `species` and `organizations` that represents which species are in use by which organizations. Can also link a species to a project and/or a site." schema="public" type="TABLE">
+      <table name="species_options" numRows="0" remarks="Linking table between `species` and `organizations` that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_options_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -173,17 +127,14 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_options_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="species_options_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="site_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="species_options_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_options_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="species_options_organization_id_idx" unique="false">
+            <column ascending="true" name="organization_id"/>
          </index>
       </table>
    </tables>
