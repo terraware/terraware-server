@@ -145,14 +145,14 @@
 <text text-anchor="start" x="53" y="-331.2" font-family="Helvetica,sans-Serif" font-size="11.00">user_type_id</text>
 <polygon fill="none" stroke="black" points="33,-305 33,-323 158,-323 158,-305 33,-305"/>
 <text text-anchor="start" x="36" y="-311.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="33,-287 33,-305 74,-305 74,-287 33,-287"/>
-<polygon fill="none" stroke="black" points="33,-287 33,-305 74,-305 74,-287 33,-287"/>
+<polygon fill="#ffffff" stroke="none" points="33,-287 33,-305 77,-305 77,-287 33,-287"/>
+<polygon fill="none" stroke="black" points="33,-287 33,-305 77,-305 77,-287 33,-287"/>
 <text text-anchor="start" x="36" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="74,-287 74,-305 125,-305 125,-287 74,-287"/>
-<polygon fill="none" stroke="black" points="74,-287 74,-305 125,-305 125,-287 74,-287"/>
-<text text-anchor="start" x="86" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="125,-287 125,-305 158,-305 158,-287 125,-287"/>
-<polygon fill="none" stroke="black" points="125,-287 125,-305 158,-305 158,-287 125,-287"/>
+<polygon fill="#ffffff" stroke="none" points="77,-287 77,-305 124,-305 124,-287 77,-287"/>
+<polygon fill="none" stroke="black" points="77,-287 77,-305 124,-305 124,-287 77,-287"/>
+<text text-anchor="start" x="90" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
+<polygon fill="#ffffff" stroke="none" points="124,-287 124,-305 158,-305 158,-287 124,-287"/>
+<polygon fill="none" stroke="black" points="124,-287 124,-305 158,-305 158,-287 124,-287"/>
 <text text-anchor="start" x="138" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>

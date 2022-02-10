@@ -1128,7 +1128,7 @@
             <column ascending="false" name="created_time"/>
          </index>
       </table>
-      <table name="user_types" numRows="3" remarks="(Enum) Types of users. Most users are of type 1, &quot;Individual.&quot;" schema="public" type="TABLE">
+      <table name="user_types" numRows="4" remarks="(Enum) Types of users. Most users are of type 1, &quot;Individual.&quot;" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="user_type_id" foreignKey="users_user_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
@@ -1141,7 +1141,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="users" numRows="0" remarks="User identities. A user can be associated with organizations via `organization_users`." schema="public" type="TABLE">
+      <table name="users" numRows="1" remarks="User identities. A user can be associated with organizations via `organization_users`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="user_id" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>

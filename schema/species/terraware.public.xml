@@ -312,11 +312,11 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="_st_distancetree" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public._ST_DistanceTree($1, $2, 0.0, true)]]></definition>
+         <definition language="C"><![CDATA[geography_distance_tree]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="_st_distanceuncached" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public._ST_DistanceUnCached($1, $2, 0.0, true)]]></definition>
+         <definition language="C"><![CDATA[geography_distance_uncached]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="_st_dwithin" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -324,7 +324,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="_st_dwithinuncached" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT $1 OPERATOR(public.&&) public._ST_Expand($2,$3) AND $2 OPERATOR(public.&&) public._ST_Expand($1,$3) AND public._ST_DWithinUnCached($1, $2, $3, true)]]></definition>
+         <definition language="C"><![CDATA[geography_dwithin_uncached]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="_st_equals" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -417,20 +417,160 @@ END;
          <comment><![CDATA[args: catalog_name, schema_name, table_name, column_name, srid, type, dimension, use_typmod=true - Adds a geometry column to an existing table.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
 DECLARE
-	ret  text;
+	rec RECORD;
+	sr varchar;
+	real_schema name;
+	sql text;
+	new_srid integer;
+
 BEGIN
-	SELECT public.AddGeometryColumn('','',$1,$2,$3,$4,$5, $6) into ret;
-	RETURN ret;
+
+	-- Verify geometry type
+	IF (postgis_type_name(new_type,new_dim) IS NULL )
+	THEN
+		RAISE EXCEPTION 'Invalid type name "%(%)" - valid ones are:
+	POINT, MULTIPOINT,
+	LINESTRING, MULTILINESTRING,
+	POLYGON, MULTIPOLYGON,
+	CIRCULARSTRING, COMPOUNDCURVE, MULTICURVE,
+	CURVEPOLYGON, MULTISURFACE,
+	GEOMETRY, GEOMETRYCOLLECTION,
+	POINTM, MULTIPOINTM,
+	LINESTRINGM, MULTILINESTRINGM,
+	POLYGONM, MULTIPOLYGONM,
+	CIRCULARSTRINGM, COMPOUNDCURVEM, MULTICURVEM
+	CURVEPOLYGONM, MULTISURFACEM, TRIANGLE, TRIANGLEM,
+	POLYHEDRALSURFACE, POLYHEDRALSURFACEM, TIN, TINM
+	or GEOMETRYCOLLECTIONM', new_type, new_dim;
+		RETURN 'fail';
+	END IF;
+
+	-- Verify dimension
+	IF ( (new_dim >4) OR (new_dim <2) ) THEN
+		RAISE EXCEPTION 'invalid dimension';
+		RETURN 'fail';
+	END IF;
+
+	IF ( (new_type LIKE '%M') AND (new_dim!=3) ) THEN
+		RAISE EXCEPTION 'TypeM needs 3 dimensions';
+		RETURN 'fail';
+	END IF;
+
+	-- Verify SRID
+	IF ( new_srid_in > 0 ) THEN
+		IF new_srid_in > 998999 THEN
+			RAISE EXCEPTION 'AddGeometryColumn() - SRID must be <= %', 998999;
+		END IF;
+		new_srid := new_srid_in;
+		SELECT SRID INTO sr FROM spatial_ref_sys WHERE SRID = new_srid;
+		IF NOT FOUND THEN
+			RAISE EXCEPTION 'AddGeometryColumn() - invalid SRID';
+			RETURN 'fail';
+		END IF;
+	ELSE
+		new_srid := public.ST_SRID('POINT EMPTY'::public.geometry);
+		IF ( new_srid_in != new_srid ) THEN
+			RAISE NOTICE 'SRID value % converted to the officially unknown SRID value %', new_srid_in, new_srid;
+		END IF;
+	END IF;
+
+	-- Verify schema
+	IF ( schema_name IS NOT NULL AND schema_name != '' ) THEN
+		sql := 'SELECT nspname FROM pg_namespace ' ||
+			'WHERE text(nspname) = ' || quote_literal(schema_name) ||
+			'LIMIT 1';
+		RAISE DEBUG '%', sql;
+		EXECUTE sql INTO real_schema;
+
+		IF ( real_schema IS NULL ) THEN
+			RAISE EXCEPTION 'Schema % is not a valid schemaname', quote_literal(schema_name);
+			RETURN 'fail';
+		END IF;
+	END IF;
+
+	IF ( real_schema IS NULL ) THEN
+		RAISE DEBUG 'Detecting schema';
+		sql := 'SELECT n.nspname AS schemaname ' ||
+			'FROM pg_catalog.pg_class c ' ||
+			  'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace ' ||
+			'WHERE c.relkind = ' || quote_literal('r') ||
+			' AND n.nspname NOT IN (' || quote_literal('pg_catalog') || ', ' || quote_literal('pg_toast') || ')' ||
+			' AND pg_catalog.pg_table_is_visible(c.oid)' ||
+			' AND c.relname = ' || quote_literal(table_name);
+		RAISE DEBUG '%', sql;
+		EXECUTE sql INTO real_schema;
+
+		IF ( real_schema IS NULL ) THEN
+			RAISE EXCEPTION 'Table % does not occur in the search_path', quote_literal(table_name);
+			RETURN 'fail';
+		END IF;
+	END IF;
+
+	-- Add geometry column to table
+	IF use_typmod THEN
+	     sql := 'ALTER TABLE ' ||
+            quote_ident(real_schema) || '.' || quote_ident(table_name)
+            || ' ADD COLUMN ' || quote_ident(column_name) ||
+            ' geometry(' || public.postgis_type_name(new_type, new_dim) || ', ' || new_srid::text || ')';
+        RAISE DEBUG '%', sql;
+	ELSE
+        sql := 'ALTER TABLE ' ||
+            quote_ident(real_schema) || '.' || quote_ident(table_name)
+            || ' ADD COLUMN ' || quote_ident(column_name) ||
+            ' geometry ';
+        RAISE DEBUG '%', sql;
+    END IF;
+	EXECUTE sql;
+
+	IF NOT use_typmod THEN
+        -- Add table CHECKs
+        sql := 'ALTER TABLE ' ||
+            quote_ident(real_schema) || '.' || quote_ident(table_name)
+            || ' ADD CONSTRAINT '
+            || quote_ident('enforce_srid_' || column_name)
+            || ' CHECK (st_srid(' || quote_ident(column_name) ||
+            ') = ' || new_srid::text || ')' ;
+        RAISE DEBUG '%', sql;
+        EXECUTE sql;
+
+        sql := 'ALTER TABLE ' ||
+            quote_ident(real_schema) || '.' || quote_ident(table_name)
+            || ' ADD CONSTRAINT '
+            || quote_ident('enforce_dims_' || column_name)
+            || ' CHECK (st_ndims(' || quote_ident(column_name) ||
+            ') = ' || new_dim::text || ')' ;
+        RAISE DEBUG '%', sql;
+        EXECUTE sql;
+
+        IF ( NOT (new_type = 'GEOMETRY')) THEN
+            sql := 'ALTER TABLE ' ||
+                quote_ident(real_schema) || '.' || quote_ident(table_name) || ' ADD CONSTRAINT ' ||
+                quote_ident('enforce_geotype_' || column_name) ||
+                ' CHECK (GeometryType(' ||
+                quote_ident(column_name) || ')=' ||
+                quote_literal(new_type) || ' OR (' ||
+                quote_ident(column_name) || ') is null)';
+            RAISE DEBUG '%', sql;
+            EXECUTE sql;
+        END IF;
+    END IF;
+
+	RETURN
+		real_schema || '.' ||
+		table_name || '.' || column_name ||
+		' SRID:' || new_srid::text ||
+		' TYPE:' || new_type ||
+		' DIMS:' || new_dim::text || ' ';
 END;
 ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box" returnType="box" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[BOX3D_to_BOX]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_to_BOX]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box2d" returnType="box2d" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[BOX3D_to_BOX2D]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_to_BOX2D]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box2d_in" returnType="box2d" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -450,7 +590,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box3d" returnType="box3d" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[BOX2D_to_BOX3D]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_to_BOX3D]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="box3d_in" returnType="box3d" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -469,8 +609,31 @@ END;
          <definition language="C"><![CDATA[LWGEOM_to_bytea]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="checkauth" returnType="integer" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: a_schema_name, a_table_name, a_key_column_name - Creates a trigger on a table to prevent/allow updates and deletes of rows based on authorization token.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT CheckAuth('', $1, $2) ]]></definition>
+         <comment><![CDATA[args: a_table_name, a_key_column_name - Creates a trigger on a table to prevent/allow updates and deletes of rows based on authorization token.]]></comment>
+         <definition language="PLPGSQL"><![CDATA[
+DECLARE
+	schema text;
+BEGIN
+	IF NOT LongTransactionsEnabled() THEN
+		RAISE EXCEPTION 'Long transaction support disabled, use EnableLongTransaction() to enable.';
+	END IF;
+
+	if ( $1 != '' ) THEN
+		schema = $1;
+	ELSE
+		SELECT current_schema() into schema;
+	END IF;
+
+	-- TODO: check for an already existing trigger ?
+
+	EXECUTE 'CREATE TRIGGER check_auth BEFORE UPDATE OR DELETE ON '
+		|| quote_ident(schema) || '.' || quote_ident($2)
+		||' FOR EACH ROW EXECUTE PROCEDURE CheckAuthTrigger('
+		|| quote_literal($3) || ')';
+
+	RETURN 0;
+END;
+]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="checkauthtrigger" returnType="trigger" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -490,7 +653,7 @@ SELECT EXISTS
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="contains_2d" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT $2 OPERATOR(public.@) $1;]]></definition>
+         <definition language="C"><![CDATA[gserialized_contains_box2df_geom_2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="difference" returnType="integer" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -547,14 +710,37 @@ END;
 DECLARE
 	ret text;
 BEGIN
-	SELECT public.DropGeometryColumn('','',$1,$2) into ret;
+	SELECT public.DropGeometryColumn('',$1,$2,$3) into ret;
 	RETURN ret;
 END;
 ]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="dropgeometrytable" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: catalog_name, schema_name, table_name - Drops a table and all its references in geometry_columns.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT public.DropGeometryTable('','',$1) ]]></definition>
+         <definition language="PLPGSQL"><![CDATA[
+DECLARE
+	real_schema name;
+
+BEGIN
+
+	IF ( schema_name = '' ) THEN
+		SELECT current_schema() into real_schema;
+	ELSE
+		real_schema = schema_name;
+	END IF;
+
+	-- TODO: Should we warn if table doesn't exist probably instead just saying dropped
+	-- Remove table
+	EXECUTE 'DROP TABLE IF EXISTS '
+		|| quote_ident(real_schema) || '.' ||
+		quote_ident(table_name) || ' RESTRICT';
+
+	RETURN
+		real_schema || '.' ||
+		table_name ||' dropped.';
+
+END;
+]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="enablelongtransactions" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[Enables long transaction support.]]></comment>
@@ -642,7 +828,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="geography" returnType="geography" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geography_from_geometry]]></definition>
+         <definition language="C"><![CDATA[geography_enforce_typmod]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="geography_analyze" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1174,7 +1360,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="is_contained_2d" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT $2 OPERATOR(public.~) $1;]]></definition>
+         <definition language="C"><![CDATA[gserialized_within_box2df_geom_2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="json" returnType="json" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1186,15 +1372,60 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="levenshtein" returnType="integer" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[levenshtein_with_costs]]></definition>
+         <definition language="C"><![CDATA[levenshtein]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="levenshtein_less_equal" returnType="integer" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[levenshtein_less_equal_with_costs]]></definition>
+         <definition language="C"><![CDATA[levenshtein_less_equal]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="lockrow" returnType="integer" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: a_schema_name, a_table_name, a_row_key, an_auth_token, expire_dt - Sets lock/authorization for a row in a table.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT LockRow(current_schema(), $1, $2, $3, $4); ]]></definition>
+         <comment/>
+         <definition language="PLPGSQL"><![CDATA[
+DECLARE
+	myschema alias for $1;
+	mytable alias for $2;
+	myrid   alias for $3;
+	authid alias for $4;
+	expires alias for $5;
+	ret int;
+	mytoid oid;
+	myrec RECORD;
+
+BEGIN
+
+	IF NOT LongTransactionsEnabled() THEN
+		RAISE EXCEPTION 'Long transaction support disabled, use EnableLongTransaction() to enable.';
+	END IF;
+
+	EXECUTE 'DELETE FROM authorization_table WHERE expires < now()';
+
+	SELECT c.oid INTO mytoid FROM pg_class c, pg_namespace n
+		WHERE c.relname = mytable
+		AND c.relnamespace = n.oid
+		AND n.nspname = myschema;
+
+	-- RAISE NOTICE 'toid: %', mytoid;
+
+	FOR myrec IN SELECT * FROM authorization_table WHERE
+		toid = mytoid AND rid = myrid
+	LOOP
+		IF myrec.authid != authid THEN
+			RETURN 0;
+		ELSE
+			RETURN 1;
+		END IF;
+	END LOOP;
+
+	EXECUTE 'INSERT INTO authorization_table VALUES ('||
+		quote_literal(mytoid::text)||','||quote_literal(myrid)||
+		','||quote_literal(expires::text)||
+		','||quote_literal(authid) ||')';
+
+	GET DIAGNOSTICS ret = ROW_COUNT;
+
+	RETURN ret;
+END;
+]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="longtransactionsenabled" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1216,7 +1447,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="overlaps_2d" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT $2 OPERATOR(public.&&) $1;]]></definition>
+         <definition language="C"><![CDATA[gserialized_overlaps_box2df_geom_2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="overlaps_geog" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1224,7 +1455,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="overlaps_nd" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT $2 OPERATOR(public.&&&) $1;]]></definition>
+         <definition language="C"><![CDATA[gserialized_gidx_geom_overlaps]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="path" returnType="path" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -1294,128 +1525,68 @@ END;
          <comment/>
          <definition language="C"><![CDATA[geometry_to_polygon]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="false" name="populate_geometry_columns" returnType="integer" securityType="INVOKER" type="FUNCTION">
+      <routine dataAccess="MODIFIES" deterministic="false" name="populate_geometry_columns" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: relation_oid, use_typmod=true - Ensures geometry columns are defined with type modifiers or have appropriate spatial constraints.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
 DECLARE
+	inserted	integer;
+	oldcount	integer;
+	probed	  integer;
+	stale	   integer;
 	gcs		 RECORD;
 	gc		  RECORD;
-	gc_old	  RECORD;
 	gsrid	   integer;
 	gndims	  integer;
 	gtype	   text;
 	query	   text;
 	gc_is_valid boolean;
-	inserted	integer;
-	constraint_successful boolean := false;
 
 BEGIN
+	SELECT count(*) INTO oldcount FROM public.geometry_columns;
 	inserted := 0;
 
-	-- Iterate through all geometry columns in this table
-	FOR gcs IN
-	SELECT n.nspname, c.relname, a.attname, c.relkind
-		FROM pg_class c,
-			 pg_attribute a,
-			 pg_type t,
-			 pg_namespace n
-		WHERE c.relkind IN('r', 'f', 'p')
+	-- Count the number of geometry columns in all tables and views
+	SELECT count(DISTINCT c.oid) INTO probed
+	FROM pg_class c,
+		 pg_attribute a,
+		 pg_type t,
+		 pg_namespace n
+	WHERE c.relkind IN('r','v','f', 'p')
 		AND t.typname = 'geometry'
 		AND a.attisdropped = false
 		AND a.atttypid = t.oid
 		AND a.attrelid = c.oid
 		AND c.relnamespace = n.oid
-		AND n.nspname NOT ILIKE 'pg_temp%'
-		AND c.oid = tbl_oid
+		AND n.nspname NOT ILIKE 'pg_temp%' AND c.relname != 'raster_columns' ;
+
+	-- Iterate through all non-dropped geometry columns
+	RAISE DEBUG 'Processing Tables.....';
+
+	FOR gcs IN
+	SELECT DISTINCT ON (c.oid) c.oid, n.nspname, c.relname
+		FROM pg_class c,
+			 pg_attribute a,
+			 pg_type t,
+			 pg_namespace n
+		WHERE c.relkind IN( 'r', 'f', 'p')
+		AND t.typname = 'geometry'
+		AND a.attisdropped = false
+		AND a.atttypid = t.oid
+		AND a.attrelid = c.oid
+		AND c.relnamespace = n.oid
+		AND n.nspname NOT ILIKE 'pg_temp%' AND c.relname != 'raster_columns'
 	LOOP
 
-        RAISE DEBUG 'Processing column %.%.%', gcs.nspname, gcs.relname, gcs.attname;
-
-        gc_is_valid := true;
-        -- Find the srid, coord_dimension, and type of current geometry
-        -- in geometry_columns -- which is now a view
-
-        SELECT type, srid, coord_dimension, gcs.relkind INTO gc_old
-            FROM geometry_columns
-            WHERE f_table_schema = gcs.nspname AND f_table_name = gcs.relname AND f_geometry_column = gcs.attname;
-
-        IF upper(gc_old.type) = 'GEOMETRY' THEN
-        -- This is an unconstrained geometry we need to do something
-        -- We need to figure out what to set the type by inspecting the data
-            EXECUTE 'SELECT public.ST_srid(' || quote_ident(gcs.attname) || ') As srid, public.GeometryType(' || quote_ident(gcs.attname) || ') As type, public.ST_NDims(' || quote_ident(gcs.attname) || ') As dims ' ||
-                     ' FROM ONLY ' || quote_ident(gcs.nspname) || '.' || quote_ident(gcs.relname) ||
-                     ' WHERE ' || quote_ident(gcs.attname) || ' IS NOT NULL LIMIT 1;'
-                INTO gc;
-            IF gc IS NULL THEN -- there is no data so we can not determine geometry type
-            	RAISE WARNING 'No data in table %.%, so no information to determine geometry type and srid', gcs.nspname, gcs.relname;
-            	RETURN 0;
-            END IF;
-            gsrid := gc.srid; gtype := gc.type; gndims := gc.dims;
-
-            IF use_typmod THEN
-                BEGIN
-                    EXECUTE 'ALTER TABLE ' || quote_ident(gcs.nspname) || '.' || quote_ident(gcs.relname) || ' ALTER COLUMN ' || quote_ident(gcs.attname) ||
-                        ' TYPE geometry(' || postgis_type_name(gtype, gndims, true) || ', ' || gsrid::text  || ') ';
-                    inserted := inserted + 1;
-                EXCEPTION
-                        WHEN invalid_parameter_value OR feature_not_supported THEN
-                        RAISE WARNING 'Could not convert ''%'' in ''%.%'' to use typmod with srid %, type %: %', quote_ident(gcs.attname), quote_ident(gcs.nspname), quote_ident(gcs.relname), gsrid, postgis_type_name(gtype, gndims, true), SQLERRM;
-                            gc_is_valid := false;
-                END;
-
-            ELSE
-                -- Try to apply srid check to column
-            	constraint_successful = false;
-                IF (gsrid > 0 AND postgis_constraint_srid(gcs.nspname, gcs.relname,gcs.attname) IS NULL ) THEN
-                    BEGIN
-                        EXECUTE 'ALTER TABLE ONLY ' || quote_ident(gcs.nspname) || '.' || quote_ident(gcs.relname) ||
-                                 ' ADD CONSTRAINT ' || quote_ident('enforce_srid_' || gcs.attname) ||
-                                 ' CHECK (ST_srid(' || quote_ident(gcs.attname) || ') = ' || gsrid || ')';
-                        constraint_successful := true;
-                    EXCEPTION
-                        WHEN check_violation THEN
-                            RAISE WARNING 'Not inserting ''%'' in ''%.%'' into geometry_columns: could not apply constraint CHECK (st_srid(%) = %)', quote_ident(gcs.attname), quote_ident(gcs.nspname), quote_ident(gcs.relname), quote_ident(gcs.attname), gsrid;
-                            gc_is_valid := false;
-                    END;
-                END IF;
-
-                -- Try to apply ndims check to column
-                IF (gndims IS NOT NULL AND postgis_constraint_dims(gcs.nspname, gcs.relname,gcs.attname) IS NULL ) THEN
-                    BEGIN
-                        EXECUTE 'ALTER TABLE ONLY ' || quote_ident(gcs.nspname) || '.' || quote_ident(gcs.relname) || '
-                                 ADD CONSTRAINT ' || quote_ident('enforce_dims_' || gcs.attname) || '
-                                 CHECK (st_ndims(' || quote_ident(gcs.attname) || ') = '||gndims||')';
-                        constraint_successful := true;
-                    EXCEPTION
-                        WHEN check_violation THEN
-                            RAISE WARNING 'Not inserting ''%'' in ''%.%'' into geometry_columns: could not apply constraint CHECK (st_ndims(%) = %)', quote_ident(gcs.attname), quote_ident(gcs.nspname), quote_ident(gcs.relname), quote_ident(gcs.attname), gndims;
-                            gc_is_valid := false;
-                    END;
-                END IF;
-
-                -- Try to apply geometrytype check to column
-                IF (gtype IS NOT NULL AND postgis_constraint_type(gcs.nspname, gcs.relname,gcs.attname) IS NULL ) THEN
-                    BEGIN
-                        EXECUTE 'ALTER TABLE ONLY ' || quote_ident(gcs.nspname) || '.' || quote_ident(gcs.relname) || '
-                        ADD CONSTRAINT ' || quote_ident('enforce_geotype_' || gcs.attname) || '
-                        CHECK (geometrytype(' || quote_ident(gcs.attname) || ') = ' || quote_literal(gtype) || ')';
-                        constraint_successful := true;
-                    EXCEPTION
-                        WHEN check_violation THEN
-                            -- No geometry check can be applied. This column contains a number of geometry types.
-                            RAISE WARNING 'Could not add geometry type check (%) to table column: %.%.%', gtype, quote_ident(gcs.nspname),quote_ident(gcs.relname),quote_ident(gcs.attname);
-                    END;
-                END IF;
-                 --only count if we were successful in applying at least one constraint
-                IF constraint_successful THEN
-                	inserted := inserted + 1;
-                END IF;
-            END IF;
-	    END IF;
-
+		inserted := inserted + public.populate_geometry_columns(gcs.oid, use_typmod);
 	END LOOP;
 
-	RETURN inserted;
+	IF oldcount > inserted THEN
+		stale = oldcount-inserted;
+	ELSE
+		stale = 0;
+	END IF;
+
+	RETURN 'probed:' ||probed|| ' inserted:'||inserted;
 END
 
 ]]></definition>
@@ -2074,16 +2245,16 @@ END
          <definition language="C"><![CDATA[LWGEOM_addpoint]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_affine" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, a, b, c, d, e, f, g, h, i, xoff, yoff, zoff - Apply a 3D affine transformation to a geometry.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT public.ST_Affine($1,  $2, $3, 0,  $4, $5, 0,  0, 0, 1,  $6, $7, 0)]]></definition>
+         <comment><![CDATA[args: geomA, a, b, d, e, xoff, yoff - Apply a 3D affine transformation to a geometry.]]></comment>
+         <definition language="C"><![CDATA[LWGEOM_affine]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_angle" returnType="double precision" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: point1, point2, point3, point4 - Returns the angle between 3 points, or between 2 vectors (4 points or 2 lines).]]></comment>
+         <comment><![CDATA[args: line1, line2 - Returns the angle between 3 points, or between 2 vectors (4 points or 2 lines).]]></comment>
          <definition language="SQL"><![CDATA[SELECT ST_Angle(St_StartPoint($1), ST_EndPoint($1), St_StartPoint($2), ST_EndPoint($2))]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_area" returnType="double precision" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geog, use_spheroid=true - Returns the area of a polygonal geometry.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Area($1::public.geometry);  ]]></definition>
+         <comment/>
+         <definition language="C"><![CDATA[geography_area]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_area2d" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2103,7 +2274,7 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_asewkt" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_AsEWKT($1::public.geometry);  ]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_asEWKT]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_asgeobuf" returnType="bytea" securityType="INVOKER" type="AGGREGATE">
          <comment/>
@@ -2111,11 +2282,11 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_asgeojson" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_AsGeoJson($1::public.geometry, 9, 0);  ]]></definition>
+         <definition language="C"><![CDATA[geography_as_geojson]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_asgml" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public._ST_AsGML(2,$1::public.geometry,15,0, NULL, NULL);  ]]></definition>
+         <definition language="C"><![CDATA[geography_as_gml]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_ashexewkb" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2123,7 +2294,7 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_askml" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_AsKML($1::public.geometry, 15);  ]]></definition>
+         <definition language="C"><![CDATA[geography_as_kml]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_aslatlontext" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2139,15 +2310,15 @@ END
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_assvg" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_AsSVG($1::public.geometry,0,15);  ]]></definition>
+         <definition language="C"><![CDATA[geography_as_svg]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_astext" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_AsText($1::public.geometry);  ]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_asText]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_astwkb" returnType="bytea" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[TWKBFromLWGEOMArray]]></definition>
+         <definition language="C"><![CDATA[TWKBFromLWGEOM]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_asx3d" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2218,17 +2389,17 @@ END;
          <comment/>
          <definition language="C"><![CDATA[box2d_from_geohash]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_buffer" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1, radius_of_buffer, buffer_style_parameters - Returns a geometry covering all points within a given distance from a geometry.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Buffer($1::public.geometry, $2, $3);  ]]></definition>
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_buffer" returnType="geography" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="SQL"><![CDATA[SELECT public.geography(public.ST_Transform(public.ST_Buffer(public.ST_Transform(public.geometry($1), public._ST_BestSRID($1)), $2), 4326))]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_buildarea" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geom - Creates a polygonal geometry formed by the linework of a geometry.]]></comment>
          <definition language="C"><![CDATA[ST_BuildArea]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_centroid" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1, use_spheroid=true - Returns the geometric center of a geometry.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Centroid($1::public.geometry);  ]]></definition>
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_centroid" returnType="geography" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="C"><![CDATA[geography_centroid]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_chaikinsmoothing" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geom, nIterations = 1, preserveEndPoints = false - Returns a smoothed version of a geometry, using the Chaikin algorithm]]></comment>
@@ -2266,9 +2437,9 @@ END;
          <comment/>
          <definition language="INTERNAL"><![CDATA[aggregate_dummy]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_collect" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1, g2 - Creates a GeometryCollection or Multi* geometry from a set of geometries.]]></comment>
-         <definition language="INTERNAL"><![CDATA[aggregate_dummy]]></definition>
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_collect" returnType="geometry" securityType="INVOKER" type="AGGREGATE">
+         <comment><![CDATA[args: g1field - Creates a GeometryCollection or Multi* geometry from a set of geometries.]]></comment>
+         <definition language="C"><![CDATA[LWGEOM_collect]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_collectionextract" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: collection, type - Given a (multi)geometry, return a (multi)geometry consisting only of elements of the specified type.]]></comment>
@@ -2278,9 +2449,9 @@ END;
          <comment><![CDATA[args: collection - Given a geometry collection, return the "simplest" representation of the contents.]]></comment>
          <definition language="C"><![CDATA[ST_CollectionHomogenize]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_combinebbox" returnType="box2d" securityType="INVOKER" type="FUNCTION">
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_combinebbox" returnType="box3d" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[BOX2D_combine]]></definition>
+         <definition language="C"><![CDATA[BOX3D_combine]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_concavehull" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geom, target_percent, allow_holes = false - Computes a possibly concave geometry that encloses all input geometry vertices]]></comment>
@@ -2460,11 +2631,11 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_coveredby" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_CoveredBy($1::public.geometry, $2::public.geometry);  ]]></definition>
+         <definition language="C"><![CDATA[geography_coveredby]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_covers" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Covers($1::public.geometry, $2::public.geometry);  ]]></definition>
+         <definition language="C"><![CDATA[geography_covers]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_cpawithin" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: track1, track2, maxdist - Returns true if the closest point of approach of two trajectoriesis within the specified distance.]]></comment>
@@ -2499,8 +2670,8 @@ END;
          <definition language="C"><![CDATA[disjoint]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_distance" returnType="double precision" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geog1, geog2, use_spheroid=true - Returns the distance between two geometry or geography values.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Distance($1::public.geometry, $2::public.geometry);  ]]></definition>
+         <comment/>
+         <definition language="C"><![CDATA[geography_distance]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_distancecpa" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: track1, track2 - Returns the distance between the closest point of approach of two trajectories.]]></comment>
@@ -2528,7 +2699,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_dwithin" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_DWithin($1::public.geometry, $2::public.geometry, $3);  ]]></definition>
+         <definition language="C"><![CDATA[geography_dwithin]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_endpoint" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g - Returns the last point of a LineString or CircularLineString.]]></comment>
@@ -2543,11 +2714,11 @@ END;
          <definition language="C"><![CDATA[ST_Equals]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="false" name="st_estimatedextent" returnType="box2d" securityType="DEFINER" type="FUNCTION">
-         <comment><![CDATA[args: schema_name, table_name, geocolumn_name, parent_only - Return the estimated extent of a spatial table.]]></comment>
+         <comment><![CDATA[args: table_name, geocolumn_name - Return the estimated extent of a spatial table.]]></comment>
          <definition language="C"><![CDATA[gserialized_estimated_extent]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_expand" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, dx, dy, dz=0, dm=0 - Returns a bounding box expanded from another bounding box or a geometry.]]></comment>
+         <comment><![CDATA[args: box, dx, dy, dz=0 - Returns a bounding box expanded from another bounding box or a geometry.]]></comment>
          <definition language="C"><![CDATA[LWGEOM_expand]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_extent" returnType="box2d" securityType="INVOKER" type="AGGREGATE">
@@ -2566,12 +2737,12 @@ END;
          <comment/>
          <definition language="PLPGSQL"><![CDATA[
 DECLARE
-	tablename alias for $1;
-	columnname alias for $2;
+	schemaname alias for $1;
+	tablename alias for $2;
+	columnname alias for $3;
 	myrec RECORD;
-
 BEGIN
-	FOR myrec IN EXECUTE 'SELECT public.ST_Extent("' || columnname || '") As extent FROM "' || tablename || '"' LOOP
+	FOR myrec IN EXECUTE 'SELECT public.ST_Extent("' || columnname || '") As extent FROM "' || schemaname || '"."' || tablename || '"' LOOP
 		return myrec.extent;
 	END LOOP;
 END;
@@ -2629,7 +2800,7 @@ END;
          <comment><![CDATA[args: g1, g2, densifyFrac = -1 - Returns the Fréchet distance between two geometries.]]></comment>
          <definition language="C"><![CDATA[ST_FrechetDistance]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_generatepoints" returnType="geometry" securityType="INVOKER" type="FUNCTION">
+      <routine dataAccess="MODIFIES" deterministic="false" name="st_generatepoints" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g, npoints, seed - Generates random points contained in a Polygon or MultiPolygon.]]></comment>
          <definition language="C"><![CDATA[ST_GeneratePoints]]></definition>
       </routine>
@@ -2653,8 +2824,8 @@ END;
          <comment/>
          <definition language="SQL"><![CDATA[
 	SELECT CASE
-	WHEN public.geometrytype(public.ST_GeomFromText($1)) = 'GEOMETRYCOLLECTION'
-	THEN public.ST_GeomFromText($1)
+	WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = 'GEOMETRYCOLLECTION'
+	THEN public.ST_GeomFromText($1,$2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -2662,8 +2833,8 @@ END;
          <comment/>
          <definition language="SQL"><![CDATA[
 	SELECT CASE
-	WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'GEOMETRYCOLLECTION'
-	THEN public.ST_GeomFromWKB($1)
+	WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'GEOMETRYCOLLECTION'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -2697,11 +2868,11 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_geomfromgeojson" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public.ST_GeomFromGeoJson($1::text)]]></definition>
+         <definition language="C"><![CDATA[geom_from_geojson]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_geomfromgml" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public._ST_GeomFromGML($1, 0)]]></definition>
+         <definition language="C"><![CDATA[geom_from_gml]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_geomfromkml" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -2717,11 +2888,11 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_geomfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public.ST_SetSRID(public.ST_GeomFromWKB($1), $2)]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_from_WKB]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_gmltosql" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[geom_from_gml]]></definition>
+         <definition language="SQL"><![CDATA[SELECT public._ST_GeomFromGML($1, 0)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_hasarc" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geomA - Tests if a geometry contains a circular arc]]></comment>
@@ -2729,7 +2900,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_hausdorffdistance" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g1, g2, densifyFrac - Returns the Hausdorff distance between two geometries.]]></comment>
-         <definition language="C"><![CDATA[hausdorffdistancedensify]]></definition>
+         <definition language="C"><![CDATA[hausdorffdistance]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_hexagon" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: size, cell_i, cell_j, origin - Returns a single hexagon, using the provided edge size and cell coordinate within the hexagon grid space.]]></comment>
@@ -2747,13 +2918,13 @@ END;
          <comment><![CDATA[args: line, point - Return the value of the measure dimension of a geometry at the point closed to the provided point.]]></comment>
          <definition language="C"><![CDATA[ST_InterpolatePoint]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_intersection" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, geomB, gridSize = -1 - Returns a geometry representing the shared portion of geometries A and B.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Intersection($1::public.geometry, $2::public.geometry);  ]]></definition>
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_intersection" returnType="geography" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="SQL"><![CDATA[SELECT public.geography(public.ST_Transform(public.ST_Intersection(public.ST_Transform(public.geometry($1), public._ST_BestSRID($1, $2)), public.ST_Transform(public.geometry($2), public._ST_BestSRID($1, $2))), 4326))]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_intersects" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Intersects($1::public.geometry, $2::public.geometry);  ]]></definition>
+         <definition language="C"><![CDATA[geography_intersects]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isclosed" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g - Tests if a LineStringss start and end points are coincident. For a PolyhedralSurface tests if it is closed (volumetric).]]></comment>
@@ -2785,27 +2956,23 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isvalid" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g, flags - Tests if a geometry is well-formed in 2D.]]></comment>
-         <definition language="C"><![CDATA[isvalid]]></definition>
+         <definition language="SQL"><![CDATA[SELECT (public.ST_isValidDetail($1, $2)).valid]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isvaliddetail" returnType="valid_detail" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geom, flags - Returns a valid_detail row stating if a geometry is valid, and if not a reason why and a location.]]></comment>
          <definition language="C"><![CDATA[isvaliddetail]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isvalidreason" returnType="text" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, flags - Returns text stating if a geometry is valid, or a reason for invalidity.]]></comment>
-         <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN valid THEN 'Valid Geometry' ELSE reason END FROM (
-		SELECT (public.ST_isValidDetail($1, $2)).*
-	) foo
-	]]></definition>
+         <comment><![CDATA[args: geomA - Returns text stating if a geometry is valid, or a reason for invalidity.]]></comment>
+         <definition language="C"><![CDATA[isvalidreason]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_isvalidtrajectory" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: line - Returns true if the geometry is a valid trajectory.]]></comment>
          <definition language="C"><![CDATA[ST_IsValidTrajectory]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_length" returnType="double precision" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geog, use_spheroid=true - Returns the 2D length of a linear geometry.]]></comment>
-         <definition language="SQL"><![CDATA[ SELECT public.ST_Length($1::public.geometry);  ]]></definition>
+         <comment/>
+         <definition language="C"><![CDATA[geography_length]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_length2d" returnType="double precision" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: a_2dlinestring - Returns the 2D length of a linear geometry. Alias for ST_Length]]></comment>
@@ -2834,16 +3001,16 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_linefromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = 'LINESTRING'
-	THEN public.ST_GeomFromText($1,$2)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1)) = 'LINESTRING'
+	THEN public.ST_GeomFromText($1)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_linefromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'LINESTRING'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'LINESTRING'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -2866,8 +3033,8 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_linestringfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'LINESTRING'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'LINESTRING'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -2907,8 +3074,8 @@ END;
          <comment><![CDATA[args: xmin, ymin, xmax, ymax, srid=unknown - Creates a rectangular Polygon from minimum and maximum coordinates.]]></comment>
          <definition language="C"><![CDATA[ST_MakeEnvelope]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_makeline" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom1, geom2 - Creates a Linestring from Point, MultiPoint, or LineString geometries.]]></comment>
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_makeline" returnType="geometry" securityType="INVOKER" type="AGGREGATE">
+         <comment><![CDATA[args: geoms - Creates a Linestring from Point, MultiPoint, or LineString geometries.]]></comment>
          <definition language="INTERNAL"><![CDATA[aggregate_dummy]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_makepoint" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -2966,48 +3133,49 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_mlinefromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1)) = 'MULTILINESTRING'
-	THEN public.ST_GeomFromText($1)
+	SELECT CASE
+	WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = 'MULTILINESTRING'
+	THEN public.ST_GeomFromText($1,$2)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_mlinefromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'MULTILINESTRING'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'MULTILINESTRING'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_mpointfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1)) = 'MULTIPOINT'
-	THEN public.ST_GeomFromText($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = 'MULTIPOINT'
+	THEN ST_GeomFromText($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_mpointfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'MULTIPOINT'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'MULTIPOINT'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_mpolyfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1)) = 'MULTIPOLYGON'
-	THEN public.ST_GeomFromText($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = 'MULTIPOLYGON'
+	THEN public.ST_GeomFromText($1,$2)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_mpolyfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'MULTIPOLYGON'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'MULTIPOLYGON'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -3025,7 +3193,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_multilinestringfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public.ST_MLineFromText($1, $2)]]></definition>
+         <definition language="SQL"><![CDATA[SELECT public.ST_MLineFromText($1)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_multipointfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -3034,22 +3202,22 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_multipointfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'MULTIPOINT'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1,$2)) = 'MULTIPOINT'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_multipolyfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'MULTIPOLYGON'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'MULTIPOLYGON'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_multipolygonfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public.ST_MPolyFromText($1)]]></definition>
+         <definition language="SQL"><![CDATA[SELECT public.ST_MPolyFromText($1, $2)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_ndims" returnType="smallint" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g1 - Returns the coordinate dimension of a geometry.]]></comment>
@@ -3138,16 +3306,16 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_pointfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = 'POINT'
-	THEN public.ST_GeomFromText($1, $2)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1)) = 'POINT'
+	THEN public.ST_GeomFromText($1)
 	ELSE NULL END
 	]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_pointfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'POINT'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1, $2)) = 'POINT'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -3170,8 +3338,8 @@ END;
       <routine dataAccess="MODIFIES" deterministic="true" name="st_polyfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = 'POLYGON'
-	THEN public.ST_GeomFromText($1, $2)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromText($1)) = 'POLYGON'
+	THEN public.ST_GeomFromText($1)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -3191,13 +3359,13 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_polygonfromtext" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="SQL"><![CDATA[SELECT public.ST_PolyFromText($1)]]></definition>
+         <definition language="SQL"><![CDATA[SELECT public.ST_PolyFromText($1, $2)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_polygonfromwkb" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment/>
          <definition language="SQL"><![CDATA[
-	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1)) = 'POLYGON'
-	THEN public.ST_GeomFromWKB($1)
+	SELECT CASE WHEN public.geometrytype(public.ST_GeomFromWKB($1,$2)) = 'POLYGON'
+	THEN public.ST_GeomFromWKB($1, $2)
 	ELSE NULL END
 	]]></definition>
       </routine>
@@ -3217,9 +3385,9 @@ END;
          <comment><![CDATA[args: g, gridsize - Returns a valid geometry with all points rounded to the provided grid tolerance.]]></comment>
          <definition language="C"><![CDATA[ST_ReducePrecision]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_relate" returnType="boolean" securityType="INVOKER" type="FUNCTION">
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_relate" returnType="text" securityType="INVOKER" type="FUNCTION">
          <comment/>
-         <definition language="C"><![CDATA[relate_pattern]]></definition>
+         <definition language="C"><![CDATA[relate_full]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_relatematch" returnType="boolean" securityType="INVOKER" type="FUNCTION">
          <comment/>
@@ -3238,8 +3406,8 @@ END;
          <definition language="C"><![CDATA[LWGEOM_reverse]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_rotate" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, rotRadians, x0, y0 - Rotates a geometry about an origin point.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT public.ST_Affine($1,  cos($2), -sin($2), 0,  sin($2),  cos($2), 0, 0, 0, 1, public.ST_X($3) - cos($2) * public.ST_X($3) + sin($2) * public.ST_Y($3), public.ST_Y($3) - sin($2) * public.ST_X($3) - cos($2) * public.ST_Y($3), 0)]]></definition>
+         <comment><![CDATA[args: geomA, rotRadians, pointOrigin - Rotates a geometry about an origin point.]]></comment>
+         <definition language="SQL"><![CDATA[SELECT public.ST_Affine($1,  cos($2), -sin($2), 0,  sin($2), cos($2), 0,  0, 0, 1,  0, 0, 0)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_rotatex" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geomA, rotRadians - Rotates a geometry about the X axis.]]></comment>
@@ -3254,8 +3422,8 @@ END;
          <definition language="SQL"><![CDATA[SELECT public.ST_Rotate($1, $2)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_scale" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, XFactor, YFactor, ZFactor - Scales a geometry by given factors.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT public.ST_Scale($1, $2, $3, 1)]]></definition>
+         <comment><![CDATA[args: geom, factor, origin - Scales a geometry by given factors.]]></comment>
+         <definition language="C"><![CDATA[ST_Scale]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_segmentize" returnType="geography" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geog, max_segment_length - Return a modified geometry/geography having no segment longer than the given distance.]]></comment>
@@ -3286,7 +3454,7 @@ END;
          <definition language="C"><![CDATA[LWGEOM_shortestline2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_simplify" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geomA, tolerance, preserveCollapsed - Returns a simplified version of a geometry, using the Douglas-Peucker algorithm.]]></comment>
+         <comment/>
          <definition language="C"><![CDATA[LWGEOM_simplify2d]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_simplifypreservetopology" returnType="geometry" securityType="INVOKER" type="FUNCTION">
@@ -3303,7 +3471,7 @@ END;
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_snaptogrid" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geomA, pointOrigin, sizeX, sizeY, sizeZ, sizeM - Snap all points of the input geometry to a regular grid.]]></comment>
-         <definition language="C"><![CDATA[LWGEOM_snaptogrid_pointoff]]></definition>
+         <definition language="C"><![CDATA[LWGEOM_snaptogrid]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_split" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: input, blade - Returns a collection of geometries created by splitting a geometry by another geometry.]]></comment>
@@ -3354,13 +3522,12 @@ END;
          <definition language="C"><![CDATA[touches]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_transform" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: geom, from_proj, to_proj - Return a new geometry with its coordinates transformed to a different spatial reference system.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT public.postgis_transform_geometry($1, $2, proj4text, $3)
-	FROM spatial_ref_sys WHERE srid=$3;]]></definition>
+         <comment><![CDATA[args: geom, from_proj, to_srid - Return a new geometry with its coordinates transformed to a different spatial reference system.]]></comment>
+         <definition language="C"><![CDATA[transform]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_translate" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g1, deltax, deltay, deltaz - Translates a geometry by given offsets.]]></comment>
-         <definition language="SQL"><![CDATA[SELECT public.ST_Translate($1, $2, $3, 0)]]></definition>
+         <definition language="SQL"><![CDATA[SELECT public.ST_Affine($1, 1, 0, 0, 0, 1, 0, 0, 0, 1, $2, $3, $4)]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_transscale" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: geomA, deltaX, deltaY, XFactor, YFactor - Translates and scales a geometry by given offsets and factors.]]></comment>
@@ -3371,9 +3538,9 @@ END;
          <comment><![CDATA[args: geom, gridSize = -1 - Computes the union of the components of a single geometry.]]></comment>
          <definition language="C"><![CDATA[ST_UnaryUnion]]></definition>
       </routine>
-      <routine dataAccess="MODIFIES" deterministic="true" name="st_union" returnType="geometry" securityType="INVOKER" type="FUNCTION">
-         <comment><![CDATA[args: g1, g2, gridSize - Returns a geometry representing the point-set union of the input geometries.]]></comment>
-         <definition language="INTERNAL"><![CDATA[aggregate_dummy]]></definition>
+      <routine dataAccess="MODIFIES" deterministic="true" name="st_union" returnType="geometry" securityType="INVOKER" type="AGGREGATE">
+         <comment><![CDATA[args: g1field, gridSize - Returns a geometry representing the point-set union of the input geometries.]]></comment>
+         <definition language="C"><![CDATA[ST_Union]]></definition>
       </routine>
       <routine dataAccess="MODIFIES" deterministic="true" name="st_voronoilines" returnType="geometry" securityType="INVOKER" type="FUNCTION">
          <comment><![CDATA[args: g1, tolerance, extend_to - Returns the boundaries of the Voronoi diagram of the vertices of a geometry.]]></comment>
@@ -3491,10 +3658,89 @@ END;
          <comment><![CDATA[args: catalog_name, schema_name, table_name, column_name, srid - Updates the SRID of all features in a geometry column, and the table metadata.]]></comment>
          <definition language="PLPGSQL"><![CDATA[
 DECLARE
-	ret  text;
+	myrec RECORD;
+	okay boolean;
+	cname varchar;
+	real_schema name;
+	unknown_srid integer;
+	new_srid integer := new_srid_in;
+
 BEGIN
-	SELECT public.UpdateGeometrySRID('','',$1,$2,$3) into ret;
-	RETURN ret;
+
+	-- Find, check or fix schema_name
+	IF ( schema_name != '' ) THEN
+		okay = false;
+
+		FOR myrec IN SELECT nspname FROM pg_namespace WHERE text(nspname) = schema_name LOOP
+			okay := true;
+		END LOOP;
+
+		IF ( okay <> true ) THEN
+			RAISE EXCEPTION 'Invalid schema name';
+		ELSE
+			real_schema = schema_name;
+		END IF;
+	ELSE
+		SELECT INTO real_schema current_schema()::text;
+	END IF;
+
+	-- Ensure that column_name is in geometry_columns
+	okay = false;
+	FOR myrec IN SELECT type, coord_dimension FROM public.geometry_columns WHERE f_table_schema = text(real_schema) and f_table_name = table_name and f_geometry_column = column_name LOOP
+		okay := true;
+	END LOOP;
+	IF (NOT okay) THEN
+		RAISE EXCEPTION 'column not found in geometry_columns table';
+		RETURN false;
+	END IF;
+
+	-- Ensure that new_srid is valid
+	IF ( new_srid > 0 ) THEN
+		IF ( SELECT count(*) = 0 from spatial_ref_sys where srid = new_srid ) THEN
+			RAISE EXCEPTION 'invalid SRID: % not found in spatial_ref_sys', new_srid;
+			RETURN false;
+		END IF;
+	ELSE
+		unknown_srid := public.ST_SRID('POINT EMPTY'::public.geometry);
+		IF ( new_srid != unknown_srid ) THEN
+			new_srid := unknown_srid;
+			RAISE NOTICE 'SRID value % converted to the officially unknown SRID value %', new_srid_in, new_srid;
+		END IF;
+	END IF;
+
+	IF postgis_constraint_srid(real_schema, table_name, column_name) IS NOT NULL THEN
+	-- srid was enforced with constraints before, keep it that way.
+        -- Make up constraint name
+        cname = 'enforce_srid_'  || column_name;
+
+        -- Drop enforce_srid constraint
+        EXECUTE 'ALTER TABLE ' || quote_ident(real_schema) ||
+            '.' || quote_ident(table_name) ||
+            ' DROP constraint ' || quote_ident(cname);
+
+        -- Update geometries SRID
+        EXECUTE 'UPDATE ' || quote_ident(real_schema) ||
+            '.' || quote_ident(table_name) ||
+            ' SET ' || quote_ident(column_name) ||
+            ' = public.ST_SetSRID(' || quote_ident(column_name) ||
+            ', ' || new_srid::text || ')';
+
+        -- Reset enforce_srid constraint
+        EXECUTE 'ALTER TABLE ' || quote_ident(real_schema) ||
+            '.' || quote_ident(table_name) ||
+            ' ADD constraint ' || quote_ident(cname) ||
+            ' CHECK (st_srid(' || quote_ident(column_name) ||
+            ') = ' || new_srid::text || ')';
+    ELSE
+        -- We will use typmod to enforce if no srid constraints
+        -- We are using postgis_type_name to lookup the new name
+        -- (in case Paul changes his mind and flips geometry_columns to return old upper case name)
+        EXECUTE 'ALTER TABLE ' || quote_ident(real_schema) || '.' || quote_ident(table_name) ||
+        ' ALTER COLUMN ' || quote_ident(column_name) || ' TYPE  geometry(' || public.postgis_type_name(myrec.type, myrec.coord_dimension, true) || ', ' || new_srid::text || ') USING public.ST_SetSRID(' || quote_ident(column_name) || ',' || new_srid::text || ');' ;
+    END IF;
+
+	RETURN real_schema || '.' || table_name || '.' || column_name ||' SRID changed to ' || new_srid::text;
+
 END;
 ]]></definition>
       </routine>
