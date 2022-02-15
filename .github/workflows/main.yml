@@ -35,7 +35,8 @@ jobs:
         path: |
           ~/.gradle
           ~/.m2
-        key: 3-${{ hashFiles('*.gradle.kts', 'gradle.properties') }}
+          node_modules
+        key: 4-${{ hashFiles('*.gradle.kts', 'gradle.properties', 'yarn.lock') }}
 
     # The build/test process is broken out into individual steps here so it's easier to watch
     # the progress of the build in the GitHub UI and so it's clearer what failed if the build
@@ -44,7 +45,7 @@ jobs:
     - name: Download dependencies
       run: |
         docker pull postgres:12
-        ./gradlew downloadDependencies
+        ./gradlew downloadDependencies yarn
 
     - name: Generate jOOQ classes
       run: ./gradlew generateJooqClasses

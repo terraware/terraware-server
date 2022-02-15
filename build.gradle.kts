@@ -1,3 +1,4 @@
+import com.github.gradle.node.yarn.task.YarnTask
 import com.terraformation.gradle.computeGitVersion
 import java.nio.file.Files
 import java.util.Properties
@@ -5,6 +6,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.utils.fileUtils.withReplacedExtensionOrNull
 import org.jooq.meta.jaxb.Strategy
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
@@ -26,6 +28,9 @@ plugins {
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
   id("org.springdoc.openapi-gradle-plugin") version "1.3.3"
+
+  // The MJML -> HTML translator for email messages is a Node.js utility.
+  id("com.github.node-gradle.node") version "3.0.1"
 }
 
 buildscript {
@@ -52,6 +57,8 @@ java {
     languageVersion.set(JavaLanguageVersion.of(17))
   }
 }
+
+node { yarnVersion.set("1.22.17") }
 
 repositories { mavenCentral() }
 
@@ -182,7 +189,55 @@ val generatePostgresDockerConfig by tasks.registering {
   }
 }
 
+// The MJML -> HTML translator can only operate on one file at a time if the source and target files
+// are in different directories, so we need to run it once per modified MJML file. But YarnTask only
+// lets us run a single command per Gradle task. Register a separate task for each MJML file.
+
+val processMjmlTasks = project.files(
+    fileTree("$projectDir/src/main/resources/templates/email") {
+      include("*/*.mjml")
+    })
+    .mapIndexed { index, mjmlFile ->
+      tasks.register<YarnTask>("compileMjml$index") {
+        // The upper levels of directory structure are a little different in the src and build
+        // directories; we want the following mapping:
+        //
+        // src/main/resources/templates/email/a/b.mjml ->
+        // build/resources/main/templates/email/a/b.html
+        val htmlFile =
+            buildDir
+                .resolve("resources/main")
+                .resolve(mjmlFile
+                    .withReplacedExtensionOrNull(".mjml", ".html")!!
+                    .relativeTo(File("$projectDir/src/main/resources")))
+
+        // Stop these tasks from appearing in "./gradlew tasks" output.
+        group = ""
+
+        dependsOn("yarn")
+
+        inputs.file(mjmlFile)
+        outputs.file(htmlFile)
+
+        args.set(
+            listOf(
+                "mjml",
+                "--config.minify",
+                "true",
+                "--config.beautify",
+                "false",
+                "-o",
+                "$htmlFile",
+                "$mjmlFile"))
+      }
+    }
+
 tasks {
+  processResources {
+    processMjmlTasks.forEach { dependsOn(it.get()) }
+    exclude("**/*.mjml")
+  }
+
   generateJooqClasses {
     basePackageName = "com.terraformation.backend.db"
     excludeFlywayTable = true
