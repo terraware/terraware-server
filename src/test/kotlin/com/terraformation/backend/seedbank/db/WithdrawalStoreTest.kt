@@ -59,13 +59,18 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
 
     // Insert a minimal accession in a state that allows withdrawals.
-    dslContext
-        .insertInto(ACCESSIONS)
-        .set(ACCESSIONS.ID, accessionId)
-        .set(ACCESSIONS.CREATED_TIME, Instant.now())
-        .set(ACCESSIONS.FACILITY_ID, facilityId)
-        .set(ACCESSIONS.STATE_ID, AccessionState.InStorage)
-        .execute()
+    with(ACCESSIONS) {
+      dslContext
+          .insertInto(ACCESSIONS)
+          .set(ID, accessionId)
+          .set(CREATED_BY, user.userId)
+          .set(CREATED_TIME, Instant.now())
+          .set(FACILITY_ID, facilityId)
+          .set(MODIFIED_BY, user.userId)
+          .set(MODIFIED_TIME, Instant.now())
+          .set(STATE_ID, AccessionState.InStorage)
+          .execute()
+    }
   }
 
   @Test

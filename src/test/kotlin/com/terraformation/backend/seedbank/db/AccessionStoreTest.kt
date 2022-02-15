@@ -200,7 +200,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         AccessionsRow(
             id = AccessionId(1),
             facilityId = facilityId,
+            createdBy = user.userId,
             createdTime = clock.instant(),
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
             number = accessionNumbers[0],
             stateId = AccessionState.AwaitingCheckIn),
         accessionsDao.fetchOneById(AccessionId(1)))
@@ -692,10 +695,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val locationName = "Test Location"
     storageLocationsDao.insert(
         StorageLocationsRow(
-            id = locationId,
+            conditionId = StorageCondition.Freezer,
+            createdBy = user.userId,
+            createdTime = clock.instant(),
             facilityId = facilityId,
-            name = locationName,
-            conditionId = StorageCondition.Freezer))
+            id = locationId,
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            name = locationName))
 
     val initial = store.create(AccessionModel(facilityId = facilityId))
     store.update(initial.copy(storageLocation = locationName))
@@ -724,9 +731,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val photosRow =
         PhotosRow(
             fileName = "photo.jpg",
+            createdBy = user.userId,
             createdTime = Instant.now(),
             capturedTime = Instant.now(),
             contentType = MediaType.IMAGE_JPEG_VALUE,
+            modifiedBy = user.userId,
             modifiedTime = Instant.now(),
             size = 123,
             storageUrl = URI("file:///photo.jpg"),
@@ -1085,7 +1094,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     (shouldMatch + shouldNotMatch).forEach { accession ->
-      accessionsDao.insert(accession.copy(createdTime = clock.instant(), facilityId = facilityId))
+      accessionsDao.insert(
+          accession.copy(
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              facilityId = facilityId,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant()))
     }
 
     val expected = shouldMatch.map { it.number!! }.toSortedSet()
@@ -1539,9 +1554,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     storageLocationsDao.insert(
         StorageLocationsRow(
+            conditionId = StorageCondition.Freezer,
+            createdBy = user.userId,
+            createdTime = clock.instant(),
             facilityId = facilityId,
-            name = storageLocationName,
-            conditionId = StorageCondition.Freezer))
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            name = storageLocationName))
 
     val initial = store.create(AccessionModel(facilityId = facilityId))
     val stored = store.updateAndFetch(update.toModel(initial.id!!))

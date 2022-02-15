@@ -134,7 +134,10 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             id = accessionId,
             number = accessionNumber,
             facilityId = facilityId,
+            createdBy = user.userId,
             createdTime = clock.instant(),
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
             stateId = AccessionState.Pending))
   }
 
@@ -157,7 +160,9 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             storageUrl = photoStorageUrl,
             gpsHorizAccuracy = accuracy.toDouble(),
             size = photoData.size.toLong(),
+            createdBy = user.userId,
             createdTime = uploadedTime,
+            modifiedBy = user.userId,
             modifiedTime = uploadedTime)
     val expectedAccessionPhoto = AccessionPhotosRow(accessionId = accessionId)
 
@@ -189,7 +194,9 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             storageUrl = URI("file:///$filename"),
             location = mercatorPoint(1.0, 2.0, 3.0),
             size = 1,
+            createdBy = user.userId,
             createdTime = uploadedTime,
+            modifiedBy = user.userId,
             modifiedTime = uploadedTime)
     photosDao.insert(photosRow)
 

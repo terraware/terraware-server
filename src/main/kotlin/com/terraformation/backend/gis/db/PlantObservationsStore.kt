@@ -8,7 +8,6 @@ import com.terraformation.backend.db.PlantObservationNotFoundException
 import com.terraformation.backend.db.tables.daos.PlantObservationsDao
 import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
-import java.lang.IllegalArgumentException
 import java.time.Clock
 import javax.annotation.ManagedBean
 
@@ -30,7 +29,13 @@ class PlantObservationsStore(
     }
 
     val currTime = clock.instant()
-    val result = row.copy(createdTime = currTime, modifiedTime = currTime)
+    val userId = currentUser().userId
+    val result =
+        row.copy(
+            createdBy = userId,
+            createdTime = currTime,
+            modifiedBy = userId,
+            modifiedTime = currTime)
     observDao.insert(result)
     return result
   }
@@ -74,7 +79,9 @@ class PlantObservationsStore(
     val result =
         row.copy(
             featureId = existingRow.featureId,
+            createdBy = existingRow.createdBy,
             createdTime = existingRow.createdTime,
+            modifiedBy = currentUser().userId,
             modifiedTime = clock.instant())
     observDao.update(result)
     return result

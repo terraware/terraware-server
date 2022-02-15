@@ -8,6 +8,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.TimeseriesType
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.tables.pojos.DevicesRow
@@ -16,6 +17,8 @@ import com.terraformation.backend.db.tables.pojos.TimeseriesValuesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import io.mockk.mockk
+import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -28,6 +31,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
+  private val clock: Clock = mockk()
   private lateinit var devicesDao: DevicesDao
   private lateinit var store: TimeseriesStore
   private lateinit var timeseriesDao: TimeseriesDao
@@ -35,30 +39,48 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   private val deviceId = DeviceId(1)
   private val facilityId = FacilityId(100)
 
-  private val timeseriesRow =
-      TimeseriesRow(
-          decimalPlaces = 2,
-          deviceId = deviceId,
-          name = "test",
-          typeId = TimeseriesType.Numeric,
-          units = "units",
-      )
+  private lateinit var timeseriesRow: TimeseriesRow
 
   @BeforeEach
   fun setUp() {
     devicesDao = DevicesDao(dslContext.configuration())
     timeseriesDao = TimeseriesDao(dslContext.configuration())
 
-    store = TimeseriesStore(dslContext)
+    store = TimeseriesStore(clock, dslContext)
 
     insertSiteData()
     devicesDao.insert(
-        DevicesRow(deviceId, facilityId, "device", "type", "make", "model", "protocol", "address"))
+        DevicesRow(
+            address = "address",
+            createdBy = user.userId,
+            deviceType = "type",
+            facilityId = facilityId,
+            id = deviceId,
+            make = "make",
+            model = "model",
+            modifiedBy = user.userId,
+            name = "device",
+            protocol = "protocol",
+        ))
 
+    every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateTimeseries(any()) } returns true
     every { user.canReadDevice(any()) } returns true
     every { user.canReadTimeseries(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
+
+    timeseriesRow =
+        TimeseriesRow(
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            decimalPlaces = 2,
+            deviceId = deviceId,
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            name = "test",
+            typeId = TimeseriesType.Numeric,
+            units = "units",
+        )
   }
 
   @Test
@@ -91,19 +113,29 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createOrUpdate updates existing timeseries with same name and device ID`() {
+    val otherUser = mockUser(UserId(3))
+    insertUser(otherUser.userId)
+    every { otherUser.canCreateTimeseries(any()) } returns true
+
     timeseriesDao.insert(timeseriesRow)
     val timeseriesId = timeseriesRow.id!!
 
+    every { clock.instant() } returns Instant.EPOCH.plusSeconds(60)
+
     val modified =
         TimeseriesRow(
+            createdBy = user.userId,
+            createdTime = Instant.EPOCH,
             decimalPlaces = 1000,
             deviceId = timeseriesRow.deviceId,
+            modifiedBy = otherUser.userId,
+            modifiedTime = clock.instant(),
             name = timeseriesRow.name,
             typeId = TimeseriesType.Text,
             units = "newUnits",
         )
 
-    val timeseriesIds = store.createOrUpdate(listOf(modified))
+    val timeseriesIds = otherUser.run { store.createOrUpdate(listOf(modified)) }
 
     assertEquals(1, timeseriesIds.size, "Number of IDs returned")
     assertEquals(timeseriesId, timeseriesIds.first(), "ID of modified row")

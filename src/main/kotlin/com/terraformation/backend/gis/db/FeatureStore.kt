@@ -82,7 +82,9 @@ class FeatureStore(
                 .set(ATTRIB, model.attrib)
                 .set(NOTES, model.notes)
                 .set(ENTERED_TIME, model.enteredTime)
+                .set(CREATED_BY, currentUser().userId)
                 .set(CREATED_TIME, currTime)
+                .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, currTime)
                 .returning(ID, GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
                 .fetchOne()
@@ -180,6 +182,7 @@ class FeatureStore(
                 .set(ATTRIB, newModel.attrib)
                 .set(NOTES, newModel.notes)
                 .set(ENTERED_TIME, newModel.enteredTime)
+                .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, currTime)
                 .where(ID.eq(featureId))
                 .returningResult(GEOM.transformSrid(SRID.LONG_LAT).`as`(GEOM))
@@ -238,6 +241,7 @@ class FeatureStore(
       throw FeatureNotFoundException(featureId)
     }
 
+    val createdBy = currentUser().userId
     val createdTime = clock.instant()
     val photoUrl = fileStore.newUrl(createdTime, "feature", contentType)
 
@@ -247,8 +251,10 @@ class FeatureStore(
       return dslContext.transactionResult { _ ->
         val sanitizedRow =
             photosRow.copy(
+                createdBy = createdBy,
                 createdTime = createdTime,
                 id = null,
+                modifiedBy = createdBy,
                 modifiedTime = createdTime,
                 storageUrl = photoUrl)
 

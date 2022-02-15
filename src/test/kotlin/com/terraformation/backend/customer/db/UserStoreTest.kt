@@ -10,10 +10,8 @@ import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
-import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -32,6 +30,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
@@ -130,7 +129,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByAuthId returns existing user without touching Keycloak`() {
-    insertUser()
+    insertUser(authId = authId)
 
     val actual = userStore.fetchByAuthId(authId)
 
@@ -146,20 +145,13 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByAuthId adds auth ID and name to existing user with matching email address`() {
-    val row =
-        UsersRow(
-            email = userRepresentation.email,
-            userTypeId = UserType.Individual,
-            createdTime = clock.instant(),
-            modifiedTime = clock.instant())
+    insertUser(authId = null, email = userRepresentation.email)
 
-    usersDao.insert(row)
+    val newUser = userStore.fetchByAuthId(authId)
 
-    val user = userStore.fetchByAuthId(authId)
+    assertEquals(user.userId, newUser.userId, "Should use existing user ID")
 
-    assertEquals(row.id, user.userId, "Should use existing user ID")
-
-    val updatedRow = usersDao.fetchOneById(user.userId)!!
+    val updatedRow = usersDao.fetchOneById(newUser.userId)!!
 
     assertEquals(userRepresentation.firstName, updatedRow.firstName, "First name")
     assertEquals(userRepresentation.lastName, updatedRow.lastName, "Last name")
@@ -180,7 +172,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByEmail returns existing user without touching Keycloak`() {
-    insertUser()
+    insertUser(email = userRepresentation.email)
 
     val actual = userStore.fetchByEmail(userRepresentation.email)
 
@@ -210,7 +202,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchOrCreateByEmail returns existing user`() {
-    insertUser()
+    insertUser(email = userRepresentation.email)
 
     val actual = userStore.fetchOrCreateByEmail(userRepresentation.email)
 
@@ -226,159 +218,169 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertNull(actual.authId)
   }
 
-  @Test
-  fun `createApiClient throws exception if user does not have permission to create clients`() {
-    every { user.canCreateApiKey(organizationId) } returns false
-
-    assertThrows<AccessDeniedException> { userStore.createApiClient(organizationId, "Description") }
-  }
-
-  @Test
-  fun `createApiClient registers user in Keycloak and adds it to organization`() {
-    insertOrganization(organizationId)
-
-    val description = "Description"
-    val user = userStore.createApiClient(organizationId, description)
-
-    val keycloakUser = usersResource.get(user.authId!!)!!.toRepresentation()
-    assertEquals(
-        description, keycloakUser.firstName, "Should use description as first name in Keycloak")
-    assertEquals(
-        "Organization $organizationId",
-        keycloakUser.lastName,
-        "Should use organization ID as last name in Keycloak")
-    assertEquals(
-        config.keycloak.apiClientUsernamePrefix,
-        keycloakUser.username.substring(0, config.keycloak.apiClientUsernamePrefix.length),
-        "Should include username prefix in Keycloak")
-    assertEquals(
-        listOf("/api-clients"),
-        keycloakUser.groups,
-        "Should add user to API clients group in Keycloak")
-
-    assertEquals(
-        mapOf(organizationId to Role.CONTRIBUTOR),
-        user.organizationRoles,
-        "Should grant contributor role to API client user")
-  }
-
-  @Test
-  fun `deleteApiClient removes user from Keycloak`() {
-    insertOrganization(organizationId)
-    val user = userStore.createApiClient(organizationId, null)
-    val authId = user.authId!!
-
-    assertNotNull(usersResource.get(authId), "User exists in Keycloak after creation")
-
-    userStore.deleteApiClient(user.userId)
-
-    assertNull(usersResource.get(authId), "User does not exist in Keycloak after deletion")
-  }
-
-  @Test
-  fun `deleteApiClient causes user to no longer be findable`() {
-    insertOrganization(organizationId)
-    val user = userStore.createApiClient(organizationId, null)
-
-    assertTrue(userStore.deleteApiClient(user.userId), "Deletion should have succeeded")
-
-    assertNull(userStore.fetchById(user.userId), "Looking up by user ID should fail")
-    assertNull(userStore.fetchByEmail(user.email), "Looking up by username should fail")
-    assertThrows<IllegalArgumentException>("Should not be able to generate token for user") {
-      userStore.generateOfflineToken(user.userId)
+  @Nested
+  inner class ApiClientTest {
+    @BeforeEach
+    fun setUpOrganization() {
+      insertUser()
+      insertOrganization(organizationId)
     }
-    assertThrows<KeycloakUserNotFoundException>("Looking up user by auth ID should fail") {
-      userStore.fetchByAuthId(user.authId!!)
+
+    @Test
+    fun `createApiClient throws exception if user does not have permission to create clients`() {
+      every { user.canCreateApiKey(organizationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        userStore.createApiClient(organizationId, "Description")
+      }
+    }
+
+    @Test
+    fun `createApiClient registers user in Keycloak and adds it to organization`() {
+      val description = "Description"
+      val newUser = userStore.createApiClient(organizationId, description)
+
+      val keycloakUser = usersResource.get(newUser.authId!!)!!.toRepresentation()
+      assertEquals(
+          description, keycloakUser.firstName, "Should use description as first name in Keycloak")
+      assertEquals(
+          "Organization $organizationId",
+          keycloakUser.lastName,
+          "Should use organization ID as last name in Keycloak")
+      assertEquals(
+          config.keycloak.apiClientUsernamePrefix,
+          keycloakUser.username.substring(0, config.keycloak.apiClientUsernamePrefix.length),
+          "Should include username prefix in Keycloak")
+      assertEquals(
+          listOf("/api-clients"),
+          keycloakUser.groups,
+          "Should add user to API clients group in Keycloak")
+
+      assertEquals(
+          mapOf(organizationId to Role.CONTRIBUTOR),
+          newUser.organizationRoles,
+          "Should grant contributor role to API client user")
+    }
+
+    @Test
+    fun `deleteApiClient removes user from Keycloak`() {
+      val user = userStore.createApiClient(organizationId, null)
+      val authId = user.authId!!
+
+      assertNotNull(usersResource.get(authId), "User exists in Keycloak after creation")
+
+      userStore.deleteApiClient(user.userId)
+
+      assertNull(usersResource.get(authId), "User does not exist in Keycloak after deletion")
+    }
+
+    @Test
+    fun `deleteApiClient causes user to no longer be findable`() {
+      val user = userStore.createApiClient(organizationId, null)
+
+      assertTrue(userStore.deleteApiClient(user.userId), "Deletion should have succeeded")
+
+      assertNull(userStore.fetchById(user.userId), "Looking up by user ID should fail")
+      assertNull(userStore.fetchByEmail(user.email), "Looking up by username should fail")
+      assertThrows<IllegalArgumentException>("Should not be able to generate token for user") {
+        userStore.generateOfflineToken(user.userId)
+      }
+      assertThrows<KeycloakUserNotFoundException>("Looking up user by auth ID should fail") {
+        userStore.fetchByAuthId(user.authId!!)
+      }
+    }
+
+    @Test
+    fun `deleteApiClient deletes user locally even if already deleted from Keycloak`() {
+      val user = userStore.createApiClient(organizationId, null)
+
+      usersResource.delete(user.authId)
+
+      assertTrue(userStore.deleteApiClient(user.userId), "Deletion should have succeeded")
+
+      assertNull(userStore.fetchById(user.userId), "User should not exist after deletion")
     }
   }
 
-  @Test
-  fun `deleteApiClient deletes user locally even if already deleted from Keycloak`() {
-    insertOrganization(organizationId)
-    val user = userStore.createApiClient(organizationId, null)
+  @Nested
+  inner class GenerateOfflineTokenTest {
+    @BeforeEach
+    fun setUpOrganization() {
+      insertUser()
+      insertOrganization(organizationId)
+    }
 
-    usersResource.delete(user.authId)
+    @Test
+    fun `generateOfflineToken does not work for individual users`() {
+      assertThrows<IllegalArgumentException> { userStore.generateOfflineToken(user.userId) }
+    }
 
-    assertTrue(userStore.deleteApiClient(user.userId), "Deletion should have succeeded")
+    @Test
+    fun `generateOfflineToken requests a token from Keycloak`() {
+      val user = userStore.createApiClient(organizationId, null)
+      val expectedToken = "token"
 
-    assertNull(userStore.fetchById(user.userId), "User should not exist after deletion")
-  }
+      val response: HttpResponse<String> = mockk()
+      val requestSlot = slot<HttpRequest>()
+      every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
+          response
+      every { response.statusCode() } returns 200
+      every { response.body() } returns """{"refresh_token":"$expectedToken","foo":"bar"}"""
 
-  @Test
-  fun `generateOfflineToken does not work for individual users`() {
-    val row = insertUser()
+      assertEquals(
+          expectedToken,
+          userStore.generateOfflineToken(user.userId),
+          "Should return refresh token from Keycloak")
+    }
 
-    assertThrows<IllegalArgumentException> { userStore.generateOfflineToken(row.id!!) }
-  }
+    @Test
+    fun `generateOfflineToken throws exception if Keycloak returns a malformed token response`() {
+      val user = userStore.createApiClient(organizationId, null)
 
-  @Test
-  fun `generateOfflineToken requests a token from Keycloak`() {
-    insertOrganization(organizationId)
-    val user = userStore.createApiClient(organizationId, null)
-    val expectedToken = "token"
+      val response: HttpResponse<String> = mockk()
+      val requestSlot = slot<HttpRequest>()
+      every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
+          response
+      every { response.statusCode() } returns 200
+      every { response.body() } returns """welcome to clowntown"""
 
-    val response: HttpResponse<String> = mockk()
-    val requestSlot = slot<HttpRequest>()
-    every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
-        response
-    every { response.statusCode() } returns 200
-    every { response.body() } returns """{"refresh_token":"$expectedToken","foo":"bar"}"""
+      assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
+    }
 
-    assertEquals(
-        expectedToken,
-        userStore.generateOfflineToken(user.userId),
-        "Should return refresh token from Keycloak")
-  }
+    @Test
+    fun `generateOfflineToken throws exception if Keycloak does not generate a token`() {
+      val user = userStore.createApiClient(organizationId, null)
 
-  @Test
-  fun `generateOfflineToken throws exception if Keycloak returns a malformed token response`() {
-    insertOrganization(organizationId)
-    val user = userStore.createApiClient(organizationId, null)
+      val response: HttpResponse<String> = mockk()
+      val requestSlot = slot<HttpRequest>()
+      every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
+          response
+      every { response.statusCode() } returns 200
+      every { response.body() } returns """{}"""
 
-    val response: HttpResponse<String> = mockk()
-    val requestSlot = slot<HttpRequest>()
-    every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
-        response
-    every { response.statusCode() } returns 200
-    every { response.body() } returns """welcome to clowntown"""
+      assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
+    }
 
-    assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
-  }
+    @Test
+    fun `generateOfflineToken generates a temporary password and removes it if token creation fails`() {
+      val user = userStore.createApiClient(organizationId, null)
+      val keycloakUser = usersResource.get(user.authId!!)!!
 
-  @Test
-  fun `generateOfflineToken throws exception if Keycloak does not generate a token`() {
-    insertOrganization(organizationId)
-    val user = userStore.createApiClient(organizationId, null)
+      val response: HttpResponse<String> = mockk()
+      every { httpClient.send(any(), any<HttpResponse.BodyHandler<*>>()) } returns response
+      every { response.statusCode() } returns 500
+      every { response.body() } returns "body"
 
-    val response: HttpResponse<String> = mockk()
-    val requestSlot = slot<HttpRequest>()
-    every { httpClient.send(capture(requestSlot), any<HttpResponse.BodyHandler<*>>()) } returns
-        response
-    every { response.statusCode() } returns 200
-    every { response.body() } returns """{}"""
+      assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
 
-    assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
-  }
+      // Expected behavior is that we have asked Keycloak to reset the user's password, then asked
+      // it
+      // to remove the password.
+      verify { keycloakUser.resetPassword(any()) }
+      verify { keycloakUser.removeCredential(any()) }
 
-  @Test
-  fun `generateOfflineToken generates a temporary password and removes it if token creation fails`() {
-    insertOrganization(organizationId)
-    val user = userStore.createApiClient(organizationId, null)
-    val keycloakUser = usersResource.get(user.authId!!)!!
-
-    val response: HttpResponse<String> = mockk()
-    every { httpClient.send(any(), any<HttpResponse.BodyHandler<*>>()) } returns response
-    every { response.statusCode() } returns 500
-    every { response.body() } returns "body"
-
-    assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
-
-    // Expected behavior is that we have asked Keycloak to reset the user's password, then asked it
-    // to remove the password.
-    verify { keycloakUser.resetPassword(any()) }
-    verify { keycloakUser.removeCredential(any()) }
-
-    assertTrue(usersResource.credentials.isEmpty(), "Credentials should have been removed")
+      assertTrue(usersResource.credentials.isEmpty(), "Credentials should have been removed")
+    }
   }
 
   @Test
@@ -386,7 +388,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     val newFirstName = "Testy"
     val newLastName = "McTestalot"
 
-    insertUser()
+    insertUser(authId = userRepresentation.id, email = userRepresentation.email)
 
     val oldEmail = userRepresentation.email
     val model = userStore.fetchByEmail(oldEmail)!!
@@ -414,31 +416,12 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateUser does not allow updating other users`() {
-    insertUser()
+    insertUser(email = userRepresentation.email)
 
     every { user.userId } returns UserId(12345678)
 
     val model = userStore.fetchByEmail(userRepresentation.email)!!
 
     assertThrows<AccessDeniedException> { userStore.updateUser(model) }
-  }
-
-  private fun insertUser(
-      representation: UserRepresentation = userRepresentation,
-      userType: UserType = UserType.Individual
-  ): UsersRow {
-    val row =
-        UsersRow(
-            authId = representation.id,
-            email = representation.email,
-            firstName = representation.firstName,
-            lastName = representation.lastName,
-            userTypeId = userType,
-            createdTime = clock.instant(),
-            modifiedTime = clock.instant())
-
-    usersDao.insert(row)
-
-    return row
   }
 }

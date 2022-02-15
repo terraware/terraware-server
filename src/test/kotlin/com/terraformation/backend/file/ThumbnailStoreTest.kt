@@ -1,5 +1,7 @@
 package com.terraformation.backend.file
 
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ThumbnailId
@@ -7,6 +9,7 @@ import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
+import com.terraformation.backend.mockUser
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.justRun
@@ -34,7 +37,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.MediaType
 
-internal class ThumbnailStoreTest : DatabaseTest() {
+internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
+  override val user: TerrawareUser = mockUser()
   private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
   private val fileStore: FileStore = mockk()
 
@@ -56,12 +60,15 @@ internal class ThumbnailStoreTest : DatabaseTest() {
 
     store = ThumbnailStore(clock, dslContext, fileStore, photosDao, thumbnailsDao)
 
+    insertUser()
     photosDao.insert(
         PhotosRow(
             id = photoId,
             capturedTime = clock.instant(),
             contentType = MediaType.IMAGE_JPEG_VALUE,
+            createdBy = user.userId,
             createdTime = clock.instant(),
+            modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             size = 1,
             fileName = "test.jpg",

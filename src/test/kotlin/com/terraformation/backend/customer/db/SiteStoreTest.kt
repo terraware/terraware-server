@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
@@ -63,11 +64,21 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
             timezone = "US/Hawaii",
         )
 
-    store.update(edits)
+    val newUserId = UserId(3)
+    insertUser(newUserId)
 
     val expected =
         edits.copy(
-            projectId = projectId, createdTime = Instant.EPOCH, modifiedTime = clock.instant())
+            projectId = projectId,
+            createdBy = user.userId,
+            createdTime = Instant.EPOCH,
+            modifiedBy = newUserId,
+            modifiedTime = clock.instant())
+
+    every { user.userId } returns newUserId
+
+    store.update(edits)
+
     val actual = sitesDao.fetchOneById(siteId)!!
 
     assertEquals(expected, actual)

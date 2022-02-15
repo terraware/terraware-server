@@ -1,5 +1,6 @@
 package com.terraformation.backend.species.db
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
@@ -61,7 +62,9 @@ class SpeciesStore(
       // the existing species ID.
       speciesOptionsDao.insert(
           SpeciesOptionsRow(
+              createdBy = currentUser().userId,
               createdTime = clock.instant(),
+              modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               organizationId = organizationId,
               speciesId = existingId))
@@ -197,9 +200,11 @@ class SpeciesStore(
 
             speciesNamesDao.insert(
                 SpeciesNamesRow(
+                    createdBy = currentUser().userId,
                     createdTime = clock.instant(),
                     isScientific = row.isScientific,
                     name = row.name,
+                    modifiedBy = currentUser().userId,
                     modifiedTime = clock.instant(),
                     organizationId = organizationId,
                     speciesId = newId))
@@ -209,7 +214,9 @@ class SpeciesStore(
 
       speciesOptionsDao.insert(
           SpeciesOptionsRow(
+              createdBy = currentUser().userId,
               createdTime = clock.instant(),
+              modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               organizationId = organizationId,
               speciesId = speciesId))
@@ -273,8 +280,9 @@ class SpeciesStore(
             dslContext
                 .update(SPECIES_NAMES)
                 .set(SPECIES_NAMES.IS_SCIENTIFIC, row.isScientific)
-                .set(SPECIES_NAMES.NAME, row.name)
+                .set(SPECIES_NAMES.MODIFIED_BY, currentUser().userId)
                 .set(SPECIES_NAMES.MODIFIED_TIME, clock.instant())
+                .set(SPECIES_NAMES.NAME, row.name)
                 .where(SPECIES_NAMES.SPECIES_ID.eq(speciesId))
                 .and(SPECIES_NAMES.NAME.eq(existing.name))
                 .and(SPECIES_NAMES.ORGANIZATION_ID.eq(organizationId))
@@ -342,7 +350,13 @@ class SpeciesStore(
 
     requirePermissions { createSpeciesName(organizationId) }
 
-    val newRow = row.copy(id = null, createdTime = clock.instant(), modifiedTime = clock.instant())
+    val newRow =
+        row.copy(
+            id = null,
+            createdBy = currentUser().userId,
+            createdTime = clock.instant(),
+            modifiedBy = currentUser().userId,
+            modifiedTime = clock.instant())
     speciesNamesDao.insert(newRow)
 
     return newRow.id!!
@@ -424,6 +438,7 @@ class SpeciesStore(
           existingNamesRow.copy(
               isScientific = row.isScientific,
               locale = row.locale,
+              modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               name = row.name))
 

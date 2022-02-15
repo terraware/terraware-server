@@ -103,9 +103,11 @@ class ProjectStore(
 
     val projectsRow =
         ProjectsRow(
+            createdBy = currentUser().userId,
             createdTime = clock.instant(),
             description = description,
             hidden = hidden,
+            modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
             organizationId = organizationId,
@@ -142,6 +144,7 @@ class ProjectStore(
         dslContext
             .update(PROJECTS)
             .set(DESCRIPTION, description)
+            .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .set(NAME, name)
             .set(START_DATE, startDate)
@@ -202,7 +205,9 @@ class ProjectStore(
             .insertInto(PROJECT_USERS)
             .set(PROJECT_ID, projectId)
             .set(USER_ID, userId)
+            .set(CREATED_BY, currentUser().userId)
             .set(CREATED_TIME, clock.instant())
+            .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .execute()
       }

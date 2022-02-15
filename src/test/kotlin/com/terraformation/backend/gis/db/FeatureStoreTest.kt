@@ -1,6 +1,7 @@
 package com.terraformation.backend.gis.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FeatureId
@@ -351,7 +352,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             id = plantObservationId,
             featureId = feature.id,
             timestamp = time1,
+            createdBy = user.userId,
             createdTime = time1,
+            modifiedBy = user.userId,
             modifiedTime = time1))
     photosDao.insert(
         PhotosRow(
@@ -361,7 +364,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             storageUrl = storageUrl,
             contentType = "jpeg",
             size = 1000,
+            createdBy = user.userId,
             createdTime = time1,
+            modifiedBy = user.userId,
             modifiedTime = time1))
     featurePhotosDao.insert(
         FeaturePhotosRow(
@@ -404,7 +409,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             id = plantObservationId,
             featureId = feature.id,
             timestamp = time1,
+            createdBy = currentUser().userId,
             createdTime = time1,
+            modifiedBy = currentUser().userId,
             modifiedTime = time1))
     photosDao.insert(
         PhotosRow(
@@ -414,7 +421,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
             storageUrl = storageUrl,
             contentType = "jpeg",
             size = 1000,
+            createdBy = currentUser().userId,
             createdTime = time1,
+            modifiedBy = currentUser().userId,
             modifiedTime = time1))
     featurePhotosDao.insert(
         FeaturePhotosRow(
@@ -506,8 +515,13 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         photosRow.copy(
-            id = photoId, createdTime = null, modifiedTime = null, storageUrl = storageUrl),
-        actualPhotosRow?.copy(createdTime = null, modifiedTime = null))
+            id = photoId,
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            storageUrl = storageUrl),
+        actualPhotosRow)
   }
 
   @Test
@@ -679,7 +693,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     val photosRow =
         PhotosRow(
             capturedTime = Instant.EPOCH,
-            createdTime = Instant.EPOCH,
+            createdBy = currentUser().userId,
+            createdTime = time1,
+            modifiedBy = currentUser().userId,
             contentType = MediaType.IMAGE_JPEG_VALUE,
             fileName = "foo",
             modifiedTime = Instant.EPOCH,

@@ -20,6 +20,8 @@ class LayerStore(
     requirePermissions { createLayer(layerModel.siteId) }
 
     val currTime = clock.instant()
+    val userId = currentUser().userId
+
     val layerID =
         dslContext
             .insertInto(LAYERS)
@@ -29,7 +31,9 @@ class LayerStore(
             .set(LAYERS.PROPOSED, layerModel.proposed)
             .set(LAYERS.HIDDEN, layerModel.hidden)
             .set(LAYERS.DELETED, false)
+            .set(LAYERS.CREATED_BY, userId)
             .set(LAYERS.CREATED_TIME, currTime)
+            .set(LAYERS.MODIFIED_BY, userId)
             .set(LAYERS.MODIFIED_TIME, currTime)
             .returning(LAYERS.ID)
             .fetchOne()
@@ -169,6 +173,7 @@ class LayerStore(
         .set(LAYERS.TILE_SET_NAME, layerModel.tileSetName)
         .set(LAYERS.PROPOSED, layerModel.proposed)
         .set(LAYERS.HIDDEN, layerModel.hidden)
+        .set(LAYERS.MODIFIED_BY, currentUser().userId)
         .set(LAYERS.MODIFIED_TIME, currTime)
         .where(LAYERS.ID.eq(layerId))
         .execute()
@@ -187,6 +192,7 @@ class LayerStore(
     dslContext
         .update(LAYERS)
         .set(LAYERS.DELETED, true)
+        .set(LAYERS.MODIFIED_BY, currentUser().userId)
         .set(LAYERS.MODIFIED_TIME, currTime)
         .where(LAYERS.ID.eq(layer.id))
         .execute()

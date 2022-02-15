@@ -184,7 +184,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "oldName"))
     val newName =
         SpeciesNamesRow(
+            createdBy = user.userId,
             createdTime = clock.instant(),
+            modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             name = "newName",
             organizationId = organizationId,
@@ -257,7 +259,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "dummy"))
     speciesNamesDao.insert(
         SpeciesNamesRow(
+            createdBy = user.userId,
             createdTime = clock.instant(),
+            modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             organizationId = organizationId,
             speciesId = speciesId,
@@ -307,7 +311,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val primaryNameOnly = speciesNamesDao.findAll()
     val nameRow =
         SpeciesNamesRow(
+            createdBy = user.userId,
             createdTime = clock.instant(),
+            modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             name = "secondary",
             organizationId = organizationId,
@@ -325,7 +331,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "dummy"))
     val nameRow =
         SpeciesNamesRow(
+            createdBy = user.userId,
             createdTime = clock.instant(),
+            modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             name = "secondary",
             organizationId = organizationId,

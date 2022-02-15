@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
@@ -60,9 +61,11 @@ class PhotoRepository(
                 capturedTime = metadata.capturedTime,
                 contentType = metadata.contentType,
                 createdTime = clock.instant(),
+                createdBy = currentUser().userId,
                 fileName = metadata.filename,
                 gpsHorizAccuracy = metadata.gpsAccuracy?.toDouble(),
                 location = metadata.location,
+                modifiedBy = currentUser().userId,
                 modifiedTime = clock.instant(),
                 size = size,
                 storageUrl = photoUrl,
