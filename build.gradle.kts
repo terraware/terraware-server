@@ -19,7 +19,7 @@ plugins {
   // kotlin("kapt")
 
   id("com.revolut.jooq-docker") version "0.3.5"
-  id("com.diffplug.spotless") version "6.0.4"
+  id("com.diffplug.spotless") version "6.2.2"
   id("org.springframework.boot") version "2.6.1"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
