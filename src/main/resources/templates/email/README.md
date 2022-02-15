@@ -4,7 +4,7 @@ This directory contains templates for server-generated email messages. Each temp
 
 There are two versions of each email message: a plaintext version and an HTML version.
 
-`body.txt` is the plaintext version. It may be edited directly.
+`body.txt` is the plaintext version.
 
 `body.mjml` is the source for the HTML version. It isn't actual HTML; the HTML is generated from [MJML](https://mjml.io/).
 
