@@ -93,7 +93,7 @@ class EmailService(
     val message = sender.createMimeMessage()
     val helper = MimeMessageHelper(message, true)
 
-    val webAppUrl = "${config.webAppUrl}"
+    val webAppUrl = "${config.webAppUrl}".trimEnd('/')
 
     val replacements =
         mapOf(

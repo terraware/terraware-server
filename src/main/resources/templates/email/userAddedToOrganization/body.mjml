@@ -75,10 +75,7 @@
 
     <mj-body>
         <mj-hero>
-            <mj-image
-                mj-class="logo-img"
-                src="https://assets-global.website-files.com/600f0cac30d70b8364793d7c/6063c7a4481fbc56adb6db1d_logo_terraformation.svg"
-            >
+            <mj-image mj-class="logo-img" src="${webAppUrl}/assets/logo-terraformation.svg">
             </mj-image>
         </mj-hero>
 
@@ -94,7 +91,7 @@
                     Please click the button below to go to your Terraware account where you can view
                     the organization.</mj-text
                 >
-                <mj-button mj-class="btn-productive-primary-md" href="${webAppUrl}"
+                <mj-button mj-class="btn-productive-primary-md" href="${webAppUrl}/"
                     >Go to Terraware</mj-button
                 >
             </mj-column>
@@ -108,35 +105,35 @@
                         mj-class="social-icons"
                         href="https://twitter.com/TF_Global"
                         title="Twitter"
-                        src="https://i.imgur.com/cAq50Gu.png"
+                        src="${webAppUrl}/assets/social-twitter.png"
                     >
                     </mj-social-element>
                     <mj-social-element
                         mj-class="social-icons"
                         href="https://www.linkedin.com/company/terraformation"
                         title="LinkedIn"
-                        src="https://i.imgur.com/XIAJiSK.png"
+                        src="${webAppUrl}/assets/social-linkedin.png"
                     >
                     </mj-social-element>
                     <mj-social-element
                         mj-class="social-icons"
                         href="https://www.instagram.com/globalterraform/"
                         title="Instagram"
-                        src="https://i.imgur.com/DZEyc92.png"
+                        src="${webAppUrl}/assets/social-instagram.png"
                     >
                     </mj-social-element>
                     <mj-social-element
                         mj-class="social-icons"
                         href="https://www.facebook.com/GlobalTerraform/"
                         title="Facebook"
-                        src="https://i.imgur.com/43MGzNO.png"
+                        src="${webAppUrl}/assets/social-facebook.png"
                     >
                     </mj-social-element>
                     <mj-social-element
                         mj-class="social-icons"
                         href="https://terraformation.com"
                         title="Website"
-                        src="https://i.imgur.com/Yd2awDz.png"
+                        src="${webAppUrl}/assets/globe.png"
                     >
                     </mj-social-element>
                 </mj-social>
