@@ -18,7 +18,11 @@ digraph "twoDegreesRelationshipsDiagram" {
   edge [
     arrowsize="0.8"
   ];
+  "devices":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "devices":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "timeseries":"created_by":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries":"device_id":w -> "devices":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "timeseries":"modified_by":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries":"type_id":w -> "timeseries_types":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries_values":"elipses":w -> "timeseries":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "devices" [
@@ -26,7 +30,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>devices</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/devices.html"
     target="_top"
@@ -40,8 +44,10 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">type_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="device_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">device_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/timeseries.html"
     target="_top"
@@ -69,5 +75,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/timeseries_values.html"
     target="_top"
     tooltip="timeseries_values"
+  ];
+  "users" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">37 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/users.html"
+    target="_top"
+    tooltip="users"
   ];
 }

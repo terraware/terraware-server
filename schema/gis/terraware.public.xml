@@ -38,6 +38,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="geom" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="features_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -87,6 +89,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="deleted" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="layers_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -104,6 +108,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="country_subdivision_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="organization_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -123,11 +129,12 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="size" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="17" id="10" name="gps_horiz_accuracy" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <column autoUpdated="false" defaultValue="null" digits="17" id="11" name="gps_vert_accuracy" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="location" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="photos_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -156,6 +163,8 @@
          <column autoUpdated="false" defaultValue="null" digits="17" id="8" name="dbh" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="plant_observations_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -198,6 +207,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pm_user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="organization_wide" nullable="false" remarks="If true, the project is accessible to the entire organization. If true, the project is only accessible to users who are added to it." size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="false" digits="0" id="13" name="hidden" nullable="false" remarks="If true, the project and its associated sites and facilities should not be displayed to end users." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -218,6 +229,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_pkey" unique="true">
             <column ascending="true" name="id"/>

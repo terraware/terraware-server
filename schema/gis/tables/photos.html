@@ -277,7 +277,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="user_id">user_id</span></td>
+                                    <td><span id="created_by">created_by</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title='nullable'>√</td>
@@ -361,6 +361,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="modified_by">modified_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -420,12 +437,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>content_type_cannot_be_empty_string</td>
-                                    <td>((length(content_type) &gt; 0))</td>
-                                </tr>
-                                <tr>
                                     <td>file_name_cannot_be_empty_string</td>
                                     <td>((length(file_name) &gt; 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>content_type_cannot_be_empty_string</td>
+                                    <td>((length(content_type) &gt; 0))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -451,17 +468,17 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/feature_photos.html" target="_top" title="feature_photos" alt="" coords="429,5,644,157">
-<area shape="rect" id="node2" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,101,385,581">
+<area shape="rect" id="node2" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,101,385,611">
 <area shape="rect" id="node3" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="449,175,624,409">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/photos.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/feature_photos.html" target="_top" title="feature_photos" alt="" coords="429,497,644,649">
-<area shape="rect" id="node2" href="../../tables/features.html" target="_top" title="features" alt="" coords="120,529,271,617">
-<area shape="rect" id="node3" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,32,385,512">
-<area shape="rect" id="node4" href="../../tables/plant_observations.html" target="_top" title="plant_observations" alt="" coords="80,635,311,723">
+<area shape="rect" id="node1" href="../../tables/feature_photos.html" target="_top" title="feature_photos" alt="" coords="429,527,644,679">
+<area shape="rect" id="node2" href="../../tables/features.html" target="_top" title="features" alt="" coords="120,559,271,647">
+<area shape="rect" id="node3" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="5,32,385,541">
+<area shape="rect" id="node4" href="../../tables/plant_observations.html" target="_top" title="plant_observations" alt="" coords="80,664,311,752">
 <area shape="rect" id="node5" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="449,5,624,240">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/photos.2degrees.svg" class="diagram" border="0" align="left"></object></a>

@@ -1,6 +1,8 @@
 species_endangered_types
 species_options
 species_names
+sites
+projects
 species
 rare_types
 plant_forms

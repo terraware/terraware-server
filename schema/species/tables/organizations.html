@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="projects.organization_id references organizations.id via projects_organization_id_fkey"><a href='projects.html'>projects</a><span class='relatedKey'>.organization_id</span></td>
+                                                <td class="constraint detail">projects_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="species_names.organization_id references organizations.id via species_names_organization_id_fkey"><a href='species_names.html'>species_names</a><span class='relatedKey'>.organization_id</span></td>
                                                 <td class="constraint detail">species_names_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -259,6 +263,40 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="created_by">created_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="modified_by">modified_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -338,18 +376,21 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="447,5,645,211">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,172,400,476">
-<area shape="rect" id="node3" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="444,228,648,404">
+<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="449,5,643,152">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,225,400,588">
+<area shape="rect" id="node3" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="447,169,645,375">
+<area shape="rect" id="node4" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="444,392,648,568">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/organizations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="447,5,645,211">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,248,400,552">
-<area shape="rect" id="node3" href="../../tables/species.html" target="_top" title="species" alt="" coords="132,108,273,196">
-<area shape="rect" id="node4" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="444,228,648,404">
+<area shape="rect" id="node1" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="449,421,643,568">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,255,400,617">
+<area shape="rect" id="node3" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="692,424,817,512">
+<area shape="rect" id="node4" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="447,199,645,404">
+<area shape="rect" id="node5" href="../../tables/species.html" target="_top" title="species" alt="" coords="132,93,273,181">
+<area shape="rect" id="node6" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="444,5,648,181">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/organizations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

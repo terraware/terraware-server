@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Thu Feb 10 23:38 GMT 2022</p>
+                                <p>Generated on Tue Feb 15 18:06 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">369</span>
+                                    <span class="info-box-number">407</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">87</span>
+                                    <span class="info-box-number">120</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -202,8 +202,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/storage_locations.html">storage_locations</a></td>
                                         <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">9</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>The available locations where seeds can be stored at a seed bank facility.</p></td>
@@ -263,15 +263,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of users. Most users are of type 1, &ldquo;Individual.&rdquo;</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_options.html">species_options</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>species</code> and <code>organizations</code> that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_statuses.html">project_statuses</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -279,6 +270,15 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of projects recognized by the application.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/species_options.html">species_options</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>species</code> and <code>organizations</code> that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_states.html">accession_states</a></td>
@@ -319,8 +319,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/organizations.html">organizations</a></td>
                                         <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Top-level information about organizations.</p></td>
@@ -355,8 +355,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/photos.html">photos</a></td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">14</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">15</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Generic information about individual photos. Photos are associated with application entities using linking tables such as <code>feature_photos</code>.</p></td>
@@ -373,8 +373,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_users.html">project_users</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">6</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>projects</code> and <code>users</code> defining which users are allowed to access which projects.</p></td>
@@ -400,8 +400,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accessions.html">accessions</a></td>
                                         <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">14</td>
-                                        <td class="detail" align="right">53</td>
+                                        <td class="detail" align="right">16</td>
+                                        <td class="detail" align="right">56</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people.</p></td>
@@ -409,8 +409,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/layers.html">layers</a></td>
                                         <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">11</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Map layers. Each layer has features of a particular type, e.g., irrigation infrastructure or existing vegetation at a site.</p></td>
@@ -471,7 +471,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/users.html">users</a></td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">37</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">9</td>
                                         <td class="detail" align="right">1</td>
@@ -508,8 +508,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/plant_observations.html">plant_observations</a></td>
                                         <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">11</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">13</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Observations of a particular plant. A single plant can be observed repeatedly over time.</p></td>
@@ -535,8 +535,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/automations.html">automations</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">9</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Configuration of automatic processes run by the device manager.</p></td>
@@ -571,8 +571,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/sites.html">sites</a></td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">12</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Physical locations where facilities are located or plants are being tracked.</p></td>
@@ -634,8 +634,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/organization_users.html">organization_users</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Organization membership and role information.</p></td>
@@ -652,8 +652,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/projects.html">projects</a></td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">14</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">16</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about a single restoration project. A project can span multiple sites.</p></td>
@@ -661,8 +661,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/facilities.html">facilities</a></td>
                                         <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">11</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Physical locations at a site. For example, each seed bank and each nursery is a facility.</p></td>
@@ -688,8 +688,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/features.html">features</a></td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">12</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Physical features that appear on a map. For example, an individual tree whose location is being tracked is a map feature. This table only has generic information; child tables such as <code>plants</code> have more information about particular kinds of features.</p></td>
@@ -733,8 +733,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/devices.html">devices</a></td>
                                         <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">13</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">15</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Hardware devices managed by the device manager at a facility.</p></td>
@@ -760,8 +760,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/species_names.html">species_names</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
@@ -769,8 +769,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries.html">timeseries</a></td>
                                         <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Properties of a series of values collected from a device. Each device metric is represented as a timeseries.</p></td>

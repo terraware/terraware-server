@@ -191,6 +191,48 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="created_by">created_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="project_users.created_by references users.id via project_users_created_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">project_users_created_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="modified_by">modified_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="project_users.modified_by references users.id via project_users_modified_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">project_users_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -244,23 +286,24 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="476,5,781,192">
-<area shape="rect" id="node2" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="237,60,432,265">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,65,193,271">
+<area shape="rect" id="node1" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="476,97,781,342">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,183,193,389">
+<area shape="rect" id="node3" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="237,51,432,315">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/project_users.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="471,277,697,365">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="227,195,415,283">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="227,300,415,505">
-<area shape="rect" id="node9" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,391,172,479">
-<area shape="rect" id="node4" href="../../tables/project_type_selections.html" target="_top" title="project_type_selections" alt="" coords="762,111,1026,199">
-<area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="487,55,681,260">
-<area shape="rect" id="node7" href="../../tables/project_statuses.html" target="_top" title="project_statuses" alt="" coords="216,89,427,177">
-<area shape="rect" id="node6" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="741,277,1047,464">
-<area shape="rect" id="node8" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="825,5,963,93">
+<area shape="rect" id="node1" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1323,28,1475,116">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,226,404,432">
+<area shape="rect" id="node3" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="1057,109,1195,197">
+<area shape="rect" id="node10" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,317,172,405">
+<area shape="rect" id="node7" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="719,266,913,530">
+<area shape="rect" id="node4" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="703,161,929,249">
+<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="459,229,647,317">
+<area shape="rect" id="node6" href="../../tables/project_type_selections.html" target="_top" title="project_type_selections" alt="" coords="994,269,1258,357">
+<area shape="rect" id="node9" href="../../tables/project_statuses.html" target="_top" title="project_statuses" alt="" coords="448,334,659,422">
+<area shape="rect" id="node8" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="973,428,1279,673">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/project_users.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

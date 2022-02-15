@@ -14,6 +14,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="configuration" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="automations_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -44,6 +46,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="parent_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="device_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -65,6 +69,8 @@
          <column autoUpdated="false" defaultValue="true" digits="0" id="6" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -96,6 +102,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="country_subdivision_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="organization_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -121,6 +129,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pm_user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="organization_wide" nullable="false" remarks="If true, the project is accessible to the entire organization. If true, the project is only accessible to users who are added to it." size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="false" digits="0" id="13" name="hidden" nullable="false" remarks="If true, the project and its associated sites and facilities should not be displayed to end users." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -141,6 +151,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -159,6 +171,10 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="units" nullable="true" remarks="For numeric timeseries, the units represented by the values; unit names should be short (possibly abbreviations) and in the default language of the site." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="decimal_places" nullable="true" remarks="For numeric timeseries, the number of digits after the decimal point to display." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="timeseries_pkey" unique="true">
             <column ascending="true" name="id"/>

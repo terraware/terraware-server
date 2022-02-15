@@ -103,8 +103,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="remaining_units_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">remaining_units_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="subset_weight_units_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">subset_weight_units_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="total_units_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">total_units_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 14</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 16</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/accessions.html"
     target="_top"
@@ -137,8 +139,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="facility_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">facility_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/automations.html"
     target="_top"
@@ -214,8 +218,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="facility_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">facility_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="parent_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">parent_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/devices.html"
     target="_top"
@@ -228,8 +234,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="site_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">site_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">type_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/facilities.html"
     target="_top"
@@ -279,8 +287,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>features</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="layer_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">layer_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/features.html"
     target="_top"
@@ -409,8 +419,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="site_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">site_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="layer_type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">layer_type_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/layers.html"
     target="_top"
@@ -451,8 +463,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="user_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">user_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="organization_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="role_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">role_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/organization_users.html"
     target="_top"
@@ -465,8 +479,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="country_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">country_code</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="country_subdivision_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">country_subdivision_code</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/organizations.html"
     target="_top"
@@ -477,10 +493,11 @@ digraph "compactRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>photos</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="user_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">user_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="storage_url" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">storage_url</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/photos.html"
     target="_top"
@@ -505,8 +522,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="feature_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">feature_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="health_state_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">health_state_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/plant_observations.html"
     target="_top"
@@ -579,8 +598,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>project_users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="user_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">user_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/project_users.html"
     target="_top"
@@ -594,8 +615,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="organization_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="109" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="status_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="109" HEIGHT="16">status_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="pm_user_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="109" HEIGHT="16">pm_user_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="109" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="109" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/projects.html"
     target="_top"
@@ -643,8 +666,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>sites</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/sites.html"
     target="_top"
@@ -699,8 +724,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="organization_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/species_names.html"
     target="_top"
@@ -713,8 +740,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="93" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="93" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="organization_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="93" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="93" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="93" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/species_options.html"
     target="_top"
@@ -739,8 +768,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="facility_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">facility_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="condition_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">condition_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/storage_locations.html"
     target="_top"
@@ -770,8 +801,10 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">type_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="device_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">device_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/timeseries.html"
     target="_top"
@@ -823,7 +856,7 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="email" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">email</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="user_type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">user_type_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">37 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"
@@ -869,7 +902,9 @@ digraph "compactRelationshipsDiagram" {
   "accession_state_history":"new_state_id":w -> "accession_states":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_state_history":"old_state_id":w -> "accession_states":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"app_device_id":w -> "app_devices":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accessions":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accessions":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"primary_collector_id":w -> "collectors":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"processing_method_id":w -> "processing_methods":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"rare_type_id":w -> "rare_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -882,19 +917,27 @@ digraph "compactRelationshipsDiagram" {
   "accessions":"subset_weight_units_id":w -> "seed_quantity_units":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"target_storage_condition":w -> "storage_conditions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"total_units_id":w -> "seed_quantity_units":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "automations":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "automations":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "automations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "bags":"accession_id":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "collectors":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "country_subdivisions":"country_code":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
+  "devices":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "devices":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "devices":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "devices":"parent_id":w -> "devices":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "facilities":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "facilities":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"site_id":w -> "sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facilities":"type_id":w -> "facility_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "facility_alert_recipients":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "feature_photos":"feature_id":w -> "features":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "feature_photos":"photo_id":w -> "photos":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "feature_photos":"plant_observation_id":w -> "plant_observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "features":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "features":"layer_id":w -> "layers":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "features":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "geolocations":"accession_id":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "germination_tests":"accession_id":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "germination_tests":"remaining_units_id":w -> "seed_quantity_units":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -903,41 +946,64 @@ digraph "compactRelationshipsDiagram" {
   "germination_tests":"test_type":w -> "germination_test_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "germination_tests":"treatment_id":w -> "germination_treatments":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "germinations":"test_id":w -> "germination_tests":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "layers":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "layers":"layer_type_id":w -> "layer_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "layers":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "layers":"site_id":w -> "sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"accession_id":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"accession_state_id":w -> "accession_states":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"site_id":w -> "sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"type_id":w -> "notification_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organization_users":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organization_users":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"role_id":w -> "roles":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organization_users":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_code":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"country_subdivision_code":w -> "country_subdivisions":"code":e [arrowhead=none dir=back arrowtail=crowodot];
-  "photos":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organizations":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "organizations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "photos":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "photos":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "plant_observations":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plant_observations":"feature_id":w -> "plants":"feature_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plant_observations":"health_state_id":w -> "health_states":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "plant_observations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plants":"feature_id":w -> "features":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "plants":"species_id":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_type_selections":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_type_selections":"project_type_id":w -> "project_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "project_users":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "project_users":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_users":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_users":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "projects":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "projects":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"pm_user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"status_id":w -> "project_statuses":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sites":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "sites":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "sites":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"conservation_status_id":w -> "conservation_statuses":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"plant_form_id":w -> "plant_forms":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"rare_type_id":w -> "rare_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "species_names":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "species_names":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_names":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_names":"species_id":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "species_options":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "species_options":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_options":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_options":"species_id":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "storage_locations":"condition_id":w -> "storage_conditions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "storage_locations":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "storage_locations":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "storage_locations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "thumbnails":"photo_id":w -> "photos":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "timeseries":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries":"device_id":w -> "devices":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "timeseries":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries":"type_id":w -> "timeseries_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "timeseries_values":"timeseries_id":w -> "timeseries":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "users":"user_type_id":w -> "user_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];

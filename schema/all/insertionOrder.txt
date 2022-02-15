@@ -41,7 +41,6 @@ photos
 germination_tests
 plant_observations
 timeseries
-automations
 bags
 facility_alert_recipients
 geolocations
@@ -52,13 +51,14 @@ accession_germination_test_types
 accession_photos
 accession_secondary_collectors
 project_type_selections
+accession_state_history
+automations
+feature_photos
+notifications
 project_users
 species_names
 species_options
-accession_state_history
-feature_photos
 organization_users
-notifications
 withdrawals
 task_processed_times
 test_clock

@@ -1,13 +1,14 @@
 test_clock
 task_processed_times
 withdrawals
-notifications
 organization_users
-feature_photos
-accession_state_history
 species_options
 species_names
 project_users
+notifications
+feature_photos
+automations
+accession_state_history
 project_type_selections
 accession_secondary_collectors
 accession_photos
@@ -18,7 +19,6 @@ germinations
 geolocations
 facility_alert_recipients
 bags
-automations
 timeseries
 plant_observations
 germination_tests

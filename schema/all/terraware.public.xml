@@ -174,6 +174,13 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="51" name="checked_in_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="52" name="family_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="53" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="54" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accessions_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="55" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accessions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -233,6 +240,12 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="configuration" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="automations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="automations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="automations_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -333,6 +346,12 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="parent_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="devices_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="devices_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="device_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -359,6 +378,12 @@
          <column autoUpdated="false" defaultValue="true" digits="0" id="6" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -423,6 +448,12 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="geom" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="features_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="features_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="features_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -588,6 +619,12 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="deleted" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="layers_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="layers_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="layers_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -641,6 +678,12 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organization_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="user_id" sequenceNumberInPK="1"/>
          <primaryKey column="organization_id" sequenceNumberInPK="2"/>
          <index name="organization_users_pkey" unique="true">
@@ -666,6 +709,12 @@
             <parent column="code" foreignKey="organizations_country_subdivision_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="organization_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -686,13 +735,16 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="size" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="17" id="10" name="gps_horiz_accuracy" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <column autoUpdated="false" defaultValue="null" digits="17" id="11" name="gps_vert_accuracy" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="location" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="photos_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -734,6 +786,12 @@
          <column autoUpdated="false" defaultValue="null" digits="17" id="8" name="dbh" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="plant_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="plant_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="plant_observations_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -819,6 +877,12 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="user_id" sequenceNumberInPK="1"/>
          <primaryKey column="project_id" sequenceNumberInPK="2"/>
          <index name="project_users_pkey" unique="true">
@@ -851,6 +915,12 @@
          </column>
          <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="organization_wide" nullable="false" remarks="If true, the project is accessible to the entire organization. If true, the project is only accessible to users who are added to it." size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="false" digits="0" id="13" name="hidden" nullable="false" remarks="If true, the project and its associated sites and facilities should not be displayed to end users." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -912,6 +982,12 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -986,6 +1062,12 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="locale" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_names_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_names_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_names_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -1005,6 +1087,12 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_options_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_options_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_options_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -1039,6 +1127,14 @@
             <parent column="id" foreignKey="storage_location_condition_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="storage_conditions"/>
          </column>
          <column autoUpdated="false" defaultValue="true" digits="0" id="4" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="6" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="storage_locations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="storage_locations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="storage_location_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -1097,6 +1193,14 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="units" nullable="true" remarks="For numeric timeseries, the units represented by the values; unit names should be short (possibly abbreviations) and in the default language of the site." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="decimal_places" nullable="true" remarks="For numeric timeseries, the number of digits after the decimal point to display." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="7" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="timeseries_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="timeseries_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="timeseries_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -1143,10 +1247,43 @@
       </table>
       <table name="users" numRows="1" remarks="User identities. A user can be associated with organizations via `organization_users`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="created_by" foreignKey="accessions_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
+            <child column="modified_by" foreignKey="accessions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
+            <child column="created_by" foreignKey="automations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
+            <child column="modified_by" foreignKey="automations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
+            <child column="created_by" foreignKey="devices_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <child column="modified_by" foreignKey="devices_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <child column="created_by" foreignKey="features_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
+            <child column="modified_by" foreignKey="features_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
+            <child column="created_by" foreignKey="layers_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
+            <child column="modified_by" foreignKey="layers_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
+            <child column="created_by" foreignKey="organization_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
+            <child column="modified_by" foreignKey="organization_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
-            <child column="user_id" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
+            <child column="created_by" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="created_by" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
+            <child column="modified_by" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
+            <child column="created_by" foreignKey="plant_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
+            <child column="modified_by" foreignKey="plant_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
+            <child column="created_by" foreignKey="project_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
+            <child column="modified_by" foreignKey="project_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
             <child column="user_id" foreignKey="project_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
+            <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="pm_user_id" foreignKey="projects_pm_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="created_by" foreignKey="sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
+            <child column="modified_by" foreignKey="sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
+            <child column="created_by" foreignKey="species_names_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_names"/>
+            <child column="modified_by" foreignKey="species_names_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_names"/>
+            <child column="created_by" foreignKey="species_options_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
+            <child column="modified_by" foreignKey="species_options_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
+            <child column="created_by" foreignKey="storage_locations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="storage_locations"/>
+            <child column="modified_by" foreignKey="storage_locations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="storage_locations"/>
+            <child column="created_by" foreignKey="timeseries_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
+            <child column="modified_by" foreignKey="timeseries_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="true" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

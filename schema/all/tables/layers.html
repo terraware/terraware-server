@@ -280,6 +280,48 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="created_by">created_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="layers.created_by references users.id via layers_created_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">layers_created_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="modified_by">modified_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="layers.modified_by references users.id via layers_modified_by_fkey"><a href='users.html'>users</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">layers_modified_by_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -359,24 +401,39 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/features.html" target="_top" title="features" alt="" coords="572,15,772,161">
-<area shape="rect" id="node2" href="../../tables/layers.html" target="_top" title="layers" alt="" coords="223,41,528,375">
-<area shape="rect" id="node3" href="../../tables/layer_types.html" target="_top" title="layer_types" alt="" coords="5,169,179,292">
-<area shape="rect" id="node4" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="10,5,174,152">
+<area shape="rect" id="node1" href="../../tables/features.html" target="_top" title="features" alt="" coords="804,356,1004,561">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,347,193,552">
+<area shape="rect" id="node3" href="../../tables/layers.html" target="_top" title="layers" alt="" coords="455,45,760,437">
+<area shape="rect" id="node4" href="../../tables/layer_types.html" target="_top" title="layer_types" alt="" coords="237,228,411,351">
+<area shape="rect" id="node5" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="242,5,406,211">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/layers.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="491,5,643,93">
-<area shape="rect" id="node2" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="202,108,366,255">
-<area shape="rect" id="node9" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="5,140,153,228">
-<area shape="rect" id="node3" href="../../tables/feature_photos.html" target="_top" title="feature_photos" alt="" coords="1008,139,1209,227">
-<area shape="rect" id="node4" href="../../tables/features.html" target="_top" title="features" alt="" coords="764,189,964,336">
-<area shape="rect" id="node5" href="../../tables/layers.html" target="_top" title="layers" alt="" coords="415,216,720,549">
-<area shape="rect" id="node6" href="../../tables/layer_types.html" target="_top" title="layer_types" alt="" coords="197,277,371,400">
-<area shape="rect" id="node7" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="476,111,659,199">
-<area shape="rect" id="node8" href="../../tables/plants.html" target="_top" title="plants" alt="" coords="1039,244,1178,332">
+<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1793,921,1958,1009">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,559,404,764">
+<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1258,1077,1410,1165">
+<area shape="rect" id="node4" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="1531,1003,1748,1091">
+<area shape="rect" id="node23" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,649,172,737">
+<area shape="rect" id="node7" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="962,759,1126,964">
+<area shape="rect" id="node5" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1548,1144,1731,1232">
+<area shape="rect" id="node6" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1568,1301,1711,1389">
+<area shape="rect" id="node19" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="719,457,867,545">
+<area shape="rect" id="node8" href="../../tables/feature_photos.html" target="_top" title="feature_photos" alt="" coords="2277,487,2479,575">
+<area shape="rect" id="node9" href="../../tables/features.html" target="_top" title="features" alt="" coords="1539,484,1739,689">
+<area shape="rect" id="node10" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="473,389,611,477">
+<area shape="rect" id="node11" href="../../tables/plant_observations.html" target="_top" title="plant_observations" alt="" coords="2003,628,2233,716">
+<area shape="rect" id="node12" href="../../tables/layers.html" target="_top" title="layers" alt="" coords="1181,225,1487,617">
+<area shape="rect" id="node17" href="../../tables/plants.html" target="_top" title="plants" alt="" coords="1806,580,1945,668">
+<area shape="rect" id="node13" href="../../tables/layer_types.html" target="_top" title="layer_types" alt="" coords="957,423,1131,545">
+<area shape="rect" id="node14" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="2027,863,2209,951">
+<area shape="rect" id="node15" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="680,5,907,93">
+<area shape="rect" id="node16" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="448,164,636,252">
+<area shape="rect" id="node18" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="951,281,1137,369">
+<area shape="rect" id="node20" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="695,111,892,199">
+<area shape="rect" id="node21" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="691,216,895,304">
+<area shape="rect" id="node22" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1792,1220,1959,1308">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/layers.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
