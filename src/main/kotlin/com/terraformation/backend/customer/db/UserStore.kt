@@ -424,11 +424,11 @@ class UserStore(
 
       val formSubmission =
           mapOf(
-              "client_id" to config.keycloak.apiClientId,
-              "scope" to "offline_access",
-              "grant_type" to "password",
-              "username" to user.toRepresentation().username,
-              "password" to credentials.value)
+                  "client_id" to config.keycloak.apiClientId,
+                  "scope" to "offline_access",
+                  "grant_type" to "password",
+                  "username" to user.toRepresentation().username,
+                  "password" to credentials.value)
               .map { (name, value) -> name to URLEncoder.encode(value, StandardCharsets.UTF_8) }
               .joinToString("&") { (name, value) -> "$name=$value" }
 

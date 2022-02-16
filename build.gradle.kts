@@ -321,7 +321,7 @@ tasks.getByName<BootJar>("bootJar") {
 
 spotless {
   kotlin {
-    ktfmt("0.30")
+    ktfmt("0.31")
     targetExclude("build/**")
   }
 }

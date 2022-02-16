@@ -682,8 +682,7 @@ class AccessionStore(
         dslContext
             .select(DSL.count())
             .from(
-                DSL
-                    .selectDistinct(ACCESSIONS.ID)
+                DSL.selectDistinct(ACCESSIONS.ID)
                     .from(ACCESSION_STATE_HISTORY)
                     .join(ACCESSIONS)
                     .on(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))

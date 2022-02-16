@@ -2256,39 +2256,39 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val expectedAccessions =
           listOf(
-              mapOf(
-                  "accessionNumber" to "ABCDEFG",
-                  "active" to "Active",
-                  "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
-                  "id" to "1001",
-                  "speciesName" to "Other Dogwood",
-                  "state" to "Processing",
-                  "treesCollectedFrom" to "2",
-              ),
-              mapOf(
-                  "accessionNumber" to "XYZ",
-                  "active" to "Active",
-                  "checkedInTime" to "$checkedInTime",
-                  "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
-                  "germinationTests" to
-                      listOf(
-                          mapOf(
-                              "germinations" to
-                                  listOf(
-                                      mapOf(
-                                          "recordingDate" to "1970-01-01",
-                                          "seedsGerminated" to "5"),
-                                      mapOf(
-                                          "recordingDate" to "1970-01-02",
-                                          "seedsGerminated" to "10")),
-                              "type" to "Lab",
-                              "seedsSown" to "15",
-                          )),
-                  "id" to "1000",
-                  "speciesName" to "Kousa Dogwood",
-                  "state" to "Processed",
-                  "treesCollectedFrom" to "1",
-              ))
+                  mapOf(
+                      "accessionNumber" to "ABCDEFG",
+                      "active" to "Active",
+                      "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
+                      "id" to "1001",
+                      "speciesName" to "Other Dogwood",
+                      "state" to "Processing",
+                      "treesCollectedFrom" to "2",
+                  ),
+                  mapOf(
+                      "accessionNumber" to "XYZ",
+                      "active" to "Active",
+                      "checkedInTime" to "$checkedInTime",
+                      "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
+                      "germinationTests" to
+                          listOf(
+                              mapOf(
+                                  "germinations" to
+                                      listOf(
+                                          mapOf(
+                                              "recordingDate" to "1970-01-01",
+                                              "seedsGerminated" to "5"),
+                                          mapOf(
+                                              "recordingDate" to "1970-01-02",
+                                              "seedsGerminated" to "10")),
+                                  "type" to "Lab",
+                                  "seedsSown" to "15",
+                              )),
+                      "id" to "1000",
+                      "speciesName" to "Kousa Dogwood",
+                      "state" to "Processed",
+                      "treesCollectedFrom" to "1",
+                  ))
               .flatMap { base ->
                 base.getListValue("bags")?.flatMap { bag ->
                   val perBagNumber = base.toMutableMap()
