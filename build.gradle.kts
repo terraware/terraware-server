@@ -52,11 +52,7 @@ group = "com.terraformation"
 
 version = computeGitVersion("0.1")
 
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
-  }
-}
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
 
 node { yarnVersion.set("1.22.17") }
 
@@ -149,88 +145,89 @@ tasks.test {
   testLogging { exceptionFormat = TestExceptionFormat.FULL }
 }
 
-val generateVersionFile by tasks.registering {
-  val generatedPath =
-      File("$buildDir/generated/kotlin/com/terraformation/backend/Version.kt").toPath()
+val generateVersionFile by
+    tasks.registering {
+      val generatedPath =
+          File("$buildDir/generated/kotlin/com/terraformation/backend/Version.kt").toPath()
 
-  inputs.property("version", project.version)
-  outputs.file(generatedPath)
+      inputs.property("version", project.version)
+      outputs.file(generatedPath)
 
-  doLast {
-    Files.createDirectories(generatedPath.parent)
-    Files.writeString(
-        generatedPath,
-        """package com.terraformation.backend
+      doLast {
+        Files.createDirectories(generatedPath.parent)
+        Files.writeString(
+            generatedPath,
+            """package com.terraformation.backend
           |const val VERSION = "$version"
           |""".trimMargin())
-  }
-}
+      }
+    }
 
-val generatePostgresDockerConfig by tasks.registering {
-  val postgresDockerRepository: String by project
-  val postgresDockerTag: String by project
+val generatePostgresDockerConfig by
+    tasks.registering {
+      val postgresDockerRepository: String by project
+      val postgresDockerTag: String by project
 
-  val generatedPath =
-      File("$buildDir/generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt").toPath()
+      val generatedPath =
+          File("$buildDir/generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt")
+              .toPath()
 
-  inputs.property("postgresDockerRepository", postgresDockerRepository)
-  inputs.property("postgresDockerTag", postgresDockerTag)
-  outputs.file(generatedPath)
+      inputs.property("postgresDockerRepository", postgresDockerRepository)
+      inputs.property("postgresDockerTag", postgresDockerTag)
+      outputs.file(generatedPath)
 
-  doLast {
-    Files.createDirectories(generatedPath.parent)
-    Files.writeString(
-        generatedPath,
-        """package com.terraformation.backend.db
-          |const val POSTGRES_DOCKER_REPOSITORY = "$postgresDockerRepository"
-          |const val POSTGRES_DOCKER_TAG = "$postgresDockerTag"
-          |""".trimMargin()
-    )
-  }
-}
+      doLast {
+        Files.createDirectories(generatedPath.parent)
+        Files.writeString(
+            generatedPath,
+            """package com.terraformation.backend.db
+              |const val POSTGRES_DOCKER_REPOSITORY = "$postgresDockerRepository"
+              |const val POSTGRES_DOCKER_TAG = "$postgresDockerTag"
+              |""".trimMargin())
+      }
+    }
 
 // The MJML -> HTML translator can only operate on one file at a time if the source and target files
 // are in different directories, so we need to run it once per modified MJML file. But YarnTask only
 // lets us run a single command per Gradle task. Register a separate task for each MJML file.
 
-val processMjmlTasks = project.files(
-    fileTree("$projectDir/src/main/resources/templates/email") {
-      include("*/*.mjml")
-    })
-    .mapIndexed { index, mjmlFile ->
-      tasks.register<YarnTask>("compileMjml$index") {
-        // The upper levels of directory structure are a little different in the src and build
-        // directories; we want the following mapping:
-        //
-        // src/main/resources/templates/email/a/b.mjml ->
-        // build/resources/main/templates/email/a/b.html
-        val htmlFile =
-            buildDir
-                .resolve("resources/main")
-                .resolve(mjmlFile
-                    .withReplacedExtensionOrNull(".mjml", ".html")!!
-                    .relativeTo(File("$projectDir/src/main/resources")))
+val processMjmlTasks =
+    project.files(
+            fileTree("$projectDir/src/main/resources/templates/email") { include("*/*.mjml") })
+        .mapIndexed { index, mjmlFile ->
+          tasks.register<YarnTask>("compileMjml$index") {
+            // The upper levels of directory structure are a little different in the src and build
+            // directories; we want the following mapping:
+            //
+            // src/main/resources/templates/email/a/b.mjml ->
+            // build/resources/main/templates/email/a/b.html
+            val htmlFile =
+                buildDir
+                    .resolve("resources/main")
+                    .resolve(
+                        mjmlFile.withReplacedExtensionOrNull(".mjml", ".html")!!.relativeTo(
+                            File("$projectDir/src/main/resources")))
 
-        // Stop these tasks from appearing in "./gradlew tasks" output.
-        group = ""
+            // Stop these tasks from appearing in "./gradlew tasks" output.
+            group = ""
 
-        dependsOn("yarn")
+            dependsOn("yarn")
 
-        inputs.file(mjmlFile)
-        outputs.file(htmlFile)
+            inputs.file(mjmlFile)
+            outputs.file(htmlFile)
 
-        args.set(
-            listOf(
-                "mjml",
-                "--config.minify",
-                "true",
-                "--config.beautify",
-                "false",
-                "-o",
-                "$htmlFile",
-                "$mjmlFile"))
-      }
-    }
+            args.set(
+                listOf(
+                    "mjml",
+                    "--config.minify",
+                    "true",
+                    "--config.beautify",
+                    "false",
+                    "-o",
+                    "$htmlFile",
+                    "$mjmlFile"))
+          }
+        }
 
 tasks {
   processResources {
@@ -292,13 +289,9 @@ jooq {
   }
 }
 
-sourceSets.main {
-  java.srcDir("build/generated/kotlin")
-}
+sourceSets.main { java.srcDir("build/generated/kotlin") }
 
-sourceSets.test {
-  java.srcDir("build/generated-test/kotlin")
-}
+sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 tasks.withType<KotlinCompile> {
   dependsOn(generateVersionFile)
@@ -310,9 +303,7 @@ tasks.withType<KotlinCompile> {
   }
 }
 
-tasks.withType<KaptGenerateStubsTask> {
-  dependsOn(tasks.generateJooqClasses)
-}
+tasks.withType<KaptGenerateStubsTask> { dependsOn(tasks.generateJooqClasses) }
 
 tasks.getByName<BootJar>("bootJar") {
   // Don't package local development settings in the distribution.
@@ -323,6 +314,10 @@ spotless {
   kotlin {
     ktfmt("0.31")
     targetExclude("build/**")
+  }
+  kotlinGradle {
+    ktfmt("0.31")
+    target("*.gradle.kts", "buildSrc/*.gradle.kts")
   }
 }
 
