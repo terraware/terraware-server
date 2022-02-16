@@ -126,14 +126,14 @@ internal class GeometryDeserializerTest {
   @Test
   fun `geometry values without coordinates`() {
     listOf(
-        "GeometryCollection",
-        "LineString",
-        "MultiLineString",
-        "MultiPoint",
-        "MultiPolygon",
-        "Point",
-        "Polygon",
-    )
+            "GeometryCollection",
+            "LineString",
+            "MultiLineString",
+            "MultiPoint",
+            "MultiPolygon",
+            "Point",
+            "Polygon",
+        )
         .forEach { typeName ->
           assertThrows<JsonParseException>(typeName) {
             objectMapper.readValue<Geometry>("""{"type": "$typeName"}""")

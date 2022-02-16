@@ -1,21 +1,15 @@
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins {
-  `kotlin-dsl`
-}
+plugins { `kotlin-dsl` }
 
 // Needed to avoid noisy warning message from Gradle. Won't be needed in Gradle 7.5.
 // https://github.com/gradle/gradle/issues/18935 https://github.com/gradle/gradle/issues/19308
 java.targetCompatibility = JavaVersion.VERSION_1_8
 
-tasks.withType<KotlinCompile> {
-  kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
-}
+tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion }
 
-repositories {
-  mavenCentral()
-}
+repositories { mavenCentral() }
 
 // buildSrc is considered a separate project from the parent, so we don't have access to properties
 // from the parent by default. Load the parent's properties explicitly so we can define dependency

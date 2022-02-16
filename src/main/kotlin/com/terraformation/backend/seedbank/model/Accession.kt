@@ -180,10 +180,10 @@ data class AccessionModel(
     }
 
     listOfNotNull(
-        withdrawals.mapNotNull { it.withdrawn },
-        withdrawals.mapNotNull { it.remaining },
-        germinationTests.mapNotNull { it.remaining },
-    )
+            withdrawals.mapNotNull { it.withdrawn },
+            withdrawals.mapNotNull { it.remaining },
+            germinationTests.mapNotNull { it.remaining },
+        )
         .flatten()
         .forEach { quantity ->
           if (quantity.units != SeedQuantityUnits.Seeds) {
