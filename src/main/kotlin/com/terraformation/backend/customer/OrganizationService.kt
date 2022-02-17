@@ -12,6 +12,7 @@ import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.email.EmailService
@@ -36,7 +37,7 @@ class OrganizationService(
       organizationId: OrganizationId,
       role: Role,
       projectIds: Collection<ProjectId>
-  ) {
+  ): UserId {
     requirePermissions {
       addOrganizationUser(organizationId)
       setOrganizationUserRole(organizationId, role)
@@ -49,7 +50,7 @@ class OrganizationService(
       throw IllegalArgumentException("Cannot add user to projects from a different organization")
     }
 
-    dslContext.transaction { _ ->
+    return dslContext.transactionResult { _ ->
       val user = userStore.fetchOrCreateByEmail(email)
 
       organizationStore.addUser(organizationId, user.userId, role)
@@ -59,6 +60,8 @@ class OrganizationService(
       // Send email in the transaction so the user will be rolled back if we couldn't notify them
       // about being added, e.g., because the email address was malformed.
       emailService.sendUserAddedToOrganization(organizationId, user.userId)
+
+      user.userId
     }
   }
 

@@ -112,14 +112,15 @@ class OrganizationsController(
   fun addOrganizationUser(
       @PathVariable("organizationId") organizationId: OrganizationId,
       @RequestBody payload: AddOrganizationUserRequestPayload
-  ): SimpleSuccessResponsePayload {
+  ): CreateOrganizationUserResponsePayload {
     if (!emailValidator.isValid(payload.email)) {
       throw BadRequestException("Invalid email address")
     }
 
-    organizationService.addUser(
-        payload.email, organizationId, payload.role, payload.projectIds ?: emptyList())
-    return SimpleSuccessResponsePayload()
+    val userId =
+        organizationService.addUser(
+            payload.email, organizationId, payload.role, payload.projectIds ?: emptyList())
+    return CreateOrganizationUserResponsePayload(userId)
   }
 
   @GetMapping("/{organizationId}/users/{userId}")
@@ -346,6 +347,13 @@ data class GetOrganizationUserResponsePayload(val user: OrganizationUserPayload)
 
 data class ListOrganizationUsersResponsePayload(val users: List<OrganizationUserPayload>) :
     SuccessResponsePayload
+
+data class CreateOrganizationUserResponsePayload(
+    @Schema(
+        description = "The ID of the newly-added user.",
+    )
+    val id: UserId
+) : SuccessResponsePayload
 
 data class ListOrganizationsResponsePayload(val organizations: List<OrganizationPayload>) :
     SuccessResponsePayload
