@@ -1,38 +1,36 @@
 import os
 import unittest
+from typing import Optional
 
-import requests
+from oauthlib.oauth2 import LegacyApplicationClient
+from requests_oauthlib import OAuth2Session
 
 
-def get_access_token(username: str, password: str, client_secret: str,
+def terraware_client(username: str, password: str, client_secret: str,
                      client_id: str = "dev-terraware-server",
                      realm: str = "terraware",
-                     auth_server_url: str = "https://localhost:8081/auth"):
-    token_url = f"{auth_server_url}/realms/{realm}/protocol/openid-connect/token"
-
-    post_body = {"client_id": client_id, "client_secret": client_secret, "username": username,
-                 "password": password, "grant_type": "password"}
-
-    print(post_body)
-    response = requests.post(token_url, data=post_body)
-    response.raise_for_status()
-
-    json = response.json()
-    print(json)
-
-    return json
+                     keycloak_base_url: str = "https://localhost:8081/auth",
+                     token_url: Optional[str] = None):
+    token_url = token_url or f"{keycloak_base_url}/realms/{realm}/protocol/openid-connect/token"
+    oauth = OAuth2Session(client=LegacyApplicationClient(client_id=client_id))
+    oauth.fetch_token(token_url=token_url, username=username, password=password,
+                      client_secret=client_secret, client_id=client_id)
+    return oauth
 
 
 class MyTestCase(unittest.TestCase):
-    def setUp(self):
-        self.auth_server_url = os.environ["TEST_AUTH_SERVER_URL"]
-        self.client_secret = os.environ["TEST_CLIENT_SECRET"]
-        self.password = os.environ["TEST_PASSWORD"]
-        self.username = os.environ["TEST_USERNAME"]
+    @classmethod
+    def setUpClass(cls) -> None:
+        auth_server_url = os.environ["TEST_AUTH_SERVER_URL"]
+        client_secret = os.environ["TEST_CLIENT_SECRET"]
+        password = os.environ["TEST_PASSWORD"]
+        username = os.environ["TEST_USERNAME"]
+        cls.client = terraware_client(username, password, client_secret,
+                                      keycloak_base_url=auth_server_url)
 
     def test_url(self):
-        self.assertIsNotNone(get_access_token(self.username, self.password, self.client_secret,
-                                              auth_server_url=self.auth_server_url))
+        r = self.client.get("http://localhost:8080/api/v1/organizations")
+        print(r.json())
 
 
 if __name__ == '__main__':
