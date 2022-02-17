@@ -1,37 +1,46 @@
 import os
-import unittest
-from typing import Optional
 
+import pytest
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
 
-def terraware_client(username: str, password: str, client_secret: str,
-                     client_id: str = "dev-terraware-server",
-                     realm: str = "terraware",
-                     keycloak_base_url: str = "https://localhost:8081/auth",
-                     token_url: Optional[str] = None):
-    token_url = token_url or f"{keycloak_base_url}/realms/{realm}/protocol/openid-connect/token"
+base_url = "http://localhost:8080"
+
+
+@pytest.fixture(scope="session")
+def client() -> OAuth2Session:
+    client_id = os.environ.get("TEST_CLIENT_ID") or "dev-terraware-server"
+    realm = os.environ.get("TEST_REALM") or "terraware"
+    client_secret = os.environ["TEST_CLIENT_SECRET"]
+    password = os.environ["TEST_PASSWORD"]
+    username = os.environ["TEST_USERNAME"]
+    keycloak_base_url = os.environ["TEST_AUTH_SERVER_URL"]
+
+    token_url = os.environ.get(
+        "TEST_TOKEN_URL") or f"{keycloak_base_url}/realms/{realm}/protocol/openid-connect/token"
+
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
     oauth = OAuth2Session(client=LegacyApplicationClient(client_id=client_id))
     oauth.fetch_token(token_url=token_url, username=username, password=password,
                       client_secret=client_secret, client_id=client_id)
+
     return oauth
 
 
-class MyTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        auth_server_url = os.environ["TEST_AUTH_SERVER_URL"]
-        client_secret = os.environ["TEST_CLIENT_SECRET"]
-        password = os.environ["TEST_PASSWORD"]
-        username = os.environ["TEST_USERNAME"]
-        cls.client = terraware_client(username, password, client_secret,
-                                      keycloak_base_url=auth_server_url)
+class TestOrganizations:
+    @pytest.fixture(scope="class")
+    def organization_id(self, client):
+        r = client.post(f"{base_url}/api/v1/organizations", json={"name": "Test Org"})
+        r.raise_for_status()
+        return r.json()["organization"]["id"]
 
-    def test_url(self):
-        r = self.client.get("http://localhost:8080/api/v1/organizations")
-        print(r.json())
+    def test_create_organization(self, organization_id):
+        assert organization_id is not None
 
+    def test_list_organizations(self, client, organization_id):
+        r = client.get(f"{base_url}/api/v1/organizations")
+        r.raise_for_status()
 
-if __name__ == '__main__':
-    unittest.main()
+        assert organization_id in [item["id"] for item in r.json()["organizations"]]
