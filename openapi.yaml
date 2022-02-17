@@ -1310,7 +1310,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+                $ref: '#/components/schemas/CreateOrganizationUserResponsePayload'
   /api/v1/organizations/{organizationId}/users/{userId}:
     get:
       tags:
@@ -3448,6 +3448,18 @@ components:
           type: string
         name:
           type: string
+    CreateOrganizationUserResponsePayload:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The ID of the newly-added user.
+          format: int64
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     CreatePlantRequestPayload:
       required:
       - featureId
