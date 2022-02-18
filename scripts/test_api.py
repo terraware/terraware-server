@@ -1,15 +1,42 @@
 import os
+import random
+from typing import Dict, Optional
 
 import pytest
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
+DEFAULT_BASE_URL = "http://localhost:8080"
 
-base_url = "http://localhost:8080"
+
+class TerrawareClient:
+    def __init__(self, session: OAuth2Session, base_url: str):
+        self.session = session
+        self.base_url = base_url
+
+    def delete(self, local_url: str, **kwargs):
+        r = self.session.delete(f"{self.base_url}{local_url}", **kwargs)
+        r.raise_for_status()
+        return r.json()
+
+    def get(self, local_url: str, **kwargs):
+        r = self.session.get(f"{self.base_url}{local_url}", **kwargs)
+        r.raise_for_status()
+        return r.json()
+
+    def post(self, local_url: str, json: Optional[Dict], **kwargs):
+        r = self.session.post(f"{self.base_url}{local_url}", json=json, **kwargs)
+        r.raise_for_status()
+        return r.json()
+
+    def put(self, local_url: str, json: Optional[Dict], **kwargs):
+        r = self.session.put(f"{self.base_url}{local_url}", json=json, **kwargs)
+        r.raise_for_status()
+        return r.json()
 
 
 @pytest.fixture(scope="session")
-def client() -> OAuth2Session:
+def client() -> TerrawareClient:
     client_id = os.environ.get("TEST_CLIENT_ID") or "dev-terraware-server"
     realm = os.environ.get("TEST_REALM") or "terraware"
     client_secret = os.environ["TEST_CLIENT_SECRET"]
@@ -26,21 +53,26 @@ def client() -> OAuth2Session:
     oauth.fetch_token(token_url=token_url, username=username, password=password,
                       client_secret=client_secret, client_id=client_id)
 
-    return oauth
+    return TerrawareClient(oauth, DEFAULT_BASE_URL)
 
 
 class TestOrganizations:
     @pytest.fixture(scope="class")
-    def organization_id(self, client):
-        r = client.post(f"{base_url}/api/v1/organizations", json={"name": "Test Org"})
-        r.raise_for_status()
-        return r.json()["organization"]["id"]
+    def organization_name(self):
+        return f"Test Org {random.randint(1000000, 9999999)}"
+
+    @pytest.fixture(scope="class")
+    def organization_id(self, client, organization_name):
+        response = client.post("/api/v1/organizations", {"name": organization_name})
+        return response["organization"]["id"]
 
     def test_create_organization(self, organization_id):
         assert organization_id is not None
 
     def test_list_organizations(self, client, organization_id):
-        r = client.get(f"{base_url}/api/v1/organizations")
-        r.raise_for_status()
+        response = client.get("/api/v1/organizations")
+        assert organization_id in [item["id"] for item in response["organizations"]]
 
-        assert organization_id in [item["id"] for item in r.json()["organizations"]]
+    def test_get_organization(self, client, organization_id, organization_name):
+        response = client.get(f"/api/v1/organizations/{organization_id}")
+        assert response["organization"]["name"] == organization_name
