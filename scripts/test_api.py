@@ -2,6 +2,7 @@ import os
 import random
 from typing import Dict, Optional
 
+from box import Box
 import pytest
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
@@ -14,25 +15,25 @@ class TerrawareClient:
         self.session = session
         self.base_url = base_url
 
-    def delete(self, local_url: str, **kwargs):
+    def delete(self, local_url: str, **kwargs) -> Box:
         r = self.session.delete(f"{self.base_url}{local_url}", **kwargs)
         r.raise_for_status()
-        return r.json()
+        return Box(r.json())
 
-    def get(self, local_url: str, **kwargs):
+    def get(self, local_url: str, **kwargs) -> Box:
         r = self.session.get(f"{self.base_url}{local_url}", **kwargs)
         r.raise_for_status()
-        return r.json()
+        return Box(r.json())
 
-    def post(self, local_url: str, json: Optional[Dict], **kwargs):
+    def post(self, local_url: str, json: Optional[Dict], **kwargs) -> Box:
         r = self.session.post(f"{self.base_url}{local_url}", json=json, **kwargs)
         r.raise_for_status()
-        return r.json()
+        return Box(r.json())
 
-    def put(self, local_url: str, json: Optional[Dict], **kwargs):
+    def put(self, local_url: str, json: Optional[Dict], **kwargs) -> Box:
         r = self.session.put(f"{self.base_url}{local_url}", json=json, **kwargs)
         r.raise_for_status()
-        return r.json()
+        return Box(r.json())
 
 
 @pytest.fixture(scope="session")
@@ -64,15 +65,15 @@ class TestOrganizations:
     @pytest.fixture(scope="class")
     def organization_id(self, client, organization_name):
         response = client.post("/api/v1/organizations", {"name": organization_name})
-        return response["organization"]["id"]
+        return response.organization.id
 
     def test_create_organization(self, organization_id):
         assert organization_id is not None
 
     def test_list_organizations(self, client, organization_id):
         response = client.get("/api/v1/organizations")
-        assert organization_id in [item["id"] for item in response["organizations"]]
+        assert organization_id in [item.id for item in response.organizations]
 
     def test_get_organization(self, client, organization_id, organization_name):
         response = client.get(f"/api/v1/organizations/{organization_id}")
-        assert response["organization"]["name"] == organization_name
+        assert response.organization.name == organization_name
