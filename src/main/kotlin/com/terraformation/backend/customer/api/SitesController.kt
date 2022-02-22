@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
 import net.postgis.jdbc.geometry.Point
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -68,7 +70,7 @@ class SitesController(private val siteStore: SiteStore) {
   @ApiResponse(responseCode = "200", description = "Site created.")
   @PostMapping
   @Operation(summary = "Creates a new site.")
-  fun createSite(@RequestBody payload: CreateSiteRequestPayload): CreateSiteResponsePayload {
+  fun createSite(@RequestBody @Valid payload: CreateSiteRequestPayload): CreateSiteResponsePayload {
     val site = siteStore.create(payload.toRow())
     return CreateSiteResponsePayload(site.id)
   }
@@ -78,7 +80,7 @@ class SitesController(private val siteStore: SiteStore) {
   @PutMapping("/{siteId}")
   fun updateSite(
       @PathVariable siteId: SiteId,
-      @RequestBody payload: UpdateSiteRequestPayload
+      @RequestBody @Valid payload: UpdateSiteRequestPayload
   ): SimpleSuccessResponsePayload {
     siteStore.update(payload.toRow(siteId))
     return SimpleSuccessResponsePayload()
@@ -142,7 +144,7 @@ data class CreateSiteRequestPayload(
     val description: String?,
     val location: Point?,
     val locale: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
     val projectId: ProjectId,
     val timezone: String?,
 ) {
@@ -164,7 +166,7 @@ data class UpdateSiteRequestPayload(
     val description: String?,
     val location: Point?,
     val locale: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
     @Schema(
         description =
             "If present, move the site to this project. Project must be owned by the same " +
