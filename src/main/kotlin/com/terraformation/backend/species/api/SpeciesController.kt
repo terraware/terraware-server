@@ -303,7 +303,11 @@ data class CreateSpeciesNameRequestPayload(
 ) {
   fun toRow() =
       SpeciesNamesRow(
-          speciesId = speciesId, name = name, isScientific = isScientific == true, locale = locale)
+          speciesId = speciesId,
+          organizationId = organizationId,
+          name = name,
+          isScientific = isScientific == true,
+          locale = locale)
 }
 
 data class CreateSpeciesResponsePayload(val id: SpeciesId) : SuccessResponsePayload
