@@ -114,7 +114,7 @@ class OrganizationsController(
       @RequestBody payload: AddOrganizationUserRequestPayload
   ): CreateOrganizationUserResponsePayload {
     if (!emailValidator.isValid(payload.email)) {
-      throw BadRequestException("Invalid email address")
+      throw BadRequestException("Field value has incorrect format: email")
     }
 
     val userId =
