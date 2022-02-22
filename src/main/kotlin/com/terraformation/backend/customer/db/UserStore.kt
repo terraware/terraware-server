@@ -93,7 +93,7 @@ class UserStore(
    * @throws KeycloakUserNotFoundException There is no user with that ID in the Keycloak database.
    */
   fun fetchByAuthId(authId: String): IndividualUser {
-    val existingUser = usersDao.fetchByAuthId(authId).firstOrNull()
+    val existingUser = usersDao.fetchOneByAuthId(authId)
     val user =
         if (existingUser != null) {
           existingUser
@@ -106,7 +106,17 @@ class UserStore(
               }
 
           if (keycloakUser != null) {
-            insertKeycloakUser(keycloakUser)
+            try {
+              insertKeycloakUser(keycloakUser)
+            } catch (e: DuplicateKeyException) {
+              // If the client authenticates for the first time and then sends two API requests in
+              // parallel, both requests might try to create the user locally. Only one will
+              // succeed thanks to the unique constraint on users.auth_id, but at that point the
+              // user should exist and be readable from the other request handler thread.
+
+              log.debug("Got DuplicateKeyException when inserting Keycloak user")
+              usersDao.fetchOneByAuthId(authId) ?: throw e
+            }
           } else {
             throw KeycloakUserNotFoundException("User ID does not exist")
           }
