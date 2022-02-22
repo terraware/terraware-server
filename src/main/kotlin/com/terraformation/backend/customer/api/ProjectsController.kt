@@ -203,7 +203,7 @@ data class ProjectPayload(
                 "displayed to end users.")
     val hidden: Boolean,
     val id: ProjectId,
-    @field:NotEmpty val name: String,
+    val name: String,
     val organizationId: OrganizationId,
     @Schema(
         description =
