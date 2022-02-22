@@ -23,6 +23,8 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.NotFoundException
 import org.apache.commons.validator.routines.EmailValidator
@@ -81,7 +83,7 @@ class OrganizationsController(
   @Operation(summary = "Creates a new organization.")
   @PostMapping
   fun createOrganization(
-      @RequestBody payload: CreateOrganizationRequestPayload
+      @RequestBody @Valid payload: CreateOrganizationRequestPayload
   ): GetOrganizationResponsePayload {
     val model =
         organizationService.createOrganization(payload.toRow(), payload.createSeedBank ?: true)
@@ -92,7 +94,7 @@ class OrganizationsController(
   @PutMapping("/{organizationId}")
   fun updateOrganization(
       @PathVariable("organizationId") organizationId: OrganizationId,
-      @RequestBody payload: UpdateOrganizationRequestPayload
+      @RequestBody @Valid payload: UpdateOrganizationRequestPayload
   ): SimpleSuccessResponsePayload {
     organizationStore.update(payload.toRow().copy(id = organizationId))
     return SimpleSuccessResponsePayload()
@@ -217,7 +219,7 @@ data class CreateOrganizationRequestPayload(
         defaultValue = "true")
     val createSeedBank: Boolean?,
     val description: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(
@@ -246,7 +248,7 @@ data class UpdateOrganizationRequestPayload(
         maxLength = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(

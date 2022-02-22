@@ -24,6 +24,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
 import javax.ws.rs.ClientErrorException
 import javax.ws.rs.NotFoundException
 import javax.ws.rs.core.Response
@@ -83,7 +85,9 @@ class ProjectsController(private val projectStore: ProjectStore) {
   @ApiResponse(responseCode = "200", description = "Project created.")
   @Operation(summary = "Creates a new project in an existing organization.")
   @PostMapping
-  fun createProject(@RequestBody payload: CreateProjectRequestPayload): GetProjectResponsePayload {
+  fun createProject(
+      @RequestBody @Valid payload: CreateProjectRequestPayload
+  ): GetProjectResponsePayload {
     val project =
         projectStore.create(
             description = payload.description,
@@ -104,7 +108,7 @@ class ProjectsController(private val projectStore: ProjectStore) {
   @PutMapping("/{id}")
   fun updateProject(
       @PathVariable("id") projectId: ProjectId,
-      @RequestBody payload: UpdateProjectRequestPayload
+      @RequestBody @Valid payload: UpdateProjectRequestPayload
   ): SimpleSuccessResponsePayload {
     projectStore.update(
         description = payload.description,
@@ -240,7 +244,7 @@ data class ProjectPayload(
 
 data class CreateProjectRequestPayload(
     val description: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
     val organizationId: OrganizationId,
     val startDate: LocalDate?,
     val status: ProjectStatus?,
@@ -253,7 +257,7 @@ data class ListProjectsResponsePayload(val projects: List<ProjectPayload>) : Suc
 
 data class UpdateProjectRequestPayload(
     val description: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
     val startDate: LocalDate?,
     val status: ProjectStatus?,
     val types: Set<ProjectType>?,

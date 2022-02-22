@@ -21,6 +21,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.PathVariable
@@ -155,6 +156,24 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     return simpleErrorResponse("Invalid value in request URL", HttpStatus.BAD_REQUEST, request)
+  }
+
+  /**
+   * Handles validation failures on request payloads. The payload argument to a controller method
+   * needs to be annotated with `@RequestBody` and `@Valid`, at which point the `javax.validation`
+   * annotations on the fields in the payload class are evaluated. (The annotations need to be on
+   * the underlying fields, not the getters: that is, `@field:NotEmpty` rather than `@NotEmpty`.)
+   */
+  override fun handleMethodArgumentNotValid(
+      ex: MethodArgumentNotValidException,
+      headers: HttpHeaders,
+      status: HttpStatus,
+      request: WebRequest
+  ): ResponseEntity<Any> {
+    val fieldName = ex.fieldError?.field ?: "field"
+    val message = ex.fieldError?.defaultMessage ?: "invalid"
+    return simpleErrorResponse(
+        "Field value invalid: $fieldName $message", HttpStatus.BAD_REQUEST, request)
   }
 
   /** Returns an actionable error message if the client submits a malformed request payload. */
