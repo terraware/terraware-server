@@ -78,7 +78,7 @@ data class SearchSortOrderElement(
             DiscriminatorMapping(value = "and", schema = AndNodePayload::class),
             DiscriminatorMapping(value = "field", schema = FieldNodePayload::class),
             DiscriminatorMapping(value = "not", schema = NotNodePayload::class),
-            DiscriminatorMapping(value = "or", schema = NotNodePayload::class),
+            DiscriminatorMapping(value = "or", schema = OrNodePayload::class),
         ])
 interface SearchNodePayload {
   fun toSearchNode(prefix: SearchFieldPrefix): SearchNode
