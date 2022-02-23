@@ -2,10 +2,13 @@ import os
 import random
 from typing import Dict, Optional
 
-from box import Box
 import pytest
+from box import Box
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
+
+import swagger_client
+from swagger_client import CustomerApi, ApiClient, CreateOrganizationRequestPayload
 
 DEFAULT_BASE_URL = "http://localhost:8080"
 
@@ -57,6 +60,19 @@ def client() -> TerrawareClient:
     return TerrawareClient(oauth, DEFAULT_BASE_URL)
 
 
+@pytest.fixture(scope="session")
+def api_client(client) -> ApiClient:
+    conf = swagger_client.Configuration()
+    conf.access_token = client.session.access_token
+    conf.host = DEFAULT_BASE_URL
+    return ApiClient(conf)
+
+
+@pytest.fixture(scope="session")
+def customer_api(api_client) -> CustomerApi:
+    return CustomerApi(api_client)
+
+
 class TestOrganizations:
     @pytest.fixture(scope="class")
     def organization_name(self):
@@ -76,4 +92,27 @@ class TestOrganizations:
 
     def test_get_organization(self, client, organization_id, organization_name):
         response = client.get(f"/api/v1/organizations/{organization_id}")
+        assert response.organization.name == organization_name
+
+
+class TestSwagger:
+    @pytest.fixture(scope="class")
+    def organization_name(self):
+        return f"Test Org {random.randint(1000000, 9999999)}"
+
+    @pytest.fixture(scope="class")
+    def organization_id(self, customer_api, organization_name):
+        response = customer_api.create_organization(
+            CreateOrganizationRequestPayload(name=organization_name))
+        return response.organization.id
+
+    def test_create_organization(self, organization_id):
+        assert organization_id is not None
+
+    def test_list_organizations(self, customer_api, organization_id):
+        response = customer_api.list_organizations()
+        assert organization_id in [item.id for item in response.organizations]
+
+    def test_get_organization(self, customer_api, organization_id, organization_name):
+        response = customer_api.get_organization(organization_id)
         assert response.organization.name == organization_name

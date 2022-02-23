@@ -8,6 +8,8 @@ info:
 servers:
 - url: http://localhost:32109
   description: Generated server url
+security:
+- oauth2: []
 tags:
 - name: Customer
 - name: Search
@@ -385,6 +387,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOrganizationsResponsePayload'
+      security:
+      - oauth2: []
     post:
       tags:
       - Customer
@@ -403,6 +407,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOrganizationResponsePayload'
+      security:
+      - oauth2: []
   /api/v1/organizations/{organizationId}:
     get:
       tags:
@@ -436,6 +442,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOrganizationResponsePayload'
+      security:
+      - oauth2: []
     put:
       tags:
       - Customer
@@ -461,6 +469,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+      security:
+      - oauth2: []
   /api/v1/organizations/{organizationId}/projects:
     get:
       tags:
@@ -516,6 +526,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListOrganizationUsersResponsePayload'
+      security:
+      - oauth2: []
     post:
       tags:
       - Customer
@@ -541,6 +553,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateOrganizationUserResponsePayload'
+      security:
+      - oauth2: []
   /api/v1/organizations/{organizationId}/users/{userId}:
     get:
       tags:
@@ -567,6 +581,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetOrganizationUserResponsePayload'
+      security:
+      - oauth2: []
     put:
       tags:
       - Customer
@@ -614,6 +630,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+      security:
+      - oauth2: []
     delete:
       tags:
       - Customer
@@ -653,6 +671,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+      security:
+      - oauth2: []
   /api/v1/projects:
     get:
       tags:
@@ -3843,7 +3863,7 @@ components:
           and: '#/components/schemas/AndNodePayload'
           field: '#/components/schemas/FieldNodePayload'
           not: '#/components/schemas/NotNodePayload'
-          or: '#/components/schemas/NotNodePayload'
+          or: '#/components/schemas/OrNodePayload'
       oneOf:
       - $ref: '#/components/schemas/AndNodePayload'
       - $ref: '#/components/schemas/FieldNodePayload'
@@ -4711,3 +4731,12 @@ components:
             \ and is ignored on input."
           allOf:
           - $ref: '#/components/schemas/SeedQuantityPayload'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      name: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.staging.terraware.io/auth/realms/terraware/protocol/openid-connect/auth
+          tokenUrl: https://auth.staging.terraware.io/auth/realms/terraware/protocol/openid-connect/token
+      openIdConnectUrl: https://auth.staging.terraware.io/auth/realms/terraware/.well-known/openid-configuration

@@ -4,6 +4,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.info.License
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
@@ -14,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
  * Stub application class. This does nothing by itself, but it is where we hang application-level
  * configuration annotations for libraries such as Spring.
  */
-@OpenAPIDefinition(
+@OpenAPIDefinition(security = [SecurityRequirement(name="oauth2")],
     info =
         Info(
             title = "Terraware Server",

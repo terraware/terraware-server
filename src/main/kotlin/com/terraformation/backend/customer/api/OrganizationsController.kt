@@ -23,6 +23,7 @@ import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.validation.Valid
@@ -45,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RestController
 @RequestMapping("/api/v1/organizations")
+@SecurityRequirement(name="oauth2")
 class OrganizationsController(
     private val organizationService: OrganizationService,
     private val organizationStore: OrganizationStore,

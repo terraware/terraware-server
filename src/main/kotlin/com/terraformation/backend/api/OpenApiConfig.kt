@@ -16,6 +16,9 @@ import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
+import io.swagger.v3.oas.models.security.OAuthFlow
+import io.swagger.v3.oas.models.security.OAuthFlows
+import io.swagger.v3.oas.models.security.SecurityScheme
 import javax.annotation.ManagedBean
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
@@ -71,6 +74,22 @@ class OpenApiConfig : OpenApiCustomiser {
     addDescriptionsToRefs(openApi)
     useRefForGeometry(openApi)
     removeAdditionalProperties(openApi)
+
+    openApi.components.addSecuritySchemes(
+        "oauth2",
+        SecurityScheme()
+            .type(SecurityScheme.Type.OAUTH2)
+            .name("oauth2")
+            .openIdConnectUrl(
+                "https://auth.staging.terraware.io/auth/realms/terraware/.well-known/openid-configuration")
+            .flows(
+                OAuthFlows()
+                    .authorizationCode(
+                        OAuthFlow()
+                            .authorizationUrl(
+                                "https://auth.staging.terraware.io/auth/realms/terraware/protocol/openid-connect/auth")
+                            .tokenUrl(
+                                "https://auth.staging.terraware.io/auth/realms/terraware/protocol/openid-connect/token"))))
   }
 
   /**
