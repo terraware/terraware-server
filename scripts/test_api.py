@@ -86,6 +86,10 @@ class TestOrganizations:
     def test_create_organization(self, organization_id):
         assert organization_id is not None
 
+    def test_create_organization_with_empty_name(self, client):
+        response = client.post("/api/v1/organizations", {"name": ""})
+        assert response is None
+
     def test_list_organizations(self, client, organization_id):
         response = client.get("/api/v1/organizations")
         assert organization_id in [item.id for item in response.organizations]
