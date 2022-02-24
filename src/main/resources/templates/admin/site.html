@@ -13,9 +13,9 @@
 <h2 th:text="|Site ${site.name} (${site.id})|">Site (id)</h2>
 
 <p>
-    Latitude: <span th:text="${site.location.y}">123.45678</span>
+    Latitude: <span th:text="${site.location?.y}">123.45678</span>
     <br>
-    Longitude: <span th:text="${site.location.x}">-44.99997</span>
+    Longitude: <span th:text="${site.location?.x}">-44.99997</span>
 </p>
 
 <h3>Facilities</h3>
