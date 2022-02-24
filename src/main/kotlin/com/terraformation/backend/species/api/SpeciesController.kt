@@ -21,6 +21,8 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
 import javax.ws.rs.NotFoundException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
@@ -69,7 +71,9 @@ class SpeciesController(private val speciesStore: SpeciesStore) {
           responseCode = "409", description = "A species with the requested name already exists."))
   @Operation(summary = "Creates a new species.")
   @PostMapping
-  fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
+  fun createSpecies(
+      @RequestBody @Valid payload: SpeciesRequestPayload
+  ): CreateSpeciesResponsePayload {
     try {
       val speciesId = speciesStore.createSpecies(payload.organizationId, payload.toRow())
       return CreateSpeciesResponsePayload(speciesId)
@@ -249,7 +253,7 @@ data class SpeciesRequestPayload(
     val conservationStatus: String?,
     @Schema(description = "True if name is the scientific name for the species.")
     val isScientific: Boolean?,
-    val name: String,
+    @field:NotEmpty val name: String,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
     val plantForm: PlantForm?,
@@ -296,7 +300,7 @@ data class CreateSpeciesNameRequestPayload(
     @Schema(description = "True if name is a scientific name for the species.")
     val isScientific: Boolean?,
     val locale: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
     val speciesId: SpeciesId,
@@ -329,7 +333,7 @@ data class UpdateSpeciesNameRequestPayload(
     @Schema(description = "True if name is a scientific name for the species.")
     val isScientific: Boolean?,
     val locale: String?,
-    val name: String,
+    @field:NotEmpty val name: String,
 ) {
   fun toRow(id: SpeciesNameId) =
       SpeciesNamesRow(id = id, name = name, isScientific = isScientific == true, locale = locale)
