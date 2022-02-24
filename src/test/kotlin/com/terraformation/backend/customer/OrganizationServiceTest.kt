@@ -21,6 +21,7 @@ import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
@@ -114,6 +115,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateProject(any()) } returns true
     every { user.canCreateSite(any()) } returns true
+    every { user.canCreateStorageLocation(any()) } returns true
+    every { user.canReadFacility(any()) } returns true
+    every { user.canReadStorageLocation(any()) } returns true
   }
 
   @Test
@@ -161,6 +165,22 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             OrganizationsRow(name = "Test Organization"), createSeedBank = true)
 
     assertEquals(expected, actual)
+
+    val storageLocations = facilityStore.fetchStorageLocations(FacilityId(1))
+
+    assertEquals(
+        3,
+        storageLocations.count {
+          it.conditionId == StorageCondition.Refrigerator &&
+              it.name?.startsWith("Refrigerator") == true
+        },
+        "Number of refrigerators")
+    assertEquals(
+        3,
+        storageLocations.count {
+          it.conditionId == StorageCondition.Freezer && it.name?.startsWith("Freezer") == true
+        },
+        "Number of freezers")
   }
 
   @Test
