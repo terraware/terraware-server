@@ -8,8 +8,8 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
-import com.terraformation.backend.seedbank.db.NotificationStore
 import com.terraformation.backend.time.atMostRecent
 import java.time.Clock
 import java.time.Instant
@@ -28,7 +28,7 @@ class StateSummaryNotificationTask(
     private val dailyTaskRunner: DailyTaskRunner,
     private val facilitiesDao: FacilitiesDao,
     private val messages: Messages,
-    private val notificationStore: NotificationStore,
+    private val accessionNotificationStore: AccessionNotificationStore,
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -135,7 +135,7 @@ class StateSummaryNotificationTask(
 
     val message = getMessage(count)
     log.info("Generated notification: $message")
-    notificationStore.insertStateNotification(facilityId, state, message)
+    accessionNotificationStore.insertStateNotification(facilityId, state, message)
   }
 
   /**

@@ -1,3 +1,9 @@
+INSERT INTO accession_notification_types (id, name)
+VALUES (1, 'Alert'),
+       (2, 'State'),
+       (3, 'Date')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accession_states (id, name, active)
 VALUES (10, 'Pending', TRUE),
        (20, 'Processing', TRUE),
@@ -51,12 +57,6 @@ VALUES (1, 'Soak'),
        (3, 'GA3'),
        (4, 'Stratification'),
        (5, 'Other')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO notification_types (id, name)
-VALUES (1, 'Alert'),
-       (2, 'State'),
-       (3, 'Date')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO plant_forms (id, name)

@@ -13,6 +13,7 @@ package com.terraformation.backend.jooq
  */
 val ENUM_TABLES =
     listOf(
+        EnumTable("accession_notification_types", "accession_notifications\\.type_id"),
         EnumTable(
             "accession_states",
             listOf(
@@ -29,7 +30,6 @@ val ENUM_TABLES =
                 "accession_germination_test_types\\.germination_test_type_id")),
         EnumTable("germination_treatments", "germination_tests\\.treatment_id"),
         EnumTable("layer_types", ".*\\.layer_type_id"),
-        EnumTable("notification_types", "notifications\\.type_id"),
         EnumTable("health_states", listOf("health_states\\.id", ".*\\.health_state_id")),
         EnumTable("plant_forms", listOf("plant_forms\\.id", ".*\\.plant_form_id")),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
@@ -49,6 +49,7 @@ val ENUM_TABLES =
 val ID_WRAPPERS =
     listOf(
         IdWrapper("AccessionId", listOf("accessions\\.id", ".*\\.accession_id")),
+        IdWrapper("AccessionNotificationId", listOf("accession_notifications\\.id")),
         IdWrapper("AppDeviceId", listOf("app_devices\\.id", ".*\\.app_device_id")),
         IdWrapper("AutomationId", listOf("automations\\.id")),
         IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
@@ -64,7 +65,6 @@ val ID_WRAPPERS =
             "GerminationTestId",
             listOf("germination_tests\\.id", ".*\\.germination_test_id", "germinations\\.test_id")),
         IdWrapper("LayerId", listOf("layers\\.id", ".*\\.layer_id")),
-        IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
         IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
         IdWrapper("PhotoId", listOf("photos\\.id", ".*\\.photo_id")),
         IdWrapper(
