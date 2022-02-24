@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
+import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.USERS
 import java.net.URI
 import java.time.Instant
@@ -474,6 +475,29 @@ abstract class DatabaseTest {
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
           .set(USER_ID, userId.toIdWrapper { UserId(it) })
+          .execute()
+    }
+  }
+
+  /** Adds a storage location to a facility. */
+  fun insertStorageLocation(
+      id: Any,
+      facilityId: Any = "$id".toLong() / 10,
+      name: String = "Location $id",
+      condition: StorageCondition = StorageCondition.Freezer,
+      createdBy: UserId = currentUser().userId,
+  ) {
+    with(STORAGE_LOCATIONS) {
+      dslContext
+          .insertInto(STORAGE_LOCATIONS)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(CONDITION_ID, condition)
+          .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
+          .set(ID, id.toIdWrapper { StorageLocationId(it) })
+          .set(MODIFIED_BY, createdBy)
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(NAME, name)
           .execute()
     }
   }

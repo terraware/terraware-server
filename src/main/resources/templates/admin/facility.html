@@ -37,6 +37,50 @@
     <span th:text="${facility.type.displayName}">Seed Bank</span>
 </div>
 
+<h3>Storage Locations</h3>
+
+<ul>
+    <li th:each="location : ${storageLocations}">
+        <form method="POST" th:action="|${prefix}/updateStorageLocation|"
+              th:if="${canUpdateFacility}">
+            <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+            <input type="text" name="name" th:value="${location.name}"/>
+            <select name="condition">
+                <option th:each="condition : ${storageConditions}"
+                        th:value="${condition.name}" th:text="${condition.displayName}"
+                        th:selected="${location.conditionId} == ${condition}">
+                    Freezer
+                </option>
+            </select>
+            <input type="submit" value=" Update "/>
+        </form>
+        <form method="POST" th:action="|${prefix}/deleteStorageLocation|"
+              th:if="${canUpdateFacility}">
+            <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+            <input type="hidden" name="storageLocationId" th:value="${location.id}"/>
+            <input type="submit" value=" Delete "/>
+        </form>
+        <span th:text="|${location.name} - ${location.conditionId.displayName}|"
+              th:if="!${canUpdateFacility}">
+            Location 1 - Freezer
+        </span>
+    </li>
+</ul>
+
+<form method="POST" th:action="|${prefix}/createStorageLocation|" th:if="${canUpdateFacility}">
+    <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+    <label for="storageLocationName">Name</label>
+    <input type="text" name="name" id="storageLocationName" required/>
+    <label for="storageLocationCondition">Condition</label>
+    <select name="condition" id="storageLocationCondition">
+        <option th:each="condition : ${storageConditions}" th:text="${condition.displayName}"
+                th:value="${condition.name}">
+            Freezer
+        </option>
+    </select>
+    <input type="submit" value=" Create Storage Location "/>
+</form>
+
 <h3>Alert Recipients</h3>
 
 <ul>
@@ -67,7 +111,8 @@
     <input type="text" name="subject" id="subject" value="Testing Alert Email"/>
     <br/>
     <label for="body">Body</label>
-    <textarea rows="5" cols="40" name="body" id="body">This is a test of facility alert email.</textarea>
+    <textarea rows="5" cols="40" name="body"
+              id="body">This is a test of facility alert email.</textarea>
     <br/>
     <input type="submit" value=" Send Alert "/>
 </form>

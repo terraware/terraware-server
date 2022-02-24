@@ -20,6 +20,8 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
+import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
@@ -40,6 +42,7 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 import net.postgis.jdbc.geometry.Point
 import org.jooq.DSLContext
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Controller
@@ -187,6 +190,7 @@ class AdminController(
         organizationStore.fetchById(project.organizationId)
             ?: throw OrganizationNotFoundException(project.organizationId)
     val recipients = facilityStore.getAlertRecipients(facilityId)
+    val storageLocations = facilityStore.fetchStorageLocations(facilityId)
 
     model.addAttribute("canUpdateFacility", currentUser().canUpdateFacility(facilityId))
     model.addAttribute("facility", facility)
@@ -196,6 +200,8 @@ class AdminController(
     model.addAttribute("project", project)
     model.addAttribute("recipients", recipients)
     model.addAttribute("site", site)
+    model.addAttribute("storageConditions", StorageCondition.values())
+    model.addAttribute("storageLocations", storageLocations)
 
     return "/admin/facility"
   }
@@ -592,6 +598,52 @@ class AdminController(
     } catch (e: Exception) {
       log.error("Failed to send alert", e)
       redirectAttributes.addFlashAttribute("failureMessage", "Failed to send alert.")
+    }
+
+    return facility(facilityId)
+  }
+
+  @PostMapping("/createStorageLocation")
+  fun createStorageLocation(
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("name") name: String,
+      @RequestParam("condition") condition: StorageCondition,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    facilityStore.createStorageLocation(facilityId, name, condition)
+
+    redirectAttributes.addFlashAttribute("successMessage", "Storage location created.")
+
+    return facility(facilityId)
+  }
+
+  @PostMapping("/updateStorageLocation")
+  fun updateStorageLocation(
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("storageLocationId") storageLocationId: StorageLocationId,
+      @RequestParam("name") name: String,
+      @RequestParam("condition") condition: StorageCondition,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    facilityStore.updateStorageLocation(storageLocationId, name, condition)
+
+    redirectAttributes.addFlashAttribute("successMessage", "Storage location updated.")
+
+    return facility(facilityId)
+  }
+
+  @PostMapping("/deleteStorageLocation")
+  fun deleteStorageLocation(
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("storageLocationId") storageLocationId: StorageLocationId,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      facilityStore.deleteStorageLocation(storageLocationId)
+      redirectAttributes.addFlashAttribute("successMessage", "Storage location deleted.")
+    } catch (e: DataIntegrityViolationException) {
+      redirectAttributes.addFlashAttribute(
+          "failureMessage", "Storage location is in use; can't delete it.")
     }
 
     return facility(facilityId)

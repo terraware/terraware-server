@@ -19,6 +19,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.AccessionsDao
@@ -44,6 +45,7 @@ import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
+import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.TIMESERIES
 import io.mockk.every
 import io.mockk.mockk
@@ -173,6 +175,10 @@ internal class PermissionTest : DatabaseTest() {
   private val speciesNameIds = speciesIds.map { SpeciesNameId(it.value) }
   private val org1SpeciesNameIds = speciesNameIds.take(1).toTypedArray()
 
+  private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
+  private val org1StorageLocationIds = storageLocationIds.toTypedArray()
+  private val project10StorageLocationIds = storageLocationIds.take(4).toTypedArray()
+
   @BeforeEach
   fun setUp() {
     every { realmResource.users() } returns mockk()
@@ -242,6 +248,9 @@ internal class PermissionTest : DatabaseTest() {
       insertFeaturePhoto(it)
     }
     speciesIds.forEach { insertSpecies(it, organizationId = it.value, createdBy = userId) }
+    storageLocationIds.forEach {
+      insertStorageLocation(it, facilityId = it.value, createdBy = userId)
+    }
   }
 
   @Test
@@ -311,6 +320,7 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
+        createStorageLocation = true,
         updateFacility = true,
         listAutomations = true,
         sendAlert = true,
@@ -343,6 +353,13 @@ internal class PermissionTest : DatabaseTest() {
         readSpeciesName = true,
         updateSpeciesName = true,
         deleteSpeciesName = true,
+    )
+
+    permissions.expect(
+        *org1StorageLocationIds,
+        readStorageLocation = true,
+        updateStorageLocation = true,
+        deleteStorageLocation = true,
     )
 
     permissions.andNothingElse()
@@ -447,6 +464,7 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
+        createStorageLocation = true,
         updateFacility = true,
         listAutomations = true,
         sendAlert = true,
@@ -479,6 +497,13 @@ internal class PermissionTest : DatabaseTest() {
         readSpeciesName = true,
         updateSpeciesName = true,
         deleteSpeciesName = true,
+    )
+
+    permissions.expect(
+        *org1StorageLocationIds,
+        readStorageLocation = true,
+        updateStorageLocation = true,
+        deleteStorageLocation = true,
     )
 
     permissions.andNothingElse()
@@ -577,6 +602,11 @@ internal class PermissionTest : DatabaseTest() {
         deleteSpeciesName = true,
     )
 
+    permissions.expect(
+        *project10StorageLocationIds,
+        readStorageLocation = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -661,6 +691,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *org1SpeciesNameIds,
         readSpeciesName = true,
+    )
+
+    permissions.expect(
+        *project10StorageLocationIds,
+        readStorageLocation = true,
     )
 
     permissions.andNothingElse()
@@ -750,6 +785,11 @@ internal class PermissionTest : DatabaseTest() {
         readSpeciesName = true,
     )
 
+    permissions.expect(
+        *org1StorageLocationIds,
+        readStorageLocation = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -792,6 +832,7 @@ internal class PermissionTest : DatabaseTest() {
   fun `permissions require target objects to exist`() {
     givenRole(org1Id, Role.OWNER)
 
+    dslContext.deleteFrom(STORAGE_LOCATIONS).execute()
     dslContext.deleteFrom(TIMESERIES).execute()
     dslContext.deleteFrom(DEVICES).execute()
     dslContext.deleteFrom(AUTOMATIONS).execute()
@@ -825,6 +866,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedSpeciesNames = speciesNameIds.toMutableSet()
+    private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
 
     // All checks keyed on organization IDs go here
     fun expect(
@@ -955,6 +997,7 @@ internal class PermissionTest : DatabaseTest() {
         createAccession: Boolean = false,
         createAutomation: Boolean = false,
         createDevice: Boolean = false,
+        createStorageLocation: Boolean = false,
         updateFacility: Boolean = false,
         listAutomations: Boolean = false,
         sendAlert: Boolean = false,
@@ -972,6 +1015,10 @@ internal class PermissionTest : DatabaseTest() {
             createDevice,
             user.canCreateDevice(facilityId),
             "Can create device at facility $facilityId")
+        assertEquals(
+            createStorageLocation,
+            user.canCreateStorageLocation(facilityId),
+            "Can create storage location at facility $facilityId")
         assertEquals(
             updateFacility, user.canUpdateFacility(facilityId), "Can update facility $facilityId")
         assertEquals(
@@ -1139,6 +1186,31 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    // All checks keyed on storage location ID go here
+    fun expect(
+        vararg storageLocationIds: StorageLocationId,
+        readStorageLocation: Boolean = false,
+        updateStorageLocation: Boolean = false,
+        deleteStorageLocation: Boolean = false,
+    ) {
+      storageLocationIds.forEach { storageLocationId ->
+        assertEquals(
+            readStorageLocation,
+            user.canReadStorageLocation(storageLocationId),
+            "Can read storage location $storageLocationId")
+        assertEquals(
+            updateStorageLocation,
+            user.canUpdateStorageLocation(storageLocationId),
+            "Can update storage location $storageLocationId")
+        assertEquals(
+            deleteStorageLocation,
+            user.canDeleteStorageLocation(storageLocationId),
+            "Can delete storage location $storageLocationId")
+
+        uncheckedStorageLocationIds.remove(storageLocationId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedProjects.toTypedArray())
@@ -1151,6 +1223,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedSpeciesNames.toTypedArray())
+      expect(*uncheckedStorageLocationIds.toTypedArray())
     }
   }
 }

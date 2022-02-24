@@ -25,6 +25,8 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
@@ -453,6 +455,34 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateTimeseries(deviceId)) {
       readTimeseries(deviceId)
       throw AccessDeniedException("No permission to update timeseries on device $deviceId")
+    }
+  }
+
+  fun createStorageLocation(facilityId: FacilityId) {
+    if (!user.canCreateStorageLocation(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException(
+          "No permission to create storage location at facility $facilityId")
+    }
+  }
+
+  fun readStorageLocation(storageLocationId: StorageLocationId) {
+    if (!user.canReadStorageLocation(storageLocationId)) {
+      throw StorageLocationNotFoundException(storageLocationId)
+    }
+  }
+
+  fun updateStorageLocation(storageLocationId: StorageLocationId) {
+    if (!user.canUpdateStorageLocation(storageLocationId)) {
+      readStorageLocation(storageLocationId)
+      throw AccessDeniedException("No permission to update storage location")
+    }
+  }
+
+  fun deleteStorageLocation(storageLocationId: StorageLocationId) {
+    if (!user.canDeleteStorageLocation(storageLocationId)) {
+      readStorageLocation(storageLocationId)
+      throw AccessDeniedException("No permission to delete storage location")
     }
   }
 }
