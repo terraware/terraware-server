@@ -402,10 +402,7 @@ data class IndividualUser(
 
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean {
     val facilityId = parentStore.getFacilityId(storageLocationId) ?: return false
-    return when (facilityRoles[facilityId]) {
-      Role.OWNER, Role.ADMIN -> true
-      else -> false
-    }
+    return canCreateStorageLocation(facilityId)
   }
 
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean =

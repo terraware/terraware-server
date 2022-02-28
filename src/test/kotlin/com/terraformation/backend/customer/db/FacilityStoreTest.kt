@@ -165,4 +165,15 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(expected, actual)
   }
+
+  @Test
+  fun `updateStorageLocation throws exception if user lacks permission`() {
+    insertStorageLocation(storageLocationId)
+
+    every { user.canUpdateStorageLocation(storageLocationId) } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.updateStorageLocation(storageLocationId, "New Name", StorageCondition.Freezer)
+    }
+  }
 }
