@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
+import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.email.EmailService
@@ -72,7 +73,11 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     facilityStore =
         FacilityStore(
-            clock, dslContext, FacilitiesDao(jooqConfig), FacilityAlertRecipientsDao(jooqConfig))
+            clock,
+            dslContext,
+            FacilitiesDao(jooqConfig),
+            FacilityAlertRecipientsDao(jooqConfig),
+            StorageLocationsDao(jooqConfig))
     organizationStore = OrganizationStore(clock, dslContext, OrganizationsDao(jooqConfig))
     parentStore = ParentStore(dslContext)
     projectStore =

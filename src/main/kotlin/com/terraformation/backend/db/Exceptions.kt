@@ -75,6 +75,9 @@ class SpeciesNotFoundException(val speciesId: SpeciesId) :
 class SpeciesNameNotFoundException(val speciesNameId: SpeciesNameId) :
     EntityNotFoundException("Species name $speciesNameId not found")
 
+class StorageLocationNotFoundException(val storageLocationId: StorageLocationId) :
+    EntityNotFoundException("Storage location $storageLocationId not found")
+
 class TimeseriesNotFoundException(
     val deviceId: DeviceId,
     val timeseriesName: String?,

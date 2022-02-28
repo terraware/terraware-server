@@ -25,6 +25,8 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.StorageLocationNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -64,6 +66,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val siteId = SiteId(1)
   private val speciesId = SpeciesId(1)
   private val speciesNameId = SpeciesNameId(1)
+  private val storageLocationId = StorageLocationId(1)
 
   /**
    * Grants permission to perform a particular operation. This is a simple wrapper around a MockK
@@ -616,5 +619,52 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canCreateTimeseries(deviceId) }
     requirements.createTimeseries(deviceId)
+  }
+
+  @Test
+  fun createStorageLocation() {
+    assertThrows<FacilityNotFoundException> { requirements.createStorageLocation(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.createStorageLocation(facilityId) }
+
+    grant { user.canCreateStorageLocation(facilityId) }
+    requirements.createStorageLocation(facilityId)
+  }
+
+  @Test
+  fun readStorageLocation() {
+    assertThrows<StorageLocationNotFoundException> {
+      requirements.readStorageLocation(storageLocationId)
+    }
+
+    grant { user.canReadStorageLocation(storageLocationId) }
+    requirements.readStorageLocation(storageLocationId)
+  }
+
+  @Test
+  fun deleteStorageLocation() {
+    assertThrows<StorageLocationNotFoundException> {
+      requirements.deleteStorageLocation(storageLocationId)
+    }
+
+    grant { user.canReadStorageLocation(storageLocationId) }
+    assertThrows<AccessDeniedException> { requirements.deleteStorageLocation(storageLocationId) }
+
+    grant { user.canDeleteStorageLocation(storageLocationId) }
+    requirements.deleteStorageLocation(storageLocationId)
+  }
+
+  @Test
+  fun updateStorageLocation() {
+    assertThrows<StorageLocationNotFoundException> {
+      requirements.updateStorageLocation(storageLocationId)
+    }
+
+    grant { user.canReadStorageLocation(storageLocationId) }
+    assertThrows<AccessDeniedException> { requirements.updateStorageLocation(storageLocationId) }
+
+    grant { user.canUpdateStorageLocation(storageLocationId) }
+    requirements.updateStorageLocation(storageLocationId)
   }
 }

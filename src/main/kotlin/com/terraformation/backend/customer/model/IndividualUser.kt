@@ -16,6 +16,7 @@ import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.log.perClassLogger
@@ -386,6 +387,26 @@ data class IndividualUser(
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
 
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
+
+  override fun canCreateStorageLocation(facilityId: FacilityId): Boolean {
+    return when (facilityRoles[facilityId]) {
+      Role.OWNER, Role.ADMIN -> true
+      else -> false
+    }
+  }
+
+  override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean {
+    val facilityId = parentStore.getFacilityId(storageLocationId) ?: return false
+    return facilityId in facilityRoles
+  }
+
+  override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean {
+    val facilityId = parentStore.getFacilityId(storageLocationId) ?: return false
+    return canCreateStorageLocation(facilityId)
+  }
+
+  override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean =
+      canUpdateStorageLocation(storageLocationId)
 
   /** Returns true if the user is an admin or owner of any organizations. */
   override fun hasAnyAdminRole(): Boolean =

@@ -12,6 +12,7 @@ import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import java.security.Principal
@@ -76,6 +77,7 @@ interface TerrawareUser : Principal {
   fun canCreateSite(projectId: ProjectId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateSpeciesName(organizationId: OrganizationId): Boolean
+  fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
   fun canDeleteApiKey(organizationId: OrganizationId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
@@ -86,6 +88,7 @@ interface TerrawareUser : Principal {
   fun canDeleteSite(siteId: SiteId): Boolean
   fun canDeleteSpecies(organizationId: OrganizationId): Boolean
   fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean
+  fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canListApiKeys(organizationId: OrganizationId): Boolean
   fun canListAutomations(facilityId: FacilityId): Boolean
   fun canListFacilities(siteId: SiteId): Boolean
@@ -104,6 +107,7 @@ interface TerrawareUser : Principal {
   fun canReadSite(siteId: SiteId): Boolean
   fun canReadSpecies(organizationId: OrganizationId): Boolean
   fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean
+  fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId): Boolean
   fun canRemoveProjectUser(projectId: ProjectId): Boolean
@@ -120,5 +124,6 @@ interface TerrawareUser : Principal {
   fun canUpdateSite(siteId: SiteId): Boolean
   fun canUpdateSpecies(organizationId: OrganizationId): Boolean
   fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean
+  fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
 }

@@ -8,11 +8,16 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
+import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.tables.pojos.FacilityAlertRecipientsRow
+import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.tables.references.FACILITY_ALERT_RECIPIENTS
+import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -25,7 +30,8 @@ class FacilityStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao,
-    private val facilityAlertRecipientsDao: FacilityAlertRecipientsDao
+    private val facilityAlertRecipientsDao: FacilityAlertRecipientsDao,
+    private val storageLocationsDao: StorageLocationsDao,
 ) {
   private val log = perClassLogger()
 
@@ -127,5 +133,71 @@ class FacilityStore(
         log.warn("Tried to delete nonexistent alert recipient $email for $facilityId")
       }
     }
+  }
+
+  fun fetchStorageLocations(facilityId: FacilityId): List<StorageLocationsRow> {
+    requirePermissions { readFacility(facilityId) }
+
+    return storageLocationsDao.fetchByFacilityId(facilityId).filter {
+      val storageLocationId = it.id
+      storageLocationId != null && currentUser().canReadStorageLocation(storageLocationId)
+    }
+  }
+
+  fun createStorageLocation(
+      facilityId: FacilityId,
+      name: String,
+      condition: StorageCondition
+  ): StorageLocationId {
+    requirePermissions { createStorageLocation(facilityId) }
+
+    val row =
+        StorageLocationsRow(
+            conditionId = condition,
+            createdBy = currentUser().userId,
+            createdTime = clock.instant(),
+            enabled = true,
+            facilityId = facilityId,
+            modifiedBy = currentUser().userId,
+            modifiedTime = clock.instant(),
+            name = name,
+        )
+
+    storageLocationsDao.insert(row)
+
+    return row.id ?: throw IllegalStateException("ID not present after insertion")
+  }
+
+  fun updateStorageLocation(
+      storageLocationId: StorageLocationId,
+      name: String,
+      condition: StorageCondition
+  ) {
+    requirePermissions { updateStorageLocation(storageLocationId) }
+
+    with(STORAGE_LOCATIONS) {
+      dslContext
+          .update(STORAGE_LOCATIONS)
+          .set(CONDITION_ID, condition)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(NAME, name)
+          .execute()
+    }
+  }
+
+  /**
+   * Deletes a storage location. This will only succeed if the storage location is not referenced by
+   * any accessions.
+   *
+   * @throws org.springframework.dao.DataIntegrityViolationException The storage location is in use.
+   */
+  fun deleteStorageLocation(storageLocationId: StorageLocationId) {
+    requirePermissions { deleteStorageLocation(storageLocationId) }
+
+    dslContext
+        .deleteFrom(STORAGE_LOCATIONS)
+        .where(STORAGE_LOCATIONS.ID.eq(storageLocationId))
+        .execute()
   }
 }

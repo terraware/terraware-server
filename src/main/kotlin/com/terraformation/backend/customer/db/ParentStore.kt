@@ -13,6 +13,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
@@ -24,6 +25,7 @@ import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
+import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -48,6 +50,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(deviceId: DeviceId): FacilityId? =
       fetchFieldById(deviceId, DEVICES.ID, DEVICES.FACILITY_ID)
+
+  fun getFacilityId(storageLocationId: StorageLocationId): FacilityId? =
+      fetchFieldById(storageLocationId, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID)
 
   fun getFeatureId(photoId: PhotoId): FeatureId? =
       fetchFieldById(photoId, FEATURE_PHOTOS.PHOTO_ID, FEATURE_PHOTOS.FEATURE_ID)
