@@ -2030,7 +2030,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotificationListResponse'
+                $ref: '#/components/schemas/ListAccessionNotificationsResponsePayload'
   /api/v1/seedbank/notification/all/markRead:
     post:
       tags:
@@ -2730,6 +2730,53 @@ paths:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
 components:
   schemas:
+    AccessionNotificationPayload:
+      required:
+      - id
+      - read
+      - text
+      - timestamp
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this notification. Clients should treat
+            it as opaque.
+          example: "12345"
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum:
+          - Alert
+          - State
+          - Date
+        read:
+          type: boolean
+          description: "If true, this notification has been marked as read."
+        text:
+          type: string
+          description: Plain-text body of notification.
+          example: Accession XYZ is ready to be dried.
+        accessionId:
+          type: integer
+          description: "For accession notifications, which accession caused the notification."
+          format: int64
+        state:
+          type: string
+          description: "For state notifications, which state is being summarized."
+          enum:
+          - Awaiting Check-In
+          - Pending
+          - Processing
+          - Processed
+          - Drying
+          - Dried
+          - In Storage
+          - Withdrawn
+          - Nursery
     AccessionPayload:
       required:
       - accessionNumber
@@ -4330,6 +4377,18 @@ components:
               items:
                 type: number
                 format: double
+    ListAccessionNotificationsResponsePayload:
+      required:
+      - notifications
+      - status
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessionNotificationPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ListAllFieldValuesRequestPayload:
       required:
       - facilityId
@@ -4759,65 +4818,6 @@ components:
         properties:
           child:
             $ref: '#/components/schemas/SearchNodePayload'
-    NotificationListResponse:
-      required:
-      - notifications
-      - status
-      type: object
-      properties:
-        notifications:
-          type: array
-          items:
-            $ref: '#/components/schemas/NotificationPayload'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    NotificationPayload:
-      required:
-      - id
-      - read
-      - text
-      - timestamp
-      - type
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier for this notification. Clients should treat
-            it as opaque.
-          example: "12345"
-        timestamp:
-          type: string
-          format: date-time
-        type:
-          type: string
-          enum:
-          - Alert
-          - State
-          - Date
-        read:
-          type: boolean
-          description: "If true, this notification has been marked as read."
-        text:
-          type: string
-          description: Plain-text body of notification.
-          example: Accession XYZ is ready to be dried.
-        accessionId:
-          type: integer
-          description: "For accession notifications, which accession caused the notification."
-          format: int64
-        state:
-          type: string
-          description: "For state notifications, which state is being summarized."
-          enum:
-          - Awaiting Check-In
-          - Pending
-          - Processing
-          - Processed
-          - Drying
-          - Dried
-          - In Storage
-          - Withdrawn
-          - Nursery
     ObservationResponse:
       required:
       - featureId
