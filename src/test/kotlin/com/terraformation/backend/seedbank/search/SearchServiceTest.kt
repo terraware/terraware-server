@@ -21,13 +21,6 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.mercatorPoint
-import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
-import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.BagsDao
-import com.terraformation.backend.db.tables.daos.GerminationTestsDao
-import com.terraformation.backend.db.tables.daos.GerminationsDao
-import com.terraformation.backend.db.tables.daos.SpeciesDao
-import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.AccessionGerminationTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
@@ -71,12 +64,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   override val sequencesToReset: List<String> = listOf("accession_id_seq")
 
-  private lateinit var accessionsDao: AccessionsDao
-  private lateinit var accessionGerminationTestTypesDao: AccessionGerminationTestTypesDao
   private lateinit var accessionSearchService: AccessionSearchService
-  private lateinit var bagsDao: BagsDao
-  private lateinit var germinationTestsDao: GerminationTestsDao
-  private lateinit var germinationsDao: GerminationsDao
   private lateinit var searchService: SearchService
 
   private val organizationId = OrganizationId(1)
@@ -110,13 +98,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun init() {
-    val jooqConfig = dslContext.configuration()
-
-    accessionsDao = AccessionsDao(jooqConfig)
-    accessionGerminationTestTypesDao = AccessionGerminationTestTypesDao(jooqConfig)
-    bagsDao = BagsDao(jooqConfig)
-    germinationTestsDao = GerminationTestsDao(jooqConfig)
-    germinationsDao = GerminationsDao(jooqConfig)
     searchService = SearchService(dslContext)
     accessionSearchService = AccessionSearchService(tables, searchService)
 
@@ -128,7 +109,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     val now = Instant.now()
 
-    val speciesDao = SpeciesDao(jooqConfig)
     speciesDao.insert(
         SpeciesRow(
             id = SpeciesId(10000),
@@ -1210,8 +1190,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns values for field from reference table`() {
-      val storageLocationDao = StorageLocationsDao(dslContext.configuration())
-      storageLocationDao.insert(
+      storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1000),
               facilityId = FacilityId(100),
@@ -1222,7 +1201,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.now(),
           ))
-      storageLocationDao.insert(
+      storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1001),
               facilityId = FacilityId(100),
@@ -1233,7 +1212,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.now(),
           ))
-      storageLocationDao.insert(
+      storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1002),
               facilityId = FacilityId(100),
@@ -1252,12 +1231,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes storage locations the user has permission to view`() {
-      val storageLocationDao = StorageLocationsDao(dslContext.configuration())
       insertProject(11)
       insertSite(110)
       insertFacility(1100)
 
-      storageLocationDao.insert(
+      storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1000),
               facilityId = FacilityId(100),
@@ -1268,7 +1246,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.now(),
           ))
-      storageLocationDao.insert(
+      storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1001),
               facilityId = FacilityId(1100),
@@ -1314,9 +1292,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes child table values the user has permission to view`() {
-      val germinationTestsDao = GerminationTestsDao(dslContext.configuration())
-      val germinationsDao = GerminationsDao(dslContext.configuration())
-
       val hiddenAccessionId = AccessionId(1100)
 
       insertProject(11)

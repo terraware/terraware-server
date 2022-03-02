@@ -8,7 +8,6 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.mercatorPoint
-import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -26,7 +25,6 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock: Clock = mockk()
   private lateinit var parentStore: ParentStore
-  private lateinit var sitesDao: SitesDao
   private lateinit var store: SiteStore
 
   private val organizationId = OrganizationId(1)
@@ -36,7 +34,6 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     parentStore = ParentStore(dslContext)
-    sitesDao = SitesDao(dslContext.configuration())
     store = SiteStore(clock, dslContext, parentStore, sitesDao)
 
     every { clock.instant() } returns Instant.EPOCH

@@ -14,9 +14,6 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.tables.daos.SpeciesDao
-import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
-import com.terraformation.backend.db.tables.daos.SpeciesOptionsDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
@@ -44,19 +41,10 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   override val user: TerrawareUser = mockUser()
 
-  private lateinit var speciesDao: SpeciesDao
-  private lateinit var speciesNamesDao: SpeciesNamesDao
-  private lateinit var speciesOptionsDao: SpeciesOptionsDao
   private lateinit var store: SpeciesStore
 
   @BeforeEach
   fun setUp() {
-    val jooqConfig = dslContext.configuration()
-
-    speciesDao = SpeciesDao(jooqConfig)
-    speciesNamesDao = SpeciesNamesDao(jooqConfig)
-    speciesOptionsDao = SpeciesOptionsDao(jooqConfig)
-
     store =
         SpeciesStore(
             clock,

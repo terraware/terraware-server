@@ -22,10 +22,6 @@ import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.AutomationsDao
-import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
@@ -110,12 +106,8 @@ import org.springframework.beans.factory.annotation.Autowired
  * permissions other than the ones the test specifically said they should.
  */
 internal class PermissionTest : DatabaseTest() {
-  private lateinit var accessionsDao: AccessionsDao
-  private lateinit var automationsDao: AutomationsDao
-  private lateinit var devicesDao: DevicesDao
   private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
-  private lateinit var usersDao: UsersDao
   private lateinit var userStore: UserStore
 
   @Autowired private lateinit var config: TerrawareServerConfig
@@ -183,13 +175,8 @@ internal class PermissionTest : DatabaseTest() {
   fun setUp() {
     every { realmResource.users() } returns mockk()
 
-    val jooqConfig = dslContext.configuration()
-    accessionsDao = AccessionsDao(jooqConfig)
-    automationsDao = AutomationsDao(jooqConfig)
-    devicesDao = DevicesDao(jooqConfig)
     parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
-    usersDao = UsersDao(jooqConfig)
     userStore =
         UserStore(
             clock,

@@ -10,9 +10,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.mercatorPoint
-import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
-import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
@@ -57,13 +54,10 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
-  private lateinit var accessionsDao: AccessionsDao
-  private lateinit var accessionPhotosDao: AccessionPhotosDao
   private lateinit var accessionStore: AccessionStore
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
   private lateinit var fileStore: FileStore
-  private lateinit var photosDao: PhotosDao
   private lateinit var pathGenerator: PathGenerator
   private val random: Random = mockk()
   private lateinit var repository: PhotoRepository
@@ -90,10 +84,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    accessionPhotosDao = AccessionPhotosDao(dslContext.configuration())
-    accessionsDao = AccessionsDao(dslContext.configuration())
-    photosDao = PhotosDao(dslContext.configuration())
-
     accessionStore =
         AccessionStore(
             dslContext,

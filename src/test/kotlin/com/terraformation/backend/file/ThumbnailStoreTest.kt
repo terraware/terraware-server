@@ -5,8 +5,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ThumbnailId
-import com.terraformation.backend.db.tables.daos.PhotosDao
-import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.mockUser
@@ -42,9 +40,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
   private val fileStore: FileStore = mockk()
 
-  private lateinit var photosDao: PhotosDao
   private lateinit var store: ThumbnailStore
-  private lateinit var thumbnailsDao: ThumbnailsDao
 
   private val photoId = PhotoId(1000)
   private val photoStorageUrl = URI("file:///a/b/c/original.jpg")
@@ -54,10 +50,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    val jooqConfig = dslContext.configuration()
-    photosDao = PhotosDao(jooqConfig)
-    thumbnailsDao = ThumbnailsDao(jooqConfig)
-
     store = ThumbnailStore(clock, dslContext, fileStore, photosDao, thumbnailsDao)
 
     insertUser()

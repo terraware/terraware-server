@@ -10,8 +10,6 @@ import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.daos.OrganizationsDao
-import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -52,11 +50,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val usersResource = InMemoryKeycloakUsersResource()
   override val user: TerrawareUser = mockUser()
 
-  private lateinit var organizationsDao: OrganizationsDao
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
-  private lateinit var usersDao: UsersDao
   private lateinit var userStore: UserStore
 
   private val keycloakConfig =
@@ -103,10 +99,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     usersResource.create(userRepresentation)
-
-    val configuration = dslContext.configuration()
-    organizationsDao = OrganizationsDao(configuration)
-    usersDao = UsersDao(configuration)
 
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     parentStore = ParentStore(dslContext)

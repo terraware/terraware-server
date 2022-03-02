@@ -29,18 +29,6 @@ import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
-import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
-import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.AppDevicesDao
-import com.terraformation.backend.db.tables.daos.BagsDao
-import com.terraformation.backend.db.tables.daos.GeolocationsDao
-import com.terraformation.backend.db.tables.daos.GerminationTestsDao
-import com.terraformation.backend.db.tables.daos.GerminationsDao
-import com.terraformation.backend.db.tables.daos.PhotosDao
-import com.terraformation.backend.db.tables.daos.SpeciesDao
-import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
-import com.terraformation.backend.db.tables.daos.SpeciesOptionsDao
-import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
@@ -128,39 +116,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
 
   private lateinit var store: AccessionStore
-  private lateinit var accessionsDao: AccessionsDao
-  private lateinit var accessionPhotosDao: AccessionPhotosDao
-  private lateinit var appDevicesDao: AppDevicesDao
-  private lateinit var bagsDao: BagsDao
-  private lateinit var geolocationsDao: GeolocationsDao
-  private lateinit var germinationsDao: GerminationsDao
-  private lateinit var germinationTestsDao: GerminationTestsDao
   private lateinit var parentStore: ParentStore
-  private lateinit var photosDao: PhotosDao
-  private lateinit var speciesDao: SpeciesDao
-  private lateinit var speciesNamesDao: SpeciesNamesDao
-  private lateinit var speciesOptionsDao: SpeciesOptionsDao
-  private lateinit var storageLocationsDao: StorageLocationsDao
 
   private val facilityId = FacilityId(100)
   private val organizationId = OrganizationId(1)
 
   @BeforeEach
   fun init() {
-    val jooqConfig = dslContext.configuration()
-    accessionsDao = AccessionsDao(jooqConfig)
-    accessionPhotosDao = AccessionPhotosDao(jooqConfig)
-    appDevicesDao = AppDevicesDao(jooqConfig)
-    bagsDao = BagsDao(jooqConfig)
-    geolocationsDao = GeolocationsDao(jooqConfig)
-    germinationsDao = GerminationsDao(jooqConfig)
-    germinationTestsDao = GerminationTestsDao(jooqConfig)
     parentStore = ParentStore(dslContext)
-    photosDao = PhotosDao(jooqConfig)
-    speciesDao = SpeciesDao(jooqConfig)
-    speciesNamesDao = SpeciesNamesDao(jooqConfig)
-    speciesOptionsDao = SpeciesOptionsDao(jooqConfig)
-    storageLocationsDao = StorageLocationsDao(jooqConfig)
 
     val speciesStore =
         SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, speciesOptionsDao)

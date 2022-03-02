@@ -22,14 +22,6 @@ import com.terraformation.backend.db.asGeoJson
 import com.terraformation.backend.db.assertPointsEqual
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.newPoint
-import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
-import com.terraformation.backend.db.tables.daos.FeaturesDao
-import com.terraformation.backend.db.tables.daos.LayersDao
-import com.terraformation.backend.db.tables.daos.PhotosDao
-import com.terraformation.backend.db.tables.daos.PlantObservationsDao
-import com.terraformation.backend.db.tables.daos.PlantsDao
-import com.terraformation.backend.db.tables.daos.SpeciesDao
-import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.pojos.FeaturePhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.PlantObservationsRow
@@ -94,23 +86,9 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
   private val thumbnailStore: ThumbnailStore = mockk()
 
   private lateinit var store: FeatureStore
-  private lateinit var featurePhotosDao: FeaturePhotosDao
-  private lateinit var featuresDao: FeaturesDao
-  private lateinit var plantsDao: PlantsDao
-  private lateinit var plantObservationsDao: PlantObservationsDao
-  private lateinit var photosDao: PhotosDao
-  private lateinit var thumbnailsDao: ThumbnailsDao
 
   @BeforeEach
   fun init() {
-    val jooqConfig = dslContext.configuration()
-    featurePhotosDao = FeaturePhotosDao(jooqConfig)
-    featuresDao = FeaturesDao(jooqConfig)
-    plantsDao = PlantsDao(jooqConfig)
-    plantObservationsDao = PlantObservationsDao(jooqConfig)
-    photosDao = PhotosDao(jooqConfig)
-    thumbnailsDao = ThumbnailsDao(jooqConfig)
-
     store =
         FeatureStore(
             clock,
@@ -716,17 +694,8 @@ internal class FeatureStoreTest : DatabaseTest(), RunsAsUser {
     private val speciesIdsToCount = mapOf(SpeciesId(1) to 4, SpeciesId(2) to 1, SpeciesId(3) to 3)
     private val nonExistentSpeciesId = SpeciesId(402)
 
-    private lateinit var layersDao: LayersDao
-    private lateinit var speciesDao: SpeciesDao
-
     @BeforeEach
     fun init() {
-      val jooqConfig = dslContext.configuration()
-
-      featuresDao = FeaturesDao(jooqConfig)
-      layersDao = LayersDao(jooqConfig)
-      speciesDao = SpeciesDao(jooqConfig)
-
       insertFeature(id = featureId, layerId = layerId)
     }
 
