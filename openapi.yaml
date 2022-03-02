@@ -3575,6 +3575,26 @@ components:
       properties:
         description:
           type: string
+        layerTypes:
+          uniqueItems: true
+          type: array
+          description: Create map layers of these types. Pass an empty list to skip
+            creating layers. Default is to create a Plants Planted layer.
+          items:
+            type: string
+            enum:
+            - Aerial Photos
+            - Surface Color Map
+            - Terrain Color Map
+            - Boundaries
+            - Plants Planted
+            - Plants Existing
+            - Irrigation
+            - Infrastructure
+            - Partner Input
+            - Restoration Zones
+            - Site Prep
+            - Map notes
         location:
           $ref: '#/components/schemas/Point'
         locale:
