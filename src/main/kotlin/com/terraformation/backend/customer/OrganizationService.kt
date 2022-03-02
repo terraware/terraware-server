@@ -12,6 +12,7 @@ import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
@@ -77,6 +78,13 @@ class OrganizationService(
             projectStore.create(orgModel.id, name, hidden = true, organizationWide = true)
         val siteModel = siteStore.create(SitesRow(projectId = projectModel.id, name = name))
         val facilityModel = facilityStore.create(siteModel.id, name, FacilityType.SeedBank)
+
+        (1..3).forEach { num ->
+          facilityStore.createStorageLocation(
+              facilityModel.id, "Refrigerator $num", StorageCondition.Refrigerator)
+          facilityStore.createStorageLocation(
+              facilityModel.id, "Freezer $num", StorageCondition.Freezer)
+        }
 
         orgModel.copy(
             projects =
