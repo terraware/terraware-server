@@ -8,8 +8,8 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
-import com.terraformation.backend.seedbank.db.NotificationStore
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
@@ -25,7 +25,7 @@ class DateNotificationTask(
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao,
     private val messages: Messages,
-    private val notificationStore: NotificationStore,
+    private val accessionNotificationStore: AccessionNotificationStore,
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -80,7 +80,7 @@ class DateNotificationTask(
 
   private fun insert(facilityId: FacilityId, accessionId: AccessionId, message: String) {
     log.info("Generated notification: $message")
-    notificationStore.insertDateNotification(facilityId, accessionId, message)
+    accessionNotificationStore.insertDateNotification(facilityId, accessionId, message)
   }
 
   class FinishedEvent

@@ -122,6 +122,8 @@ class SchemaDocsGenerator : DatabaseTest() {
   private val tableSlices =
       mapOf(
           "accession_germination_test_types" to setOf(ALL, SEEDBANK),
+          "accession_notification_types" to setOf(ALL, SEEDBANK),
+          "accession_notifications" to setOf(ALL, SEEDBANK),
           "accession_photos" to setOf(ALL, SEEDBANK),
           "accession_secondary_collectors" to setOf(ALL, SEEDBANK),
           "accession_state_history" to setOf(ALL, SEEDBANK),
@@ -151,8 +153,6 @@ class SchemaDocsGenerator : DatabaseTest() {
           "health_states" to setOf(ALL, GIS),
           "layer_types" to setOf(ALL, GIS),
           "layers" to setOf(ALL, GIS),
-          "notification_types" to setOf(ALL, SEEDBANK),
-          "notifications" to setOf(ALL, SEEDBANK),
           "organization_users" to setOf(ALL, CUSTOMER),
           "organizations" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK, SPECIES),
           "photos" to setOf(ALL, GIS, SEEDBANK),
