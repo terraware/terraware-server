@@ -3,11 +3,11 @@ accession_states
 germination_test_types
 photos
 storage_conditions
+accession_notification_types
 app_devices
 germination_seed_types
 germination_substrates
 germination_treatments
-notification_types
 organizations
 processing_methods
 source_plant_origins
@@ -28,5 +28,5 @@ accession_germination_test_types
 accession_photos
 accession_secondary_collectors
 accession_state_history
-notifications
+accession_notifications
 withdrawals

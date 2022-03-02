@@ -19,6 +19,8 @@ digraph "twoDegreesRelationshipsDiagram" {
     arrowsize="0.8"
   ];
   "accession_germination_test_types":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accession_notifications":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accession_notifications":"elipses":w -> "accession_states":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_photos":"accession_id":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_photos":"photo_id":w -> "photos":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "accession_secondary_collectors":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -50,8 +52,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "geolocations":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "germination_tests":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "germination_tests":"elipses":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "notifications":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "notifications":"elipses":w -> "accession_states":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "photos":"created_by":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "photos":"modified_by":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"elipses":w -> "rare_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -74,6 +74,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/accession_germination_test_types.html"
     target="_top"
     tooltip="accession_germination_test_types"
+  ];
+  "accession_notifications" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>accession_notifications</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/accession_notifications.html"
+    target="_top"
+    tooltip="accession_notifications"
   ];
   "accession_photos" [
    label=<
@@ -227,17 +238,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/germination_tests.html"
     target="_top"
     tooltip="germination_tests"
-  ];
-  "notifications" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>notifications</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/notifications.html"
-    target="_top"
-    tooltip="notifications"
   ];
   "photos" [
    label=<

@@ -4,6 +4,7 @@ countries
 germination_test_types
 rare_types
 storage_conditions
+accession_notification_types
 app_devices
 conservation_statuses
 facility_types
@@ -12,7 +13,6 @@ germination_substrates
 germination_treatments
 health_states
 layer_types
-notification_types
 plant_forms
 processing_methods
 project_statuses
@@ -54,7 +54,7 @@ project_type_selections
 accession_state_history
 automations
 feature_photos
-notifications
+accession_notifications
 project_users
 species_names
 species_options

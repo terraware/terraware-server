@@ -5,7 +5,7 @@ organization_users
 species_options
 species_names
 project_users
-notifications
+accession_notifications
 feature_photos
 automations
 accession_state_history
@@ -47,7 +47,6 @@ project_types
 project_statuses
 processing_methods
 plant_forms
-notification_types
 layer_types
 health_states
 germination_treatments
@@ -56,6 +55,7 @@ germination_seed_types
 facility_types
 conservation_statuses
 app_devices
+accession_notification_types
 storage_conditions
 rare_types
 germination_test_types

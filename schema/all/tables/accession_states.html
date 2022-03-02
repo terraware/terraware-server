@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="accession_notifications.accession_state_id references accession_states.id via notification_accession_state_id_fkey"><a href='accession_notifications.html'>accession_notifications</a><span class='relatedKey'>.accession_state_id</span></td>
+                                                <td class="constraint detail">notification_accession_state_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="accession_state_history.new_state_id references accession_states.id via accession_state_history_new_state_id_fkey"><a href='accession_state_history.html'>accession_state_history</a><span class='relatedKey'>.new_state_id</span></td>
                                                 <td class="constraint detail">accession_state_history_new_state_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -135,10 +139,6 @@
                                             <tr>
                                                 <td title="accessions.state_id references accession_states.id via accession_state_id_fkey"><a href='accessions.html'>accessions</a><span class='relatedKey'>.state_id</span></td>
                                                 <td class="constraint detail">accession_state_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="notifications.accession_state_id references accession_states.id via notification_accession_state_id_fkey"><a href='notifications.html'>notifications</a><span class='relatedKey'>.accession_state_id</span></td>
-                                                <td class="constraint detail">notification_accession_state_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -235,40 +235,40 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="740,81,1003,286">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="371,81,696,755">
-<area shape="rect" id="node3" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="5,493,327,650">
-<area shape="rect" id="node4" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="774,477,969,711">
+<area shape="rect" id="node1" href="../../tables/accession_notifications.html" target="_top" title="accession_notifications" alt="" coords="741,5,1001,240">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="371,145,696,820">
+<area shape="rect" id="node3" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="5,557,327,715">
+<area shape="rect" id="node4" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="740,739,1003,944">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/accession_states.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accession_germination_test_types.html" target="_top" title="accession_germination_test_types" alt="" coords="1380,219,1723,307">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1011,268,1336,943">
-<area shape="rect" id="node5" href="../../tables/collectors.html" target="_top" title="collectors" alt="" coords="726,184,886,272">
-<area shape="rect" id="node7" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="645,1275,967,1432">
-<area shape="rect" id="node8" href="../../tables/app_devices.html" target="_top" title="app_devices" alt="" coords="717,79,895,167">
-<area shape="rect" id="node9" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,357,147,445">
-<area shape="rect" id="node10" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="411,237,563,325">
-<area shape="rect" id="node11" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="687,500,925,588">
-<area shape="rect" id="node12" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="404,669,571,757">
-<area shape="rect" id="node13" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="687,888,925,976">
-<area shape="rect" id="node14" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="686,783,926,871">
-<area shape="rect" id="node15" href="../../tables/species_endangered_types.html" target="_top" title="species_endangered_types" alt="" coords="663,641,949,729">
-<area shape="rect" id="node16" href="../../tables/species.html" target="_top" title="species" alt="" coords="735,395,877,483">
-<area shape="rect" id="node17" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="697,289,915,377">
-<area shape="rect" id="node18" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="373,523,601,611">
-<area shape="rect" id="node3" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1443,324,1659,412">
-<area shape="rect" id="node4" href="../../tables/accession_secondary_collectors.html" target="_top" title="accession_secondary_collectors" alt="" coords="1390,113,1713,201">
-<area shape="rect" id="node6" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1420,1297,1683,1503">
-<area shape="rect" id="node20" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="191,319,329,407">
-<area shape="rect" id="node19" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1489,429,1614,517">
-<area shape="rect" id="node21" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1461,535,1642,623">
-<area shape="rect" id="node22" href="../../tables/germination_tests.html" target="_top" title="germination_tests" alt="" coords="1440,888,1663,976">
-<area shape="rect" id="node23" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1454,1045,1649,1280">
-<area shape="rect" id="node24" href="../../tables/notification_types.html" target="_top" title="notification_types" alt="" coords="1062,1107,1285,1195">
-<area shape="rect" id="node25" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1767,927,1948,1015">
+<area shape="rect" id="node1" href="../../tables/accession_germination_test_types.html" target="_top" title="accession_germination_test_types" alt="" coords="1380,901,1723,989">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1011,581,1336,1256">
+<area shape="rect" id="node4" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="645,175,967,332">
+<area shape="rect" id="node9" href="../../tables/collectors.html" target="_top" title="collectors" alt="" coords="726,491,886,579">
+<area shape="rect" id="node11" href="../../tables/app_devices.html" target="_top" title="app_devices" alt="" coords="717,385,895,473">
+<area shape="rect" id="node12" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,571,147,659">
+<area shape="rect" id="node13" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="411,505,563,593">
+<area shape="rect" id="node14" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="687,807,925,895">
+<area shape="rect" id="node15" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="404,949,571,1037">
+<area shape="rect" id="node16" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="687,1267,925,1355">
+<area shape="rect" id="node17" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="686,1089,926,1177">
+<area shape="rect" id="node18" href="../../tables/species_endangered_types.html" target="_top" title="species_endangered_types" alt="" coords="663,948,949,1036">
+<area shape="rect" id="node19" href="../../tables/species.html" target="_top" title="species" alt="" coords="735,701,877,789">
+<area shape="rect" id="node20" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="697,596,915,684">
+<area shape="rect" id="node21" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="373,776,601,864">
+<area shape="rect" id="node3" href="../../tables/accession_notifications.html" target="_top" title="accession_notifications" alt="" coords="1421,5,1681,240">
+<area shape="rect" id="node5" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="191,468,329,556">
+<area shape="rect" id="node6" href="../../tables/accession_notification_types.html" target="_top" title="accession_notification_types" alt="" coords="1023,111,1324,199">
+<area shape="rect" id="node7" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1443,585,1659,673">
+<area shape="rect" id="node8" href="../../tables/accession_secondary_collectors.html" target="_top" title="accession_secondary_collectors" alt="" coords="1390,480,1713,568">
+<area shape="rect" id="node10" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1420,257,1683,463">
+<area shape="rect" id="node22" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1489,691,1614,779">
+<area shape="rect" id="node23" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1461,796,1642,884">
+<area shape="rect" id="node24" href="../../tables/germination_tests.html" target="_top" title="germination_tests" alt="" coords="1440,1204,1663,1292">
+<area shape="rect" id="node25" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1767,1243,1948,1331">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/accession_states.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
