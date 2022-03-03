@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.SiteService
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
@@ -67,6 +68,7 @@ class AdminController(
     private val layerStore: LayerStore,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
+    private val siteService: SiteService,
     private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
@@ -464,25 +466,16 @@ class AdminController(
   ): String {
     val location =
         Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
-    val site = siteStore.create(SitesRow(projectId = projectId, name = name, location = location))
 
     try {
-      layerTypes?.forEach { layerType ->
-        layerStore.createLayer(
-            LayerModel(
-                hidden = false,
-                layerType = layerType,
-                proposed = false,
-                siteId = site.id,
-                tileSetName = null,
-            ))
-      }
+      siteService.create(
+          SitesRow(projectId = projectId, name = name, location = location),
+          layerTypes?.toSet() ?: emptySet())
 
       redirectAttributes.addFlashAttribute("successMessage", "Site created.")
     } catch (e: Exception) {
-      log.error("Layer creation failed", e)
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "Created site but could not create layers.")
+      log.error("Site creation failed", e)
+      redirectAttributes.addFlashAttribute("failureMessage", "Unable to create site and layers.")
     }
 
     return project(projectId)
