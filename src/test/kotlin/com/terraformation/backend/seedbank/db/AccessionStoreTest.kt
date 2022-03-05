@@ -569,7 +569,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       it.copy(
           germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)),
           processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(100))
+          initialQuantity = seeds(200))
     }
     val desired =
         initial.copy(
