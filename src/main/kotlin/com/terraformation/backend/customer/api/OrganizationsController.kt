@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RestController
 @RequestMapping("/api/v1/organizations")
-@SecurityRequirement(name="oauth2")
+@SecurityRequirement(name = "oauth2")
 class OrganizationsController(
     private val organizationService: OrganizationService,
     private val organizationStore: OrganizationStore,

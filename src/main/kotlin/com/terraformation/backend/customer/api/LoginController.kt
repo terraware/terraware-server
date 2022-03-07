@@ -4,7 +4,6 @@ import com.terraformation.backend.api.CustomerEndpoint
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import javax.servlet.http.HttpServletResponse
 import javax.ws.rs.QueryParam
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint

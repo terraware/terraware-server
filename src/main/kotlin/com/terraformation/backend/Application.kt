@@ -15,7 +15,8 @@ import org.springframework.scheduling.annotation.EnableScheduling
  * Stub application class. This does nothing by itself, but it is where we hang application-level
  * configuration annotations for libraries such as Spring.
  */
-@OpenAPIDefinition(security = [SecurityRequirement(name="oauth2")],
+@OpenAPIDefinition(
+    security = [SecurityRequirement(name = "oauth2")],
     info =
         Info(
             title = "Terraware Server",
