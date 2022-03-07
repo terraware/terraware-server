@@ -1,12 +1,10 @@
 # Terraware API Server
 
-This is the back end for the software suite that runs in Terraformation's modular seed banks.
+This is the back end for the [Terraware](https://terraware.io/) application.
 
-It has two main areas of focus: the seed processing workflow and monitoring of the seed bank's physical infrastructure.
+It has three main areas of focus: the seed processing workflow, tracking location data of plants, and monitoring of a seed bank's physical infrastructure.
 
-The initial version will be deployed to Raspberry Pi servers using Balena for device management. See the [Terraware Balena repo](https://github.com/terraware/balena/) for details about that and for links to some of the other services that interact with this code.
-
-The server does not depend on the Balena or Raspberry Pi environments and should work on any hardware that supports the Java virtual machine.
+The production version of the server is hosted on AWS, but it is also possible to run locally in a development environment or an on-premises server.
 
 ## Quickstart (to try running it locally)
 
@@ -52,7 +50,7 @@ The `check` target will run the linter as well as the actual tests; to run just 
 
 To use the web front end, you'll need access to a Keycloak instance, either an existing one or a local one. See [KEYCLOAK.md](KEYCLOAK.md) for setup instructions.
 
-Clone the [seed bank app front end code base](https://github.com/terraware/seedbank-app).
+Clone the [Terraware web app front end code base](https://github.com/terraware/terraware-web).
 
 Follow the front end repo's initial setup instructions to install dependencies and so forth.
 
