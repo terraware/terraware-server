@@ -177,6 +177,9 @@ data class AccessionModel(
         throw IllegalArgumentException(
             "Total accession size must be a seed count if processing method is Count")
       }
+      if (total.quantity.signum() <= 0) {
+        throw IllegalArgumentException("Total accession size must be greater than 0")
+      }
     }
 
     listOfNotNull(
@@ -190,7 +193,23 @@ data class AccessionModel(
             throw IllegalArgumentException(
                 "Seed quantities can't be specified by weight if processing method is Count")
           }
+
+          if (quantity.quantity.signum() < 0) {
+            throw IllegalArgumentException("Cannot withdraw more seeds than are in the accession")
+          }
         }
+
+    val totalWithdrawn =
+        listOfNotNull(
+                withdrawals
+                    .filter { it.purpose != WithdrawalPurpose.GerminationTesting }
+                    .mapNotNull { it.withdrawn?.quantity },
+                germinationTests.mapNotNull { it.seedsSown?.toBigDecimal() })
+            .flatten()
+            .sumOf { it }
+    if (total != null && totalWithdrawn > total.quantity) {
+      throw IllegalArgumentException("Cannot withdraw more seeds than are in the accession")
+    }
   }
 
   private fun validateWeightBased() {
@@ -198,6 +217,9 @@ data class AccessionModel(
       if (total.units == SeedQuantityUnits.Seeds) {
         throw IllegalArgumentException(
             "Total accession size must be a weight measurement if processing method is Weight")
+      }
+      if (total.quantity.signum() <= 0) {
+        throw IllegalArgumentException("Total accession size must be greater than 0")
       }
     }
 
@@ -212,6 +234,9 @@ data class AccessionModel(
         throw IllegalArgumentException(
             "Seeds remaining on germination tests and withdrawals must be weight-based if " +
                 "accession processing method is Weight")
+      } else if (quantity.quantity.signum() < 0) {
+        throw IllegalArgumentException(
+            "Seeds remaining on germination tests and withdrawals cannot be negative")
       }
     }
   }

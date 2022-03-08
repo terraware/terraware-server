@@ -347,6 +347,50 @@ internal class AccessionModelTest {
         accession(processingMethod = null, total = grams(1))
       }
     }
+
+    @Test
+    fun `cannot withdraw more seeds than exist in the accession`() {
+      assertThrows<IllegalArgumentException> {
+        accession(
+            processingMethod = ProcessingMethod.Count,
+            total = seeds(1),
+            germinationTests = listOf(germinationTest(seedsSown = 1)),
+            withdrawals = listOf(withdrawal(withdrawn = seeds(1), date = tomorrow)))
+      }
+    }
+
+    @Test
+    fun `cannot specify negative seeds remaining for weight-based accessions`() {
+      assertThrows<IllegalArgumentException>("germination tests") {
+        accession(
+            processingMethod = ProcessingMethod.Weight,
+            total = grams(1),
+            germinationTests = listOf(germinationTest(seedsSown = 1, remaining = grams(-1))))
+      }
+
+      assertThrows<IllegalArgumentException>("withdrawals") {
+        accession(
+            processingMethod = ProcessingMethod.Weight,
+            total = grams(1),
+            withdrawals = listOf(withdrawal(withdrawn = grams(1), remaining = grams(-1))))
+      }
+    }
+
+    @Test
+    fun `total quantity must be greater than zero`() {
+      assertThrows<IllegalArgumentException>("zero seeds") {
+        accession(processingMethod = ProcessingMethod.Count, total = seeds(0))
+      }
+      assertThrows<IllegalArgumentException>("zero weight") {
+        accession(processingMethod = ProcessingMethod.Weight, total = grams(0))
+      }
+      assertThrows<IllegalArgumentException>("negative seeds") {
+        accession(processingMethod = ProcessingMethod.Count, total = seeds(-1))
+      }
+      assertThrows<IllegalArgumentException>("negative weight") {
+        accession(processingMethod = ProcessingMethod.Weight, total = grams(-1))
+      }
+    }
   }
 
   @Nested
