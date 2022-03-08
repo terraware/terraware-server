@@ -5,7 +5,6 @@ from http import HTTPStatus
 from typing import Dict, Optional
 
 import pytest
-import requests
 from box import Box
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests import HTTPError
@@ -62,7 +61,7 @@ def client() -> TerrawareClient:
 
 
 @contextmanager
-def expect_error(status=HTTPStatus.BAD_REQUEST, message: Optional[str] = None):
+def expect_error(status: HTTPStatus = HTTPStatus.BAD_REQUEST, message: Optional[str] = None):
     with pytest.raises(HTTPError) as exc_info:
         yield exc_info
 
