@@ -164,11 +164,10 @@ class AccessionsTable(
    */
   inner class ActiveField(override val fieldName: String, override val displayName: String) :
       SearchField {
-    private val selectField = ACCESSIONS.STATE_ID.`as`("active_state")
     override val table: SearchTable
       get() = this@AccessionsTable
     override val selectFields
-      get() = listOf(selectField)
+      get() = listOf(ACCESSIONS.STATE_ID)
     override val possibleValues = AccessionActive::class.java.enumConstants!!.map { "$it" }
     override val nullable
       get() = false
@@ -187,7 +186,7 @@ class AccessionsTable(
     }
 
     override fun computeValue(record: Record): String? {
-      return record[selectField]?.toActiveEnum()?.toString()
+      return record[ACCESSIONS.STATE_ID]?.toActiveEnum()?.toString()
     }
 
     override val orderByField: Field<*>
