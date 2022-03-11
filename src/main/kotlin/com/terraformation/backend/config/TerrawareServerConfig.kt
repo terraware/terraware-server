@@ -32,6 +32,14 @@ class TerrawareServerConfig(
     val webAppUrl: URI,
 
     /**
+     * URL that the server will redirect to when a request returns an error response and indicates
+     * that it wants HTML responses. (In other words, when a user hits an endpoint directly in the
+     * browser.) Default is `/error` on the web app. The redirect will include a query string with
+     * a `message` parameter whose value is a human-readable error message to display.
+     */
+    val htmlErrorUrl: URI = webAppUrl.resolve("/error"),
+
+    /**
      * Name of S3 bucket to use for storage of files such as photos. If not specified, files won't
      * be stored on S3.
      */
