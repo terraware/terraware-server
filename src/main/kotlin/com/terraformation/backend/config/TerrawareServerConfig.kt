@@ -34,8 +34,8 @@ class TerrawareServerConfig(
     /**
      * URL that the server will redirect to when a request returns an error response and indicates
      * that it wants HTML responses. (In other words, when a user hits an endpoint directly in the
-     * browser.) Default is `/error` on the web app. The redirect will include a query string with
-     * a `message` parameter whose value is a human-readable error message to display.
+     * browser.) Default is `/error` on the web app. The redirect will include a query string with a
+     * `message` parameter whose value is a human-readable error message to display.
      */
     val htmlErrorUrl: URI = webAppUrl.resolve("/error"),
 
