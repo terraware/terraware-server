@@ -636,7 +636,26 @@ class NestedQueryBuilder(
 
       val selectWithConditions = selectWithLateral.where(conditions)
 
-      selectWithConditions.orderBy(getOrderBy(!distinct))
+      // If this table has information that'll let us directly check permissions, add a condition.
+      //
+      // In cases where permission is inherited from a parent table, there's no need to join with
+      // that table here. There are two possibilities:
+      //
+      // 1. The entire query, including root prefix, only visits tables whose permissions are
+      //    inherited from parent tables that aren't referenced in the query. In that case, we need
+      //    to join with parent tables at the top level of the query, which is handled by
+      //    SearchService.
+      // 2. A parent NestedQueryBuilder visited a table that can be used for permission checks.
+      //    In that case, the check will have been done at that point.
+      val conditionForPermissions = prefix.searchTable.conditionForPermissions()
+      val selectWithPermissions =
+          if (conditionForPermissions != null) {
+            selectWithConditions.and(conditionForPermissions)
+          } else {
+            selectWithConditions
+          }
+
+      selectWithPermissions.orderBy(getOrderBy(!distinct))
     }
   }
 
@@ -784,10 +803,36 @@ class NestedQueryBuilder(
   /**
    * Joins the top-level query with the tables referenced by flattened sublists. This is not used
    * when child tables are queried using nested sublist fields.
+   *
+   * The join criteria include permission conditions in addition to foreign key equality, such that
+   * any child flattened sublists will only be joined against rows the user has permission to see.
+   *
+   * For example, if you're querying facility names starting from the organizations root prefix and
+   * the user is a member of project 2, the query might look something like
+   * ```
+   * SELECT sites.name
+   * FROM organizations
+   * LEFT OUTER JOIN projects
+   *   ON organizations.id = projects.organization_id
+   *   AND projects.id IN (2)
+   * LEFT OUTER JOIN sites
+   *   ON projects.id = sites.project_id
+   * LEFT OUTER JOIN facilities
+   *   ON sites.id = facilities.site_id
+   * ```
+   * With that structure, the joins with `sites` and `facilities` will automatically only include
+   * rows the user has permission to see, since inaccessible projects were filtered out already.
    */
   private fun joinFlattenedSublists(query: SelectJoinStep<Record>): SelectJoinStep<Record> {
     return flattenedSublists.fold(query) { joinedQuery, sublist ->
-      joinedQuery.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
+      val sublistPermissionsCondition = sublist.searchTable.conditionForPermissions()
+      val joinWithForeignKey =
+          joinedQuery.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
+      if (sublistPermissionsCondition != null) {
+        joinWithForeignKey.and(sublistPermissionsCondition)
+      } else {
+        joinWithForeignKey
+      }
     }
   }
 
