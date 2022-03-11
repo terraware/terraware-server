@@ -31,7 +31,7 @@ class OrganizationsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearch
               isRequired = false),
           projects.asMultiValueSublist("projects", ORGANIZATIONS.ID.eq(PROJECTS.ORGANIZATION_ID)),
           organizationUsers.asMultiValueSublist(
-              "users", ORGANIZATIONS.ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID)),
+              "members", ORGANIZATIONS.ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID)),
       )
     }
   }

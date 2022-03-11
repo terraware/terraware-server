@@ -1487,10 +1487,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `should not see inaccessible organizations of other users`() {
-      val roleField = organizationsPrefix.resolve("users.roleName")
-      val userIdField = organizationsPrefix.resolve("users.user.id")
+      val roleField = organizationsPrefix.resolve("members.roleName")
+      val userIdField = organizationsPrefix.resolve("members.user.id")
       val userOrganizationIdField =
-          organizationsPrefix.resolve("users.user.organizations.organization.id")
+          organizationsPrefix.resolve("members.user.organizationMemberships.organization.id")
 
       val fields = listOf(userIdField, userOrganizationIdField, roleField)
       val sortOrder = fields.map { SearchSortField(it) }
@@ -1499,14 +1499,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           SearchResults(
               listOf(
                   mapOf(
-                      "users" to
+                      "members" to
                           listOf(
                               mapOf(
                                   "roleName" to "Manager",
                                   "user" to
                                       mapOf(
                                           "id" to "${user.userId}",
-                                          "organizations" to
+                                          "organizationMemberships" to
                                               listOf(
                                                   mapOf(
                                                       "organization" to
@@ -1520,7 +1520,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                   "user" to
                                       mapOf(
                                           "id" to "$bothOrgsUserId",
-                                          "organizations" to
+                                          "organizationMemberships" to
                                               listOf(
                                                   mapOf(
                                                       "organization" to
@@ -1535,7 +1535,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `should not see inaccessible organizations of other users via flattened sublists`() {
       val userIdField = usersPrefix.resolve("id")
-      val userOrganizationIdField = usersPrefix.resolve("organizations_organization_id")
+      val userOrganizationIdField = usersPrefix.resolve("organizationMemberships_organization_id")
 
       val fields = listOf(userIdField, userOrganizationIdField)
       val sortOrder = fields.map { SearchSortField(it) }
@@ -1545,11 +1545,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               listOf(
                   mapOf(
                       "id" to "${user.userId}",
-                      "organizations_organization_id" to "$organizationId",
+                      "organizationMemberships_organization_id" to "$organizationId",
                   ),
                   mapOf(
                       "id" to "$bothOrgsUserId",
-                      "organizations_organization_id" to "$organizationId",
+                      "organizationMemberships_organization_id" to "$organizationId",
                   )),
               null)
 
@@ -1576,7 +1576,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `should not see inaccessible projects of other users in same organization`() {
       val userIdField = usersPrefix.resolve("id")
-      val userProjectIdField = usersPrefix.resolve("projects.project.id")
+      val userProjectIdField = usersPrefix.resolve("projectMemberships.project.id")
 
       val fields = listOf(userIdField, userProjectIdField)
       val sortOrder = fields.map { SearchSortField(it) }
@@ -1589,13 +1589,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               listOf(
                   mapOf(
                       "id" to "${user.userId}",
-                      "projects" to
+                      "projectMemberships" to
                           listOf(
                               mapOf("project" to mapOf("id" to "$projectId")),
                           )),
                   mapOf(
                       "id" to "$bothOrgsUserId",
-                      "projects" to
+                      "projectMemberships" to
                           listOf(
                               mapOf("project" to mapOf("id" to "$projectId")),
                           )),
@@ -2370,8 +2370,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       // the organization/project users tables is a special case: a single-value sublist that
       // refers to a child, not a parent. Include them explicitly.
       val usersFieldNames =
-          tables.users.getAllFieldNames("users.user.") +
-              tables.users.getAllFieldNames("projects.users.user.")
+          tables.users.getAllFieldNames("members.user.") +
+              tables.users.getAllFieldNames("projects.members.user.")
 
       val fields = (organizationFieldNames + usersFieldNames).sorted().map { prefix.resolve(it) }
 
@@ -2481,18 +2481,18 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               "firstName" to "First",
               "id" to "2",
               "lastName" to "Last",
-              "organizations" to
+              "organizationMemberships" to
                   listOf(
                       mapOf(
                           "createdTime" to "1970-01-01T00:00:00Z",
-                          "projects" to
+                          "projectMemberships" to
                               listOf(
                                   mapOf(
                                       "createdTime" to "1970-01-01T00:00:00Z",
                                   )),
                           "roleName" to "Manager",
                       )),
-              "projects" to
+              "projectMemberships" to
                   listOf(
                       mapOf("createdTime" to "1970-01-01T00:00:00Z"),
                   ))
@@ -2506,17 +2506,17 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "createdTime" to "1970-01-01T00:00:00Z",
                   "hidden" to "false",
                   "id" to "2",
+                  "members" to expectedProjectUsers,
                   "name" to "project",
                   "organizationWide" to "false",
                   "sites" to expectedSites,
-                  "users" to expectedProjectUsers,
               ))
 
       val expectedOrganizationUsers =
           listOf(
               mapOf(
                   "createdTime" to "1970-01-01T00:00:00Z",
-                  "projects" to
+                  "projectMemberships" to
                       listOf(
                           mapOf(
                               "createdTime" to "1970-01-01T00:00:00Z",
@@ -2532,7 +2532,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "id" to "1",
                   "name" to "dev",
                   "projects" to expectedProjects,
-                  "users" to expectedOrganizationUsers,
+                  "members" to expectedOrganizationUsers,
               ))
 
       val result = searchService.search(prefix, fields, NoConditionNode())

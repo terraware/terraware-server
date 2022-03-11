@@ -22,8 +22,9 @@ class UsersTable(
     with(tables) {
       listOf(
           organizationUsers.asMultiValueSublist(
-              "organizations", USERS.ID.eq(ORGANIZATION_USERS.USER_ID)),
-          projectUsers.asMultiValueSublist("projects", USERS.ID.eq(PROJECT_USERS.USER_ID)),
+              "organizationMemberships", USERS.ID.eq(ORGANIZATION_USERS.USER_ID)),
+          projectUsers.asMultiValueSublist(
+              "projectMemberships", USERS.ID.eq(PROJECT_USERS.USER_ID)),
       )
     }
   }

@@ -28,7 +28,7 @@ class ProjectsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpera
           sites.asMultiValueSublist("sites", PROJECTS.ID.eq(SITES.PROJECT_ID)),
           projectTypeSelections.asMultiValueSublist(
               "types", PROJECTS.ID.eq(PROJECT_TYPE_SELECTIONS.PROJECT_ID)),
-          projectUsers.asMultiValueSublist("users", PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID)),
+          projectUsers.asMultiValueSublist("members", PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID)),
       )
     }
   }
