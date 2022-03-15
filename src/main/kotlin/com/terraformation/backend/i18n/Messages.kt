@@ -1,6 +1,9 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.GerminationTestType
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import javax.annotation.ManagedBean
 
 /**
@@ -53,4 +56,13 @@ class Messages {
    * organization is created.
    */
   fun seedBankDefaultName() = "Seed Bank"
+
+  fun facilityIdleSubject(facilityName: String) = "No data received from $facilityName"
+
+  fun dateAndTime(instant: Instant?): String =
+      if (instant != null) {
+        DateTimeFormatter.RFC_1123_DATE_TIME.format(instant.atZone(ZoneOffset.UTC))
+      } else {
+        "unknown"
+      }
 }

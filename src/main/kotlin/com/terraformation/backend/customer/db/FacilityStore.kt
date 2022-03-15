@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
@@ -16,12 +17,15 @@ import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.tables.pojos.FacilityAlertRecipientsRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.db.tables.references.DEVICES
+import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FACILITY_ALERT_RECIPIENTS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.security.access.AccessDeniedException
 
 /** Permission-aware accessors for facility information. */
@@ -33,6 +37,9 @@ class FacilityStore(
     private val facilityAlertRecipientsDao: FacilityAlertRecipientsDao,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
+  /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
+  private val defaultMaxIdleMinutes = 30
+
   private val log = perClassLogger()
 
   fun fetchById(facilityId: FacilityId): FacilityModel? {
@@ -68,13 +75,19 @@ class FacilityStore(
    * @throws AccessDeniedException The current user does not have permission to create facilities at
    * the site.
    */
-  fun create(siteId: SiteId, name: String, type: FacilityType): FacilityModel {
+  fun create(
+      siteId: SiteId,
+      name: String,
+      type: FacilityType,
+      maxIdleMinutes: Int = defaultMaxIdleMinutes
+  ): FacilityModel {
     requirePermissions { createFacility(siteId) }
 
     val row =
         FacilitiesRow(
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
+            maxIdleMinutes = maxIdleMinutes,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
@@ -88,14 +101,19 @@ class FacilityStore(
   }
 
   /** Updates the settings of an existing facility. */
-  fun update(facilityId: FacilityId, name: String, type: FacilityType) {
+  fun update(facilityId: FacilityId, name: String, type: FacilityType, maxIdleMinutes: Int) {
     requirePermissions { updateFacility(facilityId) }
+
+    if (maxIdleMinutes < 1) {
+      throw IllegalArgumentException("Maximum idle minutes must be greater than 0")
+    }
 
     val existingRow =
         facilitiesDao.fetchOneById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     facilitiesDao.update(
         existingRow.copy(
+            maxIdleMinutes = maxIdleMinutes,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
@@ -199,5 +217,88 @@ class FacilityStore(
         .deleteFrom(STORAGE_LOCATIONS)
         .where(STORAGE_LOCATIONS.ID.eq(storageLocationId))
         .execute()
+  }
+
+  /**
+   * Updates the last timeseries times of facilities to indicate that new values have been received
+   * from devices.
+   */
+  fun updateLastTimeseriesTimes(deviceIds: Collection<DeviceId>) {
+    if (deviceIds.isNotEmpty()) {
+      val uniqueDeviceIds = deviceIds.toSet()
+
+      requirePermissions { uniqueDeviceIds.forEach { updateTimeseries(it) } }
+
+      // We want to add the maximum idle minutes to the current time to get the time when the
+      // facility should be counted as idle. The addition operator on a timestamp field takes a
+      // decimal number of days on the right-hand side. So we want an expression that converts
+      // the value of the max_idle_minutes column to days.
+      val maxIdleDaysField = FACILITIES.MAX_IDLE_MINUTES.div(24.0 * 60)
+      val now = clock.instant()
+      val idleAfterTimeField = DSL.instant(now).add(maxIdleDaysField)
+
+      val rowsUpdated =
+          dslContext
+              .update(FACILITIES)
+              .set(FACILITIES.LAST_TIMESERIES_TIME, now)
+              .setNull(FACILITIES.IDLE_SINCE_TIME)
+              .set(FACILITIES.IDLE_AFTER_TIME, idleAfterTimeField)
+              .where(
+                  FACILITIES.ID.`in`(
+                      DSL.select(DEVICES.FACILITY_ID)
+                          .from(DEVICES)
+                          .where(DEVICES.ID.`in`(uniqueDeviceIds))))
+              .execute()
+
+      if (rowsUpdated < 1) {
+        log.error("No facility timestamps updated for device IDs $uniqueDeviceIds")
+      }
+    }
+  }
+
+  /**
+   * Runs an operation on facilities whose device managers have recently stopped submitting new
+   * timeseries values. "Recently" means the number of minutes specified in
+   * `facilities.max_idle_minutes`.
+   *
+   * A given facility will only be passed to [func] once per idle period. That is, if a facility
+   * goes idle and its ID is passed to [func], a subsequent call to this method won't pass the same
+   * ID to [func] again unless it has received new timeseries values in the meantime.
+   *
+   * However, if [func] throws an exception, the above doesn't apply, and a subsequent call to this
+   * method will include the same ID again. (This is why the method takes a function argument
+   * instead of just returning a set of IDs; we want to ensure that if, e.g., the server host dies
+   * in the middle of handling newly-idle facilities, they'll be taken care of later.)
+   *
+   * @param func Function to call with the IDs of newly-idle facilities. This is called in a
+   * database transaction.
+   */
+  fun withIdleFacilities(func: (Set<FacilityId>) -> Unit) {
+    dslContext.transaction { _ ->
+      val facilityIds =
+          dslContext
+              .select(FACILITIES.ID)
+              .from(FACILITIES)
+              .where(FACILITIES.IDLE_AFTER_TIME.le(clock.instant()))
+              .and(FACILITIES.IDLE_SINCE_TIME.isNull)
+              .forUpdate()
+              .skipLocked()
+              .fetch(FACILITIES.ID)
+              .filterNotNull()
+              .toSet()
+
+      if (facilityIds.isNotEmpty()) {
+        log.info("Found newly idle facilities: $facilityIds")
+
+        dslContext
+            .update(FACILITIES)
+            .setNull(FACILITIES.IDLE_AFTER_TIME)
+            .set(FACILITIES.IDLE_SINCE_TIME, clock.instant())
+            .where(FACILITIES.ID.`in`(facilityIds))
+            .execute()
+
+        func(facilityIds)
+      }
+    }
   }
 }

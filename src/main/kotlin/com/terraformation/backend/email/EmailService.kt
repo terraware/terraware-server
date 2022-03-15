@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserId
@@ -74,6 +75,41 @@ class EmailService(
     helper.setSubject(subject)
     helper.setTo(recipients.toTypedArray())
     helper.setText(textBody)
+
+    send(message)
+  }
+
+  fun sendIdleFacilityAlert(facilityId: FacilityId) {
+    requirePermissions { sendAlert(facilityId) }
+
+    val recipients = facilityStore.getAlertRecipients(facilityId)
+
+    if (recipients.isEmpty()) {
+      log.warn("No alert recipients for idle facility $facilityId")
+      return
+    }
+
+    val facility =
+        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+
+    val replacements =
+        mapOf(
+            "\${facility.lastTimeseriesTime}" to messages.dateAndTime(facility.lastTimeseriesTime),
+            "\${facility.maxIdleMinutes}" to "${facility.maxIdleMinutes}",
+            "\${facility.name}" to facility.name,
+        )
+
+    val textBody =
+        getResourceAsString("classpath:templates/email/facilityIdle/body.txt")
+            ?.replaceMultiple(replacements)
+            ?: throw IllegalStateException("Couldn't find plaintext facilityIdle email template")
+
+    val message = sender.createMimeMessage()
+    val helper = MimeMessageHelper(message)
+
+    helper.setSubject(messages.facilityIdleSubject(facility.name))
+    helper.setText(textBody)
+    helper.setTo(recipients.toTypedArray())
 
     send(message)
   }

@@ -15,6 +15,8 @@ data class FacilityModel(
     val name: String,
     val siteId: SiteId,
     val type: FacilityType,
+    val lastTimeseriesTime: Instant?,
+    val maxIdleMinutes: Int,
 ) {
   constructor(
       record: Record
@@ -25,7 +27,10 @@ data class FacilityModel(
           ?: throw IllegalArgumentException("Modified time is required"),
       record[FACILITIES.NAME] ?: throw IllegalArgumentException("Name is required"),
       record[FACILITIES.SITE_ID] ?: throw IllegalArgumentException("Site is required"),
-      record[FACILITIES.TYPE_ID] ?: throw IllegalArgumentException("Type is required"))
+      record[FACILITIES.TYPE_ID] ?: throw IllegalArgumentException("Type is required"),
+      record[FACILITIES.LAST_TIMESERIES_TIME],
+      record[FACILITIES.MAX_IDLE_MINUTES]
+          ?: throw IllegalArgumentException("Max idle minutes is required"))
 }
 
 fun FacilitiesRow.toModel(): FacilityModel {
@@ -35,5 +40,7 @@ fun FacilitiesRow.toModel(): FacilityModel {
       modifiedTime ?: throw IllegalArgumentException("Modified time is required"),
       name ?: throw IllegalArgumentException("Name is required"),
       siteId ?: throw IllegalArgumentException("Site is required"),
-      typeId ?: throw IllegalArgumentException("Type is required"))
+      typeId ?: throw IllegalArgumentException("Type is required"),
+      lastTimeseriesTime,
+      maxIdleMinutes ?: throw IllegalArgumentException("Max idle minutes is required"))
 }

@@ -61,6 +61,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       FacilityModel(
           createdTime = Instant.EPOCH,
           id = facilityId,
+          lastTimeseriesTime = null,
+          maxIdleMinutes = 30,
           modifiedTime = Instant.EPOCH,
           name = "Facility $facilityId",
           siteId = siteId,

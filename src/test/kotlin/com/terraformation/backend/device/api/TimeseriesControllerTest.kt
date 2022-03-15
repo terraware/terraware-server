@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.api
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.TimeseriesId
@@ -11,6 +12,8 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.verify
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -20,9 +23,10 @@ import org.springframework.dao.DuplicateKeyException
 
 internal class TimeseriesControllerTest : RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  private val store: TimeseriesStore = mockk()
+  private val facilityStore: FacilityStore = mockk()
+  private val timeseriesStore: TimeseriesStore = mockk()
 
-  private val controller = TimeseriesController(store)
+  private val controller = TimeseriesController(facilityStore, timeseriesStore)
 
   private val deviceId1 = DeviceId(1)
   private val deviceId2 = DeviceId(2)
@@ -31,6 +35,7 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    every { facilityStore.updateLastTimeseriesTimes(any()) } just runs
     every { user.canCreateTimeseries(any()) } returns true
     every { user.canReadTimeseries(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
@@ -42,18 +47,33 @@ internal class TimeseriesControllerTest : RunsAsUser {
   private fun valuePayloads(vararg values: String) = values.map { valuePayload(it) }
 
   @Test
+  fun `recordTimeseriesValues updates facilities`() {
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
+    every { timeseriesStore.insertValue(any(), any(), any(), any()) } just Runs
+
+    controller.recordTimeseriesValues(
+        RecordTimeseriesValuesRequestPayload(
+            listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))))
+
+    verify { facilityStore.updateLastTimeseriesTimes(listOf(deviceId1)) }
+  }
+
+  @Test
   fun `recordTimeseriesValues groups similar errors`() {
 
-    every { store.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
-    every { store.fetchOneByName(deviceId1, "ts2") } returns TimeseriesRow(id = tsId2)
-    every { store.fetchOneByName(deviceId2, "ts1") } returns null
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts2") } returns TimeseriesRow(id = tsId2)
+    every { timeseriesStore.fetchOneByName(deviceId2, "ts1") } returns null
 
-    every { store.insertValue(deviceId1, tsId1, "v10", any()) } just Runs
-    every { store.insertValue(deviceId1, tsId1, "v11", any()) } throws DuplicateKeyException("dup")
-    every { store.insertValue(deviceId1, tsId1, "v12", any()) } throws DuplicateKeyException("dup")
-    every { store.insertValue(deviceId1, tsId2, "v20", any()) } throws
+    every { timeseriesStore.insertValue(deviceId1, tsId1, "v10", any()) } just Runs
+    every { timeseriesStore.insertValue(deviceId1, tsId1, "v11", any()) } throws
+        DuplicateKeyException("dup")
+    every { timeseriesStore.insertValue(deviceId1, tsId1, "v12", any()) } throws
+        DuplicateKeyException("dup")
+    every { timeseriesStore.insertValue(deviceId1, tsId2, "v20", any()) } throws
         IllegalArgumentException("failed")
-    every { store.insertValue(deviceId1, tsId2, "v21", any()) } throws DuplicateKeyException("dup")
+    every { timeseriesStore.insertValue(deviceId1, tsId2, "v21", any()) } throws
+        DuplicateKeyException("dup")
 
     val actual =
         controller.recordTimeseriesValues(
@@ -87,8 +107,8 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
   @Test
   fun `recordTimeseriesValues does not include failures list if nothing failed`() {
-    every { store.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
-    every { store.insertValue(any(), any(), any(), any()) } just Runs
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
+    every { timeseriesStore.insertValue(any(), any(), any(), any()) } just Runs
 
     val response =
         controller.recordTimeseriesValues(

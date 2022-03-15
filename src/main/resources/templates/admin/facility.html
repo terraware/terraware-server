@@ -29,6 +29,11 @@
         </option>
     </select>
     <br/>
+    <label for="maxIdleMinutes">Max Idle</label>
+    <input type="number" name="maxIdleMinutes" id="maxIdleMinutes" maxlength="4" size="4" min="1"
+           required th:value="${facility.maxIdleMinutes}"/>
+    minutes (for updates from device manager)
+    <br/>
     <input type="submit" value=" Update Facility "/>
 </form>
 

@@ -526,6 +526,7 @@ class AdminController(
   @PostMapping("/updateFacility")
   fun updateFacility(
       @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("maxIdleMinutes") maxIdleMinutes: Int,
       @RequestParam("name") name: String,
       @RequestParam("type") typeId: Int,
       redirectAttributes: RedirectAttributes
@@ -537,7 +538,7 @@ class AdminController(
       return facility(facilityId)
     }
 
-    facilityStore.update(facilityId, name, type)
+    facilityStore.update(facilityId, name, type, maxIdleMinutes)
 
     redirectAttributes.addFlashAttribute("successMessage", "Facility updated.")
 
