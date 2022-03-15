@@ -11,6 +11,7 @@ import javax.annotation.ManagedBean
 import javax.inject.Inject
 import org.jooq.DSLContext
 import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.core.annotation.Order
 
@@ -48,6 +49,7 @@ import org.springframework.core.annotation.Order
 class DatabaseBackedClock
 private constructor(
     private val dslContext: DSLContext,
+    private val publisher: ApplicationEventPublisher,
     private val timeZone: ZoneId,
     private val useTestClock: Boolean = false,
     private val systemClock: Clock = system(timeZone),
@@ -56,9 +58,10 @@ private constructor(
 ) : Clock() {
   @Inject
   constructor(
+      config: TerrawareServerConfig,
       dslContext: DSLContext,
-      config: TerrawareServerConfig
-  ) : this(dslContext, config.timeZone, config.useTestClock)
+      publisher: ApplicationEventPublisher,
+  ) : this(dslContext, publisher, config.timeZone, config.useTestClock)
 
   private val log = perClassLogger()
 
@@ -98,7 +101,13 @@ private constructor(
   override fun withZone(zone: ZoneId): Clock {
     return synchronized(this) {
       DatabaseBackedClock(
-          dslContext, zone, useTestClock, systemClock.withZone(zone), baseRealTime, baseFakeTime)
+          dslContext,
+          publisher,
+          zone,
+          useTestClock,
+          systemClock.withZone(zone),
+          baseRealTime,
+          baseFakeTime)
     }
   }
 
@@ -149,5 +158,7 @@ private constructor(
       baseRealTime = realTime
       baseFakeTime = fakeTime
     }
+
+    publisher.publishEvent(ClockAdvancedEvent(duration))
   }
 }

@@ -5,7 +5,10 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tables.references.TEST_CLOCK
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.verify
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
@@ -19,12 +22,16 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.ApplicationEventPublisher
 
 internal class DatabaseBackedClockTest : DatabaseTest() {
   private val config: TerrawareServerConfig = mockk()
+  private val publisher: ApplicationEventPublisher = mockk()
 
   /** Lazily-instantiated test subject; this will pick up per-test config values. */
-  private val clock: DatabaseBackedClock by lazy { DatabaseBackedClock(dslContext, config) }
+  private val clock: DatabaseBackedClock by lazy {
+    DatabaseBackedClock(config, dslContext, publisher)
+  }
 
   private val applicationStartedEvent =
       ApplicationStartedEvent(SpringApplication(Application::class.java), null, null, Duration.ZERO)
@@ -33,6 +40,7 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
   fun setup() {
     every { config.timeZone } returns ZoneOffset.UTC
     every { config.useTestClock } returns true
+    every { publisher.publishEvent(any<ClockAdvancedEvent>()) } just runs
   }
 
   @Test
@@ -81,9 +89,19 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
 
     assertSameInstant(newFake, clock.instant(), "Time from existing instance")
 
-    val newClock = DatabaseBackedClock(dslContext, config)
+    val newClock = DatabaseBackedClock(config, dslContext, publisher)
     newClock.initialize(applicationStartedEvent)
     assertSameInstant(newFake, newClock.instant(), "Time from fresh instance")
+  }
+
+  @Test
+  fun `publishes event when clock is adjusted`() {
+    val expectedAdjustment = Duration.ofMinutes(1)
+
+    clock.initialize(applicationStartedEvent)
+    clock.advance(expectedAdjustment)
+
+    verify { publisher.publishEvent(ClockAdvancedEvent(expectedAdjustment)) }
   }
 
   @Test

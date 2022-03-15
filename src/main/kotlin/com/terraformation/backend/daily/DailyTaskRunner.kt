@@ -5,16 +5,14 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.tables.pojos.TaskProcessedTimesRow
 import com.terraformation.backend.db.tables.references.TASK_PROCESSED_TIMES
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.time.ClockAdvancedEvent
 import java.time.Clock
 import java.time.Instant
-import java.time.ZonedDateTime
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import javax.annotation.ManagedBean
-import javax.annotation.PreDestroy
+import javax.inject.Inject
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
@@ -36,44 +34,37 @@ class DailyTaskRunner(
     private val dslContext: DSLContext,
     private val publisher: ApplicationEventPublisher,
     private val systemUser: SystemUser,
-) : Runnable {
-  private var thread = Thread(this, "DailyTasksThread")
-  private var nextRunTime = Instant.EPOCH
-  private val shutdownLatch = CountDownLatch(1)
-
+) {
   private val log = perClassLogger()
 
-  @EventListener
-  fun startWorkerThread(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
-    thread.isDaemon = false
-    thread.start()
-  }
-
-  @PreDestroy
-  fun shutDownWorkerThread() {
-    shutdownLatch.countDown()
-  }
-
-  override fun run() {
-    // Poll the clock once a second to see if the scheduled time has arrived. While this isn't as
-    // efficient as computing how long to sleep until the next scheduled time, it handles
-    // clock jumps in test environments without the need for a more complex signaling mechanism.
-    while (!shutdownLatch.await(1, TimeUnit.SECONDS)) {
-      if (clock.instant() >= nextRunTime) {
-        log.info("Running daily tasks")
-
-        try {
-          // Run tasks as the system user by default. Individual tasks can override this if needed.
-          systemUser.run { publisher.publishEvent(DailyTaskTimeArrivedEvent()) }
-        } catch (e: Exception) {
-          log.error("An error occurred while running daily tasks", e)
-        }
-
-        nextRunTime = computeNextRunTime()
+  /**
+   * Registers the scheduled job to run once a day. If the job is already scheduled, this is a
+   * no-op.
+   */
+  @Inject
+  fun schedule(scheduler: JobScheduler) {
+    if (config.dailyTasks.enabled) {
+      val cronSchedule =
+          "${config.dailyTasks.startTime.minute} ${config.dailyTasks.startTime.hour} * * *"
+      scheduler.scheduleRecurrently(javaClass.simpleName, cronSchedule, config.timeZone) {
+        runDailyTasks()
       }
     }
+  }
 
-    log.trace("Daily task worker thread stopped")
+  /** Scans for work whenever the application clock is adjusted. */
+  @EventListener
+  fun handle(@Suppress("UNUSED_PARAMETER") event: ClockAdvancedEvent) {
+    runDailyTasks()
+  }
+
+  /**
+   * Runs all the daily tasks as the system user. This publishes an application event on the local
+   * Spring event bus; registered event listeners are called synchronously.
+   */
+  @Suppress("MemberVisibilityCanBePrivate") // Needs to be public for scheduler
+  fun runDailyTasks() {
+    systemUser.run { publisher.publishEvent(DailyTaskTimeArrivedEvent()) }
   }
 
   /**
@@ -174,16 +165,5 @@ class DailyTaskRunner(
             .execute()
       }
     }
-  }
-
-  private fun computeNextRunTime(): Instant {
-    val now = ZonedDateTime.now(clock)
-    val todayAtStartTime = now.with(config.dailyTasks.startTime)
-    val nextZonedDateTime =
-        if (todayAtStartTime > now) todayAtStartTime else todayAtStartTime.plusDays(1)
-    val nextInstant = nextZonedDateTime.toInstant()
-
-    log.debug("Next daily task run time is $nextInstant")
-    return nextInstant
   }
 }
