@@ -9,7 +9,6 @@ import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.pojos.TimeseriesValuesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
@@ -42,19 +41,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     store = TimeseriesStore(clock, dslContext)
 
     insertSiteData()
-    devicesDao.insert(
-        DevicesRow(
-            address = "address",
-            createdBy = user.userId,
-            deviceType = "type",
-            facilityId = facilityId,
-            id = deviceId,
-            make = "make",
-            model = "model",
-            modifiedBy = user.userId,
-            name = "device",
-            protocol = "protocol",
-        ))
+    insertDevice(deviceId, facilityId)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateTimeseries(any()) } returns true
