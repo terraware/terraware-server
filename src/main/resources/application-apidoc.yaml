@@ -37,6 +37,15 @@ keycloak:
   credentials:
     secret: dummy
 
+org:
+  jobrunr:
+    background-job-server:
+      enabled: false
+    job-scheduler:
+      enabled: false
+    database:
+      skip-create: true
+
 logging:
   level:
     root: warn

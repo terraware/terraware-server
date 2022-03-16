@@ -61,6 +61,12 @@ springdoc:
     disable-swagger-default-url: true
     operations-sorter: alpha
 
+org:
+  jobrunr:
+    background-job-server:
+      # All terraware-server instances can run scheduled jobs.
+      enabled: true
+
 logging:
   level:
     # Suppress a warning message about deserialization (Keycloak tries to add a serialization filter

@@ -50,7 +50,7 @@ class ClockAdjustmentController(private val clock: DatabaseBackedClock) {
     val now = ZonedDateTime.now(clock)
     val currentTime = DateTimeFormatter.RFC_1123_DATE_TIME.format(now)
     model.addAttribute("currentTime", currentTime)
-    return "test/clock"
+    return "/test/clock"
   }
 
   @PostMapping("/api/test/clock")
