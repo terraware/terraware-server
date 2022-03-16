@@ -5,7 +5,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.time.Instant
 import java.time.format.DateTimeParseException
-import java.util.*
+import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.TableField
 import org.jooq.impl.DSL
@@ -27,7 +27,7 @@ class TimestampField(
           fieldNode.values.map { if (it != null) Instant.parse(it) else null }
         } catch (e: DateTimeParseException) {
           throw IllegalArgumentException(
-              "Timestamps must be ISO-8601 format with timezone (example: 2021-05-28T18:45:30Z)")
+              "Timestamps must be in RFC 3339 format (example: 2021-05-28T18:45:30Z)")
         }
     val nonNullInstants = instantValues.filterNotNull()
 

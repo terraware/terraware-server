@@ -639,7 +639,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `can search for timestamps using different but equivalent ISO-8601 time format`() {
+  fun `can search for timestamps using different but equivalent RFC 3339 time format`() {
     val fields = listOf(checkedInTimeField)
     val searchNode =
         FieldNode(
