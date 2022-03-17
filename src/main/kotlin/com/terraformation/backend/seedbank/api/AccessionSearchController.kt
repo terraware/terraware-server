@@ -6,10 +6,8 @@ import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.api.HasSearchFields
-import com.terraformation.backend.search.api.HasSearchFilters
 import com.terraformation.backend.search.api.HasSearchNode
 import com.terraformation.backend.search.api.HasSortOrder
-import com.terraformation.backend.search.api.SearchFilter
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.api.SearchResponsePayload
 import com.terraformation.backend.search.api.SearchSortOrderElement
@@ -123,19 +121,17 @@ data class SearchAccessionsRequestPayload(
     val facilityId: FacilityId,
     @NotEmpty override val fields: List<String>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
-    override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
     val cursor: String? = null,
     @Schema(
         defaultValue = "10",
     )
     val count: Int = 10
-) : HasSearchFields, HasSearchNode, HasSortOrder, HasSearchFilters
+) : HasSearchFields, HasSearchNode, HasSortOrder
 
 data class ExportAccessionsRequestPayload(
     val facilityId: FacilityId,
     @NotEmpty override val fields: List<String>,
     override val sortOrder: List<SearchSortOrderElement>? = null,
-    override val filters: List<SearchFilter>? = null,
     override val search: SearchNodePayload? = null,
-) : HasSearchFields, HasSearchNode, HasSortOrder, HasSearchFilters
+) : HasSearchFields, HasSearchNode, HasSortOrder
