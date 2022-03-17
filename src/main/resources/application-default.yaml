@@ -22,7 +22,7 @@ spring:
     # During development, it is convenient to temporarily add a repeatable migration and work on it
     # until it's correct, then make it a versioned migration. By default, Flyway would bomb out due
     # to the repeatable migration going missing.
-    ignore-missing-migrations: true
+    ignore-migration-patterns: "*:missing"
   thymeleaf:
     cache: false
     prefix: "file:src/main/resources/templates"
