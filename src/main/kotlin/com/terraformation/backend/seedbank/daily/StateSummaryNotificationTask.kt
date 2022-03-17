@@ -115,27 +115,27 @@ class StateSummaryNotificationTask(
     val stateChangedBefore =
         ZonedDateTime.now(clock).atMostRecent(config.dailyTasks.startTime).minusDays(days)
 
-    log.debug("Scanning for $state from $endOfAlreadyCoveredPeriod to $stateChangedBefore")
+    log.debug(
+        "Scanning for $state from $endOfAlreadyCoveredPeriod to $stateChangedBefore at " +
+            "facility $facilityId")
 
     // We want to generate the notification if there are newly-overdue accessions, but the number
     // in the notification should be the total of all overdue accessions, including any that were
     // already covered by previous runs.
-    val anyNew =
+    val newCount =
         accessionStore.countInState(
             facilityId,
             state,
             sinceAfter = endOfAlreadyCoveredPeriod,
-            sinceBefore = stateChangedBefore) > 0
-    if (!anyNew) {
-      log.info("No notification needed for state $state at $weeks week(s)")
-      return
+            sinceBefore = stateChangedBefore)
+
+    if (newCount > 0) {
+      val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
+
+      val message = getMessage(count)
+      log.info("Generated notification for facility $facilityId: $message")
+      accessionNotificationStore.insertStateNotification(facilityId, state, message)
     }
-
-    val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
-
-    val message = getMessage(count)
-    log.info("Generated notification: $message")
-    accessionNotificationStore.insertStateNotification(facilityId, state, message)
   }
 
   /**
