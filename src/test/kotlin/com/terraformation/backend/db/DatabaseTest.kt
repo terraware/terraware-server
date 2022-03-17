@@ -35,6 +35,7 @@ import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
+import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.FEATURES
 import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
@@ -301,6 +302,29 @@ abstract class DatabaseTest {
           .set(NAME, name)
           .set(SITE_ID, siteId.toIdWrapper { SiteId(it) })
           .set(TYPE_ID, type)
+          .execute()
+    }
+  }
+
+  protected fun insertDevice(
+      id: Any,
+      facilityId: Any = "$id".toLong() / 10,
+      name: String = "device $id",
+      createdBy: UserId = currentUser().userId,
+  ) {
+    with(DEVICES) {
+      dslContext
+          .insertInto(DEVICES)
+          .set(ADDRESS, "address")
+          .set(CREATED_BY, createdBy)
+          .set(DEVICE_TYPE, "type")
+          .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
+          .set(ID, id.toIdWrapper { DeviceId(it) })
+          .set(MAKE, "make")
+          .set(MODEL, "model")
+          .set(MODIFIED_BY, createdBy)
+          .set(NAME, name)
+          .set(PROTOCOL, "protocol")
           .execute()
     }
   }

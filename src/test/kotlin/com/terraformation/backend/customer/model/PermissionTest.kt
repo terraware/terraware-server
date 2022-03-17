@@ -24,7 +24,6 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
-import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
@@ -198,6 +197,7 @@ internal class PermissionTest : DatabaseTest() {
 
     facilityIds.forEach { facilityId ->
       insertFacility(facilityId, createdBy = userId)
+      insertDevice(facilityId.value, facilityId, createdBy = userId)
       accessionsDao.insert(
           AccessionsRow(
               id = AccessionId(facilityId.value),
@@ -216,16 +216,6 @@ internal class PermissionTest : DatabaseTest() {
               createdTime = Instant.EPOCH,
               modifiedBy = userId,
               modifiedTime = Instant.EPOCH))
-      devicesDao.insert(
-          DevicesRow(
-              id = DeviceId(facilityId.value),
-              facilityId = facilityId,
-              name = "Device $facilityId",
-              createdBy = userId,
-              deviceType = "type",
-              make = "make",
-              model = "model",
-              modifiedBy = userId))
     }
 
     layerIds.forEach { insertLayer(it, createdBy = userId) }
