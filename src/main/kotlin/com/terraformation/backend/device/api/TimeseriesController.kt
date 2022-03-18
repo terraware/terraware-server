@@ -7,6 +7,7 @@ import com.terraformation.backend.api.ErrorDetails
 import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
@@ -25,7 +26,10 @@ import org.springframework.web.bind.annotation.RestController
 @DeviceManagerAppEndpoint
 @RequestMapping("/api/v1/timeseries")
 @RestController
-class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
+class TimeseriesController(
+    private val facilityStore: FacilityStore,
+    private val timeSeriesStore: TimeseriesStore
+) {
   private val log = perClassLogger()
 
   @ApiResponseSimpleSuccess
@@ -98,6 +102,8 @@ class TimeseriesController(private val timeSeriesStore: TimeseriesStore) {
         }
       }
     }
+
+    facilityStore.updateLastTimeseriesTimes(payload.timeseries.map { it.deviceId })
 
     return if (errors.isEmpty()) {
       RecordTimeseriesValuesResponsePayload()

@@ -290,6 +290,10 @@ abstract class DatabaseTest {
       name: String = "Facility $id",
       createdBy: UserId = currentUser().userId,
       type: FacilityType = FacilityType.SeedBank,
+      maxIdleMinutes: Int = 30,
+      lastTimeseriesTime: Instant? = null,
+      idleAfterTime: Instant? = null,
+      idleSinceTime: Instant? = null,
   ) {
     with(FACILITIES) {
       dslContext
@@ -297,6 +301,10 @@ abstract class DatabaseTest {
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(ID, id.toIdWrapper { FacilityId(it) })
+          .set(IDLE_AFTER_TIME, idleAfterTime)
+          .set(IDLE_SINCE_TIME, idleSinceTime)
+          .set(LAST_TIMESERIES_TIME, lastTimeseriesTime)
+          .set(MAX_IDLE_MINUTES, maxIdleMinutes)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)

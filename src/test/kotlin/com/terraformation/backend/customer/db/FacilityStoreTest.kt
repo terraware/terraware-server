@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
@@ -15,10 +16,12 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
@@ -43,6 +46,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFacility(any()) } returns true
     every { user.canReadStorageLocation(any()) } returns true
     every { user.canUpdateStorageLocation(any()) } returns true
+    every { user.canUpdateTimeseries(any()) } returns true
 
     insertSiteData()
   }
@@ -164,5 +168,75 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> {
       store.updateStorageLocation(storageLocationId, "New Name", StorageCondition.Freezer)
     }
+  }
+
+  @Test
+  fun `updateLastTimeseriesTimes resets idle timestamps`() {
+    val deviceId = DeviceId(1)
+    insertDevice(deviceId, facilityId)
+
+    val initial = facilitiesDao.fetchOneById(facilityId)!!
+    facilitiesDao.update(
+        initial.copy(
+            lastTimeseriesTime = null, idleAfterTime = null, idleSinceTime = Instant.EPOCH))
+
+    val expected =
+        initial.copy(
+            lastTimeseriesTime = clock.instant(),
+            idleAfterTime = clock.instant().plus(30, ChronoUnit.MINUTES),
+            idleSinceTime = null)
+
+    store.updateLastTimeseriesTimes(listOf(deviceId))
+
+    val actual = facilitiesDao.fetchOneById(facilityId)
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `withIdleFacilities detects newly-idle facilities`() {
+    every { clock.instant() } returns Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
+
+    val facilityIds = setOf(FacilityId(101), FacilityId(102))
+    facilityIds.forEach { id -> insertFacility(id, idleAfterTime = Instant.EPOCH) }
+
+    val actual = mutableSetOf<FacilityId>()
+
+    store.withIdleFacilities { actual.addAll(it) }
+
+    assertEquals(facilityIds, actual)
+  }
+
+  @Test
+  fun `withIdleFacilities does not repeat previously-idle facilities`() {
+    every { clock.instant() } returns Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
+
+    val initial = facilitiesDao.fetchOneById(facilityId)!!
+    facilitiesDao.update(
+        initial.copy(lastTimeseriesTime = Instant.EPOCH, idleAfterTime = clock.instant()))
+
+    store.withIdleFacilities {}
+
+    store.withIdleFacilities { fail("Facilities should have already been marked idle: $it") }
+  }
+
+  @Test
+  fun `withIdleFacilities repeats previously-idle facilities if handler throws exception`() {
+    every { clock.instant() } returns Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
+
+    val initial = facilitiesDao.fetchOneById(facilityId)!!
+    facilitiesDao.update(
+        initial.copy(lastTimeseriesTime = Instant.EPOCH, idleAfterTime = clock.instant()))
+
+    try {
+      store.withIdleFacilities { throw Exception("Failing callback function") }
+    } catch (e: Exception) {
+      // Expected
+    }
+
+    val actual = mutableSetOf<FacilityId>()
+
+    store.withIdleFacilities { actual.addAll(it) }
+
+    assertEquals(setOf(facilityId), actual)
   }
 }

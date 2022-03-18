@@ -140,6 +140,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                                             FacilityModel(
                                                 createdTime = clock.instant(),
                                                 id = FacilityId(1),
+                                                lastTimeseriesTime = null,
+                                                maxIdleMinutes = 30,
                                                 modifiedTime = clock.instant(),
                                                 name = seedBankDefaultName,
                                                 siteId = SiteId(1),
