@@ -318,6 +318,74 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="max_idle_minutes">max_idle_minutes</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>30</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Send an alert if this many minutes pass without new timeseries data from a facility&rsquo;s device manager.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="last_timeseries_time">last_timeseries_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>When the most recent timeseries data was received from the facility.</p></td>
+                                </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="idle_after_time">idle_after_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="idle_since_time">idle_since_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Time at which the facility became idle. Null if the facility is not currently considered idle.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -348,6 +416,12 @@
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>id</td>
                                 </tr>
+                                <tr>
+                                    <td title='Indexed'>facilities_idle_after_time_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>idle_after_time</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -371,38 +445,38 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="824,5,1149,563">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="213,137,519,529">
-<area shape="rect" id="node3" href="../../tables/collectors.html" target="_top" title="collectors" alt="" coords="591,111,751,257">
-<area shape="rect" id="node4" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="563,275,780,451">
+<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="872,5,1197,563">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="213,137,567,647">
+<area shape="rect" id="node3" href="../../tables/collectors.html" target="_top" title="collectors" alt="" coords="639,111,799,257">
+<area shape="rect" id="node4" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="611,275,828,451">
 <area shape="rect" id="node5" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="5,169,169,316">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/facilities.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accession_germination_test_types.html" target="_top" title="accession_germination_test_types" alt="" coords="1408,532,1751,620">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1039,424,1364,981">
-<area shape="rect" id="node4" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="769,12,980,100">
-<area shape="rect" id="node8" href="../../tables/collectors.html" target="_top" title="collectors" alt="" coords="795,195,955,341">
-<area shape="rect" id="node10" href="../../tables/app_devices.html" target="_top" title="app_devices" alt="" coords="785,359,964,447">
-<area shape="rect" id="node11" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="405,191,711,583">
-<area shape="rect" id="node12" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="755,763,994,851">
-<area shape="rect" id="node13" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="755,1009,994,1097">
-<area shape="rect" id="node14" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="755,904,995,992">
-<area shape="rect" id="node15" href="../../tables/species.html" target="_top" title="species" alt="" coords="804,464,945,552">
-<area shape="rect" id="node16" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="766,569,983,745">
-<area shape="rect" id="node17" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="444,731,672,819">
-<area shape="rect" id="node3" href="../../tables/accession_notifications.html" target="_top" title="accession_notifications" alt="" coords="1449,111,1709,199">
+<area shape="rect" id="node1" href="../../tables/accession_germination_test_types.html" target="_top" title="accession_germination_test_types" alt="" coords="1456,532,1799,620">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1087,424,1412,981">
+<area shape="rect" id="node4" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="817,12,1028,100">
+<area shape="rect" id="node8" href="../../tables/collectors.html" target="_top" title="collectors" alt="" coords="843,195,1003,341">
+<area shape="rect" id="node10" href="../../tables/app_devices.html" target="_top" title="app_devices" alt="" coords="833,359,1012,447">
+<area shape="rect" id="node11" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="405,191,759,700">
+<area shape="rect" id="node12" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="803,763,1042,851">
+<area shape="rect" id="node13" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="803,1009,1042,1097">
+<area shape="rect" id="node14" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="803,904,1043,992">
+<area shape="rect" id="node15" href="../../tables/species.html" target="_top" title="species" alt="" coords="852,464,993,552">
+<area shape="rect" id="node16" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="814,569,1031,745">
+<area shape="rect" id="node17" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="468,789,696,877">
+<area shape="rect" id="node3" href="../../tables/accession_notifications.html" target="_top" title="accession_notifications" alt="" coords="1497,111,1757,199">
 <area shape="rect" id="node5" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="197,137,361,284">
 <area shape="rect" id="node21" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="5,169,153,257">
-<area shape="rect" id="node6" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1471,637,1687,725">
-<area shape="rect" id="node7" href="../../tables/accession_secondary_collectors.html" target="_top" title="accession_secondary_collectors" alt="" coords="1418,216,1741,304">
-<area shape="rect" id="node9" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1448,5,1711,93">
-<area shape="rect" id="node18" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1517,321,1642,409">
-<area shape="rect" id="node19" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1489,427,1670,515">
-<area shape="rect" id="node20" href="../../tables/germination_tests.html" target="_top" title="germination_tests" alt="" coords="1468,933,1691,1021">
-<area shape="rect" id="node22" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1795,972,1976,1060">
+<area shape="rect" id="node6" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1519,637,1735,725">
+<area shape="rect" id="node7" href="../../tables/accession_secondary_collectors.html" target="_top" title="accession_secondary_collectors" alt="" coords="1466,216,1789,304">
+<area shape="rect" id="node9" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1496,5,1759,93">
+<area shape="rect" id="node18" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1565,321,1690,409">
+<area shape="rect" id="node19" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1537,427,1718,515">
+<area shape="rect" id="node20" href="../../tables/germination_tests.html" target="_top" title="germination_tests" alt="" coords="1516,933,1739,1021">
+<area shape="rect" id="node22" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1843,972,2024,1060">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/facilities.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

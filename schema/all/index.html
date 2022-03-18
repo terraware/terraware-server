@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Wed Mar 02 01:10 GMT 2022</p>
+                                <p>Generated on Fri Mar 18 17:27 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">407</span>
+                                    <span class="info-box-number">411</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -290,15 +290,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/germinations.html">germinations</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/germination_substrates.html">germination_substrates</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -306,6 +297,15 @@
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of substrate that can be used to test seeds for germination ability.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/germinations.html">germinations</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_type_selections.html">project_type_selections</a></td>
@@ -605,15 +605,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/layer_types.html">layer_types</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">12</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of map features that can be grouped together into a layer.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/germination_test_types.html">germination_test_types</a></td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
@@ -621,6 +612,15 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of tests that can be performed on seeds to check for germination ability.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/layer_types.html">layer_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">12</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of map features that can be grouped together into a layer.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/geolocations.html">geolocations</a></td>
@@ -662,7 +662,7 @@
                                         <td class="detail"><a href="tables/facilities.html">facilities</a></td>
                                         <td class="detail" align="right">6</td>
                                         <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">11</td>
+                                        <td class="detail" align="right">15</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Physical locations at a site. For example, each seed bank and each nursery is a facility.</p></td>
@@ -758,15 +758,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of facilities that can be represented in the data model.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries.html">timeseries</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">4</td>
@@ -774,6 +765,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Properties of a series of values collected from a device. Each device metric is represented as a timeseries.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
                                     </tr>
                             </table>
                         </div>
