@@ -528,7 +528,7 @@ class AccessionStore(
    * Returns a list of accessions for which the scheduled date for a time-based state transition has
    * arrived or passed.
    */
-  fun fetchTimedStateTransitionCandidates(facilityId: FacilityId): List<AccessionModel> {
+  fun fetchTimedStateTransitionCandidates(): List<AccessionModel> {
     val today = LocalDate.now(clock)
     val twoWeeksAgo = today.minusDays(14)
 
@@ -546,7 +546,6 @@ class AccessionStore(
                           .eq(AccessionState.Drying)
                           .and(STORAGE_START_DATE.le(today).or(DRYING_END_DATE.le(today))))
                   .or(STATE_ID.eq(AccessionState.Dried).and(STORAGE_START_DATE.le(today))))
-          .and(FACILITY_ID.eq(facilityId))
           .fetch(ID)
           .mapNotNull { accessionId ->
             // This is an N+1 query which isn't ideal but we are going to be processing these one
@@ -700,9 +699,9 @@ class AccessionStore(
                       }
                     })
 
-    log.debug("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
+    val sql = query.getSQL(ParamType.INLINED)
 
-    return log.debugWithTiming("Accession state count with time bounds") {
+    return log.debugWithTiming("Accession state count with time bounds: $sql") {
       query.fetchOne()?.value1() ?: 0
     }
   }
@@ -716,9 +715,11 @@ class AccessionStore(
             .where(ACCESSIONS.STATE_ID.eq(state))
             .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
 
-    log.debug("Accession state count query: ${query.getSQL(ParamType.INLINED)}")
+    val sql = query.getSQL(ParamType.INLINED)
 
-    return log.debugWithTiming("Accession state count query") { query.fetchOne()?.value1() ?: 0 }
+    return log.debugWithTiming("Accession state count query: $sql") {
+      query.fetchOne()?.value1() ?: 0
+    }
   }
 
   fun countFamilies(facilityId: FacilityId, asOf: TemporalAccessor): Int {
@@ -733,7 +734,6 @@ class AccessionStore(
   }
 
   fun fetchDryingMoveDue(
-      facilityId: FacilityId,
       after: TemporalAccessor,
       until: TemporalAccessor
   ): Map<String, AccessionId> {
@@ -744,14 +744,12 @@ class AccessionStore(
           .where(STATE_ID.eq(AccessionState.Drying))
           .and(DRYING_MOVE_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
           .and(DRYING_MOVE_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-          .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
           .fetch { it[NUMBER]!! to it[ID]!! }
           .toMap()
     }
   }
 
   fun fetchGerminationTestDue(
-      facilityId: FacilityId,
       after: TemporalAccessor,
       until: TemporalAccessor
   ): Map<String, GerminationTestsRow> {
@@ -763,13 +761,11 @@ class AccessionStore(
         .where(ACCESSIONS.STATE_ID.`in`(AccessionState.Processing, AccessionState.Processed))
         .and(GERMINATION_TESTS.START_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
         .and(GERMINATION_TESTS.START_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-        .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .fetch { it[ACCESSIONS.NUMBER]!! to it.into(GerminationTestsRow::class.java)!! }
         .toMap()
   }
 
   fun fetchWithdrawalDue(
-      facilityId: FacilityId,
       after: TemporalAccessor,
       until: TemporalAccessor
   ): Map<String, AccessionId> {
@@ -780,7 +776,6 @@ class AccessionStore(
         .on(WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID))
         .where(WITHDRAWALS.DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
         .and(WITHDRAWALS.DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-        .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
         .fetch { it[ACCESSIONS.NUMBER]!! to it[ACCESSIONS.ID]!! }
         .toMap()
   }

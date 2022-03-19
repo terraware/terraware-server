@@ -4,7 +4,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.daily.TimePeriodTask
-import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import java.time.Clock
@@ -19,7 +18,6 @@ class AccessionScheduledStateTask(
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val dailyTaskRunner: DailyTaskRunner,
-    private val facilitiesDao: FacilitiesDao
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -35,16 +33,14 @@ class AccessionScheduledStateTask(
   override fun processPeriod(since: Instant, until: Instant) {
     log.info("Scanning for scheduled accession state updates")
 
-    facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
-      accessionStore
-          .fetchTimedStateTransitionCandidates(facilityId)
-          .filter { it.getStateTransition(it, clock) != null }
-          .forEach { model ->
-            if (model.accessionNumber != null) {
-              accessionStore.update(model)
-            }
+    accessionStore
+        .fetchTimedStateTransitionCandidates()
+        .filter { it.getStateTransition(it, clock) != null }
+        .forEach { model ->
+          if (model.accessionNumber != null) {
+            accessionStore.update(model)
           }
-    }
+        }
   }
 
   /**

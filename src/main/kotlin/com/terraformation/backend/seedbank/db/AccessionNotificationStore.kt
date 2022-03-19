@@ -6,6 +6,7 @@ import com.terraformation.backend.db.AccessionNotificationType
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.log.perClassLogger
@@ -106,17 +107,19 @@ class AccessionNotificationStore(
         .execute()
   }
 
-  fun insertDateNotification(facilityId: FacilityId, accessionId: AccessionId, message: String) {
-    val siteId =
-        facilitiesDao.fetchOneById(facilityId)?.siteId
-            ?: throw IllegalStateException("Facility $facilityId not found")
-
+  fun insertDateNotification(accessionId: AccessionId, message: String) {
     dslContext
         .insertInto(ACCESSION_NOTIFICATIONS)
         .set(ACCESSION_NOTIFICATIONS.ACCESSION_ID, accessionId)
         .set(ACCESSION_NOTIFICATIONS.CREATED_TIME, clock.instant())
         .set(ACCESSION_NOTIFICATIONS.MESSAGE, message)
-        .set(ACCESSION_NOTIFICATIONS.SITE_ID, siteId)
+        .set(
+            ACCESSION_NOTIFICATIONS.SITE_ID,
+            DSL.select(FACILITIES.SITE_ID)
+                .from(ACCESSIONS)
+                .join(FACILITIES)
+                .on(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
+                .where(ACCESSIONS.ID.eq(accessionId)))
         .set(ACCESSION_NOTIFICATIONS.TYPE_ID, AccessionNotificationType.Date)
         .execute()
   }

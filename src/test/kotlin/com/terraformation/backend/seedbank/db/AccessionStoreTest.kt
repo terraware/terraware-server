@@ -68,7 +68,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -1068,10 +1067,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val expected = shouldMatch.map { it.number!! }.toSortedSet()
     val actual =
-        store
-            .fetchTimedStateTransitionCandidates(facilityId)
-            .map { it.accessionNumber!! }
-            .toSortedSet()
+        store.fetchTimedStateTransitionCandidates().map { it.accessionNumber!! }.toSortedSet()
 
     assertEquals(expected, actual)
   }
@@ -1607,98 +1603,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           1, store.countInState(facilityId, initial.state!!, Instant.EPOCH, clock.instant()))
       assertEquals(
           0, store.countInState(otherFacilityId, initial.state!!, Instant.EPOCH, clock.instant()))
-    }
-
-    @Test
-    fun `fetchDryingMoveDue only matches accessions from the requested facility`() {
-      val initial = store.create(AccessionModel(facilityId = facilityId))
-      store.update(
-          initial.copy(
-              dryingStartDate = LocalDate.now(clock).minusDays(2),
-              dryingMoveDate = LocalDate.now(clock).minusDays(1)))
-
-      assertEquals(
-          mapOf(initial.accessionNumber to initial.id),
-          store.fetchDryingMoveDue(
-              facilityId, clock.instant().minus(3, ChronoUnit.DAYS), clock.instant()))
-      assertEquals(
-          emptyMap<String, AccessionId>(),
-          store.fetchDryingMoveDue(
-              otherFacilityId, clock.instant().minus(3, ChronoUnit.DAYS), clock.instant()))
-    }
-
-    @Test
-    fun `fetchGerminationTestDue only matches accessions from the requested facility`() {
-      val initial = store.create(AccessionModel(facilityId = facilityId))
-      val updated =
-          store.updateAndFetch(
-              initial.copy(
-                  processingMethod = ProcessingMethod.Count,
-                  total = seeds(1),
-                  germinationTests =
-                      listOf(
-                          GerminationTestModel(
-                              testType = GerminationTestType.Lab,
-                              startDate = LocalDate.now(clock).minusDays(1)))))
-      assertEquals(AccessionState.Processing, updated.state)
-
-      val beforeTestStart = clock.instant().minus(3, ChronoUnit.DAYS)
-
-      assertEquals(
-          1,
-          store.fetchGerminationTestDue(facilityId, beforeTestStart, clock.instant()).size,
-          "Number of results with correct facility ID")
-      assertEquals(
-          0,
-          store.fetchGerminationTestDue(otherFacilityId, beforeTestStart, clock.instant()).size,
-          "Number of results with incorrect facility ID")
-    }
-
-    @Test
-    fun `fetchTimedStateTransitionCandidates only matches accessions from the requested facility`() {
-      val twoDaysLater = clock.instant().plus(2, ChronoUnit.DAYS)
-
-      // Make accession in Drying state, scheduled to become Dried tomorrow
-      val initial = store.create(AccessionModel(facilityId = facilityId))
-      store.update(
-          initial.copy(
-              dryingStartDate = LocalDate.now(clock),
-              dryingEndDate = LocalDate.now(clock).plusDays(1)))
-
-      every { clock.instant() } returns twoDaysLater
-
-      assertEquals(
-          1,
-          store.fetchTimedStateTransitionCandidates(facilityId).size,
-          "Number of results with correct facility ID")
-      assertEquals(
-          0,
-          store.fetchTimedStateTransitionCandidates(otherFacilityId).size,
-          "Number of results with incorrect facility ID")
-    }
-
-    @Test
-    fun `fetchWithdrawalDue only matches accessions from the requested facility`() {
-      val initial = store.create(AccessionModel(facilityId = facilityId))
-      store.update(
-          initial.copy(
-              processingMethod = ProcessingMethod.Count,
-              total = seeds(1),
-              withdrawals =
-                  listOf(
-                      WithdrawalModel(
-                          date = LocalDate.now(clock), purpose = WithdrawalPurpose.Other))))
-
-      val beforeTestStart = clock.instant().minus(1, ChronoUnit.DAYS)
-
-      assertEquals(
-          1,
-          store.fetchWithdrawalDue(facilityId, beforeTestStart, clock.instant()).size,
-          "Number of results with correct facility ID")
-      assertEquals(
-          0,
-          store.fetchWithdrawalDue(otherFacilityId, beforeTestStart, clock.instant()).size,
-          "Number of results with incorrect facility ID")
     }
   }
 
