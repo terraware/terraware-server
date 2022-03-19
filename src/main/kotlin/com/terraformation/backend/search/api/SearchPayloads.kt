@@ -15,7 +15,6 @@ import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
-import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
@@ -40,23 +39,8 @@ interface HasSearchNode {
   val search: SearchNodePayload?
 
   fun toSearchNode(prefix: SearchFieldPrefix): SearchNode {
-    val filters = if (this is HasSearchFilters) this.filters else null
-    val search = this.search
-
-    return when {
-      search != null -> search.toSearchNode(prefix)
-      filters.isNullOrEmpty() -> NoConditionNode()
-      else -> AndNode(filters.map { FieldNode(prefix.resolve(it.field), it.values, it.type) })
-    }
+    return this.search?.toSearchNode(prefix) ?: NoConditionNode()
   }
-}
-
-/**
- * Backward-compatibility interface for accession search payloads that use a list of search filters
- * rather than [SearchNodePayload].
- */
-interface HasSearchFilters {
-  val filters: List<SearchFilter>?
 }
 
 data class SearchSortOrderElement(
@@ -159,30 +143,6 @@ data class FieldNodePayload(
     return FieldNode(prefix.resolve(field), values, type)
   }
 }
-
-/**
- * A filter criterion to apply to a search.
- *
- * @see SearchService
- */
-data class SearchFilter(
-    val field: String,
-    @ArraySchema(
-        schema = Schema(nullable = true),
-        arraySchema =
-            Schema(
-                minLength = 1,
-                description =
-                    "List of values to match. For exact and fuzzy searches, a list of at least " +
-                        "one value to search for; the list may include null to match accessions " +
-                        "where the field does not have a value. For range searches, the list " +
-                        "must contain exactly two values, the minimum and maximum; one of the " +
-                        "values may be null to search for all values above a minimum or below a " +
-                        "maximum."))
-    @NotEmpty
-    val values: List<String?>,
-    val type: SearchFilterType = SearchFilterType.Exact
-)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor: String?) {

@@ -6,9 +6,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
-import com.terraformation.backend.search.api.HasSearchFilters
 import com.terraformation.backend.search.api.HasSearchNode
-import com.terraformation.backend.search.api.SearchFilter
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.StorageLocationStore
@@ -117,9 +115,8 @@ data class FieldValuesPayload(
 data class ListFieldValuesRequestPayload(
     val facilityId: FacilityId,
     val fields: List<String>,
-    override val filters: List<SearchFilter>?,
     override val search: SearchNodePayload?,
-) : HasSearchNode, HasSearchFilters
+) : HasSearchNode
 
 data class ListFieldValuesResponsePayload(val results: Map<String, FieldValuesPayload>) :
     SuccessResponsePayload

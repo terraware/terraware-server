@@ -3872,10 +3872,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchSortOrderElement'
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchFilter'
         search:
           oneOf:
           - $ref: '#/components/schemas/AndNodePayload'
@@ -4511,10 +4507,6 @@ components:
           type: array
           items:
             type: string
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchFilter'
         search:
           oneOf:
           - $ref: '#/components/schemas/AndNodePayload'
@@ -5191,10 +5183,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchSortOrderElement'
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchFilter'
         search:
           oneOf:
           - $ref: '#/components/schemas/AndNodePayload'
@@ -5207,33 +5195,6 @@ components:
           type: integer
           format: int32
           default: 10
-    SearchFilter:
-      required:
-      - field
-      - type
-      - values
-      type: object
-      properties:
-        field:
-          type: string
-        values:
-          minLength: 1
-          type: array
-          description: "List of values to match. For exact and fuzzy searches, a list\
-            \ of at least one value to search for; the list may include null to match\
-            \ accessions where the field does not have a value. For range searches,\
-            \ the list must contain exactly two values, the minimum and maximum; one\
-            \ of the values may be null to search for all values above a minimum or\
-            \ below a maximum."
-          items:
-            type: string
-            nullable: true
-        type:
-          type: string
-          enum:
-          - Exact
-          - Fuzzy
-          - Range
     SearchNodePayload:
       required:
       - operation
