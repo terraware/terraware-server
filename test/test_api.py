@@ -5,6 +5,7 @@ from http import HTTPStatus
 from typing import Dict, Optional
 
 import pytest
+import yaml
 from box import Box
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests import HTTPError
@@ -39,29 +40,74 @@ class TerrawareClient:
         return Box(r.json())
 
 
+def flatten_dict(original: Dict) -> Dict:
+    def add_to_flattened_dict(source: Dict, prefix: str, dest: Dict) -> Dict:
+        for key, value in source.items():
+            if type(value) == dict:
+                add_to_flattened_dict(value, f"{prefix}{key}.", dest)
+            else:
+                dest[f"{prefix}{key}"] = value
+        return dest
+
+    return add_to_flattened_dict(original, "", {})
+
+
 @pytest.fixture(scope="session")
-def client() -> TerrawareClient:
-    client_id = os.environ.get("TEST_CLIENT_ID") or "dev-terraware-server"
-    realm = os.environ.get("TEST_REALM") or "terraware"
-    client_secret = os.environ["TEST_CLIENT_SECRET"]
+def spring_config() -> Dict:
+    spring_profiles = os.environ.get("SPRING_PROFILES")
+    if spring_profiles:
+        with open("../src/main/resources/application.yaml", "r") as fp:
+            spring_config = flatten_dict(yaml.safe_load(fp))
+        for profile in spring_profiles.split(","):
+            with open(f"../src/main/resources/application-{profile}.yaml", "r") as fp:
+                config = flatten_dict(yaml.safe_load(fp))
+                spring_config |= config
+    else:
+        spring_config = {}
+
+    return spring_config
+
+
+@pytest.fixture(scope="session")
+def client(spring_config) -> TerrawareClient:
+    client_id = os.environ.get(
+        "TEST_CLIENT_ID", spring_config.get("keycloak.resource", "dev-terraware-server")
+    )
+    realm = os.environ.get(
+        "TEST_REALM", spring_config.get("keycloak.realm", "terraware")
+    )
+    client_secret = os.environ.get(
+        "TEST_CLIENT_SECRET", spring_config.get("keycloak.credentials.secret")
+    )
     password = os.environ["TEST_PASSWORD"]
     username = os.environ["TEST_USERNAME"]
-    keycloak_base_url = os.environ["TEST_AUTH_SERVER_URL"]
+    keycloak_base_url = os.environ.get(
+        "TEST_AUTH_SERVER_URL", spring_config.get("keycloak.auth-server-url")
+    )
 
     token_url = os.environ.get(
-        "TEST_TOKEN_URL") or f"{keycloak_base_url}/realms/{realm}/protocol/openid-connect/token"
+        "TEST_TOKEN_URL",
+        f"{keycloak_base_url}/realms/{realm}/protocol/openid-connect/token",
+    )
 
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
     oauth = OAuth2Session(client=LegacyApplicationClient(client_id=client_id))
-    oauth.fetch_token(token_url=token_url, username=username, password=password,
-                      client_secret=client_secret, client_id=client_id)
+    oauth.fetch_token(
+        token_url=token_url,
+        username=username,
+        password=password,
+        client_secret=client_secret,
+        client_id=client_id,
+    )
 
     return TerrawareClient(oauth, DEFAULT_BASE_URL)
 
 
 @contextmanager
-def expect_error(status: HTTPStatus = HTTPStatus.BAD_REQUEST, message: Optional[str] = None):
+def expect_error(
+        status: HTTPStatus = HTTPStatus.BAD_REQUEST, message: Optional[str] = None
+):
     with pytest.raises(HTTPError) as exc_info:
         yield exc_info
 
@@ -85,13 +131,22 @@ def organization_id(client, organization_name):
 
 @pytest.fixture(scope="session")
 def seed_bank_facility_id(client, organization_id):
-    response = client.get(f"/api/v1/organizations/{organization_id}",
-                          params={"depth": "Facility"})
-    seed_bank_project = \
-        [project for project in response.organization.projects if project.name == "Seed Bank"][0]
-    seed_bank_site = [site for site in seed_bank_project.sites if site.name == "Seed Bank"][0]
-    seed_bank_facility = \
-        [facility for facility in seed_bank_site.facilities if facility.type == "Seed Bank"][0]
+    response = client.get(
+        f"/api/v1/organizations/{organization_id}", params={"depth": "Facility"}
+    )
+    seed_bank_project = [
+        project
+        for project in response.organization.projects
+        if project.name == "Seed Bank"
+    ][0]
+    seed_bank_site = [
+        site for site in seed_bank_project.sites if site.name == "Seed Bank"
+    ][0]
+    seed_bank_facility = [
+        facility
+        for facility in seed_bank_site.facilities
+        if facility.type == "Seed Bank"
+    ][0]
     return seed_bank_facility.id
 
 
@@ -117,19 +172,25 @@ class TestSpecies:
 
     def test_create_species_requires_name(self, client, organization_id):
         with expect_error():
-            client.post("/api/v1/species", {"organizationId": organization_id, "name": ""})
+            client.post(
+                "/api/v1/species", {"organizationId": organization_id, "name": ""}
+            )
 
     @pytest.mark.dependency()
     def test_create_species(self, client, organization_id):
-        response = client.post("/api/v1/species",
-                               {"organizationId": organization_id, "name": self.species_name})
+        response = client.post(
+            "/api/v1/species",
+            {"organizationId": organization_id, "name": self.species_name},
+        )
         assert response.id > 0
 
     @pytest.mark.dependency(depends=["TestSpecies::test_create_species"])
     def test_create_species_rejects_duplicate_name(self, client, organization_id):
         with expect_error(HTTPStatus.CONFLICT):
-            response = client.post("/api/v1/species",
-                                   {"organizationId": organization_id, "name": self.species_name})
+            response = client.post(
+                "/api/v1/species",
+                {"organizationId": organization_id, "name": self.species_name},
+            )
 
 
 @pytest.mark.dependency(depends=["TestSpecies::test_create_species"])
@@ -145,3 +206,75 @@ def test_seed_summary(client, seed_bank_facility_id):
         "overdueDriedAccessions": 0,
         "recentlyWithdrawnAccessions": 0,
     }
+
+
+@pytest.fixture()
+def accession_id(client, seed_bank_facility_id):
+    create_response = client.post(
+        "/api/v1/seedbank/accession",
+        json={
+            "facilityId": seed_bank_facility_id,
+            "species": "Kousa Dogwoord",
+            "family": "Cornaceae",
+            "numberOfTrees": "3",
+            "founderId": "234908098",
+            "endangered": "Yes",
+            "rare": "Yes",
+            "sourcePlantOrigin": "Outplant",
+            "receivedDate": "2021-02-03",
+            "secondaryCollectors": ["Constanza", "Leann"],
+            "fieldNotes": "Some notes",
+            "collectedDate": "2021-02-01",
+            "primaryCollector": "Carlos",
+            "siteLocation": "Sunset Overdrive",
+            "landowner": "Yacin",
+            "environmentalNotes": "Cold day",
+        },
+    )
+
+    return create_response.accession.id
+
+
+@pytest.mark.dependency()
+def test_create_accession(client, seed_bank_facility_id, accession_id):
+    accession = client.get(f"/api/v1/seedbank/accession/{accession_id}").accession
+
+    expected = {
+        "facilityId": seed_bank_facility_id,
+        "species": "Kousa Dogwoord",
+        "family": "Cornaceae",
+        "numberOfTrees": 3,
+        "founderId": "234908098",
+        "endangered": "Yes",
+        "rare": "Yes",
+        "sourcePlantOrigin": "Outplant",
+        "receivedDate": "2021-02-03",
+        "secondaryCollectors": ["Constanza", "Leann"],
+        "fieldNotes": "Some notes",
+        "collectedDate": "2021-02-01",
+        "primaryCollector": "Carlos",
+        "siteLocation": "Sunset Overdrive",
+        "landowner": "Yacin",
+        "environmentalNotes": "Cold day",
+        "id": accession_id,
+        "active": "Active",
+        "state": "Awaiting Check-In",
+        "source": "Web",
+    }
+
+    # We don't care about the values of some fields, just that they exist.
+    assert accession.accessionNumber is not None
+    del accession.accessionNumber
+    assert accession.speciesId >= 0
+    del accession.speciesId
+
+    assert accession == Box(expected)
+
+
+@pytest.mark.dependency(depends=["test_create_accession"])
+def test_check_in_accession(client, seed_bank_facility_id, accession_id):
+    response = client.post(
+        f"/api/v1/seedbank/accession/{accession_id}/checkIn", json=None
+    ).accession
+
+    assert response.state == "Pending"
