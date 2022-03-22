@@ -15,7 +15,7 @@ DEFAULT_BASE_URL = "http://localhost:8080"
 
 @pytest.fixture(scope="session")
 def spring_config() -> Dict:
-    spring_profiles = os.environ.get("SPRING_PROFILES")
+    spring_profiles = os.environ.get("TEST_SPRING_PROFILES")
     if spring_profiles:
         with open("../src/main/resources/application.yaml", "r") as fp:
             spring_config = flatten_dict(yaml.safe_load(fp))
@@ -62,7 +62,9 @@ def client(spring_config) -> TerrawareClient:
         client_id=client_id,
     )
 
-    return TerrawareClient(oauth, DEFAULT_BASE_URL)
+    base_url = os.environ.get("TEST_BASE_URL", DEFAULT_BASE_URL)
+
+    return TerrawareClient(oauth, base_url)
 
 
 @pytest.fixture(scope="module")
