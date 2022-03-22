@@ -28,3 +28,9 @@ class TerrawareClient:
         r = self.session.put(f"{self.base_url}{local_url}", json=json, **kwargs)
         r.raise_for_status()
         return Box(r.json())
+
+    def get_accession(self, accession_id: int) -> Box:
+        return self.get(f"/api/v1/seedbank/accession/{accession_id}").accession
+
+    def put_accession(self, accession: Box) -> Box:
+        return self.put(f"/api/v1/seedbank/accession/{accession.id}", json=accession).accession

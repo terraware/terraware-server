@@ -2,31 +2,26 @@ import pytest
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup_accession(client, accession_url):
+def setup_accession(client, accession_id, accession_url):
     client.post(f"{accession_url}/checkIn", json=None)
 
-    accession = client.get(accession_url).accession
+    accession = client.get_accession(accession_id)
 
     accession.processingMethod = "Count"
     accession.initialQuantity = {"quantity": 1000, "units": "Seeds"}
     accession.germinationTestTypes = ["Lab"]
 
-    client.put(accession_url, json=accession)
+    client.put_accession(accession)
 
 
-def test_set_germination_test_types(client, accession_url):
-    accession = client.get(accession_url).accession
-
+def test_set_germination_test_types(client, accession):
     assert accession.germinationTestTypes == ["Lab"]
 
 
 @pytest.mark.dependency()
-def test_create_first_test(client, accession_url):
-    accession = client.get(accession_url).accession
-
+def test_create_first_test(client, accession):
     test_details = {
         "startDate": "2021-02-09",
-        "seedType": "Stored",
         "substrate": "Paper Petri Dish",
         "treatment": "Scarify",
         "seedsSown": 100,
@@ -37,7 +32,7 @@ def test_create_first_test(client, accession_url):
 
     accession.germinationTests = [test_details]
 
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     expected = [{
         **test_details,
@@ -49,21 +44,17 @@ def test_create_first_test(client, accession_url):
 
 
 @pytest.mark.dependency(depends=["test_create_first_test"])
-def test_modify_test(client, accession_url):
-    accession = client.get(accession_url).accession
-
+def test_modify_test(client, accession):
     accession.germinationTests[0].substrate = "Nursery Media"
     del accession.germinationTests[0].notes
 
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     assert updated.germinationTests == accession.germinationTests
 
 
 @pytest.mark.dependency(depends=["test_create_first_test"])
-def test_create_later_test(client, accession_url):
-    accession = client.get(accession_url).accession
-
+def test_create_later_test(client, accession):
     test_details = {
         "startDate": "2021-02-12",
         "seedType": "Stored",
@@ -75,7 +66,7 @@ def test_create_later_test(client, accession_url):
 
     accession.germinationTests.append(test_details)
 
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     expected = [accession.germinationTests[0], {
         **test_details,
@@ -87,9 +78,7 @@ def test_create_later_test(client, accession_url):
 
 
 @pytest.mark.dependency(depends=["test_create_later_test"])
-def test_remaining_quantity_is_based_on_date(client, accession_url):
-    accession = client.get(accession_url).accession
-
+def test_remaining_quantity_is_based_on_date(client, accession):
     test_details = {
         "startDate": "2021-02-01",
         "seedType": "Fresh",
@@ -101,7 +90,7 @@ def test_remaining_quantity_is_based_on_date(client, accession_url):
 
     accession.germinationTests.append(test_details)
 
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     expected = [
         {
@@ -123,12 +112,10 @@ def test_remaining_quantity_is_based_on_date(client, accession_url):
 
 
 @pytest.mark.dependency(depends=["test_remaining_quantity_is_based_on_date"])
-def test_delete_test(client, accession_url):
-    accession = client.get(accession_url).accession
-
+def test_delete_test(client, accession):
     del accession.germinationTests[2]
 
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     expected = [
         {

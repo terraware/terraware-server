@@ -31,3 +31,8 @@ def accession_id(client, seed_bank_facility_id):
 @pytest.fixture(scope="module")
 def accession_url(accession_id):
     return f"/api/v1/seedbank/accession/{accession_id}"
+
+
+@pytest.fixture(scope="function")
+def accession(client, accession_id):
+    return client.get_accession(accession_id)

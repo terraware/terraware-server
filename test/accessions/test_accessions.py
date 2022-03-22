@@ -3,9 +3,7 @@ from box import Box
 
 
 @pytest.mark.dependency()
-def test_create_accession(client, seed_bank_facility_id, accession_id, accession_url):
-    accession = client.get(accession_url).accession
-
+def test_create_accession(client, seed_bank_facility_id, accession):
     expected = {
         "facilityId": seed_bank_facility_id,
         "species": "Kousa Dogwoord",
@@ -23,7 +21,7 @@ def test_create_accession(client, seed_bank_facility_id, accession_id, accession
         "siteLocation": "Sunset Overdrive",
         "landowner": "Yacin",
         "environmentalNotes": "Cold day",
-        "id": accession_id,
+        "id": accession.id,
         "active": "Active",
         "state": "Awaiting Check-In",
         "source": "Web",
@@ -40,21 +38,18 @@ def test_create_accession(client, seed_bank_facility_id, accession_id, accession
 
 @pytest.mark.dependency(depends=["test_create_accession"])
 def test_check_in_accession(client, accession_url):
-    response = client.post(
-        f"{accession_url}/checkIn", json=None
-    ).accession
+    response = client.post(f"{accession_url}/checkIn", json=None).accession
 
     assert response.state == "Pending"
 
 
 @pytest.mark.dependency(depends=["test_check_in_accession"])
-def test_update_accession(client, accession_url):
-    accession = client.get(accession_url).accession
+def test_update_accession(client, accession):
     del accession.secondaryCollectors[1]
     accession.primaryCollector = "Leann"
     accession.fieldNotes = "Other notes"
 
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     assert updated.secondaryCollectors == ["Constanza"]
     assert updated.primaryCollector == "Leann"
@@ -62,18 +57,16 @@ def test_update_accession(client, accession_url):
 
 
 @pytest.mark.dependency(depends=["test_check_in_accession"])
-def test_send_to_nursery(client, accession_url):
-    accession = client.get(accession_url).accession
+def test_send_to_nursery(client, accession):
     accession.nurseryStartDate = "2021-03-01"
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     assert updated.state == "Nursery"
 
 
 @pytest.mark.dependency(depends=["test_send_to_nursery"])
-def test_unsend_to_nursery(client, accession_url):
-    accession = client.get(accession_url).accession
+def test_unsend_to_nursery(client, accession):
     del accession.nurseryStartDate
-    updated = client.put(accession_url, json=accession).accession
+    updated = client.put_accession(accession)
 
     assert updated.state == "Pending"
