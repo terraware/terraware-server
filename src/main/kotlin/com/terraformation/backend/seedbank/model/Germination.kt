@@ -7,6 +7,7 @@ import com.terraformation.backend.db.GerminationSubstrate
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
+import com.terraformation.backend.log.perClassLogger
 import java.time.LocalDate
 
 data class GerminationModel(
@@ -43,8 +44,8 @@ data class GerminationTestModel(
         startDate == other.startDate &&
         substrate == other.substrate &&
         testType == other.testType &&
-        totalPercentGerminated == other.totalPercentGerminated &&
-        totalSeedsGerminated == other.totalSeedsGerminated &&
+        calculateTotalPercentGerminated() == other.totalPercentGerminated &&
+        calculateTotalSeedsGerminated() == other.totalSeedsGerminated &&
         treatment == other.treatment
   }
 
