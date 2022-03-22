@@ -74,8 +74,7 @@ def organization_name():
 
 @pytest.fixture(scope="module")
 def organization_id(client, organization_name):
-    response = client.post("/api/v1/organizations",
-                           {"name": organization_name})
+    response = client.post("/api/v1/organizations", {"name": organization_name})
     return response.organization.id
 
 

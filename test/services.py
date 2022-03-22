@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 #
 #
 
+
 def start_keycloak(image="quay.io/keycloak/keycloak:14.0.0"):
     client = docker.from_env()
     containers = client.containers.list(all=True, filters={"name": "/keycloak"})
@@ -32,19 +33,27 @@ def start_keycloak(image="quay.io/keycloak/keycloak:14.0.0"):
             logger.info("Removing stopped Keycloak container %s", container.id)
             container.remove()
 
-    client.containers.run(image=image, detach=True, ports={"8080/tcp": 8081},
-                          name="keycloak",
-                          environment={"KEYCLOAK_USER": "admin",
-                                       "KEYCLOAK_PASSWORD": "admin",
-                                       "WEB_APP_URL": "http://localhost:3000/"})
+    client.containers.run(
+        image=image,
+        detach=True,
+        ports={"8080/tcp": 8081},
+        name="keycloak",
+        environment={
+            "KEYCLOAK_USER": "admin",
+            "KEYCLOAK_PASSWORD": "admin",
+            "WEB_APP_URL": "http://localhost:3000/",
+        },
+    )
 
 
 def get_keycloak_admin(realm="master"):
-    return KeycloakAdmin(server_url="http://localhost:8081/auth/",
-                         username="admin",
-                         password="admin",
-                         realm_name=realm,
-                         user_realm_name="master")
+    return KeycloakAdmin(
+        server_url="http://localhost:8081/auth/",
+        username="admin",
+        password="admin",
+        realm_name=realm,
+        user_realm_name="master",
+    )
 
 
 def init_keycloak() -> KeycloakAdmin:
@@ -64,31 +73,40 @@ def init_keycloak() -> KeycloakAdmin:
             else:
                 raise ex
 
-    keycloak_admin.create_realm(payload={
-        "realm": "terraware",
-        "enabled": True,
-        "displayName": "Terraware",
-        "duplicateEmailsAllowed": False,
-        "editUsernameAllowed": False,
-        "loginWithEmailAllowed": True,
-        "registrationAllowed": True,
-        "registrationEmailAsUsername": True,
-        "resetPasswordAllowed": True,
-        "verifyEmail": False,
-    }, skip_exists=True)
+    keycloak_admin.create_realm(
+        payload={
+            "realm": "terraware",
+            "enabled": True,
+            "displayName": "Terraware",
+            "duplicateEmailsAllowed": False,
+            "editUsernameAllowed": False,
+            "loginWithEmailAllowed": True,
+            "registrationAllowed": True,
+            "registrationEmailAsUsername": True,
+            "resetPasswordAllowed": True,
+            "verifyEmail": False,
+        },
+        skip_exists=True,
+    )
 
     # We don't need admin access to the master realm any more.
     keycloak_admin = get_keycloak_admin("terraware")
 
-    keycloak_admin.create_client(payload={
-        "clientId": "dev-terraware-server",
-        "standardFlowEnabled": True,
-        "serviceAccountsEnabled": True,
-        "redirectUris": ["http://localhost:8080/*"]
-    }, skip_exists=True)
+    keycloak_admin.create_client(
+        payload={
+            "clientId": "dev-terraware-server",
+            "standardFlowEnabled": True,
+            "serviceAccountsEnabled": True,
+            "redirectUris": ["http://localhost:8080/*"],
+        },
+        skip_exists=True,
+    )
 
-    client = [client for client in keycloak_admin.get_clients() if
-              client["clientId"] == "dev-terraware-server"][0]
+    client = [
+        client
+        for client in keycloak_admin.get_clients()
+        if client["clientId"] == "dev-terraware-server"
+    ][0]
     pprint(client)
     service_user = keycloak_admin.get_client_service_account_user(client["id"])
 
@@ -100,10 +118,12 @@ def init_keycloak() -> KeycloakAdmin:
 email_count = 0
 
 
-def create_user(keycloak_admin: KeycloakAdmin,
-                email: Optional[str] = None,
-                first_name: Optional[str] = None,
-                last_name: Optional[str] = None) -> Tuple[str, str]:
+def create_user(
+    keycloak_admin: KeycloakAdmin,
+    email: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+) -> Tuple[str, str]:
     """Create a new user. Return the Keycloak user ID.
 
     :param email Email address, or None to generate a unique one.
@@ -113,15 +133,17 @@ def create_user(keycloak_admin: KeycloakAdmin,
     email_count += 1
 
     email = email or f"{time.time()}@{email_count}.org"
-    first_name = first_name or email.split('@')[0]
-    last_name = last_name or email.split('@')[1]
+    first_name = first_name or email.split("@")[0]
+    last_name = last_name or email.split("@")[1]
 
-    user_id = keycloak_admin.create_user(payload={
-        "email": email,
-        "username": email,
-        "firstName": first_name,
-        "lastName": last_name,
-    })
+    user_id = keycloak_admin.create_user(
+        payload={
+            "email": email,
+            "username": email,
+            "firstName": first_name,
+            "lastName": last_name,
+        }
+    )
 
     return email, user_id
 

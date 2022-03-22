@@ -34,11 +34,13 @@ def test_create_first_test(client, accession):
 
     updated = client.put_accession(accession)
 
-    expected = [{
-        **test_details,
-        "id": updated.germinationTests[0].id,
-        "remainingQuantity": {"quantity": 900, "units": "Seeds"},
-    }]
+    expected = [
+        {
+            **test_details,
+            "id": updated.germinationTests[0].id,
+            "remainingQuantity": {"quantity": 900, "units": "Seeds"},
+        }
+    ]
 
     assert updated.germinationTests == expected
 
@@ -68,11 +70,14 @@ def test_create_later_test(client, accession):
 
     updated = client.put_accession(accession)
 
-    expected = [accession.germinationTests[0], {
-        **test_details,
-        "id": updated.germinationTests[1].id,
-        "remainingQuantity": {"quantity": 700, "units": "Seeds"},
-    }]
+    expected = [
+        accession.germinationTests[0],
+        {
+            **test_details,
+            "id": updated.germinationTests[1].id,
+            "remainingQuantity": {"quantity": 700, "units": "Seeds"},
+        },
+    ]
 
     assert updated.germinationTests == expected
 

@@ -20,7 +20,7 @@ def flatten_dict(original: Dict) -> Dict:
 
 @contextmanager
 def expect_error(
-        status: HTTPStatus = HTTPStatus.BAD_REQUEST, message: Optional[str] = None
+    status: HTTPStatus = HTTPStatus.BAD_REQUEST, message: Optional[str] = None
 ):
     with pytest.raises(HTTPError) as exc_info:
         yield exc_info

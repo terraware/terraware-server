@@ -9,9 +9,7 @@ species_name = "Test Species"
 
 def test_create_species_requires_name(client, organization_id):
     with expect_error():
-        client.post(
-            "/api/v1/species", {"organizationId": organization_id, "name": ""}
-        )
+        client.post("/api/v1/species", {"organizationId": organization_id, "name": ""})
 
 
 @pytest.mark.dependency()

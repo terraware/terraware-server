@@ -33,4 +33,6 @@ class TerrawareClient:
         return self.get(f"/api/v1/seedbank/accession/{accession_id}").accession
 
     def put_accession(self, accession: Box) -> Box:
-        return self.put(f"/api/v1/seedbank/accession/{accession.id}", json=accession).accession
+        return self.put(
+            f"/api/v1/seedbank/accession/{accession.id}", json=accession
+        ).accession
