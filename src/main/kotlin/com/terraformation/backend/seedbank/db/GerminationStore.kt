@@ -90,33 +90,35 @@ class GerminationStore(private val dslContext: DSLContext) {
       accessionId: AccessionId,
       germinationTest: GerminationTestModel
   ): GerminationTestModel {
+    val calculatedTest: GerminationTestModel = germinationTest.withCalculatedValues()
+
     val testId =
         with(GERMINATION_TESTS) {
           dslContext
               .insertInto(GERMINATION_TESTS)
               .set(ACCESSION_ID, accessionId)
-              .set(END_DATE, germinationTest.endDate)
-              .set(NOTES, germinationTest.notes)
-              .set(REMAINING_GRAMS, germinationTest.remaining?.grams)
-              .set(REMAINING_QUANTITY, germinationTest.remaining?.quantity)
-              .set(REMAINING_UNITS_ID, germinationTest.remaining?.units)
-              .set(SEED_TYPE_ID, germinationTest.seedType)
-              .set(SEEDS_SOWN, germinationTest.seedsSown)
-              .set(STAFF_RESPONSIBLE, germinationTest.staffResponsible)
-              .set(START_DATE, germinationTest.startDate)
-              .set(SUBSTRATE_ID, germinationTest.substrate)
-              .set(TEST_TYPE, germinationTest.testType)
-              .set(TOTAL_PERCENT_GERMINATED, germinationTest.calculateTotalPercentGerminated())
-              .set(TOTAL_SEEDS_GERMINATED, germinationTest.calculateTotalSeedsGerminated())
-              .set(TREATMENT_ID, germinationTest.treatment)
+              .set(END_DATE, calculatedTest.endDate)
+              .set(NOTES, calculatedTest.notes)
+              .set(REMAINING_GRAMS, calculatedTest.remaining?.grams)
+              .set(REMAINING_QUANTITY, calculatedTest.remaining?.quantity)
+              .set(REMAINING_UNITS_ID, calculatedTest.remaining?.units)
+              .set(SEED_TYPE_ID, calculatedTest.seedType)
+              .set(SEEDS_SOWN, calculatedTest.seedsSown)
+              .set(STAFF_RESPONSIBLE, calculatedTest.staffResponsible)
+              .set(START_DATE, calculatedTest.startDate)
+              .set(SUBSTRATE_ID, calculatedTest.substrate)
+              .set(TEST_TYPE, calculatedTest.testType)
+              .set(TOTAL_PERCENT_GERMINATED, calculatedTest.totalPercentGerminated)
+              .set(TOTAL_SEEDS_GERMINATED, calculatedTest.totalSeedsGerminated)
+              .set(TREATMENT_ID, calculatedTest.treatment)
               .returning(ID)
               .fetchOne()
               ?.get(ID)!!
         }
 
-    germinationTest.germinations?.forEach { insertGermination(testId, it) }
+    calculatedTest.germinations?.forEach { insertGermination(testId, it) }
 
-    return germinationTest.copy(id = testId)
+    return calculatedTest.copy(id = testId)
   }
 
   private fun insertGermination(testId: GerminationTestId, germination: GerminationModel) {
@@ -174,7 +176,7 @@ class GerminationStore(private val dslContext: DSLContext) {
           .execute()
     }
 
-    desired.forEach { desiredTest ->
+    desired.map { it.withCalculatedValues() }.forEach { desiredTest ->
       val testId = desiredTest.id
 
       if (testId == null) {
@@ -198,8 +200,8 @@ class GerminationStore(private val dslContext: DSLContext) {
                 .set(SUBSTRATE_ID, desiredTest.substrate)
                 .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
                 .set(START_DATE, desiredTest.startDate)
-                .set(TOTAL_PERCENT_GERMINATED, desiredTest.calculateTotalPercentGerminated())
-                .set(TOTAL_SEEDS_GERMINATED, desiredTest.calculateTotalSeedsGerminated())
+                .set(TOTAL_PERCENT_GERMINATED, desiredTest.totalPercentGerminated)
+                .set(TOTAL_SEEDS_GERMINATED, desiredTest.totalSeedsGerminated)
                 .set(TREATMENT_ID, desiredTest.treatment)
                 .where(ID.eq(testId))
                 .execute()
