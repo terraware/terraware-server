@@ -1,15 +1,18 @@
 import pytest
 
 
+@pytest.fixture(scope="module", autouse=True)
+def check_in_accession(client, accession_id, accession_url):
+    client.post(f"{accession_url}/checkIn", json=None)
+
+
 @pytest.fixture(scope="module", params=["Lab", "Nursery"])
 def germination_test_type(request):
     return request.param
 
 
 @pytest.fixture(scope="module", autouse=True)
-def check_in_accession(client, accession_id, accession_url, germination_test_type):
-    client.post(f"{accession_url}/checkIn", json=None)
-
+def set_germination_test_types(client, accession_id, germination_test_type):
     accession = client.get_accession(accession_id)
 
     accession.processingMethod = "Count"
@@ -224,29 +227,31 @@ def test_delete_germination(client, accession):
     assert updated.totalViabilityPercent == int(25 / 300 * 100)
 
 
-def test_add_cut_test(client, accession):
-    accession.cutTestSeedsFilled = 15
-    accession.cutTestSeedsEmpty = 50
-    accession.cutTestSeedsCompromised = 10
+def test_add_cut_test(client, accession, germination_test_type):
+    if germination_test_type == "Lab":
+        accession.cutTestSeedsFilled = 15
+        accession.cutTestSeedsEmpty = 50
+        accession.cutTestSeedsCompromised = 10
 
-    updated = client.put_accession(accession)
+        updated = client.put_accession(accession)
 
-    assert updated.cutTestSeedsFilled == 15
-    assert updated.cutTestSeedsEmpty == 50
-    assert updated.cutTestSeedsCompromised == 10
+        assert updated.cutTestSeedsFilled == 15
+        assert updated.cutTestSeedsEmpty == 50
+        assert updated.cutTestSeedsCompromised == 10
 
-    # (Cut test filled + germinated total) / (cut test total + germination test sown total)
-    assert updated.totalViabilityPercent == int((25 + 15) / (300 + 75) * 100)
+        # (Cut test filled + germinated total) / (cut test total + germination test sown total)
+        assert updated.totalViabilityPercent == int((25 + 15) / (300 + 75) * 100)
 
 
-def test_modify_cut_test(client, accession):
-    accession.cutTestSeedsFilled = 500
+def test_modify_cut_test(client, accession, germination_test_type):
+    if germination_test_type == "Lab":
+        accession.cutTestSeedsFilled = 500
 
-    updated = client.put_accession(accession)
+        updated = client.put_accession(accession)
 
-    assert updated.cutTestSeedsFilled == 500
-    assert updated.cutTestSeedsEmpty == 50
-    assert updated.cutTestSeedsCompromised == 10
+        assert updated.cutTestSeedsFilled == 500
+        assert updated.cutTestSeedsEmpty == 50
+        assert updated.cutTestSeedsCompromised == 10
 
-    # (Cut test filled + germinated total) / (cut test total + germination test sown total)
-    assert updated.totalViabilityPercent == int((25 + 500) / (300 + 560) * 100)
+        # (Cut test filled + germinated total) / (cut test total + germination test sown total)
+        assert updated.totalViabilityPercent == int((25 + 500) / (300 + 560) * 100)
