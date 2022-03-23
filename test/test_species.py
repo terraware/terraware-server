@@ -1,7 +1,5 @@
 from http import HTTPStatus
 
-import pytest
-
 from util import expect_error
 
 species_name = "Test Species"
@@ -12,7 +10,6 @@ def test_create_species_requires_name(client, organization_id):
         client.post("/api/v1/species", {"organizationId": organization_id, "name": ""})
 
 
-@pytest.mark.dependency()
 def test_create_species(client, organization_id):
     response = client.post(
         "/api/v1/species",
@@ -21,7 +18,6 @@ def test_create_species(client, organization_id):
     assert response.id > 0
 
 
-@pytest.mark.dependency(depends=["test_create_species"])
 def test_create_species_rejects_duplicate_name(client, organization_id):
     with expect_error(HTTPStatus.CONFLICT):
         response = client.post(
@@ -30,7 +26,6 @@ def test_create_species_rejects_duplicate_name(client, organization_id):
         )
 
 
-@pytest.mark.dependency(depends=["test_create_species"])
 def test_seed_summary(client, seed_bank_facility_id):
     response = client.get(f"/api/v1/seedbank/summary/{seed_bank_facility_id}")
     zero_counts = {"current": 0, "lastWeek": 0}

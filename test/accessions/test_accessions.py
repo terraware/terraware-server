@@ -1,8 +1,6 @@
-import pytest
 from box import Box
 
 
-@pytest.mark.dependency()
 def test_create_accession(client, seed_bank_facility_id, accession):
     expected = {
         "facilityId": seed_bank_facility_id,
@@ -36,14 +34,12 @@ def test_create_accession(client, seed_bank_facility_id, accession):
     assert accession == Box(expected)
 
 
-@pytest.mark.dependency(depends=["test_create_accession"])
 def test_check_in_accession(client, accession_url):
     response = client.post(f"{accession_url}/checkIn", json=None).accession
 
     assert response.state == "Pending"
 
 
-@pytest.mark.dependency(depends=["test_check_in_accession"])
 def test_update_accession(client, accession):
     del accession.secondaryCollectors[1]
     accession.primaryCollector = "Leann"
@@ -56,7 +52,6 @@ def test_update_accession(client, accession):
     assert updated.fieldNotes == "Other notes"
 
 
-@pytest.mark.dependency(depends=["test_check_in_accession"])
 def test_send_to_nursery(client, accession):
     accession.nurseryStartDate = "2021-03-01"
     updated = client.put_accession(accession)
@@ -64,7 +59,6 @@ def test_send_to_nursery(client, accession):
     assert updated.state == "Nursery"
 
 
-@pytest.mark.dependency(depends=["test_send_to_nursery"])
 def test_unsend_to_nursery(client, accession):
     del accession.nurseryStartDate
     updated = client.put_accession(accession)

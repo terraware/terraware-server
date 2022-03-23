@@ -1,25 +1,32 @@
 import pytest
 
 
+@pytest.fixture(scope="module", params=["Lab", "Nursery"])
+def germination_test_type(request):
+    return request.param
+
+
 @pytest.fixture(scope="module", autouse=True)
-def check_in_accession(client, accession_id, accession_url):
+def check_in_accession(client, accession_id, accession_url, germination_test_type):
     client.post(f"{accession_url}/checkIn", json=None)
 
     accession = client.get_accession(accession_id)
 
     accession.processingMethod = "Count"
     accession.initialQuantity = {"quantity": 1000, "units": "Seeds"}
-    accession.germinationTestTypes = ["Lab"]
+    accession.germinationTestTypes = [germination_test_type]
 
-    return client.put_accession(accession)
+    yield client.put_accession(accession)
+
+    # Delete the germination tests since the same accession will be used for two test types
+    client.put_accession(accession)
 
 
-def test_set_germination_test_types(client, accession):
-    assert accession.germinationTestTypes == ["Lab"]
+def test_set_germination_test_types(client, accession, germination_test_type):
+    assert accession.germinationTestTypes == [germination_test_type]
 
 
-@pytest.mark.dependency()
-def test_create_first_test(client, accession):
+def test_create_first_test(client, accession, germination_test_type):
     test_details = {
         "startDate": "2021-02-09",
         "substrate": "Paper Petri Dish",
@@ -27,7 +34,7 @@ def test_create_first_test(client, accession):
         "seedsSown": 100,
         "notes": "A lab test note",
         "staffResponsible": "Staff 1",
-        "testType": "Lab",
+        "testType": germination_test_type,
     }
 
     accession.germinationTests = [test_details]
@@ -45,7 +52,6 @@ def test_create_first_test(client, accession):
     assert updated.germinationTests == expected
 
 
-@pytest.mark.dependency(depends=["test_create_first_test"])
 def test_modify_test(client, accession):
     accession.germinationTests[0].substrate = "Nursery Media"
     del accession.germinationTests[0].notes
@@ -55,15 +61,14 @@ def test_modify_test(client, accession):
     assert updated.germinationTests == accession.germinationTests
 
 
-@pytest.mark.dependency(depends=["test_create_first_test"])
-def test_create_later_test(client, accession):
+def test_create_later_test(client, accession, germination_test_type):
     test_details = {
         "startDate": "2021-02-12",
         "seedType": "Stored",
         "substrate": "Agar Petri Dish",
         "treatment": "Soak",
         "seedsSown": 200,
-        "testType": "Lab",
+        "testType": germination_test_type,
     }
 
     accession.germinationTests.append(test_details)
@@ -82,15 +87,14 @@ def test_create_later_test(client, accession):
     assert updated.germinationTests == expected
 
 
-@pytest.mark.dependency(depends=["test_create_later_test"])
-def test_remaining_quantity_is_based_on_date(client, accession):
+def test_remaining_quantity_is_based_on_date(client, accession, germination_test_type):
     test_details = {
         "startDate": "2021-02-01",
         "seedType": "Fresh",
         "substrate": "Other",
         "treatment": "Other",
         "seedsSown": 50,
-        "testType": "Lab",
+        "testType": germination_test_type,
     }
 
     accession.germinationTests.append(test_details)
@@ -116,7 +120,6 @@ def test_remaining_quantity_is_based_on_date(client, accession):
     assert updated.germinationTests == expected
 
 
-@pytest.mark.dependency(depends=["test_remaining_quantity_is_based_on_date"])
 def test_delete_test(client, accession):
     del accession.germinationTests[2]
 
@@ -136,7 +139,6 @@ def test_delete_test(client, accession):
     assert updated.germinationTests == expected
 
 
-@pytest.mark.dependency(depends=["test_delete_test"])
 def test_add_first_germination(client, accession):
     accession.germinationTests[0].germinations = [
         {"seedsGerminated": 10, "recordingDate": "2021-02-09"}
@@ -158,7 +160,6 @@ def test_add_first_germination(client, accession):
     assert updated.totalViabilityPercent == int(10 / 300 * 100)
 
 
-@pytest.mark.dependency(depends=["test_add_first_germination"])
 def test_add_second_germination(client, accession):
     accession.germinationTests[0].germinations.append(
         {"seedsGerminated": 15, "recordingDate": "2021-05-09"}
@@ -185,7 +186,6 @@ def test_add_second_germination(client, accession):
     assert updated.totalViabilityPercent == int(25 / 300 * 100)
 
 
-@pytest.mark.dependency(depends=["test_add_second_germination"])
 def test_modify_germination(client, accession):
     accession.germinationTests[0].germinations[0].seedsGerminated = 25
 
@@ -205,7 +205,6 @@ def test_modify_germination(client, accession):
     assert updated.totalViabilityPercent == int(35 / 300 * 100)
 
 
-@pytest.mark.dependency(depends=["test_modify_germination"])
 def test_delete_germination(client, accession):
     del accession.germinationTests[0].germinations[1]
 
@@ -225,7 +224,6 @@ def test_delete_germination(client, accession):
     assert updated.totalViabilityPercent == int(25 / 300 * 100)
 
 
-@pytest.mark.dependency(depends=["test_delete_germination"])
 def test_add_cut_test(client, accession):
     accession.cutTestSeedsFilled = 15
     accession.cutTestSeedsEmpty = 50
@@ -241,7 +239,6 @@ def test_add_cut_test(client, accession):
     assert updated.totalViabilityPercent == int((25 + 15) / (300 + 75) * 100)
 
 
-@pytest.mark.dependency(depends=["test_add_cut_test"])
 def test_modify_cut_test(client, accession):
     accession.cutTestSeedsFilled = 500
 
