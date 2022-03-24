@@ -1377,6 +1377,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+        "409":
+          description: An organization must have at least one owner; cannot change
+            the role of an organization's only owner.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
     delete:
       tags:
       - Customer
@@ -1405,6 +1412,13 @@ paths:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
         "404":
           description: The user is not a member of the organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+        "409":
+          description: The user is the organization's only owner and an organization
+            must have at least one owner.
           content:
             application/json:
               schema:
