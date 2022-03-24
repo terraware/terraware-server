@@ -52,7 +52,7 @@ data class GerminationTestModel(
     return germinations?.maxOfOrNull { it.recordingDate }
   }
 
-  fun calculateTotalSeedsGerminated(): Int? {
+  private fun calculateTotalSeedsGerminated(): Int? {
     return germinations?.sumOf { it.seedsGerminated }
   }
 
@@ -65,5 +65,12 @@ data class GerminationTestModel(
         null
       }
     }
+  }
+
+  fun withCalculatedValues(): GerminationTestModel {
+    return copy(
+        totalPercentGerminated = calculateTotalPercentGerminated(),
+        totalSeedsGerminated = calculateTotalSeedsGerminated(),
+    )
   }
 }

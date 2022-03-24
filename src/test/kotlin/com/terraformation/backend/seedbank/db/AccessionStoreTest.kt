@@ -610,11 +610,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial = createAndUpdate {
       it.copy(
           processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(100),
+          initialQuantity = seeds(2000),
           germinationTests =
               listOf(
                   GerminationTestPayload(
                       testType = GerminationTestType.Lab,
+                      seedsSown = 1000,
                       germinations =
                           listOf(
                               GerminationPayload(recordingDate = localDate, seedsGerminated = 75),
@@ -626,10 +627,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         initial.copy(
             germinationTests =
                 listOf(
-                    GerminationTestModel(
-                        id = initial.germinationTests[0].id,
-                        testType = GerminationTestType.Lab,
-                        seedsSown = 100,
+                    initial.germinationTests[0].copy(
                         germinations =
                             listOf(
                                 GerminationModel(
@@ -642,9 +640,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First germination preserved")
 
+    val updatedGerminationTest = germinationTestsDao.fetchOneById(GerminationTestId(1))!!
+    assertEquals(7, updatedGerminationTest.totalPercentGerminated, "totalPercentGerminated")
+    assertEquals(75, updatedGerminationTest.totalSeedsGerminated, "totalSeedsGerminated")
+
     val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
-    assertEquals(75, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
-    assertEquals(75, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
+    assertEquals(7, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
+    assertEquals(7, updatedAccession?.latestViabilityPercent, "latestViabilityPercent")
     assertEquals(
         localDate,
         updatedAccession?.latestGerminationRecordingDate,
