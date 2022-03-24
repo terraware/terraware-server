@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Thu Mar 24 17:49 GMT 2022</p>
+                                <p>Generated on Thu Mar 24 23:42 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -434,15 +434,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) UICN Red List categories defining the conservation status of a given species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/storage_conditions.html">storage_conditions</a></td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Refrigeration condition of seeds during storage.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/roles.html">roles</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -450,6 +441,15 @@
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Roles a user is allowed to have in an organization.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/storage_conditions.html">storage_conditions</a></td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Refrigeration condition of seeds during storage.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/country_subdivisions.html">country_subdivisions</a></td>
@@ -758,15 +758,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of facilities that can be represented in the data model.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries.html">timeseries</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">4</td>
@@ -774,6 +765,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Properties of a series of values collected from a device. Each device metric is represented as a timeseries.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
                                     </tr>
                             </table>
                         </div>
