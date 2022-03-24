@@ -91,7 +91,7 @@
                     Please click the button below to go to your Terraware account where you can view
                     the organization.</mj-text
                 >
-                <mj-button mj-class="btn-productive-primary-md" href="${webAppUrl}/"
+                <mj-button mj-class="btn-productive-primary-md" href="${organizationHomeUrl}"
                     >Go to Terraware</mj-button
                 >
             </mj-column>

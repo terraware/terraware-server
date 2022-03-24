@@ -42,6 +42,7 @@ class EmailService(
     private val resourceLoader: ResourceLoader,
     private val sender: JavaMailSender,
     private val userStore: UserStore,
+    private val webAppUrls: WebAppUrls,
 ) {
   private lateinit var sesClient: SesV2Client
   private val emailValidator = EmailValidator.getInstance()
@@ -130,12 +131,14 @@ class EmailService(
     val helper = MimeMessageHelper(message, true)
 
     val webAppUrl = "${config.webAppUrl}".trimEnd('/')
+    val organizationHomeUrl = webAppUrls.organizationHome(organizationId).toString()
 
     val replacements =
         mapOf(
             "\${admin.email}" to admin.email,
             "\${admin.fullName}" to (admin.fullName ?: ""),
             "\${organization.name}" to organization.name,
+            "\${organizationHomeUrl}" to organizationHomeUrl,
         )
 
     val textBody =

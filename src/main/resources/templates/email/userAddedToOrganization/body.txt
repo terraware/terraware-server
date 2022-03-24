@@ -3,7 +3,7 @@ You've been added to ${organization.name}!
 Added by ${admin.fullName} (${admin.email})
 
 Please click the link below to go to your Terraware account where you can view the organization.
-${webAppUrl}
+${organizationHomeUrl}
 
 
 ------------------------------
