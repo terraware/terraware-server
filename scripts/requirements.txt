@@ -1,4 +1,4 @@
 pypika==0.48.9
 pyshp==2.1.3
-requests==2.25.1
+requests==2.27.1
 sridentify==0.8.0
