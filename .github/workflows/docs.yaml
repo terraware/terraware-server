@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Check out current revision
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set environment
       run: ./.github/scripts/set-environment.sh
