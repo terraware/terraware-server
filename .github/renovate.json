@@ -1,3 +1,15 @@
 {
-  "extends": ["config:base"]
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPackagePrefixes": ["software.amazon.awssdk"],
+      "schedule": ["on the first day of the month"]
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "patch releases",
+      "groupSlug": "patch-releases"
+    }
+  ]
 }
