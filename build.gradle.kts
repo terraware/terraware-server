@@ -20,9 +20,9 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("com.revolut.jooq-docker") version "0.3.5"
+  id("com.revolut.jooq-docker") version "0.3.7"
   id("com.diffplug.spotless") version "6.2.2"
-  id("org.springframework.boot") version "2.6.1"
+  id("org.springframework.boot") version "2.6.4"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
   // Add the build target to generate Swagger docs
@@ -40,7 +40,7 @@ buildscript {
     resolutionStrategy {
       setForcedModules(
           // https://github.com/revolut-engineering/jooq-plugin/pull/17
-          "com.github.docker-java:docker-java-transport-okhttp:3.2.12",
+          "com.github.docker-java:docker-java-transport-okhttp:3.2.13",
           "org.jooq:jooq:$jooqVersion",
           "org.jooq:jooq-codegen:$jooqVersion",
       )
