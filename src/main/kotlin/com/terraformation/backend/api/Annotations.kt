@@ -32,15 +32,24 @@ annotation class CustomerEndpoint
 annotation class SearchEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @ApiResponse(
-    responseCode = "404",
     content =
         [
             Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = Schema(implementation = SimpleErrorResponsePayload::class))])
+annotation class ApiResponseSimpleError(val responseCode: String)
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+@ApiResponseSimpleError(responseCode = "404")
 annotation class ApiResponse404(val description: String = "The requested resource was not found.")
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+@ApiResponseSimpleError(responseCode = "409")
+annotation class ApiResponse409(val description: String = "The request would cause a conflict.")
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)

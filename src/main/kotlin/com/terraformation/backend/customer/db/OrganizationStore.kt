@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
+import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
@@ -332,12 +333,16 @@ class OrganizationStore(
    * The user may still be referenced in the organization's data. For example, if they uploaded
    * photos, `photos.user_id` will still refer to them.
    *
+   * @throws CannotRemoveLastOwnerException The user is an owner and the organization has no other
+   * owners.
    * @throws UserNotFoundException The user was not a member of the organization.
    */
   fun removeUser(organizationId: OrganizationId, userId: UserId) {
     requirePermissions { removeOrganizationUser(organizationId) }
 
     dslContext.transaction { _ ->
+      ensureOtherOwners(organizationId, userId)
+
       dslContext
           .deleteFrom(PROJECT_USERS)
           .where(PROJECT_USERS.USER_ID.eq(userId))
@@ -361,21 +366,73 @@ class OrganizationStore(
     }
   }
 
+  /**
+   * Updates the role of an existing organization user.
+   *
+   * @throws CannotRemoveLastOwnerException The user is an owner, the requested role is not
+   * [Role.OWNER], and the organization has no other owners.
+   * @throws UserNotFoundException The user is not a member of the organization.
+   */
   fun setUserRole(organizationId: OrganizationId, userId: UserId, role: Role) {
     requirePermissions { setOrganizationUserRole(organizationId, role) }
 
-    val rowsUpdated =
+    dslContext.transaction { _ ->
+      if (role != Role.OWNER) {
+        ensureOtherOwners(organizationId, userId)
+      }
+
+      val rowsUpdated =
+          dslContext
+              .update(ORGANIZATION_USERS)
+              .set(ORGANIZATION_USERS.ROLE_ID, role.id)
+              .set(ORGANIZATION_USERS.MODIFIED_BY, currentUser().userId)
+              .set(ORGANIZATION_USERS.MODIFIED_TIME, clock.instant())
+              .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+              .and(ORGANIZATION_USERS.USER_ID.eq(userId))
+              .execute()
+
+      if (rowsUpdated < 1) {
+        throw UserNotFoundException(userId)
+      }
+    }
+  }
+
+  /**
+   * If a user is an owner of an organization, ensures that the organization has other owners.
+   *
+   * Acquires row locks on [ORGANIZATION_USERS] for the organization's owners; call from within a
+   * transaction.
+   *
+   * @throws CannotRemoveLastOwnerException The user is an owner and the organization has no other
+   * owners.
+   * @throws UserNotFoundException The user is not a member of the organization.
+   */
+  private fun ensureOtherOwners(organizationId: OrganizationId, userId: UserId) {
+    val currentRole =
         dslContext
-            .update(ORGANIZATION_USERS)
-            .set(ORGANIZATION_USERS.ROLE_ID, role.id)
-            .set(ORGANIZATION_USERS.MODIFIED_BY, currentUser().userId)
-            .set(ORGANIZATION_USERS.MODIFIED_TIME, clock.instant())
+            .select(ORGANIZATION_USERS.ROLE_ID)
+            .from(ORGANIZATION_USERS)
             .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
             .and(ORGANIZATION_USERS.USER_ID.eq(userId))
-            .execute()
+            .forUpdate()
+            .fetchOne(ORGANIZATION_USERS.ROLE_ID)
+            ?.let { Role.of(it) }
+            ?: throw UserNotFoundException(userId)
 
-    if (rowsUpdated < 1) {
-      throw UserNotFoundException(userId)
+    if (currentRole == Role.OWNER) {
+      val numOwners =
+          dslContext
+              .selectOne()
+              .from(ORGANIZATION_USERS)
+              .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+              .and(ORGANIZATION_USERS.ROLE_ID.eq(Role.OWNER.id))
+              .forUpdate()
+              .fetch()
+              .size
+
+      if (numOwners < 2) {
+        throw CannotRemoveLastOwnerException(organizationId)
+      }
     }
   }
 

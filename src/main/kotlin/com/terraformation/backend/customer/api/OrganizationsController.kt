@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -12,6 +13,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
@@ -27,6 +29,8 @@ import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.ws.rs.BadRequestException
 import javax.ws.rs.NotFoundException
+import javax.ws.rs.WebApplicationException
+import javax.ws.rs.core.Response
 import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -144,6 +148,8 @@ class OrganizationsController(
 
   @ApiResponseSimpleSuccess
   @ApiResponse404("The user is not a member of the organization.")
+  @ApiResponse409(
+      "The user is the organization's only owner and an organization must have at least one owner.")
   @DeleteMapping("/{organizationId}/users/{userId}")
   @Operation(
       summary = "Removes a user from an organization and all its projects.",
@@ -152,12 +158,20 @@ class OrganizationsController(
       @PathVariable("organizationId") organizationId: OrganizationId,
       @PathVariable("userId") userId: UserId,
   ): SimpleSuccessResponsePayload {
-    organizationStore.removeUser(organizationId, userId)
+    try {
+      organizationStore.removeUser(organizationId, userId)
+    } catch (e: CannotRemoveLastOwnerException) {
+      throw WebApplicationException(e.message, Response.Status.CONFLICT)
+    }
+
     return SimpleSuccessResponsePayload()
   }
 
   @ApiResponseSimpleSuccess
   @ApiResponse404("The user is not a member of the organization.")
+  @ApiResponse409(
+      "An organization must have at least one owner; cannot change the role of an " +
+          "organization's only owner.")
   @PutMapping("/{organizationId}/users/{userId}")
   @Operation(
       summary = "Updates the user's organization information.",
@@ -176,6 +190,8 @@ class OrganizationsController(
     } catch (e: UserNotFoundException) {
       throw NotFoundException(
           "User $userId does not exist or is not a member of organization $organizationId")
+    } catch (e: CannotRemoveLastOwnerException) {
+      throw WebApplicationException(e.message, Response.Status.CONFLICT)
     }
     return SimpleSuccessResponsePayload()
   }

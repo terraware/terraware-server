@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
@@ -470,9 +471,55 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertNotNull(store.fetchUser(otherOrgId, model.userId))
   }
 
+  @Test
+  fun `removeUser allows removing owner if there is another owner`() {
+    val owner1 = organizationUserModel(userId = UserId(100), role = Role.OWNER)
+    val owner2 = organizationUserModel(userId = UserId(101), role = Role.OWNER)
+    configureUser(owner1)
+    configureUser(owner2)
+
+    store.removeUser(organizationId, owner1.userId)
+
+    assertThrows<UserNotFoundException> { store.fetchUser(organizationId, owner1.userId) }
+  }
+
+  @Test
+  fun `removeUser does not allow removing the only owner`() {
+    val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
+    val admin = organizationUserModel(userId = UserId(101), role = Role.ADMIN)
+    configureUser(owner)
+    configureUser(admin)
+
+    assertThrows<CannotRemoveLastOwnerException> { store.removeUser(organizationId, owner.userId) }
+  }
+
+  @Test
+  fun `setUserRole allows demoting owner if there is another owner`() {
+    val owner1 = organizationUserModel(userId = UserId(100), role = Role.OWNER)
+    val owner2 = organizationUserModel(userId = UserId(101), role = Role.OWNER)
+    configureUser(owner1)
+    configureUser(owner2)
+
+    store.setUserRole(organizationId, owner1.userId, Role.ADMIN)
+
+    assertEquals(Role.ADMIN, store.fetchUser(organizationId, owner1.userId).role)
+  }
+
+  @Test
+  fun `setUserRole does not allow demoting the only owner`() {
+    val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
+    val admin = organizationUserModel(userId = UserId(101), role = Role.ADMIN)
+    configureUser(owner)
+    configureUser(admin)
+
+    assertThrows<CannotRemoveLastOwnerException> {
+      store.setUserRole(organizationId, owner.userId, Role.ADMIN)
+    }
+  }
+
   private fun organizationUserModel(
       userId: UserId = UserId(100),
-      email: String = "x@y.com",
+      email: String = "$userId@y.com",
       firstName: String = "First",
       lastName: String = "Last",
       userType: UserType = UserType.Individual,

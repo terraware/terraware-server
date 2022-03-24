@@ -28,6 +28,9 @@ class AccessionNotFoundException(val accessionId: AccessionId) :
 class AutomationNotFoundException(val automationId: AutomationId) :
     EntityNotFoundException("Automation $automationId not found")
 
+class CannotRemoveLastOwnerException(val organizationId: OrganizationId) :
+    RuntimeException("Cannot remove last owner of organization $organizationId")
+
 class DeviceNotFoundException(val deviceId: DeviceId) :
     EntityNotFoundException("Device $deviceId not found")
 
