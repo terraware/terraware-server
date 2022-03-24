@@ -83,7 +83,7 @@ dependencies {
 
   implementation("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-  implementation("com.opencsv:opencsv:5.5.2")
+  implementation("com.opencsv:opencsv:5.6")
   implementation("commons-validator:commons-validator:1.7")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.1.1")
   implementation("io.swagger.core.v3:swagger-annotations:2.1.13")
