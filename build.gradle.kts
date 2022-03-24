@@ -88,7 +88,7 @@ dependencies {
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.1.1")
   implementation("io.swagger.core.v3:swagger-annotations:2.1.11")
   implementation("javax.inject:javax.inject:1")
-  implementation("net.coobird:thumbnailator:0.4.15")
+  implementation("net.coobird:thumbnailator:0.4.17")
   implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("org.apache.tika:tika-core:2.1.0")
   implementation("org.codehaus.janino:janino:3.1.6")
