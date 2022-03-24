@@ -30,7 +30,7 @@ plugins {
   id("org.springdoc.openapi-gradle-plugin") version "1.3.3"
 
   // The MJML -> HTML translator for email messages is a Node.js utility.
-  id("com.github.node-gradle.node") version "3.0.1"
+  id("com.github.node-gradle.node") version "3.2.1"
 }
 
 buildscript {
