@@ -1,4 +1,4 @@
-FROM openjdk:17-slim-buster
+FROM openjdk:19-slim-buster
 
 # Run the server with a unique user ID so we can enforce disk quotas.
 ARG USER_ID=1001
