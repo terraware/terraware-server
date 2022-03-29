@@ -15,6 +15,8 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.processToString
+import freemarker.template.Configuration
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import javax.annotation.ManagedBean
@@ -22,11 +24,9 @@ import javax.mail.Message
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 import org.apache.commons.validator.routines.EmailValidator
-import org.springframework.core.io.ResourceLoader
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.security.access.AccessDeniedException
-import org.springframework.web.util.HtmlUtils
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.sesv2.SesV2Client
 import software.amazon.awssdk.services.sesv2.model.Destination
@@ -37,9 +37,9 @@ import software.amazon.awssdk.services.sesv2.model.RawMessage
 class EmailService(
     private val config: TerrawareServerConfig,
     private val facilityStore: FacilityStore,
+    private val freeMarkerConfig: Configuration,
     private val messages: Messages,
     private val organizationStore: OrganizationStore,
-    private val resourceLoader: ResourceLoader,
     private val sender: JavaMailSender,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
@@ -93,17 +93,12 @@ class EmailService(
     val facility =
         facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    val replacements =
+    val model =
         mapOf(
-            "\${facility.lastTimeseriesTime}" to messages.dateAndTime(facility.lastTimeseriesTime),
-            "\${facility.maxIdleMinutes}" to "${facility.maxIdleMinutes}",
-            "\${facility.name}" to facility.name,
-        )
-
+            "facility" to facility,
+            "lastTimeseriesTime" to messages.dateAndTime(facility.lastTimeseriesTime))
     val textBody =
-        getResourceAsString("classpath:templates/email/facilityIdle/body.txt")
-            ?.replaceMultiple(replacements)
-            ?: throw IllegalStateException("Couldn't find plaintext facilityIdle email template")
+        freeMarkerConfig.getTemplate("email/facilityIdle/body.txt.ftl").processToString(model)
 
     val message = sender.createMimeMessage()
     val helper = MimeMessageHelper(message)
@@ -133,51 +128,28 @@ class EmailService(
     val webAppUrl = "${config.webAppUrl}".trimEnd('/')
     val organizationHomeUrl = webAppUrls.organizationHome(organizationId).toString()
 
-    val replacements =
+    val model =
         mapOf(
-            "\${admin.email}" to admin.email,
-            "\${admin.fullName}" to (admin.fullName ?: ""),
-            "\${organization.name}" to organization.name,
-            "\${organizationHomeUrl}" to organizationHomeUrl,
+            "admin" to admin,
+            "organization" to organization,
+            "organizationHomeUrl" to organizationHomeUrl,
+            "webAppUrl" to webAppUrl,
         )
 
     val textBody =
-        getResourceAsString("classpath:templates/email/userAddedToOrganization/body.txt")
-            ?.replaceMultiple(replacements)
-            ?.replace("\${webAppUrl}", webAppUrl)
-            ?: throw IllegalStateException(
-                "Couldn't find plaintext organizationAdded email template")
-
+        freeMarkerConfig
+            .getTemplate("email/userAddedToOrganization/body.txt.ftl")
+            .processToString(model)
     val htmlBody =
-        getResourceAsString("classpath:templates/email/userAddedToOrganization/body.html")
-            ?.replaceMultiple(replacements, htmlEscape = true)
-            ?.replace("\${webAppUrl}", webAppUrl)
-            ?: throw IllegalStateException("Couldn't find HTML organizationAdded email template")
+        freeMarkerConfig
+            .getTemplate("email/userAddedToOrganization/body.ftlh")
+            .processToString(model)
 
     helper.setSubject(messages.userAddedToOrganizationSubject(admin.fullName, organization.name))
     helper.setTo(user.email)
     helper.setText(textBody, htmlBody)
 
     send(message)
-  }
-
-  private fun String.replaceMultiple(
-      replacements: Map<String, String>,
-      htmlEscape: Boolean = false
-  ): String {
-    return replacements.entries.fold(this) { str, (token, rawValue) ->
-      val replacement = if (htmlEscape) HtmlUtils.htmlEscape(rawValue) else rawValue
-      str.replace(token, replacement)
-    }
-  }
-
-  private fun getResourceAsString(name: String): String? {
-    val resource = resourceLoader.getResource(name)
-    return if (resource.isReadable)
-        resource.inputStream.use { it.readAllBytes().toString(StandardCharsets.UTF_8) }
-    else {
-      null
-    }
   }
 
   /** Sends an email message. Overrides the recipient and subject line in dev/test environments. */

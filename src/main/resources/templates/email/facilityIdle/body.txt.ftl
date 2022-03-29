@@ -1,0 +1,7 @@
+Hello,
+
+It has been over ${facility.maxIdleMinutes} minutes since the most recent update was received from ${facility.name}.
+
+The most recent update was at ${lastTimeseriesTime}.
+
+This may indicate a problem with the Internet connection or the device manager at ${facility.name}.
