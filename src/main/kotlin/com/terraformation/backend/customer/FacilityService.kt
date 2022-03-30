@@ -15,7 +15,7 @@ class FacilityService(
     private val systemUser: SystemUser,
 ) {
   /** Sends alert email when facilities go idle. Runs once per minute. */
-  @Job(name = SCAN_FOR_IDLE_FACILITIES_JOB_NAME)
+  @Job(name = SCAN_FOR_IDLE_FACILITIES_JOB_NAME, retries = 0)
   @Recurring(id = SCAN_FOR_IDLE_FACILITIES_JOB_NAME, cron = "* * * * *")
   fun scanForIdleFacilities() {
     systemUser.run {
