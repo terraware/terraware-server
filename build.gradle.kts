@@ -93,6 +93,7 @@ dependencies {
   implementation("org.apache.tika:tika-core:2.3.0")
   implementation("org.codehaus.janino:janino:3.1.6")
   implementation("org.flywaydb:flyway-core:8.5.4")
+  implementation("org.freemarker:freemarker:2.3.31")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:4.0.10")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
@@ -206,7 +207,7 @@ val processMjmlTasks =
                 buildDir
                     .resolve("resources/main")
                     .resolve(
-                        mjmlFile.withReplacedExtensionOrNull(".mjml", ".html")!!.relativeTo(
+                        mjmlFile.withReplacedExtensionOrNull(".mjml", ".ftlh")!!.relativeTo(
                             File("$projectDir/src/main/resources")))
 
             // Stop these tasks from appearing in "./gradlew tasks" output.

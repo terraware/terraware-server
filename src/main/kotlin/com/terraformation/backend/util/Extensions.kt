@@ -1,5 +1,7 @@
 package com.terraformation.backend.util
 
+import freemarker.template.Template
+import java.io.StringWriter
 import java.math.BigDecimal
 import java.util.EnumSet
 import org.jooq.Field
@@ -31,5 +33,13 @@ fun <T : Comparable<T>> T?.compareNullsFirst(other: T?): Int {
     this != null && other == null -> 1
     this == null && other != null -> -1
     else -> 0
+  }
+}
+
+/** Renders a FreeMarker template to a string given the values in a model object. */
+fun Template.processToString(model: Any): String {
+  return StringWriter().use { writer ->
+    process(model, writer)
+    writer.toString()
   }
 }
