@@ -27,7 +27,7 @@ plugins {
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
-  id("org.springdoc.openapi-gradle-plugin") version "1.3.3"
+  id("org.springdoc.openapi-gradle-plugin") version "1.3.4"
 
   // The MJML -> HTML translator for email messages is a Node.js utility.
   id("com.github.node-gradle.node") version "3.2.1"
