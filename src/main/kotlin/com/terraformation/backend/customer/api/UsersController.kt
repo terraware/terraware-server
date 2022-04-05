@@ -6,7 +6,9 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.UserId
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import javax.ws.rs.ForbiddenException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -23,7 +25,8 @@ class UsersController(private val userStore: UserStore) {
   fun getMyself(): GetUserResponsePayload {
     val user = currentUser()
     if (user is IndividualUser) {
-      return GetUserResponsePayload(UserProfilePayload(user.email, user.firstName, user.lastName))
+      return GetUserResponsePayload(
+          UserProfilePayload(user.userId, user.email, user.firstName, user.lastName))
     } else {
       throw ForbiddenException("Only ordinary users can request their information")
     }
@@ -44,6 +47,11 @@ class UsersController(private val userStore: UserStore) {
 }
 
 data class UserProfilePayload(
+    @Schema(
+        description =
+            "User's unique ID. This should not be shown to the user, but is a required input to " +
+                "some API endpoints.")
+    val id: UserId,
     val email: String,
     val firstName: String?,
     val lastName: String?,
