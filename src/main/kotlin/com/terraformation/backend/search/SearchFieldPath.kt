@@ -72,7 +72,7 @@ data class SearchFieldPrefix(
    * @return The fully-resolved path, or null if one of the elements of [relativePath] wasn't a
    * valid field name.
    */
-  fun resolveOrNull(relativePath: String): SearchFieldPath? {
+  private fun resolveOrNull(relativePath: String): SearchFieldPath? {
     val nextNestedAndRest = relativePath.split(NESTED_SUBLIST_DELIMITER, limit = 2)
     val nextFlattenedAndRest = relativePath.split(FLATTENED_SUBLIST_DELIMITER, limit = 2)
 

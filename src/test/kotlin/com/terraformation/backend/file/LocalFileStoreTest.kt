@@ -20,7 +20,7 @@ import org.junit.jupiter.api.io.TempDir
 class LocalFileStoreTest : FileStoreTest() {
   @TempDir lateinit var tempDir: Path
 
-  val config: TerrawareServerConfig = mockk()
+  private val config: TerrawareServerConfig = mockk()
 
   override lateinit var store: FileStore
 

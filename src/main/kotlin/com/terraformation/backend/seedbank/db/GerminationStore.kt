@@ -166,7 +166,7 @@ class GerminationStore(private val dslContext: DSLContext) {
     val existingById = existing.associateBy { it.id }
     val existingIds = existingById.keys
     val desired = desiredTests ?: emptyList()
-    val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id })
+    val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id }.toSet())
 
     if (deletedTestIds.isNotEmpty()) {
       dslContext.deleteFrom(GERMINATIONS).where(GERMINATIONS.TEST_ID.`in`(deletedTestIds)).execute()

@@ -7,12 +7,12 @@ The server uses [Flyway](https://flywaydb.org) to create and modify the database
 
 The migrations are split up into subdirectories to allow finer control over how they're applied in different environments:
 
-| Subdirectory | Description
-| --- | ---
-| `common` | Scripts that only use standards-compliant SQL syntax. The vast majority of migrations should live here.
-| `dev` | Scripts that are only executed in development environments. Typically these will insert dummy data for local testing. Scripts in here should all be replayable, not numbered.
-| `generic` | Standards-compliant versions of database-specific scripts. There should be one of these corresponding to each database-specific numbered script.
-| `postgres` | Scripts that use PostgreSQL-specific syntax.
+| Subdirectory | Description |
+| --- | --- |
+| `common` | Scripts that only use standards-compliant SQL syntax. The vast majority of migrations should live here. |
+| `dev` | Scripts that are only executed in development environments. Typically these will insert dummy data for local testing. Scripts in here should all be replayable, not numbered. |
+| `generic` | Standards-compliant versions of database-specific scripts. There should be one of these corresponding to each database-specific numbered script. |
+| `postgres` | Scripts that use PostgreSQL-specific syntax. |
 
 ## Support for multiple database engines
 
