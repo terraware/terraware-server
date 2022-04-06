@@ -27,6 +27,7 @@ import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StorageLocationNotFoundException
+import com.terraformation.backend.db.UserId
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -67,6 +68,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val speciesId = SpeciesId(1)
   private val speciesNameId = SpeciesNameId(1)
   private val storageLocationId = StorageLocationId(1)
+  private val userId = UserId(1)
 
   /**
    * Grants permission to perform a particular operation. This is a simple wrapper around a MockK
@@ -426,13 +428,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun removeProjectUser() {
-    assertThrows<ProjectNotFoundException> { requirements.removeProjectUser(projectId) }
+    assertThrows<ProjectNotFoundException> { requirements.removeProjectUser(projectId, userId) }
 
     grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.removeProjectUser(projectId) }
+    assertThrows<AccessDeniedException> { requirements.removeProjectUser(projectId, userId) }
 
-    grant { user.canRemoveProjectUser(projectId) }
-    requirements.removeProjectUser(projectId)
+    grant { user.canRemoveProjectUser(projectId, userId) }
+    requirements.removeProjectUser(projectId, userId)
   }
 
   @Test
@@ -481,14 +483,16 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun removeOrganizationUser() {
     assertThrows<OrganizationNotFoundException> {
-      requirements.removeOrganizationUser(organizationId)
+      requirements.removeOrganizationUser(organizationId, userId)
     }
 
     grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.removeOrganizationUser(organizationId) }
+    assertThrows<AccessDeniedException> {
+      requirements.removeOrganizationUser(organizationId, userId)
+    }
 
-    grant { user.canRemoveOrganizationUser(organizationId) }
-    requirements.removeOrganizationUser(organizationId)
+    grant { user.canRemoveOrganizationUser(organizationId, userId) }
+    requirements.removeOrganizationUser(organizationId, userId)
   }
 
   @Test

@@ -224,7 +224,7 @@ class ProjectStore(
    * @throws UserNotFoundException The user is not a member of the project.
    */
   fun removeUser(projectId: ProjectId, userId: UserId) {
-    requirePermissions { removeProjectUser(projectId) }
+    requirePermissions { removeProjectUser(projectId, userId) }
 
     val rowsDeleted =
         dslContext

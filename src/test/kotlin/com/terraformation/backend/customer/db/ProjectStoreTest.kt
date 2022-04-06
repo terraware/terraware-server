@@ -42,7 +42,7 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateProject(any()) } returns true
     every { user.canAddProjectUser(any()) } returns true
-    every { user.canRemoveProjectUser(any()) } returns true
+    every { user.canRemoveProjectUser(any(), any()) } returns true
 
     store = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
 
@@ -128,7 +128,7 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeProjectUser throws exception if no permission to remove users`() {
-    every { user.canRemoveProjectUser(any()) } returns false
+    every { user.canRemoveProjectUser(any(), any()) } returns false
 
     assertThrows<AccessDeniedException> { store.removeUser(projectId, UserId(1)) }
   }

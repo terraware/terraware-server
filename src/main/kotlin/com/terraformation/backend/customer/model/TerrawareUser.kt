@@ -109,8 +109,8 @@ interface TerrawareUser : Principal {
   fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
-  fun canRemoveOrganizationUser(organizationId: OrganizationId): Boolean
-  fun canRemoveProjectUser(projectId: ProjectId): Boolean
+  fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
+  fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean
   fun canUpdateAccession(accessionId: AccessionId): Boolean

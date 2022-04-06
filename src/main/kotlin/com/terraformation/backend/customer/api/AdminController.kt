@@ -253,19 +253,10 @@ class AdminController(
         organizationStore
             .fetchAll()
             .map { it.id }
-            .filter {
-              currentUser().canRemoveOrganizationUser(it) ||
-                  currentUser().canAddOrganizationUser(it)
-            }
+            .filter { currentUser().canAddOrganizationUser(it) }
             .toSet()
     val adminProjectIds =
-        projectStore
-            .fetchAll()
-            .map { it.id }
-            .filter {
-              currentUser().canRemoveProjectUser(it) || currentUser().canAddProjectUser(it)
-            }
-            .toSet()
+        projectStore.fetchAll().map { it.id }.filter { currentUser().canAddProjectUser(it) }.toSet()
 
     val organizationsToAdd = organizationIds - user.organizationRoles.keys
     val organizationsToRemove = adminOrganizationIds - organizationIds
