@@ -1,7 +1,6 @@
 import com.github.gradle.node.yarn.task.YarnTask
 import com.terraformation.gradle.computeGitVersion
 import java.nio.file.Files
-import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
@@ -9,6 +8,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.utils.fileUtils.withReplacedExtensionOrNull
 import org.jooq.meta.jaxb.Strategy
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
   kotlin("jvm")
@@ -324,19 +324,18 @@ spotless {
 }
 
 openApi {
-  val properties = Properties()
+  val bootRun = project.tasks["bootRun"] as BootRun
 
   // Run the server on a port that's unlikely to already be in use.
   val listenPort = 32109
-  properties["server.port"] = "$listenPort"
+  bootRun.jvmArgs("-Dserver.port=$listenPort")
   apiDocsUrl.set("http://localhost:$listenPort/v3/api-docs.yaml")
 
   // Use application-apidoc.yaml for application configuration.
-  properties["spring.profiles.active"] = "apidoc"
+  bootRun.jvmArgs("-Dspring.profiles.active=apidoc")
 
   outputDir.set(projectDir)
   outputFileName.set("openapi.yaml")
-  forkProperties.set(properties)
 }
 
 tasks.register<JavaExec>("generateFrontEndTestSession") {
