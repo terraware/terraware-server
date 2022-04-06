@@ -11,5 +11,6 @@
       "schedule": ["on the first day of the month"]
     }
   ],
+  "prCreation": "not-pending",
   "stabilityDays": 3
 }
