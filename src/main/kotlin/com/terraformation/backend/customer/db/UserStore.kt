@@ -180,6 +180,7 @@ class UserStore(
         UsersRow(
             createdTime = clock.instant(),
             email = email,
+            emailNotificationsEnabled = false,
             modifiedTime = clock.instant(),
             userTypeId = UserType.Individual)
 
@@ -269,7 +270,11 @@ class UserStore(
             ?: throw IllegalStateException("Current user not found in users table")
 
     dslContext.transaction { _ ->
-      usersDao.update(usersRow.copy(firstName = model.firstName, lastName = model.lastName))
+      usersDao.update(
+          usersRow.copy(
+              emailNotificationsEnabled = model.emailNotificationsEnabled,
+              firstName = model.firstName,
+              lastName = model.lastName))
 
       try {
         val keycloakUser = usersResource.get(usersRow.authId)
@@ -514,6 +519,8 @@ class UserStore(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId,
         usersRow.email ?: throw IllegalArgumentException("Email should never be null"),
+        usersRow.emailNotificationsEnabled
+            ?: throw IllegalArgumentException("Email notifications enabled should never be null"),
         usersRow.firstName,
         usersRow.lastName,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
@@ -545,6 +552,7 @@ class UserStore(
           UsersRow(
               authId = keycloakUser.id,
               email = keycloakUser.email,
+              emailNotificationsEnabled = false,
               firstName = keycloakUser.firstName,
               lastName = keycloakUser.lastName,
               userTypeId = type,

@@ -391,7 +391,11 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     every { user.userId } returns model.userId
 
     val modelWithEdits =
-        model.copy(email = "newemail@x.com", firstName = newFirstName, lastName = newLastName)
+        model.copy(
+            email = "newemail@x.com",
+            firstName = newFirstName,
+            lastName = newLastName,
+            emailNotificationsEnabled = true)
     userStore.updateUser(modelWithEdits)
 
     val updatedModel = userStore.fetchById(model.userId)!!
@@ -399,6 +403,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
     assertEquals(newLastName, updatedModel.lastName, "Last name (DB)")
+    assertTrue(updatedModel.emailNotificationsEnabled, "Email notifications enabled (DB)")
 
     val updatedRepresentation = representationSlot.captured
     assertEquals(oldEmail, updatedRepresentation.email, "Email (Keycloak)")

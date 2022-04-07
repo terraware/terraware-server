@@ -158,6 +158,7 @@ COMMENT ON TABLE user_types IS '(Enum) Types of users. Most users are of type 1,
 
 COMMENT ON TABLE users IS 'User identities. A user can be associated with organizations via `organization_users`.';
 COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID.';
+COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants to receive notifications via email.';
 COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
 
 COMMENT ON TABLE withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
