@@ -54,6 +54,7 @@ data class IndividualUser(
     override val userId: UserId,
     val authId: String?,
     val email: String,
+    val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
     override val userType: UserType,

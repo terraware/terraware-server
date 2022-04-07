@@ -26,7 +26,12 @@ class UsersController(private val userStore: UserStore) {
     val user = currentUser()
     if (user is IndividualUser) {
       return GetUserResponsePayload(
-          UserProfilePayload(user.userId, user.email, user.firstName, user.lastName))
+          UserProfilePayload(
+              user.userId,
+              user.email,
+              user.emailNotificationsEnabled,
+              user.firstName,
+              user.lastName))
     } else {
       throw ForbiddenException("Only ordinary users can request their information")
     }
@@ -37,7 +42,12 @@ class UsersController(private val userStore: UserStore) {
   fun updateMyself(@RequestBody payload: UpdateUserRequestPayload): SimpleSuccessResponsePayload {
     val user = currentUser()
     if (user is IndividualUser) {
-      val model = user.copy(firstName = payload.firstName, lastName = payload.lastName)
+      val model =
+          user.copy(
+              emailNotificationsEnabled = payload.emailNotificationsEnabled
+                      ?: user.emailNotificationsEnabled,
+              firstName = payload.firstName,
+              lastName = payload.lastName)
       userStore.updateUser(model)
       return SimpleSuccessResponsePayload()
     } else {
@@ -53,6 +63,12 @@ data class UserProfilePayload(
                 "some API endpoints.")
     val id: UserId,
     val email: String,
+    @Schema(
+        description =
+            "If true, the user wants to receive all the notifications for their organization and " +
+                "projects via email. This does not apply to certain kinds of notifications such " +
+                "as \"You've been added to a new organization.\"")
+    val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
 )
@@ -60,6 +76,13 @@ data class UserProfilePayload(
 data class GetUserResponsePayload(val user: UserProfilePayload) : SuccessResponsePayload
 
 data class UpdateUserRequestPayload(
+    @Schema(
+        description =
+            "If true, the user wants to receive all the notifications for their organization and " +
+                "projects via email. This does not apply to certain kinds of notifications such " +
+                "as \"You've been added to a new organization.\" If null, leave the existing " +
+                "value as-is.")
+    val emailNotificationsEnabled: Boolean? = null,
     val firstName: String,
     val lastName: String,
 )
