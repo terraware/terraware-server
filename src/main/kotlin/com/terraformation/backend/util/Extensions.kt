@@ -3,6 +3,7 @@ package com.terraformation.backend.util
 import freemarker.template.Template
 import java.io.StringWriter
 import java.math.BigDecimal
+import java.net.URI
 import java.util.EnumSet
 import org.jooq.Field
 
@@ -42,4 +43,26 @@ fun Template.processToString(model: Any): String {
     process(model, writer)
     writer.toString()
   }
+}
+
+/**
+ * Appends a path element to a URI. Unlike [URI.resolve], returns the same result whether or not the
+ * existing URI's path has a trailing slash. That is, `URI("http://x/y").appendPath("z") ==
+ * URI("http://x/y/").appendPath("z")`. Preserves other URI elements such as query string as-is.
+ */
+fun URI.appendPath(additionalPath: String): URI {
+  return if (path.endsWith('/')) {
+    URI(scheme, userInfo, host, port, "$path$additionalPath", query, fragment)
+  } else {
+    URI(scheme, userInfo, host, port, "$path/$additionalPath", query, fragment)
+  }
+}
+
+/**
+ * Calls a function on a chunk of elements from a sequence, then returns the sequence in its
+ * original unchunked form for further processing of individual elements. Each element is only
+ * consumed from the original sequence once. This is operation is _intermediate_ and _stateful_.
+ */
+fun <T> Sequence<T>.onChunk(chunkSize: Int, func: (List<T>) -> Unit): Sequence<T> {
+  return chunked(chunkSize).onEach { func(it) }.flatten()
 }

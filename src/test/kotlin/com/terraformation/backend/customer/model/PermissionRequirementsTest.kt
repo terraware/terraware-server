@@ -561,4 +561,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canUpdateStorageLocation(storageLocationId) }
     requirements.updateStorageLocation(storageLocationId)
   }
+
+  @Test
+  fun importGlobalSpeciesData() {
+    assertThrows<AccessDeniedException> { requirements.importGlobalSpeciesData() }
+
+    grant { user.canImportGlobalSpeciesData() }
+    requirements.importGlobalSpeciesData()
+  }
 }

@@ -414,4 +414,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
       throw AccessDeniedException("No permission to delete storage location")
     }
   }
+
+  fun importGlobalSpeciesData() {
+    if (!user.canImportGlobalSpeciesData()) {
+      throw AccessDeniedException("No permission to import global species data")
+    }
+  }
 }

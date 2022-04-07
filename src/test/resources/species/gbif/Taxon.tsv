@@ -1,0 +1,6 @@
+taxonID	datasetID	parentNameUsageID	acceptedNameUsageID	originalNameUsageID	scientificName	scientificNameAuthorship	canonicalName	genericName	specificEpithet	infraspecificEpithet	taxonRank	nameAccordingTo	namePublishedIn	taxonomicStatus	nomenclaturalStatus	taxonRemarks	kingdom	phylum	class	order	family	genus
+10	dataset1	9	8	7	Family	Author1	Family!	Family?	SpecificFamily	InfraFamily	family	Accord1	Publish1	accepted		Remarks1	Plantae	Phylum	Class	Order	Family	""
+11	dataset2	10			Genus	Author2	Genus!	Genus?	SpecificGenus	InfraGenus	genus	Accord2	Publish2	accepted		Remarks2	Plantae	Phylum	Class	Order	Family	Genus
+12	dataset3	11			Species	Author3	Species!	Species?	SpecificSpecies	InfraSpecies	subspecies	Accord3	Publish3	accepted	nomStatus	Remarks3	Plantae	Phylum	Class	Order	Family	Genus
+50	dataset3				Unwanted Species	x	Unwanted Species	Unwanted	Species		species	x	x	accepted	""	""	Animalia	x	x	x	x	x
+51	unwanted-dataset	11			Species from Unwanted Dataset	Author3	Species from Unwanted Dataset	Species	Unwanted	Dataset	subspecies	Accord3	Publish3	accepted	nomStatus	Remarks3	Plantae	Phylum	Class	Order	Family	Genus
