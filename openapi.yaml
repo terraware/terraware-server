@@ -6137,8 +6137,14 @@ components:
     UserProfilePayload:
       required:
       - email
+      - id
       type: object
       properties:
+        id:
+          type: integer
+          description: "User's unique ID. This should not be shown to the user, but\
+            \ is a required input to some API endpoints."
+          format: int64
         email:
           type: string
         firstName:
