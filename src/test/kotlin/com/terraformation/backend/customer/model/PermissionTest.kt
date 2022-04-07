@@ -566,6 +566,15 @@ internal class PermissionTest : DatabaseTest() {
     PermissionsTracker().andNothingElse()
   }
 
+  @Test
+  fun `super admin user has elevated privileges`() {
+    usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.SuperAdmin))
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(importGlobalSpeciesData = true)
+  }
+
   private fun givenRole(organizationId: OrganizationId, role: Role, vararg projects: ProjectId) {
     with(ORGANIZATION_USERS) {
       dslContext
@@ -627,6 +636,8 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedSpeciesNames = speciesNameIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
+
+    private var hasCheckedGlobalPermissions = false
 
     // All checks keyed on organization IDs go here
     fun expect(
@@ -922,6 +933,16 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    // All checks for globally-scoped permissions go here
+    fun expect(importGlobalSpeciesData: Boolean = false) {
+      assertEquals(
+          importGlobalSpeciesData,
+          user.canImportGlobalSpeciesData(),
+          "Can import global species data")
+
+      hasCheckedGlobalPermissions = true
+    }
+
     fun andNothingElse() {
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedProjects.toTypedArray())
@@ -932,6 +953,10 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedSpeciesNames.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())
+
+      if (!hasCheckedGlobalPermissions) {
+        expect()
+      }
     }
   }
 }

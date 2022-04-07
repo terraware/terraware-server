@@ -65,6 +65,16 @@ COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be repre
 
 COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have already been applied. Used by the Flyway library, not by application.';
 
+COMMENT ON TABLE gbif_distributions IS 'Information about geographic distribution of species and their conservation statuses.';
+
+COMMENT ON TABLE gbif_names IS 'Scientific and vernacular names from the GBIF backbone dataset. Names are not required to be unique.';
+
+COMMENT ON TABLE gbif_name_words IS 'Inverted index of lower-cased words from species and family names in the GBIF backbone dataset. Used to support fast per-word prefix searches.';
+
+COMMENT ON TABLE gbif_taxa IS 'Taxonomic data about species and families. A subset of the GBIF backbone dataset.';
+
+COMMENT ON TABLE gbif_vernacular_names IS 'Vernacular names for species and families. Part of the GBIF backbone dataset.';
+
 COMMENT ON TABLE geolocations IS 'Locations where seeds were collected.';
 
 COMMENT ON TABLE germination_seed_types IS '(Enum) Types of seeds that can be tested for germination ability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';

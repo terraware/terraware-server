@@ -82,7 +82,8 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun getName(): String = USERNAME
 
   /*
-   * All permission checks always succeed.
+   * All permission checks always succeed except for operations that should only be performed
+   * manually by a system administrator.
    */
 
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
@@ -105,6 +106,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canDeleteSpecies(organizationId: OrganizationId): Boolean = true
   override fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean = true
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = true
+  override fun canImportGlobalSpeciesData(): Boolean = false
   override fun canListApiKeys(organizationId: OrganizationId): Boolean = true
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
   override fun canListFacilities(siteId: SiteId): Boolean = true
