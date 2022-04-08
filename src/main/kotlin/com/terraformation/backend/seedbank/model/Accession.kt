@@ -326,7 +326,7 @@ data class AccessionModel(
       clock: Clock,
       existingWithdrawals: Collection<WithdrawalModel> = withdrawals
   ): List<WithdrawalModel> {
-    if (withdrawals.isNullOrEmpty() && germinationTests.isNullOrEmpty()) {
+    if (withdrawals.isEmpty() && germinationTests.isEmpty()) {
       return emptyList()
     }
 

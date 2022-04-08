@@ -323,8 +323,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         setOf(GeolocationId(1), GeolocationId(2)),
         initialGeos.map { it.id }.toSet(),
         "Initial location IDs")
-    assertEquals(
-        100.0, initialGeos.mapNotNull { it.gpsAccuracy }.first(), 0.1, "Accuracy is recorded")
+    assertEquals(100.0, initialGeos.firstNotNullOf { it.gpsAccuracy }, 0.1, "Accuracy is recorded")
 
     val desired =
         initial.copy(

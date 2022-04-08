@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.FuzzySearchOperators
+import com.terraformation.backend.search.SearchTable
 import javax.annotation.ManagedBean
 
 /**
