@@ -111,7 +111,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateOrganization(any()) } returns true
     every { user.canAddOrganizationUser(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true
-    every { user.canRemoveOrganizationUser(any()) } returns true
+    every { user.canRemoveOrganizationUser(any(), any()) } returns true
     every { user.canSetOrganizationUserRole(any(), any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadSite(any()) } returns true
@@ -434,7 +434,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser throws exception if no permission to remove users`() {
-    every { user.canRemoveOrganizationUser(organizationId) } returns false
+    every { user.canRemoveOrganizationUser(organizationId, currentUser().userId) } returns false
 
     assertThrows<AccessDeniedException> { store.removeUser(organizationId, currentUser().userId) }
   }

@@ -285,8 +285,8 @@ data class IndividualUser(
     return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
   }
 
-  override fun canRemoveProjectUser(projectId: ProjectId): Boolean {
-    return canAddProjectUser(projectId)
+  override fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean {
+    return projectId in projectRoles && (userId == this.userId || canAddProjectUser(projectId))
   }
 
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
@@ -299,8 +299,9 @@ data class IndividualUser(
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  override fun canRemoveOrganizationUser(organizationId: OrganizationId): Boolean {
-    return canAddOrganizationUser(organizationId)
+  override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
+    return organizationId in organizationRoles &&
+        (userId == this.userId || canAddOrganizationUser(organizationId))
   }
 
   override fun canSetOrganizationUserRole(

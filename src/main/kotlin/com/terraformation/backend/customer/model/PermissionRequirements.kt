@@ -28,6 +28,7 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.TimeseriesNotFoundException
+import com.terraformation.backend.db.UserId
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -319,10 +320,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun removeProjectUser(projectId: ProjectId) {
-    if (!user.canRemoveProjectUser(projectId)) {
+  fun removeProjectUser(projectId: ProjectId, userId: UserId) {
+    if (!user.canRemoveProjectUser(projectId, userId)) {
       readProject(projectId)
-      throw AccessDeniedException("No permission to remove users from project $projectId")
+      throw AccessDeniedException("No permission to remove user $userId from project $projectId")
     }
   }
 
@@ -353,10 +354,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun removeOrganizationUser(organizationId: OrganizationId) {
-    if (!user.canRemoveOrganizationUser(organizationId)) {
+  fun removeOrganizationUser(organizationId: OrganizationId, userId: UserId) {
+    if (!user.canRemoveOrganizationUser(organizationId, userId)) {
       readOrganization(organizationId)
-      throw AccessDeniedException("No permission to remove users from organization $organizationId")
+      throw AccessDeniedException(
+          "No permission to remove user $userId from organization $organizationId")
     }
   }
 

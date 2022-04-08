@@ -133,8 +133,9 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
-  override fun canRemoveOrganizationUser(organizationId: OrganizationId): Boolean = true
-  override fun canRemoveProjectUser(projectId: ProjectId): Boolean = true
+  override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
+      true
+  override fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean = true
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       true
