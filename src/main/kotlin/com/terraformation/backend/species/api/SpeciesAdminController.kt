@@ -2,6 +2,7 @@ package com.terraformation.backend.species.api
 
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.species.db.GbifImporter
+import io.swagger.v3.oas.annotations.Hidden
 import java.net.URI
 import javax.ws.rs.FormParam
 import javax.ws.rs.ServerErrorException
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@Hidden
 @RequestMapping("/api/v1/admin/species")
 @RestController
 class SpeciesAdminController(
