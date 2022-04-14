@@ -303,6 +303,9 @@ data class OrganizationPayload(
         description = "The current user's role in the organization.",
     )
     val role: Role,
+    @Schema(
+        description = "The total number of users in the organization, including the current user.")
+    val totalUsers: Int,
 ) {
   constructor(
       model: OrganizationModel,
@@ -316,6 +319,7 @@ data class OrganizationPayload(
       model.name,
       model.projects?.map { ProjectPayload(it) },
       role,
+      model.totalUsers,
   )
 }
 

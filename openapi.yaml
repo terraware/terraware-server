@@ -4894,6 +4894,7 @@ components:
       - id
       - name
       - role
+      - totalUsers
       type: object
       properties:
         countryCode:
@@ -4933,6 +4934,11 @@ components:
           - Manager
           - Admin
           - Owner
+        totalUsers:
+          type: integer
+          description: "The total number of users in the organization, including the\
+            \ current user."
+          format: int32
     OrganizationUserPayload:
       required:
       - addedTime

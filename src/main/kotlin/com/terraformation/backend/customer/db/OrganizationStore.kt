@@ -34,6 +34,7 @@ import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 
@@ -148,12 +149,19 @@ class OrganizationStore(
           DSL.value(null as List<ProjectModel>?)
         }
 
+    val totalUsersSubquery =
+        DSL.field(
+            DSL.selectCount()
+                .from(ORGANIZATION_USERS)
+                .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+
     return dslContext
-        .select(ORGANIZATIONS.asterisk(), projectsMultiset)
+        .select(ORGANIZATIONS.asterisk(), projectsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
         .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
         .orderBy(ORGANIZATIONS.ID)
-        .fetch { OrganizationModel(it, projectsMultiset) }
+        .also { log.info(it.getSQL(ParamType.INLINED)) }
+        .fetch { OrganizationModel(it, projectsMultiset, totalUsersSubquery) }
   }
 
   /** Creates a new organization and makes the current user an owner. */
@@ -187,7 +195,7 @@ class OrganizationStore(
           .execute()
     }
 
-    return fullRow.toModel()
+    return fullRow.toModel(totalUsers = 1)
   }
 
   fun update(row: OrganizationsRow) {
