@@ -148,12 +148,18 @@ class OrganizationStore(
           DSL.value(null as List<ProjectModel>?)
         }
 
+    val totalUsersSubquery =
+        DSL.field(
+            DSL.selectCount()
+                .from(ORGANIZATION_USERS)
+                .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+
     return dslContext
-        .select(ORGANIZATIONS.asterisk(), projectsMultiset)
+        .select(ORGANIZATIONS.asterisk(), projectsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
         .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
         .orderBy(ORGANIZATIONS.ID)
-        .fetch { OrganizationModel(it, projectsMultiset) }
+        .fetch { OrganizationModel(it, projectsMultiset, totalUsersSubquery) }
   }
 
   /** Creates a new organization and makes the current user an owner. */
@@ -187,7 +193,7 @@ class OrganizationStore(
           .execute()
     }
 
-    return fullRow.toModel()
+    return fullRow.toModel(totalUsers = 1)
   }
 
   fun update(row: OrganizationsRow) {

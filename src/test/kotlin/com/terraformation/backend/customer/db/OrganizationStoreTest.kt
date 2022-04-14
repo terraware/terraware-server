@@ -98,7 +98,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           countrySubdivisionCode = "US-HI",
           id = organizationId,
           name = "Organization $organizationId",
-          projects = listOf(projectModel))
+          projects = listOf(projectModel),
+          totalUsers = 0)
 
   @BeforeEach
   fun setUp() {
@@ -196,6 +197,19 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchById returns correct total user count`() {
+    val expectedTotalUsers = 10
+    val baseUserId = 100
+
+    (baseUserId until expectedTotalUsers + baseUserId).forEach { userId ->
+      insertUser(userId)
+      insertOrganizationUser(userId, organizationId)
+    }
+
+    assertEquals(expectedTotalUsers, store.fetchById(organizationId)!!.totalUsers)
+  }
+
+  @Test
   fun `fetchAll excludes organizations the user is not in`() {
     every { user.organizationRoles } returns emptyMap()
 
@@ -244,6 +258,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val actual = organizationsDao.fetchOneById(createdModel.id)!!
 
     assertEquals(expected, actual)
+    assertEquals(1, createdModel.totalUsers, "Total users")
   }
 
   @Test
