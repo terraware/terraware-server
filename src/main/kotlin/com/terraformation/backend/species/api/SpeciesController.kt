@@ -3,8 +3,8 @@ package com.terraformation.backend.species.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.DuplicateNameException
-import com.terraformation.backend.api.GISAppEndpoint
 import com.terraformation.backend.api.ResourceInUseException
+import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.OrganizationId
@@ -48,7 +48,7 @@ import org.springframework.web.bind.annotation.RestController
  * equivalents in [ValuesController] and update the names here to conform to our usual naming
  * conventions.
  */
-@GISAppEndpoint
+@SeedBankAppEndpoint
 @RequestMapping("/api/v1/species")
 @RestController
 class SpeciesController(private val speciesStore: SpeciesStore) {

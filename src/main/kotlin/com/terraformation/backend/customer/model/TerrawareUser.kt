@@ -5,10 +5,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FeatureId
-import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesNameId
@@ -71,8 +68,6 @@ interface TerrawareUser : Principal {
   fun canCreateAutomation(facilityId: FacilityId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
   fun canCreateFacility(siteId: SiteId): Boolean
-  fun canCreateFeature(layerId: LayerId): Boolean
-  fun canCreateLayer(siteId: SiteId): Boolean
   fun canCreateProject(organizationId: OrganizationId): Boolean
   fun canCreateSite(projectId: ProjectId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
@@ -81,9 +76,6 @@ interface TerrawareUser : Principal {
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
   fun canDeleteApiKey(organizationId: OrganizationId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
-  fun canDeleteFeature(featureId: FeatureId): Boolean
-  fun canDeleteFeaturePhoto(photoId: PhotoId): Boolean
-  fun canDeleteLayer(layerId: LayerId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
   fun canDeleteSite(siteId: SiteId): Boolean
   fun canDeleteSpecies(organizationId: OrganizationId): Boolean
@@ -99,9 +91,6 @@ interface TerrawareUser : Principal {
   fun canReadAutomation(automationId: AutomationId): Boolean
   fun canReadDevice(deviceId: DeviceId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
-  fun canReadFeature(featureId: FeatureId): Boolean
-  fun canReadFeaturePhoto(photoId: PhotoId): Boolean
-  fun canReadLayer(layerId: LayerId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadProject(projectId: ProjectId): Boolean
   fun canReadSite(siteId: SiteId): Boolean
@@ -117,8 +106,6 @@ interface TerrawareUser : Principal {
   fun canUpdateAutomation(automationId: AutomationId): Boolean
   fun canUpdateDevice(deviceId: DeviceId): Boolean
   fun canUpdateFacility(facilityId: FacilityId): Boolean
-  fun canUpdateFeature(featureId: FeatureId): Boolean
-  fun canUpdateLayer(layerId: LayerId): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
   fun canUpdateProject(projectId: ProjectId): Boolean
   fun canUpdateSite(siteId: SiteId): Boolean

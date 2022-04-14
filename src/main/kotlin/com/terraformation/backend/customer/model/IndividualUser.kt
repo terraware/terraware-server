@@ -9,10 +9,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FeatureId
-import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesNameId
@@ -182,56 +179,6 @@ data class IndividualUser(
     // TODO: Revisit this once we can set roles on API clients
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
-  }
-
-  private fun canAccessLayer(layerId: LayerId): Boolean {
-    // Any user who has access to a site can access all its layers
-    val siteId = parentStore.getSiteId(layerId) ?: return false
-    return siteId in siteRoles
-  }
-
-  override fun canCreateLayer(siteId: SiteId): Boolean {
-    return siteId in siteRoles
-  }
-
-  override fun canReadLayer(layerId: LayerId): Boolean {
-    return canAccessLayer(layerId)
-  }
-
-  override fun canUpdateLayer(layerId: LayerId): Boolean {
-    return canAccessLayer(layerId)
-  }
-
-  override fun canDeleteLayer(layerId: LayerId): Boolean {
-    return canAccessLayer(layerId)
-  }
-
-  override fun canCreateFeature(layerId: LayerId): Boolean {
-    return canUpdateLayer(layerId)
-  }
-
-  override fun canReadFeature(featureId: FeatureId): Boolean {
-    val layerId = parentStore.getLayerId(featureId) ?: return false
-    return canReadLayer(layerId)
-  }
-
-  override fun canUpdateFeature(featureId: FeatureId): Boolean {
-    val layerId = parentStore.getLayerId(featureId) ?: return false
-    return canUpdateLayer(layerId)
-  }
-
-  override fun canDeleteFeature(featureId: FeatureId): Boolean {
-    return canUpdateFeature(featureId)
-  }
-
-  override fun canReadFeaturePhoto(photoId: PhotoId): Boolean {
-    val featureId = parentStore.getFeatureId(photoId) ?: return false
-    return canReadFeature(featureId)
-  }
-
-  override fun canDeleteFeaturePhoto(photoId: PhotoId): Boolean {
-    val featureId = parentStore.getFeatureId(photoId) ?: return false
-    return canUpdateFeature(featureId)
   }
 
   override fun canCreateSite(projectId: ProjectId): Boolean {

@@ -13,16 +13,11 @@ import com.terraformation.backend.db.tables.daos.BagsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
-import com.terraformation.backend.db.tables.daos.FeaturePhotosDao
-import com.terraformation.backend.db.tables.daos.FeaturesDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
 import com.terraformation.backend.db.tables.daos.GerminationTestsDao
 import com.terraformation.backend.db.tables.daos.GerminationsDao
-import com.terraformation.backend.db.tables.daos.LayersDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
-import com.terraformation.backend.db.tables.daos.PlantObservationsDao
-import com.terraformation.backend.db.tables.daos.PlantsDao
 import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
 import com.terraformation.backend.db.tables.daos.ProjectUsersDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
@@ -37,13 +32,8 @@ import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.FEATURES
-import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
-import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PHOTOS
-import com.terraformation.backend.db.tables.references.PLANTS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
@@ -53,12 +43,10 @@ import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.USERS
-import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
-import net.postgis.jdbc.geometry.Geometry
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Configuration
 import org.jooq.DSLContext
@@ -71,7 +59,6 @@ import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.ComponentScan
-import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
@@ -173,16 +160,11 @@ abstract class DatabaseTest {
   protected val devicesDao: DevicesDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val facilityAlertRecipientsDao: FacilityAlertRecipientsDao by lazyDao()
-  protected val featurePhotosDao: FeaturePhotosDao by lazyDao()
-  protected val featuresDao: FeaturesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val germinationsDao: GerminationsDao by lazyDao()
   protected val germinationTestsDao: GerminationTestsDao by lazyDao()
-  protected val layersDao: LayersDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val photosDao: PhotosDao by lazyDao()
-  protected val plantObservationsDao: PlantObservationsDao by lazyDao()
-  protected val plantsDao: PlantsDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val projectTypeSelectionsDao: ProjectTypeSelectionsDao by lazyDao()
   protected val projectUsersDao: ProjectUsersDao by lazyDao()
@@ -333,134 +315,6 @@ abstract class DatabaseTest {
           .set(MODIFIED_BY, createdBy)
           .set(NAME, name)
           .set(PROTOCOL, "protocol")
-          .execute()
-    }
-  }
-
-  protected fun insertLayer(
-      id: Any,
-      siteId: Any = "$id".toLong() / 10,
-      layerType: LayerType = LayerType.PlantsPlanted,
-      tileSetName: String = "Tile set test name",
-      proposed: Boolean = false,
-      hidden: Boolean = false,
-      deleted: Boolean = false,
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      modifiedTime: Instant = Instant.EPOCH,
-  ) {
-
-    with(LAYERS) {
-      dslContext
-          .insertInto(LAYERS)
-          .set(ID, id.toIdWrapper { LayerId(it) })
-          .set(SITE_ID, siteId.toIdWrapper { SiteId(it) })
-          .set(LAYER_TYPE_ID, layerType)
-          .set(TILE_SET_NAME, tileSetName)
-          .set(PROPOSED, proposed)
-          .set(HIDDEN, hidden)
-          .set(DELETED, deleted)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, createdTime)
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, modifiedTime)
-          .execute()
-    }
-  }
-
-  protected fun insertFeature(
-      id: Any,
-      layerId: Any = "$id".toLong() / 10,
-      geom: Geometry? = null,
-      gpsHorizAccuracy: Double? = null,
-      gpsVertAccuracy: Double? = null,
-      attrib: String? = null,
-      notes: String? = null,
-      enteredTime: Instant = Instant.EPOCH,
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      modifiedTime: Instant = Instant.EPOCH,
-  ) {
-    with(FEATURES) {
-      dslContext
-          .insertInto(FEATURES)
-          .set(ID, id.toIdWrapper { FeatureId(it) })
-          .set(LAYER_ID, layerId.toIdWrapper { LayerId(it) })
-          .set(GEOM, geom)
-          .set(GPS_HORIZ_ACCURACY, gpsHorizAccuracy)
-          .set(GPS_VERT_ACCURACY, gpsVertAccuracy)
-          .set(ATTRIB, attrib)
-          .set(NOTES, notes)
-          .set(ENTERED_TIME, enteredTime)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, createdTime)
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, modifiedTime)
-          .execute()
-    }
-  }
-
-  protected fun insertPhoto(
-      id: Any,
-      storageUrl: URI = URI("http://server/$id"),
-      fileName: String = "$id.jpg",
-      contentType: String = MediaType.IMAGE_JPEG_VALUE,
-      size: Long = 1L,
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      capturedTime: Instant = Instant.EPOCH,
-      modifiedTime: Instant = Instant.EPOCH,
-  ) {
-    with(PHOTOS) {
-      dslContext
-          .insertInto(PHOTOS)
-          .set(CAPTURED_TIME, capturedTime)
-          .set(CONTENT_TYPE, contentType)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, createdTime)
-          .set(FILE_NAME, fileName)
-          .set(ID, id.toIdWrapper { PhotoId(it) })
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, modifiedTime)
-          .set(SIZE, size)
-          .set(STORAGE_URL, storageUrl)
-          .execute()
-    }
-  }
-
-  protected fun insertFeaturePhoto(
-      photoId: Any,
-      featureId: Any = "$photoId",
-      plantObservationId: Any? = null,
-  ) {
-    with(FEATURE_PHOTOS) {
-      dslContext
-          .insertInto(FEATURE_PHOTOS)
-          .set(PHOTO_ID, photoId.toIdWrapper { PhotoId(it) })
-          .set(FEATURE_ID, featureId.toIdWrapper { FeatureId(it) })
-          .apply {
-            if (plantObservationId != null)
-                set(PLANT_OBSERVATION_ID, plantObservationId.toIdWrapper { PlantObservationId(it) })
-          }
-          .execute()
-    }
-  }
-
-  protected fun insertPlant(
-      featureId: Any,
-      label: String? = null,
-      speciesId: Any? = null,
-      naturalRegen: Boolean? = null,
-      datePlanted: LocalDate? = null,
-  ) {
-    with(PLANTS) {
-      dslContext
-          .insertInto(PLANTS)
-          .set(FEATURE_ID, featureId.toIdWrapper { FeatureId(it) })
-          .set(LABEL, label)
-          .set(SPECIES_ID, speciesId?.toIdWrapper { SpeciesId(it) })
-          .set(NATURAL_REGEN, naturalRegen)
-          .set(DATE_PLANTED, datePlanted)
           .execute()
     }
   }

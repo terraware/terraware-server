@@ -3,7 +3,6 @@ package com.terraformation.backend.db
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.CUSTOMER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
-import com.terraformation.backend.db.SchemaDocsGenerator.Slice.GIS
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
 import com.terraformation.backend.log.perClassLogger
@@ -110,7 +109,6 @@ class SchemaDocsGenerator : DatabaseTest() {
     ALL("all"),
     CUSTOMER("customer"),
     DEVICE("device"),
-    GIS("gis"),
     SEEDBANK("seedbank"),
     SPECIES("species")
   }
@@ -140,8 +138,6 @@ class SchemaDocsGenerator : DatabaseTest() {
           "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
           "facility_alert_recipients" to setOf(ALL, CUSTOMER, DEVICE),
           "facility_types" to setOf(ALL, CUSTOMER),
-          "feature_photos" to setOf(ALL, GIS),
-          "features" to setOf(ALL, GIS),
           "flyway_schema_history" to emptySet(),
           "geolocations" to setOf(ALL, SEEDBANK),
           "germination_seed_types" to setOf(ALL, SEEDBANK),
@@ -150,28 +146,23 @@ class SchemaDocsGenerator : DatabaseTest() {
           "germination_tests" to setOf(ALL, SEEDBANK),
           "germination_treatments" to setOf(ALL, SEEDBANK),
           "germinations" to setOf(ALL, SEEDBANK),
-          "health_states" to setOf(ALL, GIS),
-          "layer_types" to setOf(ALL, GIS),
-          "layers" to setOf(ALL, GIS),
           "organization_users" to setOf(ALL, CUSTOMER),
-          "organizations" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK, SPECIES),
-          "photos" to setOf(ALL, GIS, SEEDBANK),
+          "organizations" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK, SPECIES),
+          "photos" to setOf(ALL, SEEDBANK),
           "plant_forms" to setOf(ALL, SPECIES),
-          "plant_observations" to setOf(ALL, GIS),
-          "plants" to setOf(ALL, GIS),
           "processing_methods" to setOf(ALL, SEEDBANK),
           "project_statuses" to setOf(ALL, CUSTOMER),
           "project_type_selections" to setOf(ALL, CUSTOMER),
           "project_types" to setOf(ALL, CUSTOMER),
           "project_users" to setOf(ALL, CUSTOMER),
-          "projects" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK),
+          "projects" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
           "rare_types" to setOf(ALL, SPECIES),
           "roles" to setOf(ALL, CUSTOMER),
           "seed_quantity_units" to setOf(ALL, SEEDBANK),
-          "sites" to setOf(ALL, CUSTOMER, DEVICE, GIS, SEEDBANK),
+          "sites" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
           "source_plant_origins" to setOf(ALL, SEEDBANK),
           "spatial_ref_sys" to emptySet(),
-          "species" to setOf(ALL, SEEDBANK, GIS, SPECIES),
+          "species" to setOf(ALL, SEEDBANK, SPECIES),
           "species_endangered_types" to setOf(ALL, SPECIES),
           "species_names" to setOf(ALL, SPECIES),
           "species_options" to setOf(ALL, SPECIES),
@@ -181,7 +172,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "storage_locations" to setOf(ALL, SEEDBANK),
           "task_processed_times" to setOf(ALL),
           "test_clock" to setOf(ALL),
-          "thumbnails" to setOf(ALL, GIS, SEEDBANK),
+          "thumbnails" to setOf(ALL, SEEDBANK),
           "timeseries" to setOf(ALL, DEVICE),
           "timeseries_types" to setOf(ALL, DEVICE),
           "timeseries_values" to setOf(ALL, DEVICE),

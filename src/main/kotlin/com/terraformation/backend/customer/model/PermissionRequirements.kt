@@ -9,14 +9,8 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.FeatureId
-import com.terraformation.backend.db.FeatureNotFoundException
-import com.terraformation.backend.db.LayerId
-import com.terraformation.backend.db.LayerNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.PhotoId
-import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
@@ -52,7 +46,7 @@ import org.springframework.security.access.AccessDeniedException
  *
  * - Always throw the most specific exception class that describes the failure. For example, the
  * rules will say to throw [EntityNotFoundException] but you'd actually want to throw, e.g.,
- * [LayerNotFoundException] to give the caller more information about what failed.
+ * [SiteNotFoundException] to give the caller more information about what failed.
  *
  * - Exception messages may be returned to the client and should never include any information that
  * you wouldn't want end users to see.
@@ -188,73 +182,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateDevice(deviceId)) {
       readDevice(deviceId)
       throw AccessDeniedException("No permission to update device $deviceId")
-    }
-  }
-
-  fun createLayer(siteId: SiteId) {
-    if (!user.canCreateLayer(siteId)) {
-      readSite(siteId)
-      throw AccessDeniedException("No permission to create layer at site $siteId")
-    }
-  }
-
-  fun readLayer(layerId: LayerId) {
-    if (!user.canReadLayer(layerId)) {
-      throw LayerNotFoundException(layerId)
-    }
-  }
-
-  fun updateLayer(layerId: LayerId) {
-    if (!user.canUpdateLayer(layerId)) {
-      readLayer(layerId)
-      throw AccessDeniedException("No permission to update layer $layerId")
-    }
-  }
-
-  fun deleteLayer(layerId: LayerId) {
-    if (!user.canDeleteLayer(layerId)) {
-      readLayer(layerId)
-      throw AccessDeniedException("No permission to delete layer $layerId")
-    }
-  }
-
-  fun createFeature(layerId: LayerId) {
-    if (!user.canCreateFeature(layerId)) {
-      readLayer(layerId)
-      throw AccessDeniedException("No permission to create feature in layer $layerId")
-    }
-  }
-
-  fun readFeature(featureId: FeatureId) {
-    if (!user.canReadFeature(featureId)) {
-      throw FeatureNotFoundException(featureId)
-    }
-  }
-
-  fun updateFeature(featureId: FeatureId) {
-    if (!user.canUpdateFeature(featureId)) {
-      readFeature(featureId)
-      throw AccessDeniedException("No permission to update feature $featureId")
-    }
-  }
-
-  fun deleteFeature(featureId: FeatureId) {
-    if (!user.canDeleteFeature(featureId)) {
-      readFeature(featureId)
-      throw AccessDeniedException("No permission to delete feature $featureId")
-    }
-  }
-
-  fun readFeaturePhoto(photoId: PhotoId) {
-    if (!user.canReadFeaturePhoto(photoId)) {
-      throw PhotoNotFoundException(photoId)
-    }
-  }
-
-  fun deleteFeaturePhoto(photoId: PhotoId) {
-    if (!user.canDeleteFeaturePhoto(photoId)) {
-      readFeaturePhoto(photoId)
-      throw AccessDeniedException("No permission to delete feature photo $photoId")
     }
   }
 

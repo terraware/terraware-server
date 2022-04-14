@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.SiteService
 import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
@@ -58,8 +57,6 @@ class SiteStore(
    * Creates a new site.
    *
    * @param row Initial site information. Project ID is required; ID and timestamps are ignored.
-   *
-   * @see SiteService.create
    */
   fun create(row: SitesRow): SiteModel {
     val projectId = row.projectId ?: throw IllegalArgumentException("Must specify project ID")

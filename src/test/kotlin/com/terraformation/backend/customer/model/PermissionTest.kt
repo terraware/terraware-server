@@ -11,10 +11,7 @@ import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FeatureId
-import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
@@ -28,12 +25,8 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.FEATURES
-import com.terraformation.backend.db.tables.references.FEATURE_PHOTOS
-import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
@@ -61,14 +54,11 @@ import org.springframework.beans.factory.annotation.Autowired
  * permutations of objects:
  *
  * ```
- * Organization 1 - Two of everything at all levels, except features and layers
+ * Organization 1 - Two of everything at all levels
  *   Project 10
  *     Site 100
  *       Facility 1000
  *       Facility 1001
- *       Layer 1000
- *       Layer 1001
- *        Feature 10010
  *     Site 101
  *       Facility 1010
  *       Facility 1011
@@ -76,9 +66,6 @@ import org.springframework.beans.factory.annotation.Autowired
  *     Site 110
  *       Facility 1100
  *       Facility 1101
- *       Layer 1100
- *        Feature 11000
- *        Feature 11001
  *     Site 111
  *       Facility 1110
  *       Facility 1111
@@ -87,8 +74,6 @@ import org.springframework.beans.factory.annotation.Autowired
  *   Project 20 - No sites
  *   Project 21 - No facilities
  *     Site 210
- *     Layer 2100
- *        Feature 21000
  *
  * Organization 3 - No projects
  * ```
@@ -131,18 +116,6 @@ internal class PermissionTest : DatabaseTest() {
   private val siteIds = listOf(100, 101, 110, 111, 210).map { SiteId(it.toLong()) }
   private val org1SiteIds = siteIds.take(4).toTypedArray()
   private val project10SiteIds = siteIds.take(2).toTypedArray()
-
-  private val layerIds = listOf(1000, 1001, 1100, 2100).map { LayerId(it.toLong()) }
-  private val org1LayerIds = layerIds.take(3).toTypedArray()
-  private val project10LayerIds = layerIds.take(2).toTypedArray()
-
-  private val featureIds = listOf(10010, 11000, 11001, 21000).map { FeatureId(it.toLong()) }
-  private val org1FeatureIds = featureIds.take(3).toTypedArray()
-  private val project10FeatureIds = featureIds.take(1).toTypedArray()
-
-  private val photoIds = featureIds.map { PhotoId(it.value) }
-  private val org1PhotoIds = photoIds.take(3).toTypedArray()
-  private val project10PhotoIds = photoIds.take(1).toTypedArray()
 
   private val facilityIds =
       listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111).map { FacilityId(it.toLong()) }
@@ -221,12 +194,6 @@ internal class PermissionTest : DatabaseTest() {
               modifiedTime = Instant.EPOCH))
     }
 
-    layerIds.forEach { insertLayer(it, createdBy = userId) }
-    featureIds.forEach { insertFeature(it, createdBy = userId) }
-    photoIds.forEach {
-      insertPhoto(it, createdBy = userId)
-      insertFeaturePhoto(it)
-    }
     speciesIds.forEach { insertSpecies(it, organizationId = it.value, createdBy = userId) }
     storageLocationIds.forEach {
       insertStorageLocation(it, facilityId = it.value, createdBy = userId)
@@ -234,7 +201,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `owner role grants all permissions in organization projects, sites, facilities, and layers`() {
+  fun `owner role grants all permissions in organization projects, sites, and facilities`() {
     givenRole(org1Id, Role.OWNER)
     val permissions = PermissionsTracker()
 
@@ -273,28 +240,6 @@ internal class PermissionTest : DatabaseTest() {
         readSite = true,
         updateSite = true,
         deleteSite = true,
-        createLayer = true,
-    )
-
-    permissions.expect(
-        *org1LayerIds,
-        readLayer = true,
-        updateLayer = true,
-        deleteLayer = true,
-        createFeature = true,
-    )
-
-    permissions.expect(
-        *org1FeatureIds,
-        readFeature = true,
-        updateFeature = true,
-        deleteFeature = true,
-    )
-
-    permissions.expect(
-        *org1PhotoIds,
-        readFeaturePhoto = true,
-        deleteFeaturePhoto = true,
     )
 
     permissions.expect(
@@ -420,28 +365,6 @@ internal class PermissionTest : DatabaseTest() {
         readSite = true,
         updateSite = true,
         deleteSite = true,
-        createLayer = true,
-    )
-
-    permissions.expect(
-        *org1LayerIds,
-        readLayer = true,
-        updateLayer = true,
-        deleteLayer = true,
-        createFeature = true,
-    )
-
-    permissions.expect(
-        *org1FeatureIds,
-        readFeature = true,
-        updateFeature = true,
-        deleteFeature = true,
-    )
-
-    permissions.expect(
-        *org1PhotoIds,
-        readFeaturePhoto = true,
-        deleteFeaturePhoto = true,
     )
 
     permissions.expect(
@@ -526,28 +449,6 @@ internal class PermissionTest : DatabaseTest() {
         listFacilities = true,
         readSite = true,
         updateSite = true,
-        createLayer = true,
-    )
-
-    permissions.expect(
-        *project10LayerIds,
-        readLayer = true,
-        updateLayer = true,
-        deleteLayer = true,
-        createFeature = true,
-    )
-
-    permissions.expect(
-        *project10FeatureIds,
-        readFeature = true,
-        updateFeature = true,
-        deleteFeature = true,
-    )
-
-    permissions.expect(
-        *project10PhotoIds,
-        readFeaturePhoto = true,
-        deleteFeaturePhoto = true,
     )
 
     permissions.expect(
@@ -621,28 +522,6 @@ internal class PermissionTest : DatabaseTest() {
         *project10SiteIds,
         listFacilities = true,
         readSite = true,
-        createLayer = true,
-    )
-
-    permissions.expect(
-        *project10LayerIds,
-        readLayer = true,
-        updateLayer = true,
-        deleteLayer = true,
-        createFeature = true,
-    )
-
-    permissions.expect(
-        *project10FeatureIds,
-        readFeature = true,
-        updateFeature = true,
-        deleteFeature = true,
-    )
-
-    permissions.expect(
-        *project10PhotoIds,
-        readFeaturePhoto = true,
-        deleteFeaturePhoto = true,
     )
 
     permissions.expect(
@@ -691,7 +570,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `API clients are members of all projects, sites, facilities, and layers`() {
+  fun `API clients are members of all projects, sites, and facilities`() {
     usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.APIClient))
     givenRole(org1Id, Role.CONTRIBUTOR)
 
@@ -715,28 +594,6 @@ internal class PermissionTest : DatabaseTest() {
         *org1SiteIds,
         listFacilities = true,
         readSite = true,
-        createLayer = true,
-    )
-
-    permissions.expect(
-        *org1LayerIds,
-        readLayer = true,
-        updateLayer = true,
-        deleteLayer = true,
-        createFeature = true,
-    )
-
-    permissions.expect(
-        *org1FeatureIds,
-        readFeature = true,
-        updateFeature = true,
-        deleteFeature = true,
-    )
-
-    permissions.expect(
-        *org1PhotoIds,
-        readFeaturePhoto = true,
-        deleteFeaturePhoto = true,
     )
 
     permissions.expect(
@@ -829,10 +686,6 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(AUTOMATIONS).execute()
     dslContext.deleteFrom(ACCESSIONS).execute()
     dslContext.deleteFrom(FACILITIES).execute()
-    dslContext.deleteFrom(FEATURE_PHOTOS).execute()
-    dslContext.deleteFrom(PHOTOS).execute()
-    dslContext.deleteFrom(FEATURES).execute()
-    dslContext.deleteFrom(LAYERS).execute()
     dslContext.deleteFrom(SITES).execute()
     dslContext.deleteFrom(PROJECT_USERS).execute()
     dslContext.deleteFrom(PROJECTS).execute()
@@ -851,9 +704,6 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedSites = siteIds.toMutableSet()
     private val uncheckedFacilities = facilityIds.toMutableSet()
     private val uncheckedAccessions = accessionIds.toMutableSet()
-    private val uncheckedLayers = layerIds.toMutableSet()
-    private val uncheckedFeatures = featureIds.toMutableSet()
-    private val uncheckedPhotos = photoIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedSpeciesNames = speciesNameIds.toMutableSet()
@@ -976,7 +826,6 @@ internal class PermissionTest : DatabaseTest() {
         readSite: Boolean = false,
         updateSite: Boolean = false,
         deleteSite: Boolean = false,
-        createLayer: Boolean = false,
     ) {
       sites.forEach { siteId ->
         assertEquals(
@@ -986,7 +835,6 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(readSite, user.canReadSite(siteId), "Can read site $siteId")
         assertEquals(updateSite, user.canUpdateSite(siteId), "Can update site $siteId")
         assertEquals(deleteSite, user.canDeleteSite(siteId), "Can delete site $siteId")
-        assertEquals(createLayer, user.canCreateLayer(siteId), "Can create layer at site $siteId")
 
         uncheckedSites.remove(siteId)
       }
@@ -1048,63 +896,6 @@ internal class PermissionTest : DatabaseTest() {
             "Can update accession $accessionId")
 
         uncheckedAccessions.remove(accessionId)
-      }
-    }
-
-    // All checks keyed on layer IDs go here
-    fun expect(
-        vararg layers: LayerId,
-        readLayer: Boolean = false,
-        updateLayer: Boolean = false,
-        deleteLayer: Boolean = false,
-        createFeature: Boolean = false,
-    ) {
-      layers.forEach { layerId ->
-        assertEquals(readLayer, user.canReadLayer(layerId), "Can read layer $layerId")
-        assertEquals(updateLayer, user.canUpdateLayer(layerId), "Can update layer $layerId")
-        assertEquals(deleteLayer, user.canDeleteLayer(layerId), "Can delete layer $layerId")
-        assertEquals(
-            createFeature,
-            user.canCreateFeature(layerId),
-            "Can create feature associated with layer $layerId")
-
-        uncheckedLayers.remove(layerId)
-      }
-    }
-
-    // All checks keyed on feature IDs go here
-    fun expect(
-        vararg features: FeatureId,
-        readFeature: Boolean = false,
-        updateFeature: Boolean = false,
-        deleteFeature: Boolean = false,
-    ) {
-      features.forEach { featureId ->
-        assertEquals(readFeature, user.canReadFeature(featureId), "Can read feature $featureId")
-        assertEquals(
-            updateFeature, user.canUpdateFeature(featureId), "Can update feature $featureId")
-        assertEquals(
-            deleteFeature, user.canDeleteFeature(featureId), "Can delete feature $featureId")
-
-        uncheckedFeatures.remove(featureId)
-      }
-    }
-
-    // All checks keyed on photo IDs go here
-    fun expect(
-        vararg photos: PhotoId,
-        readFeaturePhoto: Boolean = false,
-        deleteFeaturePhoto: Boolean = false
-    ) {
-      photos.forEach { photoId ->
-        assertEquals(
-            readFeaturePhoto, user.canReadFeaturePhoto(photoId), "Can read feature photo $photoId")
-        assertEquals(
-            deleteFeaturePhoto,
-            user.canDeleteFeaturePhoto(photoId),
-            "Can delete feature photo $photoId")
-
-        uncheckedPhotos.remove(photoId)
       }
     }
 
@@ -1218,9 +1009,6 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedAccessions.toTypedArray())
-      expect(*uncheckedLayers.toTypedArray())
-      expect(*uncheckedFeatures.toTypedArray())
-      expect(*uncheckedPhotos.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedSpeciesNames.toTypedArray())

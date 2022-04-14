@@ -9,14 +9,8 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.FeatureId
-import com.terraformation.backend.db.FeatureNotFoundException
-import com.terraformation.backend.db.LayerId
-import com.terraformation.backend.db.LayerNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.PhotoId
-import com.terraformation.backend.db.PhotoNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
@@ -58,10 +52,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val automationId = AutomationId(1)
   private val deviceId = DeviceId(1)
   private val facilityId = FacilityId(1)
-  private val featureId = FeatureId(1)
-  private val layerId = LayerId(1)
   private val organizationId = OrganizationId(1)
-  private val photoId = PhotoId(1)
   private val projectId = ProjectId(1)
   private val role = Role.CONTRIBUTOR
   private val siteId = SiteId(1)
@@ -230,107 +221,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canUpdateDevice(deviceId) }
     requirements.updateDevice(deviceId)
-  }
-
-  @Test
-  fun createLayer() {
-    assertThrows<SiteNotFoundException> { requirements.createLayer(siteId) }
-
-    grant { user.canReadSite(siteId) }
-    assertThrows<AccessDeniedException> { requirements.createLayer(siteId) }
-
-    grant { user.canCreateLayer(siteId) }
-    requirements.createLayer(siteId)
-  }
-
-  @Test
-  fun readLayer() {
-    assertThrows<LayerNotFoundException> { requirements.readLayer(layerId) }
-
-    grant { user.canReadLayer(layerId) }
-    requirements.readLayer(layerId)
-  }
-
-  @Test
-  fun updateLayer() {
-    assertThrows<LayerNotFoundException> { requirements.updateLayer(layerId) }
-
-    grant { user.canReadLayer(layerId) }
-    assertThrows<AccessDeniedException> { requirements.updateLayer(layerId) }
-
-    grant { user.canUpdateLayer(layerId) }
-    requirements.updateLayer(layerId)
-  }
-
-  @Test
-  fun deleteLayer() {
-    assertThrows<LayerNotFoundException> { requirements.deleteLayer(layerId) }
-
-    grant { user.canReadLayer(layerId) }
-    assertThrows<AccessDeniedException> { requirements.updateLayer(layerId) }
-
-    grant { user.canDeleteLayer(layerId) }
-    requirements.deleteLayer(layerId)
-  }
-
-  @Test
-  fun createFeature() {
-    assertThrows<LayerNotFoundException> { requirements.createFeature(layerId) }
-
-    grant { user.canReadLayer(layerId) }
-    assertThrows<AccessDeniedException> { requirements.createFeature(layerId) }
-
-    grant { user.canCreateFeature(layerId) }
-    requirements.createFeature(layerId)
-  }
-
-  @Test
-  fun readFeature() {
-    assertThrows<FeatureNotFoundException> { requirements.readFeature(featureId) }
-
-    grant { user.canReadFeature(featureId) }
-    requirements.readFeature(featureId)
-  }
-
-  @Test
-  fun updateFeature() {
-    assertThrows<FeatureNotFoundException> { requirements.updateFeature(featureId) }
-
-    grant { user.canReadFeature(featureId) }
-    assertThrows<AccessDeniedException> { requirements.updateFeature(featureId) }
-
-    grant { user.canUpdateFeature(featureId) }
-    requirements.updateFeature(featureId)
-  }
-
-  @Test
-  fun deleteFeature() {
-    assertThrows<FeatureNotFoundException> { requirements.deleteFeature(featureId) }
-
-    grant { user.canReadFeature(featureId) }
-    assertThrows<AccessDeniedException> { requirements.deleteFeature(featureId) }
-
-    grant { user.canDeleteFeature(featureId) }
-    requirements.deleteFeature(featureId)
-  }
-
-  @Test
-  fun readFeaturePhoto() {
-    assertThrows<PhotoNotFoundException> { requirements.readFeaturePhoto(photoId) }
-
-    grant { user.canReadFeaturePhoto(photoId) }
-    requirements.readFeaturePhoto(photoId)
-  }
-
-  @Test
-  fun deleteFeaturePhoto() {
-    assertThrows<PhotoNotFoundException> { requirements.deleteFeaturePhoto(photoId) }
-
-    grant { user.canReadFeaturePhoto(photoId) }
-    assertThrows<AccessDeniedException> { requirements.deleteFeaturePhoto(photoId) }
-
-    grant { user.canDeleteFeaturePhoto(photoId) }
-    requirements.deleteFeaturePhoto(photoId)
   }
 
   @Test

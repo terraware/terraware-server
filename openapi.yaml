@@ -13,7 +13,6 @@ tags:
 - name: Search
 - name: DeviceManager
 - name: SeedBankApp
-- name: GISApp
 paths:
   /api/v1/devices:
     post:
@@ -330,775 +329,6 @@ paths:
         "404":
           description: The facility does not exist or is not accessible by the current
             user.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/gis/features:
-    post:
-      tags:
-      - GISApp
-      summary: Create a new feature.
-      operationId: create_4
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateFeatureRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: "The feature was created successfully. Response includes fields\
-            \ populated by the server, including the feature id."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateFeatureResponsePayload'
-  /api/v1/gis/features/list/{layerId}:
-    get:
-      tags:
-      - GISApp
-      summary: "Lists the features associated with a layer. Can optionally filter\
-        \ by entered time, notes, and (for plants) species name."
-      operationId: list_1
-      parameters:
-      - name: minEnteredTime
-        in: query
-        required: false
-        schema:
-          type: string
-          format: date-time
-      - name: maxEnteredTime
-        in: query
-        required: false
-        schema:
-          type: string
-          format: date-time
-      - name: notes
-        in: query
-        required: false
-        schema:
-          type: string
-          description: Text to search for in notes. This is a fuzzy search string
-            and will match minor variations in spelling.
-      - name: speciesId
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-      - name: skip
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: Number of entries to skip in search results. Used in conjunction
-            with limit to paginate through large results. Default is 0 (don't skip
-            any results).
-          format: int32
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: Maximum number of entries to return. Used in conjunction with
-            skip to paginate through large results. The system may impose a cap on
-            this value.
-          format: int32
-      - name: layerId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListFeaturesResponsePayload'
-  /api/v1/gis/features/{featureId}:
-    get:
-      tags:
-      - GISApp
-      operationId: read_2
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetFeatureResponsePayload'
-        "404":
-          description: The specified feature doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    put:
-      tags:
-      - GISApp
-      summary: "Updates an existing feature. If plant field is null or omitted, existing\
-        \ plant details are preserved."
-      operationId: update_4
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateFeatureRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The feature was updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdateFeatureResponsePayload'
-        "404":
-          description: The specified feature doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    delete:
-      tags:
-      - GISApp
-      summary: "Deletes an existing feature and all records that directly or indirectly\
-        \ reference thatfeature. This includes but is not limited to plants, plant\
-        \ observations, photos, and thumbnails."
-      operationId: delete_1
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteFeatureResponsePayload'
-        "404":
-          description: The specified feature doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/gis/features/{featureId}/photos:
-    get:
-      tags:
-      - GISApp
-      operationId: listFeaturePhotos
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListFeaturePhotosResponsePayload'
-    post:
-      tags:
-      - GISApp
-      summary: Uploads a new photo of a feature.
-      operationId: createFeaturePhoto
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-              - file
-              - metadata
-              type: object
-              properties:
-                metadata:
-                  $ref: '#/components/schemas/CreateFeaturePhotoRequestPayload'
-                file:
-                  type: string
-                  format: binary
-            encoding:
-              file:
-                contentType: image/jpeg
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateFeaturePhotoResponsePayload'
-  /api/v1/gis/features/{featureId}/photos/{photoId}:
-    get:
-      tags:
-      - GISApp
-      summary: Gets the contents of a photo of a feature.
-      description: "Optional maxWidth and maxHeight parameters may be included to\
-        \ control the dimensions of the image; the server will scale the original\
-        \ down as needed. If neither parameter is specified, the original full-size\
-        \ image will be returned. The aspect ratio of the original image is maintained,\
-        \ so the returned image may be smaller than the requested width and height.\
-        \ If only maxWidth or only maxHeight is supplied, the other dimension will\
-        \ be computed based on the original image's aspect ratio."
-      operationId: downloadFeaturePhoto
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: photoId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: maxWidth
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: "Maximum desired width in pixels. If neither this nor maxHeight\
-            \ is specified, the full-sized original image will be returned. If this\
-            \ is specified, an image no wider than this will be returned. The image\
-            \ may be narrower than this value if needed to preserve the aspect ratio\
-            \ of the original."
-          format: int32
-      - name: maxHeight
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: "Maximum desired height in pixels. If neither this nor maxWidth\
-            \ is specified, the full-sized original image will be returned. If this\
-            \ is specified, an image no taller than this will be returned. The image\
-            \ may be shorter than this value if needed to preserve the aspect ratio\
-            \ of the original."
-          format: int32
-      responses:
-        "200":
-          description: The photo was successfully retrieved.
-          content:
-            image/jpeg:
-              schema:
-                type: string
-                format: binary
-        "404":
-          description: "The accession does not exist, or does not have a photo with\
-            \ the requested filename."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    delete:
-      tags:
-      - GISApp
-      summary: Deletes a photo of a feature.
-      operationId: deleteFeaturePhoto
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: photoId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Photo deleted.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-        "404":
-          description: The requested resource was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/gis/features/{featureId}/photos/{photoId}/metadata:
-    get:
-      tags:
-      - GISApp
-      summary: Gets information about a photo of a feature.
-      operationId: getFeaturePhotoMetadata
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: photoId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Photo metadata retrieved.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetFeaturePhotoMetadataResponsePayload'
-        "404":
-          description: The requested resource was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/gis/layers:
-    post:
-      tags:
-      - GISApp
-      summary: Create a new layer.
-      operationId: create_3
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateLayerRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: "The layer was created successfully. Response includes fields\
-            \ populated by the server, including the layer id."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateLayerResponsePayload'
-  /api/v1/gis/layers/list/{siteId}:
-    get:
-      tags:
-      - GISApp
-      operationId: list
-      parameters:
-      - name: siteId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListLayersResponsePayload'
-  /api/v1/gis/layers/{layerId}:
-    get:
-      tags:
-      - GISApp
-      operationId: read_1
-      parameters:
-      - name: layerId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetLayerResponsePayload'
-        "404":
-          description: The specified layer doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    put:
-      tags:
-      - GISApp
-      summary: "Update an existing layer. Overwrites all fields, so they must all\
-        \ be defined. Does not allow a layer to be moved between sites (siteId cannot\
-        \ be updated)"
-      operationId: update_3
-      parameters:
-      - name: layerId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateLayerRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The layer was updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdateLayerResponsePayload'
-        "404":
-          description: The specified layer doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    delete:
-      tags:
-      - GISApp
-      operationId: delete
-      parameters:
-      - name: layerId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteLayerResponsePayload'
-        "404":
-          description: The specified layer doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/gis/plant_observations:
-    post:
-      tags:
-      - GISApp
-      summary: Creates a new plant observation. Feature id must reference an existing
-        Plant. Plant observations can only be deleted as part of a feature deletion.
-      operationId: create_2
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateObservationRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The plant observation was created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateObservationResponsePayload'
-  /api/v1/gis/plant_observations/list/{featureId}:
-    get:
-      tags:
-      - GISApp
-      summary: Fetch a list of the plant observations associated with a plant.
-      operationId: getList
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListObservationsResponsePayload'
-  /api/v1/gis/plant_observations/{plantObservationId}:
-    get:
-      tags:
-      - GISApp
-      operationId: get_1
-      parameters:
-      - name: plantObservationId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetObservationResponsePayload'
-        "404":
-          description: The specified plant observation doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    put:
-      tags:
-      - GISApp
-      summary: Update an existing plant observation. Cannot update the feature id.
-        Overwrites all other fields.
-      operationId: update_2
-      parameters:
-      - name: plantObservationId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateObservationRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The plant observation was updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdateObservationResponsePayload'
-        "404":
-          description: The specified plant observation doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-  /api/v1/gis/plants:
-    post:
-      tags:
-      - GISApp
-      summary: Creates a new plant. Use the Features API to delete the plant.
-      operationId: create_1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePlantRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The plant was created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreatePlantResponsePayload'
-  /api/v1/gis/plants/list/summary/{layerId}:
-    get:
-      tags:
-      - GISApp
-      summary: Fetch a count of how many plants of each species exist in a layer.
-        Can filter based on enteredTime. Plants that are not associated with any species
-        will be grouped together and keyed on the sentinel value of -1.
-      operationId: getPlantSummary
-      parameters:
-      - name: minEnteredTime
-        in: query
-        required: false
-        schema:
-          type: string
-          format: date-time
-      - name: maxEnteredTime
-        in: query
-        required: false
-        schema:
-          type: string
-          format: date-time
-      - name: layerId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PlantSummaryResponsePayload'
-  /api/v1/gis/plants/list/{layerId}:
-    get:
-      tags:
-      - GISApp
-      summary: "Fetch a list of the plants in a layer. Can apply species, entered\
-        \ time, and/or notes filters."
-      operationId: getPlantsList
-      parameters:
-      - name: speciesName
-        in: query
-        required: false
-        schema:
-          type: string
-      - name: minEnteredTime
-        in: query
-        required: false
-        schema:
-          type: string
-          format: date-time
-      - name: maxEnteredTime
-        in: query
-        required: false
-        schema:
-          type: string
-          format: date-time
-      - name: notes
-        in: query
-        required: false
-        schema:
-          type: string
-      - name: layerId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListPlantsResponsePayload'
-  /api/v1/gis/plants/summary:
-    get:
-      tags:
-      - GISApp
-      summary: "Gets the number of plants and species in all the layers across a site,\
-        \ project, or organization."
-      description: "Optionally also gets the plants and species counts as of a previous\
-        \ time, which clients can use to compute the amount of change over time."
-      operationId: getPlantsAndSpeciesSummary
-      parameters:
-      - name: organizationId
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: "ID of organization to summarize. If not present, either projectId\
-            \ or siteId must be present. Ignored if projectId or siteId is present."
-          format: int64
-      - name: projectId
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: "ID of project to summarize. If not present, either organizationId\
-            \ or siteId must be present. Ignored if siteId is present."
-          format: int64
-      - name: siteId
-        in: query
-        required: false
-        schema:
-          type: integer
-          description: "ID of site to summarize. If not present, either organizationId\
-            \ or projectId must be present."
-          format: int64
-      - name: previousTime
-        in: query
-        required: false
-        schema:
-          type: string
-          description: "If present, the response will also include data for plants\
-            \ entered at or before this time, in addition to the most recent data."
-          format: date-time
-          example: 2021-01-05T11:22:33Z
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PlantsAndSpeciesSummaryResponsePayload'
-  /api/v1/gis/plants/{featureId}:
-    get:
-      tags:
-      - GISApp
-      operationId: get
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetPlantResponsePayload'
-        "404":
-          description: The specified plant doesn't exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    put:
-      tags:
-      - GISApp
-      summary: Update an existing plant. Overwrites all fields.
-      operationId: update_1
-      parameters:
-      - name: featureId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdatePlantRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: The plant was updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdatePlantResponsePayload'
-        "404":
-          description: The specified plant doesn't exist.
           content:
             application/json:
               schema:
@@ -2355,7 +1585,7 @@ paths:
   /api/v1/species:
     get:
       tags:
-      - GISApp
+      - SeedBankApp
       summary: Lists all the species available in an organization.
       operationId: listSpecies
       parameters:
@@ -2375,7 +1605,7 @@ paths:
                 $ref: '#/components/schemas/ListSpeciesResponsePayload'
     post:
       tags:
-      - GISApp
+      - SeedBankApp
       summary: Creates a new species.
       operationId: createSpecies
       requestBody:
@@ -2400,7 +1630,7 @@ paths:
   /api/v1/species/names:
     get:
       tags:
-      - GISApp
+      - SeedBankApp
       summary: Lists all of an organization's species names.
       operationId: listAllSpeciesNames
       parameters:
@@ -2420,7 +1650,7 @@ paths:
                 $ref: '#/components/schemas/ListSpeciesNamesResponsePayload'
     post:
       tags:
-      - GISApp
+      - SeedBankApp
       summary: Adds a new name for an existing species.
       operationId: createSpeciesName
       requestBody:
@@ -2451,7 +1681,7 @@ paths:
   /api/v1/species/names/{speciesNameId}:
     get:
       tags:
-      - GISApp
+      - SeedBankApp
       description: Gets information about a single species name.
       operationId: getSpeciesName
       parameters:
@@ -2476,7 +1706,7 @@ paths:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
     put:
       tags:
-      - GISApp
+      - SeedBankApp
       description: Updates one of the names of a species.
       operationId: updateSpeciesName
       parameters:
@@ -2501,7 +1731,7 @@ paths:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
     delete:
       tags:
-      - GISApp
+      - SeedBankApp
       description: Deletes one of the secondary names of a species.
       operationId: deleteSpeciesName
       parameters:
@@ -2533,7 +1763,7 @@ paths:
   /api/v1/species/{speciesId}:
     get:
       tags:
-      - GISApp
+      - SeedBankApp
       summary: Gets information about a single species.
       operationId: getSpecies
       parameters:
@@ -2566,7 +1796,7 @@ paths:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
     put:
       tags:
-      - GISApp
+      - SeedBankApp
       summary: Updates an existing species.
       operationId: updateSpecies
       parameters:
@@ -2597,7 +1827,7 @@ paths:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
     delete:
       tags:
-      - GISApp
+      - SeedBankApp
       summary: Deletes an existing species.
       description: "The species will no longer appear in the organization's list of\
         \ species, but existing data (plants, seeds, etc.) that refer to the species\
@@ -2639,7 +1869,7 @@ paths:
   /api/v1/species/{speciesId}/names:
     get:
       tags:
-      - GISApp
+      - SeedBankApp
       operationId: listSpeciesNames
       parameters:
       - name: speciesId
@@ -3324,163 +2554,6 @@ components:
           description: "ID of parent device such as a hub or gateway, if any. The\
             \ parent device must exist."
           format: int64
-    CreateFeaturePhotoRequestPayload:
-      required:
-      - capturedTime
-      type: object
-      properties:
-        capturedTime:
-          type: string
-          format: date-time
-        heading:
-          type: number
-          description: Compass heading of phone/camera when photo was taken.
-          format: double
-        location:
-          $ref: '#/components/schemas/Point'
-        orientation:
-          type: number
-          description: Orientation of phone/camera when photo was taken.
-          format: double
-        gpsHorizAccuracy:
-          type: number
-          description: GPS horizontal accuracy in meters.
-          format: double
-        gpsVertAccuracy:
-          type: number
-          description: GPS vertical (altitude) accuracy in meters.
-          format: double
-    CreateFeaturePhotoResponsePayload:
-      required:
-      - photoId
-      - status
-      type: object
-      properties:
-        photoId:
-          type: integer
-          format: int64
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    CreateFeatureRequestPayload:
-      required:
-      - layerId
-      type: object
-      properties:
-        layerId:
-          type: integer
-          format: int64
-        geom:
-          $ref: '#/components/schemas/Geometry'
-        gpsHorizAccuracy:
-          type: number
-          format: double
-        gpsVertAccuracy:
-          type: number
-          format: double
-        attrib:
-          type: string
-        notes:
-          type: string
-        enteredTime:
-          type: string
-          format: date-time
-        plant:
-          $ref: '#/components/schemas/PlantDetailsPayload'
-    CreateFeatureResponsePayload:
-      required:
-      - feature
-      - status
-      type: object
-      properties:
-        feature:
-          $ref: '#/components/schemas/FeatureResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    CreateLayerRequestPayload:
-      required:
-      - hidden
-      - layerType
-      - proposed
-      - siteId
-      type: object
-      properties:
-        siteId:
-          type: integer
-          format: int64
-        layerType:
-          type: string
-          enum:
-          - Aerial Photos
-          - Surface Color Map
-          - Terrain Color Map
-          - Boundaries
-          - Plants Planted
-          - Plants Existing
-          - Irrigation
-          - Infrastructure
-          - Partner Input
-          - Restoration Zones
-          - Site Prep
-          - Map notes
-        tileSetName:
-          type: string
-        proposed:
-          type: boolean
-        hidden:
-          type: boolean
-    CreateLayerResponsePayload:
-      required:
-      - layer
-      - status
-      type: object
-      properties:
-        layer:
-          $ref: '#/components/schemas/LayerResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    CreateObservationRequestPayload:
-      required:
-      - featureId
-      - timestamp
-      type: object
-      properties:
-        featureId:
-          type: integer
-          format: int64
-        timestamp:
-          type: string
-          format: date-time
-        healthState:
-          type: string
-          enum:
-          - Good
-          - Moderate
-          - Poor
-          - Dead
-        flowers:
-          type: boolean
-        seeds:
-          type: boolean
-        pests:
-          type: string
-        height:
-          type: number
-          description: Height in meters
-          format: double
-        diameterAtBreastHeight:
-          type: number
-          description: Diameter at breast height in meters
-          format: double
-    CreateObservationResponsePayload:
-      required:
-      - resp
-      - status
-      type: object
-      properties:
-        resp:
-          $ref: '#/components/schemas/ObservationResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     CreateOrganizationRequestPayload:
       required:
       - name
@@ -3519,34 +2592,6 @@ components:
           type: integer
           description: The ID of the newly-added user.
           format: int64
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    CreatePlantRequestPayload:
-      required:
-      - featureId
-      type: object
-      properties:
-        featureId:
-          type: integer
-          format: int64
-        label:
-          type: string
-        speciesId:
-          type: integer
-          format: int64
-        naturalRegen:
-          type: boolean
-        datePlanted:
-          type: string
-          format: date
-    CreatePlantResponsePayload:
-      required:
-      - plant
-      - status
-      type: object
-      properties:
-        plant:
-          $ref: '#/components/schemas/PlantResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     CreateProjectRequestPayload:
@@ -3589,26 +2634,6 @@ components:
       properties:
         description:
           type: string
-        layerTypes:
-          uniqueItems: true
-          type: array
-          description: Create map layers of these types. Pass an empty list to skip
-            creating layers. Default is to create a Plants Planted layer.
-          items:
-            type: string
-            enum:
-            - Aerial Photos
-            - Surface Color Map
-            - Terrain Color Map
-            - Boundaries
-            - Plants Planted
-            - Plants Existing
-            - Irrigation
-            - Infrastructure
-            - Partner Input
-            - Restoration Zones
-            - Site Prep
-            - Map notes
         location:
           $ref: '#/components/schemas/Point'
         locale:
@@ -3713,56 +2738,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CreateTimeseriesEntry'
-    CurrentAndPreviousCounts:
-      required:
-      - current
-      type: object
-      properties:
-        current:
-          type: integer
-          description: The current value of the quantity in question.
-          format: int32
-        previous:
-          type: integer
-          description: The value of the quantity in question as of a previous point
-            in time. Will not be present if no previousTime value was specified in
-            the request.
-          format: int32
-      description: "Represents the current, and optionally a previous, count of a\
-        \ quantity such as the number of plants or species."
-    DeleteFeatureResponsePayload:
-      required:
-      - id
-      - status
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    DeleteLayerResponse:
-      required:
-      - id
-      - siteId
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        siteId:
-          type: integer
-          format: int64
-    DeleteLayerResponsePayload:
-      required:
-      - layer
-      - status
-      type: object
-      properties:
-        layer:
-          $ref: '#/components/schemas/DeleteLayerResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     DeviceConfig:
       required:
       - facilityId
@@ -3918,81 +2893,6 @@ components:
           - Seed Bank
           - Desalination
           - Reverse Osmosis
-    FeaturePhoto:
-      required:
-      - capturedTime
-      - contentType
-      - featureId
-      - fileName
-      - id
-      - size
-      type: object
-      properties:
-        capturedTime:
-          type: string
-          format: date-time
-        contentType:
-          type: string
-        featureId:
-          type: integer
-          format: int64
-        fileName:
-          type: string
-        gpsHorizAccuracy:
-          type: number
-          description: GPS horizontal accuracy in meters.
-          format: double
-        gpsVertAccuracy:
-          type: number
-          description: GPS vertical (altitude) accuracy in meters.
-          format: double
-        heading:
-          type: number
-          description: Compass heading of phone/camera when photo was taken.
-          format: double
-        id:
-          type: integer
-          format: int64
-        location:
-          $ref: '#/components/schemas/Point'
-        orientation:
-          type: number
-          description: Orientation of phone/camera when photo was taken.
-          format: double
-        size:
-          type: integer
-          format: int64
-    FeatureResponse:
-      required:
-      - id
-      - layerId
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        layerId:
-          type: integer
-          format: int64
-        geom:
-          $ref: '#/components/schemas/Geometry'
-        gpsHorizAccuracy:
-          type: number
-          format: double
-        gpsVertAccuracy:
-          type: number
-          format: double
-        attrib:
-          type: string
-        notes:
-          type: string
-        enteredTime:
-          type: string
-          format: date-time
-        plant:
-          $ref: '#/components/schemas/PlantDetailsPayload'
-      description: Describes a map feature. The coordinate reference system of the
-        "geom" field will be longitude/latitude EPSG:4326.
     FieldNodePayload:
       required:
       - field
@@ -4223,46 +3123,6 @@ components:
           $ref: '#/components/schemas/FacilityPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    GetFeaturePhotoMetadataResponsePayload:
-      required:
-      - photo
-      - status
-      type: object
-      properties:
-        photo:
-          $ref: '#/components/schemas/FeaturePhoto'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    GetFeatureResponsePayload:
-      required:
-      - feature
-      - status
-      type: object
-      properties:
-        feature:
-          $ref: '#/components/schemas/FeatureResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    GetLayerResponsePayload:
-      required:
-      - layer
-      - status
-      type: object
-      properties:
-        layer:
-          $ref: '#/components/schemas/LayerResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    GetObservationResponsePayload:
-      required:
-      - resp
-      - status
-      type: object
-      properties:
-        resp:
-          $ref: '#/components/schemas/ObservationResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     GetOrganizationResponsePayload:
       required:
       - organization
@@ -4281,16 +3141,6 @@ components:
       properties:
         user:
           $ref: '#/components/schemas/OrganizationUserPayload'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    GetPlantResponsePayload:
-      required:
-      - plant
-      - status
-      type: object
-      properties:
-        plant:
-          $ref: '#/components/schemas/PlantResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     GetProjectResponsePayload:
@@ -4343,42 +3193,6 @@ components:
           $ref: '#/components/schemas/UserProfilePayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    LayerResponse:
-      required:
-      - hidden
-      - id
-      - layerType
-      - proposed
-      - siteId
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        siteId:
-          type: integer
-          format: int64
-        layerType:
-          type: string
-          enum:
-          - Aerial Photos
-          - Surface Color Map
-          - Terrain Color Map
-          - Boundaries
-          - Plants Planted
-          - Plants Existing
-          - Irrigation
-          - Infrastructure
-          - Partner Input
-          - Restoration Zones
-          - Site Prep
-          - Map notes
-        tileSetName:
-          type: string
-        proposed:
-          type: boolean
-        hidden:
-          type: boolean
     LineString:
       required:
       - coordinates
@@ -4480,34 +3294,6 @@ components:
             $ref: '#/components/schemas/FacilityPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    ListFeaturePhotosResponsePayload:
-      required:
-      - photos
-      - status
-      type: object
-      properties:
-        photos:
-          type: array
-          items:
-            $ref: '#/components/schemas/FeaturePhoto'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    ListFeaturesResponsePayload:
-      required:
-      - features
-      - status
-      - totalCount
-      type: object
-      properties:
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/FeatureResponse'
-        totalCount:
-          type: integer
-          format: int32
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     ListFieldValuesRequestPayload:
       required:
       - facilityId
@@ -4537,30 +3323,6 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/FieldValuesPayload'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    ListLayersResponsePayload:
-      required:
-      - layers
-      - status
-      type: object
-      properties:
-        layers:
-          type: array
-          items:
-            $ref: '#/components/schemas/LayerResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    ListObservationsResponsePayload:
-      required:
-      - list
-      - status
-      type: object
-      properties:
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/ObservationResponse'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListOrganizationUsersResponsePayload:
@@ -4628,55 +3390,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ListPhotosResponseElement'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    ListPlantsResponseElement:
-      required:
-      - featureId
-      - layerId
-      type: object
-      properties:
-        featureId:
-          type: integer
-          format: int64
-        label:
-          type: string
-        speciesId:
-          type: integer
-          format: int64
-        naturalRegen:
-          type: boolean
-        datePlanted:
-          type: string
-          format: date
-        layerId:
-          type: integer
-          format: int64
-        gpsHorizAccuracy:
-          type: number
-          format: double
-        gpsVertAccuracy:
-          type: number
-          format: double
-        attrib:
-          type: string
-        notes:
-          type: string
-        enteredTime:
-          type: string
-          format: date-time
-        geom:
-          $ref: '#/components/schemas/Geometry'
-    ListPlantsResponsePayload:
-      required:
-      - list
-      - status
-      type: object
-      properties:
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/ListPlantsResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListProjectsResponsePayload:
@@ -4844,43 +3557,6 @@ components:
         properties:
           child:
             $ref: '#/components/schemas/SearchNodePayload'
-    ObservationResponse:
-      required:
-      - featureId
-      - id
-      - timestamp
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        featureId:
-          type: integer
-          format: int64
-        timestamp:
-          type: string
-          format: date-time
-        healthState:
-          type: string
-          enum:
-          - Good
-          - Moderate
-          - Poor
-          - Dead
-        flowers:
-          type: boolean
-        seeds:
-          type: boolean
-        pests:
-          type: string
-        height:
-          type: number
-          description: Height in meters
-          format: double
-        diameterAtBreastHeight:
-          type: number
-          description: Diameter at breast height in meters
-          format: double
     OrNodePayload:
       type: object
       description: "Search criterion that matches results that meet any of a set of\
@@ -4979,67 +3655,6 @@ components:
           - Manager
           - Admin
           - Owner
-    PlantDetailsPayload:
-      type: object
-      properties:
-        datePlanted:
-          type: string
-          format: date
-        label:
-          type: string
-        naturalRegen:
-          type: boolean
-        speciesId:
-          type: integer
-          format: int64
-      description: Additional details for features that represent plants.
-    PlantResponse:
-      required:
-      - featureId
-      type: object
-      properties:
-        featureId:
-          type: integer
-          format: int64
-        label:
-          type: string
-        speciesId:
-          type: integer
-          format: int64
-        naturalRegen:
-          type: boolean
-        datePlanted:
-          type: string
-          format: date
-    PlantSummaryResponsePayload:
-      required:
-      - status
-      - summary
-      type: object
-      properties:
-        summary:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int32
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    PlantsAndSpeciesSummaryResponsePayload:
-      required:
-      - plants
-      - species
-      - status
-      type: object
-      properties:
-        previousTime:
-          type: string
-          format: date-time
-        plants:
-          $ref: '#/components/schemas/CurrentAndPreviousCounts'
-        species:
-          $ref: '#/components/schemas/CurrentAndPreviousCounts'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     Point:
       required:
       - coordinates
@@ -5877,117 +4492,6 @@ components:
           description: "ID of parent device such as a hub or gateway, if any. The\
             \ parent device must exist."
           format: int64
-    UpdateFeatureRequestPayload:
-      type: object
-      properties:
-        geom:
-          $ref: '#/components/schemas/Geometry'
-        gpsHorizAccuracy:
-          type: number
-          format: double
-        gpsVertAccuracy:
-          type: number
-          format: double
-        attrib:
-          type: string
-        notes:
-          type: string
-        enteredTime:
-          type: string
-          format: date-time
-        plant:
-          $ref: '#/components/schemas/PlantDetailsPayload'
-    UpdateFeatureResponsePayload:
-      required:
-      - feature
-      - status
-      type: object
-      properties:
-        feature:
-          $ref: '#/components/schemas/FeatureResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    UpdateLayerRequestPayload:
-      required:
-      - hidden
-      - layerType
-      - proposed
-      - siteId
-      type: object
-      properties:
-        siteId:
-          type: integer
-          format: int64
-        layerType:
-          type: string
-          enum:
-          - Aerial Photos
-          - Surface Color Map
-          - Terrain Color Map
-          - Boundaries
-          - Plants Planted
-          - Plants Existing
-          - Irrigation
-          - Infrastructure
-          - Partner Input
-          - Restoration Zones
-          - Site Prep
-          - Map notes
-        tileSetName:
-          type: string
-        proposed:
-          type: boolean
-        hidden:
-          type: boolean
-    UpdateLayerResponsePayload:
-      required:
-      - layer
-      - status
-      type: object
-      properties:
-        layer:
-          $ref: '#/components/schemas/LayerResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    UpdateObservationRequestPayload:
-      required:
-      - timestamp
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        healthState:
-          type: string
-          enum:
-          - Good
-          - Moderate
-          - Poor
-          - Dead
-        flowers:
-          type: boolean
-        seeds:
-          type: boolean
-        pests:
-          type: string
-        height:
-          type: number
-          description: Height in meters
-          format: double
-        diameterAtBreastHeight:
-          type: number
-          description: Diameter at breast height in meters
-          format: double
-    UpdateObservationResponsePayload:
-      required:
-      - resp
-      - status
-      type: object
-      properties:
-        resp:
-          $ref: '#/components/schemas/ObservationResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     UpdateOrganizationRequestPayload:
       required:
       - name
@@ -6023,29 +4527,6 @@ components:
           - Manager
           - Admin
           - Owner
-    UpdatePlantRequestPayload:
-      type: object
-      properties:
-        label:
-          type: string
-        speciesId:
-          type: integer
-          format: int64
-        naturalRegen:
-          type: boolean
-        datePlanted:
-          type: string
-          format: date
-    UpdatePlantResponsePayload:
-      required:
-      - plant
-      - status
-      type: object
-      properties:
-        plant:
-          $ref: '#/components/schemas/PlantResponse'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     UpdateProjectRequestPayload:
       required:
       - name
