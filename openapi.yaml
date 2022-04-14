@@ -2279,7 +2279,6 @@ components:
           type: string
           enum:
           - Contributor
-          - Manager
           - Admin
           - Owner
         projectIds:
@@ -3607,7 +3606,6 @@ components:
           description: The current user's role in the organization.
           enum:
           - Contributor
-          - Manager
           - Admin
           - Owner
         totalUsers:
@@ -3652,7 +3650,6 @@ components:
           type: string
           enum:
           - Contributor
-          - Manager
           - Admin
           - Owner
     Point:
@@ -4524,7 +4521,6 @@ components:
           type: string
           enum:
           - Contributor
-          - Manager
           - Admin
           - Owner
     UpdateProjectRequestPayload:

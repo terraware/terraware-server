@@ -197,7 +197,7 @@ data class IndividualUser(
 
   override fun canUpdateSite(siteId: SiteId): Boolean {
     return when (siteRoles[siteId]) {
-      Role.MANAGER, Role.ADMIN, Role.OWNER -> true
+      Role.ADMIN, Role.OWNER -> true
       else -> false
     }
   }
@@ -229,7 +229,7 @@ data class IndividualUser(
 
   override fun canAddProjectUser(projectId: ProjectId): Boolean {
     val role = projectRoles[projectId]
-    return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
+    return role == Role.ADMIN || role == Role.OWNER
   }
 
   override fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean {
@@ -238,7 +238,7 @@ data class IndividualUser(
 
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
     val role = organizationRoles[organizationId]
-    return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
+    return role == Role.ADMIN || role == Role.OWNER
   }
 
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean {
@@ -292,7 +292,7 @@ data class IndividualUser(
 
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
-      Role.OWNER, Role.ADMIN, Role.MANAGER -> true
+      Role.OWNER, Role.ADMIN -> true
       else -> false
     }
   }
@@ -308,7 +308,7 @@ data class IndividualUser(
 
   override fun canCreateSpeciesName(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
-      Role.OWNER, Role.ADMIN, Role.MANAGER -> true
+      Role.OWNER, Role.ADMIN -> true
       else -> false
     }
   }
