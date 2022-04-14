@@ -50,7 +50,6 @@ springdoc:
   packages-to-scan:
     - "com.terraformation.backend.customer.api"
     - "com.terraformation.backend.device.api"
-    - "com.terraformation.backend.gis.api"
     - "com.terraformation.backend.search.api"
     - "com.terraformation.backend.seedbank.api"
     - "com.terraformation.backend.species.api"

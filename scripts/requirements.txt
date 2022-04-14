@@ -1,4 +1,1 @@
-pypika==0.48.9
-pyshp==2.2.0
 requests==2.27.1
-sridentify==0.8.0

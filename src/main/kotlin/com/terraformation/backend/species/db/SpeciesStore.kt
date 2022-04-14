@@ -2,7 +2,6 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
@@ -14,9 +13,6 @@ import com.terraformation.backend.db.tables.daos.SpeciesOptionsDao
 import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesOptionsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.db.tables.references.LAYERS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
 import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
@@ -71,23 +67,6 @@ class SpeciesStore(
     }
 
     return existingId ?: createSpecies(organizationId, SpeciesRow(name = speciesName))
-  }
-
-  fun fetchSpeciesId(layerId: LayerId, speciesName: String): SpeciesId? {
-    requirePermissions { readLayer(layerId) }
-
-    return dslContext
-        .select(SPECIES_NAMES.SPECIES_ID)
-        .from(SPECIES_NAMES)
-        .join(PROJECTS)
-        .on(PROJECTS.ORGANIZATION_ID.eq(SPECIES_NAMES.ORGANIZATION_ID))
-        .join(SITES)
-        .on(SITES.PROJECT_ID.eq(PROJECTS.ID))
-        .join(LAYERS)
-        .on(LAYERS.SITE_ID.eq(SITES.ID))
-        .where(LAYERS.ID.eq(layerId))
-        .and(SPECIES_NAMES.NAME.eq(speciesName))
-        .fetchOne(SPECIES_NAMES.SPECIES_ID)
   }
 
   fun fetchSpeciesById(organizationId: OrganizationId, speciesId: SpeciesId): SpeciesRow? {

@@ -6,17 +6,14 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.customer.SiteService
 import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.model.SiteModel
-import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
@@ -36,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RestController
 @RequestMapping("/api/v1/sites")
-class SitesController(private val siteService: SiteService, private val siteStore: SiteStore) {
+class SitesController(private val siteStore: SiteStore) {
   @ApiResponse(responseCode = "200", description = "Retrieved list of sites.")
   @GetMapping
   @Operation(summary = "Gets all of the sites the current user can access.")
@@ -74,8 +71,7 @@ class SitesController(private val siteService: SiteService, private val siteStor
   @PostMapping
   @Operation(summary = "Creates a new site.")
   fun createSite(@RequestBody @Valid payload: CreateSiteRequestPayload): CreateSiteResponsePayload {
-    val site =
-        siteService.create(payload.toRow(), payload.layerTypes ?: setOf(LayerType.PlantsPlanted))
+    val site = siteStore.create(payload.toRow())
     return CreateSiteResponsePayload(site.id)
   }
 
@@ -146,13 +142,6 @@ data class GetSiteResponsePayload(val site: SiteElement) : SuccessResponsePayloa
 
 data class CreateSiteRequestPayload(
     val description: String?,
-    @ArraySchema(
-        arraySchema =
-            Schema(
-                description =
-                    "Create map layers of these types. Pass an empty list to skip creating " +
-                        "layers. Default is to create a Plants Planted layer."))
-    val layerTypes: Set<LayerType>?,
     val location: Point?,
     val locale: String?,
     @field:NotEmpty val name: String,

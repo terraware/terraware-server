@@ -6,10 +6,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FeatureId
-import com.terraformation.backend.db.LayerId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesNameId
@@ -95,8 +92,6 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
   override fun canCreateFacility(siteId: SiteId): Boolean = true
-  override fun canCreateFeature(layerId: LayerId): Boolean = true
-  override fun canCreateLayer(siteId: SiteId): Boolean = true
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
   override fun canCreateSite(projectId: ProjectId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
@@ -105,9 +100,6 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canDeleteApiKey(organizationId: OrganizationId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
-  override fun canDeleteFeature(featureId: FeatureId): Boolean = true
-  override fun canDeleteFeaturePhoto(photoId: PhotoId): Boolean = true
-  override fun canDeleteLayer(layerId: LayerId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
   override fun canDeleteSite(siteId: SiteId): Boolean = true
   override fun canDeleteSpecies(organizationId: OrganizationId): Boolean = true
@@ -123,9 +115,6 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
-  override fun canReadFeature(featureId: FeatureId): Boolean = true
-  override fun canReadFeaturePhoto(photoId: PhotoId): Boolean = true
-  override fun canReadLayer(layerId: LayerId): Boolean = true
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadProject(projectId: ProjectId): Boolean = true
   override fun canReadSite(siteId: SiteId): Boolean = true
@@ -143,8 +132,6 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canUpdateAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
-  override fun canUpdateFeature(featureId: FeatureId): Boolean = true
-  override fun canUpdateLayer(layerId: LayerId): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
   override fun canUpdateProject(projectId: ProjectId): Boolean = true
   override fun canUpdateSite(siteId: SiteId): Boolean = true

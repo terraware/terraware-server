@@ -3,8 +3,6 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.LayerId
-import com.terraformation.backend.db.LayerNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.PlantForm
@@ -57,7 +55,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { clock.instant() } returns Instant.EPOCH
 
     every { user.canCreateSpecies(any()) } returns true
-    every { user.canReadLayer(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
@@ -370,34 +367,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     assertNotNull(speciesId, "Should have created species")
     assertNotEquals(otherOrgSpeciesId, speciesId, "Should not use species ID from other org")
-  }
-
-  @Test
-  fun `fetchSpeciesId returns existing species ID for organization that owns the layer`() {
-    val otherOrgId = OrganizationId(2)
-    insertOrganization(otherOrgId.value)
-
-    val name = "test"
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = name))
-    store.createSpecies(otherOrgId, SpeciesRow(name = name))
-
-    val layerId = LayerId(100)
-
-    insertLayer(layerId.value)
-    insertFeature(1000)
-    insertPlant(1000, speciesId = speciesId)
-
-    assertEquals(speciesId, store.fetchSpeciesId(layerId, name))
-  }
-
-  @Test
-  fun `fetchSpeciesId throws exception if user has no permission to read layer`() {
-    val layerId = LayerId(100)
-    insertLayer(layerId.value)
-
-    every { user.canReadLayer(layerId) } returns false
-
-    assertThrows<LayerNotFoundException> { store.fetchSpeciesId(layerId, "test") }
   }
 
   @Test

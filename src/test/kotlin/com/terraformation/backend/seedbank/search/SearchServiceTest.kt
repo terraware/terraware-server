@@ -21,7 +21,6 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.pojos.AccessionGerminationTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
@@ -737,18 +736,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns geometry values as string-wrapped GeoJSON`() {
-    insertLayer(100)
-    insertFeature(1000, geom = mercatorPoint(1000.0, 2000.0, 3000.0))
-
-    val prefix = SearchFieldPrefix(tables.features)
-    val field = prefix.resolve("geom")
+    val prefix = SearchFieldPrefix(tables.sites)
+    val field = prefix.resolve("location")
 
     // We don't care about minor formatting differences in the GeoJSON; compare the contents
     // rather than the string form to avoid bogus failures.
     val expectedGeometry =
         mapOf(
             "type" to "Point",
-            "coordinates" to listOf(1000, 2000, 3000),
+            "coordinates" to listOf(1, 2, 0),
             "crs" to mapOf("type" to "name", "properties" to mapOf("name" to "EPSG:3857")))
 
     val actualGeometry =
@@ -756,7 +752,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             .search(prefix, listOf(field), NoConditionNode())
             .results
             .firstOrNull()
-            ?.get("geom")
+            ?.get(field.searchField.fieldName)
             ?.let { geometryString ->
               jacksonObjectMapper().readValue<Map<String, Any>>("$geometryString")
             }
@@ -2472,6 +2468,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "facilities" to expectedFacilities,
                   "id" to "10",
                   "name" to "sim",
+                  "location" to
+                      """{"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[1,2,0]}""",
               ))
 
       val expectedUser =

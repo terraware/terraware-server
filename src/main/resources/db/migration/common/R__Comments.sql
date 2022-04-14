@@ -63,10 +63,6 @@ COMMENT ON TABLE facility_alert_recipients IS 'Where to send notifications about
 
 COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be represented in the data model.';
 
-COMMENT ON TABLE feature_photos IS 'Linking table between `features` and `photos`. Also optionally links `plant_observations` and `photos`.';
-
-COMMENT ON TABLE features IS 'Physical features that appear on a map. For example, an individual tree whose location is being tracked is a map feature. This table only has generic information; child tables such as `plants` have more information about particular kinds of features.';
-
 COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have already been applied. Used by the Flyway library, not by application.';
 
 COMMENT ON TABLE geolocations IS 'Locations where seeds were collected.';
@@ -83,24 +79,14 @@ COMMENT ON TABLE germination_treatments IS '(Enum) Techniques that can be used t
 
 COMMENT ON TABLE germinations IS 'Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 
-COMMENT ON TABLE health_states IS '(Enum) Possible ratings of how healthy a plant was when it was observed.';
-
-COMMENT ON TABLE layer_types IS '(Enum) Types of map features that can be grouped together into a layer.';
-
-COMMENT ON TABLE layers IS 'Map layers. Each layer has features of a particular type, e.g., irrigation infrastructure or existing vegetation at a site.';
-
 COMMENT ON TABLE organization_users IS 'Organization membership and role information.';
 
 COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
 
-COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `feature_photos`.';
+COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`.';
 
 COMMENT ON TABLE plant_forms IS '(Enum) What physical form a particular species takes. For example, "Tree" or "Shrub."';
-
-COMMENT ON TABLE plant_observations IS 'Observations of a particular plant. A single plant can be observed repeatedly over time.';
-
-COMMENT ON TABLE plants IS 'Plants whose locations are being tracked. Each plant is represented as a map feature in the `features` table; this table has information that only applies to plants and not to other kinds of map features.';
 
 COMMENT ON TABLE processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
 

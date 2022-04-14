@@ -2,7 +2,7 @@
 
 This is the back end for the [Terraware](https://terraware.io/) application.
 
-It has three main areas of focus: the seed processing workflow, tracking location data of plants, and monitoring of a seed bank's physical infrastructure.
+It has two main areas of focus: the seed processing workflow and monitoring of a seed bank's physical infrastructure.
 
 The production version of the server is hosted on AWS, but it is also possible to run locally in a development environment or an on-premises server.
 

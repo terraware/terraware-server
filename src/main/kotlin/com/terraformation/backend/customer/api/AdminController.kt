@@ -3,7 +3,6 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.SiteService
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
@@ -13,7 +12,6 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
-import com.terraformation.backend.db.LayerType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
@@ -29,8 +27,6 @@ import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.email.EmailService
-import com.terraformation.backend.gis.db.LayerStore
-import com.terraformation.backend.gis.model.LayerModel
 import com.terraformation.backend.log.perClassLogger
 import java.math.BigDecimal
 import java.net.URI
@@ -65,10 +61,8 @@ class AdminController(
     private val dslContext: DSLContext,
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
-    private val layerStore: LayerStore,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
-    private val siteService: SiteService,
     private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
@@ -141,14 +135,8 @@ class AdminController(
     val availableUsers = orgUsers.filter { projectId !in it.projectIds }
     val sites = siteStore.fetchByProjectId(projectId).sortedBy { it.name }
 
-    val defaultLayerTypes = listOf(LayerType.PlantsPlanted)
-    val otherLayerTypes =
-        LayerType.values().filter { it !in defaultLayerTypes }.sortedBy { it.displayName }
-
     model.addAttribute("availableUsers", availableUsers)
     model.addAttribute("canCreateSite", currentUser().canCreateSite(projectId))
-    model.addAttribute("defaultLayerTypes", defaultLayerTypes)
-    model.addAttribute("otherLayerTypes", otherLayerTypes)
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("project", project)
@@ -165,14 +153,10 @@ class AdminController(
     val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
     val organization = organizationStore.fetchById(project.organizationId)
     val facilities = facilityStore.fetchBySiteId(siteId).sortedBy { it.name }
-    val layers = layerStore.listLayers(siteId).sortedBy { it.layerType.displayName }
 
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(siteId))
-    model.addAttribute("canCreateLayer", currentUser().canCreateLayer(siteId))
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
-    model.addAttribute("layers", layers)
-    model.addAttribute("layerTypes", LayerType.values().sortedBy { it.displayName })
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("project", project)
@@ -452,45 +436,21 @@ class AdminController(
       @NotBlank @RequestParam("name") name: String,
       @Min(-180L) @Max(180L) @RequestParam("latitude") latitude: BigDecimal,
       @Min(-180L) @Max(180L) @RequestParam("longitude") longitude: BigDecimal,
-      @RequestParam("layerTypes", required = false) layerTypes: List<LayerType>?,
       redirectAttributes: RedirectAttributes,
   ): String {
     val location =
         Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
 
     try {
-      siteService.create(
-          SitesRow(projectId = projectId, name = name, location = location),
-          layerTypes?.toSet() ?: emptySet())
+      siteStore.create(SitesRow(projectId = projectId, name = name, location = location))
 
       redirectAttributes.addFlashAttribute("successMessage", "Site created.")
     } catch (e: Exception) {
       log.error("Site creation failed", e)
-      redirectAttributes.addFlashAttribute("failureMessage", "Unable to create site and layers.")
+      redirectAttributes.addFlashAttribute("failureMessage", "Unable to create site.")
     }
 
     return project(projectId)
-  }
-
-  @PostMapping("/createLayer")
-  fun createLayer(
-      @RequestParam("siteId") siteId: SiteId,
-      @RequestParam("layerType") layerType: LayerType,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val layer =
-        layerStore.createLayer(
-            LayerModel(
-                hidden = false,
-                layerType = layerType,
-                proposed = false,
-                siteId = siteId,
-                tileSetName = null,
-            ))
-
-    redirectAttributes.addFlashAttribute("successMessage", "Layer ${layer.id} created.")
-
-    return site(siteId)
   }
 
   @PostMapping("/createFacility")

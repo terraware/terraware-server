@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.LAYERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.search.SearchTable
@@ -23,7 +22,6 @@ class SitesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperator
     with(tables) {
       listOf(
           facilities.asMultiValueSublist("facilities", SITES.ID.eq(FACILITIES.SITE_ID)),
-          layers.asMultiValueSublist("layers", SITES.ID.eq(LAYERS.SITE_ID)),
           projects.asSingleValueSublist("project", SITES.PROJECT_ID.eq(PROJECTS.ID)),
       )
     }
@@ -34,6 +32,7 @@ class SitesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperator
           timestampField("createdTime", "Site created time", SITES.CREATED_TIME, nullable = false),
           textField("description", "Site description", SITES.DESCRIPTION),
           idWrapperField("id", "Site ID", SITES.ID) { SiteId(it) },
+          geometryField("location", "Site location", SITES.LOCATION),
           textField("name", "Site name", SITES.NAME, nullable = false),
       )
 

@@ -37,9 +37,6 @@ class DeviceNotFoundException(val deviceId: DeviceId) :
 class FacilityNotFoundException(val facilityId: FacilityId) :
     EntityNotFoundException("Facility $facilityId not found")
 
-class FeatureNotFoundException(val featureId: FeatureId) :
-    EntityNotFoundException("Feature $featureId not found")
-
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(
     override val message: String,
@@ -49,20 +46,11 @@ open class KeycloakRequestFailedException(
 /** Keycloak couldn't find a user that we expected to be able to find. */
 class KeycloakUserNotFoundException(message: String) : EntityNotFoundException(message)
 
-class LayerNotFoundException(val layerId: LayerId) :
-    EntityNotFoundException("Layer $layerId not found")
-
 class OrganizationNotFoundException(val organizationId: OrganizationId) :
     EntityNotFoundException("Organization $organizationId not found")
 
 class PhotoNotFoundException(val photoId: PhotoId) :
     EntityNotFoundException("Photo $photoId not found")
-
-class PlantNotFoundException(val featureId: FeatureId) :
-    EntityNotFoundException("Plant with feature id $featureId not found")
-
-class PlantObservationNotFoundException(val id: PlantObservationId) :
-    EntityNotFoundException("Plant observation $id not found")
 
 class ProjectNotFoundException(val projectId: ProjectId) :
     EntityNotFoundException("Project $projectId not found")
