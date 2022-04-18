@@ -48,6 +48,9 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getFacilityId(storageLocationId: StorageLocationId): FacilityId? =
       fetchFieldById(storageLocationId, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID)
 
+  fun getProjectId(facilityId: FacilityId): ProjectId? =
+      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.sites().PROJECT_ID)
+
   fun getProjectId(siteId: SiteId): ProjectId? = fetchFieldById(siteId, SITES.ID, SITES.PROJECT_ID)
 
   fun getOrganizationId(projectId: ProjectId): OrganizationId? =

@@ -59,8 +59,6 @@ COMMENT ON COLUMN facilities.idle_since_time IS 'Time at which the facility beca
 COMMENT ON COLUMN facilities.last_timeseries_time IS 'When the most recent timeseries data was received from the facility.';
 COMMENT ON COLUMN facilities.max_idle_minutes IS 'Send an alert if this many minutes pass without new timeseries data from a facility''s device manager.';
 
-COMMENT ON TABLE facility_alert_recipients IS 'Where to send notifications about issues at a particular facility. The recipients are not necessarily Terraware users.';
-
 COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be represented in the data model.';
 
 COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have already been applied. Used by the Flyway library, not by application.';

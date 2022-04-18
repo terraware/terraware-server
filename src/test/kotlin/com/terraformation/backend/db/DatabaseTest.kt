@@ -11,7 +11,6 @@ import com.terraformation.backend.db.tables.daos.AutomationsDao
 import com.terraformation.backend.db.tables.daos.BagsDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
 import com.terraformation.backend.db.tables.daos.GerminationTestsDao
 import com.terraformation.backend.db.tables.daos.GerminationsDao
@@ -194,7 +193,6 @@ abstract class DatabaseTest {
   protected val bagsDao: BagsDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
-  protected val facilityAlertRecipientsDao: FacilityAlertRecipientsDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val germinationsDao: GerminationsDao by lazyDao()
   protected val germinationTestsDao: GerminationTestsDao by lazyDao()
@@ -429,6 +427,7 @@ abstract class DatabaseTest {
       firstName: String? = "First",
       lastName: String? = "Last",
       type: UserType = UserType.Individual,
+      emailNotificationsEnabled: Boolean = false,
   ) {
     with(USERS) {
       dslContext
@@ -436,6 +435,7 @@ abstract class DatabaseTest {
           .set(AUTH_ID, authId)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(EMAIL, email)
+          .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
           .set(ID, userId.toIdWrapper { UserId(it) })
           .set(FIRST_NAME, firstName)
           .set(LAST_NAME, lastName)
