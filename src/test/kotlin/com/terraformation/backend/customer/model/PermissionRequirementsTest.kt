@@ -70,15 +70,28 @@ internal class PermissionRequirementsTest : RunsAsUser {
     every(stubBlock) returns true
   }
 
+  /**
+   * Helper function to test permission requirements during create flows
+   */
+  private inline fun <reified E : Throwable, T>
+      testCreateFlowPermissions(createContextId: T,
+                                create: (T) -> Unit,
+                                crossinline readCheck: (T) -> Boolean,
+                                crossinline createCheck: (T) -> Boolean) {
+    assertThrows<E> { create(createContextId) }
+
+    grant { readCheck(createContextId) }
+    assertThrows<AccessDeniedException> { create(createContextId) }
+
+    grant { createCheck(createContextId) }
+    create(createContextId)
+  }
+
   @Test
   fun createAccession() {
-    assertThrows<FacilityNotFoundException> { requirements.createAccession(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.createAccession(facilityId) }
-
-    grant { user.canCreateAccession(facilityId) }
-    requirements.createAccession(facilityId)
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
+        create = requirements::createAccession, readCheck = user::canReadFacility,
+        createCheck = user::canCreateAccession);
   }
 
   @Test
@@ -102,13 +115,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createAutomation() {
-    assertThrows<FacilityNotFoundException> { requirements.createAutomation(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.createAutomation(facilityId) }
-
-    grant { user.canCreateAutomation(facilityId) }
-    requirements.createAutomation(facilityId)
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
+        create = requirements::createAutomation, readCheck = user::canReadFacility,
+        createCheck = user::canCreateAutomation);
   }
 
   @Test
@@ -154,13 +163,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createFacility() {
-    assertThrows<SiteNotFoundException> { requirements.createFacility(siteId) }
-
-    grant { user.canReadSite(siteId) }
-    assertThrows<AccessDeniedException> { requirements.createFacility(siteId) }
-
-    grant { user.canCreateFacility(siteId) }
-    requirements.createFacility(siteId)
+    testCreateFlowPermissions<SiteNotFoundException, SiteId>(siteId,
+        create = requirements::createFacility, readCheck = user::canReadSite,
+        createCheck = user::canCreateFacility);
   }
 
   @Test
@@ -195,13 +200,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createDevice() {
-    assertThrows<FacilityNotFoundException> { requirements.createDevice(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.createDevice(facilityId) }
-
-    grant { user.canCreateDevice(facilityId) }
-    requirements.createDevice(facilityId)
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
+        create = requirements::createDevice, readCheck = user::canReadFacility,
+        createCheck = user::canCreateDevice);
   }
 
   @Test
@@ -225,13 +226,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSite() {
-    assertThrows<ProjectNotFoundException> { requirements.createSite(projectId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.createSite(projectId) }
-
-    grant { user.canCreateSite(projectId) }
-    requirements.createSite(projectId)
+    testCreateFlowPermissions<ProjectNotFoundException, ProjectId>(projectId,
+        create = requirements::createSite, readCheck = user::canReadProject,
+        createCheck = user::canCreateSite);
   }
 
   @Test
@@ -266,13 +263,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createProject() {
-    assertThrows<OrganizationNotFoundException> { requirements.createProject(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.createProject(organizationId) }
-
-    grant { user.canCreateProject(organizationId) }
-    requirements.createProject(organizationId)
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
+        create = requirements::createProject, readCheck = user::canReadOrganization,
+        createCheck = user::canCreateProject);
   }
 
   @Test
@@ -402,13 +395,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createApiKey() {
-    assertThrows<OrganizationNotFoundException> { requirements.createApiKey(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.createApiKey(organizationId) }
-
-    grant { user.canCreateApiKey(organizationId) }
-    requirements.createApiKey(organizationId)
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
+        create = requirements::createApiKey, readCheck = user::canReadOrganization,
+        createCheck = user::canCreateApiKey);
   }
 
   @Test
@@ -424,13 +413,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSpecies() {
-    assertThrows<OrganizationNotFoundException> { requirements.deleteApiKey(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.createSpecies(organizationId) }
-
-    grant { user.canCreateSpecies(organizationId) }
-    requirements.createSpecies(organizationId)
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
+        create = requirements::createSpecies, readCheck = user::canReadOrganization,
+        createCheck = user::canCreateSpecies);
   }
 
   @Test
@@ -465,13 +450,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSpeciesName() {
-    assertThrows<OrganizationNotFoundException> { requirements.createSpeciesName(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.createSpeciesName(organizationId) }
-
-    grant { user.canCreateSpeciesName(organizationId) }
-    requirements.createSpeciesName(organizationId)
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
+        create = requirements::createSpeciesName, readCheck = user::canReadOrganization,
+        createCheck = user::canCreateSpeciesName);
   }
 
   @Test
@@ -506,24 +487,16 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createTimeseries() {
-    assertThrows<DeviceNotFoundException> { requirements.createTimeseries(deviceId) }
-
-    grant { user.canReadDevice(deviceId) }
-    assertThrows<AccessDeniedException> { requirements.createTimeseries(deviceId) }
-
-    grant { user.canCreateTimeseries(deviceId) }
-    requirements.createTimeseries(deviceId)
+    testCreateFlowPermissions<DeviceNotFoundException, DeviceId>(deviceId,
+        create = requirements::createTimeseries, readCheck = user::canReadDevice,
+        createCheck = user::canCreateTimeseries);
   }
 
   @Test
   fun createStorageLocation() {
-    assertThrows<FacilityNotFoundException> { requirements.createStorageLocation(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.createStorageLocation(facilityId) }
-
-    grant { user.canCreateStorageLocation(facilityId) }
-    requirements.createStorageLocation(facilityId)
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
+        create = requirements::createStorageLocation, readCheck = user::canReadFacility,
+        createCheck = user::canCreateStorageLocation);
   }
 
   @Test
