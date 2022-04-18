@@ -1,7 +1,6 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.config.FacilityIdConfigConverter
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
@@ -92,9 +91,7 @@ import org.testcontainers.utility.DockerImageName
  */
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(
-    initializers = [DatabaseTest.DockerPostgresDataSourceInitializer::class],
-    classes = [FacilityIdConfigConverter::class])
+@ContextConfiguration(initializers = [DatabaseTest.DockerPostgresDataSourceInitializer::class])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @JooqTest
 @Testcontainers
