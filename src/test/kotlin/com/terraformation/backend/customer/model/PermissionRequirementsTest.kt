@@ -70,14 +70,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
     every(stubBlock) returns true
   }
 
-  /**
-   * Helper function to test permission requirements during create flows
-   */
-  private inline fun <reified E : Throwable, T>
-      testCreateFlowPermissions(createContextId: T,
-                                create: (T) -> Unit,
-                                crossinline readCheck: (T) -> Boolean,
-                                crossinline createCheck: (T) -> Boolean) {
+  /** Helper function to test permission requirements during create flows */
+  private inline fun <reified E : Throwable, T> testCreateFlowPermissions(
+      createContextId: T,
+      create: (T) -> Unit,
+      crossinline readCheck: (T) -> Boolean,
+      crossinline createCheck: (T) -> Boolean
+  ) {
     assertThrows<E> { create(createContextId) }
 
     grant { readCheck(createContextId) }
@@ -89,9 +88,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createAccession() {
-    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
-        create = requirements::createAccession, readCheck = user::canReadFacility,
-        createCheck = user::canCreateAccession);
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(
+        facilityId,
+        create = requirements::createAccession,
+        readCheck = user::canReadFacility,
+        createCheck = user::canCreateAccession)
   }
 
   @Test
@@ -115,9 +116,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createAutomation() {
-    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
-        create = requirements::createAutomation, readCheck = user::canReadFacility,
-        createCheck = user::canCreateAutomation);
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(
+        facilityId,
+        create = requirements::createAutomation,
+        readCheck = user::canReadFacility,
+        createCheck = user::canCreateAutomation)
   }
 
   @Test
@@ -163,9 +166,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createFacility() {
-    testCreateFlowPermissions<SiteNotFoundException, SiteId>(siteId,
-        create = requirements::createFacility, readCheck = user::canReadSite,
-        createCheck = user::canCreateFacility);
+    testCreateFlowPermissions<SiteNotFoundException, SiteId>(
+        siteId,
+        create = requirements::createFacility,
+        readCheck = user::canReadSite,
+        createCheck = user::canCreateFacility)
   }
 
   @Test
@@ -200,9 +205,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createDevice() {
-    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
-        create = requirements::createDevice, readCheck = user::canReadFacility,
-        createCheck = user::canCreateDevice);
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(
+        facilityId,
+        create = requirements::createDevice,
+        readCheck = user::canReadFacility,
+        createCheck = user::canCreateDevice)
   }
 
   @Test
@@ -226,9 +233,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSite() {
-    testCreateFlowPermissions<ProjectNotFoundException, ProjectId>(projectId,
-        create = requirements::createSite, readCheck = user::canReadProject,
-        createCheck = user::canCreateSite);
+    testCreateFlowPermissions<ProjectNotFoundException, ProjectId>(
+        projectId,
+        create = requirements::createSite,
+        readCheck = user::canReadProject,
+        createCheck = user::canCreateSite)
   }
 
   @Test
@@ -263,9 +272,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createProject() {
-    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
-        create = requirements::createProject, readCheck = user::canReadOrganization,
-        createCheck = user::canCreateProject);
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(
+        organizationId,
+        create = requirements::createProject,
+        readCheck = user::canReadOrganization,
+        createCheck = user::canCreateProject)
   }
 
   @Test
@@ -395,9 +406,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createApiKey() {
-    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
-        create = requirements::createApiKey, readCheck = user::canReadOrganization,
-        createCheck = user::canCreateApiKey);
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(
+        organizationId,
+        create = requirements::createApiKey,
+        readCheck = user::canReadOrganization,
+        createCheck = user::canCreateApiKey)
   }
 
   @Test
@@ -413,9 +426,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSpecies() {
-    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
-        create = requirements::createSpecies, readCheck = user::canReadOrganization,
-        createCheck = user::canCreateSpecies);
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(
+        organizationId,
+        create = requirements::createSpecies,
+        readCheck = user::canReadOrganization,
+        createCheck = user::canCreateSpecies)
   }
 
   @Test
@@ -450,9 +465,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createSpeciesName() {
-    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(organizationId,
-        create = requirements::createSpeciesName, readCheck = user::canReadOrganization,
-        createCheck = user::canCreateSpeciesName);
+    testCreateFlowPermissions<OrganizationNotFoundException, OrganizationId>(
+        organizationId,
+        create = requirements::createSpeciesName,
+        readCheck = user::canReadOrganization,
+        createCheck = user::canCreateSpeciesName)
   }
 
   @Test
@@ -487,16 +504,20 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createTimeseries() {
-    testCreateFlowPermissions<DeviceNotFoundException, DeviceId>(deviceId,
-        create = requirements::createTimeseries, readCheck = user::canReadDevice,
-        createCheck = user::canCreateTimeseries);
+    testCreateFlowPermissions<DeviceNotFoundException, DeviceId>(
+        deviceId,
+        create = requirements::createTimeseries,
+        readCheck = user::canReadDevice,
+        createCheck = user::canCreateTimeseries)
   }
 
   @Test
   fun createStorageLocation() {
-    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(facilityId,
-        create = requirements::createStorageLocation, readCheck = user::canReadFacility,
-        createCheck = user::canCreateStorageLocation);
+    testCreateFlowPermissions<FacilityNotFoundException, FacilityId>(
+        facilityId,
+        create = requirements::createStorageLocation,
+        readCheck = user::canReadFacility,
+        createCheck = user::canCreateStorageLocation)
   }
 
   @Test
