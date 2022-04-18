@@ -88,24 +88,13 @@
 
 <h3>Alert Recipients</h3>
 
-<ul>
-    <li th:each="recipient : ${recipients}">
-        <form method="POST" th:action="|${prefix}/deleteAlertRecipient|">
-            <span th:text="${recipient}">foo@bar.com</span>
-            <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-            <input type="hidden" name="email" th:value="${recipient}"/>
-            <input type="submit" value=" Delete " th:if="${canUpdateFacility}"/>
-        </form>
-    </li>
+<p>
+    Alerts are emailed to users who have enabled email notifications in their account settings and
+    are either members of this facility's project or are owners or admins of the organization.
+</p>
 
-    <li th:if="${canUpdateFacility}">
-        <form method="POST" th:action="|${prefix}/addAlertRecipient|">
-            <input type="hidden" name="facilityId" th:value="${facility.id}"/>
-            <label for="email">Email</label>
-            <input type="email" name="email" id="email" required/>
-            <input type="submit" value=" Add "/>
-        </form>
-    </li>
+<ul>
+    <li th:each="recipient : ${recipients}" th:text="${recipient}">foo@bar.com</li>
 </ul>
 
 <h4>Send Test Alert</h4>

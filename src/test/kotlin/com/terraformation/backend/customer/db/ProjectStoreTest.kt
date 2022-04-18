@@ -206,4 +206,33 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       store.countUsers(listOf(projectId))
     }
   }
+
+  @Test
+  fun `fetchEmailRecipients returns opted-in project members and admins`() {
+    val optedInAdmin = UserId(100)
+    val optedOutAdmin = UserId(101)
+    val optedInNonMember = UserId(102)
+    val optedInMember = UserId(103)
+    val optedOutMember = UserId(104)
+
+    insertUser(optedInAdmin, email = "optedInAdmin@x.com", emailNotificationsEnabled = true)
+    insertUser(optedOutAdmin, email = "optedOutAdmin@x.com")
+    insertUser(optedInNonMember, email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
+    insertUser(optedInMember, email = "optedInMember@x.com", emailNotificationsEnabled = true)
+    insertUser(optedOutMember, email = "optedOutMember@x.com")
+
+    insertOrganizationUser(optedInAdmin, organizationId, Role.ADMIN)
+    insertOrganizationUser(optedOutAdmin, organizationId, Role.ADMIN)
+    insertOrganizationUser(optedInNonMember, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(optedInMember, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(optedOutMember, organizationId, Role.CONTRIBUTOR)
+
+    insertProjectUser(optedInMember, projectId)
+    insertProjectUser(optedOutMember, projectId)
+
+    val expected = setOf("optedInAdmin@x.com", "optedInMember@x.com")
+    val actual = store.fetchEmailRecipients(projectId).toSet()
+
+    assertEquals(expected, actual)
+  }
 }

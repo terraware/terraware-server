@@ -36,9 +36,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store =
-        FacilityStore(
-            clock, dslContext, facilitiesDao, facilityAlertRecipientsDao, storageLocationsDao)
+    store = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateStorageLocation(any()) } returns true

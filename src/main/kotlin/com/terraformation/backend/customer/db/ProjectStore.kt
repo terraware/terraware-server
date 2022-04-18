@@ -14,6 +14,7 @@ import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.UserAlreadyInProjectException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.pojos.ProjectTypeSelectionsRow
@@ -22,6 +23,7 @@ import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
+import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import java.time.LocalDate
@@ -285,5 +287,31 @@ class ProjectStore(
    */
   fun countUsers(projectId: ProjectId): Int {
     return countUsers(listOf(projectId))[projectId] ?: 0
+  }
+
+  fun fetchEmailRecipients(projectId: ProjectId, requireOptIn: Boolean = true): List<String> {
+    val optedInCondition =
+        if (requireOptIn) USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue else DSL.trueCondition()
+
+    return dslContext
+        .select(USERS.EMAIL)
+        .from(USERS)
+        .join(ORGANIZATION_USERS)
+        .on(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
+        .join(PROJECTS)
+        .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+        .leftJoin(PROJECT_USERS)
+        .on(USERS.ID.eq(PROJECT_USERS.USER_ID))
+        .where(PROJECTS.ID.eq(projectId))
+        .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))
+        .and(
+            PROJECTS
+                .ORGANIZATION_WIDE
+                .isTrue
+                .or(ORGANIZATION_USERS.ROLE_ID.`in`(Role.OWNER.id, Role.ADMIN.id))
+                .or(PROJECT_USERS.USER_ID.isNotNull))
+        .and(optedInCondition)
+        .fetch(USERS.EMAIL)
+        .filterNotNull()
   }
 }

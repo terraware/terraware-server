@@ -175,7 +175,7 @@ class AdminController(
     val organization =
         organizationStore.fetchById(project.organizationId)
             ?: throw OrganizationNotFoundException(project.organizationId)
-    val recipients = facilityStore.getAlertRecipients(facilityId)
+    val recipients = projectStore.fetchEmailRecipients(project.id)
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
 
     model.addAttribute("canUpdateFacility", currentUser().canUpdateFacility(facilityId))
@@ -492,32 +492,6 @@ class AdminController(
     facilityStore.update(facilityId, name, type, maxIdleMinutes)
 
     redirectAttributes.addFlashAttribute("successMessage", "Facility updated.")
-
-    return facility(facilityId)
-  }
-
-  @PostMapping("/deleteAlertRecipient")
-  fun deleteAlertRecipient(
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("email") email: String,
-      redirectAttributes: RedirectAttributes
-  ): String {
-    facilityStore.deleteAlertRecipient(facilityId, email)
-
-    redirectAttributes.addFlashAttribute("successMessage", "Recipient deleted.")
-
-    return facility(facilityId)
-  }
-
-  @PostMapping("/addAlertRecipient")
-  fun addAlertRecipient(
-      @RequestParam("facilityId") facilityId: FacilityId,
-      @RequestParam("email") email: String,
-      redirectAttributes: RedirectAttributes
-  ): String {
-    facilityStore.insertAlertRecipient(facilityId, email)
-
-    redirectAttributes.addFlashAttribute("successMessage", "Recipient added.")
 
     return facility(facilityId)
   }
