@@ -1,17 +1,18 @@
 package com.terraformation.backend.customer
 
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.email.EmailService
 import javax.annotation.ManagedBean
 import org.jobrunr.jobs.annotations.Job
 import org.jobrunr.spring.annotations.Recurring
+import org.springframework.context.ApplicationEventPublisher
 
 /** Facility-related business logic that needs to interact with multiple services. */
 @ManagedBean
 class FacilityService(
-    private val emailService: EmailService,
     private val facilityStore: FacilityStore,
+    private val publisher: ApplicationEventPublisher,
     private val systemUser: SystemUser,
 ) {
   /** Sends alert email when facilities go idle. Runs once per minute. */
@@ -20,7 +21,7 @@ class FacilityService(
   fun scanForIdleFacilities() {
     systemUser.run {
       facilityStore.withIdleFacilities { facilityIds ->
-        facilityIds.forEach { facilityId -> emailService.sendIdleFacilityAlert(facilityId) }
+        facilityIds.map { FacilityIdleEvent(it) }.forEach { publisher.publishEvent(it) }
       }
     }
   }

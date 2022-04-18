@@ -1,10 +1,12 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
@@ -16,20 +18,20 @@ import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
-import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.i18n.Messages
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 
 /** Organization-related business logic that needs to interact with multiple services. */
 @ManagedBean
 class OrganizationService(
     private val dslContext: DSLContext,
-    private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val messages: Messages,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
+    private val publisher: ApplicationEventPublisher,
     private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
@@ -58,9 +60,8 @@ class OrganizationService(
 
       projectIds.forEach { projectStore.addUser(it, user.userId) }
 
-      // Send email in the transaction so the user will be rolled back if we couldn't notify them
-      // about being added, e.g., because the email address was malformed.
-      emailService.sendUserAddedToOrganization(organizationId, user.userId)
+      publisher.publishEvent(
+          UserAddedToOrganizationEvent(user.userId, organizationId, currentUser().userId))
 
       user.userId
     }

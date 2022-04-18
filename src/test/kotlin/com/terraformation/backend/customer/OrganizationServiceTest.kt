@@ -27,7 +27,6 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
-import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.keycloak.admin.client.resource.RealmResource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationEventPublisher
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -50,12 +50,12 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Autowired private lateinit var config: TerrawareServerConfig
 
   private val clock: Clock = mockk()
-  private val emailService: EmailService = mockk()
   private lateinit var facilityStore: FacilityStore
   private val messages: Messages = mockk()
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private lateinit var projectStore: ProjectStore
+  private val publisher: ApplicationEventPublisher = mockk()
   private val realmResource: RealmResource = mockk()
   private lateinit var siteStore: SiteStore
   private lateinit var userStore: UserStore
@@ -90,11 +90,11 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     service =
         OrganizationService(
             dslContext,
-            emailService,
             facilityStore,
             messages,
             organizationStore,
             projectStore,
+            publisher,
             siteStore,
             userStore)
 
