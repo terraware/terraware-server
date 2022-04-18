@@ -145,7 +145,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                                                 modifiedTime = clock.instant(),
                                                 name = seedBankDefaultName,
                                                 siteId = SiteId(1),
-                                                type = FacilityType.SeedBank)))))))
+                                                type = FacilityType.SeedBank)))))),
+            totalUsers = 1)
     val actual =
         service.createOrganization(
             OrganizationsRow(name = "Test Organization"), createSeedBank = true)
@@ -178,7 +179,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             createdTime = clock.instant(),
             id = OrganizationId(1),
             name = "Test Organization",
-            projects = null)
+            projects = null,
+            totalUsers = 1)
     val actual =
         service.createOrganization(
             OrganizationsRow(name = "Test Organization"), createSeedBank = false)
