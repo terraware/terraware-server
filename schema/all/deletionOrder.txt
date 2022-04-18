@@ -6,7 +6,6 @@ species_options
 species_names
 project_users
 accession_notifications
-feature_photos
 automations
 accession_state_history
 project_type_selections
@@ -20,15 +19,11 @@ geolocations
 facility_alert_recipients
 bags
 timeseries
-plant_observations
 germination_tests
 photos
-plants
 accessions
 storage_locations
-features
 collectors
-layers
 devices
 facilities
 sites
@@ -47,8 +42,6 @@ project_types
 project_statuses
 processing_methods
 plant_forms
-layer_types
-health_states
 germination_treatments
 germination_substrates
 germination_seed_types

@@ -456,53 +456,6 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="feature_photos" numRows="0" remarks="Linking table between `features` and `photos`. Also optionally links `plant_observations` and `photos`." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="photo_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="feature_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="feature_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="feature_photos_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="plant_observation_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="feature_photos_plant_observation_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
-         </column>
-         <primaryKey column="photo_id" sequenceNumberInPK="1"/>
-         <index name="feature_photos_pkey" unique="true">
-            <column ascending="true" name="photo_id"/>
-         </index>
-         <index name="feature_photos_feature_id_idx" unique="false">
-            <column ascending="true" name="feature_id"/>
-         </index>
-      </table>
-      <table name="features" numRows="0" remarks="Physical features that appear on a map. For example, an individual tree whose location is being tracked is a map feature. This table only has generic information; child tables such as `plants` have more information about particular kinds of features." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="feature_id" foreignKey="feature_photos_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
-            <child column="feature_id" foreignKey="plants_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="layer_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="features_layer_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="17" id="2" name="gps_horiz_accuracy" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
-         <column autoUpdated="false" defaultValue="null" digits="17" id="3" name="gps_vert_accuracy" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="attrib" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="entered_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="geom" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="features_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="features_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="features_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <checkConstraint constraint="(((attrib IS NULL) OR (length(attrib) &gt; 0)))" name="attrib_cannot_be_empty_string"/>
-         <checkConstraint constraint="(((notes IS NULL) OR (length(notes) &gt; 0)))" name="notes_cannot_be_empty_string"/>
-      </table>
       <table name="geolocations" numRows="0" remarks="Locations where seeds were collected." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -619,60 +572,6 @@
             <column ascending="true" name="test_id"/>
          </index>
       </table>
-      <table name="health_states" numRows="4" remarks="(Enum) Possible ratings of how healthy a plant was when it was observed." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="health_state_id" foreignKey="plant_observations_health_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="health_states_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="health_states_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="layer_types" numRows="12" remarks="(Enum) Types of map features that can be grouped together into a layer." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="layer_type_id" foreignKey="layers_layer_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="layer_types_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="layer_types_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="layers" numRows="0" remarks="Map layers. Each layer has features of a particular type, e.g., irrigation infrastructure or existing vegetation at a site." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="layer_id" foreignKey="features_layer_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="layers_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="layer_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="layers_layer_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layer_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="tile_set_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="proposed" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="hidden" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="deleted" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="layers_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="layers_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="layers_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <checkConstraint constraint="(((tile_set_name IS NULL) OR (length(tile_set_name) &gt; 0)))" name="tile_set_name_cannot_be_empty_string"/>
-      </table>
       <table name="organization_users" numRows="0" remarks="Organization membership and role information." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
@@ -695,6 +594,9 @@
          <primaryKey column="organization_id" sequenceNumberInPK="2"/>
          <index name="organization_users_pkey" unique="true">
             <column ascending="true" name="user_id"/>
+            <column ascending="true" name="organization_id"/>
+         </index>
+         <index name="organization_users_organization_id_idx" unique="false">
             <column ascending="true" name="organization_id"/>
          </index>
       </table>
@@ -728,10 +630,9 @@
          </index>
          <checkConstraint constraint="(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))" name="country_code_matches_subdivision"/>
       </table>
-      <table name="photos" numRows="0" remarks="Generic information about individual photos. Photos are associated with application entities using linking tables such as `feature_photos`." schema="public" type="TABLE">
+      <table name="photos" numRows="0" remarks="Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="photo_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_photos"/>
-            <child column="photo_id" foreignKey="feature_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
             <child column="photo_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="17" id="1" name="heading" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
@@ -774,53 +675,6 @@
          <index name="plant_forms_name_key" unique="true">
             <column ascending="true" name="name"/>
          </index>
-      </table>
-      <table name="plant_observations" numRows="0" remarks="Observations of a particular plant. A single plant can be observed repeatedly over time." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="plant_observation_id" foreignKey="feature_photos_plant_observation_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="feature_photos"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="feature_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="feature_id" foreignKey="plant_observations_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="timestamp" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="health_state_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="plant_observations_health_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="health_states"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="flowers" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="seeds" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="pests" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="17" id="7" name="height" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
-         <column autoUpdated="false" defaultValue="null" digits="17" id="8" name="dbh" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plant_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plant_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="plant_observations_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <checkConstraint constraint="(((pests IS NULL) OR (length(pests) &gt; 0)))" name="pests_cannot_be_empty_string"/>
-      </table>
-      <table name="plants" numRows="0" remarks="Plants whose locations are being tracked. Each plant is represented as a map feature in the `features` table; this table has information that only applies to plants and not to other kinds of map features." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="feature_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="feature_id" foreignKey="plant_observations_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
-            <parent column="id" foreignKey="plants_feature_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="label" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="natural_regen" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="date_planted" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <primaryKey column="feature_id" sequenceNumberInPK="1"/>
-         <index name="plants_pkey" unique="true">
-            <column ascending="true" name="feature_id"/>
-         </index>
-         <checkConstraint constraint="(((label IS NULL) OR (length(label) &gt; 0)))" name="label_cannot_be_empty_string"/>
       </table>
       <table name="processing_methods" numRows="2" remarks="(Enum) Methods of counting seeds when processing accessions." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -944,7 +798,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="roles" numRows="4" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
+      <table name="roles" numRows="3" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
          </column>
@@ -976,7 +830,6 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="site_id" foreignKey="notification_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_notifications"/>
             <child column="site_id" foreignKey="site_module_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
-            <child column="site_id" foreignKey="layers_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="locale" nullable="true" remarks="Default locale at the site; an IETF BCP 47 language tag such as en-US." size="2147483647" type="text" typeCode="12"/>
@@ -1016,7 +869,6 @@
       <table name="species" numRows="0" remarks="Information about plant species that isn't organization-specific. Currently, the application doesn't have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="accession_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-            <child column="species_id" foreignKey="plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="plants"/>
             <child column="species_id" foreignKey="species_names_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_names"/>
             <child column="species_id" foreignKey="species_options_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_options"/>
          </column>
@@ -1262,10 +1114,6 @@
             <child column="modified_by" foreignKey="devices_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
-            <child column="created_by" foreignKey="features_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
-            <child column="modified_by" foreignKey="features_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="features"/>
-            <child column="created_by" foreignKey="layers_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
-            <child column="modified_by" foreignKey="layers_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="layers"/>
             <child column="created_by" foreignKey="organization_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="modified_by" foreignKey="organization_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
@@ -1273,8 +1121,6 @@
             <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="created_by" foreignKey="photos_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
             <child column="modified_by" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="photos"/>
-            <child column="created_by" foreignKey="plant_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
-            <child column="modified_by" foreignKey="plant_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_observations"/>
             <child column="created_by" foreignKey="project_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
             <child column="modified_by" foreignKey="project_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
             <child column="user_id" foreignKey="project_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
@@ -1302,6 +1148,7 @@
             <parent column="id" foreignKey="users_user_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="last_activity_time" nullable="true" remarks="When the user most recently interacted with the system." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="9" name="email_notifications_enabled" nullable="false" remarks="If true, the user wants to receive notifications via email." size="1" type="bool" typeCode="-7"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="users_pkey" unique="true">
             <column ascending="true" name="id"/>
