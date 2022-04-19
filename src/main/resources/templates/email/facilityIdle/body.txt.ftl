@@ -1,3 +1,4 @@
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityIdle" -->
 Hello,
 
 It has been over ${facility.maxIdleMinutes} minutes since the most recent update was received from ${facility.name}.

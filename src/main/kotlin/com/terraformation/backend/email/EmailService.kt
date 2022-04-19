@@ -15,6 +15,8 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.email.model.FacilityIdle
+import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.processToString
@@ -101,10 +103,7 @@ class EmailService(
     val facility =
         facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    val model =
-        mapOf(
-            "facility" to facility,
-            "lastTimeseriesTime" to messages.dateAndTime(facility.lastTimeseriesTime))
+    val model = FacilityIdle(facility, messages.dateAndTime(facility.lastTimeseriesTime))
     val textBody =
         freeMarkerConfig.getTemplate("email/facilityIdle/body.txt.ftl").processToString(model)
 
@@ -136,13 +135,7 @@ class EmailService(
     val webAppUrl = "${config.webAppUrl}".trimEnd('/')
     val organizationHomeUrl = webAppUrls.organizationHome(organizationId).toString()
 
-    val model =
-        mapOf(
-            "admin" to admin,
-            "organization" to organization,
-            "organizationHomeUrl" to organizationHomeUrl,
-            "webAppUrl" to webAppUrl,
-        )
+    val model = UserAddedToOrganization(admin, organization, organizationHomeUrl, webAppUrl)
 
     val textBody =
         freeMarkerConfig
