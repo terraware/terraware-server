@@ -9,9 +9,11 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.processToString
 import freemarker.template.Configuration
+import freemarker.template.TemplateNotFoundException
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import javax.annotation.ManagedBean
@@ -27,6 +29,12 @@ import software.amazon.awssdk.services.sesv2.model.Destination
 import software.amazon.awssdk.services.sesv2.model.EmailContent
 import software.amazon.awssdk.services.sesv2.model.RawMessage
 
+/**
+ * Renders email messages from templates and sends them to people using the configured mail server.
+ *
+ * Email templates are loaded from the `src/main/resources/templates/email` directory. Please see
+ * the README file in that directory for more details.
+ */
 @ManagedBean
 class EmailService(
     private val config: TerrawareServerConfig,
@@ -46,10 +54,21 @@ class EmailService(
     }
   }
 
+  /**
+   * Sends an email notification to all the people who should be notified about something happening
+   * at or to a particular facility.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
+   * opted out of email notifications. The default is to obey the user's notification preference,
+   * which is the correct thing to do in the vast majority of cases.
+   */
   fun sendFacilityNotification(
       facilityId: FacilityId,
       templateDir: String,
-      model: Map<String, Any?>,
+      model: EmailTemplateModel,
       requireOptIn: Boolean = true
   ) {
     val projectId =
@@ -58,10 +77,21 @@ class EmailService(
     sendProjectNotification(projectId, templateDir, model, requireOptIn)
   }
 
+  /**
+   * Sends an email notification to all the people who should be notified about something happening
+   * to a particular project.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
+   * opted out of email notifications. The default is to obey the user's notification preference,
+   * which is the correct thing to do in the vast majority of cases.
+   */
   fun sendProjectNotification(
       projectId: ProjectId,
       templateDir: String,
-      model: Map<String, Any?>,
+      model: EmailTemplateModel,
       requireOptIn: Boolean = true
   ) {
     val recipients = projectStore.fetchEmailRecipients(projectId, requireOptIn)
@@ -69,10 +99,21 @@ class EmailService(
     send(templateDir, model, recipients)
   }
 
+  /**
+   * Sends an email notification to all the people who should be notified about something happening
+   * to a particular organization.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
+   * opted out of email notifications. The default is to obey the user's notification preference,
+   * which is the correct thing to do in the vast majority of cases.
+   */
   fun sendOrganizationNotification(
       organizationId: OrganizationId,
       templateDir: String,
-      model: Map<String, Any?>,
+      model: EmailTemplateModel,
       requireOptIn: Boolean = true,
   ) {
     val recipients = organizationStore.fetchEmailRecipients(organizationId, requireOptIn)
@@ -80,10 +121,20 @@ class EmailService(
     send(templateDir, model, recipients)
   }
 
+  /**
+   * Sends an email notification to a specific user.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification even if the user has not opted into email
+   * notifications. The default is to obey the user's notification preference, which is the correct
+   * thing to do in the majority of cases.
+   */
   fun sendUserNotification(
       user: IndividualUser,
       templateDir: String,
-      model: Map<String, Any?>,
+      model: EmailTemplateModel,
       requireOptIn: Boolean = true
   ) {
     if (requireOptIn && !user.emailNotificationsEnabled) {
@@ -93,17 +144,32 @@ class EmailService(
     }
   }
 
-  private fun renderOptionalTemplate(path: String, model: Map<String, Any?>): String? {
+  /** Renders a Freemarker template if it exists. Returns null if the template doesn't exist. */
+  private fun renderOptionalTemplate(path: String, model: EmailTemplateModel): String? {
     // Set the ignoreMissing flag which causes getTemplate() to return null if the template
     // doesn't exist.
     return freeMarkerConfig.getTemplate(path, null, null, true, true)?.processToString(model)
   }
 
-  private fun renderRequiredTemplate(path: String, model: Map<String, Any?>): String {
+  /**
+   * Renders a Freemarker template.
+   *
+   * @throws TemplateNotFoundException The template does not exist.
+   */
+  private fun renderRequiredTemplate(path: String, model: EmailTemplateModel): String {
     return freeMarkerConfig.getTemplate(path).processToString(model)
   }
 
-  private fun send(templateDir: String, model: Map<String, Any?>, recipients: List<String>) {
+  /**
+   * Renders an email message from a template and sends it to some recipients.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [recipients] Email addresses to send the message to. This will be overridden in dev/test
+   * environments when [TerrawareServerConfig.EmailConfig.alwaysSendToOverrideAddress] is true.
+   */
+  private fun send(templateDir: String, model: EmailTemplateModel, recipients: List<String>) {
     if (recipients.isEmpty()) {
       log.info("No recipients found for email notification $templateDir, so not sending any email.")
       // Don't log the contents of the email; it may contain sensitive information.

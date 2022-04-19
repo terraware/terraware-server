@@ -11,6 +11,9 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.email.model.FacilityAlert
+import com.terraformation.backend.email.model.FacilityIdle
+import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
@@ -49,15 +52,9 @@ class EmailNotificationService(
         facilityStore.fetchById(event.facilityId)
             ?: throw FacilityNotFoundException(event.facilityId)
 
-    val model =
-        mapOf(
-            "body" to event.body,
-            "facility" to facility,
-            "requestedBy" to requestedByUser,
-            "subject" to event.subject,
-        )
+    val m = FacilityAlert(event.body, facility, requestedByUser, event.subject)
 
-    emailService.sendFacilityNotification(event.facilityId, "facilityAlert", model)
+    emailService.sendFacilityNotification(event.facilityId, "facilityAlert", m)
   }
 
   @EventListener
@@ -66,10 +63,7 @@ class EmailNotificationService(
         facilityStore.fetchById(event.facilityId)
             ?: throw FacilityNotFoundException(event.facilityId)
 
-    val model =
-        mapOf(
-            "facility" to facility,
-            "lastTimeseriesTime" to messages.dateAndTime(facility.lastTimeseriesTime))
+    val model = FacilityIdle(facility, messages.dateAndTime(facility.lastTimeseriesTime))
 
     emailService.sendFacilityNotification(facility.id, "facilityIdle", model)
   }
@@ -85,13 +79,7 @@ class EmailNotificationService(
     val webAppUrl = "${config.webAppUrl}".trimEnd('/')
     val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId).toString()
 
-    val model =
-        mapOf(
-            "admin" to admin,
-            "organization" to organization,
-            "organizationHomeUrl" to organizationHomeUrl,
-            "webAppUrl" to webAppUrl,
-        )
+    val model = UserAddedToOrganization(admin, organization, organizationHomeUrl, webAppUrl)
 
     emailService.sendUserNotification(user, "userAddedToOrganization", model, requireOptIn = false)
   }
