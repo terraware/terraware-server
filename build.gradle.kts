@@ -201,13 +201,13 @@ val processMjmlTasks =
             // The upper levels of directory structure are a little different in the src and build
             // directories; we want the following mapping:
             //
-            // src/main/resources/templates/email/a/b.mjml ->
-            // build/resources/main/templates/email/a/b.html
+            // src/main/resources/templates/email/a/b.ftlh.mjml ->
+            // build/resources/main/templates/email/a/b.ftlh
             val htmlFile =
                 buildDir
                     .resolve("resources/main")
                     .resolve(
-                        mjmlFile.withReplacedExtensionOrNull(".mjml", ".ftlh")!!.relativeTo(
+                        mjmlFile.withReplacedExtensionOrNull(".mjml", "")!!.relativeTo(
                             File("$projectDir/src/main/resources")))
 
             // Stop these tasks from appearing in "./gradlew tasks" output.
