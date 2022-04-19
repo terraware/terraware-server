@@ -52,9 +52,10 @@ class EmailNotificationService(
         facilityStore.fetchById(event.facilityId)
             ?: throw FacilityNotFoundException(event.facilityId)
 
-    val m = FacilityAlert(event.body, facility, requestedByUser, event.subject)
-
-    emailService.sendFacilityNotification(event.facilityId, "facilityAlert", m)
+    emailService.sendFacilityNotification(
+        event.facilityId,
+        "facilityAlert",
+        FacilityAlert(event.body, facility, requestedByUser, event.subject))
   }
 
   @EventListener
@@ -63,9 +64,10 @@ class EmailNotificationService(
         facilityStore.fetchById(event.facilityId)
             ?: throw FacilityNotFoundException(event.facilityId)
 
-    val model = FacilityIdle(facility, messages.dateAndTime(facility.lastTimeseriesTime))
-
-    emailService.sendFacilityNotification(facility.id, "facilityIdle", model)
+    emailService.sendFacilityNotification(
+        facility.id,
+        "facilityIdle",
+        FacilityIdle(facility, messages.dateAndTime(facility.lastTimeseriesTime)))
   }
 
   @EventListener
@@ -79,8 +81,10 @@ class EmailNotificationService(
     val webAppUrl = "${config.webAppUrl}".trimEnd('/')
     val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId).toString()
 
-    val model = UserAddedToOrganization(admin, organization, organizationHomeUrl, webAppUrl)
-
-    emailService.sendUserNotification(user, "userAddedToOrganization", model, requireOptIn = false)
+    emailService.sendUserNotification(
+        user,
+        "userAddedToOrganization",
+        UserAddedToOrganization(admin, organization, organizationHomeUrl, webAppUrl),
+        requireOptIn = false)
   }
 }
