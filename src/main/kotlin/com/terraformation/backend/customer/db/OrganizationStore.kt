@@ -15,6 +15,7 @@ import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
@@ -299,6 +300,25 @@ class OrganizationStore(
             null
           }
         }
+  }
+
+  fun fetchEmailRecipients(
+      organizationId: OrganizationId,
+      requireOptIn: Boolean = true
+  ): List<String> {
+    val optInCondition =
+        if (requireOptIn) USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue else DSL.trueCondition()
+
+    return dslContext
+        .select(USERS.EMAIL)
+        .from(USERS)
+        .join(ORGANIZATION_USERS)
+        .on(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
+        .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+        .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))
+        .and(optInCondition)
+        .fetch(USERS.EMAIL)
+        .filterNotNull()
   }
 
   /**

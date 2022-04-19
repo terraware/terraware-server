@@ -13,14 +13,18 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.email.model.EmailTemplateModel
+import com.terraformation.backend.email.model.FacilityAlert
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.processToString
 import freemarker.template.Configuration
+import freemarker.template.TemplateNotFoundException
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import javax.annotation.ManagedBean
@@ -37,6 +41,12 @@ import software.amazon.awssdk.services.sesv2.model.Destination
 import software.amazon.awssdk.services.sesv2.model.EmailContent
 import software.amazon.awssdk.services.sesv2.model.RawMessage
 
+/**
+ * Renders email messages from templates and sends them to people using the configured mail server.
+ *
+ * Email templates are loaded from the `src/main/resources/templates/email` directory. Please see
+ * the README file in that directory for more details.
+ */
 @ManagedBean
 class EmailService(
     private val config: TerrawareServerConfig,
@@ -68,53 +78,23 @@ class EmailService(
   fun sendAlert(facilityId: FacilityId, subject: String, textBody: String) {
     requirePermissions { sendAlert(facilityId) }
 
-    val projectId =
-        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-    val recipients = projectStore.fetchEmailRecipients(projectId)
+    val facility =
+        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    if (recipients.isEmpty()) {
-      log.error("Got alert for facility $facilityId but no recipients are configured")
-      log.info("Alert subject: $subject")
-      log.info("Alert body: $textBody")
-    }
-
-    val message = sender.createMimeMessage()
-    val helper = MimeMessageHelper(message)
-
-    helper.setSubject(subject)
-    helper.setTo(recipients.toTypedArray())
-    helper.setText(textBody)
-
-    send(message)
+    sendFacilityNotification(
+        facilityId, "facilityAlert", FacilityAlert(textBody, facility, currentUser(), subject))
   }
 
   fun sendIdleFacilityAlert(facilityId: FacilityId) {
     requirePermissions { sendAlert(facilityId) }
 
-    val projectId =
-        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-    val recipients = projectStore.fetchEmailRecipients(projectId)
-
-    if (recipients.isEmpty()) {
-      log.warn("No alert recipients for idle facility $facilityId")
-      return
-    }
-
     val facility =
         facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    val model = FacilityIdle(facility, messages.dateAndTime(facility.lastTimeseriesTime))
-    val textBody =
-        freeMarkerConfig.getTemplate("email/facilityIdle/body.txt.ftl").processToString(model)
-
-    val message = sender.createMimeMessage()
-    val helper = MimeMessageHelper(message)
-
-    helper.setSubject(messages.facilityIdleSubject(facility.name))
-    helper.setText(textBody)
-    helper.setTo(recipients.toTypedArray())
-
-    send(message)
+    sendFacilityNotification(
+        facilityId,
+        "facilityIdle",
+        FacilityIdle(facility, messages.dateAndTime(facility.lastTimeseriesTime)))
   }
 
   fun sendUserAddedToOrganization(organizationId: OrganizationId, userId: UserId) {
@@ -129,33 +109,161 @@ class EmailService(
             ?: throw OrganizationNotFoundException(organizationId)
     val user = userStore.fetchById(userId) ?: throw UserNotFoundException(userId)
 
-    val message = sender.createMimeMessage()
-    val helper = MimeMessageHelper(message, true)
-
     val webAppUrl = "${config.webAppUrl}".trimEnd('/')
     val organizationHomeUrl = webAppUrls.organizationHome(organizationId).toString()
 
     val model = UserAddedToOrganization(admin, organization, organizationHomeUrl, webAppUrl)
 
-    val textBody =
-        freeMarkerConfig
-            .getTemplate("email/userAddedToOrganization/body.txt.ftl")
-            .processToString(model)
-    val htmlBody =
-        freeMarkerConfig
-            .getTemplate("email/userAddedToOrganization/body.ftlh")
-            .processToString(model)
+    sendUserNotification(user, "userAddedToOrganization", model, false)
+  }
 
-    helper.setSubject(messages.userAddedToOrganizationSubject(admin.fullName, organization.name))
-    helper.setTo(user.email)
-    helper.setText(textBody, htmlBody)
+  /**
+   * Sends an email notification to all the people who should be notified about something happening
+   * at or to a particular facility.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
+   * opted out of email notifications. The default is to obey the user's notification preference,
+   * which is the correct thing to do in the vast majority of cases.
+   */
+  fun sendFacilityNotification(
+      facilityId: FacilityId,
+      templateDir: String,
+      model: EmailTemplateModel,
+      requireOptIn: Boolean = true
+  ) {
+    val projectId =
+        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    send(message)
+    sendProjectNotification(projectId, templateDir, model, requireOptIn)
+  }
+
+  /**
+   * Sends an email notification to all the people who should be notified about something happening
+   * to a particular project.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
+   * opted out of email notifications. The default is to obey the user's notification preference,
+   * which is the correct thing to do in the vast majority of cases.
+   */
+  fun sendProjectNotification(
+      projectId: ProjectId,
+      templateDir: String,
+      model: EmailTemplateModel,
+      requireOptIn: Boolean = true
+  ) {
+    val recipients = projectStore.fetchEmailRecipients(projectId, requireOptIn)
+
+    send(templateDir, model, recipients)
+  }
+
+  /**
+   * Sends an email notification to all the people who should be notified about something happening
+   * to a particular organization.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
+   * opted out of email notifications. The default is to obey the user's notification preference,
+   * which is the correct thing to do in the vast majority of cases.
+   */
+  fun sendOrganizationNotification(
+      organizationId: OrganizationId,
+      templateDir: String,
+      model: EmailTemplateModel,
+      requireOptIn: Boolean = true,
+  ) {
+    val recipients = organizationStore.fetchEmailRecipients(organizationId, requireOptIn)
+
+    send(templateDir, model, recipients)
+  }
+
+  /**
+   * Sends an email notification to a specific user.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification even if the user has not opted into email
+   * notifications. The default is to obey the user's notification preference, which is the correct
+   * thing to do in the majority of cases.
+   */
+  fun sendUserNotification(
+      user: IndividualUser,
+      templateDir: String,
+      model: EmailTemplateModel,
+      requireOptIn: Boolean = true
+  ) {
+    if (requireOptIn && !user.emailNotificationsEnabled) {
+      log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
+    } else {
+      send(templateDir, model, listOf(user.email))
+    }
+  }
+
+  /** Renders a Freemarker template if it exists. Returns null if the template doesn't exist. */
+  private fun renderOptionalTemplate(path: String, model: EmailTemplateModel): String? {
+    // Set the ignoreMissing flag which causes getTemplate() to return null if the template
+    // doesn't exist.
+    return freeMarkerConfig.getTemplate(path, null, null, true, true)?.processToString(model)
+  }
+
+  /**
+   * Renders a Freemarker template.
+   *
+   * @throws TemplateNotFoundException The template does not exist.
+   */
+  private fun renderRequiredTemplate(path: String, model: EmailTemplateModel): String {
+    return freeMarkerConfig.getTemplate(path).processToString(model)
+  }
+
+  /**
+   * Renders an email message from a template and sends it to some recipients.
+   *
+   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
+   * Freemarker templates to render.
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [recipients] Email addresses to send the message to. This will be overridden in dev/test
+   * environments when [TerrawareServerConfig.EmailConfig.alwaysSendToOverrideAddress] is true.
+   */
+  private fun send(templateDir: String, model: EmailTemplateModel, recipients: List<String>) {
+    if (recipients.isEmpty()) {
+      log.info("No recipients found for email notification $templateDir, so not sending any email.")
+      // Don't log the contents of the email; it may contain sensitive information.
+      return
+    }
+
+    val subject = renderRequiredTemplate("email/$templateDir/subject.ftl", model).trim()
+    val textBody = renderOptionalTemplate("email/$templateDir/body.txt.ftl", model)
+    val htmlBody = renderOptionalTemplate("email/$templateDir/body.ftlh", model)
+
+    val multipart = textBody != null && htmlBody != null
+    val helper = MimeMessageHelper(sender.createMimeMessage(), multipart)
+
+    helper.setSubject(subject)
+
+    when {
+      textBody != null && htmlBody != null -> helper.setText(textBody, htmlBody)
+      textBody != null -> helper.setText(textBody, false)
+      htmlBody != null -> helper.setText(htmlBody, true)
+      else -> throw IllegalStateException("No email templates found in $templateDir")
+    }
+
+    recipients.forEach { recipient ->
+      helper.setTo(recipient)
+      send(helper)
+    }
   }
 
   /** Sends an email message. Overrides the recipient and subject line in dev/test environments. */
-  private fun send(message: MimeMessage) {
-    val helper = MimeMessageHelper(message)
+  private fun send(helper: MimeMessageHelper) {
+    val message = helper.mimeMessage
 
     // Validate the caller-supplied recipient(s) even if we're going to override, so we can test
     // validation in dev environments.
