@@ -25,6 +25,7 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -32,6 +33,8 @@ import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import org.jooq.Record
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -42,7 +45,8 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val sequencesToReset: List<String> = listOf("organizations_id_seq")
+  override val tablesToResetSequences: List<Table<out Record>>
+    get() = listOf(ORGANIZATIONS)
 
   private val clock: Clock = mockk()
   private lateinit var permissionStore: PermissionStore

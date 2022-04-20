@@ -49,7 +49,11 @@ import kotlin.reflect.full.isSupertypeOf
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Configuration
 import org.jooq.DSLContext
+import org.jooq.Record
+import org.jooq.Table
 import org.jooq.impl.DAOImpl
+import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -65,6 +69,13 @@ import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
+
+/**
+ * Postgresql function name that retrieves serial sequence name. This is also the column name that
+ * holds the result in a successful response.
+ * @see https://www.postgresql.org/docs/9.2/functions-info.html
+ */
+const val PG_GET_SERIAL_SEQUENCE = "pg_get_serial_sequence"
 
 /**
  * Base class for database-backed tests. Subclass this to get a fully-configured database with a
@@ -106,10 +117,45 @@ abstract class DatabaseTest {
   protected val sequencesToReset: List<String>
     get() = emptyList()
 
+  /**
+   * List of tables from which sequences are to be reset before each test method. Sequences used
+   * here belong to the primary key in the table.
+   */
+  protected val tablesToResetSequences: List<Table<out Record>>
+    get() = emptyList()
+
   @BeforeEach
   fun resetSequences() {
     sequencesToReset.forEach { sequenceName ->
       dslContext.alterSequence(sequenceName).restart().execute()
+    }
+  }
+
+  fun getSerialSequenceNames(table: Table<out Record>): List<String> {
+    return table.primaryKey!!.fields.mapNotNull { field ->
+      try {
+        dslContext
+                .select(
+                    DSL.function(
+                        PG_GET_SERIAL_SEQUENCE,
+                        SQLDataType.VARCHAR,
+                        DSL.field("{0}, {1}", table.name, field.name)))
+                .fetchOne(PG_GET_SERIAL_SEQUENCE)!!
+            .toString()
+      } catch (e: Exception) {
+        println(e)
+        null
+      }
+    }
+  }
+
+  @BeforeEach
+  fun resetSequencesForTables() {
+    tablesToResetSequences.forEach { table ->
+      getSerialSequenceNames(table).forEach { sequenceName ->
+        println("YO --> " + table.name + " = " + sequenceName)
+        dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
+      }
     }
   }
 

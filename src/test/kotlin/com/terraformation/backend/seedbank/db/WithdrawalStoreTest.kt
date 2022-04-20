@@ -14,6 +14,7 @@ import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.milligrams
@@ -25,6 +26,8 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import org.jooq.Record
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,8 +44,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   private val facilityId = FacilityId(100)
   private val germinationTestId = GerminationTestId(9998)
 
-  override val sequencesToReset: List<String>
-    get() = listOf("withdrawal_id_seq")
+  override val tablesToResetSequences: List<Table<out Record>>
+    get() = listOf(WITHDRAWALS)
 
   @BeforeEach
   fun setup() {

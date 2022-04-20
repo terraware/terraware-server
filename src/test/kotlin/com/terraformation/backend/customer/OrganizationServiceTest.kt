@@ -23,6 +23,10 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
@@ -30,6 +34,8 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import org.jooq.Record
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,8 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val sequencesToReset: List<String> =
-      listOf("organizations_id_seq", "projects_id_seq", "site_id_seq", "site_module_id_seq")
+  override val tablesToResetSequences: List<Table<out Record>>
+    get() = listOf(ORGANIZATIONS, PROJECTS, SITES, FACILITIES)
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
