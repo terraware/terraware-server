@@ -79,6 +79,12 @@ class TerrawareServerConfig(
      */
     val allowAdminUiForNonAdmins: Boolean = false,
 
+    /**
+     * When importing GBIF taxonomy data, only include entries from these datasets. These should be
+     * dataset identifiers (typically UUIDs), not names.
+     */
+    val gbifDatasetIds: List<String>? = null,
+
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),
 

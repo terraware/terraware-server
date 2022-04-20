@@ -1,0 +1,389 @@
+package com.terraformation.backend.species.db
+
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.tables.pojos.GbifDistributionsRow
+import com.terraformation.backend.db.tables.pojos.GbifNameWordsRow
+import com.terraformation.backend.db.tables.pojos.GbifNamesRow
+import com.terraformation.backend.db.tables.pojos.GbifTaxaRow
+import com.terraformation.backend.db.tables.pojos.GbifVernacularNamesRow
+import com.terraformation.backend.db.tables.records.GbifDistributionsRecord
+import com.terraformation.backend.db.tables.records.GbifTaxaRecord
+import com.terraformation.backend.db.tables.records.GbifVernacularNamesRecord
+import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
+import com.terraformation.backend.db.tables.references.GBIF_NAMES
+import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
+import com.terraformation.backend.db.tables.references.GBIF_TAXA
+import com.terraformation.backend.db.tables.references.GBIF_VERNACULAR_NAMES
+import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.mockUser
+import io.mockk.CapturingSlot
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import java.net.URI
+import java.nio.file.NoSuchFileException
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
+
+internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
+  private val config: TerrawareServerConfig = mockk()
+  private val fileStore: FileStore = mockk()
+  private lateinit var importer: GbifImporter
+
+  override val sequencesToReset: List<String> = listOf("gbif_names_id_seq")
+  override val user: TerrawareUser = mockUser()
+
+  @BeforeEach
+  fun setUp() {
+    importer = GbifImporter(config, dslContext, fileStore)
+
+    every { config.gbifDatasetIds } returns listOf("dataset1", "dataset2", "dataset3")
+    every { user.canImportGlobalSpeciesData() } returns true
+  }
+
+  @Test
+  fun `parses and imports data from files`() {
+    val prefix = javaClass.getResource("/species/gbif")!!.toURI()
+    importer.import(prefix)
+
+    val expected =
+        GbifData(
+            listOf(
+                GbifTaxaRow(
+                    taxonId = 10,
+                    datasetId = "dataset1",
+                    parentNameUsageId = 9,
+                    acceptedNameUsageId = 8,
+                    originalNameUsageId = 7,
+                    scientificName = "Family",
+                    canonicalName = "Family!",
+                    genericName = "Family?",
+                    specificEpithet = "SpecificFamily",
+                    infraspecificEpithet = "InfraFamily",
+                    taxonRank = "family",
+                    taxonomicStatus = "accepted",
+                    nomenclaturalStatus = null,
+                    phylum = "Phylum",
+                    `class` = "Class",
+                    order = "Order",
+                    family = "Family",
+                    genus = null),
+                GbifTaxaRow(
+                    taxonId = 11,
+                    datasetId = "dataset2",
+                    parentNameUsageId = 10,
+                    acceptedNameUsageId = null,
+                    originalNameUsageId = null,
+                    scientificName = "Genus",
+                    canonicalName = "Genus!",
+                    genericName = "Genus?",
+                    specificEpithet = "SpecificGenus",
+                    infraspecificEpithet = "InfraGenus",
+                    taxonRank = "genus",
+                    taxonomicStatus = "accepted",
+                    nomenclaturalStatus = null,
+                    phylum = "Phylum",
+                    `class` = "Class",
+                    order = "Order",
+                    family = "Family",
+                    genus = "Genus"),
+                GbifTaxaRow(
+                    taxonId = 12,
+                    datasetId = "dataset3",
+                    parentNameUsageId = 11,
+                    acceptedNameUsageId = null,
+                    originalNameUsageId = null,
+                    scientificName = "Species",
+                    canonicalName = "Species!",
+                    genericName = "Species?",
+                    specificEpithet = "SpecificSpecies",
+                    infraspecificEpithet = "InfraSpecies",
+                    taxonRank = "subspecies",
+                    taxonomicStatus = "accepted",
+                    nomenclaturalStatus = "nomStatus",
+                    phylum = "Phylum",
+                    `class` = "Class",
+                    order = "Order",
+                    family = "Family",
+                    genus = "Genus"),
+            ),
+            listOf(
+                GbifDistributionsRow(
+                    taxonId = 12,
+                    countryCode = "CA",
+                    establishmentMeans = "native",
+                    occurrenceStatus = "present",
+                    threatStatus = null),
+                GbifDistributionsRow(
+                    taxonId = 12,
+                    countryCode = null,
+                    establishmentMeans = null,
+                    occurrenceStatus = null,
+                    threatStatus = "least concern"),
+            ),
+            listOf(
+                GbifVernacularNamesRow(
+                    taxonId = 12,
+                    vernacularName = "My Species",
+                    language = "en",
+                    countryCode = "US"),
+                GbifVernacularNamesRow(taxonId = 12, vernacularName = "My Species 2"),
+            ),
+            listOf(
+                GbifNamesRow(
+                    id = 1,
+                    taxonId = 12,
+                    name = "Species? SpecificSpecies subsp. InfraSpecies",
+                    language = null,
+                    isScientific = true),
+                GbifNamesRow(
+                    id = 2,
+                    taxonId = 12,
+                    name = "My Species",
+                    language = "en",
+                    isScientific = false),
+                GbifNamesRow(
+                    id = 3,
+                    taxonId = 12,
+                    name = "My Species 2",
+                    language = null,
+                    isScientific = false),
+            ),
+            listOf(
+                GbifNameWordsRow(gbifNameId = 1, word = "infraspecies"),
+                GbifNameWordsRow(gbifNameId = 1, word = "species?"),
+                GbifNameWordsRow(gbifNameId = 1, word = "specificspecies"),
+                GbifNameWordsRow(gbifNameId = 2, word = "my"),
+                GbifNameWordsRow(gbifNameId = 2, word = "species"),
+                GbifNameWordsRow(gbifNameId = 3, word = "my"),
+                GbifNameWordsRow(gbifNameId = 3, word = "species"),
+            ),
+        )
+
+    assertEquals(expected, actualData())
+  }
+
+  @Test
+  fun `throws exception if data files not found`() {
+    assertThrows<NoSuchFileException> {
+      every { fileStore.read(any()) } throws NoSuchFileException("error")
+      importer.import(URI("s3://bucket"))
+    }
+  }
+
+  @Test
+  fun `throws exception if no permission to import data`() {
+    assertThrows<AccessDeniedException> {
+      every { user.canImportGlobalSpeciesData() } returns false
+      importer.import(URI("s3://bucket"))
+    }
+  }
+
+  @Test
+  fun `replaces previous data with new data`() {
+    dslContext
+        .insertInto(GBIF_TAXA)
+        .set(GBIF_TAXA.TAXON_ID, 1)
+        .set(GBIF_TAXA.SCIENTIFIC_NAME, "name")
+        .set(GBIF_TAXA.TAXON_RANK, "species")
+        .set(GBIF_TAXA.TAXONOMIC_STATUS, "accepted")
+        .execute()
+    dslContext
+        .insertInto(GBIF_VERNACULAR_NAMES)
+        .set(GBIF_VERNACULAR_NAMES.TAXON_ID, 1)
+        .set(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME, "vernacular")
+        .execute()
+    dslContext
+        .insertInto(GBIF_DISTRIBUTIONS)
+        .set(GBIF_DISTRIBUTIONS.TAXON_ID, 1)
+        .set(GBIF_DISTRIBUTIONS.THREAT_STATUS, "endangered")
+        .execute()
+    dslContext
+        .insertInto(GBIF_NAMES)
+        .set(GBIF_NAMES.TAXON_ID, 1)
+        .set(GBIF_NAMES.IS_SCIENTIFIC, true)
+        .set(GBIF_NAMES.NAME, "name")
+        .execute()
+    dslContext
+        .insertInto(GBIF_NAME_WORDS)
+        .set(GBIF_NAME_WORDS.GBIF_NAME_ID, 1)
+        .set(GBIF_NAME_WORDS.WORD, "word")
+        .execute()
+
+    // Make the FileStore return valid header rows with no data rows.
+    val headerLines =
+        mapOf(
+            URI("s3://bucket/Distribution.tsv") to
+                "taxonID\tlocationID\tlocality\tcountry\tcountryCode\tlocationRemarks\testablishmentMeans\tlifeStage\toccurrenceStatus\tthreatStatus\tsource\n",
+            URI("s3://bucket/Taxon.tsv") to
+                "taxonID\tdatasetID\tparentNameUsageID\tacceptedNameUsageID\toriginalNameUsageID\tscientificName\tscientificNameAuthorship\tcanonicalName\tgenericName\tspecificEpithet\tinfraspecificEpithet\ttaxonRank\tnameAccordingTo\tnamePublishedIn\ttaxonomicStatus\tnomenclaturalStatus\ttaxonRemarks\tkingdom\tphylum\tclass\torder\tfamily\tgenus\n",
+            URI("s3://bucket/VernacularName.tsv") to
+                "taxonID\tvernacularName\tlanguage\tcountry\tcountryCode\tsex\tlifeStage\tsource\n",
+        )
+
+    val uriSlot: CapturingSlot<URI> = slot()
+    every { fileStore.read(capture(uriSlot)) } answers
+        {
+          val content = headerLines[uriSlot.captured]!!.encodeToByteArray()
+          SizedInputStream(content.inputStream(), content.size.toLong())
+        }
+
+    importer.import(URI("s3://bucket"))
+
+    val expected = GbifData(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+    assertEquals(expected, actualData())
+  }
+
+  @Nested
+  inner class DistributionRecordParserTest {
+    private fun parse(input: String): List<GbifDistributionsRecord> {
+      return GbifImporter.DistributionsRecordParser(input.byteInputStream()).sequence().toList()
+    }
+
+    @Test
+    fun `throws exception if header does not contain required column`() {
+      assertThrows<IllegalArgumentException> { parse("dummy\n1\n") }
+    }
+
+    @Test
+    fun `ignores rows with wrong number of columns`() {
+      val input =
+          "taxonID\tlocationID\tlocality\tcountry\tcountryCode\tlocationRemarks\testablishmentMeans\tlifeStage\toccurrenceStatus\tthreatStatus\tsource\n" +
+              "1\textra\t\tl\tCanada\tCA\t\tnative\t\tpresent\t\ts\n" +
+              "1\tl\tCanada\tCA\t\tnative\t\tpresent\t\ts\n"
+      assertEquals(emptyList<Any>(), parse(input))
+    }
+
+    @Test
+    fun `throws exception on non-numeric taxon ID`() {
+      val input =
+          "taxonID\tlocationID\tlocality\tcountry\tcountryCode\tlocationRemarks\testablishmentMeans\tlifeStage\toccurrenceStatus\tthreatStatus\tsource\n" +
+              "X\t\tl\tCanada\tCA\t\tnative\t\tpresent\t\ts\n"
+
+      assertThrows<NumberFormatException> { parse(input) }
+    }
+  }
+
+  @Nested
+  inner class TaxaRecordParserTest {
+    private fun parse(input: String): List<GbifTaxaRecord> {
+      return GbifImporter.TaxaRecordParser(input.byteInputStream()).sequence().toList()
+    }
+
+    @Test
+    fun `throws exception if header does not contain required column`() {
+      assertThrows<IllegalArgumentException> { parse("dummy\n1\n") }
+    }
+
+    @Test
+    fun `ignores rows with wrong number of columns`() {
+      val input =
+          "taxonID\tdatasetID\tparentNameUsageID\tacceptedNameUsageID\toriginalNameUsageID\tscientificName\tscientificNameAuthorship\tcanonicalName\tgenericName\tspecificEpithet\tinfraspecificEpithet\ttaxonRank\tnameAccordingTo\tnamePublishedIn\ttaxonomicStatus\tnomenclaturalStatus\ttaxonRemarks\tkingdom\tphylum\tclass\torder\tfamily\tgenus\n" +
+              "1\textra\tdataset3\t\t\t\tSpecies\tAuthor3\tSpecies!\tSpecies?\tSpecificSpecies\tInfraSpecies\tsubspecies\tAccord3\tPublish3\taccepted\tnomStatus\tRemarks3\tPlantae\tPhylum\tClass\tOrder\tFamily\tGenus\n" +
+              "1\t\t\t\tSpecies\tAuthor3\tSpecies!\tSpecies?\tSpecificSpecies\tInfraSpecies\tsubspecies\tAccord3\tPublish3\taccepted\tnomStatus\tRemarks3\tPlantae\tPhylum\tClass\tOrder\tFamily\tGenus\n"
+
+      assertEquals(emptyList<Any>(), parse(input))
+    }
+
+    @Test
+    fun `ignores rows with non-plant kingdoms`() {
+      val input =
+          "taxonID\tdatasetID\tparentNameUsageID\tacceptedNameUsageID\toriginalNameUsageID\tscientificName\tscientificNameAuthorship\tcanonicalName\tgenericName\tspecificEpithet\tinfraspecificEpithet\ttaxonRank\tnameAccordingTo\tnamePublishedIn\ttaxonomicStatus\tnomenclaturalStatus\ttaxonRemarks\tkingdom\tphylum\tclass\torder\tfamily\tgenus\n" +
+              "1\tdataset3\t\t\t\tSpecies\tAuthor3\tSpecies!\tSpecies?\tSpecificSpecies\tInfraSpecies\tsubspecies\tAccord3\tPublish3\taccepted\tnomStatus\tRemarks3\tAnimalia\tPhylum\tClass\tOrder\tFamily\tGenus\n"
+
+      assertEquals(emptyList<Any>(), parse(input))
+    }
+
+    @Test
+    fun `throws exception on non-numeric taxon ID`() {
+      val input =
+          "taxonID\tdatasetID\tparentNameUsageID\tacceptedNameUsageID\toriginalNameUsageID\tscientificName\tscientificNameAuthorship\tcanonicalName\tgenericName\tspecificEpithet\tinfraspecificEpithet\ttaxonRank\tnameAccordingTo\tnamePublishedIn\ttaxonomicStatus\tnomenclaturalStatus\ttaxonRemarks\tkingdom\tphylum\tclass\torder\tfamily\tgenus\n" +
+              "X\tdataset3\t\t\t\tSpecies\tAuthor3\tSpecies!\tSpecies?\tSpecificSpecies\tInfraSpecies\tsubspecies\tAccord3\tPublish3\taccepted\tnomStatus\tRemarks3\tPlantae\tPhylum\tClass\tOrder\tFamily\tGenus\n"
+
+      assertThrows<NumberFormatException> { parse(input) }
+    }
+  }
+
+  @Nested
+  inner class VernacularNameRecordParserTest {
+    private fun parse(input: String): List<GbifVernacularNamesRecord> {
+      return GbifImporter.VernacularNameRecordParser(input.byteInputStream()).sequence().toList()
+    }
+
+    @Test
+    fun `throws exception if header does not contain required column`() {
+      assertThrows<IllegalArgumentException> { parse("dummy\n1\n") }
+    }
+
+    @Test
+    fun `ignores rows with wrong number of columns`() {
+      val input =
+          "taxonID\tvernacularName\tlanguage\tcountry\tcountryCode\tsex\tlifeStage\tsource\n" +
+              "1\tx\ten\tx\tUS\tx\tx\n"
+
+      assertEquals(emptyList<Any>(), parse(input))
+    }
+
+    @Test
+    fun `throws exception on non-numeric taxon ID`() {
+      val input =
+          "taxonID\tvernacularName\tlanguage\tcountry\tcountryCode\tsex\tlifeStage\tsource\n" +
+              "X\tx\ten\tx\tUS\tM\tx\tx\n"
+
+      assertThrows<NumberFormatException> { parse(input) }
+    }
+  }
+
+  /**
+   * Bundles all the data together into a single object so that the entire imported data set can be
+   * asserted all at once. If we did individual assertions on the contents of each table, an
+   * assertion failure would cause the test method to abort before the remaining tables could be
+   * evaluated.
+   */
+  data class GbifData(
+      val taxa: List<GbifTaxaRow>,
+      val distributions: List<GbifDistributionsRow>,
+      val vernacularNames: List<GbifVernacularNamesRow>,
+      val names: List<GbifNamesRow>,
+      val nameWords: List<GbifNameWordsRow>
+  )
+
+  private fun actualData(): GbifData {
+    val taxa =
+        dslContext
+            .selectFrom(GBIF_TAXA)
+            .orderBy(GBIF_TAXA.TAXON_ID)
+            .fetchInto(GbifTaxaRow::class.java)
+
+    val distributions =
+        dslContext
+            .selectFrom(GBIF_DISTRIBUTIONS)
+            .orderBy(GBIF_DISTRIBUTIONS.TAXON_ID, GBIF_DISTRIBUTIONS.COUNTRY_CODE)
+            .fetchInto(GbifDistributionsRow::class.java)
+
+    val vernacularNames =
+        dslContext
+            .selectFrom(GBIF_VERNACULAR_NAMES)
+            .orderBy(GBIF_VERNACULAR_NAMES.TAXON_ID, GBIF_VERNACULAR_NAMES.VERNACULAR_NAME)
+            .fetchInto(GbifVernacularNamesRow::class.java)
+
+    val names =
+        dslContext.selectFrom(GBIF_NAMES).orderBy(GBIF_NAMES.ID).fetchInto(GbifNamesRow::class.java)
+
+    val nameWords =
+        dslContext
+            .selectFrom(GBIF_NAME_WORDS)
+            .orderBy(GBIF_NAME_WORDS.GBIF_NAME_ID, GBIF_NAME_WORDS.WORD)
+            .fetchInto(GbifNameWordsRow::class.java)
+
+    return GbifData(taxa, distributions, vernacularNames, names, nameWords)
+  }
+}
