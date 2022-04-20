@@ -151,11 +151,13 @@ abstract class DatabaseTest {
 
   @BeforeEach
   fun resetSequencesForTables() {
-    tablesToResetSequences.forEach { table ->
-      getSerialSequenceNames(table).forEach { sequenceName ->
-        dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
-      }
-    }
+    tablesToResetSequences
+        .map { table -> getSerialSequenceNames(table) }
+        .flatten()
+        .toSet()
+        .forEach { sequenceName ->
+          dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
+        }
   }
 
   /**
