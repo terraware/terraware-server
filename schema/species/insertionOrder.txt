@@ -1,8 +1,13 @@
 organizations
 conservation_statuses
+gbif_taxa
 plant_forms
 rare_types
 species
+gbif_names
+gbif_name_words
 species_names
 species_options
+gbif_distributions
+gbif_vernacular_names
 species_endangered_types

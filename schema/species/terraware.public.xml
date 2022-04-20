@@ -17,6 +17,81 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="gbif_distributions" numRows="0" remarks="Information about geographic distribution of species and their conservation statuses." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="occurrence_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="threat_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="gbif_distributions_taxon_id_idx" unique="false">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+      </table>
+      <table name="gbif_name_words" numRows="0" remarks="Inverted index of lower-cased words from species and family names in the GBIF backbone dataset. Used to support fast per-word prefix searches." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="gbif_name_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="gbif_name_words_gbif_name_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_names"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="word" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="gbif_name_words_gbif_name_id_idx" unique="false">
+            <column ascending="true" name="gbif_name_id"/>
+         </index>
+         <index name="gbif_name_words_word_idx" unique="false">
+            <column ascending="true" name="word"/>
+         </index>
+      </table>
+      <table name="gbif_names" numRows="0" remarks="Scientific and vernacular names from the GBIF backbone dataset. Names are not required to be unique." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="gbif_name_id" foreignKey="gbif_name_words_gbif_name_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_name_words"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="taxon_id" foreignKey="gbif_names_taxon_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_taxa"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="language" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_scientific" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="gbif_names_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="gbif_names_taxon_id_idx" unique="false">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+      </table>
+      <table name="gbif_taxa" numRows="0" remarks="Taxonomic data about species and families. A subset of the GBIF backbone dataset." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="taxon_id" foreignKey="gbif_names_taxon_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_names"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="dataset_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="parent_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="accepted_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="original_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="canonical_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="generic_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="specific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="infraspecific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="taxon_rank" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="taxonomic_status" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="nomenclatural_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="phylum" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="class" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="order" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="family" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="genus" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
+         <index name="gbif_taxa_pkey" unique="true">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+      </table>
+      <table name="gbif_vernacular_names" numRows="0" remarks="Vernacular names for species and families. Part of the GBIF backbone dataset." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="vernacular_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="language" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="gbif_vernacular_names_taxon_id_idx" unique="false">
+            <column ascending="true" name="taxon_id"/>
+         </index>
+      </table>
       <table name="organizations" numRows="0" remarks="Top-level information about organizations." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="species_names_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_names"/>
