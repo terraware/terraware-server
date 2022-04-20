@@ -50,6 +50,7 @@ import net.postgis.jdbc.geometry.Point
 import org.jooq.Configuration
 import org.jooq.DSLContext
 import org.jooq.Record
+import org.jooq.Sequence
 import org.jooq.Table
 import org.jooq.impl.DAOImpl
 import org.jooq.impl.DSL
@@ -114,7 +115,7 @@ abstract class DatabaseTest {
    * List of sequences to reset before each test method. Test classes can use this to get
    * predictable IDs when inserting new data.
    */
-  protected val sequencesToReset: List<String>
+  protected val sequencesToReset: List<Sequence<out Number>>
     get() = emptyList()
 
   /**
@@ -126,9 +127,7 @@ abstract class DatabaseTest {
 
   @BeforeEach
   fun resetSequences() {
-    sequencesToReset.forEach { sequenceName ->
-      dslContext.alterSequence(sequenceName).restart().execute()
-    }
+    sequencesToReset.forEach { sequence -> dslContext.alterSequence(sequence).restart().execute() }
   }
 
   fun getSerialSequenceNames(table: Table<out Record>): List<String> {

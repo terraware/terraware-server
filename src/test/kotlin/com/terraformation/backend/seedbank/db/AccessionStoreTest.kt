@@ -77,6 +77,7 @@ import java.time.ZoneOffset
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.jooq.Record
+import org.jooq.Sequence
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -95,11 +96,8 @@ import org.springframework.security.access.AccessDeniedException
 internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  override val sequencesToReset
-    get() =
-        listOf(
-            "accession_number_seq",
-        )
+  override val sequencesToReset: List<Sequence<Long>>
+    get() = listOf(ACCESSION_NUMBER_SEQ)
 
   override val tablesToResetSequences: List<Table<out Record>>
     get() =
