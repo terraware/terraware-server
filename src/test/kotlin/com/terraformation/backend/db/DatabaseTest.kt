@@ -153,7 +153,6 @@ abstract class DatabaseTest {
   fun resetSequencesForTables() {
     tablesToResetSequences.forEach { table ->
       getSerialSequenceNames(table).forEach { sequenceName ->
-        println("YO --> " + table.name + " = " + sequenceName)
         dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
       }
     }
