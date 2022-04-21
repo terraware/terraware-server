@@ -130,34 +130,28 @@ abstract class DatabaseTest {
     sequencesToReset.forEach { sequence -> dslContext.alterSequence(sequence).restart().execute() }
   }
 
-  fun getSerialSequenceNames(table: Table<out Record>): List<String> {
-    return table.primaryKey!!.fields.mapNotNull { field ->
-      try {
+  @BeforeEach
+  fun resetSequencesForTables() {
+    tablesToResetSequences
+        .map { table -> getSerialSequenceNames(table) }
+        .flatMap { it.toSet() }
+        .forEach { sequenceName ->
+          dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
+        }
+  }
+
+  private fun getSerialSequenceNames(table: Table<out Record>): List<String> =
+      table.primaryKey!!.fields.map { field ->
         dslContext
                 .select(
                     DSL.function(
                         PG_GET_SERIAL_SEQUENCE,
                         SQLDataType.VARCHAR,
-                        DSL.field("{0}, {1}", table.name, field.name)))
+                        DSL.value(table.name),
+                        DSL.value(field.name)))
                 .fetchOne(PG_GET_SERIAL_SEQUENCE)!!
             .toString()
-      } catch (e: Exception) {
-        println(e)
-        null
       }
-    }
-  }
-
-  @BeforeEach
-  fun resetSequencesForTables() {
-    tablesToResetSequences
-        .map { table -> getSerialSequenceNames(table) }
-        .flatten()
-        .toSet()
-        .forEach { sequenceName ->
-          dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
-        }
-  }
 
   /**
    * Turns a value into a type-safe ID wrapper.
