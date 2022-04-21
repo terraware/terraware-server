@@ -3,24 +3,19 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.PlantForm
-import com.terraformation.backend.db.RareType
-import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNameId
-import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
-import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
-import net.postgis.jdbc.geometry.Point
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -29,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
@@ -43,14 +37,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store =
-        SpeciesStore(
-            clock,
-            dslContext,
-            speciesDao,
-            speciesNamesDao,
-            speciesOptionsDao,
-        )
+    store = SpeciesStore(clock, dslContext, speciesDao)
 
     every { clock.instant() } returns Instant.EPOCH
 
@@ -59,37 +46,56 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
     every { user.canDeleteSpecies(any()) } returns true
-    every { user.canCreateSpeciesName(any()) } returns true
-    every { user.canReadSpeciesName(any()) } returns true
-    every { user.canUpdateSpeciesName(any()) } returns true
-    every { user.canDeleteSpeciesName(any()) } returns true
 
     insertSiteData()
   }
 
   @Test
-  fun `createSpecies inserts species and name`() {
+  fun `createSpecies inserts species`() {
     val row =
         SpeciesRow(
-            name = "test",
-            plantFormId = PlantForm.Liana,
-            conservationStatusId = "LC",
-            rareTypeId = RareType.Unsure,
-            isScientific = true,
-            nativeRange = Point(1.0, 2.0, 3.0).apply { srid = SRID.SPHERICAL_MERCATOR },
-            tsn = "tsn")
+            commonName = "common",
+            deletedBy = user.userId,
+            deletedTime = Instant.EPOCH,
+            endangered = true,
+            familyName = "family",
+            growthFormId = GrowthForm.Shrub,
+            organizationId = organizationId,
+            rare = false,
+            scientificName = "test",
+            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+        )
 
-    val speciesId = store.createSpecies(organizationId, row)
+    val speciesId = store.createSpecies(row)
     assertNotNull(speciesId, "Should have returned ID")
 
-    val species = speciesDao.findAll()
-    assertEquals(
-        row.copy(id = speciesId),
-        species[0].copy(createdTime = null, modifiedTime = null),
-        "Should have inserted species")
+    val expected =
+        listOf(
+            row.copy(
+                id = speciesId,
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                deletedBy = null,
+                deletedTime = null,
+                modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH,
+            ))
 
-    val names = speciesNamesDao.findAll()
-    assertEquals("test", names[0].name, "Should have inserted name")
+    val actual = speciesDao.findAll()
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `createSpecies does not modify input`() {
+    val originalRow =
+        SpeciesRow(
+            organizationId = organizationId,
+            scientificName = "test",
+        )
+    val parameterRow = originalRow.copy()
+
+    store.createSpecies(parameterRow)
+    assertEquals(originalRow, parameterRow)
   }
 
   @Test
@@ -97,325 +103,254 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val otherOrgId = OrganizationId(2)
     insertOrganization(otherOrgId.value)
 
-    val row = SpeciesRow(name = "test")
-    store.createSpecies(organizationId, row)
+    val row = SpeciesRow(scientificName = "test")
+    store.createSpecies(row.copy(organizationId = organizationId))
 
-    assertDoesNotThrow { store.createSpecies(otherOrgId, row) }
+    assertDoesNotThrow { store.createSpecies(row.copy(organizationId = otherOrgId)) }
   }
 
   @Test
   fun `createSpecies reuses previously deleted species if one exists`() {
-    val originalSpeciesId = store.createSpecies(organizationId, SpeciesRow(name = "test"))
+    val originalSpeciesId =
+        store.createSpecies(
+            SpeciesRow(
+                commonName = "original common",
+                endangered = false,
+                familyName = "original family",
+                organizationId = organizationId,
+                scientificName = "test",
+                growthFormId = GrowthForm.Fern,
+                rare = false,
+                seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
+            ))
+    val originalRow = speciesDao.fetchOneById(originalSpeciesId)!!
 
-    store.deleteSpecies(organizationId, originalSpeciesId)
+    store.deleteSpecies(originalSpeciesId)
 
-    val reusedSpeciesId = store.createSpecies(organizationId, SpeciesRow(name = "test"))
+    val editedRow =
+        SpeciesRow(
+            commonName = "edited common",
+            endangered = true,
+            familyName = "edited family",
+            organizationId = organizationId,
+            scientificName = "test",
+            growthFormId = GrowthForm.Shrub,
+            rare = true,
+            seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+        )
 
-    assertEquals(originalSpeciesId, reusedSpeciesId)
+    val newInstant = Instant.ofEpochSecond(500)
+    every { clock.instant() } returns newInstant
+
+    val reusedSpeciesId = store.createSpecies(editedRow)
+
+    val expected =
+        editedRow.copy(
+            createdBy = originalRow.createdBy,
+            createdTime = originalRow.createdTime,
+            id = originalSpeciesId,
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant())
+    val actual = speciesDao.fetchOneById(reusedSpeciesId)
+
+    assertEquals(expected, actual)
   }
 
   @Test
   fun `createSpecies throws exception if name already exists for organization`() {
-    val row = SpeciesRow(name = "test")
-    store.createSpecies(organizationId, row)
+    val row = SpeciesRow(organizationId = organizationId, scientificName = "test")
+    store.createSpecies(row)
 
-    assertThrows<DuplicateKeyException> { store.createSpecies(organizationId, row) }
+    assertThrows<DuplicateKeyException> { store.createSpecies(row) }
   }
 
   @Test
   fun `createSpecies throws exception if user has no permission to create species`() {
     every { user.canCreateSpecies(organizationId) } returns false
     assertThrows<AccessDeniedException> {
-      store.createSpecies(organizationId, SpeciesRow(name = "dummy"))
+      store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
     }
   }
 
   @Test
-  fun `updateSpecies updates both species and name`() {
+  fun `updateSpecies updates all modifiable fields`() {
     val initial =
         SpeciesRow(
-            name = "initial",
-            plantFormId = PlantForm.Shrub,
-            conservationStatusId = "LC",
-            rareTypeId = RareType.Unsure,
-            isScientific = false)
-    val speciesId = store.createSpecies(organizationId, initial)
+            commonName = "original common",
+            endangered = true,
+            familyName = "original family",
+            growthFormId = GrowthForm.Shrub,
+            organizationId = organizationId,
+            rare = true,
+            scientificName = "original scientific",
+            seedStorageBehaviorId = SeedStorageBehavior.Unknown,
+        )
+    val speciesId = store.createSpecies(initial)
+
+    val bogusOrganizationId = OrganizationId(10000)
+    val bogusInstant = Instant.ofEpochSecond(1000)
+    val bogusUserId = UserId(10000)
+
+    val newInstant = Instant.ofEpochSecond(500)
+    every { clock.instant() } returns newInstant
 
     val update =
         SpeciesRow(
+            commonName = "new common",
+            createdBy = bogusUserId,
+            createdTime = bogusInstant,
+            deletedBy = bogusUserId,
+            deletedTime = bogusInstant,
+            endangered = false,
+            familyName = "new family",
+            growthFormId = GrowthForm.Fern,
             id = speciesId,
-            plantFormId = PlantForm.Liana,
-            conservationStatusId = "CR",
-            name = "updated",
-            isScientific = true)
+            modifiedBy = bogusUserId,
+            modifiedTime = bogusInstant,
+            organizationId = bogusOrganizationId,
+            rare = false,
+            scientificName = "new scientific",
+            seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
+        )
 
-    store.updateSpecies(organizationId, update)
-
-    val actual = speciesDao.fetchOneById(speciesId)!!
-    assertEquals(
-        update,
-        actual.copy(createdTime = null, modifiedTime = null),
-        "Should have updated species data")
-
-    val names = speciesNamesDao.fetchBySpeciesId(speciesId)
-    assertEquals(1, names.size, "Should have updated existing name")
-    assertEquals(update.name, names[0].name, "Should have updated name")
-    assertEquals(
-        update.isScientific, names[0].isScientific, "Should have updated isScientific on name")
-  }
-
-  @Test
-  fun `updateSpecies deletes old primary name if switching to an existing secondary name`() {
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "oldName"))
-    val newName =
-        SpeciesNamesRow(
+    val expected =
+        update.copy(
             createdBy = user.userId,
-            createdTime = clock.instant(),
+            createdTime = Instant.EPOCH,
+            deletedBy = null,
+            deletedTime = null,
             modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            name = "newName",
+            modifiedTime = newInstant,
             organizationId = organizationId,
-            speciesId = speciesId)
-    speciesNamesDao.insert(newName)
+        )
 
-    val update = SpeciesRow(id = speciesId, name = "newName", isScientific = true)
-
-    store.updateSpecies(organizationId, update)
+    store.updateSpecies(update)
 
     val actual = speciesDao.fetchOneById(speciesId)!!
-    assertEquals(update.name, actual.name, "Should have updated primary name")
-    assertEquals(
-        update.isScientific, actual.isScientific, "Should have updated primary isScientific")
-
-    val names = speciesNamesDao.findAll()
-    assertEquals(1, names.size, "Should have deleted old primary name")
-    assertEquals(update.name, names[0].name, "Should have updated names row")
-    assertEquals(
-        update.isScientific, names[0].isScientific, "Should have updated isScientific of name")
+    assertEquals(expected, actual)
   }
 
   @Test
   fun `updateSpecies throws exception if user has no permission to update species`() {
     every { user.canUpdateSpecies(any()) } returns false
 
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "dummy"))
+    val speciesId =
+        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
 
     assertThrows<AccessDeniedException> {
-      store.updateSpecies(organizationId, SpeciesRow(id = speciesId, name = "other"))
+      store.updateSpecies(SpeciesRow(id = speciesId, scientificName = "other"))
     }
   }
 
   @Test
-  fun `updateSpeciesName updates primary name if needed`() {
-    val speciesId = SpeciesId(1)
-    val speciesNameId = SpeciesNameId(1)
-    insertSpecies(
-        speciesId = speciesId,
-        name = "oldName",
-        organizationId = organizationId,
-        speciesNameId = speciesNameId)
-
-    store.updateSpeciesName(SpeciesNamesRow(id = speciesNameId, name = "newName"))
-
-    val updatedSpeciesRow = speciesDao.fetchOneById(speciesId)!!
-
-    assertEquals("newName", updatedSpeciesRow.name)
-  }
-
-  @Test
-  fun `updateSpeciesName throws exception if user has no permission to update species names`() {
-    val speciesId = SpeciesId(1)
-    val speciesNameId = SpeciesNameId(1)
-    insertSpecies(speciesId, organizationId = organizationId, speciesNameId = speciesNameId)
-
-    every { user.canUpdateSpeciesName(any()) } returns false
-
-    assertThrows<AccessDeniedException> {
-      store.updateSpeciesName(SpeciesNamesRow(id = speciesNameId, name = "newName"))
-    }
-  }
-
-  @Test
-  fun `deleteSpecies deletes options but leaves names and species`() {
+  fun `deleteSpecies marks species as deleted`() {
     // Make sure it only deletes the species in question, not the whole table
-    store.createSpecies(organizationId, SpeciesRow(name = "other"))
-    val expectedOptions = speciesOptionsDao.findAll()
+    store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "other"))
+    val expected = store.findAllSpecies(organizationId)
 
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "dummy"))
-    speciesNamesDao.insert(
-        SpeciesNamesRow(
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            organizationId = organizationId,
-            speciesId = speciesId,
-            name = "name2"))
+    val speciesId =
+        store.createSpecies(
+            SpeciesRow(organizationId = organizationId, scientificName = "to delete"))
 
-    val allNames = speciesNamesDao.findAll()
-    val allSpecies = speciesDao.findAll()
+    store.deleteSpecies(speciesId)
 
-    store.deleteSpecies(organizationId, speciesId)
-
-    assertEquals(
-        expectedOptions,
-        speciesOptionsDao.findAll(),
-        "Options row for deleted species should be deleted")
-    assertEquals(
-        allNames, speciesNamesDao.findAll(), "Names of deleted species should not be deleted")
-    assertEquals(allSpecies, speciesDao.findAll(), "Underlying species should not be deleted")
+    val actual = store.findAllSpecies(organizationId)
+    assertEquals(expected, actual)
   }
 
   @Test
   fun `deleteSpecies throws exception if user has no permission to delete species`() {
     every { user.canDeleteSpecies(any()) } returns false
 
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "dummy"))
+    val speciesId =
+        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
 
-    assertThrows<AccessDeniedException> { store.deleteSpecies(organizationId, speciesId) }
+    assertThrows<AccessDeniedException> { store.deleteSpecies(speciesId) }
   }
 
   @Test
   fun `deleteSpecies throws exception if species does not exist at all`() {
-    assertThrows<SpeciesNotFoundException> { store.deleteSpecies(organizationId, SpeciesId(1)) }
+    assertThrows<SpeciesNotFoundException> { store.deleteSpecies(SpeciesId(1)) }
   }
 
   @Test
-  fun `deleteSpecies throws exception if species does not exist in organization`() {
-    val otherOrganizationId = OrganizationId(2)
+  fun `getOrCreateSpecies returns existing species ID for organization`() {
     val speciesId = SpeciesId(1)
-    insertOrganization(otherOrganizationId)
-    insertSpecies(speciesId, organizationId = otherOrganizationId)
+    val scientificName = "test"
 
-    assertThrows<SpeciesNotFoundException> { store.deleteSpecies(organizationId, speciesId) }
+    insertSpecies(speciesId.value, scientificName = scientificName, organizationId = organizationId)
+
+    assertEquals(speciesId, store.getOrCreateSpecies(organizationId, scientificName))
   }
 
   @Test
-  fun `deleteSpeciesName deletes secondary names`() {
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "primary"))
-    val primaryNameOnly = speciesNamesDao.findAll()
-    val nameRow =
-        SpeciesNamesRow(
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            name = "secondary",
-            organizationId = organizationId,
-            speciesId = speciesId,
-        )
-    speciesNamesDao.insert(nameRow)
-
-    store.deleteSpeciesName(nameRow.id!!)
-
-    assertEquals(primaryNameOnly, speciesNamesDao.findAll())
-  }
-
-  @Test
-  fun `deleteSpeciesName throws exception if user has no permission to delete species names`() {
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "dummy"))
-    val nameRow =
-        SpeciesNamesRow(
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            name = "secondary",
-            organizationId = organizationId,
-            speciesId = speciesId,
-        )
-    speciesNamesDao.insert(nameRow)
-
-    every { user.canDeleteSpeciesName(any()) } returns false
-
-    assertThrows<AccessDeniedException> { store.deleteSpeciesName(nameRow.id!!) }
-  }
-
-  @Test
-  fun `deleteSpeciesName throws exception if primary name is deleted`() {
-    store.createSpecies(organizationId, SpeciesRow(name = "primary"))
-    val nameRow = speciesNamesDao.findAll()[0]
-
-    assertThrows<DataIntegrityViolationException> { store.deleteSpeciesName(nameRow.id!!) }
-  }
-
-  @Test
-  fun `getSpeciesId returns existing species ID for organization`() {
-    val speciesId = SpeciesId(1)
-    val name = "test"
-
-    insertSpecies(speciesId.value, name = name, organizationId = organizationId.value)
-
-    assertEquals(speciesId, store.getOrCreateSpecies(organizationId, name))
-  }
-
-  @Test
-  fun `getSpeciesId creates new species if name does not exist in organization`() {
+  fun `getOrCreateSpecies creates new species if it does not exist in organization`() {
     val otherOrgId = OrganizationId(2)
     val otherOrgSpeciesId = SpeciesId(10)
-    val name = "test"
+    val scientificName = "test"
 
     insertOrganization(otherOrgId.value)
-    insertSpecies(otherOrgSpeciesId.value, name = name, organizationId = otherOrgId.value)
+    insertSpecies(
+        otherOrgSpeciesId.value,
+        scientificName = scientificName,
+        organizationId = otherOrgId.value,
+    )
 
-    assertEquals(
-        emptyList<SpeciesNamesRow>(),
-        speciesNamesDao.fetchByOrganizationId(organizationId),
-        "Species for main organization")
-
-    val speciesId = store.getOrCreateSpecies(organizationId, name)
+    val speciesId = store.getOrCreateSpecies(organizationId, scientificName)
 
     assertNotNull(speciesId, "Should have created species")
     assertNotEquals(otherOrgSpeciesId, speciesId, "Should not use species ID from other org")
   }
 
   @Test
-  fun `fetchSpeciesById returns species if there is an options row in the organization`() {
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "test"))
+  fun `fetchSpeciesById returns species if it is not deleted`() {
+    val speciesId =
+        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "test"))
 
     val expected =
         SpeciesRow(
+            createdBy = user.userId,
             createdTime = clock.instant(),
             id = speciesId,
-            isScientific = false,
+            modifiedBy = user.userId,
             modifiedTime = clock.instant(),
-            name = "test",
+            organizationId = organizationId,
+            scientificName = "test",
         )
 
-    val actual = store.fetchSpeciesById(organizationId, speciesId)
-
+    val actual = store.fetchSpeciesById(speciesId)
     assertEquals(expected, actual)
   }
 
   @Test
-  fun `fetchSpeciesById returns null if there is no options row in the organization`() {
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = "test"))
-    dslContext.deleteFrom(SPECIES_OPTIONS).execute()
+  fun `fetchSpeciesById returns null if species is deleted`() {
+    val speciesId =
+        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "test"))
+    store.deleteSpecies(speciesId)
 
-    assertNull(store.fetchSpeciesById(organizationId, speciesId))
+    assertNull(store.fetchSpeciesById(speciesId))
   }
 
   @Test
   fun `species reading methods throw exception if user has no permission to read organization`() {
-    val name = "species"
-    val speciesId = store.createSpecies(organizationId, SpeciesRow(name = name))
+    val scientificName = "species"
+    val speciesId =
+        store.createSpecies(
+            SpeciesRow(organizationId = organizationId, scientificName = scientificName))
 
     every { user.canReadOrganization(organizationId) } returns false
-    every { user.canReadSpecies(organizationId) } returns false
-    every { user.canReadSpeciesName(any()) } returns false
+    every { user.canReadSpecies(speciesId) } returns false
 
     assertThrows<OrganizationNotFoundException> {
       store.countSpecies(organizationId, Instant.EPOCH)
     }
 
-    assertThrows<OrganizationNotFoundException> { store.getOrCreateSpecies(organizationId, name) }
+    assertThrows<OrganizationNotFoundException> {
+      store.getOrCreateSpecies(organizationId, scientificName)
+    }
 
-    assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(organizationId, speciesId) }
-
-    assertThrows<SpeciesNameNotFoundException> { store.fetchSpeciesNameById(SpeciesNameId(1)) }
+    assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
 
     assertThrows<OrganizationNotFoundException> { store.findAllSpecies(organizationId) }
-
-    assertThrows<OrganizationNotFoundException> { store.findAllSpeciesNames(organizationId) }
   }
 }

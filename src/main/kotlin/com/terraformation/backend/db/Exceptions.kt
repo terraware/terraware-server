@@ -66,9 +66,6 @@ class SiteNotFoundException(val siteId: SiteId) : EntityNotFoundException("Site 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     EntityNotFoundException("Species $speciesId not found")
 
-class SpeciesNameNotFoundException(val speciesNameId: SpeciesNameId) :
-    EntityNotFoundException("Species name $speciesNameId not found")
-
 class StorageLocationNotFoundException(val storageLocationId: StorageLocationId) :
     EntityNotFoundException("Storage location $storageLocationId not found")
 
