@@ -49,7 +49,12 @@ import kotlin.reflect.full.isSupertypeOf
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Configuration
 import org.jooq.DSLContext
+import org.jooq.Record
+import org.jooq.Sequence
+import org.jooq.Table
 import org.jooq.impl.DAOImpl
+import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -65,6 +70,13 @@ import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
+
+/**
+ * Postgresql function name that retrieves serial sequence name. This is also the column name that
+ * holds the result in a successful response.
+ * @see https://www.postgresql.org/docs/9.2/functions-info.html
+ */
+const val PG_GET_SERIAL_SEQUENCE = "pg_get_serial_sequence"
 
 /**
  * Base class for database-backed tests. Subclass this to get a fully-configured database with a
@@ -103,15 +115,41 @@ abstract class DatabaseTest {
    * List of sequences to reset before each test method. Test classes can use this to get
    * predictable IDs when inserting new data.
    */
-  protected val sequencesToReset: List<String>
+  protected val sequencesToReset: List<Sequence<out Number>>
+    get() = emptyList()
+
+  /**
+   * List of tables from which sequences are to be reset before each test method. Sequences used
+   * here belong to the primary key in the table.
+   */
+  protected val tablesToResetSequences: List<Table<out Record>>
     get() = emptyList()
 
   @BeforeEach
   fun resetSequences() {
-    sequencesToReset.forEach { sequenceName ->
-      dslContext.alterSequence(sequenceName).restart().execute()
+    sequencesToReset.forEach { sequence -> dslContext.alterSequence(sequence).restart().execute() }
+  }
+
+  @BeforeEach
+  fun resetSequencesForTables() {
+    tablesToResetSequences.flatMap { table -> getSerialSequenceNames(table) }.toSet().forEach {
+        sequenceName ->
+      dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
     }
   }
+
+  private fun getSerialSequenceNames(table: Table<out Record>): List<String> =
+      table.primaryKey!!.fields.map { field ->
+        dslContext
+                .select(
+                    DSL.function(
+                        PG_GET_SERIAL_SEQUENCE,
+                        SQLDataType.VARCHAR,
+                        DSL.value(table.name),
+                        DSL.value(field.name)))
+                .fetchOne()!!
+            .value1()
+      }
 
   /**
    * Turns a value into a type-safe ID wrapper.

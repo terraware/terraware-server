@@ -26,6 +26,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import java.net.URI
 import java.nio.file.NoSuchFileException
+import org.jooq.Record
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -38,7 +40,8 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   private val fileStore: FileStore = mockk()
   private lateinit var importer: GbifImporter
 
-  override val sequencesToReset: List<String> = listOf("gbif_names_id_seq")
+  override val tablesToResetSequences: List<Table<out Record>>
+    get() = listOf(GBIF_NAMES)
   override val user: TerrawareUser = mockUser()
 
   @BeforeEach

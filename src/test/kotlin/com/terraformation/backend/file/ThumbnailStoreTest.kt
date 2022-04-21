@@ -7,6 +7,7 @@ import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.ThumbnailId
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
+import com.terraformation.backend.db.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -28,6 +29,8 @@ import java.time.ZoneOffset
 import javax.imageio.ImageIO
 import javax.imageio.stream.MemoryCacheImageInputStream
 import kotlin.random.Random
+import org.jooq.Record
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -45,8 +48,8 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   private val photoId = PhotoId(1000)
   private val photoStorageUrl = URI("file:///a/b/c/original.jpg")
 
-  override val sequencesToReset: List<String>
-    get() = listOf("thumbnail_id_seq")
+  override val tablesToResetSequences: List<Table<out Record>>
+    get() = listOf(THUMBNAILS)
 
   @BeforeEach
   fun setUp() {

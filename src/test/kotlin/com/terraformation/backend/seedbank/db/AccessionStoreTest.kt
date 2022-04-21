@@ -41,6 +41,12 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.db.tables.references.APP_DEVICES
+import com.terraformation.backend.db.tables.references.BAGS
+import com.terraformation.backend.db.tables.references.GEOLOCATIONS
+import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
+import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
@@ -70,6 +76,9 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
+import org.jooq.Record
+import org.jooq.Sequence
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -87,18 +96,12 @@ import org.springframework.security.access.AccessDeniedException
 internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  override val sequencesToReset
+  override val sequencesToReset: List<Sequence<Long>>
+    get() = listOf(ACCESSION_NUMBER_SEQ)
+
+  override val tablesToResetSequences: List<Table<out Record>>
     get() =
-        listOf(
-            "accession_id_seq",
-            "accession_number_seq",
-            "app_device_id_seq",
-            "bag_id_seq",
-            "collection_event_id_seq",
-            "germination_test_id_seq",
-            "species_id_seq",
-            "withdrawal_id_seq",
-        )
+        listOf(ACCESSIONS, APP_DEVICES, BAGS, GEOLOCATIONS, GERMINATION_TESTS, SPECIES, WITHDRAWALS)
 
   private val accessionNumbers =
       listOf(

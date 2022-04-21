@@ -10,6 +10,8 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import org.jooq.Record
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -21,8 +23,8 @@ internal class AppDeviceStoreTest : DatabaseTest() {
 
   private lateinit var store: AppDeviceStore
 
-  override val sequencesToReset: List<String>
-    get() = listOf("app_device_id_seq")
+  override val tablesToResetSequences: List<Table<out Record>>
+    get() = listOf(APP_DEVICES)
 
   @BeforeEach
   fun setup() {
