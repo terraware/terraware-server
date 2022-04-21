@@ -1,0 +1,45 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.EmailTemplateModel" --> -->
+<mj-section padding="0px">
+    <mj-column mj-class="footer-wrapper">
+        <mj-text mj-class="text-body02 text-bold">Terraformation Inc.</mj-text>
+        <mj-text mj-class="text-body02">PO Box 3470, PMB 15777</mj-text>
+        <mj-text mj-class="text-body02">Honolulu, HI 96801-3470</mj-text>
+        <mj-social mj-class="social-wrapper">
+            <mj-social-element
+                    mj-class="social-icons"
+                    href="https://twitter.com/TF_Global"
+                    title="Twitter"
+                    src="${webAppUrl}/assets/social-twitter.png"
+            >
+            </mj-social-element>
+            <mj-social-element
+                    mj-class="social-icons"
+                    href="https://www.linkedin.com/company/terraformation"
+                    title="LinkedIn"
+                    src="${webAppUrl}/assets/social-linkedin.png"
+            >
+            </mj-social-element>
+            <mj-social-element
+                    mj-class="social-icons"
+                    href="https://www.instagram.com/globalterraform/"
+                    title="Instagram"
+                    src="${webAppUrl}/assets/social-instagram.png"
+            >
+            </mj-social-element>
+            <mj-social-element
+                    mj-class="social-icons"
+                    href="https://www.facebook.com/GlobalTerraform/"
+                    title="Facebook"
+                    src="${webAppUrl}/assets/social-facebook.png"
+            >
+            </mj-social-element>
+            <mj-social-element
+                    mj-class="social-icons"
+                    href="https://terraformation.com"
+                    title="Website"
+                    src="${webAppUrl}/assets/globe.png"
+            >
+            </mj-social-element>
+        </mj-social>
+    </mj-column>
+</mj-section>
