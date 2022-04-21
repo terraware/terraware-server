@@ -147,8 +147,8 @@ abstract class DatabaseTest {
                         SQLDataType.VARCHAR,
                         DSL.value(table.name),
                         DSL.value(field.name)))
-                .fetchOne(PG_GET_SERIAL_SEQUENCE)!!
-            .toString()
+                .fetchOne()!!
+            .value1()
       }
 
   /**
