@@ -94,7 +94,7 @@ dependencies {
   implementation("org.codehaus.janino:janino:3.1.6")
   implementation("org.flywaydb:flyway-core:8.5.8")
   implementation("org.freemarker:freemarker:2.3.31")
-  implementation("org.jobrunr:jobrunr-spring-boot-starter:4.0.10")
+  implementation("org.jobrunr:jobrunr-spring-boot-starter:5.0.1")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
   implementation("org.keycloak:keycloak-spring-boot-starter")
