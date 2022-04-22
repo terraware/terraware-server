@@ -135,5 +135,7 @@ class TerrawareGenerator : KotlinGenerator() {
     return types
   }
 
+  fun embeddables() = EMBEDDABLES
+
   fun excludes() = ENUM_TABLES.joinToString("|") { "$it\$" }
 }

@@ -1,5 +1,7 @@
 package com.terraformation.backend.jooq
 
+import org.jooq.meta.jaxb.EmbeddableDefinitionType
+
 /**
  * See the definition of EnumTable for general information. There are roughly two ways to specify
  * items in the includeExpression list. Both require use of regex.
@@ -74,4 +76,22 @@ val ID_WRAPPERS =
         IdWrapper(
             "UserId", listOf("users\\.id", ".*\\.user_id", ".*\\.created_by", ".*\\.modified_by")),
         IdWrapper("WithdrawalId", listOf("withdrawals\\.id", ".*\\.withdrawal_id")),
+    )
+
+/**
+ * Defines the synthetic data types that are embedded in the column lists of tables. We mostly use
+ * this to represent compound primary keys.
+ *
+ * @see https://www.jooq.org/doc/latest/manual/code-generation/codegen-embeddable-types/
+ */
+val EMBEDDABLES =
+    listOf(
+        EmbeddableDefinitionType()
+            .withName("organization_user_id")
+            .withTables("organization_users")
+            .withColumns("organization_id", "user_id"),
+        EmbeddableDefinitionType()
+            .withName("project_user_id")
+            .withTables("project_users")
+            .withColumns("project_id", "user_id"),
     )

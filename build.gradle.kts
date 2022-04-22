@@ -253,12 +253,14 @@ tasks {
         withIncludes(".*")
         withExcludes(generator.excludes())
         withForcedTypes(generator.forcedTypes(basePackageName))
+        withEmbeddables(generator.embeddables())
         // Fix compiler warnings for PostGIS functions; see https://github.com/jOOQ/jOOQ/issues/8587
         withTableValuedFunctions(false)
       }
 
       generate.apply {
         isDaos = true
+        isEmbeddables = true
         isJavaTimeTypes = true
         isPojos = true
         isPojosAsKotlinDataClasses = true

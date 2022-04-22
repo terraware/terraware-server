@@ -50,7 +50,7 @@ class OrganizationUsersTable(tables: SearchTables, fuzzySearchOperators: FuzzySe
       )
 
   override val primaryKey: TableField<out Record, out Any?>
-    get() = ORGANIZATION_USERS.USER_ID
+    get() = ORGANIZATION_USERS.ORGANIZATION_USER_ID
 
   override fun conditionForPermissions(): Condition {
     return ORGANIZATION_USERS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
