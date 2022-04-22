@@ -104,6 +104,16 @@ class OrganizationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(summary = "Lists the roles in an organization.")
+  @GetMapping("/{organizationId}/roles")
+  fun listOrganizationRoles(
+      @PathVariable("organizationId") organizationId: OrganizationId
+  ): ListOrganizationRolesResponsePayload {
+    val roleCounts = mapOf(Role.ADMIN to 0)
+    return ListOrganizationRolesResponsePayload(
+        roleCounts.map { (role, count) -> OrganizationRolePayload(role, count) })
+  }
+
   @GetMapping("/{organizationId}/users")
   @Operation(summary = "Lists the users in an organization.")
   fun listOrganizationUsers(
@@ -323,6 +333,12 @@ data class OrganizationPayload(
   )
 }
 
+data class OrganizationRolePayload(
+    val role: Role,
+    @Schema(description = "Total number of users in the organization with this role.")
+    val totalUsers: Int,
+)
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class OrganizationUserPayload(
     @Schema(description = "Date and time the user was added to the organization.")
@@ -365,6 +381,9 @@ data class GetOrganizationResponsePayload(val organization: OrganizationPayload)
     SuccessResponsePayload
 
 data class GetOrganizationUserResponsePayload(val user: OrganizationUserPayload) :
+    SuccessResponsePayload
+
+data class ListOrganizationRolesResponsePayload(val roles: List<OrganizationRolePayload>) :
     SuccessResponsePayload
 
 data class ListOrganizationUsersResponsePayload(val users: List<OrganizationUserPayload>) :

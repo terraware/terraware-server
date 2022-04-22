@@ -532,6 +532,30 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     }
   }
 
+  @Test
+  fun `countRoleUsers includes counts for roles with no users`() {
+    listOf(Role.OWNER, Role.OWNER, Role.CONTRIBUTOR).forEachIndexed { index, role ->
+      configureUser(organizationUserModel(userId = UserId(index + 100L), role = role))
+    }
+
+    val expected =
+        mapOf(
+            Role.ADMIN to 0,
+            Role.CONTRIBUTOR to 1,
+            Role.OWNER to 2,
+        )
+    val actual = store.countRoleUsers(organizationId)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `countRoleUsers requires permission to list users`() {
+    every { user.canListOrganizationUsers(organizationId) } returns false
+
+    assertThrows<AccessDeniedException> { store.countRoleUsers(organizationId) }
+  }
+
   private fun organizationUserModel(
       userId: UserId = UserId(100),
       email: String = "$userId@y.com",
