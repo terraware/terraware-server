@@ -496,6 +496,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorResponsePayload'
+  /api/v1/organizations/{organizationId}/roles:
+    get:
+      tags:
+      - Customer
+      summary: Lists the roles in an organization.
+      operationId: listOrganizationRoles
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrganizationRolesResponsePayload'
   /api/v1/organizations/{organizationId}/users:
     get:
       tags:
@@ -3324,6 +3344,18 @@ components:
             $ref: '#/components/schemas/FieldValuesPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    ListOrganizationRolesResponsePayload:
+      required:
+      - roles
+      - status
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationRolePayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     ListOrganizationUsersResponsePayload:
       required:
       - status
@@ -3612,6 +3644,22 @@ components:
           type: integer
           description: "The total number of users in the organization, including the\
             \ current user."
+          format: int32
+    OrganizationRolePayload:
+      required:
+      - role
+      - totalUsers
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - Contributor
+          - Admin
+          - Owner
+        totalUsers:
+          type: integer
+          description: Total number of users in the organization with this role.
           format: int32
     OrganizationUserPayload:
       required:

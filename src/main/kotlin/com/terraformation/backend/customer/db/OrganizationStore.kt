@@ -403,6 +403,25 @@ class OrganizationStore(
     }
   }
 
+  /** Returns the number of users with each available role in an organization. */
+  fun countRoleUsers(organizationId: OrganizationId): Map<Role, Int> {
+    requirePermissions { listOrganizationUsers(organizationId) }
+
+    val countByRoleId =
+        with(ORGANIZATION_USERS) {
+          dslContext
+              .select(ROLE_ID, DSL.count())
+              .from(ORGANIZATION_USERS)
+              .where(ORGANIZATION_ID.eq(organizationId))
+              .groupBy(ROLE_ID)
+              .fetchMap(ROLE_ID, DSL.count())
+        }
+
+    // The query won't return rows for roles that have no users, but we want to include them in the
+    // return value with a count of 0.
+    return Role.values().associateWith { countByRoleId[it.id] ?: 0 }
+  }
+
   /**
    * If a user is an owner of an organization, ensures that the organization has other owners.
    *
