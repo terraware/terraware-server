@@ -109,7 +109,7 @@ class OrganizationsController(
   fun listOrganizationRoles(
       @PathVariable("organizationId") organizationId: OrganizationId
   ): ListOrganizationRolesResponsePayload {
-    val roleCounts = mapOf(Role.ADMIN to 0)
+    val roleCounts = organizationStore.countRoleUsers(organizationId)
     return ListOrganizationRolesResponsePayload(
         roleCounts.map { (role, count) -> OrganizationRolePayload(role, count) })
   }
