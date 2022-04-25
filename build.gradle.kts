@@ -91,7 +91,6 @@ dependencies {
   implementation("net.coobird:thumbnailator:0.4.17")
   implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("org.apache.tika:tika-core:2.3.0")
-  implementation("org.codehaus.janino:janino:3.1.6")
   implementation("org.flywaydb:flyway-core:8.5.8")
   implementation("org.freemarker:freemarker:2.3.31")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.0.1")
