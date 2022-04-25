@@ -12,7 +12,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
  */
 interface EmailTemplateModel
 
-data class FacilityAlert(
+data class FacilityAlertRequested(
     val body: String,
     val facility: FacilityModel,
     val requestedBy: TerrawareUser,

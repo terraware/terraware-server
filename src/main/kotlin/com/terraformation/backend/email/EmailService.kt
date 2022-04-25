@@ -1,26 +1,15 @@
 package com.terraformation.backend.email
 
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
-import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.email.model.EmailTemplateModel
-import com.terraformation.backend.email.model.FacilityAlert
-import com.terraformation.backend.email.model.FacilityIdle
-import com.terraformation.backend.email.model.UserAddedToOrganization
-import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.processToString
 import freemarker.template.Configuration
@@ -34,7 +23,6 @@ import javax.mail.internet.MimeMessage
 import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
-import org.springframework.security.access.AccessDeniedException
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.sesv2.SesV2Client
 import software.amazon.awssdk.services.sesv2.model.Destination
@@ -50,15 +38,11 @@ import software.amazon.awssdk.services.sesv2.model.RawMessage
 @ManagedBean
 class EmailService(
     private val config: TerrawareServerConfig,
-    private val facilityStore: FacilityStore,
     private val freeMarkerConfig: Configuration,
-    private val messages: Messages,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
     private val sender: JavaMailSender,
-    private val userStore: UserStore,
-    private val webAppUrls: WebAppUrls,
 ) {
   private lateinit var sesClient: SesV2Client
   private val emailValidator = EmailValidator.getInstance()
@@ -68,53 +52,6 @@ class EmailService(
     if (config.email.enabled && config.email.useSes) {
       sesClient = SesV2Client.create()
     }
-  }
-
-  /**
-   * Sends an alert about a facility.
-   *
-   * This is a placeholder implementation for use by the device manager.
-   */
-  fun sendAlert(facilityId: FacilityId, subject: String, textBody: String) {
-    requirePermissions { sendAlert(facilityId) }
-
-    val facility =
-        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
-
-    sendFacilityNotification(
-        facilityId, "facilityAlert", FacilityAlert(textBody, facility, currentUser(), subject))
-  }
-
-  fun sendIdleFacilityAlert(facilityId: FacilityId) {
-    requirePermissions { sendAlert(facilityId) }
-
-    val facility =
-        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
-
-    sendFacilityNotification(
-        facilityId,
-        "facilityIdle",
-        FacilityIdle(facility, messages.dateAndTime(facility.lastTimeseriesTime)))
-  }
-
-  fun sendUserAddedToOrganization(organizationId: OrganizationId, userId: UserId) {
-    requirePermissions { addOrganizationUser(organizationId) }
-
-    val admin =
-        currentUser() as? IndividualUser
-            ?: throw AccessDeniedException("Notification email must be sent by a regular user")
-
-    val organization =
-        organizationStore.fetchById(organizationId)
-            ?: throw OrganizationNotFoundException(organizationId)
-    val user = userStore.fetchById(userId) ?: throw UserNotFoundException(userId)
-
-    val webAppUrl = "${config.webAppUrl}".trimEnd('/')
-    val organizationHomeUrl = webAppUrls.organizationHome(organizationId).toString()
-
-    val model = UserAddedToOrganization(admin, organization, organizationHomeUrl, webAppUrl)
-
-    sendUserNotification(user, "userAddedToOrganization", model, false)
   }
 
   /**

@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -26,7 +27,6 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
-import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.log.perClassLogger
 import java.math.BigDecimal
 import java.net.URI
@@ -39,6 +39,7 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 import net.postgis.jdbc.geometry.Point
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
@@ -59,10 +60,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminController(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
-    private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
+    private val publisher: ApplicationEventPublisher,
     private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
@@ -504,7 +505,8 @@ class AdminController(
       redirectAttributes: RedirectAttributes
   ): String {
     try {
-      emailService.sendAlert(facilityId, subject, body)
+      publisher.publishEvent(
+          FacilityAlertRequestedEvent(facilityId, subject, body, currentUser().userId))
 
       val successMessage =
           if (config.email.enabled) {

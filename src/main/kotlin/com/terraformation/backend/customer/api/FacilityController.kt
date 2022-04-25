@@ -6,17 +6,19 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -24,6 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.ws.rs.InternalServerErrorException
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -38,8 +41,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/facility")
 class FacilityController(
     private val automationStore: AutomationStore,
-    private val emailService: EmailService,
     private val facilityStore: FacilityStore,
+    private val publisher: ApplicationEventPublisher,
 ) {
   private val log = perClassLogger()
 
@@ -150,8 +153,12 @@ class FacilityController(
       @PathVariable facilityId: FacilityId,
       @RequestBody payload: SendFacilityAlertRequestPayload
   ): SimpleSuccessResponsePayload {
+    requirePermissions { sendAlert(facilityId) }
+
     try {
-      emailService.sendAlert(facilityId, payload.subject, payload.body)
+      publisher.publishEvent(
+          FacilityAlertRequestedEvent(
+              facilityId, payload.subject, payload.body, currentUser().userId))
     } catch (e: Exception) {
       log.error("Unable to send alert email", e)
       throw InternalServerErrorException("Unable to send email message.")
