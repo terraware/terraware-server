@@ -208,7 +208,7 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchEmailRecipients returns opted-in project members and admins`() {
+  fun `fetchEmailRecipients only returns opted-in project members and opted-in admins`() {
     val optedInAdmin = UserId(100)
     val optedOutAdmin = UserId(101)
     val optedInNonMember = UserId(102)
