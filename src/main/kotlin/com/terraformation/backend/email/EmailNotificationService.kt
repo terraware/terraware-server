@@ -11,7 +11,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.email.model.FacilityAlert
+import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.i18n.Messages
@@ -55,7 +55,7 @@ class EmailNotificationService(
     emailService.sendFacilityNotification(
         event.facilityId,
         "facilityAlert",
-        FacilityAlert(event.body, facility, requestedByUser, event.subject))
+        FacilityAlertRequested(event.body, facility, requestedByUser, event.subject))
   }
 
   @EventListener

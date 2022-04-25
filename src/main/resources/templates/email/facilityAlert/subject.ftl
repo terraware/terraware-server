@@ -1,2 +1,2 @@
-<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityAlert" -->
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityAlertRequested" -->
 Alert: ${subject}
