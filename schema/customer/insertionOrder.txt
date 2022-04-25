@@ -9,8 +9,7 @@ country_subdivisions
 organizations
 projects
 sites
-facilities
-facility_alert_recipients
 project_type_selections
+facilities
 project_users
 organization_users

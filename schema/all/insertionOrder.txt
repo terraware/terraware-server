@@ -36,7 +36,6 @@ photos
 germination_tests
 timeseries
 bags
-facility_alert_recipients
 geolocations
 germinations
 thumbnails

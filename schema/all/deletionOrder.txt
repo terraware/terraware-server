@@ -16,7 +16,6 @@ timeseries_values
 thumbnails
 germinations
 geolocations
-facility_alert_recipients
 bags
 timeseries
 germination_tests

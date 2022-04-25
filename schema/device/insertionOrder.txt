@@ -6,5 +6,4 @@ facilities
 devices
 timeseries
 automations
-facility_alert_recipients
 timeseries_values
