@@ -1472,8 +1472,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       insertOrganization(otherOrganizationId)
 
-      insertOrganizationUser(bothOrgsUserId, organizationId)
-      insertOrganizationUser(bothOrgsUserId, otherOrganizationId)
+      insertOrganizationUser(bothOrgsUserId, organizationId, Role.ADMIN)
+      insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.ADMIN)
       insertOrganizationUser(otherOrgUserId, otherOrganizationId)
 
       insertProject(sameOrgProjectId)
@@ -1516,7 +1516,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                       ),
                               ),
                               mapOf(
-                                  "roleName" to "Contributor",
+                                  "roleName" to "Admin",
                                   "user" to
                                       mapOf(
                                           "id" to "$bothOrgsUserId",
@@ -1604,6 +1604,40 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val actual = searchService.search(usersPrefix, fields, NoConditionNode(), sortOrder)
 
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `should be able to filter organization members by organization`() {
+      val membersPrefix = SearchFieldPrefix(tables.organizationUsers)
+      val organizationIdField = membersPrefix.resolve("organization_id")
+      val roleNameField = membersPrefix.resolve("roleName")
+
+      val fields = listOf(organizationIdField, roleNameField)
+      val criteria =
+          AndNode(
+              listOf(
+                  FieldNode(roleNameField, listOf(Role.ADMIN.displayName)),
+                  FieldNode(organizationIdField, listOf("$organizationId"))))
+      val sortOrder = fields.map { SearchSortField(it) }
+
+      insertOrganizationUser(organizationId = otherOrganizationId, role = Role.ADMIN)
+      every { user.organizationRoles } returns
+          mapOf(
+              organizationId to Role.ADMIN,
+              otherOrganizationId to Role.ADMIN,
+          )
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "organization_id" to "$organizationId",
+                      "roleName" to Role.ADMIN.displayName,
+                  )),
+              null)
+
+      val actual = searchService.search(membersPrefix, fields, criteria, sortOrder)
       assertEquals(expected, actual)
     }
   }

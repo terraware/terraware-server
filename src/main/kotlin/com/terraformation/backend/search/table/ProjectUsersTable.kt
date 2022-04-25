@@ -30,7 +30,7 @@ class ProjectUsersTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchO
       )
 
   override val primaryKey: TableField<out Record, out Any?>
-    get() = PROJECT_USERS.USER_ID
+    get() = PROJECT_USERS.PROJECT_USER_ID
 
   override fun conditionForPermissions(): Condition {
     return PROJECT_USERS.PROJECT_ID.`in`(currentUser().projectRoles.keys)
