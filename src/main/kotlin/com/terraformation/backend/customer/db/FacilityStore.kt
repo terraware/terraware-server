@@ -12,14 +12,11 @@ import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.db.tables.daos.FacilityAlertRecipientsDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.pojos.FacilitiesRow
-import com.terraformation.backend.db.tables.pojos.FacilityAlertRecipientsRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.FACILITY_ALERT_RECIPIENTS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
@@ -34,7 +31,6 @@ class FacilityStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao,
-    private val facilityAlertRecipientsDao: FacilityAlertRecipientsDao,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
   /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
@@ -118,39 +114,6 @@ class FacilityStore(
             modifiedTime = clock.instant(),
             name = name,
             typeId = type))
-  }
-
-  fun getAlertRecipients(facilityId: FacilityId): List<String> {
-    requirePermissions { readFacility(facilityId) }
-
-    return facilityAlertRecipientsDao.fetchByFacilityId(facilityId).mapNotNull { it.email }
-  }
-
-  fun insertAlertRecipient(facilityId: FacilityId, email: String) {
-    requirePermissions { updateFacility(facilityId) }
-
-    facilityAlertRecipientsDao.insert(
-        FacilityAlertRecipientsRow(facilityId = facilityId, email = email))
-  }
-
-  fun deleteAlertRecipient(facilityId: FacilityId, email: String) {
-    requirePermissions { updateFacility(facilityId) }
-
-    with(FACILITY_ALERT_RECIPIENTS) {
-      val id =
-          dslContext
-              .select(ID)
-              .from(FACILITY_ALERT_RECIPIENTS)
-              .where(FACILITY_ID.eq(facilityId))
-              .and(EMAIL.eq(email))
-              .fetchOne(ID)
-
-      if (id != null) {
-        dslContext.deleteFrom(FACILITY_ALERT_RECIPIENTS).where(ID.eq(id)).execute()
-      } else {
-        log.warn("Tried to delete nonexistent alert recipient $email for $facilityId")
-      }
-    }
   }
 
   fun fetchStorageLocations(facilityId: FacilityId): List<StorageLocationsRow> {

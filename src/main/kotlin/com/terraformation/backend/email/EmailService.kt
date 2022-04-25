@@ -4,6 +4,8 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -42,6 +44,8 @@ class EmailService(
     private val freeMarkerConfig: Configuration,
     private val messages: Messages,
     private val organizationStore: OrganizationStore,
+    private val parentStore: ParentStore,
+    private val projectStore: ProjectStore,
     private val sender: JavaMailSender,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
@@ -64,7 +68,9 @@ class EmailService(
   fun sendAlert(facilityId: FacilityId, subject: String, textBody: String) {
     requirePermissions { sendAlert(facilityId) }
 
-    val recipients = facilityStore.getAlertRecipients(facilityId)
+    val projectId =
+        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val recipients = projectStore.fetchEmailRecipients(projectId)
 
     if (recipients.isEmpty()) {
       log.error("Got alert for facility $facilityId but no recipients are configured")
@@ -85,7 +91,9 @@ class EmailService(
   fun sendIdleFacilityAlert(facilityId: FacilityId) {
     requirePermissions { sendAlert(facilityId) }
 
-    val recipients = facilityStore.getAlertRecipients(facilityId)
+    val projectId =
+        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val recipients = projectStore.fetchEmailRecipients(projectId)
 
     if (recipients.isEmpty()) {
       log.warn("No alert recipients for idle facility $facilityId")
