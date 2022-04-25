@@ -1,0 +1,73 @@
+<mj-head>
+    <mj-attributes>
+        <mj-class
+            name="logo-img"
+            width="205px"
+            align="left"
+            padding="0px"
+            padding-top="64px"
+            padding-bottom="32px"
+        />
+
+        <mj-class
+            name="body-wrapper"
+            width="650px"
+            padding="1px"
+            background-color="#A9B7B8"
+            inner-background-color="#fff"
+            border-radius="4px"
+            inner-border-radius="3px"
+        />
+        <mj-class
+            name="text-headline06-bold"
+            font-family="Inter, sans-serif"
+            font-weight="700"
+            font-size="20px"
+            line-height="28px"
+            color="#3A4445"
+            padding="32px 32px 16px 32px"
+        />
+        <mj-class
+            name="text-body03"
+            font-family="Inter, sans-serif"
+            font-weight="400"
+            font-size="14px"
+            line-height="20px"
+            color="#000000"
+            padding="0px 32px 24px 32px"
+        />
+        <mj-class
+            name="btn-productive-primary-md"
+            background-color="#0067C8"
+            color="#FFFFFF"
+            height="40px"
+            padding="0px 0px 32px 0px"
+            border-radius="1024px"
+            font-family="Inter, sans-serif"
+            font-weight="600"
+            font-size="16px"
+            line-height="24px"
+        />
+
+        <mj-class name="footer-wrapper" width="650px" padding="0px" padding-top="48px" />
+        <mj-class
+            name="text-body02"
+            font-family="Inter, sans-serif"
+            font-weight="400"
+            font-size="16px"
+            line-height="24px"
+            color="#3A4445"
+            align="center"
+            padding="0px"
+        />
+        <mj-class name="text-bold" font-weight="600" />
+        <mj-class
+            name="social-wrapper"
+            font-size="15px"
+            icon-size="24px"
+            mode="horizontal"
+            padding="32px 0px 0px 0px"
+        />
+        <mj-class name="social-icons" padding="0px 8px 0px 8px" />
+    </mj-attributes>
+</mj-head>

@@ -1,32 +1,37 @@
 package com.terraformation.backend.email.model
 
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 
 /**
- * Marker interface to denote classes that can be passed as models when rendering email templates.
- * This is to provide a small amount of compile-time sanity checking and ensure that other random
- * objects don't get passed.
+ * Common attributes for classes that can be passed as models when rendering email templates. This
+ * includes all the values that are used by the generic header and footer sections but aren't
+ * related to the main content of the email.
  */
-interface EmailTemplateModel
+open class EmailTemplateModel(config: TerrawareServerConfig) {
+  val webAppUrl: String = "${config.webAppUrl}".trimEnd('/')
+}
 
-data class FacilityAlertRequested(
+class FacilityAlertRequested(
+    config: TerrawareServerConfig,
     val body: String,
     val facility: FacilityModel,
     val requestedBy: TerrawareUser,
     val subject: String,
-) : EmailTemplateModel
+) : EmailTemplateModel(config)
 
-data class FacilityIdle(
+class FacilityIdle(
+    config: TerrawareServerConfig,
     val facility: FacilityModel,
     val lastTimeseriesTime: String,
-) : EmailTemplateModel
+) : EmailTemplateModel(config)
 
-data class UserAddedToOrganization(
+class UserAddedToOrganization(
+    config: TerrawareServerConfig,
     val admin: IndividualUser,
     val organization: OrganizationModel,
     val organizationHomeUrl: String,
-    val webAppUrl: String,
-) : EmailTemplateModel
+) : EmailTemplateModel(config)

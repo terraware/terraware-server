@@ -1,84 +1,9 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UserAddedToOrganization" --> -->
 <mjml>
-    <mj-head>
-        <mj-attributes>
-            <mj-class
-                name="logo-img"
-                width="205px"
-                align="left"
-                padding="0px"
-                padding-top="64px"
-                padding-bottom="32px"
-            />
-
-            <mj-class
-                name="body-wrapper"
-                width="650px"
-                padding="1px"
-                background-color="#A9B7B8"
-                inner-background-color="#fff"
-                border-radius="4px"
-                inner-border-radius="3px"
-            />
-            <mj-class
-                name="text-headline06-bold"
-                font-family="Inter, sans-serif"
-                font-weight="700"
-                font-size="20px"
-                line-height="28px"
-                color="#3A4445"
-                padding="32px 32px 16px 32px"
-            />
-            <mj-class
-                name="text-body03"
-                font-family="Inter, sans-serif"
-                font-weight="400"
-                font-size="14px"
-                line-height="20px"
-                color="#000000"
-                padding="0px 32px 24px 32px"
-            />
-            <mj-class
-                name="btn-productive-primary-md"
-                background-color="#0067C8"
-                color="#FFFFFF"
-                height="40px"
-                padding="0px 0px 32px 0px"
-                border-radius="1024px"
-                font-family="Inter, sans-serif"
-                font-weight="600"
-                font-size="16px"
-                line-height="24px"
-            />
-
-            <mj-class name="footer-wrapper" width="650px" padding="0px" padding-top="48px" />
-            <mj-class
-                name="text-body02"
-                font-family="Inter, sans-serif"
-                font-weight="400"
-                font-size="16px"
-                line-height="24px"
-                color="#3A4445"
-                align="center"
-                padding="0px"
-            />
-            <mj-class name="text-bold" font-weight="600" />
-            <mj-class
-                name="social-wrapper"
-                font-size="15px"
-                icon-size="24px"
-                mode="horizontal"
-                padding="32px 0px 0px 0px"
-            />
-            <mj-class name="social-icons" padding="0px 8px 0px 8px" />
-        </mj-attributes>
-    </mj-head>
+    <mj-include path="../head.ftlh.mjml" />
 
     <mj-body>
-        <mj-hero>
-            <mj-image mj-class="logo-img" src="${webAppUrl}/assets/logo-terraformation.svg">
-            </mj-image>
-        </mj-hero>
+        <mj-include path="../logo.ftlh.mjml" />
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
@@ -96,49 +21,8 @@
                     >Go to Terraware</mj-button
                 >
             </mj-column>
-
-            <mj-column mj-class="footer-wrapper">
-                <mj-text mj-class="text-body02 text-bold">Terraformation Inc.</mj-text>
-                <mj-text mj-class="text-body02">PO Box 3470, PMB 15777</mj-text>
-                <mj-text mj-class="text-body02">Honolulu, HI 96801-3470</mj-text>
-                <mj-social mj-class="social-wrapper">
-                    <mj-social-element
-                        mj-class="social-icons"
-                        href="https://twitter.com/TF_Global"
-                        title="Twitter"
-                        src="${webAppUrl}/assets/social-twitter.png"
-                    >
-                    </mj-social-element>
-                    <mj-social-element
-                        mj-class="social-icons"
-                        href="https://www.linkedin.com/company/terraformation"
-                        title="LinkedIn"
-                        src="${webAppUrl}/assets/social-linkedin.png"
-                    >
-                    </mj-social-element>
-                    <mj-social-element
-                        mj-class="social-icons"
-                        href="https://www.instagram.com/globalterraform/"
-                        title="Instagram"
-                        src="${webAppUrl}/assets/social-instagram.png"
-                    >
-                    </mj-social-element>
-                    <mj-social-element
-                        mj-class="social-icons"
-                        href="https://www.facebook.com/GlobalTerraform/"
-                        title="Facebook"
-                        src="${webAppUrl}/assets/social-facebook.png"
-                    >
-                    </mj-social-element>
-                    <mj-social-element
-                        mj-class="social-icons"
-                        href="https://terraformation.com"
-                        title="Website"
-                        src="${webAppUrl}/assets/globe.png"
-                    >
-                    </mj-social-element>
-                </mj-social>
-            </mj-column>
         </mj-section>
+
+        <mj-include path="../footer.ftlh.mjml" />
     </mj-body>
 </mjml>
