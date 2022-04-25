@@ -2,8 +2,9 @@
 
 This directory contains templates for server-generated email messages. Each template is in its own subdirectory.
 
-Each subdirectory can contain two template files:
+Each subdirectory can contain three template files:
 
+- `subject.ftl` is the subject line of the email message.
 - `body.txt.ftl` is the plaintext body of the message. If it doesn't exist, the message will only be sent as HTML.
 - `body.ftlh.mjml` is the source for the HTML version. It isn't actual HTML; the HTML is generated from [MJML](https://mjml.io/). If it doesn't exist, the message will only be sent as plaintext.
 

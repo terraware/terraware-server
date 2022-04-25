@@ -560,6 +560,29 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> { store.countRoleUsers(organizationId) }
   }
 
+  @Test
+  fun `fetchEmailRecipients returns addresses of opted-in users`() {
+    val otherOrganizationId = OrganizationId(2)
+    val optedInNonMember = UserId(100)
+    val optedInMember = UserId(101)
+    val optedOutMember = UserId(102)
+
+    insertOrganization(otherOrganizationId)
+
+    insertUser(optedInNonMember, email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
+    insertUser(optedInMember, email = "optedInMember@x.com", emailNotificationsEnabled = true)
+    insertUser(optedOutMember, email = "optedOutMember@x.com")
+
+    insertOrganizationUser(optedInNonMember, otherOrganizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(optedInMember, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(optedOutMember, organizationId, Role.CONTRIBUTOR)
+
+    val expected = setOf("optedInMember@x.com")
+    val actual = store.fetchEmailRecipients(organizationId).toSet()
+
+    assertEquals(expected, actual)
+  }
+
   private fun organizationUserModel(
       userId: UserId = UserId(100),
       email: String = "$userId@y.com",
@@ -569,7 +592,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       createdTime: Instant = clock.instant(),
       organizationId: OrganizationId = this.organizationId,
       role: Role = Role.CONTRIBUTOR,
-      projectIds: List<ProjectId> = emptyList()
+      projectIds: List<ProjectId> = emptyList(),
   ): OrganizationUserModel {
     return OrganizationUserModel(
         userId, email, firstName, lastName, userType, createdTime, organizationId, role, projectIds)

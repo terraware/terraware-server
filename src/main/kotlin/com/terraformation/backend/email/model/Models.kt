@@ -3,6 +3,7 @@ package com.terraformation.backend.email.model
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.TerrawareUser
 
 /**
  * Marker interface to denote classes that can be passed as models when rendering email templates.
@@ -10,6 +11,13 @@ import com.terraformation.backend.customer.model.OrganizationModel
  * objects don't get passed.
  */
 interface EmailTemplateModel
+
+data class FacilityAlert(
+    val body: String,
+    val facility: FacilityModel,
+    val requestedBy: TerrawareUser,
+    val subject: String,
+) : EmailTemplateModel
 
 data class FacilityIdle(
     val facility: FacilityModel,
