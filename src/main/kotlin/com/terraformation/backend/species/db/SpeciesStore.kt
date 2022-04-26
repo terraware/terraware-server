@@ -62,7 +62,8 @@ class SpeciesStore(
     return dslContext
         .select(DSL.count())
         .from(SPECIES)
-        .where(SPECIES.CREATED_TIME.le(asOf.toInstant()))
+        .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .and(SPECIES.CREATED_TIME.le(asOf.toInstant()))
         .and(SPECIES.DELETED_TIME.isNull.or(SPECIES.DELETED_TIME.gt(asOf.toInstant())))
         .fetchOne()
         ?.value1()
@@ -74,7 +75,8 @@ class SpeciesStore(
 
     return dslContext
         .selectFrom(SPECIES)
-        .where(SPECIES.DELETED_TIME.isNull)
+        .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
         .fetchInto(SpeciesRow::class.java)
   }
