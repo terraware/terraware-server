@@ -14,6 +14,7 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
+import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
@@ -102,6 +103,23 @@ class OrganizationsController(
   ): SimpleSuccessResponsePayload {
     organizationStore.update(payload.toRow().copy(id = organizationId))
     return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse409(description = "The organization has other members and cannot be deleted.")
+  @Operation(
+      summary = "Deletes an existing organization.",
+      description =
+          "Organizations can only be deleted if they have no members other than the current user.")
+  @DeleteMapping("/{organizationId}")
+  fun deleteOrganization(
+      @PathVariable("organizationId") organizationId: OrganizationId
+  ): SimpleSuccessResponsePayload {
+    try {
+      organizationService.deleteOrganization(organizationId)
+      return SimpleSuccessResponsePayload()
+    } catch (e: OrganizationHasOtherUsersException) {
+      throw WebApplicationException(e.message, Response.Status.CONFLICT)
+    }
   }
 
   @Operation(summary = "Lists the roles in an organization.")

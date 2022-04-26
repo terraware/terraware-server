@@ -461,6 +461,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+    delete:
+      tags:
+      - Customer
+      summary: Deletes an existing organization.
+      description: Organizations can only be deleted if they have no members other
+        than the current user.
+      operationId: deleteOrganization
+      parameters:
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "409":
+          description: The organization has other members and cannot be deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/organizations/{organizationId}/projects:
     get:
       tags:

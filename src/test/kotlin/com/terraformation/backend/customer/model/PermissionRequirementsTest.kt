@@ -347,6 +347,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun deleteOrganization() {
+    assertThrows<OrganizationNotFoundException> { requirements.deleteOrganization(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.deleteOrganization(organizationId) }
+
+    grant { user.canDeleteOrganization(organizationId) }
+    requirements.deleteOrganization(organizationId)
+  }
+
+  @Test
   fun listOrganizationUsers() {
     assertThrows<OrganizationNotFoundException> {
       requirements.listOrganizationUsers(organizationId)
