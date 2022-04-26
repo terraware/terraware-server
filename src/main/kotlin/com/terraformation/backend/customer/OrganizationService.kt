@@ -6,11 +6,13 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.OrganizationDeletedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -19,6 +21,7 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
@@ -35,6 +38,8 @@ class OrganizationService(
     private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
+  private val log = perClassLogger()
+
   fun addUser(
       email: String,
       organizationId: OrganizationId,
@@ -93,6 +98,24 @@ class OrganizationService(
                     projectModel.copy(
                         sites = listOf(siteModel.copy(facilities = listOf(facilityModel))))))
       }
+    }
+  }
+
+  fun deleteOrganization(organizationId: OrganizationId) {
+    requirePermissions { deleteOrganization(organizationId) }
+
+    dslContext.transaction { _ ->
+      val users = organizationStore.fetchUsers(organizationId)
+      if (users.size != 1 || users[0].userId != currentUser().userId) {
+        throw OrganizationHasOtherUsersException(organizationId)
+      }
+
+      organizationStore.removeUser(
+          organizationId, currentUser().userId, allowRemovingLastOwner = true)
+
+      log.info("Deleted last owner from organization $organizationId")
+
+      publisher.publishEvent(OrganizationDeletedEvent(organizationId))
     }
   }
 }

@@ -267,6 +267,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteOrganization(organizationId: OrganizationId) {
+    if (!user.canDeleteOrganization(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to delete organization $organizationId")
+    }
+  }
+
   fun listOrganizationUsers(organizationId: OrganizationId) {
     if (!user.canListOrganizationUsers(organizationId)) {
       readOrganization(organizationId)

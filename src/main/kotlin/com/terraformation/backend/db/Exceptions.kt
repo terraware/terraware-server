@@ -46,6 +46,9 @@ open class KeycloakRequestFailedException(
 /** Keycloak couldn't find a user that we expected to be able to find. */
 class KeycloakUserNotFoundException(message: String) : EntityNotFoundException(message)
 
+class OrganizationHasOtherUsersException(val organizationId: OrganizationId) :
+    RuntimeException("Organization $organizationId has other users")
+
 class OrganizationNotFoundException(val organizationId: OrganizationId) :
     EntityNotFoundException("Organization $organizationId not found")
 

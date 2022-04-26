@@ -363,11 +363,17 @@ class OrganizationStore(
    * owners.
    * @throws UserNotFoundException The user was not a member of the organization.
    */
-  fun removeUser(organizationId: OrganizationId, userId: UserId) {
+  fun removeUser(
+      organizationId: OrganizationId,
+      userId: UserId,
+      allowRemovingLastOwner: Boolean = false,
+  ) {
     requirePermissions { removeOrganizationUser(organizationId, userId) }
 
     dslContext.transaction { _ ->
-      ensureOtherOwners(organizationId, userId)
+      if (!allowRemovingLastOwner) {
+        ensureOtherOwners(organizationId, userId)
+      }
 
       dslContext
           .deleteFrom(PROJECT_USERS)
