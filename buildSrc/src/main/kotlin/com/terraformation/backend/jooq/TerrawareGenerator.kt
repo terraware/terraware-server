@@ -51,14 +51,22 @@ class TerrawareGenerator : KotlinGenerator() {
 
     log.info("Generating enum for reference table $table")
 
-    connection.prepareStatement("SELECT id, name FROM $table ORDER BY id").use { ps ->
+    val columns = listOf("id", "name", *(table.additionalColumns.toTypedArray())).joinToString()
+    connection.prepareStatement("SELECT $columns FROM $table ORDER BY id").use { ps ->
       ps.executeQuery().use { rs ->
         while (rs.next()) {
           val id = rs.getInt(1)
           val name = rs.getString(2)
           if (name != null) {
             val capitalizedName = name.replace(Regex("[-/ ]"), "").capitalize()
-            values.add("$capitalizedName($id, \"$name\")")
+            if (table.additionalColumns.isEmpty()) {
+              values.add("$capitalizedName($id, \"$name\")")
+            } else {
+              val properties = table.additionalColumns.mapIndexed { i, _ ->
+                "\"${rs.getString(2 + i + 1)}\""
+              }.joinToString()
+              values.add("$capitalizedName($id, \"$name\", $properties)")
+            }
           }
         }
       }
@@ -74,11 +82,17 @@ class TerrawareGenerator : KotlinGenerator() {
     // https://youtrack.jetbrains.com/issue/KT-2425
     val dollarSign = '$'
 
+    val additionalProperties = table.additionalColumns.map { p -> "val $p: String" }
+    val properties = listOf(
+        "override val id: Int",
+        "@get:JsonValue override val displayName: String",
+        *(additionalProperties.toTypedArray()),
+    ).filter { it.trim().isNotEmpty() }.joinToString(separator = ",\n          ")
+
     out.println(
         """
       enum class $enumName(
-          override val id: Int,
-          @get:JsonValue override val displayName: String
+          $properties
       ) : EnumFromReferenceTable<$enumName> {
           $valuesCodeSnippet;
           
