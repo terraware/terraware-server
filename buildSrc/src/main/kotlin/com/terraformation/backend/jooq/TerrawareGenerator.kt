@@ -38,7 +38,7 @@ class TerrawareGenerator : KotlinGenerator() {
         val tableName: String
       }
 
-    """.trimIndent(),
+    """.trimIndent()
     )
 
     ENUM_TABLES.forEach { printEnum(out, it, schema.database.connection) }
@@ -60,13 +60,15 @@ class TerrawareGenerator : KotlinGenerator() {
           val name = rs.getString(2)
           if (name != null) {
             val capitalizedName = name.replace(Regex("[-/ ]"), "").capitalize()
-            val properties = (listOf("\"$name\"") + table.additionalColumns.mapIndexed { i, it ->
-              val obj = rs.getObject(2 + i + 1)
-              when (obj) {
-                is String -> "\"$obj\""
-                else -> if (it.isTableEnum) "${it.columnDataType}.forId($obj)!!" else "$obj"
-              }
-            }).joinToString()
+            val properties =
+                (listOf("\"$name\"") + table.additionalColumns.mapIndexed { i, columnInfo ->
+                  val obj = rs.getObject(2 + i + 1)
+                  when {
+                    obj is String -> "\"$obj\""
+                    columnInfo.isTableEnum -> "${columnInfo.columnDataType}.forId($obj)!!"
+                    else -> "$obj"
+                  }
+                }).joinToString()
             values.add("$capitalizedName($id, $properties)")
           }
         }
@@ -127,7 +129,7 @@ class TerrawareGenerator : KotlinGenerator() {
   override fun generateTable(schema: SchemaDefinition, table: TableDefinition) {
     if (ENUM_TABLES.any { it.toString() == table.name }) {
       throw IllegalArgumentException(
-          "${table.name} is generated as an enum and must be excluded from the table list",
+          "${table.name} is generated as an enum and must be excluded from the table list"
       )
     }
 
@@ -147,7 +149,7 @@ class TerrawareGenerator : KotlinGenerator() {
             ForcedType()
                 .withIncludeExpression("(?i:.*_ur[li])")
                 .withConverter("com.terraformation.backend.db.UriConverter")
-                .withUserType("java.net.URI"),
+                .withUserType("java.net.URI")
         )
 
     ENUM_TABLES.forEach { types.add(it.forcedType(targetPackage)) }
