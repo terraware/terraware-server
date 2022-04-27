@@ -38,7 +38,8 @@ class TerrawareGenerator : KotlinGenerator() {
         val tableName: String
       }
 
-    """.trimIndent())
+    """.trimIndent(),
+    )
 
     ENUM_TABLES.forEach { printEnum(out, it, schema.database.connection) }
     ID_WRAPPERS.forEach { it.render(out) }
@@ -51,7 +52,7 @@ class TerrawareGenerator : KotlinGenerator() {
 
     log.info("Generating enum for reference table $table")
 
-    val columns = listOf("id", "name", *(table.additionalColumns.toTypedArray())).joinToString()
+    val columns = (listOf("id", "name") + table.additionalColumns.map { it.columnName }).joinToString()
     connection.prepareStatement("SELECT $columns FROM $table ORDER BY id").use { ps ->
       ps.executeQuery().use { rs ->
         while (rs.next()) {
@@ -59,14 +60,14 @@ class TerrawareGenerator : KotlinGenerator() {
           val name = rs.getString(2)
           if (name != null) {
             val capitalizedName = name.replace(Regex("[-/ ]"), "").capitalize()
-            if (table.additionalColumns.isEmpty()) {
-              values.add("$capitalizedName($id, \"$name\")")
-            } else {
-              val properties = table.additionalColumns.mapIndexed { i, _ ->
-                "\"${rs.getString(2 + i + 1)}\""
-              }.joinToString()
-              values.add("$capitalizedName($id, \"$name\", $properties)")
-            }
+            val properties = (listOf("\"$name\"") + table.additionalColumns.mapIndexed { i, it ->
+              val obj = rs.getObject(2 + i + 1)
+              when (obj) {
+                is String -> "\"$obj\""
+                else -> if (it.isTableEnum) "${it.columnDataType}.forId($obj)!!" else "$obj"
+              }
+            }).joinToString()
+            values.add("$capitalizedName($id, $properties)")
           }
         }
       }
@@ -82,12 +83,15 @@ class TerrawareGenerator : KotlinGenerator() {
     // https://youtrack.jetbrains.com/issue/KT-2425
     val dollarSign = '$'
 
-    val additionalProperties = table.additionalColumns.map { p -> "val $p: String" }
-    val properties = listOf(
+    val additionalProperties = table.additionalColumns.map {
+      val propertyName = it.columnName.toCamelCase()
+      val propertyType = it.columnDataType
+      "val $propertyName: $propertyType"
+    }
+    val properties = (listOf(
         "override val id: Int",
         "@get:JsonValue override val displayName: String",
-        *(additionalProperties.toTypedArray()),
-    ).filter { it.trim().isNotEmpty() }.joinToString(separator = ",\n          ")
+    ) + additionalProperties).joinToString(separator = ",\n          ")
 
     out.println(
         """
@@ -116,13 +120,15 @@ class TerrawareGenerator : KotlinGenerator() {
           override fun to(enumValue: $enumName?) = enumValue?.id
       }
 
-    """.trimIndent())
+    """.trimIndent(),
+    )
   }
 
   override fun generateTable(schema: SchemaDefinition, table: TableDefinition) {
     if (ENUM_TABLES.any { it.toString() == table.name }) {
       throw IllegalArgumentException(
-          "${table.name} is generated as an enum and must be excluded from the table list")
+          "${table.name} is generated as an enum and must be excluded from the table list",
+      )
     }
 
     super.generateTable(schema, table)
@@ -141,7 +147,8 @@ class TerrawareGenerator : KotlinGenerator() {
             ForcedType()
                 .withIncludeExpression("(?i:.*_ur[li])")
                 .withConverter("com.terraformation.backend.db.UriConverter")
-                .withUserType("java.net.URI"))
+                .withUserType("java.net.URI"),
+        )
 
     ENUM_TABLES.forEach { types.add(it.forcedType(targetPackage)) }
     ID_WRAPPERS.forEach { types.add(it.forcedType(targetPackage)) }
