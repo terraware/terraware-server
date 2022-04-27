@@ -58,6 +58,9 @@ val ID_WRAPPERS =
             listOf("collectors\\.id", ".*\\.collector_id", "accessions\\.primary_collector_id")),
         IdWrapper("DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
         IdWrapper("FacilityId", listOf("facilities\\.id", ".*\\.facility_id")),
+        IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
+        IdWrapper(
+            "GbifTaxonId", listOf("gbif_taxa\\.id", "gbif_.*\\.taxon_id", "gbif_.*\\..*_usage_id")),
         IdWrapper("GeolocationId", listOf("geolocations\\.id", ".*\\.geolocation_id")),
         IdWrapper("GerminationId", listOf("germinations\\.id", ".*\\.germination_id")),
         IdWrapper(

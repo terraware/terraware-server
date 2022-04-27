@@ -4,6 +4,8 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.GbifNameId
+import com.terraformation.backend.db.GbifTaxonId
 import com.terraformation.backend.db.tables.pojos.GbifDistributionsRow
 import com.terraformation.backend.db.tables.pojos.GbifNameWordsRow
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
@@ -61,11 +63,11 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
         GbifData(
             listOf(
                 GbifTaxaRow(
-                    taxonId = 10,
+                    taxonId = GbifTaxonId(10),
                     datasetId = "dataset1",
-                    parentNameUsageId = 9,
-                    acceptedNameUsageId = 8,
-                    originalNameUsageId = 7,
+                    parentNameUsageId = GbifTaxonId(9),
+                    acceptedNameUsageId = GbifTaxonId(8),
+                    originalNameUsageId = GbifTaxonId(7),
                     scientificName = "Family",
                     canonicalName = "Family!",
                     genericName = "Family?",
@@ -80,9 +82,9 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     family = "Family",
                     genus = null),
                 GbifTaxaRow(
-                    taxonId = 11,
+                    taxonId = GbifTaxonId(11),
                     datasetId = "dataset2",
-                    parentNameUsageId = 10,
+                    parentNameUsageId = GbifTaxonId(10),
                     acceptedNameUsageId = null,
                     originalNameUsageId = null,
                     scientificName = "Genus",
@@ -99,9 +101,9 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
                     family = "Family",
                     genus = "Genus"),
                 GbifTaxaRow(
-                    taxonId = 12,
+                    taxonId = GbifTaxonId(12),
                     datasetId = "dataset3",
-                    parentNameUsageId = 11,
+                    parentNameUsageId = GbifTaxonId(11),
                     acceptedNameUsageId = null,
                     originalNameUsageId = null,
                     scientificName = "Species",
@@ -120,13 +122,13 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
             ),
             listOf(
                 GbifDistributionsRow(
-                    taxonId = 12,
+                    taxonId = GbifTaxonId(12),
                     countryCode = "CA",
                     establishmentMeans = "native",
                     occurrenceStatus = "present",
                     threatStatus = null),
                 GbifDistributionsRow(
-                    taxonId = 12,
+                    taxonId = GbifTaxonId(12),
                     countryCode = null,
                     establishmentMeans = null,
                     occurrenceStatus = null,
@@ -134,40 +136,40 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
             ),
             listOf(
                 GbifVernacularNamesRow(
-                    taxonId = 12,
+                    taxonId = GbifTaxonId(12),
                     vernacularName = "My Species",
                     language = "en",
                     countryCode = "US"),
-                GbifVernacularNamesRow(taxonId = 12, vernacularName = "My Species 2"),
+                GbifVernacularNamesRow(taxonId = GbifTaxonId(12), vernacularName = "My Species 2"),
             ),
             listOf(
                 GbifNamesRow(
-                    id = 1,
-                    taxonId = 12,
+                    id = GbifNameId(1),
+                    taxonId = GbifTaxonId(12),
                     name = "Species? SpecificSpecies subsp. InfraSpecies",
                     language = null,
                     isScientific = true),
                 GbifNamesRow(
-                    id = 2,
-                    taxonId = 12,
+                    id = GbifNameId(2),
+                    taxonId = GbifTaxonId(12),
                     name = "My Species",
                     language = "en",
                     isScientific = false),
                 GbifNamesRow(
-                    id = 3,
-                    taxonId = 12,
+                    id = GbifNameId(3),
+                    taxonId = GbifTaxonId(12),
                     name = "My Species 2",
                     language = null,
                     isScientific = false),
             ),
             listOf(
-                GbifNameWordsRow(gbifNameId = 1, word = "infraspecies"),
-                GbifNameWordsRow(gbifNameId = 1, word = "species?"),
-                GbifNameWordsRow(gbifNameId = 1, word = "specificspecies"),
-                GbifNameWordsRow(gbifNameId = 2, word = "my"),
-                GbifNameWordsRow(gbifNameId = 2, word = "species"),
-                GbifNameWordsRow(gbifNameId = 3, word = "my"),
-                GbifNameWordsRow(gbifNameId = 3, word = "species"),
+                GbifNameWordsRow(gbifNameId = GbifNameId(1), word = "infraspecies"),
+                GbifNameWordsRow(gbifNameId = GbifNameId(1), word = "species?"),
+                GbifNameWordsRow(gbifNameId = GbifNameId(1), word = "specificspecies"),
+                GbifNameWordsRow(gbifNameId = GbifNameId(2), word = "my"),
+                GbifNameWordsRow(gbifNameId = GbifNameId(2), word = "species"),
+                GbifNameWordsRow(gbifNameId = GbifNameId(3), word = "my"),
+                GbifNameWordsRow(gbifNameId = GbifNameId(3), word = "species"),
             ),
         )
 
@@ -194,30 +196,30 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   fun `replaces previous data with new data`() {
     dslContext
         .insertInto(GBIF_TAXA)
-        .set(GBIF_TAXA.TAXON_ID, 1)
+        .set(GBIF_TAXA.TAXON_ID, GbifTaxonId(1))
         .set(GBIF_TAXA.SCIENTIFIC_NAME, "name")
         .set(GBIF_TAXA.TAXON_RANK, "species")
         .set(GBIF_TAXA.TAXONOMIC_STATUS, "accepted")
         .execute()
     dslContext
         .insertInto(GBIF_VERNACULAR_NAMES)
-        .set(GBIF_VERNACULAR_NAMES.TAXON_ID, 1)
+        .set(GBIF_VERNACULAR_NAMES.TAXON_ID, GbifTaxonId(1))
         .set(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME, "vernacular")
         .execute()
     dslContext
         .insertInto(GBIF_DISTRIBUTIONS)
-        .set(GBIF_DISTRIBUTIONS.TAXON_ID, 1)
+        .set(GBIF_DISTRIBUTIONS.TAXON_ID, GbifTaxonId(1))
         .set(GBIF_DISTRIBUTIONS.THREAT_STATUS, "endangered")
         .execute()
     dslContext
         .insertInto(GBIF_NAMES)
-        .set(GBIF_NAMES.TAXON_ID, 1)
+        .set(GBIF_NAMES.TAXON_ID, GbifTaxonId(1))
         .set(GBIF_NAMES.IS_SCIENTIFIC, true)
         .set(GBIF_NAMES.NAME, "name")
         .execute()
     dslContext
         .insertInto(GBIF_NAME_WORDS)
-        .set(GBIF_NAME_WORDS.GBIF_NAME_ID, 1)
+        .set(GBIF_NAME_WORDS.GBIF_NAME_ID, GbifNameId(1))
         .set(GBIF_NAME_WORDS.WORD, "word")
         .execute()
 
