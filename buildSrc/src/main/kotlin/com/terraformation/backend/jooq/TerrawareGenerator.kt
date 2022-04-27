@@ -51,14 +51,24 @@ class TerrawareGenerator : KotlinGenerator() {
 
     log.info("Generating enum for reference table $table")
 
-    connection.prepareStatement("SELECT id, name FROM $table ORDER BY id").use { ps ->
+    val columns = (listOf("id", "name") + table.additionalColumns.map { it.columnName }).joinToString()
+    connection.prepareStatement("SELECT $columns FROM $table ORDER BY id").use { ps ->
       ps.executeQuery().use { rs ->
         while (rs.next()) {
           val id = rs.getInt(1)
           val name = rs.getString(2)
           if (name != null) {
             val capitalizedName = name.replace(Regex("[-/ ]"), "").capitalize()
-            values.add("$capitalizedName($id, \"$name\")")
+            val properties =
+                (listOf("\"$name\"") + table.additionalColumns.mapIndexed { i, columnInfo ->
+                  val obj = rs.getObject(2 + i + 1)
+                  when {
+                    obj is String -> "\"$obj\""
+                    columnInfo.isTableEnum -> "${columnInfo.columnDataType}.forId($obj)!!"
+                    else -> "$obj"
+                  }
+                }).joinToString()
+            values.add("$capitalizedName($id, $properties)")
           }
         }
       }
@@ -74,11 +84,20 @@ class TerrawareGenerator : KotlinGenerator() {
     // https://youtrack.jetbrains.com/issue/KT-2425
     val dollarSign = '$'
 
+    val additionalProperties = table.additionalColumns.map {
+      val propertyName = it.columnName.toCamelCase()
+      val propertyType = it.columnDataType
+      "val $propertyName: $propertyType"
+    }
+    val properties = (listOf(
+        "override val id: Int",
+        "@get:JsonValue override val displayName: String",
+    ) + additionalProperties).joinToString(separator = ",\n          ")
+
     out.println(
         """
       enum class $enumName(
-          override val id: Int,
-          @get:JsonValue override val displayName: String
+          $properties
       ) : EnumFromReferenceTable<$enumName> {
           $valuesCodeSnippet;
           
