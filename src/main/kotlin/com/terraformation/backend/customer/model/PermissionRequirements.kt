@@ -427,4 +427,22 @@ class PermissionRequirements(private val user: TerrawareUser) {
       throw AccessDeniedException("No permission to import global species data")
     }
   }
+
+  fun canReadNotification() {
+    if (!user.canReadNotification()) {
+      throw AccessDeniedException("No permission to read notifications")
+    }
+  }
+
+  fun canCreateNotification() {
+    if (!user.canCreateNotification()) {
+      throw AccessDeniedException("No permission to create notifications")
+    }
+  }
+
+  fun canUpdateNotification() {
+    if (!user.canUpdateNotification()) {
+      throw AccessDeniedException("No permission to update notifications")
+    }
+  }
 }

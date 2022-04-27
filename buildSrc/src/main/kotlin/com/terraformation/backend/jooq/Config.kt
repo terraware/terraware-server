@@ -31,6 +31,10 @@ val ENUM_TABLES =
                 "germination_tests\\.test_type",
                 "accession_germination_test_types\\.germination_test_type_id")),
         EnumTable("germination_treatments", "germination_tests\\.treatment_id"),
+        EnumTable("notification_criticality", listOf(".*\\.notification_criticality_id")),
+        EnumTable("notification_types", listOf(".*\\.notification_type_id"),
+            additionalColumns = listOf(EnumTableColumnInfo("notification_criticality_id",
+                    "NotificationCriticality", true,))),
         EnumTable("plant_forms", listOf("plant_forms\\.id", ".*\\.plant_form_id")),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
         EnumTable("project_statuses", listOf("projects\\.status_id"), "ProjectStatus"),
@@ -66,6 +70,7 @@ val ID_WRAPPERS =
         IdWrapper(
             "GerminationTestId",
             listOf("germination_tests\\.id", ".*\\.germination_test_id", "germinations\\.test_id")),
+        IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
         IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
         IdWrapper("PhotoId", listOf("photos\\.id", ".*\\.photo_id")),
         IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),

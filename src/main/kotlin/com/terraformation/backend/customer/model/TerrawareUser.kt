@@ -114,4 +114,7 @@ interface TerrawareUser : Principal {
   fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
+  fun canReadNotification(): Boolean
+  fun canCreateNotification(): Boolean
+  fun canUpdateNotification(): Boolean
 }

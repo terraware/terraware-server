@@ -141,4 +141,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
+  override fun canReadNotification(): Boolean = true
+  override fun canCreateNotification(): Boolean = true
+  override fun canUpdateNotification(): Boolean = true
 }

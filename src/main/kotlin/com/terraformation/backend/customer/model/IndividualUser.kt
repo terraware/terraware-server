@@ -361,6 +361,10 @@ data class IndividualUser(
     return userType == UserType.SuperAdmin
   }
 
+  override fun canReadNotification(): Boolean = true
+  override fun canCreateNotification(): Boolean = true
+  override fun canUpdateNotification(): Boolean = true
+
   /** Returns true if the user is an admin or owner of any organizations. */
   override fun hasAnyAdminRole(): Boolean =
       organizationRoles.values.any { it == Role.OWNER || it == Role.ADMIN }
