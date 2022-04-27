@@ -2,6 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.GbifTaxonId
 import com.terraformation.backend.db.tables.records.GbifDistributionsRecord
 import com.terraformation.backend.db.tables.records.GbifNameWordsRecord
 import com.terraformation.backend.db.tables.records.GbifTaxaRecord
@@ -123,7 +124,7 @@ class GbifImporter(
     }
   }
 
-  private fun importTaxa(inputStream: InputStream): Set<Long> {
+  private fun importTaxa(inputStream: InputStream): Set<GbifTaxonId> {
     log.info("Importing GBIF taxon data")
 
     var count = 0
@@ -178,7 +179,7 @@ class GbifImporter(
         .toSet()
   }
 
-  private fun importVernacularNames(inputStream: InputStream, taxonIds: Set<Long>) {
+  private fun importVernacularNames(inputStream: InputStream, taxonIds: Set<GbifTaxonId>) {
     log.info("Importing GBIF vernacular names")
 
     var count = 0
@@ -215,7 +216,7 @@ class GbifImporter(
         }
   }
 
-  private fun importDistributions(inputStream: InputStream, taxonIds: Set<Long>) {
+  private fun importDistributions(inputStream: InputStream, taxonIds: Set<GbifTaxonId>) {
     log.info("Importing GBIF distribution data")
 
     var count = 0
@@ -324,11 +325,11 @@ class GbifImporter(
     override fun parseRow(row: Array<String?>): GbifTaxaRecord? {
       return if (row["kingdom"] == "Plantae") {
         GbifTaxaRecord(
-            taxonId = row["taxonID"]?.toLong(),
+            taxonId = row["taxonID"]?.let { GbifTaxonId(it) },
             datasetId = row["datasetID"],
-            parentNameUsageId = row["parentNameUsageID"]?.toLong(),
-            acceptedNameUsageId = row["acceptedNameUsageID"]?.toLong(),
-            originalNameUsageId = row["originalNameUsageID"]?.toLong(),
+            parentNameUsageId = row["parentNameUsageID"]?.let { GbifTaxonId(it) },
+            acceptedNameUsageId = row["acceptedNameUsageID"]?.let { GbifTaxonId(it) },
+            originalNameUsageId = row["originalNameUsageID"]?.let { GbifTaxonId(it) },
             scientificName = row["scientificName"],
             canonicalName = row["canonicalName"],
             genericName = row["genericName"],
@@ -353,7 +354,7 @@ class GbifImporter(
       ParsedCsvReader<GbifVernacularNamesRecord>(inputStream, tsvParser()) {
     override fun parseRow(row: Array<String?>): GbifVernacularNamesRecord {
       return GbifVernacularNamesRecord(
-          taxonId = row["taxonID"]?.toLong(),
+          taxonId = row["taxonID"]?.let { GbifTaxonId(it) },
           vernacularName = row["vernacularName"],
           language = row["language"],
           countryCode = row["countryCode"],
@@ -365,7 +366,7 @@ class GbifImporter(
       ParsedCsvReader<GbifDistributionsRecord>(inputStream, tsvParser()) {
     override fun parseRow(row: Array<String?>): GbifDistributionsRecord {
       return GbifDistributionsRecord(
-          taxonId = row["taxonID"]?.toLong(),
+          taxonId = row["taxonID"]?.let { GbifTaxonId(it) },
           countryCode = row["countryCode"],
           establishmentMeans = row["establishmentMeans"],
           occurrenceStatus = row["occurrenceStatus"],
