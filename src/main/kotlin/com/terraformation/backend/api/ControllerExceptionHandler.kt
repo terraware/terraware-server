@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.PathVariable
@@ -220,6 +221,16 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     } else {
       return simpleErrorResponse(ex.localizedMessage, status, request)
     }
+  }
+
+  override fun handleMissingServletRequestParameter(
+      ex: MissingServletRequestParameterException,
+      headers: HttpHeaders,
+      status: HttpStatus,
+      request: WebRequest
+  ): ResponseEntity<Any> {
+    return simpleErrorResponse(
+        "Missing required parameter: ${ex.parameterName}", HttpStatus.BAD_REQUEST, request)
   }
 
   private fun controllerLogger(ex: Exception): Logger {
