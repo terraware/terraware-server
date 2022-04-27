@@ -38,8 +38,7 @@ class TerrawareGenerator : KotlinGenerator() {
         val tableName: String
       }
 
-    """.trimIndent()
-    )
+    """.trimIndent())
 
     ENUM_TABLES.forEach { printEnum(out, it, schema.database.connection) }
     ID_WRAPPERS.forEach { it.render(out) }
@@ -122,15 +121,13 @@ class TerrawareGenerator : KotlinGenerator() {
           override fun to(enumValue: $enumName?) = enumValue?.id
       }
 
-    """.trimIndent(),
-    )
+    """.trimIndent())
   }
 
   override fun generateTable(schema: SchemaDefinition, table: TableDefinition) {
     if (ENUM_TABLES.any { it.toString() == table.name }) {
       throw IllegalArgumentException(
-          "${table.name} is generated as an enum and must be excluded from the table list"
-      )
+          "${table.name} is generated as an enum and must be excluded from the table list")
     }
 
     super.generateTable(schema, table)
@@ -149,8 +146,7 @@ class TerrawareGenerator : KotlinGenerator() {
             ForcedType()
                 .withIncludeExpression("(?i:.*_ur[li])")
                 .withConverter("com.terraformation.backend.db.UriConverter")
-                .withUserType("java.net.URI")
-        )
+                .withUserType("java.net.URI"))
 
     ENUM_TABLES.forEach { types.add(it.forcedType(targetPackage)) }
     ID_WRAPPERS.forEach { types.add(it.forcedType(targetPackage)) }
