@@ -3765,13 +3765,12 @@ components:
           format: int32
     NotificationPayload:
       required:
-      - body
       - createdTime
       - id
       - localUrl
+      - metadata
       - notificationCriticality
       - notificationType
-      - title
       - userId
       type: object
       properties:
@@ -3797,10 +3796,10 @@ components:
         organizationId:
           type: integer
           format: int64
-        title:
-          type: string
-        body:
-          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: object
         localUrl:
           type: string
           format: uri
