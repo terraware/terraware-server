@@ -1,7 +1,5 @@
 package com.terraformation.backend.customer.model
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
@@ -16,35 +14,36 @@ data class NotificationCountModel(val organizationId: OrganizationId?, val unrea
 data class CreateNotificationModel(
     val notificationType: NotificationType,
     val userId: UserId,
-    val organizationId: OrganizationId?,
+    val organizationId: OrganizationId,
+    val title: String,
+    val body: String,
     val localUrl: URI,
-    val metadata: Map<String, Any?>
+    val isGlobalNotification: Boolean = true
 )
 
 data class NotificationModel(
     val id: NotificationId,
     val notificationType: NotificationType,
-    val userId: UserId,
     val organizationId: OrganizationId?,
+    val title: String,
+    val body: String,
     val localUrl: URI,
-    val metadata: Map<String, Any?>,
     val createdTime: Instant,
-    val readTime: Instant?,
+    val isRead: Boolean,
 ) {
   constructor(
-      row: Record,
-      objectMapper: ObjectMapper
+      record: Record
   ) : this(
-      id = row[NOTIFICATIONS.ID] ?: throw IllegalArgumentException("Id is required"),
-      notificationType = row[NOTIFICATIONS.NOTIFICATION_TYPE_ID]
+      id = record[NOTIFICATIONS.ID] ?: throw IllegalArgumentException("Id is required"),
+      notificationType = record[NOTIFICATIONS.NOTIFICATION_TYPE_ID]
               ?: throw IllegalArgumentException("Notification type is required"),
-      userId = row[NOTIFICATIONS.USER_ID] ?: throw IllegalArgumentException("User Id is required"),
-      organizationId = row[NOTIFICATIONS.ORGANIZATION_ID],
-      localUrl = row[NOTIFICATIONS.LOCAL_URL]
+      organizationId = record[NOTIFICATIONS.ORGANIZATION_ID],
+      title = record[NOTIFICATIONS.TITLE] ?: throw IllegalArgumentException("Title is required"),
+      body = record[NOTIFICATIONS.BODY] ?: throw IllegalArgumentException("Body is required"),
+      localUrl = record[NOTIFICATIONS.LOCAL_URL]
               ?: throw IllegalArgumentException("Local URL is required"),
-      metadata = row[NOTIFICATIONS.METADATA]?.data()?.let { objectMapper.readValue(it) }
-              ?: throw IllegalArgumentException("Metadata is required"),
-      createdTime = row[NOTIFICATIONS.CREATED_TIME]
+      createdTime = record[NOTIFICATIONS.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
-      readTime = row[NOTIFICATIONS.READ_TIME])
+      isRead = record[NOTIFICATIONS.IS_READ]
+              ?: throw IllegalArgumentException("Notification read is required"))
 }

@@ -150,7 +150,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "germination_tests" to setOf(ALL, SEEDBANK),
           "germination_treatments" to setOf(ALL, SEEDBANK),
           "germinations" to setOf(ALL, SEEDBANK),
-          "notification_criticality" to setOf(ALL, CUSTOMER),
+          "notification_criticalities" to setOf(ALL, CUSTOMER),
           "notification_types" to setOf(ALL, CUSTOMER),
           "notifications" to setOf(ALL, CUSTOMER),
           "organization_users" to setOf(ALL, CUSTOMER),

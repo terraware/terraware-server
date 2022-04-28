@@ -388,7 +388,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateNotificationRequestPayload'
+              $ref: '#/components/schemas/UpdateNotificationsRequestPayload'
         required: true
       responses:
         "200":
@@ -3765,13 +3765,14 @@ components:
           format: int32
     NotificationPayload:
       required:
+      - body
       - createdTime
       - id
+      - isRead
       - localUrl
-      - metadata
       - notificationCriticality
       - notificationType
-      - userId
+      - title
       type: object
       properties:
         id:
@@ -3790,25 +3791,21 @@ components:
           - Warning
           - Error
           - Success
-        userId:
-          type: integer
-          format: int64
         organizationId:
           type: integer
           format: int64
-        metadata:
-          type: object
-          additionalProperties:
-            type: object
+        title:
+          type: string
+        body:
+          type: string
         localUrl:
           type: string
           format: uri
         createdTime:
           type: string
           format: date-time
-        readTime:
-          type: string
-          format: date-time
+        isRead:
+          type: boolean
     OrNodePayload:
       type: object
       description: "Search criterion that matches results that meet any of a set of\
@@ -4759,6 +4756,13 @@ components:
             \ parent device must exist."
           format: int64
     UpdateNotificationRequestPayload:
+      required:
+      - read
+      type: object
+      properties:
+        read:
+          type: boolean
+    UpdateNotificationsRequestPayload:
       required:
       - read
       type: object

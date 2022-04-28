@@ -9,6 +9,8 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.NotificationId
+import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
@@ -428,21 +430,40 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun canReadNotification() {
-    if (!user.canReadNotification()) {
-      throw AccessDeniedException("No permission to read notifications")
+  fun readNotification(notificationId: NotificationId) {
+    if (!user.canReadNotification(notificationId)) {
+      throw NotificationNotFoundException(notificationId)
     }
   }
 
-  fun canCreateNotification() {
-    if (!user.canCreateNotification()) {
-      throw AccessDeniedException("No permission to create notifications")
+  fun listNotifications(organizationId: OrganizationId?) {
+    if (!user.canListNotifications(organizationId)) {
+      throw AccessDeniedException("No permission to list notifications")
     }
   }
 
-  fun canUpdateNotification() {
-    if (!user.canUpdateNotification()) {
+  fun countNotifications() {
+    if (!user.canCountNotifications()) {
+      throw AccessDeniedException("No permission to count notifications")
+    }
+  }
+
+  fun updateNotification(notificationId: NotificationId) {
+    if (!user.canUpdateNotification(notificationId)) {
+      readNotification(notificationId)
+      throw AccessDeniedException("No permission to update notification")
+    }
+  }
+
+  fun updateNotifications(organizationId: OrganizationId?) {
+    if (!user.canUpdateNotifications(organizationId)) {
       throw AccessDeniedException("No permission to update notifications")
+    }
+  }
+
+  fun createNotification(userId: UserId, organizationId: OrganizationId) {
+    if (!user.canCreateNotification(userId, organizationId)) {
+      throw AccessDeniedException("No permission to create notification")
     }
   }
 }

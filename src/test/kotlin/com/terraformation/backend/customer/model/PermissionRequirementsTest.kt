@@ -9,6 +9,8 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.NotificationId
+import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
@@ -60,6 +62,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val speciesNameId = SpeciesNameId(1)
   private val storageLocationId = StorageLocationId(1)
   private val userId = UserId(1)
+  private val notificationUserId = UserId(2)
+  private val notificationId = NotificationId(1)
 
   /**
    * Grants permission to perform a particular operation. This is a simple wrapper around a MockK
@@ -579,5 +583,63 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canImportGlobalSpeciesData() }
     requirements.importGlobalSpeciesData()
+  }
+
+  @Test
+  fun createNotification() {
+    assertThrows<AccessDeniedException> {
+      requirements.createNotification(notificationUserId, organizationId)
+    }
+
+    grant { user.canCreateNotification(notificationUserId, organizationId) }
+    requirements.createNotification(notificationUserId, organizationId)
+  }
+
+  @Test
+  fun listGlobalNotifications() {
+    assertThrows<AccessDeniedException> { requirements.listNotifications(null) }
+
+    grant { user.canListNotifications(null) }
+    requirements.listNotifications(null)
+  }
+
+  @Test
+  fun listOrganizationNotifications() {
+    assertThrows<AccessDeniedException> { requirements.listNotifications(organizationId) }
+
+    grant { user.canListNotifications(organizationId) }
+    requirements.listNotifications(organizationId)
+  }
+
+  @Test
+  fun readNotification() {
+    assertThrows<NotificationNotFoundException> { requirements.readNotification(notificationId) }
+
+    grant { user.canReadNotification(notificationId) }
+    requirements.readNotification(notificationId)
+  }
+
+  @Test
+  fun updateNotification() {
+    assertThrows<NotificationNotFoundException> { requirements.updateNotification(notificationId) }
+
+    grant { user.canUpdateNotification(notificationId) }
+    requirements.updateNotification(notificationId)
+  }
+
+  @Test
+  fun updateGlobalNotifications() {
+    assertThrows<AccessDeniedException> { requirements.updateNotifications(null) }
+
+    grant { user.canUpdateNotifications(null) }
+    requirements.updateNotifications(null)
+  }
+
+  @Test
+  fun updateOrganizationNotifications() {
+    assertThrows<AccessDeniedException> { requirements.updateNotifications(organizationId) }
+
+    grant { user.canUpdateNotifications(organizationId) }
+    requirements.updateNotifications(organizationId)
   }
 }

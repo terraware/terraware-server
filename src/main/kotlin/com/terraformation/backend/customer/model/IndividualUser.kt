@@ -3,12 +3,14 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
@@ -60,6 +62,7 @@ data class IndividualUser(
     override val userType: UserType,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
+    private val notificationStore: NotificationStore,
 ) : TerrawareUser, UserDetails {
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
     permissionStore.fetchOrganizationRoles(userId)
@@ -361,9 +364,30 @@ data class IndividualUser(
     return userType == UserType.SuperAdmin
   }
 
-  override fun canReadNotification(): Boolean = true
-  override fun canCreateNotification(): Boolean = true
-  override fun canUpdateNotification(): Boolean = true
+  override fun canReadNotification(notificationId: NotificationId): Boolean {
+    return notificationStore.isOwner(userId, notificationId)
+  }
+  override fun canListNotifications(organizationId: OrganizationId?): Boolean {
+    // user can list global notifications relevant to user
+    if (organizationId == null) return true
+    // user should belong to the organization otherwise
+    else return organizationRoles[organizationId] != null
+  }
+
+  // all users can count their unread notifications
+  override fun canCountNotifications(): Boolean = true
+
+  override fun canUpdateNotification(notificationId: NotificationId): Boolean =
+      canReadNotification(notificationId)
+
+  override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean =
+      canListNotifications(organizationId)
+
+  override fun canCreateNotification(userId: UserId, organizationId: OrganizationId): Boolean =
+      // for now, ensure user making the request and the target user for notification,
+      // are both members of the organization in context
+      permissionStore.fetchOrganizationRoles(this.userId)[organizationId] != null &&
+          permissionStore.fetchOrganizationRoles(userId)[organizationId] != null
 
   /** Returns true if the user is an admin or owner of any organizations. */
   override fun hasAnyAdminRole(): Boolean =

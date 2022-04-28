@@ -1,124 +1,101 @@
 package com.terraformation.backend.customer.db
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.NotificationId
+import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.tables.daos.NotificationsDao
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import java.time.Clock
-import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.jooq.JSONB
 import org.jooq.impl.DSL
 
 @ManagedBean
 class NotificationStore(
     private val dslContext: DSLContext,
+    private val notificationsDao: NotificationsDao,
     private val clock: Clock,
-    private val objectMapper: ObjectMapper
 ) {
 
-  fun fetchById(notificationId: NotificationId): NotificationModel? {
-    requirePermissions { canReadNotification() }
+  fun isOwner(userId: UserId, notificationId: NotificationId): Boolean =
+      notificationsDao.fetchOneById(notificationId)?.userId?.equals(userId)
+          ?: throw NotificationNotFoundException(notificationId)
+
+  fun fetchById(notificationId: NotificationId): NotificationModel {
+    requirePermissions { readNotification(notificationId) }
     return dslContext
         .select(NOTIFICATIONS.asterisk())
         .from(NOTIFICATIONS)
-        .where(
-            NOTIFICATIONS.ID.eq(notificationId).and(NOTIFICATIONS.USER_ID.eq(currentUser().userId)))
-        .fetch { row -> NotificationModel(row, objectMapper) }
+        .where(NOTIFICATIONS.ID.eq(notificationId).and(isCurrentUserOwnerClause()))
+        .fetch { row -> NotificationModel(row) }
         .firstOrNull()
+        ?: throw NotificationNotFoundException(notificationId)
   }
 
   fun fetchByOrganization(organizationId: OrganizationId?): List<NotificationModel> {
-    requirePermissions { canReadNotification() }
+    requirePermissions { listNotifications(organizationId) }
     return dslContext
         .select(NOTIFICATIONS.asterisk())
         .from(NOTIFICATIONS)
-        .where(
-            getOrganizationIdClause(organizationId)
-                .and(NOTIFICATIONS.USER_ID.eq(currentUser().userId)))
-        .fetch { row -> NotificationModel(row, objectMapper) }
+        .where(isOrganizationIdClause(organizationId).and(isCurrentUserOwnerClause()))
+        .fetch { row -> NotificationModel(row) }
   }
 
   fun count(): List<NotificationCountModel> {
-    requirePermissions { canReadNotification() }
+    requirePermissions { countNotifications() }
     return dslContext
         .select(NOTIFICATIONS.ORGANIZATION_ID, DSL.count(NOTIFICATIONS.ID))
         .from(NOTIFICATIONS)
-        .where(NOTIFICATIONS.READ_TIME.isNull)
+        .where(NOTIFICATIONS.IS_READ.isFalse.and(isCurrentUserOwnerClause()))
         .groupBy(NOTIFICATIONS.ORGANIZATION_ID)
         .fetch { row -> NotificationCountModel(row.value1(), row.value2()) }
   }
 
-  fun markRead(
-      notificationId: NotificationId,
-      readTime: Instant?,
-      organizationId: OrganizationId?
-  ): Boolean {
-    requirePermissions { canUpdateNotification() }
-    if (fetchById(notificationId) != null) {
-      dslContext
-          .update(NOTIFICATIONS)
-          .set(NOTIFICATIONS.READ_TIME, readTime)
-          .where(
-              NOTIFICATIONS
-                  .ID
-                  .eq(notificationId)
-                  .and(NOTIFICATIONS.USER_ID.eq(currentUser().userId))
-                  .and(getOrganizationIdClause(organizationId)))
-          .execute()
-      return true
-    } else {
-      return false
-    }
-  }
-
-  fun markAllRead(readTime: Instant?, organizationId: OrganizationId?): Unit {
-    requirePermissions { canUpdateNotification() }
+  fun markRead(notificationId: NotificationId, read: Boolean): Unit {
+    requirePermissions { updateNotification(notificationId) }
     dslContext
         .update(NOTIFICATIONS)
-        .set(NOTIFICATIONS.READ_TIME, readTime)
-        .where(
-            NOTIFICATIONS
-                .USER_ID
-                .eq(currentUser().userId)
-                .and(getOrganizationIdClause(organizationId)))
+        .set(NOTIFICATIONS.IS_READ, read)
+        .where(NOTIFICATIONS.ID.eq(notificationId).and(isCurrentUserOwnerClause()))
+        .execute()
+  }
+
+  fun markAllRead(read: Boolean, organizationId: OrganizationId?): Unit {
+    requirePermissions { updateNotifications(organizationId) }
+    dslContext
+        .update(NOTIFICATIONS)
+        .set(NOTIFICATIONS.IS_READ, read)
+        .where(isOrganizationIdClause(organizationId).and(isCurrentUserOwnerClause()))
         .execute()
   }
 
   fun create(notification: CreateNotificationModel) {
-    requirePermissions { canCreateNotification() }
+    requirePermissions { createNotification(notification.userId, notification.organizationId) }
     with(NOTIFICATIONS) {
       with(notification) {
         dslContext
-            .insertInto(
-                NOTIFICATIONS,
-                NOTIFICATION_TYPE_ID,
-                USER_ID,
-                ORGANIZATION_ID,
-                METADATA,
-                LOCAL_URL,
-                CREATED_TIME,
-            )
-            .values(
-                notificationType,
-                userId,
-                organizationId,
-                JSONB.jsonb(objectMapper.writeValueAsString(metadata)),
-                localUrl,
-                clock.instant(),
-            )
+            .insertInto(NOTIFICATIONS)
+            .set(NOTIFICATION_TYPE_ID, notificationType)
+            .set(USER_ID, userId)
+            .set(ORGANIZATION_ID, if (isGlobalNotification) organizationId else null)
+            .set(TITLE, title)
+            .set(BODY, body)
+            .set(LOCAL_URL, localUrl)
+            .set(CREATED_TIME, clock.instant())
             .execute()
       }
     }
   }
 
-  private fun getOrganizationIdClause(organizationId: OrganizationId?) =
+  private fun isOrganizationIdClause(organizationId: OrganizationId?) =
       if (organizationId == null) NOTIFICATIONS.ORGANIZATION_ID.isNull
       else NOTIFICATIONS.ORGANIZATION_ID.eq(organizationId)
+
+  private fun isCurrentUserOwnerClause() = NOTIFICATIONS.USER_ID.eq(currentUser().userId)
 }

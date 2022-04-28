@@ -10,15 +10,12 @@ import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.db.NotificationCriticality
 import com.terraformation.backend.db.NotificationId
-import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.net.URI
-import java.time.Clock
 import java.time.Instant
 import javax.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,10 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RequestMapping("/api/v1/notifications")
 @RestController
-class NotificationController(
-    private val notificationStore: NotificationStore,
-    private val clock: Clock
-) {
+class NotificationController(private val notificationStore: NotificationStore) {
 
   @ApiResponse(responseCode = "200")
   @ApiResponse404
@@ -44,9 +38,7 @@ class NotificationController(
   fun read(
       @PathVariable("id") notificationId: NotificationId,
   ): GetNotificationResponsePayload {
-    val notification =
-        notificationStore.fetchById(notificationId)
-            ?: throw NotificationNotFoundException(notificationId)
+    val notification = notificationStore.fetchById(notificationId)
     return GetNotificationResponsePayload(NotificationPayload(notification))
   }
 
@@ -78,10 +70,7 @@ class NotificationController(
       @PathVariable("id") notificationId: NotificationId,
       @RequestBody @Valid payload: UpdateNotificationRequestPayload
   ): SimpleSuccessResponsePayload {
-    if (!notificationStore.markRead(
-        notificationId, clock.instant().takeIf { payload.read }, payload.organizationId)) {
-      throw NotificationNotFoundException(notificationId)
-    }
+    notificationStore.markRead(notificationId, payload.read)
     return SimpleSuccessResponsePayload()
   }
 
@@ -89,9 +78,9 @@ class NotificationController(
   @PutMapping()
   @Operation(summary = "Update notifications as read or unread")
   fun markAllRead(
-      @RequestBody @Valid payload: UpdateNotificationRequestPayload
+      @RequestBody @Valid payload: UpdateNotificationsRequestPayload
   ): SimpleSuccessResponsePayload {
-    notificationStore.markAllRead(clock.instant().takeIf { payload.read }, payload.organizationId)
+    notificationStore.markAllRead(payload.read, payload.organizationId)
     return SimpleSuccessResponsePayload()
   }
 }
@@ -102,12 +91,12 @@ data class NotificationPayload(
     val id: NotificationId,
     val notificationType: NotificationType,
     val notificationCriticality: NotificationCriticality,
-    val userId: UserId,
     val organizationId: OrganizationId?,
-    val metadata: Map<String, Any?>,
+    val title: String,
+    val body: String,
     val localUrl: URI,
     val createdTime: Instant,
-    val readTime: Instant?,
+    val isRead: Boolean,
 ) {
   constructor(
       model: NotificationModel
@@ -115,12 +104,12 @@ data class NotificationPayload(
       model.id,
       model.notificationType,
       model.notificationType.notificationCriticalityId,
-      model.userId,
       model.organizationId,
-      model.metadata,
+      model.title,
+      model.body,
       model.localUrl,
       model.createdTime,
-      model.readTime,
+      model.isRead,
   )
 }
 
@@ -133,7 +122,12 @@ data class NotificationCountPayload(val organizationId: OrganizationId?, val unr
   )
 }
 
-data class UpdateNotificationRequestPayload(val read: Boolean, val organizationId: OrganizationId?)
+data class UpdateNotificationRequestPayload(val read: Boolean)
+
+data class UpdateNotificationsRequestPayload(
+    val read: Boolean,
+    val organizationId: OrganizationId?
+)
 
 data class GetNotificationResponsePayload(val notification: NotificationPayload) :
     SuccessResponsePayload

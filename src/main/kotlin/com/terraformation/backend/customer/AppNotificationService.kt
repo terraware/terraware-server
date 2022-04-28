@@ -11,6 +11,7 @@ import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.email.WebAppUrls
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import java.net.URI
 import javax.annotation.ManagedBean
@@ -22,6 +23,7 @@ class AppNotificationService(
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
     private val notificationStore: NotificationStore,
+    private val messages: Messages,
 ) {
   private val log = perClassLogger()
 
@@ -40,30 +42,28 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: UserAddedToOrganizationEvent) {
-    val admin = userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
+    userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
     val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
     val organization =
         organizationStore.fetchById(event.organizationId)
             ?: throw OrganizationNotFoundException(event.organizationId)
 
     val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId).toString()
+    val message = messages.userAddedToOrganizationNotification(organization.name)
 
-    log.info("Creating app notification for user being added to an organization.")
-
-    val metadata: Map<String, Any> =
-        mapOf(
-            "organizationName" to organization.name,
-            "adminEmail" to admin.email,
-            "organizationId" to event.organizationId)
+    log.info(
+        "Creating app notification for user ${event.userId} being added to an organization" +
+            "${event.organizationId}.")
 
     val notification =
         CreateNotificationModel(
             userId = user.userId,
-            organizationId = null,
+            organizationId = event.organizationId,
+            title = message.title,
+            body = message.body,
             localUrl = URI.create(organizationHomeUrl),
-            metadata = metadata,
             notificationType = NotificationType.UserAddedtoOrganization,
-        )
+            isGlobalNotification = false)
     notificationStore.create(notification)
   }
 }

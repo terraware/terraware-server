@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
@@ -70,6 +71,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private val realmResource: RealmResource = mockk()
   private lateinit var siteStore: SiteStore
   private lateinit var userStore: UserStore
+  private lateinit var notificationStore: NotificationStore
 
   private lateinit var service: OrganizationService
 
@@ -84,6 +86,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     parentStore = ParentStore(dslContext)
     projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
     siteStore = SiteStore(clock, dslContext, parentStore, sitesDao)
+    notificationStore = NotificationStore(dslContext, notificationsDao, clock)
     userStore =
         UserStore(
             clock,
@@ -96,7 +99,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             PermissionStore(dslContext),
             realmResource,
-            usersDao)
+            usersDao,
+            notificationStore,
+        )
 
     service =
         OrganizationService(
