@@ -21,5 +21,18 @@
     <input type="submit" value=" Create Organization "/>
 </form>
 
+<div th:if="${canImportGlobalSpeciesData}">
+    <h2>Import GBIF species data</h2>
+
+    <p>You can download the data
+        <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
+    </p>
+
+    <form method="POST" enctype="multipart/form-data" action="uploadGbif">
+        <input type="file" name="zipfile" accept="application/zip" />
+        <input type="submit" value=" Upload Zipfile " />
+        (can take several minutes)
+    </form>
+</div>
 </body>
 </html>
