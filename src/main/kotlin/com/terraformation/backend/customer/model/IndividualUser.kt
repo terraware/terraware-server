@@ -303,15 +303,12 @@ data class IndividualUser(
     return canReadOrganization(organizationId)
   }
 
-  override fun canDeleteSpecies(speciesId: SpeciesId): Boolean {
-    val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
-    return canCreateSpecies(organizationId)
-  }
-
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean {
     val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
     return canCreateSpecies(organizationId)
   }
+
+  override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = canUpdateSpecies(speciesId)
 
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
