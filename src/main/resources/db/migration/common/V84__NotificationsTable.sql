@@ -3,9 +3,8 @@ CREATE TABLE notifications (
     notification_type_id INTEGER NOT NULL REFERENCES notification_types,
     user_id BIGINT NOT NULL REFERENCES users,
     organization_id BIGINT REFERENCES organizations,
-    title TEXT NOT NULL,
-    body TEXT NOT NULL,
     local_url TEXT NOT NULL,
+    metadata JSONB NOT NULL,
     created_time TIMESTAMP WITH TIME ZONE NOT NULL,
     read_time TIMESTAMP WITH TIME ZONE
 );

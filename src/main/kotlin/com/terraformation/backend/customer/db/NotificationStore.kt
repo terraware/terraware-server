@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.db
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationCountModel
@@ -12,10 +13,15 @@ import java.time.Clock
 import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.JSONB
 import org.jooq.impl.DSL
 
 @ManagedBean
-class NotificationStore(private val dslContext: DSLContext, private val clock: Clock) {
+class NotificationStore(
+    private val dslContext: DSLContext,
+    private val clock: Clock,
+    private val objectMapper: ObjectMapper
+) {
 
   fun fetchById(notificationId: NotificationId): NotificationModel? {
     requirePermissions { canReadNotification() }
@@ -23,41 +29,28 @@ class NotificationStore(private val dslContext: DSLContext, private val clock: C
         .select(NOTIFICATIONS.asterisk())
         .from(NOTIFICATIONS)
         .where(
-            NOTIFICATIONS.ID.eq(notificationId).and(NOTIFICATIONS.USER_ID.eq(currentUser().userId)),
-        )
-        .fetch { row -> NotificationModel(row) }
+            NOTIFICATIONS.ID.eq(notificationId).and(NOTIFICATIONS.USER_ID.eq(currentUser().userId)))
+        .fetch { row -> NotificationModel(row, objectMapper) }
         .firstOrNull()
   }
 
   fun fetchByOrganization(organizationId: OrganizationId?): List<NotificationModel> {
     requirePermissions { canReadNotification() }
     return dslContext
-        .select(
-            NOTIFICATIONS.asterisk(),
-        )
+        .select(NOTIFICATIONS.asterisk())
         .from(NOTIFICATIONS)
         .where(
-            NOTIFICATIONS
-                .ORGANIZATION_ID
-                .eq(organizationId)
-                .and(
-                    NOTIFICATIONS.USER_ID.eq(currentUser().userId),
-                ),
-        )
-        .fetch { row -> NotificationModel(row) }
+            getOrganizationIdClause(organizationId)
+                .and(NOTIFICATIONS.USER_ID.eq(currentUser().userId)))
+        .fetch { row -> NotificationModel(row, objectMapper) }
   }
 
   fun count(): List<NotificationCountModel> {
     requirePermissions { canReadNotification() }
     return dslContext
-        .select(
-            NOTIFICATIONS.ORGANIZATION_ID,
-            DSL.count(NOTIFICATIONS.ID),
-        )
+        .select(NOTIFICATIONS.ORGANIZATION_ID, DSL.count(NOTIFICATIONS.ID))
         .from(NOTIFICATIONS)
-        .where(
-            NOTIFICATIONS.READ_TIME.isNull,
-        )
+        .where(NOTIFICATIONS.READ_TIME.isNull)
         .groupBy(NOTIFICATIONS.ORGANIZATION_ID)
         .fetch { row -> NotificationCountModel(row.value1(), row.value2()) }
   }
@@ -77,7 +70,7 @@ class NotificationStore(private val dslContext: DSLContext, private val clock: C
                   .ID
                   .eq(notificationId)
                   .and(NOTIFICATIONS.USER_ID.eq(currentUser().userId))
-                  .and(NOTIFICATIONS.ORGANIZATION_ID.eq(organizationId)))
+                  .and(getOrganizationIdClause(organizationId)))
           .execute()
       return true
     } else {
@@ -94,7 +87,7 @@ class NotificationStore(private val dslContext: DSLContext, private val clock: C
             NOTIFICATIONS
                 .USER_ID
                 .eq(currentUser().userId)
-                .and(NOTIFICATIONS.ORGANIZATION_ID.eq(organizationId)))
+                .and(getOrganizationIdClause(organizationId)))
         .execute()
   }
 
@@ -108,8 +101,7 @@ class NotificationStore(private val dslContext: DSLContext, private val clock: C
                 NOTIFICATION_TYPE_ID,
                 USER_ID,
                 ORGANIZATION_ID,
-                TITLE,
-                BODY,
+                METADATA,
                 LOCAL_URL,
                 CREATED_TIME,
             )
@@ -117,8 +109,7 @@ class NotificationStore(private val dslContext: DSLContext, private val clock: C
                 notificationType,
                 userId,
                 organizationId,
-                title,
-                body,
+                JSONB.jsonb(objectMapper.writeValueAsString(metadata)),
                 localUrl,
                 clock.instant(),
             )
@@ -126,4 +117,8 @@ class NotificationStore(private val dslContext: DSLContext, private val clock: C
       }
     }
   }
+
+  private fun getOrganizationIdClause(organizationId: OrganizationId?) =
+      if (organizationId == null) NOTIFICATIONS.ORGANIZATION_ID.isNull
+      else NOTIFICATIONS.ORGANIZATION_ID.eq(organizationId)
 }

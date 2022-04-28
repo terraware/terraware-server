@@ -47,18 +47,21 @@ class AppNotificationService(
             ?: throw OrganizationNotFoundException(event.organizationId)
 
     val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId).toString()
-    val title = "You have joined \"${organization.name}\""
-    val body = "You were added to organization \"${organization.name}\" by \"${admin.email}\"."
 
     log.info("Creating app notification for user being added to an organization.")
+
+    val metadata: Map<String, Any> =
+        mapOf(
+            "organizationName" to organization.name,
+            "adminEmail" to admin.email,
+            "organizationId" to event.organizationId)
 
     val notification =
         CreateNotificationModel(
             userId = user.userId,
-            organizationId = event.organizationId,
-            title = title,
-            body = body,
+            organizationId = null,
             localUrl = URI.create(organizationHomeUrl),
+            metadata = metadata,
             notificationType = NotificationType.UserAddedtoOrganization,
         )
     notificationStore.create(notification)
