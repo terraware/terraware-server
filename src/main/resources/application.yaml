@@ -1,31 +1,34 @@
 terraware:
-  gbif-dataset-ids:
-    # International Plant Names Index
-    - "046bbc50-cae2-47ff-aa43-729fbf53f7c5"
-    # The IUCN Red List of Threatened Species
-    - "19491596-35ae-4a91-9a98-85cf505f1bd3"
-    # Catálogo de Plantas y Líquenes de Colombia
-    - "5c0b1470-8884-4914-ae76-70a7c81d6d08"
-    # GRIN Taxonomy
-    - "66dd0960-2d7d-46ee-a491-87b9adcfe7b1"
-    # Catalogue of Life Checklist
-    - "7ddf754f-d193-4cc9-b351-99906754a03b"
-    # A list of the terrestrial fungi, flora and fauna of Madeira and Selvagens archipelagos
-    - "a43ec6d8-7b8a-4868-ad74-56b824c75698"
-    # Referral of the Halocypridina Thaumatocypris (Miocene, Australia) to the Cladocopina (Ostracoda, Halocyprida)
-    - "af3841ac-293b-4c0f-9b95-3718da4f124b"
-    # The Leipzig catalogue of vascular plants
-    - "bae5856f-da10-4333-90a0-5a2135361b30"
-    # Taxon list of vascular plants from Bavaria, Germany compiled in the context of the BFL project
-    - "d027759f-84bc-4dfc-a5ea-b17a50793451"
-    # GBIF Backbone Taxonomy
-    - "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
-    # The Plant List with literature
-    - "d9a4eedb-e985-4456-ad46-3df8472e00e8"
-    # The World Checklist of Vascular Plants (WCVP)
-    - "f382f0ce-323a-4091-bb9f-add557f3a9a2"
-    # The World Checklist of Vascular Plants (WCVP): Fabaceae
-    - "f7053f73-74fb-4c9f-ab63-de28c61140c2"
+  gbif:
+    dataset-ids:
+      # International Plant Names Index
+      - "046bbc50-cae2-47ff-aa43-729fbf53f7c5"
+      # The IUCN Red List of Threatened Species
+      - "19491596-35ae-4a91-9a98-85cf505f1bd3"
+      # Catálogo de Plantas y Líquenes de Colombia
+      - "5c0b1470-8884-4914-ae76-70a7c81d6d08"
+      # GRIN Taxonomy
+      - "66dd0960-2d7d-46ee-a491-87b9adcfe7b1"
+      # Catalogue of Life Checklist
+      - "7ddf754f-d193-4cc9-b351-99906754a03b"
+      # A list of the terrestrial fungi, flora and fauna of Madeira and Selvagens archipelagos
+      - "a43ec6d8-7b8a-4868-ad74-56b824c75698"
+      # Referral of the Halocypridina Thaumatocypris (Miocene, Australia) to the Cladocopina (Ostracoda, Halocyprida)
+      - "af3841ac-293b-4c0f-9b95-3718da4f124b"
+      # The Leipzig catalogue of vascular plants
+      - "bae5856f-da10-4333-90a0-5a2135361b30"
+      # Taxon list of vascular plants from Bavaria, Germany compiled in the context of the BFL project
+      - "d027759f-84bc-4dfc-a5ea-b17a50793451"
+      # GBIF Backbone Taxonomy
+      - "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
+      # The Plant List with literature
+      - "d9a4eedb-e985-4456-ad46-3df8472e00e8"
+      # The World Checklist of Vascular Plants (WCVP)
+      - "f382f0ce-323a-4091-bb9f-add557f3a9a2"
+      # The World Checklist of Vascular Plants (WCVP): Fabaceae
+      - "f7053f73-74fb-4c9f-ab63-de28c61140c2"
+    distribution-sources:
+      - "The IUCN Red List of Threatened Species"
   keycloak:
     api-client-id: "api"
 

@@ -38,6 +38,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
+  private val gbifConfig: TerrawareServerConfig.GbifConfig = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val fileStore: FileStore = mockk()
   private lateinit var importer: GbifImporter
@@ -50,7 +51,8 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     importer = GbifImporter(config, dslContext, fileStore)
 
-    every { config.gbifDatasetIds } returns listOf("dataset1", "dataset2", "dataset3")
+    every { config.gbif } returns gbifConfig
+    every { gbifConfig.datasetIds } returns listOf("dataset1", "dataset2", "dataset3")
     every { user.canImportGlobalSpeciesData() } returns true
   }
 
@@ -250,7 +252,9 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class DistributionRecordParserTest {
     private fun parse(input: String): List<GbifDistributionsRecord> {
-      return GbifImporter.DistributionsRecordParser(input.byteInputStream()).sequence().toList()
+      return GbifImporter.DistributionsRecordParser(input.byteInputStream(), config)
+          .sequence()
+          .toList()
     }
 
     @Test

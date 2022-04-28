@@ -140,7 +140,7 @@ class GbifImporter(
     var count = 0
 
     val datasetIds =
-        config.gbifDatasetIds?.toSet() ?: throw IllegalStateException("No dataset IDs configured")
+        config.gbif.datasetIds?.toSet() ?: throw IllegalStateException("No dataset IDs configured")
 
     // This call chain is a little gross, but it's structured this way because we need to do
     // different things with different subsets of the data, and we don't want to have to load
@@ -231,7 +231,7 @@ class GbifImporter(
 
     var count = 0
 
-    DistributionsRecordParser(inputStream)
+    DistributionsRecordParser(inputStream, config)
         .sequence()
         .filter { it.taxonId in taxonIds }
         .filter {
@@ -372,16 +372,22 @@ class GbifImporter(
     }
   }
 
-  class DistributionsRecordParser(inputStream: InputStream) :
+  class DistributionsRecordParser(inputStream: InputStream, config: TerrawareServerConfig) :
       ParsedCsvReader<GbifDistributionsRecord>(inputStream, tsvParser()) {
-    override fun parseRow(row: Array<String?>): GbifDistributionsRecord {
-      return GbifDistributionsRecord(
-          taxonId = row["taxonID"]?.let { GbifTaxonId(it) },
-          countryCode = row["countryCode"],
-          establishmentMeans = row["establishmentMeans"],
-          occurrenceStatus = row["occurrenceStatus"],
-          threatStatus = row["threatStatus"],
-      )
+    private val sources: Set<String> = config.gbif.distributionSources?.toSet() ?: emptySet()
+
+    override fun parseRow(row: Array<String?>): GbifDistributionsRecord? {
+      return if (row["source"] in sources) {
+        GbifDistributionsRecord(
+            taxonId = row["taxonID"]?.let { GbifTaxonId(it) },
+            countryCode = row["countryCode"],
+            establishmentMeans = row["establishmentMeans"],
+            occurrenceStatus = row["occurrenceStatus"],
+            threatStatus = row["threatStatus"],
+        )
+      } else {
+        null
+      }
     }
   }
 }

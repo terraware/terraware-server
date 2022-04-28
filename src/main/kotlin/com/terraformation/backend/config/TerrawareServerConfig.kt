@@ -79,12 +79,6 @@ class TerrawareServerConfig(
      */
     val allowAdminUiForNonAdmins: Boolean = false,
 
-    /**
-     * When importing GBIF taxonomy data, only include entries from these datasets. These should be
-     * dataset identifiers (typically UUIDs), not names.
-     */
-    val gbifDatasetIds: List<String>? = null,
-
     /** Configures execution of daily tasks. */
     val dailyTasks: DailyTasksConfig = DailyTasksConfig(),
 
@@ -100,6 +94,9 @@ class TerrawareServerConfig(
      * under `spring.mail`.
      */
     @NotNull val email: EmailConfig = EmailConfig(),
+
+    /** Configures how the server works with GBIF species data. */
+    @NotNull val gbif: GbifConfig = GbifConfig(),
 ) {
   @ConstructorBinding
   class DailyTasksConfig(
@@ -201,6 +198,16 @@ class TerrawareServerConfig(
       }
     }
   }
+
+  @ConstructorBinding
+  class GbifConfig(
+      /**
+       * When importing GBIF taxonomy data, only include entries from these datasets. These should
+       * be dataset identifiers (typically UUIDs), not names.
+       */
+      val datasetIds: List<String>? = null,
+      val distributionSources: List<String>? = null,
+  )
 
   companion object {
     const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"
