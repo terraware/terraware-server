@@ -50,6 +50,9 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
 
     return SpeciesLookupNamesResponsePayload(names.take(cappedMaxResults), partial)
   }
+
+  @GetMapping("/details")
+  fun getSpeciesDetails(@RequestParam("scientificName") scientificName: String) {}
 }
 
 data class SpeciesLookupNamesResponsePayload(

@@ -3,6 +3,7 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
 import com.terraformation.backend.db.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
+import com.terraformation.backend.species.model.GbifTaxonModel
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -71,5 +72,9 @@ class GbifStore(private val dslContext: DSLContext) {
         .limit(maxResults)
         .fetchInto(GbifNamesRow::class.java)
         .filterNotNull()
+  }
+
+  fun fetchOneByScientificName(scientificName: String): GbifTaxonModel? {
+    return null
   }
 }
