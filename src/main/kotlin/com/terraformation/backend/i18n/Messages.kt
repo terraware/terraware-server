@@ -65,7 +65,5 @@ class Messages {
 
   /** Title and body to use for "user added to organization" app notification */
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
-      NotificationMessage(
-          title = "Lorem ipsum dolor sit amet",
-          body = "You have joined $orgName.")
+      NotificationMessage(title = "Lorem ipsum dolor sit amet", body = "You have joined $orgName.")
 }
