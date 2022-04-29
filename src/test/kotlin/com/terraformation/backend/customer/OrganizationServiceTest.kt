@@ -86,7 +86,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     parentStore = ParentStore(dslContext)
     projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
     siteStore = SiteStore(clock, dslContext, parentStore, sitesDao)
-    notificationStore = NotificationStore(dslContext, notificationsDao, clock)
+    notificationStore = NotificationStore(dslContext, clock)
     userStore =
         UserStore(
             clock,

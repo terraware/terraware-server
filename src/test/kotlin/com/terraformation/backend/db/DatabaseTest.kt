@@ -14,7 +14,6 @@ import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
 import com.terraformation.backend.db.tables.daos.GerminationTestsDao
 import com.terraformation.backend.db.tables.daos.GerminationsDao
-import com.terraformation.backend.db.tables.daos.NotificationsDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
@@ -211,7 +210,6 @@ abstract class DatabaseTest {
   protected val timeseriesDao: TimeseriesDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
-  protected val notificationsDao: NotificationsDao by lazyDao()
 
   protected fun insertOrganization(
       id: Any? = null,

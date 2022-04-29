@@ -365,13 +365,16 @@ data class IndividualUser(
   }
 
   override fun canReadNotification(notificationId: NotificationId): Boolean {
-    return notificationStore.isOwner(userId, notificationId)
+    return parentStore.getUserId(notificationId) == userId
   }
   override fun canListNotifications(organizationId: OrganizationId?): Boolean {
-    // user can list global notifications relevant to user
-    if (organizationId == null) return true
-    // user should belong to the organization otherwise
-    else return organizationRoles[organizationId] != null
+    return if (organizationId == null) {
+      // user can list global notifications relevant to user
+      true
+    } else {
+      // user should belong to the organization otherwise
+      organizationId in organizationRoles
+    }
   }
 
   // all users can count their unread notifications
@@ -383,11 +386,15 @@ data class IndividualUser(
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean =
       canListNotifications(organizationId)
 
-  override fun canCreateNotification(userId: UserId, organizationId: OrganizationId): Boolean =
-      // for now, ensure user making the request and the target user for notification,
-      // are both members of the organization in context
-      permissionStore.fetchOrganizationRoles(this.userId)[organizationId] != null &&
-          permissionStore.fetchOrganizationRoles(userId)[organizationId] != null
+  override fun canCreateNotification(
+      targetUserId: UserId,
+      organizationId: OrganizationId
+  ): Boolean {
+    // for now, ensure user making the request and the target user for notification,
+    // are both members of the organization in context
+    return (organizationId in permissionStore.fetchOrganizationRoles(targetUserId)) &&
+        (organizationId in organizationRoles)
+  }
 
   /** Returns true if the user is an admin or owner of any organizations. */
   override fun hasAnyAdminRole(): Boolean =

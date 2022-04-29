@@ -587,6 +587,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createNotification() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.createNotification(notificationUserId, organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> {
       requirements.createNotification(notificationUserId, organizationId)
     }
@@ -605,6 +610,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun listOrganizationNotifications() {
+    assertThrows<OrganizationNotFoundException> { requirements.listNotifications(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.listNotifications(organizationId) }
 
     grant { user.canListNotifications(organizationId) }
@@ -637,6 +645,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun updateOrganizationNotifications() {
+    assertThrows<OrganizationNotFoundException> { requirements.updateNotifications(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.updateNotifications(organizationId) }
 
     grant { user.canUpdateNotifications(organizationId) }

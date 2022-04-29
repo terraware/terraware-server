@@ -153,7 +153,7 @@ internal class PermissionTest : DatabaseTest() {
 
     parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
-    notificationStore = NotificationStore(dslContext, notificationsDao, clock)
+    notificationStore = NotificationStore(dslContext, clock)
     userStore =
         UserStore(
             clock,

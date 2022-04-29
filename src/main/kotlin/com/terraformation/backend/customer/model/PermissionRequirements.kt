@@ -437,6 +437,9 @@ class PermissionRequirements(private val user: TerrawareUser) {
   }
 
   fun listNotifications(organizationId: OrganizationId?) {
+    if (organizationId != null) {
+      readOrganization(organizationId)
+    }
     if (!user.canListNotifications(organizationId)) {
       throw AccessDeniedException("No permission to list notifications")
     }
@@ -456,12 +459,16 @@ class PermissionRequirements(private val user: TerrawareUser) {
   }
 
   fun updateNotifications(organizationId: OrganizationId?) {
+    if (organizationId != null) {
+      readOrganization(organizationId)
+    }
     if (!user.canUpdateNotifications(organizationId)) {
       throw AccessDeniedException("No permission to update notifications")
     }
   }
 
   fun createNotification(userId: UserId, organizationId: OrganizationId) {
+    readOrganization(organizationId)
     if (!user.canCreateNotification(userId, organizationId)) {
       throw AccessDeniedException("No permission to create notification")
     }

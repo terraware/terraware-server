@@ -70,7 +70,7 @@ class NotificationController(private val notificationStore: NotificationStore) {
       @PathVariable("id") notificationId: NotificationId,
       @RequestBody @Valid payload: UpdateNotificationRequestPayload
   ): SimpleSuccessResponsePayload {
-    notificationStore.markRead(notificationId, payload.read)
+    notificationStore.markRead(payload.read, notificationId)
     return SimpleSuccessResponsePayload()
   }
 

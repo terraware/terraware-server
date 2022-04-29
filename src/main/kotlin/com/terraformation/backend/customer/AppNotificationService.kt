@@ -58,12 +58,11 @@ class AppNotificationService(
     val notification =
         CreateNotificationModel(
             userId = user.userId,
-            organizationId = event.organizationId,
+            organizationId = null,
             title = message.title,
             body = message.body,
             localUrl = URI.create(organizationHomeUrl),
-            notificationType = NotificationType.UserAddedtoOrganization,
-            isGlobalNotification = false)
-    notificationStore.create(notification)
+            notificationType = NotificationType.UserAddedtoOrganization)
+    notificationStore.create(notification, organization.id)
   }
 }

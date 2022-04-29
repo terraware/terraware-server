@@ -120,5 +120,5 @@ interface TerrawareUser : Principal {
   fun canCountNotifications(): Boolean
   fun canUpdateNotification(notificationId: NotificationId): Boolean
   fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
-  fun canCreateNotification(userId: UserId, organizationId: OrganizationId): Boolean
+  fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
 }

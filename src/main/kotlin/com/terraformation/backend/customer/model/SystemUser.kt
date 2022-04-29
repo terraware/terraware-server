@@ -147,5 +147,8 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canCountNotifications(): Boolean = true
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
   override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
-  override fun canCreateNotification(userId: UserId, organizationId: OrganizationId): Boolean = true
+  override fun canCreateNotification(
+      targetUserId: UserId,
+      organizationId: OrganizationId
+  ): Boolean = true
 }

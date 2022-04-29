@@ -14,11 +14,10 @@ data class NotificationCountModel(val organizationId: OrganizationId?, val unrea
 data class CreateNotificationModel(
     val notificationType: NotificationType,
     val userId: UserId,
-    val organizationId: OrganizationId,
+    val organizationId: OrganizationId?,
     val title: String,
     val body: String,
     val localUrl: URI,
-    val isGlobalNotification: Boolean = true
 )
 
 data class NotificationModel(
