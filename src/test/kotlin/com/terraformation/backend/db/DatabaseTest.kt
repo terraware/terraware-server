@@ -22,8 +22,6 @@ import com.terraformation.backend.db.tables.daos.ProjectUsersDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
-import com.terraformation.backend.db.tables.daos.SpeciesNamesDao
-import com.terraformation.backend.db.tables.daos.SpeciesOptionsDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
@@ -38,8 +36,6 @@ import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
-import com.terraformation.backend.db.tables.references.SPECIES_NAMES
-import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.USERS
 import java.time.Instant
@@ -205,8 +201,6 @@ abstract class DatabaseTest {
   protected val projectUsersDao: ProjectUsersDao by lazyDao()
   protected val sitesDao: SitesDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
-  protected val speciesNamesDao: SpeciesNamesDao by lazyDao()
-  protected val speciesOptionsDao: SpeciesOptionsDao by lazyDao()
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
@@ -356,59 +350,26 @@ abstract class DatabaseTest {
 
   protected fun insertSpecies(
       speciesId: Any,
-      name: String = "Species $speciesId",
+      scientificName: String = "Species $speciesId",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH,
-      organizationId: Any? = null,
-      insertName: Boolean = organizationId != null,
-      insertOption: Boolean = organizationId != null,
-      speciesNameId: Any? = null,
+      organizationId: Any = "$speciesId".toLong() / 10,
   ) {
     val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
-    val organizationIdWrapper = organizationId?.toIdWrapper { OrganizationId(it) }
+    val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
 
     with(SPECIES) {
       dslContext
           .insertInto(SPECIES)
+          .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
           .set(ID, speciesIdWrapper)
+          .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, modifiedTime)
-          .set(NAME, name)
+          .set(ORGANIZATION_ID, organizationIdWrapper)
+          .set(SCIENTIFIC_NAME, scientificName)
           .execute()
-    }
-
-    if (insertName) {
-      val speciesNameIdWrapper =
-          speciesNameId?.toIdWrapper { SpeciesNameId(it) } ?: SpeciesNameId(speciesIdWrapper.value)
-
-      with(SPECIES_NAMES) {
-        dslContext
-            .insertInto(SPECIES_NAMES)
-            .set(CREATED_BY, createdBy)
-            .set(CREATED_TIME, createdTime)
-            .set(ID, speciesNameIdWrapper)
-            .set(SPECIES_ID, speciesIdWrapper)
-            .set(ORGANIZATION_ID, organizationIdWrapper)
-            .set(MODIFIED_BY, createdBy)
-            .set(MODIFIED_TIME, modifiedTime)
-            .set(NAME, name)
-            .execute()
-      }
-    }
-
-    if (insertOption) {
-      with(SPECIES_OPTIONS) {
-        dslContext
-            .insertInto(SPECIES_OPTIONS)
-            .set(CREATED_BY, createdBy)
-            .set(CREATED_TIME, createdTime)
-            .set(MODIFIED_BY, createdBy)
-            .set(MODIFIED_TIME, modifiedTime)
-            .set(ORGANIZATION_ID, organizationIdWrapper)
-            .set(SPECIES_ID, speciesIdWrapper)
-            .execute()
-      }
     }
   }
 

@@ -7,16 +7,12 @@ import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.PlantForm
-import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNameId
-import com.terraformation.backend.db.tables.pojos.SpeciesNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.db.SpeciesStore
-import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -71,7 +67,7 @@ class SpeciesController(private val speciesStore: SpeciesStore) {
   @PostMapping
   fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
     try {
-      val speciesId = speciesStore.createSpecies(payload.organizationId, payload.toRow())
+      val speciesId = speciesStore.createSpecies(payload.toRow())
       return CreateSpeciesResponsePayload(speciesId)
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
@@ -89,7 +85,7 @@ class SpeciesController(private val speciesStore: SpeciesStore) {
       organizationId: OrganizationId,
   ): GetSpeciesResponsePayload {
     val speciesRow =
-        speciesStore.fetchSpeciesById(organizationId, speciesId)
+        speciesStore.fetchSpeciesById(speciesId)
             ?: throw NotFoundException("Species $speciesId not found.")
 
     val element = SpeciesResponseElement(speciesRow)
@@ -105,7 +101,7 @@ class SpeciesController(private val speciesStore: SpeciesStore) {
       @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesStore.updateSpecies(payload.organizationId, payload.toRow(speciesId))
+    speciesStore.updateSpecies(payload.toRow(speciesId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -128,209 +124,63 @@ class SpeciesController(private val speciesStore: SpeciesStore) {
       organizationId: OrganizationId,
   ): SimpleSuccessResponsePayload {
     try {
-      speciesStore.deleteSpecies(organizationId, speciesId)
+      speciesStore.deleteSpecies(speciesId)
       return SimpleSuccessResponsePayload()
     } catch (e: DataIntegrityViolationException) {
       throw ResourceInUseException("Species $speciesId is currently in use.")
     }
   }
-
-  @GetMapping("/names")
-  @Operation(summary = "Lists all of an organization's species names.")
-  fun listAllSpeciesNames(
-      @RequestParam("organizationId", required = true)
-      @Schema(description = "Organization whose species names should be listed.")
-      organizationId: OrganizationId,
-  ): ListSpeciesNamesResponsePayload {
-    val names = speciesStore.findAllSpeciesNames(organizationId)
-    return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
-  }
-
-  @ApiResponses(
-      ApiResponse(responseCode = "200", description = "Species name added."),
-      ApiResponse(
-          responseCode = "409", description = "The species already has the requested name."))
-  @ApiResponse404("The species does not exist.")
-  @Operation(summary = "Adds a new name for an existing species.")
-  @PostMapping("/names")
-  fun createSpeciesName(
-      @RequestBody payload: CreateSpeciesNameRequestPayload
-  ): CreateSpeciesNameResponsePayload {
-    try {
-      val speciesNameId = speciesStore.createSpeciesName(payload.toRow())
-      return CreateSpeciesNameResponsePayload(speciesNameId)
-    } catch (e: DataIntegrityViolationException) {
-      throw DuplicateNameException("The species already has the requested name.")
-    }
-  }
-
-  @ApiResponse(responseCode = "200", description = "Species names retrieved.")
-  @ApiResponse404("The species does not exist.")
-  @GetMapping("/{speciesId}/names")
-  fun listSpeciesNames(
-      @PathVariable speciesId: SpeciesId,
-      @RequestParam("organizationId", required = true)
-      @Schema(description = "Organization whose names for the species should be listed.")
-      organizationId: OrganizationId,
-  ): ListSpeciesNamesResponsePayload {
-    val names = speciesStore.listAllSpeciesNames(organizationId, speciesId)
-    return ListSpeciesNamesResponsePayload(names.map { SpeciesNamesResponseElement(it) })
-  }
-
-  @ApiResponse(responseCode = "200", description = "Species name retrieved.")
-  @ApiResponse404
-  @GetMapping("/names/{speciesNameId}")
-  @Operation(description = "Gets information about a single species name.")
-  fun getSpeciesName(
-      @PathVariable speciesNameId: SpeciesNameId,
-  ): GetSpeciesNameResponsePayload {
-    val row =
-        speciesStore.fetchSpeciesNameById(speciesNameId)
-            ?: throw NotFoundException("Species name not found")
-
-    return GetSpeciesNameResponsePayload(SpeciesNamesResponseElement(row))
-  }
-
-  @ApiResponses(
-      ApiResponse(responseCode = "200", description = "Species name deleted."),
-      ApiResponse(
-          responseCode = "409", description = "Cannot delete the primary name of a species."))
-  @ApiResponse404
-  @DeleteMapping("/names/{speciesNameId}")
-  @Operation(description = "Deletes one of the secondary names of a species.")
-  fun deleteSpeciesName(
-      @PathVariable speciesNameId: SpeciesNameId,
-  ): SimpleSuccessResponsePayload {
-    speciesStore.deleteSpeciesName(speciesNameId)
-    return SimpleSuccessResponsePayload()
-  }
-
-  @Operation(description = "Updates one of the names of a species.")
-  @PutMapping("/names/{speciesNameId}")
-  fun updateSpeciesName(
-      @PathVariable speciesNameId: SpeciesNameId,
-      @RequestBody payload: UpdateSpeciesNameRequestPayload
-  ): SimpleSuccessResponsePayload {
-    speciesStore.updateSpeciesName(payload.toRow(speciesNameId))
-    return SimpleSuccessResponsePayload()
-  }
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeciesResponseElement(
-    val conservationStatus: String?,
+    val commonName: String?,
+    val endangered: Boolean?,
+    val familyName: String?,
+    val growthForm: GrowthForm?,
     val id: SpeciesId,
-    @Schema(description = "True if name is the scientific name for the species.")
-    val isScientific: Boolean,
-    val name: String,
-    val plantForm: PlantForm?,
-    val rare: RareType?,
-    @Schema(
-        description = "Taxonomic serial number from ITIS database.",
-        externalDocs =
-            ExternalDocumentation(
-                url = "https://en.wikipedia.org/wiki/Integrated_Taxonomic_Information_System"))
-    val tsn: String?,
+    val rare: Boolean?,
+    val scientificName: String,
 ) {
   constructor(
       row: SpeciesRow
   ) : this(
-      conservationStatus = row.conservationStatusId,
+      commonName = row.commonName,
+      endangered = row.endangered,
+      familyName = row.familyName,
+      growthForm = row.growthFormId,
       id = row.id!!,
-      isScientific = row.isScientific!!,
-      plantForm = row.plantFormId,
-      rare = row.rareTypeId,
-      name = row.name!!,
-      tsn = row.tsn,
+      rare = row.rare,
+      scientificName = row.scientificName!!,
   )
 }
 
 data class SpeciesRequestPayload(
-    val conservationStatus: String?,
-    @Schema(description = "True if name is the scientific name for the species.")
-    val isScientific: Boolean?,
-    val name: String,
+    val commonName: String?,
+    val endangered: Boolean?,
+    val familyName: String?,
+    val growthForm: GrowthForm?,
+    val scientificName: String,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
-    val plantForm: PlantForm?,
-    val rare: RareType?,
-    @Schema(
-        description = "Taxonomic serial number from ITIS database.",
-        externalDocs =
-            ExternalDocumentation(
-                url = "https://en.wikipedia.org/wiki/Integrated_Taxonomic_Information_System"))
-    val tsn: String?,
+    val rare: Boolean?,
 ) {
   fun toRow(id: SpeciesId? = null) =
       SpeciesRow(
-          conservationStatusId = conservationStatus,
+          commonName = commonName,
+          endangered = endangered,
+          familyName = familyName,
+          growthFormId = growthForm,
           id = id,
-          isScientific = isScientific == true,
-          name = name,
-          plantFormId = plantForm,
-          rareTypeId = rare,
-          tsn = tsn,
-      )
-}
-
-data class SpeciesNamesResponseElement(
-    val id: SpeciesNameId,
-    @Schema(description = "True if name is the scientific name for the species.")
-    val isScientific: Boolean,
-    val name: String,
-    val organizationId: OrganizationId,
-    val speciesId: SpeciesId,
-) {
-  constructor(
-      row: SpeciesNamesRow
-  ) : this(
-      id = row.id!!,
-      isScientific = row.isScientific == true,
-      name = row.name!!,
-      organizationId = row.organizationId!!,
-      speciesId = row.speciesId!!,
-  )
-}
-
-data class CreateSpeciesNameRequestPayload(
-    @Schema(description = "True if name is a scientific name for the species.")
-    val isScientific: Boolean?,
-    val locale: String?,
-    val name: String,
-    @Schema(description = "Which organization's species list to update.")
-    val organizationId: OrganizationId,
-    val speciesId: SpeciesId,
-) {
-  fun toRow() =
-      SpeciesNamesRow(
-          speciesId = speciesId,
+          rare = rare,
           organizationId = organizationId,
-          name = name,
-          isScientific = isScientific == true,
-          locale = locale)
+          scientificName = scientificName,
+      )
 }
 
 data class CreateSpeciesResponsePayload(val id: SpeciesId) : SuccessResponsePayload
 
-data class CreateSpeciesNameResponsePayload(val id: SpeciesNameId) : SuccessResponsePayload
-
 data class GetSpeciesResponsePayload(val species: SpeciesResponseElement) : SuccessResponsePayload
-
-data class GetSpeciesNameResponsePayload(val speciesName: SpeciesNamesResponseElement) :
-    SuccessResponsePayload
 
 data class ListSpeciesResponsePayload(val species: List<SpeciesResponseElement>) :
     SuccessResponsePayload
-
-data class ListSpeciesNamesResponsePayload(val speciesNames: List<SpeciesNamesResponseElement>) :
-    SuccessResponsePayload
-
-data class UpdateSpeciesNameRequestPayload(
-    @Schema(description = "True if name is a scientific name for the species.")
-    val isScientific: Boolean?,
-    val locale: String?,
-    val name: String,
-) {
-  fun toRow(id: SpeciesNameId) =
-      SpeciesNamesRow(id = id, name = name, isScientific = isScientific == true, locale = locale)
-}

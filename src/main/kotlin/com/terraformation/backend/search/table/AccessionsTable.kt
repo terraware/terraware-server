@@ -118,7 +118,7 @@ class AccessionsTable(
         enumField("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
         textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
         enumField("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
-        aliasField("speciesName", "species_name"),
+        aliasField("speciesName", "species_scientificName"),
         enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
         enumField("storageCondition", "Storage condition", ACCESSIONS.TARGET_STORAGE_CONDITION),
         aliasField("storageLocationName", "storageLocation_name"),
