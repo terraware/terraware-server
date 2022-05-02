@@ -44,6 +44,10 @@ class GbifStore(private val dslContext: DSLContext) {
     // AND gbif_names.is_scientific = TRUE
     // AND LOWER(gbif_names.name) LIKE '%abc%def%'
     // ORDER by gbif_names.name
+    //
+    // The LOWER(gbif_names.name) LIKE '%abc%def%' is needed because we want the prefixes to be
+    // order-sensitive, but we don't require them to start at the beginning of the name. That is,
+    // this search should match species 'Abc def' and 'Xyz abc var. def' but not species 'Def abc'.
 
     val selectFrom = dslContext.selectDistinct(GBIF_NAMES.asterisk()).from(GBIF_NAMES)
 
