@@ -15,19 +15,6 @@ VALUES (10, 'Pending', TRUE),
        (80, 'Nursery', FALSE)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO conservation_statuses (id, name)
-VALUES ('CD', 'Conservation Dependent'),
-       ('CR', 'Critically endangered'),
-       ('DD', 'Data deficient'),
-       ('EN', 'Endangered'),
-       ('EW', 'Extinct in the wild'),
-       ('EX', 'Extinct'),
-       ('LC', 'Least concern'),
-       ('NE', 'Not evaluated'),
-       ('NT', 'Near threatened'),
-       ('VU', 'Vulnerable')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO facility_types (id, name)
 VALUES (1, 'Seed Bank'),
        (2, 'Desalination'),
@@ -59,12 +46,12 @@ VALUES (1, 'Soak'),
        (5, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO plant_forms (id, name)
+INSERT INTO growth_forms (id, name)
 VALUES (1, 'Tree'),
        (2, 'Shrub'),
-       (3, 'Vine'),
-       (4, 'Liana'),
-       (5, 'Herbaceous')
+       (3, 'Forb'),
+       (4, 'Graminoid'),
+       (5, 'Fern')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO processing_methods (id, name)
@@ -103,6 +90,13 @@ VALUES (1, 'Seeds'),
        (4, 'Kilograms'),
        (5, 'Ounces'),
        (6, 'Pounds')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO seed_storage_behaviors (id, name)
+VALUES (1, 'Orthodox'),
+       (2, 'Recalcitrant'),
+       (3, 'Intermediate'),
+       (4, 'Unknown')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO source_plant_origins (id, name)

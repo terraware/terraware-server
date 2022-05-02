@@ -12,7 +12,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
@@ -298,35 +298,17 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadSpecies(organizationId: OrganizationId): Boolean =
-      canReadOrganization(organizationId)
-
-  override fun canDeleteSpecies(organizationId: OrganizationId): Boolean =
-      canCreateSpecies(organizationId)
-
-  override fun canUpdateSpecies(organizationId: OrganizationId): Boolean =
-      canCreateSpecies(organizationId)
-
-  override fun canCreateSpeciesName(organizationId: OrganizationId): Boolean {
-    return when (organizationRoles[organizationId]) {
-      Role.OWNER, Role.ADMIN -> true
-      else -> false
-    }
+  override fun canReadSpecies(speciesId: SpeciesId): Boolean {
+    val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
+    return canReadOrganization(organizationId)
   }
 
-  override fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean {
-    val organizationId = parentStore.getOrganizationId(speciesNameId) ?: return false
-    return organizationId in organizationRoles.keys
+  override fun canUpdateSpecies(speciesId: SpeciesId): Boolean {
+    val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
+    return canCreateSpecies(organizationId)
   }
 
-  override fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean {
-    val organizationId = parentStore.getOrganizationId(speciesNameId) ?: return false
-    return canCreateSpeciesName(organizationId)
-  }
-
-  override fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean {
-    return canUpdateSpeciesName(speciesNameId)
-  }
+  override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = canUpdateSpecies(speciesId)
 
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false

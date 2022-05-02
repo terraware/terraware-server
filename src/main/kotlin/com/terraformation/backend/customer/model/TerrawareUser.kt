@@ -8,7 +8,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
@@ -71,15 +71,13 @@ interface TerrawareUser : Principal {
   fun canCreateProject(organizationId: OrganizationId): Boolean
   fun canCreateSite(projectId: ProjectId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
-  fun canCreateSpeciesName(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
   fun canDeleteApiKey(organizationId: OrganizationId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
   fun canDeleteSite(siteId: SiteId): Boolean
-  fun canDeleteSpecies(organizationId: OrganizationId): Boolean
-  fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean
+  fun canDeleteSpecies(speciesId: SpeciesId): Boolean
   fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canImportGlobalSpeciesData(): Boolean
   fun canListApiKeys(organizationId: OrganizationId): Boolean
@@ -95,8 +93,7 @@ interface TerrawareUser : Principal {
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadProject(projectId: ProjectId): Boolean
   fun canReadSite(siteId: SiteId): Boolean
-  fun canReadSpecies(organizationId: OrganizationId): Boolean
-  fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean
+  fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
@@ -110,8 +107,7 @@ interface TerrawareUser : Principal {
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
   fun canUpdateProject(projectId: ProjectId): Boolean
   fun canUpdateSite(siteId: SiteId): Boolean
-  fun canUpdateSpecies(organizationId: OrganizationId): Boolean
-  fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean
+  fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
 }

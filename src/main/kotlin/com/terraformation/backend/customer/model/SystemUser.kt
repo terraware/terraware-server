@@ -9,7 +9,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SpeciesNameId
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
@@ -96,15 +96,13 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
   override fun canCreateSite(projectId: ProjectId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
-  override fun canCreateSpeciesName(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canDeleteApiKey(organizationId: OrganizationId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
   override fun canDeleteSite(siteId: SiteId): Boolean = true
-  override fun canDeleteSpecies(organizationId: OrganizationId): Boolean = true
-  override fun canDeleteSpeciesName(speciesNameId: SpeciesNameId): Boolean = true
+  override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canImportGlobalSpeciesData(): Boolean = false
   override fun canListApiKeys(organizationId: OrganizationId): Boolean = true
@@ -120,8 +118,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadProject(projectId: ProjectId): Boolean = true
   override fun canReadSite(siteId: SiteId): Boolean = true
-  override fun canReadSpecies(organizationId: OrganizationId): Boolean = true
-  override fun canReadSpeciesName(speciesNameId: SpeciesNameId): Boolean = true
+  override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
@@ -137,8 +134,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
   override fun canUpdateProject(projectId: ProjectId): Boolean = true
   override fun canUpdateSite(siteId: SiteId): Boolean = true
-  override fun canUpdateSpecies(organizationId: OrganizationId): Boolean = true
-  override fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean = true
+  override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
 }

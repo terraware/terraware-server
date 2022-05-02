@@ -119,17 +119,21 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     speciesDao.insert(
         SpeciesRow(
             id = SpeciesId(10000),
-            name = "Kousa Dogwood",
-            isScientific = false,
+            scientificName = "Kousa Dogwood",
+            createdBy = user.userId,
             createdTime = now,
-            modifiedTime = now))
+            modifiedBy = user.userId,
+            modifiedTime = now,
+            organizationId = organizationId))
     speciesDao.insert(
         SpeciesRow(
             id = SpeciesId(10001),
-            name = "Other Dogwood",
-            isScientific = false,
+            scientificName = "Other Dogwood",
+            createdBy = user.userId,
             createdTime = now,
-            modifiedTime = now))
+            modifiedBy = user.userId,
+            modifiedTime = now,
+            organizationId = organizationId))
 
     accessionsDao.insert(
         AccessionsRow(

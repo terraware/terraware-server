@@ -16,8 +16,6 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNameId
-import com.terraformation.backend.db.SpeciesNameNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StorageLocationNotFoundException
@@ -57,7 +55,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val role = Role.CONTRIBUTOR
   private val siteId = SiteId(1)
   private val speciesId = SpeciesId(1)
-  private val speciesNameId = SpeciesNameId(1)
   private val storageLocationId = StorageLocationId(1)
   private val userId = UserId(1)
 
@@ -446,73 +443,32 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun readSpecies() {
-    assertThrows<SpeciesNotFoundException> { requirements.readSpecies(organizationId, speciesId) }
+    assertThrows<SpeciesNotFoundException> { requirements.readSpecies(speciesId) }
 
-    grant { user.canReadSpecies(organizationId) }
-    requirements.readSpecies(organizationId, speciesId)
+    grant { user.canReadSpecies(speciesId) }
+    requirements.readSpecies(speciesId)
   }
 
   @Test
   fun deleteSpecies() {
-    assertThrows<SpeciesNotFoundException> { requirements.deleteSpecies(organizationId, speciesId) }
+    assertThrows<SpeciesNotFoundException> { requirements.deleteSpecies(speciesId) }
 
-    grant { user.canReadSpecies(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.deleteSpecies(organizationId, speciesId) }
+    grant { user.canReadSpecies(speciesId) }
+    assertThrows<AccessDeniedException> { requirements.deleteSpecies(speciesId) }
 
-    grant { user.canDeleteSpecies(organizationId) }
-    requirements.deleteSpecies(organizationId, speciesId)
+    grant { user.canDeleteSpecies(speciesId) }
+    requirements.deleteSpecies(speciesId)
   }
 
   @Test
   fun updateSpecies() {
-    assertThrows<SpeciesNotFoundException> { requirements.updateSpecies(organizationId, speciesId) }
+    assertThrows<SpeciesNotFoundException> { requirements.updateSpecies(speciesId) }
 
-    grant { user.canReadSpecies(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.updateSpecies(organizationId, speciesId) }
+    grant { user.canReadSpecies(speciesId) }
+    assertThrows<AccessDeniedException> { requirements.updateSpecies(speciesId) }
 
-    grant { user.canUpdateSpecies(organizationId) }
-    requirements.updateSpecies(organizationId, speciesId)
-  }
-
-  @Test
-  fun createSpeciesName() {
-    assertThrows<OrganizationNotFoundException> { requirements.createSpeciesName(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.createSpeciesName(organizationId) }
-
-    grant { user.canCreateSpeciesName(organizationId) }
-    requirements.createSpeciesName(organizationId)
-  }
-
-  @Test
-  fun readSpeciesName() {
-    assertThrows<SpeciesNameNotFoundException> { requirements.readSpeciesName(speciesNameId) }
-
-    grant { user.canReadSpeciesName(speciesNameId) }
-    requirements.readSpeciesName(speciesNameId)
-  }
-
-  @Test
-  fun updateSpeciesName() {
-    assertThrows<SpeciesNameNotFoundException> { requirements.updateSpeciesName(speciesNameId) }
-
-    grant { user.canReadSpeciesName(speciesNameId) }
-    assertThrows<AccessDeniedException> { requirements.updateSpeciesName(speciesNameId) }
-
-    grant { user.canUpdateSpeciesName(speciesNameId) }
-    requirements.updateSpeciesName(speciesNameId)
-  }
-
-  @Test
-  fun deleteSpeciesName() {
-    assertThrows<SpeciesNameNotFoundException> { requirements.deleteSpeciesName(speciesNameId) }
-
-    grant { user.canReadSpeciesName(speciesNameId) }
-    assertThrows<AccessDeniedException> { requirements.deleteSpeciesName(speciesNameId) }
-
-    grant { user.canDeleteSpeciesName(speciesNameId) }
-    requirements.deleteSpeciesName(speciesNameId)
+    grant { user.canUpdateSpecies(speciesId) }
+    requirements.updateSpecies(speciesId)
   }
 
   @Test

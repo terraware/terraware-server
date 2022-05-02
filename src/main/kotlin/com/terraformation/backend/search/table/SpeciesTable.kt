@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.FuzzySearchOperators
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.search.SearchTable
@@ -24,6 +25,8 @@ class SpeciesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperat
 
   override val fields: List<SearchField> =
       listOf(
-          textField("name", "Species name", SPECIES.NAME),
+          idWrapperField("id", "Species ID", SPECIES.ID) { SpeciesId(it) },
+          textField("commonName", "Species common name", SPECIES.COMMON_NAME),
+          textField("scientificName", "Species scientific name", SPECIES.SCIENTIFIC_NAME),
       )
 }

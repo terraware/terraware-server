@@ -89,7 +89,7 @@ class AccessionStore(
             .select(
                 ACCESSIONS.asterisk(),
                 ACCESSIONS.collectors().NAME,
-                ACCESSIONS.species().NAME,
+                ACCESSIONS.species().SCIENTIFIC_NAME,
                 ACCESSIONS.STATE_ID,
                 ACCESSIONS.storageLocations().NAME,
                 ACCESSIONS.storageLocations().CONDITION_ID,
@@ -162,7 +162,7 @@ class AccessionStore(
           siteLocation = record[COLLECTION_SITE_NAME],
           source = source,
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
-          species = record[species().NAME],
+          species = record[species().SCIENTIFIC_NAME],
           speciesId = record[SPECIES_ID],
           state = record[STATE_ID]!!,
           storageCondition = record[storageLocations().CONDITION_ID],
