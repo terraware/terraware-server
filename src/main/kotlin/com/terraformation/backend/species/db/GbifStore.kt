@@ -1,8 +1,11 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
+import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
 import com.terraformation.backend.db.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
+import com.terraformation.backend.db.tables.references.GBIF_TAXA
+import com.terraformation.backend.db.tables.references.GBIF_VERNACULAR_NAMES
 import com.terraformation.backend.species.model.GbifTaxonModel
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -75,6 +78,28 @@ class GbifStore(private val dslContext: DSLContext) {
   }
 
   fun fetchOneByScientificName(scientificName: String): GbifTaxonModel? {
-    return null
+    val commonNamesMultiset =
+        DSL.multiset(
+            DSL.select(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME)
+                .from(GBIF_VERNACULAR_NAMES)
+                .where(GBIF_VERNACULAR_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID))
+                .orderBy(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME))
+
+    return dslContext
+        .select(
+            GBIF_TAXA.TAXON_ID,
+            GBIF_NAMES.NAME,
+            GBIF_TAXA.FAMILY,
+            GBIF_DISTRIBUTIONS.THREAT_STATUS,
+            commonNamesMultiset)
+        .from(GBIF_NAMES)
+        .join(GBIF_TAXA)
+        .on(GBIF_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID))
+        .leftJoin(GBIF_DISTRIBUTIONS)
+        .on(GBIF_NAMES.TAXON_ID.eq(GBIF_DISTRIBUTIONS.TAXON_ID))
+        .where(GBIF_NAMES.NAME.eq(scientificName))
+        .and(GBIF_NAMES.IS_SCIENTIFIC.isTrue)
+        .limit(1)
+        .fetchOne { record -> GbifTaxonModel(record, commonNamesMultiset) }
   }
 }
