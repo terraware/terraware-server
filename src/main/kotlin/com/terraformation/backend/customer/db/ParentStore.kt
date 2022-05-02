@@ -10,7 +10,6 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
@@ -20,8 +19,7 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
-import com.terraformation.backend.db.tables.references.SPECIES_NAMES
-import com.terraformation.backend.db.tables.references.SPECIES_OPTIONS
+import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -62,17 +60,8 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.sites().projects().ORGANIZATION_ID)
 
-  fun getOrganizationIds(speciesId: SpeciesId): List<OrganizationId> {
-    return dslContext
-        .select(SPECIES_OPTIONS.ORGANIZATION_ID)
-        .from(SPECIES_OPTIONS)
-        .where(SPECIES_OPTIONS.SPECIES_ID.eq(speciesId))
-        .fetch(SPECIES_OPTIONS.ORGANIZATION_ID)
-        .filterNotNull()
-  }
-
-  fun getOrganizationId(speciesNameId: SpeciesNameId): OrganizationId? =
-      fetchFieldById(speciesNameId, SPECIES_NAMES.ID, SPECIES_NAMES.ORGANIZATION_ID)
+  fun getOrganizationId(speciesId: SpeciesId): OrganizationId? =
+      fetchFieldById(speciesId, SPECIES.ID, SPECIES.ORGANIZATION_ID)
 
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)

@@ -31,17 +31,20 @@ val ENUM_TABLES =
                 "germination_tests\\.test_type",
                 "accession_germination_test_types\\.germination_test_type_id")),
         EnumTable("germination_treatments", "germination_tests\\.treatment_id"),
+        EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
         EnumTable("notification_criticalities", listOf(".*\\.notification_criticality_id"),
             "NotificationCriticality"),
         EnumTable("notification_types", listOf(".*\\.notification_type_id"),
             additionalColumns = listOf(EnumTableColumnInfo("notification_criticality_id",
                     "NotificationCriticality", true,))),
-        EnumTable("plant_forms", listOf("plant_forms\\.id", ".*\\.plant_form_id")),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
         EnumTable("project_statuses", listOf("projects\\.status_id"), "ProjectStatus"),
         EnumTable("project_types", ".*\\.project_type_id"),
         EnumTable("rare_types", ".*\\.rare_type_id"),
         EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
+        EnumTable(
+            "seed_storage_behaviors",
+            listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),
         EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
         EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
         EnumTable(
@@ -77,13 +80,18 @@ val ID_WRAPPERS =
         IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
         IdWrapper("SiteId", listOf("sites\\.id", ".*\\.site_id")),
         IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
-        IdWrapper("SpeciesNameId", listOf("species_names\\.id")),
         IdWrapper(
             "StorageLocationId", listOf("storage_locations\\.id", ".*\\.storage_location_id")),
         IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
         IdWrapper("TimeseriesId", listOf("timeseries\\.id", ".*\\.timeseries_id")),
         IdWrapper(
-            "UserId", listOf("users\\.id", ".*\\.user_id", ".*\\.created_by", ".*\\.modified_by")),
+            "UserId",
+            listOf(
+                "users\\.id",
+                ".*\\.user_id",
+                ".*\\.created_by",
+                ".*\\.deleted_by",
+                ".*\\.modified_by")),
         IdWrapper("WithdrawalId", listOf("withdrawals\\.id", ".*\\.withdrawal_id")),
     )
 

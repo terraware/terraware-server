@@ -1777,139 +1777,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSpeciesResponsePayload'
-  /api/v1/species/names:
-    get:
-      tags:
-      - SeedBankApp
-      summary: Lists all of an organization's species names.
-      operationId: listAllSpeciesNames
-      parameters:
-      - name: organizationId
-        in: query
-        required: true
-        schema:
-          type: integer
-          description: Organization whose species names should be listed.
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListSpeciesNamesResponsePayload'
-    post:
-      tags:
-      - SeedBankApp
-      summary: Adds a new name for an existing species.
-      operationId: createSpeciesName
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateSpeciesNameRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: Species name added.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSpeciesNameResponsePayload'
-        "404":
-          description: The species does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-        "409":
-          description: The species already has the requested name.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSpeciesNameResponsePayload'
-  /api/v1/species/names/{speciesNameId}:
-    get:
-      tags:
-      - SeedBankApp
-      description: Gets information about a single species name.
-      operationId: getSpeciesName
-      parameters:
-      - name: speciesNameId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Species name retrieved.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetSpeciesNameResponsePayload'
-        "404":
-          description: The requested resource was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-    put:
-      tags:
-      - SeedBankApp
-      description: Updates one of the names of a species.
-      operationId: updateSpeciesName
-      parameters:
-      - name: speciesNameId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateSpeciesNameRequestPayload'
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-    delete:
-      tags:
-      - SeedBankApp
-      description: Deletes one of the secondary names of a species.
-      operationId: deleteSpeciesName
-      parameters:
-      - name: speciesNameId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Species name deleted.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-        "404":
-          description: The requested resource was not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
-        "409":
-          description: Cannot delete the primary name of a species.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
   /api/v1/species/{speciesId}:
     get:
       tags:
@@ -2016,38 +1883,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSuccessResponsePayload'
-  /api/v1/species/{speciesId}/names:
-    get:
-      tags:
-      - SeedBankApp
-      operationId: listSpeciesNames
-      parameters:
-      - name: speciesId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: organizationId
-        in: query
-        required: true
-        schema:
-          type: integer
-          description: Organization whose names for the species should be listed.
-          format: int64
-      responses:
-        "200":
-          description: Species names retrieved.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListSpeciesNamesResponsePayload'
-        "404":
-          description: The species does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/timeseries/create:
     post:
       tags:
@@ -2805,38 +2640,6 @@ components:
           format: int64
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    CreateSpeciesNameRequestPayload:
-      required:
-      - name
-      - organizationId
-      - speciesId
-      type: object
-      properties:
-        isScientific:
-          type: boolean
-          description: True if name is a scientific name for the species.
-        locale:
-          type: string
-        name:
-          type: string
-        organizationId:
-          type: integer
-          description: Which organization's species list to update.
-          format: int64
-        speciesId:
-          type: integer
-          format: int64
-    CreateSpeciesNameResponsePayload:
-      required:
-      - id
-      - status
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     CreateSpeciesResponsePayload:
       required:
       - id
@@ -3346,16 +3149,6 @@ components:
           $ref: '#/components/schemas/SiteElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
-    GetSpeciesNameResponsePayload:
-      required:
-      - speciesName
-      - status
-      type: object
-      properties:
-        speciesName:
-          $ref: '#/components/schemas/SpeciesNamesResponseElement'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
     GetSpeciesResponsePayload:
       required:
       - species
@@ -3609,18 +3402,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SiteElement'
-        status:
-          $ref: '#/components/schemas/SuccessOrError'
-    ListSpeciesNamesResponsePayload:
-      required:
-      - speciesNames
-      - status
-      type: object
-      properties:
-        speciesNames:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpeciesNamesResponseElement'
         status:
           $ref: '#/components/schemas/SuccessOrError'
     ListSpeciesResponsePayload:
@@ -4283,101 +4064,61 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FacilityPayload'
-    SpeciesNamesResponseElement:
-      required:
-      - id
-      - isScientific
-      - name
-      - organizationId
-      - speciesId
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        isScientific:
-          type: boolean
-          description: True if name is the scientific name for the species.
-        name:
-          type: string
-        organizationId:
-          type: integer
-          format: int64
-        speciesId:
-          type: integer
-          format: int64
     SpeciesRequestPayload:
       required:
-      - name
       - organizationId
+      - scientificName
       type: object
       properties:
-        conservationStatus:
+        commonName:
           type: string
-        isScientific:
+        endangered:
           type: boolean
-          description: True if name is the scientific name for the species.
-        name:
+        familyName:
+          type: string
+        growthForm:
+          type: string
+          enum:
+          - Tree
+          - Shrub
+          - Forb
+          - Graminoid
+          - Fern
+        scientificName:
           type: string
         organizationId:
           type: integer
           description: Which organization's species list to update.
           format: int64
-        plantForm:
-          type: string
-          enum:
-          - Tree
-          - Shrub
-          - Vine
-          - Liana
-          - Herbaceous
         rare:
-          type: string
-          enum:
-          - "No"
-          - "Yes"
-          - Unsure
-        tsn:
-          type: string
-          description: Taxonomic serial number from ITIS database.
-          externalDocs:
-            url: https://en.wikipedia.org/wiki/Integrated_Taxonomic_Information_System
+          type: boolean
     SpeciesResponseElement:
       required:
       - id
-      - isScientific
-      - name
+      - scientificName
       type: object
       properties:
-        conservationStatus:
+        commonName:
           type: string
-        id:
-          type: integer
-          format: int64
-        isScientific:
+        endangered:
           type: boolean
-          description: True if name is the scientific name for the species.
-        name:
+        familyName:
           type: string
-        plantForm:
+        growthForm:
           type: string
           enum:
           - Tree
           - Shrub
-          - Vine
-          - Liana
-          - Herbaceous
+          - Forb
+          - Graminoid
+          - Fern
+        id:
+          type: integer
+          format: int64
         rare:
+          type: boolean
+        scientificName:
           type: string
-          enum:
-          - "No"
-          - "Yes"
-          - Unsure
-        tsn:
-          type: string
-          description: Taxonomic serial number from ITIS database.
-          externalDocs:
-            url: https://en.wikipedia.org/wiki/Integrated_Taxonomic_Information_System
     StorageLocationDetails:
       required:
       - storageCondition
@@ -4855,18 +4596,6 @@ components:
             \ the existing one."
           format: int64
         timezone:
-          type: string
-    UpdateSpeciesNameRequestPayload:
-      required:
-      - name
-      type: object
-      properties:
-        isScientific:
-          type: boolean
-          description: True if name is a scientific name for the species.
-        locale:
-          type: string
-        name:
           type: string
     UpdateUserRequestPayload:
       required:

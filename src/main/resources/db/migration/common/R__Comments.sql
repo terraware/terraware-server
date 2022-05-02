@@ -40,8 +40,6 @@ COMMENT ON TABLE bags IS 'Individual bags of seeds that are part of an accession
 
 COMMENT ON TABLE collectors IS 'People who participated in seed collection. Both primary and secondary collectors are included.';
 
-COMMENT ON TABLE conservation_statuses IS '(Enum) UICN Red List categories defining the conservation status of a given species.';
-
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
 COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code.';
 COMMENT ON COLUMN countries.name IS 'Name of country in US English.';
@@ -87,6 +85,8 @@ COMMENT ON TABLE germination_treatments IS '(Enum) Techniques that can be used t
 
 COMMENT ON TABLE germinations IS 'Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 
+COMMENT ON TABLE growth_forms IS '(Enum) What physical form a particular species takes. For example, "Tree" or "Shrub."';
+
 COMMENT ON TABLE notification_criticalities IS '(Enum) Criticality information of notifications in the application.';
 COMMENT ON TABLE notification_types IS '(Enum) Types of notifications in the application.';
 COMMENT ON TABLE notifications IS 'Notifications for application users.';
@@ -97,8 +97,6 @@ COMMENT ON TABLE organizations IS 'Top-level information about organizations.';
 COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organization.';
 
 COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`.';
-
-COMMENT ON TABLE plant_forms IS '(Enum) What physical form a particular species takes. For example, "Tree" or "Shrub."';
 
 COMMENT ON TABLE processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
 
@@ -120,6 +118,8 @@ COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organiza
 
 COMMENT ON TABLE seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
 
+COMMENT ON TABLE seed_storage_behaviors IS '(Enum) How seeds of a particular species behave in storage.';
+
 COMMENT ON TABLE sites IS 'Physical locations where facilities are located or plants are being tracked.';
 COMMENT ON COLUMN sites.locale IS 'Default locale at the site; an IETF BCP 47 language tag such as en-US.';
 COMMENT ON COLUMN sites.timezone IS 'Name of time zone at site; an IANA tz database zone name.';
@@ -128,18 +128,9 @@ COMMENT ON TABLE source_plant_origins IS '(Enum) Types of origins of plants from
 
 COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (coordinate) systems. Managed by the PostGIS extension, not the application.';
 
-COMMENT ON TABLE species IS 'Information about plant species that isn''t organization-specific. Currently, the application doesn''t have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it.';
-COMMENT ON COLUMN species.name IS 'Primary name of the species. Currently, this is always the same as `species_names.name`.';
-COMMENT ON COLUMN species.tsn IS '(Unused in current app version) Taxonomic Serial Number from the ITIS database, to link this species to its ITIS database entry.';
-COMMENT ON COLUMN species.is_scientific IS 'If true, the `name` column is a scientific name.';
+COMMENT ON TABLE species IS 'Per-organization information about species.';
 
 COMMENT ON TABLE species_endangered_types IS '(Enum) Possible values for the "Endangered" attribute of an accession. This is not used for plants whose locations are being tracked; see `conservation_statuses` instead.';
-
-COMMENT ON TABLE species_names IS 'Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in `species`. If multiple organizations use the same species, each one will have a separate row in this table.';
-COMMENT ON COLUMN species_names.name IS 'Species name. This can be a scientific name or an arbitrary organization-supplied name in any language.';
-COMMENT ON COLUMN species_names.is_scientific IS 'If true, the `name` column is a scientific name. There can be more than one scientific name for a species, though the app currently does not provide a way to add multiple names.';
-
-COMMENT ON TABLE species_options IS 'Linking table between `species` and `organizations` that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted.';
 
 COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Session, not the application.';
 

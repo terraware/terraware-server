@@ -127,8 +127,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun init() {
     parentStore = ParentStore(dslContext)
 
-    val speciesStore =
-        SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, speciesOptionsDao)
+    val speciesStore = SpeciesStore(clock, dslContext, speciesDao)
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
