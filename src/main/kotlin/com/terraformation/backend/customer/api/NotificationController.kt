@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class NotificationController(private val notificationStore: NotificationStore) {
 
+  /** API to retrieve a notification by its id */
   @ApiResponse(responseCode = "200")
   @ApiResponse404
   @GetMapping("/{id}")
@@ -42,6 +43,10 @@ class NotificationController(private val notificationStore: NotificationStore) {
     return GetNotificationResponsePayload(NotificationPayload(notification))
   }
 
+  /**
+   * API to retrieve notifications specific to an organization. If organization id is unset,
+   * globally scoped notifications will be retrieved.
+   */
   @ApiResponse(responseCode = "200")
   @GetMapping()
   @Operation(summary = "Retrieve all notifications for current user scoped to an organization.")
@@ -54,6 +59,10 @@ class NotificationController(private val notificationStore: NotificationStore) {
     return GetNotificationsResponsePayload(notifications.map { NotificationPayload(it) })
   }
 
+  /**
+   * Retrieve list of organizations with count of unread notifications, organizations with no unread
+   * notifications will not be included in the list.
+   */
   @ApiResponse(responseCode = "200")
   @GetMapping("/count")
   @Operation(summary = "Retrieve notifications count by organization for current user.")
@@ -62,6 +71,7 @@ class NotificationController(private val notificationStore: NotificationStore) {
     return GetNotificationsCountResponsePayload(notifications.map { NotificationCountPayload(it) })
   }
 
+  /** Mark a notifcation by id as read or unread */
   @ApiResponse(responseCode = "200")
   @ApiResponse404
   @PutMapping("/{id}")
@@ -74,6 +84,10 @@ class NotificationController(private val notificationStore: NotificationStore) {
     return SimpleSuccessResponsePayload()
   }
 
+  /**
+   * Mark all user's notifcation as read or unread, scoped by organization. If organization id is
+   * unset, this api will apply to globally scoped notifications.
+   */
   @ApiResponse(responseCode = "200")
   @PutMapping()
   @Operation(summary = "Update notifications as read or unread")
