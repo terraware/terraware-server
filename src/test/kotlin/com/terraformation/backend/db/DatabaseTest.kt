@@ -157,7 +157,9 @@ abstract class DatabaseTest {
    * which case it is turned into a Long and passed to [wrapperConstructor] or an ID of the desired
    * type (in which case it is returned to the caller).
    */
-  private inline fun <R : Any, reified T : Any> R.toIdWrapper(wrapperConstructor: (Long) -> T): T {
+  protected final inline fun <R : Any, reified T : Any> R.toIdWrapper(
+      wrapperConstructor: (Long) -> T
+  ): T {
     return when (this) {
       is T -> this
       is Number -> wrapperConstructor(toLong())

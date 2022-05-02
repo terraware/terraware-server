@@ -1777,6 +1777,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSpeciesResponsePayload'
+  /api/v1/species/lookup/names:
+    get:
+      tags:
+      - Customer
+      description: Gets a list of known scientific names whose words begin with particular
+        letters.
+      operationId: listSpeciesNames
+      parameters:
+      - name: search
+        in: query
+        required: true
+        schema:
+          maxLength: 100
+          minLength: 2
+          type: string
+          description: "Space-delimited list of word prefixes to search for. Non-alphabetic\
+            \ characters are ignored, and matches are case-insensitive. The order\
+            \ of prefixes is significant; \"ag sc\" will match \"Aglaonema schottianum\"\
+            \ but won't match \"Scabiosa agrestis\"."
+          example: ag sc
+      - name: maxResults
+        in: query
+        required: false
+        schema:
+          maximum: 50
+          minimum: 1
+          type: integer
+          description: Maximum number of results to return.
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeciesLookupNamesResponsePayload'
   /api/v1/species/{speciesId}:
     get:
       tags:
@@ -4057,6 +4094,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FacilityPayload'
+    SpeciesLookupNamesResponsePayload:
+      required:
+      - names
+      - partial
+      - status
+      type: object
+      properties:
+        names:
+          type: array
+          items:
+            type: string
+        partial:
+          type: boolean
+          description: True if there were more matching names than could be included
+            in the response.
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     SpeciesRequestPayload:
       required:
       - organizationId
