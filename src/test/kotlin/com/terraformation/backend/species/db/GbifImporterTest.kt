@@ -6,6 +6,9 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GbifNameId
 import com.terraformation.backend.db.GbifTaxonId
+import com.terraformation.backend.db.LockService
+import com.terraformation.backend.db.LockType
+import com.terraformation.backend.db.OperationInProgressException
 import com.terraformation.backend.db.tables.pojos.GbifDistributionsRow
 import com.terraformation.backend.db.tables.pojos.GbifNameWordsRow
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
@@ -40,6 +43,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   private val config: TerrawareServerConfig = mockk()
   private val fileStore: FileStore = mockk()
+  private val lockService: LockService = mockk()
   private lateinit var importer: GbifImporter
 
   override val tablesToResetSequences: List<Table<out Record>>
@@ -48,9 +52,10 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    importer = GbifImporter(config, dslContext, fileStore)
+    importer = GbifImporter(config, dslContext, fileStore, lockService)
 
     every { config.gbifDatasetIds } returns listOf("dataset1", "dataset2", "dataset3")
+    every { lockService.tryExclusiveTransactional(any()) } returns true
     every { user.canImportGlobalSpeciesData() } returns true
   }
 
@@ -188,6 +193,14 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   fun `throws exception if no permission to import data`() {
     assertThrows<AccessDeniedException> {
       every { user.canImportGlobalSpeciesData() } returns false
+      importer.import(URI("s3://bucket"))
+    }
+  }
+
+  @Test
+  fun `throws exception if another import is in progress`() {
+    assertThrows<OperationInProgressException> {
+      every { lockService.tryExclusiveTransactional(LockType.GBIF_IMPORT) } returns false
       importer.import(URI("s3://bucket"))
     }
   }
