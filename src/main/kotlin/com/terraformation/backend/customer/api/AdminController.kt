@@ -28,16 +28,23 @@ import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.species.db.GbifImporter
 import java.math.BigDecimal
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.zip.ZipFile
 import javax.servlet.http.HttpServletRequest
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
+import kotlin.io.path.createTempFile
+import kotlin.io.path.deleteIfExists
 import net.postgis.jdbc.geometry.Point
+import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
@@ -61,6 +68,7 @@ class AdminController(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
+    private val gbifImporter: GbifImporter,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
     private val publisher: ApplicationEventPublisher,
@@ -80,6 +88,7 @@ class AdminController(
   fun getIndex(model: Model): String {
     val organizations = organizationStore.fetchAll().sortedBy { it.id.value }
 
+    model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
 
@@ -621,6 +630,32 @@ class AdminController(
     }
 
     return organization(organizationId)
+  }
+
+  @PostMapping("/uploadGbif", consumes = ["multipart/form-data"])
+  fun uploadGbif(
+      request: HttpServletRequest,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val tempFile = createTempFile(suffix = ".zip")
+
+    try {
+      log.info("Copying GBIF zipfile to local filesystem: $tempFile")
+      val uploadRequestPart =
+          ServletFileUpload().getItemIterator(request).next()
+              ?: throw IllegalArgumentException("No uploaded file found")
+      uploadRequestPart.openStream().use { uploadStream ->
+        Files.copy(uploadStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
+      }
+
+      ZipFile(tempFile.toFile()).use { gbifImporter.import(it) }
+
+      redirectAttributes.addFlashAttribute("successMessage", "GBIF data imported successfully.")
+    } finally {
+      tempFile.deleteIfExists()
+    }
+
+    return adminHome()
   }
 
   /** Returns a redirect view name for an admin endpoint. */
