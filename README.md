@@ -164,6 +164,32 @@ terraware:
     subject-prefix: "[DEV]"
 ```
 
+## Super-Admins
+
+Some operations are not available to regular users of the system; they must be requested by privileged administrative users. Internally, these are referred to as "super-admins".
+
+Marking a user as a super-admin currently requires connecting to the server's database and modifying the users table directly. The exact command you'll need to run to connect to the database will vary a bit depending on where it's running (local host, Docker container, managed cloud database service, etc.). For a database running on your local host, `psql terraware` will usually work.
+
+Once you're connected to the database, run the following query to change the user with a particular email address to a super-admin:
+
+```sql
+UPDATE users SET user_type_id = 2 WHERE email = 'your_email@your.domain';
+```
+
+## Importing GBIF backbone data
+
+The server uses a public species database from the [Global Biodiversity Information Facility (GBIF)](https://gbif.org/). If you're working with species-related parts of the code, you'll need to import the data into your local database.
+
+This must be done by a super-admin; see above for more information on that.
+
+1. Download `backbone.zip` from [the GBIF backbone dataset page](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c) (it's the "Source archive" item in the download menu at the top of the page).
+2. Log into the admin interface on your terraware-server instance. For a locally-running server instance, it'll typically be [http://localhost:8080/admin/](http://localhost:8080/admin/).
+3. If you are a super-admin, you'll see an "Import GBIF species data" section on the admin home page. If you don't see that section, make sure you've set your user type properly as described in the "Super-Admins" section above.
+4. Select the zipfile you downloaded from the GBIF site, and hit the "Upload Zipfile" button.
+5. Watch the server logs to monitor the progress of the import. It will take several minutes to finish.
+
+Once it's done, the species lookup endpoints under `/api/v1/species/lookup` should start returning real results.
+
 ## How to contribute
 
 We welcome your contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for information about contributing to the project's development, including a discussion of coding conventions.

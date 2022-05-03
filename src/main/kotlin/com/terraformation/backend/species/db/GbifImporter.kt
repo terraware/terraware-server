@@ -17,8 +17,10 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.ParsedCsvReader
 import com.terraformation.backend.util.appendPath
 import com.terraformation.backend.util.onChunk
+import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
+import java.util.zip.ZipFile
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
@@ -79,22 +81,30 @@ class GbifImporter(
   private val log = perClassLogger()
 
   fun import(prefix: URI) {
+    import { filename -> openUri(prefix.appendPath(filename)) }
+  }
+
+  fun import(zipFile: ZipFile) {
+    import { fileName ->
+      val entry = zipFile.getEntry("backbone/$fileName") ?: throw FileNotFoundException(fileName)
+      zipFile.getInputStream(entry)
+    }
+  }
+
+  fun import(openFile: (String) -> InputStream) {
     requirePermissions { importGlobalSpeciesData() }
 
     try {
       dslContext.transaction { _ ->
         deleteAll()
 
-        val taxonIds =
-            openUri(prefix.appendPath(TAXON_FILENAME)).use { inputStream ->
-              importTaxa(inputStream)
-            }
+        val taxonIds = openFile(TAXON_FILENAME).use { inputStream -> importTaxa(inputStream) }
 
-        openUri(prefix.appendPath(DISTRIBUTION_FILENAME)).use { inputStream ->
+        openFile(DISTRIBUTION_FILENAME).use { inputStream ->
           importDistributions(inputStream, taxonIds)
         }
 
-        openUri(prefix.appendPath(VERNACULAR_NAMES_FILENAME)).use { inputStream ->
+        openFile(VERNACULAR_NAMES_FILENAME).use { inputStream ->
           importVernacularNames(inputStream, taxonIds)
         }
 
