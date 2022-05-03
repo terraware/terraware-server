@@ -29,7 +29,7 @@ class LockService(private val dslContext: DSLContext) {
    *
    * Recommended usage:
    * ```
-   * lockService.tryExclusiveLockNonTransactional(key).use { ... }
+   * lockService.lockExclusiveNonTransactional(key).use { ... }
    * ```
    *
    * @return An object that can be closed to release the lock; you'll typically want to use the
