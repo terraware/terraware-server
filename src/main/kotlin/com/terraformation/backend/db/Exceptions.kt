@@ -46,6 +46,16 @@ open class KeycloakRequestFailedException(
 /** Keycloak couldn't find a user that we expected to be able to find. */
 class KeycloakUserNotFoundException(message: String) : EntityNotFoundException(message)
 
+/**
+ * Thrown when the system detects that an operation is already in progress that prevents a requested
+ * operation from proceeding. This is mapped to HTTP 423 Locked if it is thrown by a controller
+ * method.
+ */
+class OperationInProgressException(message: String) : RuntimeException(message) {
+  override val message: String
+    get() = super.message!!
+}
+
 class OrganizationHasOtherUsersException(val organizationId: OrganizationId) :
     RuntimeException("Organization $organizationId has other users")
 
