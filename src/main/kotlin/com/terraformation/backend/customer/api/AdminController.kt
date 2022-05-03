@@ -651,6 +651,8 @@ class AdminController(
       ZipFile(tempFile.toFile()).use { gbifImporter.import(it) }
 
       redirectAttributes.addFlashAttribute("successMessage", "GBIF data imported successfully.")
+    } catch (e: Exception) {
+      redirectAttributes.addFlashAttribute("failureMessage", "Import failed: ${e.message}")
     } finally {
       tempFile.deleteIfExists()
     }

@@ -3,6 +3,9 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.GbifTaxonId
+import com.terraformation.backend.db.LockService
+import com.terraformation.backend.db.LockType
+import com.terraformation.backend.db.OperationInProgressException
 import com.terraformation.backend.db.tables.records.GbifDistributionsRecord
 import com.terraformation.backend.db.tables.records.GbifNameWordsRecord
 import com.terraformation.backend.db.tables.records.GbifTaxaRecord
@@ -62,6 +65,7 @@ class GbifImporter(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val fileStore: FileStore,
+    private val lockService: LockService,
 ) {
   companion object {
     /** Number of rows to insert in a single SQL statement. */
@@ -96,6 +100,10 @@ class GbifImporter(
 
     try {
       dslContext.transaction { _ ->
+        if (!lockService.tryExclusiveTransactional(LockType.GBIF_IMPORT)) {
+          throw OperationInProgressException("Another import is currently in progress.")
+        }
+
         deleteAll()
 
         val taxonIds = openFile(TAXON_FILENAME).use { inputStream -> importTaxa(inputStream) }
