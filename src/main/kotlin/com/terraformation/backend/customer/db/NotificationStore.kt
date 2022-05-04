@@ -23,8 +23,6 @@ class NotificationStore(
   /**
    * Fetches a notification by unique id
    *
-   * @param notificationId ID of notification for which to retrieve information
-   * @return NotificationModel representation of the notification
    * @throws NotificationNotFoundException if notification for id was not retrievable
    */
   fun fetchById(notificationId: NotificationId): NotificationModel {
@@ -40,12 +38,11 @@ class NotificationStore(
   }
 
   /**
-   * Fetch notifications for a user within a specific organization or globally. If the input
-   * organizationId is null, assumes globally scoped notifications.
+   * Fetches notifications for a user within a specific organization or globally. Assumes globally
+   * scoped notifications if input organizationId is null.
    *
    * @param organizationId The organization id for which to retrieve user's notifications for. If
    * null, retrieves globally scoped notifications
-   * @return List<NotificationModel> list of notifications
    */
   fun fetchByOrganization(organizationId: OrganizationId?): List<NotificationModel> {
     requirePermissions { listNotifications(organizationId) }
@@ -57,11 +54,7 @@ class NotificationStore(
         .fetch { row -> NotificationModel(row) }
   }
 
-  /**
-   * Retrieve unread count of notifications across all organizations and global scope, for user
-   *
-   * @return List<NotificationCountModel> list of organizations with unread count, if any
-   */
+  /** Retrieves unread count of notifications across all organizations and global scope, for user */
   fun count(): List<NotificationCountModel> {
     requirePermissions { countNotifications() }
     return dslContext
@@ -73,12 +66,7 @@ class NotificationStore(
         .fetch { row -> NotificationCountModel(row.value1(), row.value2()) }
   }
 
-  /**
-   * Marks a notification as read or unread
-   *
-   * @param read Boolean status to be set for notification isRead property
-   * @param notificationId id of notification for which to set the status
-   */
+  /** Marks a notification as read or unread */
   fun markRead(read: Boolean, notificationId: NotificationId) {
     requirePermissions { updateNotification(notificationId) }
     dslContext
@@ -92,7 +80,6 @@ class NotificationStore(
   /**
    * Marks all of user's notifications within an organization (or globally), as read or unread
    *
-   * @param read Boolean status to be set for notification isRead property
    * @param organizationId id of organization within which to set the notifications' status. If id
    * is null, notifications within the global scope will be set
    */
@@ -107,7 +94,7 @@ class NotificationStore(
   }
 
   /**
-   * Create a user notification
+   * Creates a user notification
    *
    * @param notification The notification to insert into the table. This could be scoped to an
    * organization or global. Global notifications will have the organizationId property set as null.

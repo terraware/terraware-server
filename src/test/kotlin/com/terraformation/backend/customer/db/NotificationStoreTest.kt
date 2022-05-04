@@ -3,17 +3,15 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationModel
-import com.terraformation.backend.customer.model.OrganizationModel
-import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.NotificationId
+import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectStatus
-import com.terraformation.backend.db.ProjectType
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.mockUser
@@ -22,16 +20,15 @@ import io.mockk.mockk
 import java.net.URI
 import java.time.Clock
 import java.time.Instant
-import java.time.LocalDate
 import org.jooq.Record
 import org.jooq.Table
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -43,37 +40,16 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var store: NotificationStore
 
   private val organizationId = OrganizationId(1)
-  private val projectId = ProjectId(10)
+  private val projectId = ProjectId(2)
 
-  private val projectModel =
-      ProjectModel(
-          createdTime = Instant.EPOCH,
-          description = "Project description $projectId",
-          hidden = false,
-          id = projectId,
-          organizationId = organizationId,
-          organizationWide = false,
-          name = "Project $projectId",
-          sites = emptyList(),
-          startDate = LocalDate.EPOCH.plusDays(projectId.value),
-          status = ProjectStatus.Planting,
-          types = setOf(ProjectType.Agroforestry, ProjectType.SustainableTimber))
-
-  private val organizationModel =
-      OrganizationModel(
-          createdTime = Instant.EPOCH,
-          countryCode = "US",
-          countrySubdivisionCode = "US-HI",
-          id = organizationId,
-          name = "Organization $organizationId",
-          projects = listOf(projectModel),
-          totalUsers = 0)
-
-  private fun notificationModel(globalNotification: Boolean = false): CreateNotificationModel {
+  private fun notificationModel(
+      globalNotification: Boolean = false,
+      userId: UserId = user.userId
+  ): CreateNotificationModel {
     val orgId: OrganizationId? = if (globalNotification) null else organizationId
     return CreateNotificationModel(
         NotificationType.UserAddedtoOrganization,
-        user.userId,
+        userId,
         orgId,
         "the quick brown fox",
         "jumped over the silly lazy goat",
@@ -111,26 +87,20 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
 
-    insertUser()
-    Assertions.assertEquals(
-        organizationId,
-        insertOrganization(
-            name = organizationModel.name,
-            countryCode = organizationModel.countryCode,
-            countrySubdivisionCode = organizationModel.countrySubdivisionCode))
-    insertProject(
-        projectId,
-        description = projectModel.description,
-        startDate = projectModel.startDate,
-        status = projectModel.status,
-        types = projectModel.types)
+    insertSiteData()
   }
 
   @Test
   fun `should create a notification`() {
-    assert(dslContext.fetchCount(NOTIFICATIONS) == 0)
+    assertEquals(
+        0,
+        dslContext.fetchCount(NOTIFICATIONS),
+        "Expected count of 0 notifications when none were created")
     store.create(notificationModel(), organizationId)
-    assert(dslContext.fetchCount(NOTIFICATIONS) == 1)
+    assertEquals(
+        1,
+        dslContext.fetchCount(NOTIFICATIONS),
+        "Expected count of 1 notification after one was created ")
   }
 
   @Test
@@ -139,33 +109,18 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     val id = NotificationId(1)
     val expected = toModel(toCreate, id)
     store.create(toCreate, organizationId)
-    assertEquals(store.fetchById(id), expected)
+    assertEquals(
+        expected, store.fetchById(id), "Notification fetched by id does not match what was created")
   }
 
   @Test
   fun `should list notifications scoped to an organization for user`() {
-    // create a few notification model representations
-    val toCreate = Array(5, { notificationModel() })
-    val expected =
-        toCreate.mapIndexed { index, model -> toModel(model, NotificationId(index + 1L)) }
-
-    // persist the notificatios
-    toCreate.forEach { notification -> store.create(notification, organizationId) }
-
-    assertEquals(store.fetchByOrganization(organizationId), expected)
+    listNotificationsTest(globalNotifications = false)
   }
 
   @Test
   fun `should list notifications scoped globally for user`() {
-    // create a few notification model representations, set global notification option to true
-    val toCreate = Array(5, { notificationModel(true) })
-    val expected =
-        toCreate.mapIndexed { index, model -> toModel(model, NotificationId(index + 1L)) }
-
-    // persist the notificatios
-    toCreate.forEach { notification -> store.create(notification, organizationId) }
-
-    assertEquals(store.fetchByOrganization(null), expected)
+    listNotificationsTest(globalNotifications = true)
   }
 
   @Test
@@ -175,115 +130,123 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     // create a notification
     store.create(notificationModel(), organizationId)
 
-    // confirm it is unread
-    assertFalse(store.fetchById(id).isRead)
+    assertFalse(store.fetchById(id).isRead, "Expected notification to be unread upon create")
 
     // mark as read
     store.markRead(true, id)
 
-    // confirm it is read
-    assertTrue(store.fetchById(id).isRead)
+    assertTrue(store.fetchById(id).isRead, "Expected notification to be read after marking as read")
 
     // mark as unread
     store.markRead(false, id)
 
-    // confirm it is unread
-    assertFalse(store.fetchById(id).isRead)
+    assertFalse(
+        store.fetchById(id).isRead, "Expected notification to be unread after marking as unread")
   }
 
   @Test
   fun `should mark all notifications, scoped to an organization for user, as read`() {
-    val id1 = NotificationId(1)
-    val id2 = NotificationId(2)
-
-    // create 2 notifications
-    store.create(notificationModel(), organizationId)
-    store.create(notificationModel(), organizationId)
-
-    // confirm they are unread
-    assertFalse(store.fetchById(id1).isRead)
-    assertFalse(store.fetchById(id2).isRead)
-
-    // mark all as read
-    store.markAllRead(true, organizationId)
-
-    // confirm they are read
-    assertTrue(store.fetchById(id1).isRead)
-    assertTrue(store.fetchById(id2).isRead)
-
-    // mark all as unread
-    store.markAllRead(false, organizationId)
-
-    // confirm they are unread
-    assertFalse(store.fetchById(id1).isRead)
-    assertFalse(store.fetchById(id2).isRead)
+    markAllReadTest(globalNotifications = false)
   }
 
   @Test
   fun `should mark all notifications, scoped globally for user, as read`() {
-    val id1 = NotificationId(1)
-    val id2 = NotificationId(2)
-
-    // create 2 notifications
-    store.create(notificationModel(true), organizationId)
-    store.create(notificationModel(true), organizationId)
-
-    // confirm they are unread
-    assertFalse(store.fetchById(id1).isRead)
-    assertFalse(store.fetchById(id2).isRead)
-
-    // mark all as read
-    store.markAllRead(true, null)
-
-    // confirm they are read
-    assertTrue(store.fetchById(id1).isRead)
-    assertTrue(store.fetchById(id2).isRead)
-
-    // mark all as unread
-    store.markAllRead(false, null)
-
-    // confirm they are unread
-    assertFalse(store.fetchById(id1).isRead)
-    assertFalse(store.fetchById(id2).isRead)
+    markAllReadTest(globalNotifications = true)
   }
 
   @Test
   fun `should return count information on unread notifications`() {
     val id = NotificationId(1)
 
-    // create 2 notifications
+    // create 2 notifications of each type
     store.create(notificationModel(), organizationId)
     store.create(notificationModel(), organizationId)
     store.create(notificationModel(true), organizationId)
     store.create(notificationModel(true), organizationId)
 
-    // confirm unread count (2 for org, 2 for global)
     var result = store.count()
 
-    // get unread count for org
-    var forOrg = result.filter { r -> r.organizationId == organizationId }[0]
-    assertNotNull(forOrg)
-    assertEquals(forOrg.unread, 2)
+    var forOrg = result.firstOrNull { r -> r.organizationId == organizationId }
+    assertNotNull(forOrg, "Did not find unread count for organization notifications")
+    assertEquals(2, forOrg!!.unread, "Unread count mismatch for organization notifications")
 
-    // get unread count for global
-    var forGlobal = result.filter { r -> r.organizationId == null }[0]
-    assertNotNull(forGlobal)
-    assertEquals(forGlobal.unread, 2)
+    var forGlobal = result.firstOrNull { r -> r.organizationId == null }
+    assertNotNull(forGlobal, "Did not find unread count for global notifications")
+    assertEquals(2, forGlobal!!.unread, "Unread count mismatch for global notifications")
 
     // mark first notification as read
     store.markRead(true, id)
 
-    // confirm new unread count (1 for org, 2 for global)
     result = store.count()
 
-    // get unread count for org
-    forOrg = result.filter { r -> r.organizationId == organizationId }[0]
-    assertNotNull(forOrg)
-    assertEquals(forOrg.unread, 1)
+    forOrg = result.firstOrNull { r -> r.organizationId == organizationId }
+    assertNotNull(
+        forOrg,
+        "Did not find unread count for organization notifications after marking some as read")
+    assertEquals(
+        1,
+        forOrg!!.unread,
+        "Unread count mismatch for organization notifications after marking some as read")
 
-    // get unread count for global
-    forGlobal = result.filter { r -> r.organizationId == null }[0]
-    assertNotNull(forGlobal)
-    assertEquals(forGlobal.unread, 2)
+    forGlobal = result.firstOrNull { r -> r.organizationId == null }
+    assertNotNull(
+        forGlobal, "Did not find unread count for global notifications after marking some as read")
+    assertEquals(
+        2,
+        forGlobal!!.unread,
+        "Unread count mismatch for global notifications after marking some as read")
+  }
+
+  @Test
+  fun `should throw an error when reading notifications belonging to another user`() {
+    val otherUserId = UserId(3)
+    insertUser(otherUserId)
+    assertThrows<NotificationNotFoundException> {
+      val notification = notificationModel(userId = otherUserId)
+      store.create(notification, organizationId)
+      store.fetchById(NotificationId(1))
+    }
+  }
+
+  private fun listNotificationsTest(globalNotifications: Boolean) {
+    val orgId = if (globalNotifications) null else organizationId
+    val model = notificationModel(globalNotifications)
+    val expected = (1..5).map { id -> toModel(model, NotificationId(id.toLong())) }
+
+    repeat(5) { store.create(model, organizationId) }
+
+    assertEquals(
+        expected,
+        store.fetchByOrganization(orgId),
+        "Listed organizations do not match what was created")
+  }
+
+  private fun markAllReadTest(globalNotifications: Boolean) {
+    val orgId = if (globalNotifications) null else organizationId
+    val id1 = NotificationId(1)
+    val id2 = NotificationId(2)
+
+    // create 2 notifications of each type
+    store.create(notificationModel(globalNotifications), organizationId)
+    store.create(notificationModel(globalNotifications), organizationId)
+    store.create(notificationModel(!globalNotifications), organizationId)
+    store.create(notificationModel(!globalNotifications), organizationId)
+
+    assertFalse(store.fetchById(id1).isRead, "Notification-1 is read when it should be unread")
+    assertFalse(store.fetchById(id2).isRead, "Notification-2 is read when it should be unread")
+
+    // mark all as read
+    store.markAllRead(true, orgId)
+
+    assertTrue(store.fetchById(id1).isRead, "Notification id-1 is unread after marking as read")
+    assertTrue(store.fetchById(id2).isRead, "Notification id-2 is unread after marking as read")
+
+    // mark all as unread
+    store.markAllRead(false, orgId)
+
+    assertFalse(
+        store.fetchById(id1).isRead, "Notification id-1 is still read after marking as unread")
+    assertFalse(
+        store.fetchById(id2).isRead, "Notification id-2 is still read after marking as unread")
   }
 }

@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class NotificationController(private val notificationStore: NotificationStore) {
 
-  /** API to retrieve a notification by its id */
+  /** Retrieves a notification by its id */
   @ApiResponse(responseCode = "200")
   @ApiResponse404
   @GetMapping("/{id}")
@@ -44,8 +44,8 @@ class NotificationController(private val notificationStore: NotificationStore) {
   }
 
   /**
-   * API to retrieve notifications specific to an organization. If organization id is unset,
-   * globally scoped notifications will be retrieved.
+   * Retrieves notifications specific to an organization. If organization id is unset, globally
+   * scoped notifications will be retrieved.
    */
   @ApiResponse(responseCode = "200")
   @GetMapping()
@@ -60,8 +60,8 @@ class NotificationController(private val notificationStore: NotificationStore) {
   }
 
   /**
-   * Retrieve list of organizations with count of unread notifications, organizations with no unread
-   * notifications will not be included in the list.
+   * Retrieves list of organizations with count of unread notifications, organizations with no
+   * unread notifications will not be included in the list.
    */
   @ApiResponse(responseCode = "200")
   @GetMapping("/count")
@@ -71,7 +71,7 @@ class NotificationController(private val notificationStore: NotificationStore) {
     return GetNotificationsCountResponsePayload(notifications.map { NotificationCountPayload(it) })
   }
 
-  /** Mark a notifcation by id as read or unread */
+  /** Marks a notifcation by id as read or unread */
   @ApiResponse(responseCode = "200")
   @ApiResponse404
   @PutMapping("/{id}")
@@ -85,7 +85,7 @@ class NotificationController(private val notificationStore: NotificationStore) {
   }
 
   /**
-   * Mark all user's notifcation as read or unread, scoped by organization. If organization id is
+   * Marks all user's notifcation as read or unread, scoped by organization. If organization id is
    * unset, this api will apply to globally scoped notifications.
    */
   @ApiResponse(responseCode = "200")
