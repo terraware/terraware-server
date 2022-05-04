@@ -71,7 +71,7 @@ class NotificationController(private val notificationStore: NotificationStore) {
     return GetNotificationsCountResponsePayload(notifications.map { NotificationCountPayload(it) })
   }
 
-  /** Marks a notifcation by id as read or unread */
+  /** Marks a notification by id as read or unread */
   @ApiResponse(responseCode = "200")
   @ApiResponse404
   @PutMapping("/{id}")
@@ -85,7 +85,7 @@ class NotificationController(private val notificationStore: NotificationStore) {
   }
 
   /**
-   * Marks all user's notifcation as read or unread, scoped by organization. If organization id is
+   * Marks all user's notifications as read or unread, scoped by organization. If organization id is
    * unset, this api will apply to globally scoped notifications.
    */
   @ApiResponse(responseCode = "200")

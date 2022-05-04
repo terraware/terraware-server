@@ -48,7 +48,7 @@ class AppNotificationService(
         organizationStore.fetchById(event.organizationId)
             ?: throw OrganizationNotFoundException(event.organizationId)
 
-    val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId).toString()
+    val organizationHomeUrl = webAppUrls.inAppOrganizationHome(event.organizationId).toString()
     val message = messages.userAddedToOrganizationNotification(organization.name)
 
     log.info(

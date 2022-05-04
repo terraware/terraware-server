@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -113,14 +115,54 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
         expected, store.fetchById(id), "Notification fetched by id does not match what was created")
   }
 
-  @Test
-  fun `should list notifications scoped to an organization for user`() {
-    listNotificationsTest(globalNotifications = false)
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `fetchByOrganization should return notifications with the correct scope`(
+      globalNotifications: Boolean
+  ) {
+    val orgId = if (globalNotifications) null else organizationId
+    val model = notificationModel(globalNotifications)
+    val expected = (1..5).map { id -> toModel(model, NotificationId(id.toLong())) }
+
+    repeat(5) { store.create(model, organizationId) }
+
+    assertEquals(
+        expected,
+        store.fetchByOrganization(orgId),
+        "Listed organizations do not match what was created")
   }
 
-  @Test
-  fun `should list notifications scoped globally for user`() {
-    listNotificationsTest(globalNotifications = true)
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `markAllRead by organization should affect notifications with the correct scope`(
+      globalNotifications: Boolean
+  ) {
+    val orgId = if (globalNotifications) null else organizationId
+    val id1 = NotificationId(1)
+    val id2 = NotificationId(2)
+
+    // create 2 notifications of each type
+    store.create(notificationModel(globalNotifications), organizationId)
+    store.create(notificationModel(globalNotifications), organizationId)
+    store.create(notificationModel(!globalNotifications), organizationId)
+    store.create(notificationModel(!globalNotifications), organizationId)
+
+    assertFalse(store.fetchById(id1).isRead, "Notification-1 is read when it should be unread")
+    assertFalse(store.fetchById(id2).isRead, "Notification-2 is read when it should be unread")
+
+    // mark all as read
+    store.markAllRead(true, orgId)
+
+    assertTrue(store.fetchById(id1).isRead, "Notification id-1 is unread after marking as read")
+    assertTrue(store.fetchById(id2).isRead, "Notification id-2 is unread after marking as read")
+
+    // mark all as unread
+    store.markAllRead(false, orgId)
+
+    assertFalse(
+        store.fetchById(id1).isRead, "Notification id-1 is still read after marking as unread")
+    assertFalse(
+        store.fetchById(id2).isRead, "Notification id-2 is still read after marking as unread")
   }
 
   @Test
@@ -142,16 +184,6 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertFalse(
         store.fetchById(id).isRead, "Expected notification to be unread after marking as unread")
-  }
-
-  @Test
-  fun `should mark all notifications, scoped to an organization for user, as read`() {
-    markAllReadTest(globalNotifications = false)
-  }
-
-  @Test
-  fun `should mark all notifications, scoped globally for user, as read`() {
-    markAllReadTest(globalNotifications = true)
   }
 
   @Test
@@ -206,47 +238,5 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
       store.create(notification, organizationId)
       store.fetchById(NotificationId(1))
     }
-  }
-
-  private fun listNotificationsTest(globalNotifications: Boolean) {
-    val orgId = if (globalNotifications) null else organizationId
-    val model = notificationModel(globalNotifications)
-    val expected = (1..5).map { id -> toModel(model, NotificationId(id.toLong())) }
-
-    repeat(5) { store.create(model, organizationId) }
-
-    assertEquals(
-        expected,
-        store.fetchByOrganization(orgId),
-        "Listed organizations do not match what was created")
-  }
-
-  private fun markAllReadTest(globalNotifications: Boolean) {
-    val orgId = if (globalNotifications) null else organizationId
-    val id1 = NotificationId(1)
-    val id2 = NotificationId(2)
-
-    // create 2 notifications of each type
-    store.create(notificationModel(globalNotifications), organizationId)
-    store.create(notificationModel(globalNotifications), organizationId)
-    store.create(notificationModel(!globalNotifications), organizationId)
-    store.create(notificationModel(!globalNotifications), organizationId)
-
-    assertFalse(store.fetchById(id1).isRead, "Notification-1 is read when it should be unread")
-    assertFalse(store.fetchById(id2).isRead, "Notification-2 is read when it should be unread")
-
-    // mark all as read
-    store.markAllRead(true, orgId)
-
-    assertTrue(store.fetchById(id1).isRead, "Notification id-1 is unread after marking as read")
-    assertTrue(store.fetchById(id2).isRead, "Notification id-2 is unread after marking as read")
-
-    // mark all as unread
-    store.markAllRead(false, orgId)
-
-    assertFalse(
-        store.fetchById(id1).isRead, "Notification id-1 is still read after marking as unread")
-    assertFalse(
-        store.fetchById(id2).isRead, "Notification id-2 is still read after marking as unread")
   }
 }

@@ -18,4 +18,9 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
         .queryParam("organizationId", organizationId)
         .build()
   }
+
+  /** Generates a relative path of organization home within the web app */
+  fun inAppOrganizationHome(organizationId: OrganizationId): URI {
+    return UriBuilder.fromPath("/home").queryParam("organizationId", organizationId).build()
+  }
 }
