@@ -1777,6 +1777,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateSpeciesResponsePayload'
+  /api/v1/species/lookup/details:
+    get:
+      tags:
+      - Customer
+      summary: Gets more information about a species with a particular scientific
+        name.
+      operationId: getSpeciesDetails
+      parameters:
+      - name: scientificName
+        in: query
+        required: true
+        schema:
+          type: string
+          description: Exact scientific name to look up. This name is case-sensitive.
+      - name: language
+        in: query
+        required: false
+        schema:
+          type: string
+          description: "If specified, only return common names in this language or\
+            \ whose language is unknown. Names with unknown languages are always included.\
+            \ This is a two-letter ISO 639-1 language code."
+          example: en
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeciesLookupDetailsResponsePayload'
+        "404":
+          description: The scientific name was not found in the server's taxonomic
+            database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/species/lookup/names:
     get:
       tags:
@@ -4094,6 +4131,39 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FacilityPayload'
+    SpeciesLookupCommonNamePayload:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+        language:
+          type: string
+          description: ISO 639-1 two-letter language code indicating the name's language.
+            Some common names in the server's taxonomic database are not tagged with
+            languages; this value will not be present for those names.
+    SpeciesLookupDetailsResponsePayload:
+      required:
+      - familyName
+      - scientificName
+      type: object
+      properties:
+        scientificName:
+          type: string
+        commonNames:
+          type: array
+          description: "List of known common names for the species, if any."
+          items:
+            $ref: '#/components/schemas/SpeciesLookupCommonNamePayload'
+        familyName:
+          type: string
+        endangered:
+          type: boolean
+          description: "True if the species is known to be endangered, false if the\
+            \ species is known to not be endangered. This value will not be present\
+            \ if the server's taxonomic database doesn't indicate whether or not the\
+            \ species is endangered."
     SpeciesLookupNamesResponsePayload:
       required:
       - names
