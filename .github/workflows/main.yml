@@ -99,7 +99,7 @@ jobs:
         context: build/docker
         tags: ${{ env.DOCKER_TAGS }}
         platforms: linux/amd64,linux/arm64
-        push: ${{ env.IS_CD == 'true' }}
+        push: ${{ env.DOCKER_TAGS != '' }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
