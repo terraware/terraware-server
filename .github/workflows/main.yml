@@ -6,6 +6,7 @@ on:
       - main
       - qa
       - renovate/*
+      - species
       - wip-*
     tags:
       # Semver (these are glob-like patterns, not regexes; the "." has no special meaning)
