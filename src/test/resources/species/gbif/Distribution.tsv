@@ -1,5 +1,6 @@
 taxonID	locationID	locality	country	countryCode	locationRemarks	establishmentMeans	lifeStage	occurrenceStatus	threatStatus	source
-12		Locality12	Canada	CA		native		present		Source1
-12									least concern	Source2
-12										Should be ignored because all relevant fields are empty
-50									least concern	Should be ignored because taxon ID was not imported
+12		Locality12	Canada	CA		native		present		source1
+12									least concern	source2
+12					Should be ignored because source is not on the list of desired sources				least concern	UnknownSource
+12					Should be ignored because all relevant fields are empty					source1
+50					Should be ignored because taxon ID was not imported				least concern	source1
