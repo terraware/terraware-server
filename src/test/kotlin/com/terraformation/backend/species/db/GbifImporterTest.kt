@@ -41,6 +41,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
+  private val gbifConfig: TerrawareServerConfig.GbifConfig = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val fileStore: FileStore = mockk()
   private val lockService: LockService = mockk()
@@ -54,7 +55,9 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     importer = GbifImporter(config, dslContext, fileStore, lockService)
 
-    every { config.gbifDatasetIds } returns listOf("dataset1", "dataset2", "dataset3")
+    every { config.gbif } returns gbifConfig
+    every { gbifConfig.datasetIds } returns listOf("dataset1", "dataset2", "dataset3")
+    every { gbifConfig.distributionSources } returns listOf("source1", "source2")
     every { lockService.tryExclusiveTransactional(any()) } returns true
     every { user.canImportGlobalSpeciesData() } returns true
   }
@@ -263,7 +266,9 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class DistributionRecordParserTest {
     private fun parse(input: String): List<GbifDistributionsRecord> {
-      return GbifImporter.DistributionsRecordParser(input.byteInputStream()).sequence().toList()
+      return GbifImporter.DistributionsRecordParser(input.byteInputStream(), config)
+          .sequence()
+          .toList()
     }
 
     @Test
@@ -276,7 +281,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
       val input =
           "taxonID\tlocationID\tlocality\tcountry\tcountryCode\tlocationRemarks\testablishmentMeans\tlifeStage\toccurrenceStatus\tthreatStatus\tsource\n" +
               "1\textra\t\tl\tCanada\tCA\t\tnative\t\tpresent\t\ts\n" +
-              "1\tl\tCanada\tCA\t\tnative\t\tpresent\t\ts\n"
+              "1\tl\tCanada\tCA\t\tnative\t\tpresent\t\tsource1\n"
       assertEquals(emptyList<Any>(), parse(input))
     }
 
@@ -284,7 +289,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
     fun `throws exception on non-numeric taxon ID`() {
       val input =
           "taxonID\tlocationID\tlocality\tcountry\tcountryCode\tlocationRemarks\testablishmentMeans\tlifeStage\toccurrenceStatus\tthreatStatus\tsource\n" +
-              "X\t\tl\tCanada\tCA\t\tnative\t\tpresent\t\ts\n"
+              "X\t\tl\tCanada\tCA\t\tnative\t\tpresent\t\tsource1\n"
 
       assertThrows<NumberFormatException> { parse(input) }
     }
