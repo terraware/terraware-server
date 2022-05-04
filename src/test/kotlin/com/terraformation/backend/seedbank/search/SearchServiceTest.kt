@@ -120,6 +120,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SpeciesRow(
             id = SpeciesId(10000),
             scientificName = "Kousa Dogwood",
+            commonName = "Common 1",
+            rare = false,
             createdBy = user.userId,
             createdTime = now,
             modifiedBy = user.userId,
@@ -129,6 +131,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SpeciesRow(
             id = SpeciesId(10001),
             scientificName = "Other Dogwood",
+            commonName = "Common 2",
+            endangered = true,
             createdBy = user.userId,
             createdTime = now,
             modifiedBy = user.userId,
@@ -2493,6 +2497,22 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                     ?: listOf(base)
               }
 
+      val expectedSpecies =
+          listOf(
+              mapOf(
+                  "commonName" to "Common 1",
+                  "id" to "10000",
+                  "rare" to "false",
+                  "scientificName" to "Kousa Dogwood",
+              ),
+              mapOf(
+                  "commonName" to "Common 2",
+                  "endangered" to "true",
+                  "id" to "10001",
+                  "scientificName" to "Other Dogwood",
+              ),
+          )
+
       val expectedFacilities =
           listOf(
               mapOf(
@@ -2573,6 +2593,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "name" to "dev",
                   "projects" to expectedProjects,
                   "members" to expectedOrganizationUsers,
+                  "species" to expectedSpecies,
               ))
 
       val result = searchService.search(prefix, fields, NoConditionNode())
