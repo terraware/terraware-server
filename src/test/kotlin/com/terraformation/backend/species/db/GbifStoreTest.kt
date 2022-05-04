@@ -4,11 +4,15 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GbifNameId
 import com.terraformation.backend.db.GbifTaxonId
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
+import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
 import com.terraformation.backend.db.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
 import com.terraformation.backend.db.tables.references.GBIF_TAXA
 import com.terraformation.backend.db.tables.references.GBIF_VERNACULAR_NAMES
+import com.terraformation.backend.species.model.GbifTaxonModel
+import com.terraformation.backend.species.model.GbifVernacularNameModel
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -46,7 +50,7 @@ internal class GbifStoreTest : DatabaseTest() {
     @Test
     fun `does case-insensitive prefix matching of scientific names`() {
       insertTaxon(1, "Scientific name")
-      insertTaxon(2, "Unscientific name", listOf("Scientific name but it is common"))
+      insertTaxon(2, "Unscientific name", listOf("Scientific name but it is common" to null))
       insertTaxon(3, "Scientific balderdash")
 
       val expected = listOf(namesRow(1, 1, "Scientific name"))
@@ -67,8 +71,8 @@ internal class GbifStoreTest : DatabaseTest() {
 
     @Test
     fun `can search common names`() {
-      insertTaxon(1, "Scientific name", listOf("Common name"))
-      insertTaxon(2, "Somewhat common name", listOf("No match"))
+      insertTaxon(1, "Scientific name", listOf("Common name" to null))
+      insertTaxon(2, "Somewhat common name", listOf("No match" to null))
 
       val expected = listOf(namesRow(2, 1, "Common name", isScientific = false))
 
@@ -128,10 +132,68 @@ internal class GbifStoreTest : DatabaseTest() {
     }
   }
 
+  @Nested
+  inner class FetchOneByScientificName {
+    @Test
+    fun `returns null if scientific name does not exist`() {
+      assertNull(store.fetchOneByScientificName("nonexistent"))
+    }
+
+    @Test
+    fun `returns vernacular names in multiple languages if no language specified`() {
+      insertTaxon(
+          1,
+          "Scientific name",
+          listOf("Common en" to "en", "Common xx" to "xx", "Common unknown" to null),
+          "Family",
+          "endangered")
+
+      val expected =
+          GbifTaxonModel(
+              GbifTaxonId(1),
+              "Scientific name",
+              "Family",
+              listOf(
+                  GbifVernacularNameModel("Common en", "en"),
+                  GbifVernacularNameModel("Common unknown", null),
+                  GbifVernacularNameModel("Common xx", "xx"),
+              ),
+              "endangered")
+
+      val actual = store.fetchOneByScientificName("Scientific name")
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `excludes vernacular names in languages other than the specified one`() {
+      insertTaxon(
+          1,
+          "Scientific name",
+          listOf("Common en" to "en", "Common xx" to "xx", "Common unknown" to null),
+          "Family")
+
+      val expected =
+          GbifTaxonModel(
+              GbifTaxonId(1),
+              "Scientific name",
+              "Family",
+              listOf(
+                  GbifVernacularNameModel("Common en", "en"),
+                  GbifVernacularNameModel("Common unknown", null),
+              ),
+              null)
+
+      val actual = store.fetchOneByScientificName("Scientific name", "en")
+      assertEquals(expected, actual)
+    }
+  }
+
   private fun insertTaxon(
       id: Any,
       scientificName: String,
-      commonNames: Collection<String> = emptyList(),
+      commonNames: Collection<Pair<String, String?>> = emptyList(),
+      familyName: String = scientificName.substringBefore(' '),
+      threatStatus: String? = null,
   ): GbifTaxonId {
     val taxonId = id.toIdWrapper { GbifTaxonId(it) }
 
@@ -139,20 +201,30 @@ internal class GbifStoreTest : DatabaseTest() {
         .insertInto(GBIF_TAXA)
         .set(GBIF_TAXA.TAXON_ID, taxonId)
         .set(GBIF_TAXA.SCIENTIFIC_NAME, scientificName)
+        .set(GBIF_TAXA.FAMILY, familyName)
         .set(GBIF_TAXA.TAXON_RANK, "species")
         .set(GBIF_TAXA.TAXONOMIC_STATUS, "accepted")
         .execute()
 
     insertName(taxonId, scientificName, true)
 
-    commonNames.forEach { name ->
+    commonNames.forEach { (name, language) ->
       dslContext
           .insertInto(GBIF_VERNACULAR_NAMES)
           .set(GBIF_VERNACULAR_NAMES.TAXON_ID, taxonId)
           .set(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME, name)
+          .set(GBIF_VERNACULAR_NAMES.LANGUAGE, language)
           .execute()
 
       insertName(taxonId, name, false)
+    }
+
+    if (threatStatus != null) {
+      dslContext
+          .insertInto(GBIF_DISTRIBUTIONS)
+          .set(GBIF_DISTRIBUTIONS.TAXON_ID, taxonId)
+          .set(GBIF_DISTRIBUTIONS.THREAT_STATUS, threatStatus)
+          .execute()
     }
 
     return taxonId

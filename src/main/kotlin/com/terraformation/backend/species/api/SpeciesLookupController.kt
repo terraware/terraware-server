@@ -1,11 +1,18 @@
 package com.terraformation.backend.species.api
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.species.db.GbifStore
+import com.terraformation.backend.species.model.GbifTaxonModel
+import com.terraformation.backend.species.model.GbifVernacularNameModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import javax.ws.rs.BadRequestException
+import javax.ws.rs.NotFoundException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -50,6 +57,29 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
 
     return SpeciesLookupNamesResponsePayload(names.take(cappedMaxResults), partial)
   }
+
+  @ApiResponse(responseCode = "200")
+  @ApiResponse404("The scientific name was not found in the server's taxonomic database.")
+  @GetMapping("/details")
+  @Operation(summary = "Gets more information about a species with a particular scientific name.")
+  fun getSpeciesDetails(
+      @RequestParam("scientificName")
+      @Schema(description = "Exact scientific name to look up. This name is case-sensitive.")
+      scientificName: String,
+      @RequestParam("language")
+      @Schema(
+          description =
+              "If specified, only return common names in this language or whose language is " +
+                  "unknown. Names with unknown languages are always included. This is a " +
+                  "two-letter ISO 639-1 language code.",
+          example = "en")
+      language: String? = null,
+  ): SpeciesLookupDetailsResponsePayload {
+    val model =
+        gbifStore.fetchOneByScientificName(scientificName, language)
+            ?: throw NotFoundException("No species found for scientific name")
+    return SpeciesLookupDetailsResponsePayload(model)
+  }
 }
 
 data class SpeciesLookupNamesResponsePayload(
@@ -59,3 +89,39 @@ data class SpeciesLookupNamesResponsePayload(
             "True if there were more matching names than could be included in the response.")
     val partial: Boolean
 ) : SuccessResponsePayload
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SpeciesLookupCommonNamePayload(
+    val name: String,
+    @Schema(
+        description =
+            "ISO 639-1 two-letter language code indicating the name's language. Some common " +
+                "names in the server's taxonomic database are not tagged with languages; this " +
+                "value will not be present for those names.")
+    val language: String?,
+) {
+  constructor(model: GbifVernacularNameModel) : this(model.name, model.language)
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SpeciesLookupDetailsResponsePayload(
+    val scientificName: String,
+    @ArraySchema(
+        arraySchema = Schema(description = "List of known common names for the species, if any."))
+    val commonNames: List<SpeciesLookupCommonNamePayload>?,
+    val familyName: String,
+    @Schema(
+        description =
+            "True if the species is known to be endangered, false if the species is known to not " +
+                "be endangered. This value will not be present if the server's taxonomic " +
+                "database doesn't indicate whether or not the species is endangered.")
+    val endangered: Boolean?,
+) {
+  constructor(
+      model: GbifTaxonModel
+  ) : this(
+      model.scientificName,
+      model.vernacularNames.map { SpeciesLookupCommonNamePayload(it) }.ifEmpty { null },
+      model.familyName,
+      model.isEndangered)
+}
