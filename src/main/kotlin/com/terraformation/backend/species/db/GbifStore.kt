@@ -1,8 +1,13 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
+import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
 import com.terraformation.backend.db.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
+import com.terraformation.backend.db.tables.references.GBIF_TAXA
+import com.terraformation.backend.db.tables.references.GBIF_VERNACULAR_NAMES
+import com.terraformation.backend.species.model.GbifTaxonModel
+import com.terraformation.backend.species.model.GbifVernacularNameModel
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -75,5 +80,66 @@ class GbifStore(private val dslContext: DSLContext) {
         .limit(maxResults)
         .fetchInto(GbifNamesRow::class.java)
         .filterNotNull()
+  }
+
+  /**
+   * Returns GBIF taxon data for the species with a particular scientific name.
+   *
+   * @param [vernacularNameLanguage] ISO 639-1 two-letter language code. If non-null, filter
+   * vernacular names to exclude names in languages other than this. Vernacular names without
+   * langauge tags are always included.
+   */
+  fun fetchOneByScientificName(
+      scientificName: String,
+      vernacularNameLanguage: String? = null
+  ): GbifTaxonModel? {
+    val languageCondition =
+        if (vernacularNameLanguage != null) {
+          GBIF_VERNACULAR_NAMES.LANGUAGE.isNull.or(
+              GBIF_VERNACULAR_NAMES.LANGUAGE.eq(vernacularNameLanguage))
+        } else {
+          null
+        }
+
+    val vernacularNamesMultiset =
+        DSL.multiset(
+                DSL.selectDistinct(
+                        GBIF_VERNACULAR_NAMES.VERNACULAR_NAME, GBIF_VERNACULAR_NAMES.LANGUAGE)
+                    .from(GBIF_VERNACULAR_NAMES)
+                    .where(
+                        listOfNotNull(
+                            GBIF_VERNACULAR_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID),
+                            languageCondition))
+                    .orderBy(GBIF_VERNACULAR_NAMES.VERNACULAR_NAME))
+            .convertFrom { result -> result.map { record -> GbifVernacularNameModel(record) } }
+
+    return dslContext
+        .select(
+            GBIF_TAXA.TAXON_ID,
+            GBIF_NAMES.NAME,
+            GBIF_TAXA.FAMILY,
+            GBIF_DISTRIBUTIONS.THREAT_STATUS,
+            vernacularNamesMultiset)
+        .from(GBIF_NAMES)
+        .join(GBIF_TAXA)
+        .on(GBIF_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID))
+        .leftJoin(GBIF_DISTRIBUTIONS)
+        .on(GBIF_NAMES.TAXON_ID.eq(GBIF_DISTRIBUTIONS.TAXON_ID))
+        .where(GBIF_NAMES.NAME.eq(scientificName))
+        .and(GBIF_NAMES.IS_SCIENTIFIC.isTrue)
+        .orderBy(GBIF_NAMES.NAME, GBIF_NAMES.TAXON_ID)
+        .limit(1)
+        .fetchOne { record ->
+          GbifTaxonModel(
+              taxonId = record[GBIF_TAXA.TAXON_ID]
+                      ?: throw IllegalArgumentException("Taxon ID must be non-null"),
+              scientificName = record[GBIF_NAMES.NAME]
+                      ?: throw IllegalArgumentException("Scientific name must be non-null"),
+              familyName = record[GBIF_TAXA.FAMILY]
+                      ?: throw IllegalArgumentException("Family name must be non-null"),
+              vernacularNames = record[vernacularNamesMultiset] ?: emptyList(),
+              threatStatus = record[GBIF_DISTRIBUTIONS.THREAT_STATUS],
+          )
+        }
   }
 }
