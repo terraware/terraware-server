@@ -82,7 +82,7 @@ jobs:
 
     - name: Log into Docker Hub
       if: env.IS_CD == 'true'
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
