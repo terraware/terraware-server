@@ -27,7 +27,7 @@ CREATE TABLE species (
     deleted_by BIGINT REFERENCES users,
     deleted_time TIMESTAMP WITH TIME ZONE,
     -- Temporarily include the corresponding ID from the old species table so we can update FKs.
-    old_species_id BIGINT REFERENCES species,
+    old_species_id BIGINT REFERENCES old_species,
     UNIQUE (organization_id, scientific_name)
 );
 
