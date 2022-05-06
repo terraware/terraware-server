@@ -5,6 +5,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
@@ -114,4 +115,10 @@ interface TerrawareUser : Principal {
   fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
+  fun canReadNotification(notificationId: NotificationId): Boolean
+  fun canListNotifications(organizationId: OrganizationId?): Boolean
+  fun canCountNotifications(): Boolean
+  fun canUpdateNotification(notificationId: NotificationId): Boolean
+  fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
+  fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
 }

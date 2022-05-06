@@ -358,6 +358,115 @@ paths:
         "302":
           description: "Redirects to a login page. After login, the user will be redirected\
             \ back to the URL specified in the \"redirect\" parameter."
+  /api/v1/notifications:
+    get:
+      tags:
+      - Customer
+      summary: Retrieve all notifications for current user scoped to an organization.
+      operationId: readAll
+      parameters:
+      - name: organizationId
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: "If set, return notifications relevant to that organization."
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotificationsResponsePayload'
+    put:
+      tags:
+      - Customer
+      summary: Update notifications as read or unread
+      operationId: markAllRead
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationsRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+  /api/v1/notifications/count:
+    get:
+      tags:
+      - Customer
+      summary: Retrieve notifications count by organization for current user.
+      operationId: count
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotificationsCountResponsePayload'
+  /api/v1/notifications/{id}:
+    get:
+      tags:
+      - Customer
+      summary: Retrieve a notification by its id.
+      operationId: read_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotificationResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
+    put:
+      tags:
+      - Customer
+      summary: Update a single notification as read or unread
+      operationId: markRead
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSuccessResponsePayload'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorResponsePayload'
   /api/v1/organizations:
     get:
       tags:
@@ -1321,7 +1430,7 @@ paths:
       tags:
       - SeedBankApp
       summary: Mark all notifications as read.
-      operationId: markAllRead
+      operationId: markAllRead_1
       responses:
         "200":
           description: All notifications have been marked as read.
@@ -1349,7 +1458,7 @@ paths:
       tags:
       - SeedBankApp
       summary: Mark a specific notification as read.
-      operationId: markRead
+      operationId: markRead_1
       parameters:
       - name: id
         in: path
@@ -3163,6 +3272,40 @@ components:
           $ref: '#/components/schemas/FacilityPayload'
         status:
           $ref: '#/components/schemas/SuccessOrError'
+    GetNotificationResponsePayload:
+      required:
+      - notification
+      - status
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/NotificationPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetNotificationsCountResponsePayload:
+      required:
+      - notifications
+      - status
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationCountPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
+    GetNotificationsResponsePayload:
+      required:
+      - notifications
+      - status
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationPayload'
+        status:
+          $ref: '#/components/schemas/SuccessOrError'
     GetOrganizationResponsePayload:
       required:
       - organization
@@ -3609,6 +3752,60 @@ components:
         properties:
           child:
             $ref: '#/components/schemas/SearchNodePayload'
+    NotificationCountPayload:
+      required:
+      - unread
+      type: object
+      properties:
+        organizationId:
+          type: integer
+          format: int64
+        unread:
+          type: integer
+          format: int32
+    NotificationPayload:
+      required:
+      - body
+      - createdTime
+      - id
+      - isRead
+      - localUrl
+      - notificationCriticality
+      - notificationType
+      - title
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        notificationType:
+          type: string
+          enum:
+          - User Added to Organization
+          - Facility Idle
+          - Facility Alert Requested
+        notificationCriticality:
+          type: string
+          enum:
+          - Info
+          - Warning
+          - Error
+          - Success
+        organizationId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        body:
+          type: string
+        localUrl:
+          type: string
+          format: uri
+        createdTime:
+          type: string
+          format: date-time
+        isRead:
+          type: boolean
     OrNodePayload:
       type: object
       description: "Search criterion that matches results that meet any of a set of\
@@ -4557,6 +4754,23 @@ components:
           type: integer
           description: "ID of parent device such as a hub or gateway, if any. The\
             \ parent device must exist."
+          format: int64
+    UpdateNotificationRequestPayload:
+      required:
+      - read
+      type: object
+      properties:
+        read:
+          type: boolean
+    UpdateNotificationsRequestPayload:
+      required:
+      - read
+      type: object
+      properties:
+        read:
+          type: boolean
+        organizationId:
+          type: integer
           format: int64
     UpdateOrganizationRequestPayload:
       required:

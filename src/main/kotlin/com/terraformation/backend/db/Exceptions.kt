@@ -87,3 +87,6 @@ class UserAlreadyInProjectException(val userId: UserId, val projectId: ProjectId
     DuplicateEntityException("User is already in project")
 
 class UserNotFoundException(val userId: UserId) : EntityNotFoundException("User $userId not found")
+
+class NotificationNotFoundException(val notificationId: NotificationId) :
+    EntityNotFoundException("Notification $notificationId not found")

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
@@ -141,4 +142,13 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canUpdateSpeciesName(speciesNameId: SpeciesNameId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
+  override fun canReadNotification(notificationId: NotificationId): Boolean = true
+  override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
+  override fun canCountNotifications(): Boolean = true
+  override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
+  override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
+  override fun canCreateNotification(
+      targetUserId: UserId,
+      organizationId: OrganizationId
+  ): Boolean = true
 }

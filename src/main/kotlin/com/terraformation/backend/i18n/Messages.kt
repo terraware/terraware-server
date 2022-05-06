@@ -6,6 +6,9 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.annotation.ManagedBean
 
+/** Helper class to encapsulate notification message semantics */
+data class NotificationMessage(val title: String, val body: String)
+
 /**
  * Renders human-readable messages. All server-generated text that gets displayed to end users
  * should live here rather than inline in the rest of the application. This will make it easier to
@@ -59,4 +62,10 @@ class Messages {
       } else {
         "unknown"
       }
+
+  /** Title and body to use for "user added to organization" app notification */
+  fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
+      NotificationMessage(
+          title = "You've been added to a new organization!",
+          body = "You are now a member of $orgName. Welcome!")
 }

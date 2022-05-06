@@ -5,16 +5,19 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNameId
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES_NAMES
@@ -70,6 +73,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(speciesNameId: SpeciesNameId): OrganizationId? =
       fetchFieldById(speciesNameId, SPECIES_NAMES.ID, SPECIES_NAMES.ORGANIZATION_ID)
+
+  fun getUserId(notificationId: NotificationId): UserId? =
+      fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row

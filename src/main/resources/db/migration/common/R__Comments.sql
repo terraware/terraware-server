@@ -87,6 +87,10 @@ COMMENT ON TABLE germination_treatments IS '(Enum) Techniques that can be used t
 
 COMMENT ON TABLE germinations IS 'Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 
+COMMENT ON TABLE notification_criticalities IS '(Enum) Criticality information of notifications in the application.';
+COMMENT ON TABLE notification_types IS '(Enum) Types of notifications in the application.';
+COMMENT ON TABLE notifications IS 'Notifications for application users.';
+
 COMMENT ON TABLE organization_users IS 'Organization membership and role information.';
 
 COMMENT ON TABLE organizations IS 'Top-level information about organizations.';

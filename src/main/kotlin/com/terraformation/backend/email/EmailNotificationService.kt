@@ -78,7 +78,7 @@ class EmailNotificationService(
         organizationStore.fetchById(event.organizationId)
             ?: throw OrganizationNotFoundException(event.organizationId)
 
-    val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId).toString()
+    val organizationHomeUrl = webAppUrls.fullOrganizationHome(event.organizationId).toString()
 
     emailService.sendUserNotification(
         user,
