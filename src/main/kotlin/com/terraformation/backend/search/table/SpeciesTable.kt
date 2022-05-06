@@ -28,16 +28,21 @@ class SpeciesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperat
 
   override val fields: List<SearchField> =
       listOf(
-          idWrapperField("id", "Species ID", SPECIES.ID) { SpeciesId(it) },
           textField("commonName", "Species common name", SPECIES.COMMON_NAME),
-          booleanField("endangered", "Species endangered", SPECIES.ENDANGERED),
+          booleanField("endangered", "Species is endangered", SPECIES.ENDANGERED),
           textField("familyName", "Species family name", SPECIES.FAMILY_NAME, nullable = false),
-          booleanField("rare", "Species rare", SPECIES.RARE),
+          enumField("growthForm", "Species growth form", SPECIES.GROWTH_FORM_ID),
+          idWrapperField("id", "Species ID", SPECIES.ID) { SpeciesId(it) },
+          booleanField("rare", "Species is rare", SPECIES.RARE),
           textField(
               "scientificName",
               "Species scientific name",
               SPECIES.SCIENTIFIC_NAME,
               nullable = false),
+          enumField(
+              "seedStorageBehavior",
+              "Species seed storage behavior",
+              SPECIES.SEED_STORAGE_BEHAVIOR_ID),
       )
 
   override fun conditionForPermissions(): Condition {
