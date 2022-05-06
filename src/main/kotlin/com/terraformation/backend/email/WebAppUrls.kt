@@ -12,7 +12,7 @@ import javax.ws.rs.core.UriBuilder
  */
 @ManagedBean
 class WebAppUrls(private val config: TerrawareServerConfig) {
-  fun organizationHome(organizationId: OrganizationId): URI {
+  fun fullOrganizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/home")
         .queryParam("organizationId", organizationId)
@@ -20,7 +20,7 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
   }
 
   /** Generates a relative path of organization home within the web app */
-  fun inAppOrganizationHome(organizationId: OrganizationId): URI {
+  fun organizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromPath("/home").queryParam("organizationId", organizationId).build()
   }
 }
