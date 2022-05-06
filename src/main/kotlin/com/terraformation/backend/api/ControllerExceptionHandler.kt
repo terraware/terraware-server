@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.opencsv.CSVWriter
 import com.terraformation.backend.db.DuplicateEntityException
 import com.terraformation.backend.db.EntityNotFoundException
+import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.OperationInProgressException
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
@@ -55,6 +56,14 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       request: WebRequest
   ): ResponseEntity<*> {
     return simpleErrorResponse(ex.message, HttpStatus.NOT_FOUND, request)
+  }
+
+  @ExceptionHandler
+  fun handleMismatchedStateException(
+      ex: MismatchedStateException,
+      request: WebRequest
+  ): ResponseEntity<*> {
+    return simpleErrorResponse(ex.message, HttpStatus.CONFLICT, request)
   }
 
   @ExceptionHandler
