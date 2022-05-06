@@ -4011,14 +4011,21 @@ components:
           - Forb
           - Graminoid
           - Fern
-        scientificName:
-          type: string
         organizationId:
           type: integer
           description: Which organization's species list to update.
           format: int64
         rare:
           type: boolean
+        scientificName:
+          type: string
+        seedStorageBehavior:
+          type: string
+          enum:
+          - Orthodox
+          - Recalcitrant
+          - Intermediate
+          - Unknown
     SpeciesResponseElement:
       required:
       - id
@@ -4046,6 +4053,13 @@ components:
           type: boolean
         scientificName:
           type: string
+        seedStorageBehavior:
+          type: string
+          enum:
+          - Orthodox
+          - Recalcitrant
+          - Intermediate
+          - Unknown
     StorageLocationDetails:
       required:
       - storageCondition

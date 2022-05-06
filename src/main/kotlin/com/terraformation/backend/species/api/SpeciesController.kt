@@ -9,6 +9,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.seedbank.api.ValuesController
@@ -141,6 +142,7 @@ data class SpeciesResponseElement(
     val id: SpeciesId,
     val rare: Boolean?,
     val scientificName: String,
+    val seedStorageBehavior: SeedStorageBehavior?,
 ) {
   constructor(
       row: SpeciesRow
@@ -152,6 +154,7 @@ data class SpeciesResponseElement(
       id = row.id!!,
       rare = row.rare,
       scientificName = row.scientificName!!,
+      seedStorageBehavior = row.seedStorageBehaviorId,
   )
 }
 
@@ -160,10 +163,11 @@ data class SpeciesRequestPayload(
     val endangered: Boolean?,
     val familyName: String?,
     val growthForm: GrowthForm?,
-    val scientificName: String,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
     val rare: Boolean?,
+    val scientificName: String,
+    val seedStorageBehavior: SeedStorageBehavior?,
 ) {
   fun toRow(id: SpeciesId? = null) =
       SpeciesRow(
@@ -175,6 +179,7 @@ data class SpeciesRequestPayload(
           rare = rare,
           organizationId = organizationId,
           scientificName = scientificName,
+          seedStorageBehaviorId = seedStorageBehavior,
       )
 }
 
