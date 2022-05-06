@@ -37,12 +37,12 @@ data class GbifTaxonModel(
         mapOf(
             // IUCN Red List categories
             "least concern" to false,
-            "vulnerable" to false,
             "near threatened" to false,
+            "vulnerable" to true,
             "endangered" to true,
             "critically endangered" to true,
-            "extinct" to true,
             "extinct in the wild" to true,
+            "extinct" to true,
         )
   }
 }
