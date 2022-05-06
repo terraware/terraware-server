@@ -11,6 +11,7 @@ facility_types
 germination_seed_types
 germination_substrates
 germination_treatments
+notification_criticalities
 plant_forms
 processing_methods
 project_statuses
@@ -34,6 +35,7 @@ storage_locations
 accessions
 photos
 germination_tests
+notification_types
 timeseries
 bags
 geolocations
@@ -46,6 +48,7 @@ accession_secondary_collectors
 project_type_selections
 accession_state_history
 automations
+notifications
 accession_notifications
 project_users
 species_names

@@ -6,6 +6,7 @@ species_options
 species_names
 project_users
 accession_notifications
+notifications
 automations
 accession_state_history
 project_type_selections
@@ -18,6 +19,7 @@ germinations
 geolocations
 bags
 timeseries
+notification_types
 germination_tests
 photos
 accessions
@@ -41,6 +43,7 @@ project_types
 project_statuses
 processing_methods
 plant_forms
+notification_criticalities
 germination_treatments
 germination_substrates
 germination_seed_types

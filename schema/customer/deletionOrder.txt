@@ -1,8 +1,10 @@
 organization_users
 project_users
 facilities
+notifications
 project_type_selections
 sites
+notification_types
 projects
 organizations
 country_subdivisions
@@ -11,5 +13,6 @@ user_types
 roles
 project_types
 project_statuses
+notification_criticalities
 facility_types
 countries
