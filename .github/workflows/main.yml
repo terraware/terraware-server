@@ -94,7 +94,7 @@ jobs:
         key: 2-buildx
 
     - name: Build Docker image and push if on main branch or tag
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       with:
         context: build/docker
         tags: ${{ env.DOCKER_TAGS }}
