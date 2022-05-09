@@ -68,4 +68,10 @@ class Messages {
       NotificationMessage(
           title = "You've been added to a new organization!",
           body = "You are now a member of $orgName. Welcome!")
+
+  /** Title and body to use for "user added to project" app notification */
+  fun userAddedToProjectNotification(projectName: String, orgName: String): NotificationMessage =
+      NotificationMessage(
+          title = "You've been added to a new project!",
+          body = "You are now a member of $projectName, a $orgName project.")
 }

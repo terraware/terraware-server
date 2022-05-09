@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.ProjectId
 import java.net.URI
 import javax.annotation.ManagedBean
 import javax.ws.rs.core.UriBuilder
@@ -22,5 +23,13 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
   /** Generates a relative path of organization home within the web app */
   fun organizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromPath("/home").queryParam("organizationId", organizationId).build()
+  }
+
+  fun fullProjectHome(projectId: ProjectId): URI {
+    return UriBuilder.fromUri(config.webAppUrl).path("/projects/" + projectId.value).build()
+  }
+
+  fun projectHome(projectId: ProjectId): URI {
+    return UriBuilder.fromPath("/projects/" + projectId.value).build()
   }
 }
