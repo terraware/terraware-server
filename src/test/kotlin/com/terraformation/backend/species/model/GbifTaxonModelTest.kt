@@ -8,8 +8,16 @@ import org.junit.jupiter.params.provider.ValueSource
 
 internal class GbifTaxonModelTest {
   @ParameterizedTest
-  @ValueSource(strings = ["critically endangered", "endangered", "extinct", "extinct in the wild"])
-  fun `treats IUCN Red List categories of Endangered or worse as endangered`(threatStatus: String) {
+  @ValueSource(
+      strings =
+          [
+              "critically endangered",
+              "endangered",
+              "extinct",
+              "extinct in the wild",
+              "vulnerable",
+          ])
+  fun `treats IUCN Red List categories of Vulnerable or worse as endangered`(threatStatus: String) {
     val model =
         GbifTaxonModel(
             taxonId = GbifTaxonId(1),
@@ -21,8 +29,8 @@ internal class GbifTaxonModelTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["least concern", "near threatened", "vulnerable"])
-  fun `treats IUCN Red list categories of Vulnerable or better as non-endangered`(
+  @ValueSource(strings = ["least concern", "near threatened"])
+  fun `treats IUCN Red list categories of Near Threatened or better as non-endangered`(
       threatStatus: String
   ) {
     val model =
