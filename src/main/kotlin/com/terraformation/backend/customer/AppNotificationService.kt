@@ -16,7 +16,6 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
-import java.net.URI
 import javax.annotation.ManagedBean
 import org.springframework.context.event.EventListener
 
@@ -52,7 +51,7 @@ class AppNotificationService(
         organizationStore.fetchById(event.organizationId)
             ?: throw OrganizationNotFoundException(event.organizationId)
 
-    val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId).toString()
+    val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId)
     val message = messages.userAddedToOrganizationNotification(organization.name)
 
     log.info(
@@ -65,7 +64,7 @@ class AppNotificationService(
             organizationId = null,
             title = message.title,
             body = message.body,
-            localUrl = URI.create(organizationHomeUrl),
+            localUrl = organizationHomeUrl,
             notificationType = NotificationType.UserAddedtoOrganization)
     notificationStore.create(notification, organization.id)
   }
@@ -80,8 +79,8 @@ class AppNotificationService(
         organizationStore.fetchById(project.organizationId)
             ?: throw OrganizationNotFoundException(project.organizationId)
 
-    val projectHomeUrl = webAppUrls.projectHome(event.projectId).toString()
-    val message = messages.userAddedToProjectNotification(project.name, organization.name)
+    val projectHomeUrl = webAppUrls.projectHome(event.projectId)
+    val message = messages.userAddedToProjectNotification(project.name)
 
     log.info(
         "Creating app notification for user ${event.userId} being added to a project " +
@@ -93,8 +92,8 @@ class AppNotificationService(
             organizationId = organization.id,
             title = message.title,
             body = message.body,
-            localUrl = URI.create(projectHomeUrl),
-            notificationType = NotificationType.UserAddedtoOrganization)
+            localUrl = projectHomeUrl,
+            notificationType = NotificationType.UserAddedToProject)
     notificationStore.create(notification, organization.id)
   }
 }

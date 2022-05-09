@@ -37,14 +37,15 @@ internal class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(ORGANIZATIONS, PROJECTS)
 
-  private val clock: Clock = mockk()
   private val organizationId = OrganizationId(1)
   private val projectId = ProjectId(2)
   private val otherUserId = UserId(100)
-  private lateinit var projectStore: ProjectStore
-  private val publisher: ApplicationEventPublisher = mockk()
-  private lateinit var permissionStore: PermissionStore
 
+  private val clock: Clock = mockk()
+  private val publisher: ApplicationEventPublisher = mockk()
+
+  private lateinit var projectStore: ProjectStore
+  private lateinit var permissionStore: PermissionStore
   private lateinit var service: ProjectService
 
   @BeforeEach

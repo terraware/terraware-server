@@ -31,7 +31,7 @@ class ProjectService(
           "Cannot add user that does not belong to project's organization")
     }
 
-    return dslContext.transactionResult { _ ->
+    return dslContext.transaction { _ ->
       projectStore.addUser(projectId, userId)
 
       publisher.publishEvent(UserAddedToProjectEvent(userId, projectId, currentUser().userId))
