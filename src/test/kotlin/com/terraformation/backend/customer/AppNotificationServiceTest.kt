@@ -20,6 +20,7 @@ import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
@@ -34,7 +35,6 @@ import java.time.Instant
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.keycloak.admin.client.resource.RealmResource
@@ -117,18 +117,36 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(otherUserId)
     insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
 
-    assertEquals(0, notificationsDao.count())
+    assertEquals(
+        0,
+        notificationsDao.count(),
+        "There should be no notifications before any notification event")
 
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
 
-    assertEquals(1, notificationsDao.count())
-    val notification = notificationsDao.fetchById(NotificationId(1)).firstOrNull()!!
-    assertEquals(NotificationType.UserAddedtoOrganization, notification.notificationTypeId)
-    assertEquals(otherUserId, notification.userId)
-    assertNull(notification.organizationId)
-    assertEquals("organization title", notification.title)
-    assertEquals("organization body", notification.body)
-    assertEquals(webAppUrls.organizationHome(organizationId), notification.localUrl)
+    assertEquals(
+        1,
+        notificationsDao.count(),
+        "There should be one notification after user is added to an organization")
+
+    val expectedNotification =
+        NotificationsRow(
+            id = NotificationId(1),
+            notificationTypeId = NotificationType.UserAddedtoOrganization,
+            userId = otherUserId,
+            organizationId = null,
+            title = "organization title",
+            body = "organization body",
+            localUrl = webAppUrls.organizationHome(organizationId),
+            createdTime = Instant.EPOCH,
+            isRead = false)
+
+    val actualNotification = notificationsDao.fetchById(NotificationId(1)).firstOrNull()!!
+
+    assertEquals(
+        expectedNotification,
+        actualNotification,
+        "Notification should match that of user added to an organization")
   }
 
   @Test
@@ -137,17 +155,35 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
     insertProjectUser(otherUserId, projectId, user.userId)
 
-    assertEquals(0, notificationsDao.count())
+    assertEquals(
+        0,
+        notificationsDao.count(),
+        "There should be no notifications before any notification event")
 
     service.on(UserAddedToProjectEvent(otherUserId, projectId, user.userId))
 
-    assertEquals(1, notificationsDao.count())
-    val notification = notificationsDao.fetchById(NotificationId(1)).firstOrNull()!!
-    assertEquals(NotificationType.UserAddedToProject, notification.notificationTypeId)
-    assertEquals(otherUserId, notification.userId)
-    assertEquals(organizationId, notification.organizationId)
-    assertEquals("project title", notification.title)
-    assertEquals("project body", notification.body)
-    assertEquals(webAppUrls.organizationProject(projectId), notification.localUrl)
+    assertEquals(
+        1,
+        notificationsDao.count(),
+        "There should be one notification after user is added to a project")
+
+    val expectedNotification =
+        NotificationsRow(
+            id = NotificationId(1),
+            notificationTypeId = NotificationType.UserAddedToProject,
+            userId = otherUserId,
+            organizationId = organizationId,
+            title = "project title",
+            body = "project body",
+            localUrl = webAppUrls.organizationProject(projectId),
+            createdTime = Instant.EPOCH,
+            isRead = false)
+
+    val actualNotification = notificationsDao.fetchById(NotificationId(1)).firstOrNull()!!
+
+    assertEquals(
+        expectedNotification,
+        actualNotification,
+        "Notification should match that of user added to a project")
   }
 }
