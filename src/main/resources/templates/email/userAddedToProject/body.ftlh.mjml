@@ -1,0 +1,28 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UserAddedToProject" --> -->
+<mjml>
+    <mj-include path="../head.ftlh.mjml" />
+
+    <mj-body>
+        <mj-include path="../logo.ftlh.mjml" />
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    You’ve been added to project ${project.name} in organization ${organization.name}!</mj-text
+                >
+                <mj-text mj-class="text-body03">
+                    Added by ${admin.fullName!} (<a href="">${admin.email}</a>)</mj-text
+                >
+                <mj-text mj-class="text-body03">
+                    Please click the button below to go to your Terraware account where you can view
+                    the project.</mj-text
+                >
+                <mj-button mj-class="btn-productive-primary-md" href="${organizationProjectUrl?no_esc}"
+                    >Go to Terraware</mj-button
+                >
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../footer.ftlh.mjml" />
+    </mj-body>
+</mjml>

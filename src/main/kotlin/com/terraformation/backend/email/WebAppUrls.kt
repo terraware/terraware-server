@@ -25,11 +25,14 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
     return UriBuilder.fromPath("/home").queryParam("organizationId", organizationId).build()
   }
 
-  fun fullProjectHome(projectId: ProjectId): URI {
-    return UriBuilder.fromUri(config.webAppUrl).path("/projects/" + projectId.value).build()
+  fun fullOrganizationProject(projectId: ProjectId, organizationId: OrganizationId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/projects/" + projectId.value)
+        .queryParam("organizationId", organizationId)
+        .build()
   }
 
-  fun projectHome(projectId: ProjectId): URI {
+  fun organizationProject(projectId: ProjectId): URI {
     return UriBuilder.fromPath("/projects/" + projectId.value).build()
   }
 }
