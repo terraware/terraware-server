@@ -141,5 +141,5 @@ INSERT INTO notification_types (id, name, notification_criticality_id)
 VALUES (1, 'User Added to Organization', 1),
        (2, 'Facility Idle', 2),
        (3, 'Facility Alert Requested', 3),
-       (4, 'User Added To Project', 1)
+       (4, 'User Added to Project', 1)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name, notification_criticality_id = excluded.notification_criticality_id;

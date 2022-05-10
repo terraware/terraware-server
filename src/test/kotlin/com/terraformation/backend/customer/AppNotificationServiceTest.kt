@@ -124,29 +124,25 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
 
-    assertEquals(
-        1,
-        notificationsDao.count(),
-        "There should be one notification after user is added to an organization")
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.UserAddedtoOrganization,
+                userId = otherUserId,
+                organizationId = null,
+                title = "organization title",
+                body = "organization body",
+                localUrl = webAppUrls.organizationHome(organizationId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
 
-    val expectedNotification =
-        NotificationsRow(
-            id = NotificationId(1),
-            notificationTypeId = NotificationType.UserAddedtoOrganization,
-            userId = otherUserId,
-            organizationId = null,
-            title = "organization title",
-            body = "organization body",
-            localUrl = webAppUrls.organizationHome(organizationId),
-            createdTime = Instant.EPOCH,
-            isRead = false)
-
-    val actualNotification = notificationsDao.fetchById(NotificationId(1)).firstOrNull()!!
+    val actualNotifications = notificationsDao.findAll()
 
     assertEquals(
-        expectedNotification,
-        actualNotification,
-        "Notification should match that of user added to an organization")
+        expectedNotifications,
+        actualNotifications,
+        "Notifications should match that of a single user added to an organization")
   }
 
   @Test
@@ -162,28 +158,24 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(UserAddedToProjectEvent(otherUserId, projectId, user.userId))
 
-    assertEquals(
-        1,
-        notificationsDao.count(),
-        "There should be one notification after user is added to a project")
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.UserAddedtoProject,
+                userId = otherUserId,
+                organizationId = organizationId,
+                title = "project title",
+                body = "project body",
+                localUrl = webAppUrls.organizationProject(projectId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
 
-    val expectedNotification =
-        NotificationsRow(
-            id = NotificationId(1),
-            notificationTypeId = NotificationType.UserAddedToProject,
-            userId = otherUserId,
-            organizationId = organizationId,
-            title = "project title",
-            body = "project body",
-            localUrl = webAppUrls.organizationProject(projectId),
-            createdTime = Instant.EPOCH,
-            isRead = false)
-
-    val actualNotification = notificationsDao.fetchById(NotificationId(1)).firstOrNull()!!
+    val actualNotifications = notificationsDao.findAll()
 
     assertEquals(
-        expectedNotification,
-        actualNotification,
-        "Notification should match that of user added to a project")
+        expectedNotifications,
+        actualNotifications,
+        "Notification should match that of a single user added to a project")
   }
 }

@@ -3784,7 +3784,7 @@ components:
           - User Added to Organization
           - Facility Idle
           - Facility Alert Requested
-          - User Added To Project
+          - User Added to Project
         notificationCriticality:
           type: string
           enum:

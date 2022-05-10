@@ -93,7 +93,7 @@ class AppNotificationService(
             title = message.title,
             body = message.body,
             localUrl = projectHomeUrl,
-            notificationType = NotificationType.UserAddedToProject)
+            notificationType = NotificationType.UserAddedtoProject)
     notificationStore.create(notification, organization.id)
   }
 }
