@@ -36,4 +36,11 @@ private constructor(
       throw IllegalArgumentException("Cannot alias nested path $targetPath")
     }
   }
+
+  /**
+   * True if the target field or any of the sublists it belongs to are nullable. We can't use the
+   * nullability of the target field itself here, because the alias may be an optional reference to
+   * a table where the field is a required value.
+   */
+  override val nullable: Boolean = original.nullable || targetPath.sublists.any { !it.isRequired }
 }

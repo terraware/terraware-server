@@ -43,8 +43,8 @@ import org.jooq.impl.DSL
  * ```sql
  * INSERT INTO facilities (id, name) VALUES (10, 'My Seed Bank');
  *
- * INSERT INTO species (id, name) VALUES (1, 'First Species');
- * INSERT INTO species (id, name) VALUES (2, 'Second Species');
+ * INSERT INTO species (id, scientific_name) VALUES (1, 'First Species');
+ * INSERT INTO species (id, scientific_name) VALUES (2, 'Second Species');
  *
  * INSERT INTO accessions (id, facility_id, species_id) VALUES (3, 10, 1);
  * INSERT INTO accessions (id, facility_id, species_id) VALUES (4, 10, 2);
@@ -82,7 +82,7 @@ import org.jooq.impl.DSL
  * queryBuilder.addSelectFields(
  *     listOf(
  *         rootPrefix.resolve("id"),
- *         rootPrefix.resolve("species"),
+ *         rootPrefix.resolve("speciesName"),
  *         rootPrefix.resolve("bags.number"),
  *         rootPrefix.resolve("facility.name"),
  *         rootPrefix.resolve("germinationTests.startDate"),
@@ -92,7 +92,7 @@ import org.jooq.impl.DSL
  * // to keep the example easier to follow.
  * queryBuilder.addSortFields(
  *     listOf(
- *         SearchSortField(rootPrefix.resolve("species")),
+ *         SearchSortField(rootPrefix.resolve("speciesName")),
  *         SearchSortField(rootPrefix.resolve("germinationTests.startDate")),
  *         SearchSortField(rootPrefix.resolve("bags.number")),
  *         SearchSortField(rootPrefix.resolve("germinationTests.germinations.seedsGerminated"))))
@@ -104,11 +104,11 @@ import org.jooq.impl.DSL
  *
  * ```json
  * [
- *   # The first sort key is "species". "First Species" is alphabetically lower than "Second
+ *   # The first sort key is "speciesName". "First Species" is alphabetically lower than "Second
  *   # Species", so accession 3 is first in the results list.
  *   {
  *     "id": "3",
- *     "species": "First Species",
+ *     "speciesName": "First Species",
  *     "bags": [
  *       # The first (and only) sort field under "bags" is the bag number, so this list is
  *       # sorted alphabetically on that value.
@@ -140,7 +140,7 @@ import org.jooq.impl.DSL
  *     # Empty lists, and scalar fields with no values, are omitted from the result. Each result
  *     # is a Map<String,Any> which might be implemented as a hashtable, so callers shouldn't
  *     # assume the fields are in any particular order.
- *     "species": "Second Species",
+ *     "speciesName": "Second Species",
  *     "id": "4",
  *     "facility": {
  *       "name": "My Seed Bank"

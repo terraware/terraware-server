@@ -12,11 +12,13 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
@@ -120,6 +122,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SpeciesRow(
             id = SpeciesId(10000),
             scientificName = "Kousa Dogwood",
+            commonName = "Common 1",
+            rare = false,
+            growthFormId = GrowthForm.Graminoid,
             createdBy = user.userId,
             createdTime = now,
             modifiedBy = user.userId,
@@ -129,6 +134,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SpeciesRow(
             id = SpeciesId(10001),
             scientificName = "Other Dogwood",
+            commonName = "Common 2",
+            endangered = true,
+            seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
             createdBy = user.userId,
             createdTime = now,
             modifiedBy = user.userId,
@@ -2493,6 +2501,24 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                     ?: listOf(base)
               }
 
+      val expectedSpecies =
+          listOf(
+              mapOf(
+                  "commonName" to "Common 1",
+                  "growthForm" to "Graminoid",
+                  "id" to "10000",
+                  "rare" to "false",
+                  "scientificName" to "Kousa Dogwood",
+              ),
+              mapOf(
+                  "commonName" to "Common 2",
+                  "endangered" to "true",
+                  "id" to "10001",
+                  "scientificName" to "Other Dogwood",
+                  "seedStorageBehavior" to "Orthodox",
+              ),
+          )
+
       val expectedFacilities =
           listOf(
               mapOf(
@@ -2573,6 +2599,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "name" to "dev",
                   "projects" to expectedProjects,
                   "members" to expectedOrganizationUsers,
+                  "species" to expectedSpecies,
               ))
 
       val result = searchService.search(prefix, fields, NoConditionNode())
