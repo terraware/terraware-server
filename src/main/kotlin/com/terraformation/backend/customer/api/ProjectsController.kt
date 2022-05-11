@@ -7,6 +7,7 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.ProjectService
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.OrganizationId
@@ -42,7 +43,10 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RequestMapping("/api/v1/projects")
 @RestController
-class ProjectsController(private val projectStore: ProjectStore) {
+class ProjectsController(
+    private val projectStore: ProjectStore,
+    private val projectService: ProjectService
+) {
   @GetMapping
   @Operation(summary = "Gets a list of all projects the user can access.")
   fun listAllProjects(
@@ -137,7 +141,7 @@ class ProjectsController(private val projectStore: ProjectStore) {
       @PathVariable("userId") userId: UserId
   ): SimpleSuccessResponsePayload {
     try {
-      projectStore.addUser(projectId, userId)
+      projectService.addUser(projectId, userId)
     } catch (e: ProjectOrganizationWideException) {
       throw ClientErrorException("Project is organization-wide", Response.Status.CONFLICT)
     }

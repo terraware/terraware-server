@@ -3,17 +3,21 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.UserAddedToOrganization
+import com.terraformation.backend.email.model.UserAddedToProject
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
@@ -26,6 +30,7 @@ class EmailNotificationService(
     private val facilityStore: FacilityStore,
     private val messages: Messages,
     private val organizationStore: OrganizationStore,
+    private val projectStore: ProjectStore,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
 ) {
@@ -84,6 +89,26 @@ class EmailNotificationService(
         user,
         "userAddedToOrganization",
         UserAddedToOrganization(config, admin, organization, organizationHomeUrl),
+        requireOptIn = false)
+  }
+
+  @EventListener
+  fun on(event: UserAddedToProjectEvent) {
+    val admin = userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
+    val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
+    val project =
+        projectStore.fetchById(event.projectId) ?: throw ProjectNotFoundException(event.projectId)
+    val organization =
+        organizationStore.fetchById(project.organizationId)
+            ?: throw OrganizationNotFoundException(project.organizationId)
+
+    val organizationProjectUrl =
+        webAppUrls.fullOrganizationProject(event.projectId, project.organizationId).toString()
+
+    emailService.sendUserNotification(
+        user,
+        "userAddedToProject",
+        UserAddedToProject(config, admin, project, organization, organizationProjectUrl),
         requireOptIn = false)
   }
 }

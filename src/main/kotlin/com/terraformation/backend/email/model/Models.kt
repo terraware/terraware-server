@@ -4,6 +4,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.TerrawareUser
 
 /**
@@ -34,4 +35,12 @@ class UserAddedToOrganization(
     val admin: IndividualUser,
     val organization: OrganizationModel,
     val organizationHomeUrl: String,
+) : EmailTemplateModel(config)
+
+class UserAddedToProject(
+    config: TerrawareServerConfig,
+    val admin: IndividualUser,
+    val project: ProjectModel,
+    val organization: OrganizationModel,
+    val organizationProjectUrl: String,
 ) : EmailTemplateModel(config)
