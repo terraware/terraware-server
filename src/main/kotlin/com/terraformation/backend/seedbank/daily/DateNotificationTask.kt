@@ -1,6 +1,10 @@
 package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.AccessionDryingEndEvent
+import com.terraformation.backend.customer.event.AccessionDryingStartEvent
+import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
+import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionId
@@ -13,6 +17,7 @@ import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
@@ -23,6 +28,7 @@ class DateNotificationTask(
     private val dslContext: DSLContext,
     private val messages: Messages,
     private val accessionNotificationStore: AccessionNotificationStore,
+    private val eventPublisher: ApplicationEventPublisher
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -39,6 +45,7 @@ class DateNotificationTask(
 
     dslContext.transaction { _ ->
       moveToDryingCabinet(since, until)
+      endDrying(since, until)
       germinationTest(since, until)
       withdraw(since, until)
     }
@@ -47,18 +54,28 @@ class DateNotificationTask(
   private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchDryingMoveDue(after, until).forEach { (number, id) ->
       insert(id, messages.dryingMoveDateNotification(number))
+      eventPublisher.publishEvent(AccessionDryingStartEvent(number, id))
+    }
+  }
+
+  private fun endDrying(after: TemporalAccessor, until: TemporalAccessor) {
+    accessionStore.fetchDryingEndDue(after, until).forEach { (number, id) ->
+      eventPublisher.publishEvent(AccessionDryingEndEvent(number, id))
     }
   }
 
   private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
       insert(test.accessionId!!, messages.germinationTestDateNotification(number, test.testType!!))
+      eventPublisher.publishEvent(
+          AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
     }
   }
 
   private fun withdraw(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchWithdrawalDue(after, until).forEach { (number, id) ->
       insert(id, messages.withdrawalDateNotification(number))
+      eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
     }
   }
 

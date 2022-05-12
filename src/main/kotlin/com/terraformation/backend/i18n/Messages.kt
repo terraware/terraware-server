@@ -74,4 +74,31 @@ class Messages {
       NotificationMessage(
           title = "You've been added to a new project!",
           body = "You are now a member of project $projectName.")
+
+  fun accessionDryingStartNotification(accessionNumber: String): NotificationMessage =
+      NotificationMessage(
+          title = "Accession scheduled for drying",
+          body = dryingMoveDateNotification(accessionNumber))
+
+  fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
+      NotificationMessage(
+          title = "Accession drying ends", body = "$accessionNumber drying end date is today!")
+
+  fun accessionGerminationTestNotification(
+      accessionNumber: String,
+      testType: GerminationTestType
+  ): NotificationMessage =
+      NotificationMessage(
+          title = "Accession scheduled for germination test",
+          body =
+              when (testType) {
+                GerminationTestType.Lab ->
+                    "$accessionNumber is scheduled for a lab germination test today!"
+                GerminationTestType.Nursery ->
+                    "$accessionNumber is scheduled for a nursery germination test today!"
+              })
+
+  fun accessionWithdrawalNotification(accessionNumber: String): NotificationMessage =
+      NotificationMessage(
+          title = "Accession withdrawal", body = withdrawalDateNotification(accessionNumber))
 }

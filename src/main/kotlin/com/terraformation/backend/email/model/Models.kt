@@ -44,3 +44,32 @@ class UserAddedToProject(
     val organization: OrganizationModel,
     val organizationProjectUrl: String,
 ) : EmailTemplateModel(config)
+
+class AccessionDryingStart(
+    config: TerrawareServerConfig,
+    val accessionNumber: String,
+    val organization: OrganizationModel,
+    val accessionUrl: String,
+) : EmailTemplateModel(config)
+
+class AccessionDryingEnd(
+    config: TerrawareServerConfig,
+    val accessionNumber: String,
+    val organization: OrganizationModel,
+    val accessionUrl: String,
+) : EmailTemplateModel(config)
+
+class AccessionGerminationTest(
+    config: TerrawareServerConfig,
+    val accessionNumber: String,
+    val testType: String,
+    val organization: OrganizationModel,
+    val accessionUrl: String,
+) : EmailTemplateModel(config)
+
+class AccessionWithdrawal(
+    config: TerrawareServerConfig,
+    val accessionNumber: String,
+    val organization: OrganizationModel,
+    val accessionUrl: String,
+) : EmailTemplateModel(config)

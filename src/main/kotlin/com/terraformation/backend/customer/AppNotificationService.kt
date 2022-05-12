@@ -2,20 +2,30 @@ package com.terraformation.backend.customer
 
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.AccessionDryingEndEvent
+import com.terraformation.backend.customer.event.AccessionDryingStartEvent
+import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
+import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.NotificationType
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.log.perClassLogger
+import java.net.URI
 import javax.annotation.ManagedBean
 import org.springframework.context.event.EventListener
 
@@ -23,6 +33,7 @@ import org.springframework.context.event.EventListener
 class AppNotificationService(
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
+    private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
     private val userStore: UserStore,
     private val messages: Messages,
@@ -58,15 +69,13 @@ class AppNotificationService(
         "Creating app notification for user ${event.userId} being added to an organization" +
             "${event.organizationId}.")
 
-    val notification =
-        CreateNotificationModel(
-            userId = user.userId,
-            organizationId = null,
-            title = message.title,
-            body = message.body,
-            localUrl = organizationHomeUrl,
-            notificationType = NotificationType.UserAddedtoOrganization)
-    notificationStore.create(notification, organization.id)
+    insert(
+        NotificationType.UserAddedtoOrganization,
+        user.userId,
+        null,
+        message,
+        organizationHomeUrl,
+        organization.id)
   }
 
   @EventListener
@@ -79,21 +88,110 @@ class AppNotificationService(
         organizationStore.fetchById(project.organizationId)
             ?: throw OrganizationNotFoundException(project.organizationId)
 
-    val projectHomeUrl = webAppUrls.organizationProject(event.projectId)
+    val organizationProjectUrl = webAppUrls.organizationProject(event.projectId)
     val message = messages.userAddedToProjectNotification(project.name)
 
     log.info(
         "Creating app notification for user ${event.userId} being added to a project " +
             "${event.projectId}.")
 
+    insert(
+        NotificationType.UserAddedtoProject,
+        user.userId,
+        organization.id,
+        message,
+        organizationProjectUrl,
+        organization.id)
+  }
+
+  @EventListener
+  fun on(event: AccessionDryingStartEvent) {
+    val accessionUrl = webAppUrls.accession(event.accessionId)
+    val message = messages.accessionDryingStartNotification(event.accessionNumber)
+
+    log.info(
+        "Creating app notifications for accession ${event.accessionNumber} scheduled for drying.")
+
+    insertAccessionNotifications(
+        event.accessionId, NotificationType.AccessionScheduledforDrying, message, accessionUrl)
+  }
+
+  @EventListener
+  fun on(event: AccessionDryingEndEvent) {
+    val accessionUrl = webAppUrls.accession(event.accessionId)
+    val message = messages.accessionDryingEndNotification(event.accessionNumber)
+
+    log.info("Creating app notifications for accession ${event.accessionNumber} ends drying.")
+
+    insertAccessionNotifications(
+        event.accessionId,
+        NotificationType.AccessionScheduledtoEndDrying,
+        message,
+        accessionUrl,
+    )
+  }
+
+  @EventListener
+  fun on(event: AccessionGerminationTestEvent) {
+    val accessionUrl = webAppUrls.accessionGerminationTest(event.accessionId, event.testType)
+    val message =
+        messages.accessionGerminationTestNotification(event.accessionNumber, event.testType)
+
+    log.info(
+        "Creating app notifications for accession ${event.accessionNumber} germination test ${event.testType}.")
+
+    insertAccessionNotifications(
+        event.accessionId,
+        NotificationType.AccessionScheduledforGerminationTest,
+        message,
+        accessionUrl,
+    )
+  }
+
+  @EventListener
+  fun on(event: AccessionWithdrawalEvent) {
+    val accessionUrl = webAppUrls.accession(event.accessionId)
+    val message = messages.accessionWithdrawalNotification(event.accessionNumber)
+
+    log.info("Creating app notifications for accession ${event.accessionNumber} withdrawal.")
+
+    insertAccessionNotifications(
+        event.accessionId,
+        NotificationType.AccessionScheduledforWithdrawal,
+        message,
+        accessionUrl,
+    )
+  }
+
+  private fun insertAccessionNotifications(
+      accessionId: AccessionId,
+      notificationType: NotificationType,
+      message: NotificationMessage,
+      localUrl: URI
+  ) {
+    val facilityId = parentStore.getFacilityId(accessionId)!!
+    val projectId = parentStore.getProjectId(facilityId)!!
+    val organizationId = parentStore.getOrganizationId(projectId)!!
+    val recipients =
+        projectStore.fetchEmailRecipients(projectId, false).mapNotNull {
+          userStore.fetchByEmail(it)
+        }
+    recipients.forEach { user ->
+      insert(notificationType, user.userId, organizationId, message, localUrl, organizationId)
+    }
+  }
+
+  private fun insert(
+      notificationType: NotificationType,
+      userId: UserId,
+      organizationId: OrganizationId?,
+      message: NotificationMessage,
+      localUrl: URI,
+      targetOrganizationId: OrganizationId
+  ) {
     val notification =
         CreateNotificationModel(
-            userId = user.userId,
-            organizationId = organization.id,
-            title = message.title,
-            body = message.body,
-            localUrl = projectHomeUrl,
-            notificationType = NotificationType.UserAddedtoProject)
-    notificationStore.create(notification, organization.id)
+            notificationType, userId, organizationId, message.title, message.body, localUrl)
+    notificationStore.create(notification, targetOrganizationId)
   }
 }

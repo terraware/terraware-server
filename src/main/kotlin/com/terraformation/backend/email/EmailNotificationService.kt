@@ -3,17 +3,31 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.AccessionDryingEndEvent
+import com.terraformation.backend.customer.event.AccessionDryingStartEvent
+import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
+import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.email.model.AccessionDryingEnd
+import com.terraformation.backend.email.model.AccessionDryingStart
+import com.terraformation.backend.email.model.AccessionGerminationTest
+import com.terraformation.backend.email.model.AccessionWithdrawal
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.UserAddedToOrganization
@@ -30,6 +44,7 @@ class EmailNotificationService(
     private val facilityStore: FacilityStore,
     private val messages: Messages,
     private val organizationStore: OrganizationStore,
+    private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
@@ -108,7 +123,90 @@ class EmailNotificationService(
     emailService.sendUserNotification(
         user,
         "userAddedToProject",
-        UserAddedToProject(config, admin, project, organization, organizationProjectUrl),
-        requireOptIn = false)
+        UserAddedToProject(config, admin, project, organization, organizationProjectUrl))
+  }
+
+  @EventListener
+  fun on(event: AccessionDryingStartEvent) {
+    val organizationId = getOrganizationId(event.accessionId)
+    val organization =
+        organizationStore.fetchById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
+    val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
+    getRecipients(event.accessionId).forEach { user ->
+      emailService.sendUserNotification(
+          user,
+          "accessionDryingStart",
+          AccessionDryingStart(config, event.accessionNumber, organization, accessionUrl))
+    }
+  }
+
+  @EventListener
+  fun on(event: AccessionDryingEndEvent) {
+    val organizationId = getOrganizationId(event.accessionId)
+    val organization =
+        organizationStore.fetchById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
+    val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
+    getRecipients(event.accessionId).forEach { user ->
+      emailService.sendUserNotification(
+          user,
+          "accessionDryingEnd",
+          AccessionDryingEnd(config, event.accessionNumber, organization, accessionUrl))
+    }
+  }
+
+  @EventListener
+  fun on(event: AccessionGerminationTestEvent) {
+    val organizationId = getOrganizationId(event.accessionId)
+    val organization =
+        organizationStore.fetchById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
+    val accessionUrl =
+        webAppUrls
+            .fullAccessionGerminationTest(event.accessionId, event.testType, organizationId)
+            .toString()
+    val testType =
+        when (event.testType) {
+          GerminationTestType.Lab -> "lab"
+          GerminationTestType.Nursery -> "nursery"
+        }
+    getRecipients(event.accessionId).forEach { user ->
+      emailService.sendUserNotification(
+          user,
+          "accessionGerminationTest",
+          AccessionGerminationTest(
+              config, event.accessionNumber, testType, organization, accessionUrl))
+    }
+  }
+
+  @EventListener
+  fun on(event: AccessionWithdrawalEvent) {
+    val organizationId = getOrganizationId(event.accessionId)
+    val organization =
+        organizationStore.fetchById(organizationId)
+            ?: throw OrganizationNotFoundException(organizationId)
+    val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
+    getRecipients(event.accessionId).forEach { user ->
+      emailService.sendUserNotification(
+          user,
+          "accessionWithdrawal",
+          AccessionWithdrawal(config, event.accessionNumber, organization, accessionUrl))
+    }
+  }
+
+  private fun getProjectId(accessionId: AccessionId): ProjectId {
+    val facilityId = parentStore.getFacilityId(accessionId)!!
+    return parentStore.getProjectId(facilityId)!!
+  }
+
+  private fun getOrganizationId(accessionId: AccessionId): OrganizationId {
+    return parentStore.getOrganizationId(getProjectId(accessionId))!!
+  }
+
+  private fun getRecipients(accessionId: AccessionId): List<IndividualUser> {
+    return projectStore.fetchEmailRecipients(getProjectId(accessionId)).mapNotNull {
+      userStore.fetchByEmail(it)
+    }
   }
 }

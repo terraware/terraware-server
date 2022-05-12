@@ -1,0 +1,25 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionDryingEnd" --> -->
+<mjml>
+    <mj-include path="../head.ftlh.mjml" />
+
+    <mj-body>
+        <mj-include path="../logo.ftlh.mjml" />
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    Accession ${accessionNumber} in organization ${organization.name} has a drying end date of today!</mj-text
+                >
+                <mj-text mj-class="text-body03">
+                    Please click the button below to go to your Terraware account where you can view
+                    the accession.</mj-text
+                >
+                <mj-button mj-class="btn-productive-primary-md" href="${accessionUrl?no_esc}"
+                    >Go to Terraware</mj-button
+                >
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../footer.ftlh.mjml" />
+    </mj-body>
+</mjml>
