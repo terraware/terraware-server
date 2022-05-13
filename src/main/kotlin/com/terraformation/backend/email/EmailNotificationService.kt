@@ -207,7 +207,7 @@ class EmailNotificationService(
   }
 
   private fun getRecipients(accessionId: AccessionId): List<IndividualUser> {
-    return projectStore.fetchEmailRecipients(getProjectId(accessionId)).mapNotNull {
+    return projectStore.fetchEmailRecipients(getProjectId(accessionId)).toSet().mapNotNull {
       userStore.fetchByEmail(it)
     }
   }
