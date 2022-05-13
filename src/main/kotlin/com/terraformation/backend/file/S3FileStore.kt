@@ -1,7 +1,6 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import java.io.InputStream
 import java.net.URI
@@ -17,12 +16,17 @@ import kotlin.io.path.relativeTo
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest
+import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest
+import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload
+import software.amazon.awssdk.services.s3.model.CompletedPart
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.UploadPartRequest
 
 @ConditionalOnProperty("terraware.s3BucketName", havingValue = "")
 @ManagedBean
@@ -72,7 +76,7 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
     }
   }
 
-  override fun write(url: URI, contents: InputStream, size: Long) {
+  override fun write(url: URI, contents: InputStream) {
     val s3Key = toS3Key(url)
 
     // Check whether the file already exists so that we can avoid overwriting it. There is a race
@@ -89,11 +93,54 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
 
     log.info("Writing $s3Key to $bucketName")
 
-    val request = PutObjectRequest.builder().bucket(bucketName).key(s3Key).build()
-
     mapExceptions(url) {
-      log.debugWithTiming("Wrote $size bytes to S3") {
-        s3Client.putObject(request, RequestBody.fromInputStream(contents, size))
+      val createUploadRequest =
+          CreateMultipartUploadRequest.builder().bucket(bucketName).key(s3Key).build()
+      val uploadId = s3Client.createMultipartUpload(createUploadRequest).uploadId()
+
+      try {
+        val completedParts =
+            readChunks(contents)
+                .mapIndexed { index, chunk ->
+                  log.debug("Writing chunk of ${chunk.size} bytes")
+
+                  // Part numbers must be greater than 0
+                  val partNumber = index + 1
+
+                  val partRequest =
+                      UploadPartRequest.builder()
+                          .bucket(bucketName)
+                          .contentLength(chunk.size.toLong())
+                          .key(s3Key)
+                          .partNumber(partNumber)
+                          .uploadId(uploadId)
+                          .build()
+
+                  val response = s3Client.uploadPart(partRequest, RequestBody.fromBytes(chunk))
+
+                  CompletedPart.builder().partNumber(partNumber).eTag(response.eTag()).build()
+                }
+                .toList()
+
+        val completedMultipartUpload =
+            CompletedMultipartUpload.builder().parts(completedParts).build()
+        val completeMultipartUploadRequest =
+            CompleteMultipartUploadRequest.builder()
+                .bucket(bucketName)
+                .key(s3Key)
+                .multipartUpload(completedMultipartUpload)
+                .uploadId(uploadId)
+                .build()
+        s3Client.completeMultipartUpload(completeMultipartUploadRequest)
+      } catch (e: Exception) {
+        val abortMultipartUploadRequest =
+            AbortMultipartUploadRequest.builder()
+                .bucket(bucketName)
+                .key(s3Key)
+                .uploadId(uploadId)
+                .build()
+        s3Client.abortMultipartUpload(abortMultipartUploadRequest)
+        throw e
       }
     }
   }
@@ -109,6 +156,27 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
 
   override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
     return getUrl(pathGenerator.generatePath(timestamp, category, contentType))
+  }
+
+  /**
+   * Returns a sequence of chunks from an input stream.
+   *
+   * @param [chunkSize] How many bytes to read into each chunk. Note that AWS has a minimum size of
+   * 5MB for each part of a multipart upload except the final one; this needs to be bigger than
+   * that.
+   */
+  private fun readChunks(
+      inputStream: InputStream,
+      chunkSize: Int = 5 * 1024 * 1024
+  ): Sequence<ByteArray> = sequence {
+    while (true) {
+      val chunk = inputStream.readNBytes(chunkSize)
+      if (chunk.isEmpty()) {
+        break
+      }
+
+      yield(chunk)
+    }
   }
 
   /** Returns an S3 key for a URL. */

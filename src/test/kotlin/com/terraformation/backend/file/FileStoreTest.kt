@@ -88,31 +88,29 @@ abstract class FileStoreTest {
   }
 
   @Test
-  fun `store creates new file`() {
+  fun `write creates new file`() {
     val url = makeUrl()
     val bytesToWrite = Random.nextBytes(100)
 
-    store.write(url, bytesToWrite.inputStream(), bytesToWrite.size.toLong())
+    store.write(url, bytesToWrite.inputStream())
 
     val bytesWritten = readFile(url)
     assertArrayEquals(bytesToWrite, bytesWritten)
   }
 
   @Test
-  fun `store throws exception if file already exists`() {
+  fun `write throws exception if file already exists`() {
     val url = makeUrl()
 
     createFile(url)
 
-    assertThrows<FileAlreadyExistsException> {
-      store.write(url, Random.nextBytes(1).inputStream(), 1)
-    }
+    assertThrows<FileAlreadyExistsException> { store.write(url, Random.nextBytes(1).inputStream()) }
   }
 
   @Test
-  fun `store throws exception if URL is invalid`() {
+  fun `write throws exception if URL is invalid`() {
     assertThrows<InvalidStorageLocationException> {
-      store.write(badUrl, Random.nextBytes(1).inputStream(), 1)
+      store.write(badUrl, Random.nextBytes(1).inputStream())
     }
   }
 

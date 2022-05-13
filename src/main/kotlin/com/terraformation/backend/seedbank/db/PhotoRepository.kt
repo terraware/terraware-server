@@ -53,7 +53,7 @@ class PhotoRepository(
     val photoUrl = fileStore.newUrl(clock.instant(), "accession", metadata.contentType)
 
     try {
-      fileStore.write(photoUrl, data, size)
+      fileStore.write(photoUrl, data)
 
       dslContext.transaction { _ ->
         val photosRow =

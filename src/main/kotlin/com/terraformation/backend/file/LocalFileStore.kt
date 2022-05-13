@@ -50,7 +50,7 @@ class LocalFileStore(
     return getFullPath(url).fileSize()
   }
 
-  override fun write(url: URI, contents: InputStream, size: Long) {
+  override fun write(url: URI, contents: InputStream) {
     // The file might be in a subdirectory that doesn't exist yet.
     val fullPath = getFullPath(url)
     val directory = fullPath.parent
