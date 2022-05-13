@@ -1,4 +1,4 @@
-<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionDryingStart" --> -->
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionMoveToDry" --> -->
 <mjml>
     <mj-include path="../head.ftlh.mjml" />
 
@@ -8,7 +8,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    Accession ${accessionNumber} in organization ${organization.name} is scheduled to be moved from racks to dry cabinets today!</mj-text
+                    Accession ${accessionNumber} in organization ${organization.name} is scheduled to be moved from racks to drying cabinets today!</mj-text
                 >
                 <mj-text mj-class="text-body03">
                     Please click the button below to go to your Terraware account where you can view

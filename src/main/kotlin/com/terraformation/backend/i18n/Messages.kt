@@ -75,7 +75,7 @@ class Messages {
           title = "You've been added to a new project!",
           body = "You are now a member of project $projectName.")
 
-  fun accessionDryingStartNotification(accessionNumber: String): NotificationMessage =
+  fun accessionMoveToDryNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
           title = "Accession scheduled for drying",
           body = dryingMoveDateNotification(accessionNumber))

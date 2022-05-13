@@ -6,8 +6,8 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionDryingStartEvent
 import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
+import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
 import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
@@ -105,9 +105,9 @@ class AppNotificationService(
   }
 
   @EventListener
-  fun on(event: AccessionDryingStartEvent) {
+  fun on(event: AccessionMoveToDryEvent) {
     val accessionUrl = webAppUrls.accession(event.accessionId)
-    val message = messages.accessionDryingStartNotification(event.accessionNumber)
+    val message = messages.accessionMoveToDryNotification(event.accessionNumber)
 
     log.info(
         "Creating app notifications for accession ${event.accessionNumber} scheduled for drying.")
@@ -172,8 +172,12 @@ class AppNotificationService(
     val facilityId = parentStore.getFacilityId(accessionId)!!
     val projectId = parentStore.getProjectId(facilityId)!!
     val organizationId = parentStore.getOrganizationId(projectId)!!
+    val emailR = projectStore.fetchEmailRecipients(projectId, false)
+    if (emailR.isEmpty()) {
+      return
+    }
     val recipients =
-        projectStore.fetchEmailRecipients(projectId, false).mapNotNull {
+        projectStore.fetchEmailRecipients(projectId, false).toSet().mapNotNull {
           userStore.fetchByEmail(it)
         }
     recipients.forEach { user ->

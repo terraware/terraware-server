@@ -1,5 +1,5 @@
-<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionDryingStart" -->
-Accession ${accessionNumber} in organization ${organization.name} is scheduled to be moved from racks to dry cabinets today!
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionMoveToDry" -->
+Accession ${accessionNumber} in organization ${organization.name} is scheduled to be moved from racks to drying cabinets today!
 
 Please click the link below to go to your Terraware account where you can view the accession.
 ${accessionUrl}

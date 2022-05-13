@@ -7,8 +7,8 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionDryingStartEvent
 import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
+import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
 import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
@@ -24,9 +24,10 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.email.model.AccessionDryingEnd
-import com.terraformation.backend.email.model.AccessionDryingStart
 import com.terraformation.backend.email.model.AccessionGerminationTest
+import com.terraformation.backend.email.model.AccessionMoveToDry
 import com.terraformation.backend.email.model.AccessionWithdrawal
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
@@ -43,6 +44,7 @@ class EmailNotificationService(
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val messages: Messages,
+    private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
@@ -127,17 +129,17 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(event: AccessionDryingStartEvent) {
+  fun on(event: AccessionMoveToDryEvent) {
     val organizationId = getOrganizationId(event.accessionId)
     val organization =
-        organizationStore.fetchById(organizationId)
+        organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
     val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
     getRecipients(event.accessionId).forEach { user ->
       emailService.sendUserNotification(
           user,
-          "accessionDryingStart",
-          AccessionDryingStart(config, event.accessionNumber, organization, accessionUrl))
+          "accessionMoveToDry",
+          AccessionMoveToDry(config, event.accessionNumber, organization, accessionUrl))
     }
   }
 
@@ -145,7 +147,7 @@ class EmailNotificationService(
   fun on(event: AccessionDryingEndEvent) {
     val organizationId = getOrganizationId(event.accessionId)
     val organization =
-        organizationStore.fetchById(organizationId)
+        organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
     val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
     getRecipients(event.accessionId).forEach { user ->
@@ -160,7 +162,7 @@ class EmailNotificationService(
   fun on(event: AccessionGerminationTestEvent) {
     val organizationId = getOrganizationId(event.accessionId)
     val organization =
-        organizationStore.fetchById(organizationId)
+        organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
     val accessionUrl =
         webAppUrls
@@ -184,7 +186,7 @@ class EmailNotificationService(
   fun on(event: AccessionWithdrawalEvent) {
     val organizationId = getOrganizationId(event.accessionId)
     val organization =
-        organizationStore.fetchById(organizationId)
+        organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
     val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
     getRecipients(event.accessionId).forEach { user ->

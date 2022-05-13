@@ -12,8 +12,8 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionDryingStartEvent
 import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
+import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
 import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
@@ -135,7 +135,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("organization title", "organization body")
     every { messages.userAddedToProjectNotification(any()) } returns
         NotificationMessage("project title", "project body")
-    every { messages.accessionDryingStartNotification(any()) } returns
+    every { messages.accessionMoveToDryNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
     every { messages.accessionDryingEndNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
@@ -236,7 +236,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store accession drying scheduled notification`() {
+  fun `should store accession move to drying racks notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
     insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
@@ -252,7 +252,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         notificationsDao.count(),
         "There should be no notifications before any notification event")
 
-    service.on(AccessionDryingStartEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
+    service.on(AccessionMoveToDryEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
 
     val expectedNotifications =
         listOf(
@@ -283,7 +283,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         expectedNotifications,
         actualNotifications,
-        "Notification should match that of an accession scheduled for drying")
+        "Notification should match that of an accession move from racks to drying cabinets")
   }
 
   @Test

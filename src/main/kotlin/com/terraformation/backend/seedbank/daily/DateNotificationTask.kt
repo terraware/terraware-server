@@ -2,8 +2,8 @@ package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionDryingStartEvent
 import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
+import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
 import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.TimePeriodTask
@@ -54,28 +54,44 @@ class DateNotificationTask(
   private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchDryingMoveDue(after, until).forEach { (number, id) ->
       insert(id, messages.dryingMoveDateNotification(number))
-      eventPublisher.publishEvent(AccessionDryingStartEvent(number, id))
+      try {
+        eventPublisher.publishEvent(AccessionMoveToDryEvent(number, id))
+      } catch (e: Exception) {
+        log.error("Error handling AccessionMoveToDryEvent", e)
+      }
     }
   }
 
   private fun endDrying(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchDryingEndDue(after, until).forEach { (number, id) ->
-      eventPublisher.publishEvent(AccessionDryingEndEvent(number, id))
+      try {
+        eventPublisher.publishEvent(AccessionDryingEndEvent(number, id))
+      } catch (e: Exception) {
+        log.error("Error handling AccessionDryingEndEvent", e)
+      }
     }
   }
 
   private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
       insert(test.accessionId!!, messages.germinationTestDateNotification(number, test.testType!!))
-      eventPublisher.publishEvent(
-          AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
+      try {
+        eventPublisher.publishEvent(
+            AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
+      } catch (e: Exception) {
+        log.error("Error handling AccessionGerminationTestEvent", e)
+      }
     }
   }
 
   private fun withdraw(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchWithdrawalDue(after, until).forEach { (number, id) ->
       insert(id, messages.withdrawalDateNotification(number))
-      eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
+      try {
+        eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
+      } catch (e: Exception) {
+        log.error("Error handling AccessionWithdrawalEvent", e)
+      }
     }
   }
 
