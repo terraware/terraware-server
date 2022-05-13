@@ -190,11 +190,11 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     val thumbUrlSlot: CapturingSlot<URI> = slot()
     val streamSlot: CapturingSlot<InputStream> = slot()
-    justRun { fileStore.write(capture(thumbUrlSlot), capture(streamSlot), any()) }
+    justRun { fileStore.write(capture(thumbUrlSlot), capture(streamSlot)) }
 
     val actual = store.getThumbnailData(photoId, width, height)
 
-    verify(exactly = 1) { fileStore.write(any(), any(), any()) }
+    verify(exactly = 1) { fileStore.write(any(), any()) }
 
     assertEquals(
         URI("file:///a/b/c/thumb/original-${width}x$height.jpg"),
@@ -211,7 +211,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     val width = photoWidth / 10
     val height = photoHeight / 10
 
-    justRun { fileStore.write(any(), any(), any()) }
+    justRun { fileStore.write(any(), any()) }
 
     val actual = store.getThumbnailData(photoId, width, height)
     val actualData = actual.readAllBytes()
@@ -226,7 +226,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `generates thumbnails above minimum high-quality dimensions`() {
-    justRun { fileStore.write(any(), any(), any()) }
+    justRun { fileStore.write(any(), any()) }
 
     val actual =
         store.getThumbnailData(photoId, store.minSizeForHighQuality, store.minSizeForHighQuality)
@@ -244,7 +244,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     val width = photoWidth / 10
     val height = photoHeight / 10
 
-    every { fileStore.write(any(), any(), any()) } throws FileAlreadyExistsException("Exists")
+    every { fileStore.write(any(), any()) } throws FileAlreadyExistsException("Exists")
 
     val actual = store.getThumbnailData(photoId, width, height)
 
@@ -270,11 +270,11 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     val existingRow = insertThumbnail(width, height)
 
     every { fileStore.read(existingRow.storageUrl!!) } throws NoSuchFileException("Nope")
-    justRun { fileStore.write(any(), any(), any()) }
+    justRun { fileStore.write(any(), any()) }
 
     val actual = store.getThumbnailData(photoId, width, height)
 
-    verify { fileStore.write(existingRow.storageUrl!!, any(), any()) }
+    verify { fileStore.write(existingRow.storageUrl!!, any()) }
 
     assertEquals(
         listOf(

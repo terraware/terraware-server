@@ -115,7 +115,7 @@ class ThumbnailStore(
     val thumbUrl = getThumbnailUrl(photoUrl, resizedImage.width, resizedImage.height)
 
     try {
-      fileStore.write(thumbUrl, ByteArrayInputStream(buffer), size.toLong())
+      fileStore.write(thumbUrl, ByteArrayInputStream(buffer))
     } catch (e: FileAlreadyExistsException) {
       // This is suspicious if it happens a lot, but we expect to see it if, e.g., two users
       // run the same search at the same time and there isn't already a thumbnail for one of
