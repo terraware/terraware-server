@@ -21,6 +21,8 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StorageLocationNotFoundException
+import com.terraformation.backend.db.UploadId
+import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserId
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -52,15 +54,16 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val automationId = AutomationId(1)
   private val deviceId = DeviceId(1)
   private val facilityId = FacilityId(1)
+  private val notificationUserId = UserId(2)
+  private val notificationId = NotificationId(1)
   private val organizationId = OrganizationId(1)
   private val projectId = ProjectId(1)
   private val role = Role.CONTRIBUTOR
   private val siteId = SiteId(1)
   private val speciesId = SpeciesId(1)
   private val storageLocationId = StorageLocationId(1)
+  private val uploadId = UploadId(1)
   private val userId = UserId(1)
-  private val notificationUserId = UserId(2)
-  private val notificationId = NotificationId(1)
 
   /**
    * Grants permission to perform a particular operation. This is a simple wrapper around a MockK
@@ -608,5 +611,35 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canUpdateNotifications(organizationId) }
     requirements.updateNotifications(organizationId)
+  }
+
+  @Test
+  fun readUpload() {
+    assertThrows<UploadNotFoundException> { requirements.readUpload(uploadId) }
+
+    grant { user.canReadUpload(uploadId) }
+    requirements.readUpload(uploadId)
+  }
+
+  @Test
+  fun updateUpload() {
+    assertThrows<UploadNotFoundException> { requirements.updateUpload(uploadId) }
+
+    grant { user.canReadUpload(uploadId) }
+    assertThrows<AccessDeniedException> { requirements.updateUpload(uploadId) }
+
+    grant { user.canUpdateUpload(uploadId) }
+    requirements.updateUpload(uploadId)
+  }
+
+  @Test
+  fun deleteUpload() {
+    assertThrows<UploadNotFoundException> { requirements.deleteUpload(uploadId) }
+
+    grant { user.canReadUpload(uploadId) }
+    assertThrows<AccessDeniedException> { requirements.deleteUpload(uploadId) }
+
+    grant { user.canDeleteUpload(uploadId) }
+    requirements.deleteUpload(uploadId)
   }
 }

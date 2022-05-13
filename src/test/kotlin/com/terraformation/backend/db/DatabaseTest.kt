@@ -25,6 +25,7 @@ import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
+import com.terraformation.backend.db.tables.daos.UploadsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.references.DEVICES
@@ -37,7 +38,9 @@ import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tables.references.UPLOADS
 import com.terraformation.backend.db.tables.references.USERS
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.reflect.full.createType
@@ -206,6 +209,7 @@ abstract class DatabaseTest {
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
+  protected val uploadsDao: UploadsDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
 
@@ -469,6 +473,30 @@ abstract class DatabaseTest {
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
+          .execute()
+    }
+  }
+
+  fun insertUpload(
+      id: Any,
+      type: UploadType = UploadType.SpeciesCSV,
+      fileName: String = "$id.csv",
+      storageUrl: URI = URI.create("file:///$id.csv"),
+      contentType: String = "text/csv",
+      createdBy: UserId = currentUser().userId,
+      status: UploadStatus = UploadStatus.Receiving,
+  ) {
+    with(UPLOADS) {
+      dslContext
+          .insertInto(UPLOADS)
+          .set(CONTENT_TYPE, contentType)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(FILENAME, fileName)
+          .set(ID, id.toIdWrapper { UploadId(it) })
+          .set(STATUS_ID, status)
+          .set(STORAGE_URL, storageUrl)
+          .set(TYPE_ID, type)
           .execute()
     }
   }

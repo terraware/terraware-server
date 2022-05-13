@@ -16,6 +16,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.log.perClassLogger
@@ -377,6 +378,14 @@ data class IndividualUser(
     return (organizationId in permissionStore.fetchOrganizationRoles(targetUserId)) &&
         (organizationId in organizationRoles)
   }
+
+  override fun canReadUpload(uploadId: UploadId): Boolean {
+    return userId == parentStore.getUserId(uploadId)
+  }
+
+  override fun canUpdateUpload(uploadId: UploadId): Boolean = canReadUpload(uploadId)
+
+  override fun canDeleteUpload(uploadId: UploadId): Boolean = canReadUpload(uploadId)
 
   /** Returns true if the user is an admin or owner of any organizations. */
   override fun hasAnyAdminRole(): Boolean =

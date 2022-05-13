@@ -164,6 +164,20 @@ COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authent
 COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants to receive notifications via email.';
 COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
 
+COMMENT ON TABLE uploads IS 'Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.';
+
+COMMENT ON TABLE upload_problems IS 'Details about problems (validation failures, etc.) in user-uploaded files.';
+COMMENT ON COLUMN upload_problems.position IS 'Where in the uploaded file the problem appears, or null if it is a problem with the file as a whole. This may be a byte offset, a line number, or a record number depending on the type of file.';
+COMMENT ON COLUMN upload_problems.field IS 'If the problem pertains to a specific field, its name. Null if the problem affects an entire record or the entire file.';
+
+COMMENT ON TABLE upload_problem_types IS '(Enum) Specific types of problems encountered while processing a user-uploaded file.';
+
+COMMENT ON TABLE upload_statuses IS '(Enum) Available statuses of user-uploaded files. Uploads progress through these statuses as the system processes the files.';
+COMMENT ON COLUMN upload_statuses.finished IS 'If true, this status means that the system is finished processing the file.';
+
+COMMENT ON TABLE upload_types IS '(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table.';
+COMMENT ON COLUMN upload_types.expire_files IS 'Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type.';
+
 COMMENT ON TABLE withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
 
 COMMENT ON TABLE withdrawals IS 'Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here.';

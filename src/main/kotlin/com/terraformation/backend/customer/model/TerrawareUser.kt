@@ -11,6 +11,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import java.security.Principal
@@ -80,6 +81,7 @@ interface TerrawareUser : Principal {
   fun canDeleteSite(siteId: SiteId): Boolean
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean
   fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean
+  fun canDeleteUpload(uploadId: UploadId): Boolean
   fun canImportGlobalSpeciesData(): Boolean
   fun canListApiKeys(organizationId: OrganizationId): Boolean
   fun canListAutomations(facilityId: FacilityId): Boolean
@@ -97,6 +99,7 @@ interface TerrawareUser : Principal {
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
+  fun canReadUpload(uploadId: UploadId): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean
@@ -111,6 +114,7 @@ interface TerrawareUser : Principal {
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
+  fun canUpdateUpload(uploadId: UploadId): Boolean
   fun canReadNotification(notificationId: NotificationId): Boolean
   fun canListNotifications(organizationId: OrganizationId?): Boolean
   fun canCountNotifications(): Boolean

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
@@ -23,6 +24,7 @@ import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tables.references.UPLOADS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -83,6 +85,9 @@ class ParentStore(private val dslContext: DSLContext) {
     return fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.NAME)
         ?: throw FacilityNotFoundException(facilityId)
   }
+
+  fun getUserId(uploadId: UploadId): UserId? =
+      fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.CREATED_BY)
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
