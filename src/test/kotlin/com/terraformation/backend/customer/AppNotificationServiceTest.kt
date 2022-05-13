@@ -11,10 +11,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
-import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
-import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.Role
@@ -40,6 +36,10 @@ import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
 import com.terraformation.backend.seedbank.db.GerminationStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
+import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
+import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
@@ -121,6 +121,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     webAppUrls = WebAppUrls(config)
     service =
         AppNotificationService(
+            dslContext,
             notificationStore,
             organizationStore,
             parentStore,

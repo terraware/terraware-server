@@ -1,10 +1,6 @@
 package com.terraformation.backend.seedbank.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
-import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
-import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionId
@@ -12,6 +8,10 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
+import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
+import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
@@ -57,7 +57,7 @@ class DateNotificationTask(
       try {
         eventPublisher.publishEvent(AccessionMoveToDryEvent(number, id))
       } catch (e: Exception) {
-        log.error("Error handling AccessionMoveToDryEvent", e)
+        log.error("Error handling AccessionMoveToDryEvent for accession $id", e)
       }
     }
   }
@@ -67,7 +67,7 @@ class DateNotificationTask(
       try {
         eventPublisher.publishEvent(AccessionDryingEndEvent(number, id))
       } catch (e: Exception) {
-        log.error("Error handling AccessionDryingEndEvent", e)
+        log.error("Error handling AccessionDryingEndEvent for accession $id", e)
       }
     }
   }
@@ -79,7 +79,8 @@ class DateNotificationTask(
         eventPublisher.publishEvent(
             AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
       } catch (e: Exception) {
-        log.error("Error handling AccessionGerminationTestEvent", e)
+        log.error(
+            "Error handling AccessionGerminationTestEvent for accession ${test.accessionId}", e)
       }
     }
   }
@@ -90,7 +91,7 @@ class DateNotificationTask(
       try {
         eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
       } catch (e: Exception) {
-        log.error("Error handling AccessionWithdrawalEvent", e)
+        log.error("Error handling AccessionWithdrawalEvent for accession $id", e)
       }
     }
   }

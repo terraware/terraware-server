@@ -3771,24 +3771,12 @@ components:
       - isRead
       - localUrl
       - notificationCriticality
-      - notificationType
       - title
       type: object
       properties:
         id:
           type: integer
           format: int64
-        notificationType:
-          type: string
-          enum:
-          - User Added to Organization
-          - Facility Idle
-          - Facility Alert Requested
-          - User Added to Project
-          - Accession Scheduled for Drying
-          - Accession Scheduled to End Drying
-          - Accession Scheduled for Withdrawal
-          - Accession Scheduled for Germination Test
         notificationCriticality:
           type: string
           enum:

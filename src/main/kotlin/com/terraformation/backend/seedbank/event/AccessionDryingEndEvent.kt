@@ -1,4 +1,4 @@
-package com.terraformation.backend.customer.event
+package com.terraformation.backend.seedbank.event
 
 import com.terraformation.backend.db.AccessionId
 

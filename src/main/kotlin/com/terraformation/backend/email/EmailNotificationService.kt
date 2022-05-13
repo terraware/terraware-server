@@ -6,10 +6,6 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
-import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
-import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -19,9 +15,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GerminationTestType
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
@@ -35,6 +29,10 @@ import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToProject
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
+import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import javax.annotation.ManagedBean
 import org.springframework.context.event.EventListener
 
@@ -130,7 +128,7 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: AccessionMoveToDryEvent) {
-    val organizationId = getOrganizationId(event.accessionId)
+    val organizationId = parentStore.getOrganizationId(event.accessionId)
     val organization =
         organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
@@ -145,7 +143,7 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: AccessionDryingEndEvent) {
-    val organizationId = getOrganizationId(event.accessionId)
+    val organizationId = parentStore.getOrganizationId(event.accessionId)
     val organization =
         organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
@@ -160,7 +158,7 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: AccessionGerminationTestEvent) {
-    val organizationId = getOrganizationId(event.accessionId)
+    val organizationId = parentStore.getOrganizationId(event.accessionId)
     val organization =
         organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
@@ -184,7 +182,7 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: AccessionWithdrawalEvent) {
-    val organizationId = getOrganizationId(event.accessionId)
+    val organizationId = parentStore.getOrganizationId(event.accessionId)
     val organization =
         organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
@@ -197,18 +195,10 @@ class EmailNotificationService(
     }
   }
 
-  private fun getProjectId(accessionId: AccessionId): ProjectId {
-    val facilityId = parentStore.getFacilityId(accessionId)!!
-    return parentStore.getProjectId(facilityId)!!
-  }
-
-  private fun getOrganizationId(accessionId: AccessionId): OrganizationId {
-    return parentStore.getOrganizationId(getProjectId(accessionId))!!
-  }
-
   private fun getRecipients(accessionId: AccessionId): List<IndividualUser> {
-    return projectStore.fetchEmailRecipients(getProjectId(accessionId)).toSet().mapNotNull {
-      userStore.fetchByEmail(it)
-    }
+    return projectStore
+        .fetchEmailRecipients(parentStore.getProjectId(accessionId))
+        .toSet()
+        .mapNotNull { userStore.fetchByEmail(it) }
   }
 }

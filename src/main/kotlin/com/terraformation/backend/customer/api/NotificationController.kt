@@ -10,7 +10,6 @@ import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.db.NotificationCriticality
 import com.terraformation.backend.db.NotificationId
-import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -103,7 +102,6 @@ class NotificationController(private val notificationStore: NotificationStore) {
 @Schema
 data class NotificationPayload(
     val id: NotificationId,
-    val notificationType: NotificationType,
     val notificationCriticality: NotificationCriticality,
     val organizationId: OrganizationId?,
     val title: String,
@@ -116,7 +114,6 @@ data class NotificationPayload(
       model: NotificationModel
   ) : this(
       model.id,
-      model.notificationType,
       model.notificationType.notificationCriticalityId,
       model.organizationId,
       model.title,

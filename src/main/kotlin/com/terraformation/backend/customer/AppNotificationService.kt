@@ -5,10 +5,6 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.event.AccessionDryingEndEvent
-import com.terraformation.backend.customer.event.AccessionGerminationTestEvent
-import com.terraformation.backend.customer.event.AccessionMoveToDryEvent
-import com.terraformation.backend.customer.event.AccessionWithdrawalEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -25,12 +21,18 @@ import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
+import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import java.net.URI
 import javax.annotation.ManagedBean
+import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 
 @ManagedBean
 class AppNotificationService(
+    private val dslContext: DSLContext,
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
@@ -180,8 +182,10 @@ class AppNotificationService(
         projectStore.fetchEmailRecipients(projectId, false).toSet().mapNotNull {
           userStore.fetchByEmail(it)
         }
-    recipients.forEach { user ->
-      insert(notificationType, user.userId, organizationId, message, localUrl, organizationId)
+    dslContext.transaction { _ ->
+      recipients.forEach { user ->
+        insert(notificationType, user.userId, organizationId, message, localUrl, organizationId)
+      }
     }
   }
 
