@@ -1,6 +1,8 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.GrowthForm
+import com.terraformation.backend.db.SeedStorageBehavior
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -56,6 +58,37 @@ class Messages {
    */
   fun seedBankDefaultName() = "Seed Bank"
 
+  fun speciesCsvBadHeader() = "Incorrect column headings"
+
+  fun speciesCsvWrongFieldCount(expected: Int, actual: Int) =
+      if (actual == 1) "Row has 1 field; expected $expected"
+      else "Row has $actual fields; expected $expected"
+
+  fun speciesCsvScientificNameMissing() = "Missing scientific name"
+
+  fun speciesCsvScientificNameInvalidChar(invalidChar: String) =
+      "Scientific name has invalid character \"$invalidChar\""
+
+  fun speciesCsvScientificNameTooShort() = "Scientific name must be at least 2 words"
+
+  fun speciesCsvScientificNameTooLong() = "Scientific name must be no more than 4 words"
+
+  fun speciesCsvScientificNameExists() = "Scientific name already exists"
+
+  fun speciesCsvFamilyMultipleWords() = "Family must be a single word"
+
+  fun speciesCsvFamilyInvalidChar(invalidChar: String) =
+      "Family has invalid character \"$invalidChar\""
+
+  fun speciesCsvEndangeredInvalid() = "Endangered value must be \"yes\" or \"no\""
+
+  fun speciesCsvRareInvalid() = "Rare value must be \"yes\" or \"no\""
+
+  fun speciesCsvGrowthFormInvalid() = "Growth form must be one of: $validGrowthForms"
+
+  fun speciesCsvSeedStorageBehaviorInvalid() =
+      "Seed storage behavior must be one of: $validSeedStorageBehaviors"
+
   fun dateAndTime(instant: Instant?): String =
       if (instant != null) {
         DateTimeFormatter.RFC_1123_DATE_TIME.format(instant.atZone(ZoneOffset.UTC))
@@ -102,4 +135,8 @@ class Messages {
   fun accessionWithdrawalNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
           title = "Seeds are being withdrawn!", body = withdrawalDateNotification(accessionNumber))
+
+  private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
+  private val validSeedStorageBehaviors =
+      SeedStorageBehavior.values().joinToString { it.displayName }
 }
