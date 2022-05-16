@@ -22,6 +22,8 @@ import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.TimeseriesNotFoundException
+import com.terraformation.backend.db.UploadId
+import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserId
 import org.springframework.security.access.AccessDeniedException
 
@@ -442,6 +444,26 @@ class PermissionRequirements(private val user: TerrawareUser) {
     readOrganization(organizationId)
     if (!user.canCreateNotification(userId, organizationId)) {
       throw AccessDeniedException("No permission to create notification")
+    }
+  }
+
+  fun readUpload(uploadId: UploadId) {
+    if (!user.canReadUpload(uploadId)) {
+      throw UploadNotFoundException(uploadId)
+    }
+  }
+
+  fun updateUpload(uploadId: UploadId) {
+    if (!user.canUpdateUpload(uploadId)) {
+      readUpload(uploadId)
+      throw AccessDeniedException("No permission to update upload")
+    }
+  }
+
+  fun deleteUpload(uploadId: UploadId) {
+    if (!user.canDeleteUpload(uploadId)) {
+      readUpload(uploadId)
+      throw AccessDeniedException("No permission to delete upload")
     }
   }
 }

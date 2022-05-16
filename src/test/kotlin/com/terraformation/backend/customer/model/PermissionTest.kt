@@ -17,6 +17,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
@@ -39,6 +40,8 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.keycloak.admin.client.resource.RealmResource
@@ -74,6 +77,8 @@ import org.springframework.beans.factory.annotation.Autowired
  *     Site 210
  *
  * Organization 3 - No projects
+ *
+ * Upload 1 - created by the test's default user ID
  * ```
  *
  * The basic structure of each test is to:
@@ -141,6 +146,8 @@ internal class PermissionTest : DatabaseTest() {
   private val project10StorageLocationIds = storageLocationIds.take(4).toTypedArray()
 
   private val otherUserId = UserId(8765)
+
+  private val uploadId = UploadId(1)
 
   @BeforeEach
   fun setUp() {
@@ -563,6 +570,24 @@ internal class PermissionTest : DatabaseTest() {
     val permissions = PermissionsTracker()
 
     permissions.expect(importGlobalSpeciesData = true)
+  }
+
+  @Test
+  fun `user can access their own uploads`() {
+    insertUpload(uploadId, createdBy = userId)
+
+    assertTrue(user.canReadUpload(uploadId), "Can read upload")
+    assertTrue(user.canUpdateUpload(uploadId), "Can update upload")
+    assertTrue(user.canDeleteUpload(uploadId), "Can delete upload")
+  }
+
+  @Test
+  fun `user cannot access uploads of other users`() {
+    insertUpload(uploadId, createdBy = otherUserId)
+
+    assertFalse(user.canReadUpload(uploadId), "Can read upload")
+    assertFalse(user.canUpdateUpload(uploadId), "Can update upload")
+    assertFalse(user.canDeleteUpload(uploadId), "Can delete upload")
   }
 
   private fun givenRole(organizationId: OrganizationId, role: Role, vararg projects: ProjectId) {

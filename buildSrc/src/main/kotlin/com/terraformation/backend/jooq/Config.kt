@@ -32,11 +32,20 @@ val ENUM_TABLES =
                 "accession_germination_test_types\\.germination_test_type_id")),
         EnumTable("germination_treatments", "germination_tests\\.treatment_id"),
         EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
-        EnumTable("notification_criticalities", listOf(".*\\.notification_criticality_id"),
+        EnumTable(
+            "notification_criticalities",
+            listOf(".*\\.notification_criticality_id"),
             "NotificationCriticality"),
-        EnumTable("notification_types", listOf(".*\\.notification_type_id"),
-            additionalColumns = listOf(EnumTableColumnInfo("notification_criticality_id",
-                    "NotificationCriticality", true,))),
+        EnumTable(
+            "notification_types",
+            listOf(".*\\.notification_type_id"),
+            additionalColumns =
+                listOf(
+                    EnumTableColumnInfo(
+                        "notification_criticality_id",
+                        "NotificationCriticality",
+                        true,
+                    ))),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
         EnumTable("project_statuses", listOf("projects\\.status_id"), "ProjectStatus"),
         EnumTable("project_types", ".*\\.project_type_id"),
@@ -51,6 +60,16 @@ val ENUM_TABLES =
             "storage_conditions",
             listOf("accessions\\.target_storage_condition", "storage_locations\\.condition_id")),
         EnumTable("timeseries_types", "timeseries\\.type_id"),
+        EnumTable("upload_problem_types", "upload_problems\\.type_id"),
+        EnumTable(
+            "upload_statuses",
+            listOf("uploads\\.status_id"),
+            "UploadStatus",
+            listOf(EnumTableColumnInfo("finished", "Boolean", false))),
+        EnumTable(
+            "upload_types",
+            "uploads\\.type_id",
+            additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean", false))),
         EnumTable("user_types", ".*\\.user_type_id"),
         EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"))
 
@@ -84,6 +103,8 @@ val ID_WRAPPERS =
             "StorageLocationId", listOf("storage_locations\\.id", ".*\\.storage_location_id")),
         IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
         IdWrapper("TimeseriesId", listOf("timeseries\\.id", ".*\\.timeseries_id")),
+        IdWrapper("UploadId", listOf("uploads\\.id", ".*\\.upload_id")),
+        IdWrapper("UploadProblemId", listOf("upload_problems\\.id")),
         IdWrapper(
             "UserId",
             listOf(

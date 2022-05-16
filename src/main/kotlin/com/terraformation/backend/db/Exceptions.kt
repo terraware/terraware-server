@@ -87,6 +87,9 @@ class TimeseriesNotFoundException(
   constructor(deviceId: DeviceId) : this(deviceId, null, "Timeseries not found on device $deviceId")
 }
 
+class UploadNotFoundException(val uploadId: UploadId) :
+    EntityNotFoundException("Upload $uploadId not found")
+
 class UserAlreadyInOrganizationException(val userId: UserId, val organizationId: OrganizationId) :
     DuplicateEntityException("User is already in organization")
 

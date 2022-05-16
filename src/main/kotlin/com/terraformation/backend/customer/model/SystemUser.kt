@@ -12,6 +12,7 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.UsersDao
@@ -105,6 +106,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canDeleteSite(siteId: SiteId): Boolean = true
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = true
+  override fun canDeleteUpload(uploadId: UploadId): Boolean = true
   override fun canImportGlobalSpeciesData(): Boolean = false
   override fun canListApiKeys(organizationId: OrganizationId): Boolean = true
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
@@ -122,6 +124,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
+  override fun canReadUpload(uploadId: UploadId): Boolean = true
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
   override fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean = true
@@ -138,6 +141,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
+  override fun canUpdateUpload(uploadId: UploadId): Boolean = true
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
   override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canCountNotifications(): Boolean = true

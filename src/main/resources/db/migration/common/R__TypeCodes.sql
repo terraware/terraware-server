@@ -114,6 +114,34 @@ VALUES (1, 'Numeric'),
        (2, 'Text')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO upload_problem_types (id, name)
+VALUES (1, 'Unrecognized Value'),
+       (2, 'Missing Required Value'),
+       (3, 'Duplicate Value'),
+       (4, 'Malformed Value')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+-- These are not in time order; add new intermediate statuses to the end rather than renumbering
+-- existing ones.
+INSERT INTO upload_statuses (id, name, finished)
+VALUES (1, 'Receiving', FALSE),
+       (2, 'Validating', FALSE),
+       (3, 'Processing', FALSE),
+       (4, 'Completed', TRUE),
+       (5, 'Processing Failed', TRUE),
+       (6, 'Invalid', TRUE),
+       (7, 'Receiving Failed', TRUE),
+       (8, 'Awaiting Validation', FALSE),
+       (9, 'Awaiting User Action', FALSE),
+       (10, 'Awaiting Processing', FALSE)
+ON CONFLICT (id) DO UPDATE SET name     = excluded.name,
+                               finished = excluded.finished;
+
+INSERT INTO upload_types (id, name, expire_files)
+VALUES (1, 'Species CSV', TRUE)
+ON CONFLICT (id) DO UPDATE SET name         = excluded.name,
+                               expire_files = excluded.expire_files;
+
 INSERT INTO withdrawal_purposes (id, name)
 VALUES (1, 'Propagation'),
        (2, 'Outreach or Education'),
