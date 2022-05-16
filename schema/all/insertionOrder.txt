@@ -20,6 +20,9 @@ seed_storage_behaviors
 source_plant_origins
 species_endangered_types
 timeseries_types
+upload_problem_types
+upload_statuses
+upload_types
 user_types
 withdrawal_purposes
 users
@@ -37,6 +40,7 @@ photos
 germination_tests
 notification_types
 timeseries
+uploads
 bags
 geolocations
 germinations
@@ -46,6 +50,7 @@ accession_germination_test_types
 accession_photos
 accession_secondary_collectors
 project_type_selections
+upload_problems
 accession_state_history
 automations
 notifications

@@ -7,6 +7,7 @@ accession_notifications
 notifications
 automations
 accession_state_history
+upload_problems
 project_type_selections
 accession_secondary_collectors
 accession_photos
@@ -16,6 +17,7 @@ thumbnails
 germinations
 geolocations
 bags
+uploads
 timeseries
 notification_types
 germination_tests
@@ -33,6 +35,9 @@ country_subdivisions
 users
 withdrawal_purposes
 user_types
+upload_types
+upload_statuses
+upload_problem_types
 timeseries_types
 species_endangered_types
 source_plant_origins

@@ -2,7 +2,9 @@ organization_users
 project_users
 facilities
 notifications
+upload_problems
 project_type_selections
+uploads
 sites
 notification_types
 projects
@@ -10,6 +12,9 @@ organizations
 country_subdivisions
 users
 user_types
+upload_types
+upload_statuses
+upload_problem_types
 roles
 project_types
 project_statuses

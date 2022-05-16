@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Mon May 16 19:25 GMT 2022</p>
+                                <p>Generated on Mon May 16 19:39 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">18</span>
+                                    <span class="info-box-number">23</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">107</span>
+                                    <span class="info-box-number">132</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">33</span>
+                                    <span class="info-box-number">39</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -218,6 +218,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Organization membership and role information.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/upload_types.html">upload_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/countries.html">countries</a></td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
@@ -236,6 +245,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about a single restoration project. A project can span multiple sites.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/notification_types.html">notification_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notifications in the application.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/facilities.html">facilities</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">4</td>
@@ -245,13 +263,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Physical locations at a site. For example, each seed bank and each nursery is a facility.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/notification_types.html">notification_types</a></td>
+                                        <td class="detail"><a href="tables/upload_statuses.html">upload_statuses</a></td>
                                         <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notifications in the application.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Available statuses of user-uploaded files. Uploads progress through these statuses as the system processes the files.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/notification_criticalities.html">notification_criticalities</a></td>
@@ -270,6 +288,15 @@
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of projects recognized by the application.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/upload_problem_types.html">upload_problem_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Specific types of problems encountered while processing a user-uploaded file.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/user_types.html">user_types</a></td>
@@ -309,7 +336,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/organizations.html">organizations</a></td>
-                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
@@ -335,6 +362,24 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Physical locations where facilities are located or plants are being tracked.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/upload_problems.html">upload_problems</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Details about problems (validation failures, etc.) in user-uploaded files.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/uploads.html">uploads</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/notifications.html">notifications</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">3</td>
@@ -345,7 +390,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/users.html">users</a></td>
-                                        <td class="detail" align="right">16</td>
+                                        <td class="detail" align="right">17</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">1</td>

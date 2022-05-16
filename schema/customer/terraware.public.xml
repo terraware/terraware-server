@@ -154,6 +154,7 @@
             <child column="organization_id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
+            <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
@@ -315,6 +316,84 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="upload_problem_types" numRows="4" remarks="(Enum) Specific types of problems encountered while processing a user-uploaded file." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="upload_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="upload_problem_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="upload_problems" numRows="0" remarks="Details about problems (validation failures, etc.) in user-uploaded files." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="upload_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="upload_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_problem_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="is_error" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="position" nullable="true" remarks="Where in the uploaded file the problem appears, or null if it is a problem with the file as a whole. This may be a byte offset, a line number, or a record number depending on the type of file." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="field" nullable="true" remarks="If the problem pertains to a specific field, its name. Null if the problem affects an entire record or the entire file." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="message" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="upload_problems_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="upload_problems_upload_id_idx" unique="false">
+            <column ascending="true" name="upload_id"/>
+         </index>
+      </table>
+      <table name="upload_statuses" numRows="10" remarks="(Enum) Available statuses of user-uploaded files. Uploads progress through these statuses as the system processes the files." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="status_id" foreignKey="uploads_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="finished" nullable="false" remarks="If true, this status means that the system is finished processing the file." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="upload_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="upload_types" numRows="1" remarks="(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="uploads_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="expire_files" nullable="false" remarks="Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="upload_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="uploads" numRows="0" remarks="Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="upload_id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="filename" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="storage_url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="content_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="uploads_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="uploads_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="organization_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="uploads_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="user_types" numRows="4" remarks="(Enum) Types of users. Most users are of type 1, &quot;Individual.&quot;" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="user_type_id" foreignKey="users_user_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
@@ -346,6 +425,7 @@
             <child column="pm_user_id" foreignKey="projects_pm_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="created_by" foreignKey="sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
             <child column="modified_by" foreignKey="sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
+            <child column="created_by" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="true" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

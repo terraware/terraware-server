@@ -4,6 +4,9 @@ notification_criticalities
 project_statuses
 project_types
 roles
+upload_problem_types
+upload_statuses
+upload_types
 user_types
 users
 country_subdivisions
@@ -11,7 +14,9 @@ organizations
 projects
 notification_types
 sites
+uploads
 project_type_selections
+upload_problems
 notifications
 facilities
 project_users
