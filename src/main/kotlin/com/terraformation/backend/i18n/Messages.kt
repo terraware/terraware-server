@@ -84,12 +84,10 @@ class Messages {
 
   fun speciesCsvRareInvalid() = "Rare value must be \"yes\" or \"no\""
 
-  fun speciesCsvGrowthFormInvalid() =
-      "Growth form must be one of: " + GrowthForm.values().joinToString { it.displayName }
+  fun speciesCsvGrowthFormInvalid() = "Growth form must be one of: $validGrowthForms"
 
   fun speciesCsvSeedStorageBehaviorInvalid() =
-      "Seed storage behavior must be one of: " +
-          SeedStorageBehavior.values().joinToString { it.displayName }
+      "Seed storage behavior must be one of: $validSeedStorageBehaviors"
 
   fun dateAndTime(instant: Instant?): String =
       if (instant != null) {
@@ -137,4 +135,8 @@ class Messages {
   fun accessionWithdrawalNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
           title = "Seeds are being withdrawn!", body = withdrawalDateNotification(accessionNumber))
+
+  private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
+  private val validSeedStorageBehaviors =
+      SeedStorageBehavior.values().joinToString { it.displayName }
 }
