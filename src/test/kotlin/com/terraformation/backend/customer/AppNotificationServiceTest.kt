@@ -90,7 +90,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     parentStore = ParentStore(dslContext)
     projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
-    speciesStore = SpeciesStore(clock, dslContext, speciesDao, speciesNamesDao, speciesOptionsDao)
+    speciesStore = SpeciesStore(clock, dslContext, speciesDao)
     accessionStore =
         AccessionStore(
             dslContext,
