@@ -1,5 +1,5 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionDryingEnd" -->
-Accession ${accessionNumber} in organization ${organization.name} has a drying end date of today!
+${accessionNumber} (located in ${facilityName}) has reached its scheduled drying date. It is ready to be moved into storage now.
 
 Please click the link below to go to your Terraware account where you can view the accession.
 ${accessionUrl}

@@ -1,5 +1,5 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionGerminationTest" -->
-Accession ${accessionNumber} in organization ${organization.name} is scheduled for a ${testType} germination test today!
+Time to test the viability of your seeds! ${accessionNumber} (located in ${facilityName}) is scheduled for a ${testType} germination test today!
 
 Please click the link below to go to your Terraware account where you can view the accession.
 ${accessionUrl}

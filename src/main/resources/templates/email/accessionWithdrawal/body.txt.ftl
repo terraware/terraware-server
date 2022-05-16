@@ -1,5 +1,5 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionWithdrawal" -->
-Accession ${accessionNumber} in organization ${organization.name} is scheduled for a withdrawal today!
+${accessionNumber} (located in ${facilityName}) is scheduled for a withdrawal today! Make sure to account for what seeds are withdrawn in Terraware to keep your seed inventory accurate.
 
 Please click the link below to go to your Terraware account where you can view the accession.
 ${accessionUrl}

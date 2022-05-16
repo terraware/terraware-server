@@ -8,7 +8,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    Accession ${accessionNumber} in organization ${organization.name} has a drying end date of today!</mj-text
+                    ${accessionNumber} (located in ${facilityName}) has reached its scheduled drying date. It is ready to be moved into storage now.</mj-text
                 >
                 <mj-text mj-class="text-body03">
                     Please click the button below to go to your Terraware account where you can view

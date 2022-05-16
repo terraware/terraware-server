@@ -8,7 +8,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    You’ve been added to ${organization.name}!</mj-text
+                    You are now a member of ${organization.name}. Welcome!</mj-text
                 >
                 <mj-text mj-class="text-body03">
                     Added by ${admin.fullName!} (<a href="">${admin.email}</a>)</mj-text

@@ -77,19 +77,20 @@ class Messages {
 
   fun accessionMoveToDryNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
-          title = "Accession scheduled for drying",
+          title = "An accession needs attention!",
           body = dryingMoveDateNotification(accessionNumber))
 
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
-          title = "Accession drying ends", body = "$accessionNumber drying end date is today!")
+          title = "An accession has dried",
+          body = "$accessionNumber has reached its scheduled drying date.")
 
   fun accessionGerminationTestNotification(
       accessionNumber: String,
       testType: GerminationTestType
   ): NotificationMessage =
       NotificationMessage(
-          title = "Accession scheduled for germination test",
+          title = "Time to test your accessions!",
           body =
               when (testType) {
                 GerminationTestType.Lab ->
@@ -100,5 +101,5 @@ class Messages {
 
   fun accessionWithdrawalNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
-          title = "Accession withdrawal", body = withdrawalDateNotification(accessionNumber))
+          title = "Seeds are being withdrawn!", body = withdrawalDateNotification(accessionNumber))
 }

@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 
 /**
  * Common attributes for classes that can be passed as models when rendering email templates. This
@@ -49,14 +48,14 @@ class UserAddedToProject(
 class AccessionMoveToDry(
     config: TerrawareServerConfig,
     val accessionNumber: String,
-    val organization: OrganizationsRow,
+    val facilityName: String,
     val accessionUrl: String,
 ) : EmailTemplateModel(config)
 
 class AccessionDryingEnd(
     config: TerrawareServerConfig,
     val accessionNumber: String,
-    val organization: OrganizationsRow,
+    val facilityName: String,
     val accessionUrl: String,
 ) : EmailTemplateModel(config)
 
@@ -64,13 +63,13 @@ class AccessionGerminationTest(
     config: TerrawareServerConfig,
     val accessionNumber: String,
     val testType: String,
-    val organization: OrganizationsRow,
+    val facilityName: String,
     val accessionUrl: String,
 ) : EmailTemplateModel(config)
 
 class AccessionWithdrawal(
     config: TerrawareServerConfig,
     val accessionNumber: String,
-    val organization: OrganizationsRow,
+    val facilityName: String,
     val accessionUrl: String,
 ) : EmailTemplateModel(config)

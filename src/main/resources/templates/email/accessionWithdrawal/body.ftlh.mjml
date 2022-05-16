@@ -8,7 +8,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    Accession ${accessionNumber} in organization ${organization.name} is scheduled for a withdrawal today!</mj-text
+                  ${accessionNumber} (located in ${facilityName}) is scheduled for a withdrawal today! Make sure to account for what seeds are withdrawn in Terraware to keep your seed inventory accurate.</mj-text
                 >
                 <mj-text mj-class="text-body03">
                     Please click the button below to go to your Terraware account where you can view

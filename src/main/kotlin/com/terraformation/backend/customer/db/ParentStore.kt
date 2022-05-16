@@ -89,6 +89,12 @@ class ParentStore(private val dslContext: DSLContext) {
         ?: throw AccessionNotFoundException(accessionId)
   }
 
+  fun getFacilityName(accessionId: AccessionId): String {
+    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    return fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.NAME)
+        ?: throw FacilityNotFoundException(facilityId)
+  }
+
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
    * had the given ID.

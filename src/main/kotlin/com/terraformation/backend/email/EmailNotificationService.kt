@@ -18,7 +18,6 @@ import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.email.model.AccessionDryingEnd
 import com.terraformation.backend.email.model.AccessionGerminationTest
 import com.terraformation.backend.email.model.AccessionMoveToDry
@@ -42,7 +41,6 @@ class EmailNotificationService(
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val messages: Messages,
-    private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
@@ -129,39 +127,33 @@ class EmailNotificationService(
   @EventListener
   fun on(event: AccessionMoveToDryEvent) {
     val organizationId = parentStore.getOrganizationId(event.accessionId)
-    val organization =
-        organizationsDao.fetchOneById(organizationId)
-            ?: throw OrganizationNotFoundException(organizationId)
+    val facilityName = parentStore.getFacilityName(event.accessionId)
     val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
     getRecipients(event.accessionId).forEach { user ->
       emailService.sendUserNotification(
           user,
           "accessionMoveToDry",
-          AccessionMoveToDry(config, event.accessionNumber, organization, accessionUrl))
+          AccessionMoveToDry(config, event.accessionNumber, facilityName, accessionUrl))
     }
   }
 
   @EventListener
   fun on(event: AccessionDryingEndEvent) {
     val organizationId = parentStore.getOrganizationId(event.accessionId)
-    val organization =
-        organizationsDao.fetchOneById(organizationId)
-            ?: throw OrganizationNotFoundException(organizationId)
+    val facilityName = parentStore.getFacilityName(event.accessionId)
     val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
     getRecipients(event.accessionId).forEach { user ->
       emailService.sendUserNotification(
           user,
           "accessionDryingEnd",
-          AccessionDryingEnd(config, event.accessionNumber, organization, accessionUrl))
+          AccessionDryingEnd(config, event.accessionNumber, facilityName, accessionUrl))
     }
   }
 
   @EventListener
   fun on(event: AccessionGerminationTestEvent) {
     val organizationId = parentStore.getOrganizationId(event.accessionId)
-    val organization =
-        organizationsDao.fetchOneById(organizationId)
-            ?: throw OrganizationNotFoundException(organizationId)
+    val facilityName = parentStore.getFacilityName(event.accessionId)
     val accessionUrl =
         webAppUrls
             .fullAccessionGerminationTest(event.accessionId, event.testType, organizationId)
@@ -176,22 +168,20 @@ class EmailNotificationService(
           user,
           "accessionGerminationTest",
           AccessionGerminationTest(
-              config, event.accessionNumber, testType, organization, accessionUrl))
+              config, event.accessionNumber, testType, facilityName, accessionUrl))
     }
   }
 
   @EventListener
   fun on(event: AccessionWithdrawalEvent) {
     val organizationId = parentStore.getOrganizationId(event.accessionId)
-    val organization =
-        organizationsDao.fetchOneById(organizationId)
-            ?: throw OrganizationNotFoundException(organizationId)
+    val facilityName = parentStore.getFacilityName(event.accessionId)
     val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
     getRecipients(event.accessionId).forEach { user ->
       emailService.sendUserNotification(
           user,
           "accessionWithdrawal",
-          AccessionWithdrawal(config, event.accessionNumber, organization, accessionUrl))
+          AccessionWithdrawal(config, event.accessionNumber, facilityName, accessionUrl))
     }
   }
 
