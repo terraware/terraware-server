@@ -113,7 +113,7 @@ dependencies {
 
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.1.1")
 
-  testImplementation("io.mockk:mockk:1.12.3")
+  testImplementation("io.mockk:mockk:1.12.4")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
