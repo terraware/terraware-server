@@ -124,10 +124,6 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="species.rare_type_id references rare_types.id via species_rare_type_id_fkey"><a href='species.html'>species</a><span class='relatedKey'>.rare_type_id</span></td>
-                                                <td class="constraint detail">species_rare_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -187,44 +183,10 @@
                             </table>
                         </div><!-- /.box-body -->
                     </div>
-                    <div class="box box-primary">
-                        <div class="box-header with-border">
-                            <i class="fa fa-code-fork"></i>
-                            <h3 id="Relationships" class="box-title">Relationships</h3>
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                        <div class="box-body">
-                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
-                                <h5>Close relationships within degrees of separation</h5>
-                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
-                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
-                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
-                                </ul>
-                                <div class="tab-content no-padding">
-                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="321,5,552,269">
-<area shape="rect" id="node2" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="5,149,277,277">
-</map>
-                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/rare_types.1degree.svg" class="diagram" border="0" align="left"></object></a>
-                                    </div>
-                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="321,55,552,319">
-<area shape="rect" id="node2" href="../../tables/conservation_statuses.html" target="_top" title="conservation_statuses" alt="" coords="14,175,269,263">
-<area shape="rect" id="node3" href="../../tables/plant_forms.html" target="_top" title="plant_forms" alt="" coords="53,69,230,157">
-<area shape="rect" id="node4" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="5,280,277,408">
-<area shape="rect" id="node5" href="../../tables/species_names.html" target="_top" title="species_names" alt="" coords="599,5,797,93">
-<area shape="rect" id="node6" href="../../tables/species_options.html" target="_top" title="species_options" alt="" coords="596,111,800,199">
-</map>
-                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/rare_types.2degrees.svg" class="diagram" border="0" align="left"></object></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!-- /.box-body -->
+                    <div class="alert alert-warning alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h4><i class="icon fa fa-warning"></i>Diagram producer might be missing</h4>
+                        <p>No diagrams were produced please see application output for any errors</p>
                     </div>
                 </section>
                 <script>

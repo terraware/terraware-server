@@ -1,13 +1,9 @@
-organizations
-conservation_statuses
 gbif_taxa
-plant_forms
-rare_types
-species
+organizations
 gbif_names
 gbif_name_words
-species_names
-species_options
+species
 gbif_distributions
 gbif_vernacular_names
+rare_types
 species_endangered_types

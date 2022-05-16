@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Mon May 16 19:08 GMT 2022</p>
+                                <p>Generated on Mon May 16 19:24 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">59</span>
+                                    <span class="info-box-number">57</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">375</span>
+                                    <span class="info-box-number">363</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">107</span>
+                                    <span class="info-box-number">102</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -218,6 +218,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of tests that can be performed on seeds to determine whether or not they successfully germinate</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/rare_types.html">rare_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values of the &ldquo;Rare&rdquo; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/notification_types.html">notification_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">1</td>
@@ -225,15 +234,6 @@
                                         <td class="detail" align="right">8</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notifications in the application.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/rare_types.html">rare_types</a></td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values of the &ldquo;Rare&rdquo; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_notification_types.html">accession_notification_types</a></td>
@@ -246,12 +246,12 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/species.html">species</a></td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">15</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Information about plant species that isn&rsquo;t organization-specific. Currently, the application doesn&rsquo;t have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization information about species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/test_clock.html">test_clock</a></td>
@@ -281,15 +281,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of projects recognized by the application.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_options.html">species_options</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>species</code> and <code>organizations</code> that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_states.html">accession_states</a></td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">0</td>
@@ -299,15 +290,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/germination_substrates.html">germination_substrates</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of substrate that can be used to test seeds for germination ability.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/germinations.html">germinations</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
@@ -315,6 +297,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/germination_substrates.html">germination_substrates</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of substrate that can be used to test seeds for germination ability.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_type_selections.html">project_type_selections</a></td>
@@ -327,7 +318,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/organizations.html">organizations</a></td>
-                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
@@ -342,6 +333,15 @@
                                         <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Reasons that someone can withdraw seeds from a seed bank.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/seed_storage_behaviors.html">seed_storage_behaviors</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) How seeds of a particular species behave in storage.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/collectors.html">collectors</a></td>
@@ -389,6 +389,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Country information per ISO-3166.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/growth_forms.html">growth_forms</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) What physical form a particular species takes. For example, &ldquo;Tree&rdquo; or &ldquo;Shrub.&rdquo;</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries_types.html">timeseries_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -414,15 +423,6 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Notifications about tasks that need to be performed at a seed bank.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/conservation_statuses.html">conservation_statuses</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) UICN Red List categories defining the conservation status of a given species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/storage_conditions.html">storage_conditions</a></td>
@@ -462,7 +462,7 @@
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/users.html">users</a></td>
-                                        <td class="detail" align="right">32</td>
+                                        <td class="detail" align="right">31</td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">1</td>
@@ -659,15 +659,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of projects recognized by the application.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/plant_forms.html">plant_forms</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) What physical form a particular species takes. For example, &ldquo;Tree&rdquo; or &ldquo;Shrub.&rdquo;</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/bags.html">bags</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
@@ -711,15 +702,6 @@
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of facilities that can be represented in the data model.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/timeseries.html">timeseries</a></td>

@@ -1,6 +1,7 @@
 seed_quantity_units
 accession_states
 germination_test_types
+organizations
 photos
 storage_conditions
 accession_notification_types
@@ -8,12 +9,13 @@ app_devices
 germination_seed_types
 germination_substrates
 germination_treatments
-organizations
+growth_forms
 processing_methods
+seed_storage_behaviors
 source_plant_origins
-species
 withdrawal_purposes
 projects
+species
 sites
 facilities
 collectors

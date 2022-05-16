@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Mon May 16 19:09 GMT 2022</p>
+                                <p>Generated on Mon May 16 19:25 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">13</span>
+                                    <span class="info-box-number">9</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">79</span>
+                                    <span class="info-box-number">63</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">9</span>
+                                    <span class="info-box-number">3</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -200,42 +200,6 @@
                                 </thead>
                                 <tbody>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/rare_types.html">rare_types</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values of the &ldquo;Rare&rdquo; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species.html">species</a></td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Information about plant species that isn&rsquo;t organization-specific. Currently, the application doesn&rsquo;t have a way to share species across organizations, but we expect to want to be able to do that in the future so the data model allows it.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/gbif_distributions.html">gbif_distributions</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Information about geographic distribution of species and their conservation statuses.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_options.html">species_options</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>species</code> and <code>organizations</code> that represents which species are available as options in the UI for a particular organization. When a species is deleted from an organization, its row in this table is deleted.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/species_endangered_types.html">species_endangered_types</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">0</td>
@@ -254,31 +218,22 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Scientific and vernacular names from the GBIF backbone dataset. Names are not required to be unique.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/plant_forms.html">plant_forms</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) What physical form a particular species takes. For example, &ldquo;Tree&rdquo; or &ldquo;Shrub.&rdquo;</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/conservation_statuses.html">conservation_statuses</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) UICN Red List categories defining the conservation status of a given species.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/organizations.html">organizations</a></td>
-                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Top-level information about organizations.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/rare_types.html">rare_types</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values of the &ldquo;Rare&rdquo; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/gbif_name_words.html">gbif_name_words</a></td>
@@ -288,6 +243,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Inverted index of lower-cased words from species and family names in the GBIF backbone dataset. Used to support fast per-word prefix searches.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/species.html">species</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">15</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization information about species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/gbif_taxa.html">gbif_taxa</a></td>
@@ -308,13 +272,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Vernacular names for species and families. Part of the GBIF backbone dataset.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/species_names.html">species_names</a></td>
+                                        <td class="detail"><a href="tables/gbif_distributions.html">gbif_distributions</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Per-organization names for species. A species can have multiple names, e.g., a scientific name and several common names, though the app currently does not provide a way to add multiple names. The primary name is stored here as well as in <code>species</code>. If multiple organizations use the same species, each one will have a separate row in this table.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Information about geographic distribution of species and their conservation statuses.</p></td>
                                     </tr>
                             </table>
                         </div>

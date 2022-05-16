@@ -77,54 +77,54 @@
 <polygon fill="#ffffff" stroke="none" points="199,-524 199,-546 427,-546 427,-524 199,-524"/>
 <polygon fill="none" stroke="black" points="199,-524 199,-546 427,-546 427,-524 199,-524"/>
 <text text-anchor="start" x="219" y="-532.2" font-family="Helvetica,sans-Serif" font-size="11.00">number</text>
+<polygon fill="#ffffff" stroke="none" points="199,-502 199,-524 427,-524 427,-502 199,-502"/>
 <polygon fill="none" stroke="black" points="199,-502 199,-524 427,-524 427,-502 199,-502"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-519"/>
-<text text-anchor="start" x="219" y="-510.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="#ffffff" stroke="none" points="199,-480 199,-502 427,-502 427,-480 199,-480"/>
+<text text-anchor="start" x="219" y="-510.2" font-family="Helvetica,sans-Serif" font-size="11.00">received_date</text>
 <polygon fill="none" stroke="black" points="199,-480 199,-502 427,-502 427,-480 199,-480"/>
-<text text-anchor="start" x="219" y="-488.2" font-family="Helvetica,sans-Serif" font-size="11.00">received_date</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-497"/>
+<text text-anchor="start" x="219" y="-488.2" font-family="Helvetica,sans-Serif" font-size="11.00">state_id</text>
 <polygon fill="none" stroke="black" points="199,-458 199,-480 427,-480 427,-458 199,-458"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-475"/>
-<text text-anchor="start" x="219" y="-466.2" font-family="Helvetica,sans-Serif" font-size="11.00">state_id</text>
+<text text-anchor="start" x="219" y="-466.2" font-family="Helvetica,sans-Serif" font-size="11.00">primary_collector_id</text>
 <polygon fill="none" stroke="black" points="199,-436 199,-458 427,-458 427,-436 199,-436"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-453"/>
-<text text-anchor="start" x="219" y="-444.2" font-family="Helvetica,sans-Serif" font-size="11.00">primary_collector_id</text>
+<text text-anchor="start" x="219" y="-444.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_location_id</text>
+<polygon fill="#ffffff" stroke="none" points="199,-414 199,-436 427,-436 427,-414 199,-414"/>
 <polygon fill="none" stroke="black" points="199,-414 199,-436 427,-436 427,-414 199,-414"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-431"/>
-<text text-anchor="start" x="219" y="-422.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_location_id</text>
-<polygon fill="#ffffff" stroke="none" points="199,-392 199,-414 427,-414 427,-392 199,-392"/>
+<text text-anchor="start" x="219" y="-422.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="199,-392 199,-414 427,-414 427,-392 199,-392"/>
-<text text-anchor="start" x="219" y="-400.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-409"/>
+<text text-anchor="start" x="219" y="-400.2" font-family="Helvetica,sans-Serif" font-size="11.00">processing_method_id</text>
 <polygon fill="none" stroke="black" points="199,-370 199,-392 427,-392 427,-370 199,-370"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-387"/>
-<text text-anchor="start" x="219" y="-378.2" font-family="Helvetica,sans-Serif" font-size="11.00">processing_method_id</text>
+<text text-anchor="start" x="219" y="-378.2" font-family="Helvetica,sans-Serif" font-size="11.00">target_storage_condition</text>
 <polygon fill="none" stroke="black" points="199,-348 199,-370 427,-370 427,-348 199,-348"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-365"/>
-<text text-anchor="start" x="219" y="-356.2" font-family="Helvetica,sans-Serif" font-size="11.00">target_storage_condition</text>
+<text text-anchor="start" x="219" y="-356.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_endangered_type_id</text>
 <polygon fill="none" stroke="black" points="199,-326 199,-348 427,-348 427,-326 199,-326"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-343"/>
-<text text-anchor="start" x="219" y="-334.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_endangered_type_id</text>
+<text text-anchor="start" x="219" y="-334.2" font-family="Helvetica,sans-Serif" font-size="11.00">rare_type_id</text>
 <polygon fill="none" stroke="black" points="199,-304 199,-326 427,-326 427,-304 199,-304"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-321"/>
-<text text-anchor="start" x="219" y="-312.2" font-family="Helvetica,sans-Serif" font-size="11.00">rare_type_id</text>
+<text text-anchor="start" x="219" y="-312.2" font-family="Helvetica,sans-Serif" font-size="11.00">source_plant_origin_id</text>
 <polygon fill="none" stroke="black" points="199,-282 199,-304 427,-304 427,-282 199,-282"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-299"/>
-<text text-anchor="start" x="219" y="-290.2" font-family="Helvetica,sans-Serif" font-size="11.00">source_plant_origin_id</text>
+<text text-anchor="start" x="219" y="-290.2" font-family="Helvetica,sans-Serif" font-size="11.00">remaining_units_id</text>
 <polygon fill="none" stroke="black" points="199,-260 199,-282 427,-282 427,-260 199,-260"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-277"/>
-<text text-anchor="start" x="219" y="-268.2" font-family="Helvetica,sans-Serif" font-size="11.00">remaining_units_id</text>
+<text text-anchor="start" x="219" y="-268.2" font-family="Helvetica,sans-Serif" font-size="11.00">subset_weight_units_id</text>
 <polygon fill="none" stroke="black" points="199,-238 199,-260 427,-260 427,-238 199,-238"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-255"/>
-<text text-anchor="start" x="219" y="-246.2" font-family="Helvetica,sans-Serif" font-size="11.00">subset_weight_units_id</text>
+<text text-anchor="start" x="219" y="-246.2" font-family="Helvetica,sans-Serif" font-size="11.00">total_units_id</text>
 <polygon fill="none" stroke="black" points="199,-216 199,-238 427,-238 427,-216 199,-216"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-233"/>
-<text text-anchor="start" x="219" y="-224.2" font-family="Helvetica,sans-Serif" font-size="11.00">total_units_id</text>
+<text text-anchor="start" x="219" y="-224.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="199,-194 199,-216 427,-216 427,-194 199,-194"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-211"/>
-<text text-anchor="start" x="219" y="-202.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="219" y="-202.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="199,-172 199,-194 427,-194 427,-172 199,-172"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="204" y="-189"/>
-<text text-anchor="start" x="219" y="-180.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="219" y="-180.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
 <polygon fill="none" stroke="black" points="199,-154 199,-172 427,-172 427,-154 199,-154"/>
 <text text-anchor="start" x="202" y="-160.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="199,-136 199,-154 295,-154 295,-136 199,-136"/>
@@ -184,9 +184,9 @@
 </g>
 <!-- accessions&#45;&gt;accession_states -->
 <g id="edge4" class="edge"><title>accessions:state_id:w&#45;&gt;accession_states:id:e</title>
-<path fill="none" stroke="black" d="M183.46,-467.845C55.6204,-445.687 305.722,-112 151,-112"/>
-<polygon fill="black" stroke="black" points="190.025,-468.367 197.715,-472.589 194.013,-468.683 198,-469 198,-469 198,-469 194.013,-468.683 198.285,-465.411 190.025,-468.367 190.025,-468.367"/>
-<ellipse fill="none" stroke="black" cx="186.835" cy="-468.113" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M183.413,-489.913C46.0932,-467.683 315.431,-112 151,-112"/>
+<polygon fill="black" stroke="black" points="190.022,-490.405 197.732,-494.59 194.011,-490.703 198,-491 198,-491 198,-491 194.011,-490.703 198.268,-487.41 190.022,-490.405 190.022,-490.405"/>
+<ellipse fill="none" stroke="black" cx="186.831" cy="-490.167" rx="3.2" ry="3.2"/>
 </g>
 </g>
 </svg>
