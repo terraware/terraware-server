@@ -1,5 +1,5 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UserAddedToProject" -->
-You've been added to project ${project.name} in organization ${organization.name}!
+You are now a member of ${project.name}, part of ${organization.name}!
 
 Added by ${admin.fullName} (${admin.email})
 

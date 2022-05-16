@@ -2,9 +2,11 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
@@ -76,6 +78,22 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
+
+  fun getProjectId(accessionId: AccessionId): ProjectId {
+    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    return getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+  }
+
+  fun getOrganizationId(accessionId: AccessionId): OrganizationId {
+    return getOrganizationId(getProjectId(accessionId))
+        ?: throw AccessionNotFoundException(accessionId)
+  }
+
+  fun getFacilityName(accessionId: AccessionId): String {
+    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    return fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.NAME)
+        ?: throw FacilityNotFoundException(facilityId)
+  }
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row

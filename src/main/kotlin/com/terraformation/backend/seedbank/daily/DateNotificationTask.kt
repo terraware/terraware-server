@@ -8,11 +8,16 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
+import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
+import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
@@ -23,6 +28,7 @@ class DateNotificationTask(
     private val dslContext: DSLContext,
     private val messages: Messages,
     private val accessionNotificationStore: AccessionNotificationStore,
+    private val eventPublisher: ApplicationEventPublisher
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -39,6 +45,7 @@ class DateNotificationTask(
 
     dslContext.transaction { _ ->
       moveToDryingCabinet(since, until)
+      endDrying(since, until)
       germinationTest(since, until)
       withdraw(since, until)
     }
@@ -47,18 +54,45 @@ class DateNotificationTask(
   private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchDryingMoveDue(after, until).forEach { (number, id) ->
       insert(id, messages.dryingMoveDateNotification(number))
+      try {
+        eventPublisher.publishEvent(AccessionMoveToDryEvent(number, id))
+      } catch (e: Exception) {
+        log.error("Error handling AccessionMoveToDryEvent for accession $id", e)
+      }
+    }
+  }
+
+  private fun endDrying(after: TemporalAccessor, until: TemporalAccessor) {
+    accessionStore.fetchDryingEndDue(after, until).forEach { (number, id) ->
+      try {
+        eventPublisher.publishEvent(AccessionDryingEndEvent(number, id))
+      } catch (e: Exception) {
+        log.error("Error handling AccessionDryingEndEvent for accession $id", e)
+      }
     }
   }
 
   private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
       insert(test.accessionId!!, messages.germinationTestDateNotification(number, test.testType!!))
+      try {
+        eventPublisher.publishEvent(
+            AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
+      } catch (e: Exception) {
+        log.error(
+            "Error handling AccessionGerminationTestEvent for accession ${test.accessionId}", e)
+      }
     }
   }
 
   private fun withdraw(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchWithdrawalDue(after, until).forEach { (number, id) ->
       insert(id, messages.withdrawalDateNotification(number))
+      try {
+        eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
+      } catch (e: Exception) {
+        log.error("Error handling AccessionWithdrawalEvent for accession $id", e)
+      }
     }
   }
 

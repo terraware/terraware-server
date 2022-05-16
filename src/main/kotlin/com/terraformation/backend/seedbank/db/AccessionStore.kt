@@ -749,6 +749,22 @@ class AccessionStore(
     }
   }
 
+  fun fetchDryingEndDue(
+      after: TemporalAccessor,
+      until: TemporalAccessor
+  ): Map<String, AccessionId> {
+    return with(ACCESSIONS) {
+      dslContext
+          .select(ID, NUMBER)
+          .from(ACCESSIONS)
+          .where(STATE_ID.`in`(AccessionState.Drying, AccessionState.Dried))
+          .and(DRYING_END_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
+          .and(DRYING_END_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+          .fetch { it[NUMBER]!! to it[ID]!! }
+          .toMap()
+    }
+  }
+
   fun fetchGerminationTestDue(
       after: TemporalAccessor,
       until: TemporalAccessor

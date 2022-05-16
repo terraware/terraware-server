@@ -1,6 +1,8 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import java.net.URI
@@ -27,12 +29,49 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
 
   fun fullOrganizationProject(projectId: ProjectId, organizationId: OrganizationId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path("/projects/" + projectId.value)
+        .path("/projects/${projectId.value}")
         .queryParam("organizationId", organizationId)
         .build()
   }
 
   fun organizationProject(projectId: ProjectId): URI {
     return UriBuilder.fromPath("/projects/" + projectId.value).build()
+  }
+
+  fun fullAccession(accessionId: AccessionId, organizationId: OrganizationId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/accessions/${accessionId.value}")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun accession(accessionId: AccessionId): URI {
+    return UriBuilder.fromPath("/accessions/${accessionId.value}").build()
+  }
+
+  fun fullAccessionGerminationTest(
+      accessionId: AccessionId,
+      testType: GerminationTestType,
+      organizationId: OrganizationId
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path(accessionGerminationTestPath(accessionId, testType))
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun accessionGerminationTest(accessionId: AccessionId, testType: GerminationTestType): URI {
+    return UriBuilder.fromPath(accessionGerminationTestPath(accessionId, testType)).build()
+  }
+
+  private fun accessionGerminationTestPath(
+      accessionId: AccessionId,
+      testType: GerminationTestType
+  ): String {
+    return "/accessions/${accessionId.value}/" +
+        when (testType) {
+          GerminationTestType.Lab -> "lab"
+          GerminationTestType.Nursery -> "nursery"
+        }
   }
 }
