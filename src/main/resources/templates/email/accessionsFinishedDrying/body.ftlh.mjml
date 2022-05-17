@@ -1,0 +1,29 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionsFinishedDrying" --> -->
+<mjml>
+    <mj-include path="../head.ftlh.mjml" />
+
+    <mj-body>
+        <mj-include path="../logo.ftlh.mjml" />
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    <!-- htmlmin:ignore --><#if numAccessions == 1><!-- htmlmin:ignore -->
+                        ${organizationName} has 1 accession that is past it's drying date and is ready to be stored. Please move it to storage now.
+                    <!-- htmlmin:ignore --><#else><!-- htmlmin:ignore -->
+                        ${organizationName} has ${numAccessions} accessions that are past their drying date and are ready to be stored. Please move them to storage now.
+                    <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    Please click the button below to go to your Terraware account where you can view
+                    the accessions.</mj-text
+                >
+                <mj-button mj-class="btn-productive-primary-md" href="${accessionsUrl?no_esc}"
+                    >Go to Terraware</mj-button
+                >
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../footer.ftlh.mjml" />
+    </mj-body>
+</mjml>

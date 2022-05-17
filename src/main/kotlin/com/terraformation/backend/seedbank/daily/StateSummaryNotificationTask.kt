@@ -10,25 +10,30 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
+import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
+import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
+import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import com.terraformation.backend.time.atMostRecent
 import java.time.Clock
 import java.time.Instant
 import java.time.ZonedDateTime
 import javax.annotation.ManagedBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 /** Generates summary notifications about accessions that are overdue for action. */
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class StateSummaryNotificationTask(
+    private val accessionNotificationStore: AccessionNotificationStore,
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dailyTaskRunner: DailyTaskRunner,
+    private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
     private val messages: Messages,
-    private val accessionNotificationStore: AccessionNotificationStore,
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -128,13 +133,30 @@ class StateSummaryNotificationTask(
             state,
             sinceAfter = endOfAlreadyCoveredPeriod,
             sinceBefore = stateChangedBefore)
-
     if (newCount > 0) {
       val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
 
       val message = getMessage(count)
       log.info("Generated notification for facility $facilityId: $message")
       accessionNotificationStore.insertStateNotification(facilityId, state, message)
+      try {
+        when (state) {
+          AccessionState.Pending ->
+              eventPublisher.publishEvent(
+                  AccessionsAwaitingProcessingEvent(facilityId, count, state))
+          AccessionState.Processed -> {
+            if (weeks == 2) {
+              eventPublisher.publishEvent(
+                  AccessionsReadyForTestingEvent(facilityId, count, weeks, state))
+            }
+          }
+          AccessionState.Dried ->
+              eventPublisher.publishEvent(AccessionsFinishedDryingEvent(facilityId, count, state))
+          else -> log.warn("Unsupported state $state for notification events.")
+        }
+      } catch (e: Exception) {
+        log.error("Error handling notification event for state summary $state", e)
+      }
     }
   }
 

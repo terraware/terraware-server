@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -25,6 +26,9 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
+import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
+import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
+import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import java.net.URI
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -165,6 +169,41 @@ class AppNotificationService(
     )
   }
 
+  @EventListener
+  fun on(event: AccessionsAwaitingProcessingEvent) {
+    val accessionsUrl = webAppUrls.accessions(event.state)
+    val message = messages.accessionsAwaitingProcessing(event.numAccessions)
+
+    log.info(
+        "Creating app notifications for ${event.numAccessions} accessions awaiting processing.")
+
+    insertAccessionNotifications(
+        event.facilityId, NotificationType.AccessionsAwaitingProcessing, message, accessionsUrl)
+  }
+
+  @EventListener
+  fun on(event: AccessionsReadyForTestingEvent) {
+    val accessionsUrl = webAppUrls.accessions(event.state)
+    val message = messages.accessionsReadyForTesting(event.numAccessions, event.weeks)
+
+    log.info(
+        "Creating app notifications for ${event.numAccessions} accessions ready for testing since ${event.weeks} weeks.")
+
+    insertAccessionNotifications(
+        event.facilityId, NotificationType.AccessionsReadyforTesting, message, accessionsUrl)
+  }
+
+  @EventListener
+  fun on(event: AccessionsFinishedDryingEvent) {
+    val accessionsUrl = webAppUrls.accessions(event.state)
+    val message = messages.accessionsFinishedDrying(event.numAccessions)
+
+    log.info("Creating app notifications for ${event.numAccessions} accessions finished drying.")
+
+    insertAccessionNotifications(
+        event.facilityId, NotificationType.AccessionsFinishedDrying, message, accessionsUrl)
+  }
+
   private fun insertAccessionNotifications(
       accessionId: AccessionId,
       notificationType: NotificationType,
@@ -172,12 +211,17 @@ class AppNotificationService(
       localUrl: URI
   ) {
     val facilityId = parentStore.getFacilityId(accessionId)!!
+    insertAccessionNotifications(facilityId, notificationType, message, localUrl)
+  }
+
+  private fun insertAccessionNotifications(
+      facilityId: FacilityId,
+      notificationType: NotificationType,
+      message: NotificationMessage,
+      localUrl: URI
+  ) {
     val projectId = parentStore.getProjectId(facilityId)!!
     val organizationId = parentStore.getOrganizationId(projectId)!!
-    val emailR = projectStore.fetchEmailRecipients(projectId, false)
-    if (emailR.isEmpty()) {
-      return
-    }
     val recipients =
         projectStore.fetchEmailRecipients(projectId, false).toSet().mapNotNull {
           userStore.fetchByEmail(it)

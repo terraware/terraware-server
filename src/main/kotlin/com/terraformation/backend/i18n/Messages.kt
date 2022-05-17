@@ -136,6 +136,29 @@ class Messages {
       NotificationMessage(
           title = "Seeds are being withdrawn!", body = withdrawalDateNotification(accessionNumber))
 
+  fun accessionsAwaitingProcessing(count: Int): NotificationMessage =
+      NotificationMessage(
+          title = "Accessions need your review!",
+          body =
+              if (count == 1)
+                  "1 accession has been waiting since drop off for at least 1 week and is ready to be processed."
+              else
+                  "$count accessions have been waiting since drop off for at least 1 week and are ready to be processed.")
+
+  fun accessionsReadyForTesting(count: Int, weeks: Int): NotificationMessage =
+      NotificationMessage(
+          title = "You have accessions ready for testing.",
+          body =
+              if (count == 1)
+                  "1 accession has finished processing for at least $weeks weeks and is ready to be " +
+                      "tested for %RH."
+              else
+                  "$count accessions have finished processing for at least $weeks weeks and are ready to " +
+                      "be tested for %RH.")
+
+  fun accessionsFinishedDrying(count: Int): NotificationMessage =
+      NotificationMessage(title = "Accessions need attention!", body = driedNotification(count))
+
   private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
   private val validSeedStorageBehaviors =
       SeedStorageBehavior.values().joinToString { it.displayName }

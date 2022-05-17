@@ -13,15 +13,22 @@ import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.email.model.AccessionDryingEnd
 import com.terraformation.backend.email.model.AccessionGerminationTest
 import com.terraformation.backend.email.model.AccessionMoveToDry
 import com.terraformation.backend.email.model.AccessionWithdrawal
+import com.terraformation.backend.email.model.AccessionsAwaitingProcessing
+import com.terraformation.backend.email.model.AccessionsFinishedDrying
+import com.terraformation.backend.email.model.AccessionsReadyForTesting
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.UserAddedToOrganization
@@ -32,6 +39,9 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
+import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
+import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
+import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import javax.annotation.ManagedBean
 import org.springframework.context.event.EventListener
 
@@ -41,6 +51,7 @@ class EmailNotificationService(
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val messages: Messages,
+    private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
@@ -101,8 +112,7 @@ class EmailNotificationService(
     emailService.sendUserNotification(
         user,
         "userAddedToOrganization",
-        UserAddedToOrganization(config, admin, organization, organizationHomeUrl),
-        requireOptIn = false)
+        UserAddedToOrganization(config, admin, organization, organizationHomeUrl))
   }
 
   @EventListener
@@ -185,10 +195,62 @@ class EmailNotificationService(
     }
   }
 
+  @EventListener
+  fun on(event: AccessionsAwaitingProcessingEvent) {
+    val organization = getOrganization(event.facilityId)
+    val accessionsUrl = webAppUrls.fullAccessions(organization.id!!, event.state).toString()
+    getRecipients(event.facilityId).forEach { user ->
+      emailService.sendUserNotification(
+          user,
+          "accessionsAwaitingProcessing",
+          AccessionsAwaitingProcessing(
+              config, event.numAccessions, organization.name!!, accessionsUrl))
+    }
+  }
+
+  @EventListener
+  fun on(event: AccessionsReadyForTestingEvent) {
+    val organization = getOrganization(event.facilityId)
+    val accessionsUrl = webAppUrls.fullAccessions(organization.id!!, event.state).toString()
+    getRecipients(event.facilityId).forEach { user ->
+      emailService.sendUserNotification(
+          user,
+          "accessionsReadyForTesting",
+          AccessionsReadyForTesting(
+              config, event.numAccessions, event.weeks, organization.name!!, accessionsUrl))
+    }
+  }
+
+  @EventListener
+  fun on(event: AccessionsFinishedDryingEvent) {
+    val organization = getOrganization(event.facilityId)
+    val accessionsUrl = webAppUrls.fullAccessions(organization.id!!, event.state).toString()
+    getRecipients(event.facilityId).forEach { user ->
+      emailService.sendUserNotification(
+          user,
+          "accessionsFinishedDrying",
+          AccessionsFinishedDrying(config, event.numAccessions, organization.name!!, accessionsUrl))
+    }
+  }
+
+  private fun getOrganization(facilityId: FacilityId): OrganizationsRow {
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    return organizationsDao.fetchOneById(organizationId)
+        ?: throw OrganizationNotFoundException(organizationId)
+  }
+
   private fun getRecipients(accessionId: AccessionId): List<IndividualUser> {
-    return projectStore
-        .fetchEmailRecipients(parentStore.getProjectId(accessionId))
-        .toSet()
-        .mapNotNull { userStore.fetchByEmail(it) }
+    val facilityId =
+        parentStore.getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    return getRecipients(facilityId)
+  }
+
+  private fun getRecipients(facilityId: FacilityId): List<IndividualUser> {
+    val projectId =
+        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    return projectStore.fetchEmailRecipients(projectId).toSet().mapNotNull {
+      userStore.fetchByEmail(it)
+    }
   }
 }

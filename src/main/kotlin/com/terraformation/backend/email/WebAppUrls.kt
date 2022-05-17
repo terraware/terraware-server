@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
@@ -62,6 +63,18 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
 
   fun accessionGerminationTest(accessionId: AccessionId, testType: GerminationTestType): URI {
     return UriBuilder.fromPath(accessionGerminationTestPath(accessionId, testType)).build()
+  }
+
+  fun fullAccessions(organizationId: OrganizationId, state: AccessionState): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/accessions")
+        .queryParam("stage", state)
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun accessions(state: AccessionState): URI {
+    return UriBuilder.fromPath("/accessions").queryParam("stage", state).build()
   }
 
   private fun accessionGerminationTestPath(

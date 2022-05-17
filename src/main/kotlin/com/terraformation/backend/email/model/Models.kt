@@ -73,3 +73,25 @@ class AccessionWithdrawal(
     val facilityName: String,
     val accessionUrl: String,
 ) : EmailTemplateModel(config)
+
+class AccessionsAwaitingProcessing(
+    config: TerrawareServerConfig,
+    val numAccessions: Number,
+    val organizationName: String,
+    val accessionsUrl: String,
+) : EmailTemplateModel(config)
+
+class AccessionsReadyForTesting(
+    config: TerrawareServerConfig,
+    val numAccessions: Number,
+    val weeks: Int,
+    val organizationName: String,
+    val accessionsUrl: String,
+) : EmailTemplateModel(config)
+
+class AccessionsFinishedDrying(
+    config: TerrawareServerConfig,
+    val numAccessions: Number,
+    val organizationName: String,
+    val accessionsUrl: String,
+) : EmailTemplateModel(config)

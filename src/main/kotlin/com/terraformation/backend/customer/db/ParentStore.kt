@@ -70,11 +70,6 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
 
-  fun getProjectId(accessionId: AccessionId): ProjectId {
-    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
-    return getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-  }
-
   fun getOrganizationId(accessionId: AccessionId): OrganizationId {
     return getOrganizationId(getProjectId(accessionId))
         ?: throw AccessionNotFoundException(accessionId)
@@ -88,6 +83,11 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getUserId(uploadId: UploadId): UserId? =
       fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.CREATED_BY)
+
+  private fun getProjectId(accessionId: AccessionId): ProjectId {
+    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    return getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+  }
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row

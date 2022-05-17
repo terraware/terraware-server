@@ -167,5 +167,8 @@ VALUES (1, 'User Added to Organization', 1),
        (5, 'Accession Scheduled for Drying', 1),
        (6, 'Accession Scheduled to End Drying', 1),
        (7, 'Accession Scheduled for Withdrawal', 1),
-       (8, 'Accession Scheduled for Germination Test', 1)
+       (8, 'Accession Scheduled for Germination Test', 1),
+       (9, 'Accessions Awaiting Processing', 1),
+       (10, 'Accessions Ready for Testing', 1),
+       (11, 'Accessions Finished Drying', 1)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name, notification_criticality_id = excluded.notification_criticality_id;

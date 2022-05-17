@@ -15,6 +15,7 @@ import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
@@ -40,6 +41,9 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
+import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
+import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
+import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
@@ -143,6 +147,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { messages.accessionGerminationTestNotification(any(), GerminationTestType.Lab) } returns
         NotificationMessage(
             "accession lab germination test title", "accession lab germination test body")
+    every { messages.accessionsAwaitingProcessing(any()) } returns
+        NotificationMessage(
+            "accessions awaiting processing title", "accessions awaiting processing body")
+    every { messages.accessionsReadyForTesting(any(), any()) } returns
+        NotificationMessage(
+            "accessions ready for testing title", "accessions ready for testing body")
+    every { messages.accessionsFinishedDrying(any()) } returns
+        NotificationMessage("accessions finished drying title", "accessions finished drying body")
     every {
       messages.accessionGerminationTestNotification(any(), GerminationTestType.Nursery)
     } returns
@@ -445,5 +457,106 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         expectedNotifications,
         actualNotifications,
         "Notification should match that of an accession scheduled for withdrawal")
+  }
+
+  @Test
+  fun `should store accessions awaiting processing notification`() {
+    // add a second user to check for multiple notifications
+    insertUser(otherUserId)
+    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(user.userId, projectId, user.userId)
+
+    assertEquals(
+        0,
+        notificationsDao.count(),
+        "There should be no notifications before any notification event")
+
+    service.on(AccessionsAwaitingProcessingEvent(facilityId, 5, AccessionState.Pending))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.AccessionsAwaitingProcessing,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "accessions awaiting processing title",
+                body = "accessions awaiting processing body",
+                localUrl = webAppUrls.accessions(AccessionState.Pending),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(
+        expectedNotifications,
+        actualNotifications,
+        "Notification should match that of accessions awaiting processing")
+  }
+
+  @Test
+  fun `should store accessions ready for testing notification`() {
+    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(user.userId, projectId, user.userId)
+
+    assertEquals(
+        0,
+        notificationsDao.count(),
+        "There should be no notifications before any notification event")
+
+    service.on(AccessionsReadyForTestingEvent(facilityId, 5, 2, AccessionState.Processed))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.AccessionsReadyforTesting,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "accessions ready for testing title",
+                body = "accessions ready for testing body",
+                localUrl = webAppUrls.accessions(AccessionState.Processed),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(
+        expectedNotifications,
+        actualNotifications,
+        "Notification should match that of accessions ready for testing")
+  }
+
+  @Test
+  fun `should store accessions finished drying notification`() {
+    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(user.userId, projectId, user.userId)
+
+    assertEquals(
+        0,
+        notificationsDao.count(),
+        "There should be no notifications before any notification event")
+
+    service.on(AccessionsFinishedDryingEvent(facilityId, 5, AccessionState.Dried))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.AccessionsFinishedDrying,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "accessions finished drying title",
+                body = "accessions finished drying body",
+                localUrl = webAppUrls.accessions(AccessionState.Dried),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(
+        expectedNotifications,
+        actualNotifications,
+        "Notification should match that of accessions finished drying")
   }
 }
