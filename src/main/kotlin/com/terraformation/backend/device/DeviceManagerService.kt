@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.device.balena.BalenaClient
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean

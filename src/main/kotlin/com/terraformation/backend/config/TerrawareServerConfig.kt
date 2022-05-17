@@ -97,6 +97,9 @@ class TerrawareServerConfig(
 
     /** Configures how the server works with GBIF species data. */
     @NotNull val gbif: GbifConfig = GbifConfig(),
+
+    /** Configures how the server interacts with the Balena cloud service to manage sensor kits. */
+    val balena: BalenaConfig = BalenaConfig(),
 ) {
   @ConstructorBinding
   class DailyTasksConfig(
@@ -214,7 +217,28 @@ class TerrawareServerConfig(
       val distributionSources: List<String>? = null,
   )
 
+  @ConstructorBinding
+  class BalenaConfig(
+      val apiKey: String? = null,
+      @DefaultValue("false") val enabled: Boolean = false,
+      val fleetId: Long? = null,
+      @DefaultValue(BALENA_API_URL) val url: URI = URI(BALENA_API_URL),
+  ) {
+    init {
+      if (enabled) {
+        if (apiKey == null || fleetId == null) {
+          throw IllegalArgumentException("API key and fleet name are required if Balena is enabled")
+        }
+      }
+    }
+
+    companion object {
+      const val BALENA_API_URL = "https://api.balena-cloud.com"
+    }
+  }
+
   companion object {
+    const val BALENA_ENABLED_PROPERTY = "terraware.balena.enabled"
     const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"
   }
 }
