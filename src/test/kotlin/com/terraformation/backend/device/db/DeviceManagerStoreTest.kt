@@ -2,6 +2,7 @@ package com.terraformation.backend.device.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.DeviceManagerNotFoundException
@@ -172,8 +173,8 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   ): DeviceManagersRow {
     return DeviceManagersRow(
         balenaModifiedTime = Instant.EPOCH,
-        balenaId = balenaId,
-        balenaUuid = UUID.fromString(balenaUuid),
+        balenaId = BalenaDeviceId(balenaId),
+        balenaUuid = balenaUuid,
         createdTime = Instant.EPOCH,
         deviceName = "Device $id",
         facilityId = facilityId?.toIdWrapper { FacilityId(it) },

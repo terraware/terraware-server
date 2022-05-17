@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceTemplateCategory
@@ -767,8 +768,8 @@ class AdminController(
   ): String {
     val row =
         DeviceManagersRow(
-            balenaId = Random.nextLong(),
-            balenaUuid = UUID.randomUUID(),
+            balenaId = BalenaDeviceId(Random.nextLong()),
+            balenaUuid = UUID.randomUUID().toString(),
             balenaModifiedTime = clock.instant(),
             createdTime = clock.instant(),
             deviceName = "Test Device $shortCode",

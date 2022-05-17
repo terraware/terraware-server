@@ -1,5 +1,6 @@
 package com.terraformation.backend.device
 
+import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
@@ -9,7 +10,7 @@ import javax.annotation.ManagedBean
 class BalenaClient {
   private val log = perClassLogger()
 
-  fun configureDeviceManager(balenaId: Long, facilityId: FacilityId, token: String) {
+  fun configureDeviceManager(balenaId: BalenaDeviceId, facilityId: FacilityId, token: String) {
     val tokenExcerpt = token.substring(0..8) + "..."
     log.info("Configure Balena device $balenaId with facility $facilityId, token $tokenExcerpt")
   }
