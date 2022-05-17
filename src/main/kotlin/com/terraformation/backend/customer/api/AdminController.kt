@@ -105,9 +105,11 @@ class AdminController(
 
     if (currentUser().canListApiKeys(organizationId)) {
       val apiClients =
-          users.filter { it.userType == UserType.APIClient }.map {
-            it.copy(email = it.email.substringAfter(config.keycloak.apiClientUsernamePrefix))
-          }
+          users
+              .filter { it.userType == UserType.APIClient }
+              .map {
+                it.copy(email = it.email.substringAfter(config.keycloak.apiClientUsernamePrefix))
+              }
 
       // Thymeleaf templates only know how to render Instant in the server's time zone, so we
       // need to format the timestamps here. In a real admin UI we'd let the client render these
@@ -230,9 +232,9 @@ class AdminController(
 
     // Roles are of the form orgId:roleId
     val roles =
-        roleValues?.map { it.split(':') }?.associate {
-          OrganizationId(it[0].toLong()) to Role.of(it[1].toInt())
-        }
+        roleValues
+            ?.map { it.split(':') }
+            ?.associate { OrganizationId(it[0].toLong()) to Role.of(it[1].toInt()) }
             ?: emptyMap()
 
     val user = userStore.fetchById(userId)

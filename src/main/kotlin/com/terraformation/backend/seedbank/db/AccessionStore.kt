@@ -537,13 +537,11 @@ class AccessionStore(
           .select(ID)
           .from(ACCESSIONS)
           .where(
-              STATE_ID
-                  .eq(AccessionState.Processing)
+              STATE_ID.eq(AccessionState.Processing)
                   .and(PROCESSING_START_DATE.le(twoWeeksAgo).or(DRYING_START_DATE.le(today)))
                   .or(STATE_ID.eq(AccessionState.Processed).and(DRYING_START_DATE.le(today)))
                   .or(
-                      STATE_ID
-                          .eq(AccessionState.Drying)
+                      STATE_ID.eq(AccessionState.Drying)
                           .and(STORAGE_START_DATE.le(today).or(DRYING_END_DATE.le(today))))
                   .or(STATE_ID.eq(AccessionState.Dried).and(STORAGE_START_DATE.le(today))))
           .fetch(ID)
@@ -646,9 +644,7 @@ class AccessionStore(
             .where(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
             .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
             .and(
-                ACCESSIONS
-                    .STATE_ID
-                    .`in`(statesByActive[AccessionActive.Active])
+                ACCESSIONS.STATE_ID.`in`(statesByActive[AccessionActive.Active])
                     .orNotExists(
                         dslContext
                             .selectOne()

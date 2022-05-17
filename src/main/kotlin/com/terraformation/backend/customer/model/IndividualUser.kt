@@ -202,14 +202,16 @@ data class IndividualUser(
 
   override fun canUpdateSite(siteId: SiteId): Boolean {
     return when (siteRoles[siteId]) {
-      Role.ADMIN, Role.OWNER -> true
+      Role.ADMIN,
+      Role.OWNER -> true
       else -> false
     }
   }
 
   override fun canDeleteSite(siteId: SiteId): Boolean {
     return when (siteRoles[siteId]) {
-      Role.ADMIN, Role.OWNER -> true
+      Role.ADMIN,
+      Role.OWNER -> true
       else -> false
     }
   }
@@ -261,7 +263,8 @@ data class IndividualUser(
       @Suppress("UNUSED_PARAMETER") role: Role
   ): Boolean {
     return when (organizationRoles[organizationId]) {
-      Role.OWNER, Role.ADMIN -> true
+      Role.OWNER,
+      Role.ADMIN -> true
       else -> false
     }
   }
@@ -272,7 +275,8 @@ data class IndividualUser(
 
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
-      Role.OWNER, Role.ADMIN -> true
+      Role.OWNER,
+      Role.ADMIN -> true
       else -> false
     }
   }
@@ -284,7 +288,8 @@ data class IndividualUser(
 
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
-      Role.OWNER, Role.ADMIN -> true
+      Role.OWNER,
+      Role.ADMIN -> true
       else -> false
     }
   }
@@ -297,7 +302,8 @@ data class IndividualUser(
 
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
-      Role.OWNER, Role.ADMIN -> true
+      Role.OWNER,
+      Role.ADMIN -> true
       else -> false
     }
   }
@@ -325,7 +331,8 @@ data class IndividualUser(
 
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean {
     return when (facilityRoles[facilityId]) {
-      Role.OWNER, Role.ADMIN -> true
+      Role.OWNER,
+      Role.ADMIN -> true
       else -> false
     }
   }

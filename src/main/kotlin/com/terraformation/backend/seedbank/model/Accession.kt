@@ -25,7 +25,8 @@ enum class AccessionActive {
 
 fun AccessionState.toActiveEnum() =
     when (this) {
-      AccessionState.Withdrawn, AccessionState.Nursery -> AccessionActive.Inactive
+      AccessionState.Withdrawn,
+      AccessionState.Nursery -> AccessionActive.Inactive
 
       // Don't use "else" here -- we want it to be a compile error if we add a state and forget
       // to specify whether it is active or inactive.
@@ -336,18 +337,20 @@ data class AccessionModel(
                 "Cannot withdraw from accession before specifying its total size")
 
     val existingIds = existingWithdrawals.mapNotNull { it.id }.toSet()
-    withdrawals.mapNotNull { it.id }.forEach { id ->
-      if (id !in existingIds) {
-        throw IllegalArgumentException("Cannot update withdrawal with nonexistent ID $id")
-      }
-    }
+    withdrawals
+        .mapNotNull { it.id }
+        .forEach { id ->
+          if (id !in existingIds) {
+            throw IllegalArgumentException("Cannot update withdrawal with nonexistent ID $id")
+          }
+        }
 
     val nonTestWithdrawals =
         withdrawals.filter { it.purpose != WithdrawalPurpose.GerminationTesting }
     val existingTestWithdrawals =
-        existingWithdrawals.filter { it.germinationTestId != null }.associateBy {
-          it.germinationTestId!!
-        }
+        existingWithdrawals
+            .filter { it.germinationTestId != null }
+            .associateBy { it.germinationTestId!! }
     val testWithdrawals =
         germinationTests.map { test ->
           val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
@@ -369,23 +372,27 @@ data class AccessionModel(
 
     return when (processingMethod) {
       ProcessingMethod.Count -> {
-        unsortedWithdrawals.sortedWith { a, b -> a.compareByTime(b) }.map { withdrawal ->
-          withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
-          withdrawal.copy(
-              remaining = currentRemaining,
-              germinationTest = withdrawal.germinationTest?.copy(remaining = currentRemaining))
-        }
+        unsortedWithdrawals
+            .sortedWith { a, b -> a.compareByTime(b) }
+            .map { withdrawal ->
+              withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
+              withdrawal.copy(
+                  remaining = currentRemaining,
+                  germinationTest = withdrawal.germinationTest?.copy(remaining = currentRemaining))
+            }
       }
       ProcessingMethod.Weight -> {
-        unsortedWithdrawals.sortedByDescending { it.remaining }.map { withdrawal ->
-          val remaining =
-              withdrawal.remaining
-                  ?: throw IllegalArgumentException(
-                      "Withdrawals from weight-based accessions must include seeds remaining")
-          val difference = currentRemaining - remaining
-          currentRemaining = remaining
-          withdrawal.copy(weightDifference = difference)
-        }
+        unsortedWithdrawals
+            .sortedByDescending { it.remaining }
+            .map { withdrawal ->
+              val remaining =
+                  withdrawal.remaining
+                      ?: throw IllegalArgumentException(
+                          "Withdrawals from weight-based accessions must include seeds remaining")
+              val difference = currentRemaining - remaining
+              currentRemaining = remaining
+              withdrawal.copy(weightDifference = difference)
+            }
       }
       null -> {
         throw IllegalStateException("Cannot add withdrawals before setting processingMethod")
@@ -410,13 +417,13 @@ data class AccessionModel(
     // If all the quantities are count-based, return a count-based total.
     val totalQuantity =
         if (units == SeedQuantityUnits.Seeds) {
-          withdrawals.mapNotNull { it.withdrawn }.foldRight(zero) { quantity, acc ->
-            acc + quantity
-          }
+          withdrawals
+              .mapNotNull { it.withdrawn }
+              .foldRight(zero) { quantity, acc -> acc + quantity }
         } else {
-          withdrawals.mapNotNull { it.weightDifference }.foldRight(zero) { quantity, acc ->
-            acc + quantity
-          }
+          withdrawals
+              .mapNotNull { it.weightDifference }
+              .foldRight(zero) { quantity, acc -> acc + quantity }
         }
 
     return if (totalQuantity > zero) totalQuantity else null

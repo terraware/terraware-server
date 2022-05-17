@@ -121,9 +121,9 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
   fun getAllFieldNames(prefix: String = ""): Set<String> {
     val myFieldNames = fields.map { prefix + it.fieldName }
     val sublistFieldNames =
-        sublistsByName.filterValues { it.isMultiValue }.flatMap { (name, sublist) ->
-          sublist.searchTable.getAllFieldNames("${prefix}$name.")
-        }
+        sublistsByName
+            .filterValues { it.isMultiValue }
+            .flatMap { (name, sublist) -> sublist.searchTable.getAllFieldNames("${prefix}$name.") }
 
     return (myFieldNames + sublistFieldNames).toSet()
   }

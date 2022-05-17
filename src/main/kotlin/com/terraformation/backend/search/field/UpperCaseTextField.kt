@@ -32,13 +32,15 @@ class UpperCaseTextField(
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null))
       SearchFilterType.Fuzzy ->
           DSL.or(
-              fieldNode.values.map { it?.uppercase() }.flatMap { value ->
-                if (value != null) {
-                  listOf(databaseField.likeFuzzy(value), databaseField.like("$value%"))
-                } else {
-                  listOf(databaseField.isNull)
-                }
-              })
+              fieldNode.values
+                  .map { it?.uppercase() }
+                  .flatMap { value ->
+                    if (value != null) {
+                      listOf(databaseField.likeFuzzy(value), databaseField.like("$value%"))
+                    } else {
+                      listOf(databaseField.isNull)
+                    }
+                  })
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for text fields")
     }
