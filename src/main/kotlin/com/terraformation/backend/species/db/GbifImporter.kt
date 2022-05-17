@@ -295,9 +295,10 @@ class GbifImporter(
             .fetchLazy()
             .asSequence()
             .flatMap { (nameId, name) ->
-              name!!.split(' ').filter { it.length > 1 }.map { word ->
-                GbifNameWordsRecord(nameId, word.lowercase())
-              }
+              name!!
+                  .split(' ')
+                  .filter { it.length > 1 }
+                  .map { word -> GbifNameWordsRecord(nameId, word.lowercase()) }
             }
 
     (scientificNameWords + vernacularNameWords).chunked(INSERT_BATCH_SIZE).forEach { records ->

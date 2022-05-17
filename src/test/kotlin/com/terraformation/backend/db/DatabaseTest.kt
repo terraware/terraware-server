@@ -132,23 +132,24 @@ abstract class DatabaseTest {
 
   @BeforeEach
   fun resetSequencesForTables() {
-    tablesToResetSequences.flatMap { table -> getSerialSequenceNames(table) }.toSet().forEach {
-        sequenceName ->
-      dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
-    }
+    tablesToResetSequences
+        .flatMap { table -> getSerialSequenceNames(table) }
+        .toSet()
+        .forEach { sequenceName ->
+          dslContext.alterSequence(DSL.unquotedName(sequenceName)).restart().execute()
+        }
   }
 
   private fun getSerialSequenceNames(table: Table<out Record>): List<String> =
       table.primaryKey!!.fields.map { field ->
         dslContext
-                .select(
-                    DSL.function(
-                        PG_GET_SERIAL_SEQUENCE,
-                        SQLDataType.VARCHAR,
-                        DSL.value(table.name),
-                        DSL.value(field.name)))
-                .fetchOne()!!
-            .value1()
+            .select(
+                DSL.function(
+                    PG_GET_SERIAL_SEQUENCE,
+                    SQLDataType.VARCHAR,
+                    DSL.value(table.name),
+                    DSL.value(field.name)))
+            .fetchOne()!!.value1()
       }
 
   /**

@@ -50,7 +50,8 @@ class TerrawareErrorController(
           // available" which isn't really suitable to show to a user.
           val message =
               when (attrs["message"]) {
-                "No message available", null -> "An error occurred while processing the request."
+                "No message available",
+                null -> "An error occurred while processing the request."
                 else -> attrs["message"]
               }
 

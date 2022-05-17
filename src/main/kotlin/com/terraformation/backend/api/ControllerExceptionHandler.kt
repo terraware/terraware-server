@@ -217,8 +217,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       }
 
       val path =
-          cause
-              .path
+          cause.path
               .joinToString(".") { reference ->
                 val arrayIndex = if (reference.index >= 0) "[${reference.index}]" else ""
                 val fieldName = reference.fieldName ?: ""

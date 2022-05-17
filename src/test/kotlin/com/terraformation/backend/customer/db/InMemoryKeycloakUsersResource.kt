@@ -40,9 +40,9 @@ class InMemoryKeycloakUsersResource(private val stub: UsersResource = mockk()) :
       throw IOException("Simulated request failure")
     }
 
-    if (users.map { it.toRepresentation() }.any {
-      it.email == user.email || it.username == user.username || it.id == user.id
-    }) {
+    if (users
+        .map { it.toRepresentation() }
+        .any { it.email == user.email || it.username == user.username || it.id == user.id }) {
       return Response.status(Response.Status.CONFLICT).entity("Dupe!").build()
     }
 

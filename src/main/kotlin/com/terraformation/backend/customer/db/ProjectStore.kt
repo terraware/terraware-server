@@ -305,9 +305,7 @@ class ProjectStore(
         .where(PROJECTS.ID.eq(projectId))
         .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))
         .and(
-            PROJECTS
-                .ORGANIZATION_WIDE
-                .isTrue
+            PROJECTS.ORGANIZATION_WIDE.isTrue
                 .or(ORGANIZATION_USERS.ROLE_ID.`in`(Role.OWNER.id, Role.ADMIN.id))
                 .or(PROJECT_USERS.USER_ID.isNotNull))
         .and(optedInCondition)

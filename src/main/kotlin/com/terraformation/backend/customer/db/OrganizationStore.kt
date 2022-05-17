@@ -101,9 +101,7 @@ class OrganizationStore(
                           SITES.NAME,
                           SITES.PROJECT_ID,
                           SITES.TIMEZONE,
-                          SITES
-                              .LOCATION
-                              .transformSrid(SRID.LONG_LAT)
+                          SITES.LOCATION.transformSrid(SRID.LONG_LAT)
                               .forMultiset()
                               .`as`(SITES.LOCATION),
                           facilitiesMultiset)
@@ -228,9 +226,7 @@ class OrganizationStore(
     requirePermissions { listOrganizationUsers(organizationId) }
 
     return queryOrganizationUsers(
-            ORGANIZATION_USERS
-                .ORGANIZATION_ID
-                .eq(organizationId)
+            ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
                 .and(ORGANIZATION_USERS.USER_ID.eq(userId)))
         .firstOrNull()
         ?: throw UserNotFoundException(userId)

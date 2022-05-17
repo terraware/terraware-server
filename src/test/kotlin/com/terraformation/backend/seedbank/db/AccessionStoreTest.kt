@@ -1428,9 +1428,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val stored = store.create(accession.toModel())
 
-    accessionModelProperties.filter { it.name in propertyNames }.forEach { prop ->
-      assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
-    }
+    accessionModelProperties
+        .filter { it.name in propertyNames }
+        .forEach { prop ->
+          assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
+        }
   }
 
   @Test
@@ -1527,9 +1529,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     val stored = store.updateAndFetch(update.toModel(initial.id!!))
 
-    accessionModelProperties.filter { it.name in propertyNames }.forEach { prop ->
-      assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
-    }
+    accessionModelProperties
+        .filter { it.name in propertyNames }
+        .forEach { prop ->
+          assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
+        }
   }
 
   @Test
