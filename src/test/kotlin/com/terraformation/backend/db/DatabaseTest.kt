@@ -25,6 +25,7 @@ import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
+import com.terraformation.backend.db.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.tables.daos.UploadsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
@@ -209,6 +210,7 @@ abstract class DatabaseTest {
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
+  protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
@@ -361,6 +363,7 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH,
       organizationId: Any = "$speciesId".toLong() / 10,
+      deletedTime: Instant? = null,
   ) {
     val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -370,6 +373,8 @@ abstract class DatabaseTest {
           .insertInto(SPECIES)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
+          .set(DELETED_BY, if (deletedTime != null) createdBy else null)
+          .set(DELETED_TIME, deletedTime)
           .set(ID, speciesIdWrapper)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, modifiedTime)
@@ -484,16 +489,19 @@ abstract class DatabaseTest {
       storageUrl: URI = URI.create("file:///$id.csv"),
       contentType: String = "text/csv",
       createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
       status: UploadStatus = UploadStatus.Receiving,
+      organizationId: OrganizationId? = null,
   ) {
     with(UPLOADS) {
       dslContext
           .insertInto(UPLOADS)
           .set(CONTENT_TYPE, contentType)
           .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
+          .set(CREATED_TIME, createdTime)
           .set(FILENAME, fileName)
           .set(ID, id.toIdWrapper { UploadId(it) })
+          .set(ORGANIZATION_ID, organizationId)
           .set(STATUS_ID, status)
           .set(STORAGE_URL, storageUrl)
           .set(TYPE_ID, type)
