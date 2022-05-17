@@ -120,14 +120,14 @@ class SpeciesImporter(
       fileStore.read(storageUrl).use { inputStream -> validator.validate(inputStream) }
 
       dslContext.transaction { _ ->
+        // If there are errors, don't bother recording any warnings since the user will be unable
+        // to resolve them anyway.
         if (validator.errors.isNotEmpty()) {
           log.info("Uploaded species list $uploadId has validation errors")
 
           uploadProblemsDao.insert(validator.errors)
           updateStatus(uploadId, UploadStatus.Invalid)
         } else if (validator.warnings.isNotEmpty()) {
-          // Currently, the only warning condition is duplicate scientific names, so we can hardwire
-          // the status message to reflect that.
           log.info("Uploaded species list $uploadId has warnings; awaiting user action")
 
           uploadProblemsDao.insert(validator.warnings)

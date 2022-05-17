@@ -15,6 +15,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifySequence
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.URI
@@ -110,7 +111,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     service.delete(uploadId)
 
     assertEquals(emptyList<UploadsRow>(), uploadsDao.findAll())
-    verify { fileStore.delete(storageUrl) }
+    verifySequence { fileStore.delete(storageUrl) }
   }
 
   @Test
@@ -156,8 +157,10 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
     val actualIds = dslContext.select(UPLOADS.ID).from(UPLOADS).fetch(UPLOADS.ID)
     assertEquals(expectedIds, actualIds)
-    verify { fileStore.delete(twoWeekOldStorageUrl) }
-    verify { fileStore.delete(weekOldStorageUrl) }
+    verifySequence {
+      fileStore.delete(twoWeekOldStorageUrl)
+      fileStore.delete(weekOldStorageUrl)
+    }
   }
 
   @Test
