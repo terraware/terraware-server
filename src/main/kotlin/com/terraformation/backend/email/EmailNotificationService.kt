@@ -12,7 +12,6 @@ import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
@@ -252,13 +251,12 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: DailyTaskTimeArrivedEvent) {
+  fun on(@Suppress("UNUSED_PARAMETER") event: DateNotificationTask.PeriodProcessedStartEvent) {
     accessionDatePendingEmails.clear()
-    accessionStatePendingEmails.clear()
   }
 
   @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: DateNotificationTask.PeriodProcessedEvent) {
+  fun on(@Suppress("UNUSED_PARAMETER") event: DateNotificationTask.PeriodProcessedFinishedEvent) {
     accessionDatePendingEmails.forEach { sendEmail(it) }
     accessionDatePendingEmails.clear()
   }
@@ -269,7 +267,16 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: StateSummaryNotificationTask.PeriodProcessedEvent) {
+  fun on(
+      @Suppress("UNUSED_PARAMETER") event: StateSummaryNotificationTask.PeriodProcessedStartEvent
+  ) {
+    accessionStatePendingEmails.clear()
+  }
+
+  @EventListener
+  fun on(
+      @Suppress("UNUSED_PARAMETER") event: StateSummaryNotificationTask.PeriodProcessedFinishedEvent
+  ) {
     accessionStatePendingEmails.forEach { sendEmail(it) }
     accessionStatePendingEmails.clear()
   }
@@ -310,8 +317,7 @@ class EmailNotificationService(
     }
   }
 
-  companion object data
-  class EmailRequest(
+  data class EmailRequest(
       val user: IndividualUser,
       val emailTemplate: String,
       val emailTemplateModel: EmailTemplateModel

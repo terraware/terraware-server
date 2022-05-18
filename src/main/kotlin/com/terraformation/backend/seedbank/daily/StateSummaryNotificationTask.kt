@@ -49,6 +49,7 @@ class StateSummaryNotificationTask(
 
   override fun processPeriod(since: Instant, until: Instant) {
     log.info("Generating state update notifications")
+    eventPublisher.publishEvent(PeriodProcessedStartEvent())
 
     val zonedSince = ZonedDateTime.ofInstant(since, clock.zone)
 
@@ -64,7 +65,7 @@ class StateSummaryNotificationTask(
           }
     }
 
-    eventPublisher.publishEvent(PeriodProcessedEvent())
+    eventPublisher.publishEvent(PeriodProcessedFinishedEvent())
   }
 
   private fun pending(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
@@ -164,11 +165,14 @@ class StateSummaryNotificationTask(
     }
   }
 
+  /** Published when the period processed task begins */
+  class PeriodProcessedStartEvent
+
   /**
-   * Published when the system has successfully finished generating notifications with summaries of
-   * accession states for a period.
+   * Published when the period processed task ends successfully, this event will not be published if
+   * there are errors
    */
-  class PeriodProcessedEvent
+  class PeriodProcessedFinishedEvent
 
   /**
    * Published when the system has finished generating notifications with summaries of accession

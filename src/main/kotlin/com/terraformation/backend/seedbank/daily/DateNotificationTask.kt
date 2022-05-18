@@ -42,6 +42,7 @@ class DateNotificationTask(
 
   override fun processPeriod(since: Instant, until: Instant) {
     log.info("Generating date update notifications for due dates since $since")
+    eventPublisher.publishEvent(PeriodProcessedStartEvent())
 
     dslContext.transaction { _ ->
       moveToDryingCabinet(since, until)
@@ -50,7 +51,7 @@ class DateNotificationTask(
       withdraw(since, until)
     }
 
-    eventPublisher.publishEvent(PeriodProcessedEvent())
+    eventPublisher.publishEvent(PeriodProcessedFinishedEvent())
   }
 
   private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
@@ -86,11 +87,14 @@ class DateNotificationTask(
     accessionNotificationStore.insertDateNotification(accessionId, message)
   }
 
+  /** Published when the period processed task begins */
+  class PeriodProcessedStartEvent
+
   /**
-   * Published when the system has successfully finished generating notifications for individual
-   * accessions for a period.
+   * Published when the period processed task ends successfully, this event will not be published if
+   * there are errors
    */
-  class PeriodProcessedEvent
+  class PeriodProcessedFinishedEvent
 
   /**
    * Published when the system has finished generating notifications for individual accessions
