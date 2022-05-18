@@ -139,8 +139,7 @@ class StateSummaryNotificationTask(
             state,
             sinceAfter = endOfAlreadyCoveredPeriod,
             sinceBefore = stateChangedBefore)
-    var kb = 1
-    if (newCount > 0 || kb > 0) {
+    if (newCount > 0) {
       val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
 
       val message = getMessage(count)
