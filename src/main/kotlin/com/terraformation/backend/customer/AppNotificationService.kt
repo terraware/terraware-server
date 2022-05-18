@@ -171,7 +171,7 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: AccessionsAwaitingProcessingEvent) {
-    val accessionsUrl = webAppUrls.accessions(event.state)
+    val accessionsUrl = webAppUrls.accessions(event.facilityId, event.state)
     val message = messages.accessionsAwaitingProcessing(event.numAccessions)
 
     log.info(
@@ -183,7 +183,7 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: AccessionsReadyForTestingEvent) {
-    val accessionsUrl = webAppUrls.accessions(event.state)
+    val accessionsUrl = webAppUrls.accessions(event.facilityId, event.state)
     val message = messages.accessionsReadyForTesting(event.numAccessions, event.weeks)
 
     log.info(
@@ -195,7 +195,7 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: AccessionsFinishedDryingEvent) {
-    val accessionsUrl = webAppUrls.accessions(event.state)
+    val accessionsUrl = webAppUrls.accessions(event.facilityId, event.state)
     val message = messages.accessionsFinishedDrying(event.numAccessions)
 
     log.info("Creating app notifications for ${event.numAccessions} accessions finished drying.")

@@ -442,7 +442,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 title = "accessions awaiting processing title",
                 body = "accessions awaiting processing body",
-                localUrl = webAppUrls.accessions(AccessionState.Pending),
+                localUrl = webAppUrls.accessions(facilityId, AccessionState.Pending),
                 createdTime = Instant.EPOCH,
                 isRead = false))
 
@@ -470,7 +470,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 title = "accessions ready for testing title",
                 body = "accessions ready for testing body",
-                localUrl = webAppUrls.accessions(AccessionState.Processed),
+                localUrl = webAppUrls.accessions(facilityId, AccessionState.Processed),
                 createdTime = Instant.EPOCH,
                 isRead = false))
 
@@ -498,7 +498,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 title = "accessions finished drying title",
                 body = "accessions finished drying body",
-                localUrl = webAppUrls.accessions(AccessionState.Dried),
+                localUrl = webAppUrls.accessions(facilityId, AccessionState.Dried),
                 createdTime = Instant.EPOCH,
                 isRead = false))
 

@@ -209,7 +209,8 @@ class EmailNotificationService(
   @EventListener
   fun on(event: AccessionsAwaitingProcessingEvent) {
     val organization = getOrganization(event.facilityId)
-    val accessionsUrl = webAppUrls.fullAccessions(organization.id!!, event.state).toString()
+    val accessionsUrl =
+        webAppUrls.fullAccessions(organization.id!!, event.facilityId, event.state).toString()
     getRecipients(event.facilityId).forEach { user ->
       accessionStatePendingEmails.add(
           EmailRequest(
@@ -223,7 +224,8 @@ class EmailNotificationService(
   @EventListener
   fun on(event: AccessionsReadyForTestingEvent) {
     val organization = getOrganization(event.facilityId)
-    val accessionsUrl = webAppUrls.fullAccessions(organization.id!!, event.state).toString()
+    val accessionsUrl =
+        webAppUrls.fullAccessions(organization.id!!, event.facilityId, event.state).toString()
     getRecipients(event.facilityId).forEach { user ->
       accessionStatePendingEmails.add(
           EmailRequest(
@@ -237,7 +239,8 @@ class EmailNotificationService(
   @EventListener
   fun on(event: AccessionsFinishedDryingEvent) {
     val organization = getOrganization(event.facilityId)
-    val accessionsUrl = webAppUrls.fullAccessions(organization.id!!, event.state).toString()
+    val accessionsUrl =
+        webAppUrls.fullAccessions(organization.id!!, event.facilityId, event.state).toString()
     getRecipients(event.facilityId).forEach { user ->
       accessionStatePendingEmails.add(
           EmailRequest(
