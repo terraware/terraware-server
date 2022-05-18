@@ -18,6 +18,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZonedDateTime
 import javax.annotation.ManagedBean
+import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -31,6 +32,7 @@ class StateSummaryNotificationTask(
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dailyTaskRunner: DailyTaskRunner,
+    private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
     private val messages: Messages,
@@ -50,12 +52,16 @@ class StateSummaryNotificationTask(
 
     val zonedSince = ZonedDateTime.ofInstant(since, clock.zone)
 
-    facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
-      pending(facilityId, zonedSince)
-      processed(facilityId, 2, zonedSince)
-      processed(facilityId, 4, zonedSince)
-      dried(facilityId, zonedSince)
+    dslContext.transaction { _ ->
+      facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
+        pending(facilityId, zonedSince)
+        processed(facilityId, 2, zonedSince)
+        processed(facilityId, 4, zonedSince)
+        dried(facilityId, zonedSince)
+      }
     }
+
+    eventPublisher.publishEvent(PeriodProcessedEvent())
   }
 
   private fun pending(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
@@ -133,36 +139,38 @@ class StateSummaryNotificationTask(
             state,
             sinceAfter = endOfAlreadyCoveredPeriod,
             sinceBefore = stateChangedBefore)
-    if (newCount > 0) {
+    var kb = 1
+    if (newCount > 0 || kb > 0) {
       val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
 
       val message = getMessage(count)
       log.info("Generated notification for facility $facilityId: $message")
       accessionNotificationStore.insertStateNotification(facilityId, state, message)
-      try {
-        when (state) {
-          AccessionState.Pending ->
-              eventPublisher.publishEvent(
-                  AccessionsAwaitingProcessingEvent(facilityId, count, state))
-          AccessionState.Processed -> {
-            if (weeks == 2) {
-              eventPublisher.publishEvent(
-                  AccessionsReadyForTestingEvent(facilityId, count, weeks, state))
-            }
+      when (state) {
+        AccessionState.Pending ->
+            eventPublisher.publishEvent(AccessionsAwaitingProcessingEvent(facilityId, count, state))
+        AccessionState.Processed -> {
+          if (weeks == 2) {
+            eventPublisher.publishEvent(
+                AccessionsReadyForTestingEvent(facilityId, count, weeks, state))
           }
-          AccessionState.Dried ->
-              eventPublisher.publishEvent(AccessionsFinishedDryingEvent(facilityId, count, state))
-          else -> log.warn("Unsupported state $state for notification events.")
         }
-      } catch (e: Exception) {
-        log.error("Error handling notification event for state summary $state", e)
+        AccessionState.Dried ->
+            eventPublisher.publishEvent(AccessionsFinishedDryingEvent(facilityId, count, state))
+        else -> log.warn("Unsupported state $state for notification events.")
       }
     }
   }
 
   /**
+   * Published when the system has successfully finished generating notifications with summaries of
+   * accession states for a period.
+   */
+  class PeriodProcessedEvent
+
+  /**
    * Published when the system has finished generating notifications with summaries of accession
-   * states.
+   * states regardless of error state.
    */
   class FinishedEvent
 }
