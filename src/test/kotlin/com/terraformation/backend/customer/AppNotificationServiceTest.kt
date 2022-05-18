@@ -186,11 +186,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(otherUserId)
     insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
 
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
-
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
 
     val expectedNotifications =
@@ -219,11 +214,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUser(otherUserId)
     insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
     insertProjectUser(otherUserId, projectId, user.userId)
-
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
 
     service.on(UserAddedToProjectEvent(otherUserId, projectId, user.userId))
 
@@ -259,11 +249,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
-
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
 
     service.on(AccessionMoveToDryEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
 
@@ -309,11 +294,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
 
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
-
     service.on(AccessionDryingEndEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
 
     val expectedNotifications =
@@ -346,11 +326,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
-
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
 
     service.on(
         AccessionGerminationTestEvent(
@@ -389,11 +364,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
 
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
-
     service.on(
         AccessionGerminationTestEvent(
             accessionModel.accessionNumber!!, accessionModel.id!!, GerminationTestType.Nursery))
@@ -431,11 +401,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
 
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
-
     service.on(AccessionWithdrawalEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
 
     val expectedNotifications =
@@ -466,11 +431,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
     insertProjectUser(user.userId, projectId, user.userId)
 
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
-
     service.on(AccessionsAwaitingProcessingEvent(facilityId, 5, AccessionState.Pending))
 
     val expectedNotifications =
@@ -499,11 +459,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
     insertProjectUser(user.userId, projectId, user.userId)
 
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
-
     service.on(AccessionsReadyForTestingEvent(facilityId, 5, 2, AccessionState.Processed))
 
     val expectedNotifications =
@@ -531,11 +486,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accessions finished drying notification`() {
     insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
     insertProjectUser(user.userId, projectId, user.userId)
-
-    assertEquals(
-        0,
-        notificationsDao.count(),
-        "There should be no notifications before any notification event")
 
     service.on(AccessionsFinishedDryingEvent(facilityId, 5, AccessionState.Dried))
 

@@ -112,7 +112,8 @@ class EmailNotificationService(
     emailService.sendUserNotification(
         user,
         "userAddedToOrganization",
-        UserAddedToOrganization(config, admin, organization, organizationHomeUrl))
+        UserAddedToOrganization(config, admin, organization, organizationHomeUrl),
+        requireOptIn = false)
   }
 
   @EventListener
