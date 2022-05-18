@@ -53,7 +53,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
         TimeseriesRow(
             createdBy = user.userId,
             createdTime = clock.instant(),
-            decimalPlaces = 2,
+            decimalPlaces = 10,
             deviceId = deviceId,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
@@ -137,6 +137,35 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     timeseriesDao.insert(timeseriesRow)
     val timeseriesId = timeseriesRow.id!!
     val value = "1.5678"
+
+    store.insertValue(deviceId, timeseriesId, value, Instant.EPOCH)
+
+    val expected = listOf(TimeseriesValuesRow(timeseriesId, Instant.EPOCH, value))
+    val actual = dslContext.selectFrom(TIMESERIES_VALUES).fetchInto(TimeseriesValuesRow::class.java)
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `insertValue rounds numeric value to correct number of decimal places`() {
+    timeseriesRow.decimalPlaces = 3
+    timeseriesDao.insert(timeseriesRow)
+    val timeseriesId = timeseriesRow.id!!
+    val value = "1.5678"
+    val roundedValue = "1.568"
+
+    store.insertValue(deviceId, timeseriesId, value, Instant.EPOCH)
+
+    val expected = listOf(TimeseriesValuesRow(timeseriesId, Instant.EPOCH, roundedValue))
+    val actual = dslContext.selectFrom(TIMESERIES_VALUES).fetchInto(TimeseriesValuesRow::class.java)
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `insertValue does not round numeric value if timeseries does not specify decimal places`() {
+    timeseriesRow.decimalPlaces = null
+    timeseriesDao.insert(timeseriesRow)
+    val timeseriesId = timeseriesRow.id!!
+    val value = "1.56789999999999999999999"
 
     store.insertValue(deviceId, timeseriesId, value, Instant.EPOCH)
 

@@ -1,0 +1,431 @@
+package com.terraformation.backend.species.db
+
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.GrowthForm
+import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.SeedStorageBehavior
+import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.UploadId
+import com.terraformation.backend.db.UploadNotAwaitingActionException
+import com.terraformation.backend.db.UploadProblemId
+import com.terraformation.backend.db.UploadProblemType
+import com.terraformation.backend.db.UploadStatus
+import com.terraformation.backend.db.UploadType
+import com.terraformation.backend.db.tables.pojos.SpeciesRow
+import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.UPLOADS
+import com.terraformation.backend.db.tables.references.UPLOAD_PROBLEMS
+import com.terraformation.backend.file.FileStore
+import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.UploadService
+import com.terraformation.backend.file.UploadStore
+import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.mockUser
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
+import java.io.ByteArrayInputStream
+import java.net.URI
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.util.UUID
+import org.jobrunr.jobs.JobId
+import org.jobrunr.scheduling.JobScheduler
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+
+internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
+  override val tablesToResetSequences = listOf(SPECIES, UPLOADS, UPLOAD_PROBLEMS)
+  override val user = mockUser()
+
+  private val clock: Clock = mockk()
+  private val fileStore: FileStore = mockk()
+  private val messages = Messages()
+  private val scheduler: JobScheduler = mockk()
+  private val uploadService: UploadService = mockk()
+  private val uploadStore: UploadStore by lazy {
+    UploadStore(dslContext, uploadProblemsDao, uploadsDao)
+  }
+  private val userStore: UserStore = mockk()
+  private val importer: SpeciesImporter by lazy {
+    SpeciesImporter(
+        clock,
+        dslContext,
+        fileStore,
+        messages,
+        scheduler,
+        uploadProblemsDao,
+        uploadsDao,
+        uploadService,
+        uploadStore,
+        userStore)
+  }
+
+  private val header =
+      "Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior"
+
+  private val storageUrl = URI.create("file:///test")
+  private val organizationId = OrganizationId(1)
+  private val uploadId = UploadId(10)
+  private val userId = user.userId
+
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+    insertOrganization(organizationId)
+
+    every { clock.instant() } returns Instant.EPOCH
+    every { user.canCreateSpecies(organizationId) } returns true
+    every { user.canDeleteUpload(uploadId) } returns true
+    every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadUpload(uploadId) } returns true
+    every { user.canUpdateUpload(uploadId) } returns true
+    every { userStore.fetchById(userId) } returns user
+  }
+
+  @Test
+  fun `receiveCsv schedules validate job`() {
+    every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
+    every { uploadService.receive(any(), any(), any(), any(), any()) } returns uploadId
+
+    importer.receiveCsv(ByteArrayInputStream(ByteArray(1)), "test", organizationId)
+
+    verify { scheduler.enqueue<SpeciesImporter>(any()) }
+  }
+
+  @Test
+  fun `getCsvTemplate returns a template that is accepted by validateCsv`() {
+    val template = importer.getCsvTemplate()
+    every { fileStore.read(storageUrl) } returns sizedInputStream(template)
+    every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
+
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        storageUrl = storageUrl,
+        type = UploadType.SpeciesCSV)
+
+    importer.validateCsv(uploadId, user.userId)
+
+    assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll())
+  }
+
+  @Test
+  fun `cancelProcessing throws exception if upload is not awaiting user action`() {
+    insertUpload(uploadId, status = UploadStatus.Processing)
+
+    assertThrows<UploadNotAwaitingActionException> { importer.cancelProcessing(uploadId) }
+  }
+
+  @Test
+  fun `cancelProcessing deletes upload if it is awaiting user action`() {
+    every { uploadService.delete(uploadId) } just Runs
+    insertUpload(uploadId, status = UploadStatus.AwaitingUserAction)
+
+    importer.cancelProcessing(uploadId)
+
+    verify { uploadService.delete(uploadId) }
+  }
+
+  @Test
+  fun `resolveWarnings throws exception if upload is not awaiting user action`() {
+    insertUpload(uploadId, status = UploadStatus.Processing)
+
+    assertThrows<UploadNotAwaitingActionException> { importer.resolveWarnings(uploadId, true) }
+  }
+
+  @Test
+  fun `resolveWarnings schedules import job`() {
+    every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
+    insertUpload(uploadId, status = UploadStatus.AwaitingUserAction)
+
+    importer.resolveWarnings(uploadId, true)
+
+    verify { scheduler.enqueue<SpeciesImporter>(any()) }
+  }
+
+  @Test
+  fun `validateCsv detects existing scientific names`() {
+    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingValidation,
+        storageUrl = storageUrl)
+    insertSpecies(1, "Existing name", organizationId = organizationId)
+
+    importer.validateCsv(uploadId, user.userId)
+
+    val expectedProblems =
+        listOf(
+            UploadProblemsRow(
+                UploadProblemId(1),
+                uploadId,
+                UploadProblemType.DuplicateValue,
+                false,
+                2,
+                "Scientific Name",
+                messages.speciesCsvScientificNameExists(),
+                "Existing name"))
+
+    val actualProblems = uploadProblemsDao.findAll()
+    assertEquals(expectedProblems, actualProblems, "Upload problems")
+    assertStatus(UploadStatus.AwaitingUserAction)
+  }
+
+  @Test
+  fun `validateCsv does not treat deleted species as name collisions`() {
+    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,")
+    every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingValidation,
+        storageUrl = storageUrl)
+    insertSpecies(1, "Existing name", deletedTime = Instant.EPOCH, organizationId = organizationId)
+
+    importer.validateCsv(uploadId, userId)
+
+    assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Upload problems")
+    assertStatus(UploadStatus.AwaitingProcessing)
+  }
+
+  @Test
+  fun `validateCsv sets upload status to Invalid if there are validation errors`() {
+    every { fileStore.read(storageUrl) } returns sizedInputStream("bogus")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingValidation,
+        storageUrl = storageUrl)
+
+    importer.validateCsv(uploadId, userId)
+
+    val expectedProblems =
+        listOf(
+            UploadProblemsRow(
+                UploadProblemId(1),
+                uploadId,
+                UploadProblemType.MalformedValue,
+                true,
+                1,
+                null,
+                messages.speciesCsvBadHeader()))
+
+    val actualProblems = uploadProblemsDao.findAll()
+    assertEquals(expectedProblems, actualProblems, "Upload problems")
+    assertStatus(UploadStatus.Invalid)
+  }
+
+  @Test
+  fun `validateCsv schedules import if there are no validation errors`() {
+    every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nNew name,,,,,,")
+    every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingValidation,
+        storageUrl = storageUrl)
+
+    importer.validateCsv(uploadId, userId)
+
+    assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Upload problems")
+    assertStatus(UploadStatus.AwaitingProcessing)
+    verify { scheduler.enqueue<SpeciesImporter>(any()) }
+  }
+
+  @Test
+  fun `importCsv creates new species`() {
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    insertSpecies(2, "Existing name", organizationId = organizationId)
+
+    importer.importCsv(uploadId, userId, true)
+
+    val expected =
+        setOf(
+            SpeciesRow(
+                id = SpeciesId(1),
+                organizationId = organizationId,
+                scientificName = "New name",
+                commonName = "Common",
+                familyName = "Family",
+                endangered = true,
+                rare = false,
+                growthFormId = GrowthForm.Shrub,
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = Instant.EPOCH),
+            SpeciesRow(
+                id = SpeciesId(2),
+                organizationId = organizationId,
+                scientificName = "Existing name",
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = Instant.EPOCH),
+        )
+
+    val actual = speciesDao.findAll().toSet()
+    assertEquals(expected, actual)
+    assertStatus(UploadStatus.Completed)
+  }
+
+  @Test
+  fun `importCsv throws exception if upload is not awaiting processing`() {
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingValidation,
+        storageUrl = storageUrl)
+
+    assertThrows<IllegalStateException> { importer.importCsv(uploadId, userId, true) }
+  }
+
+  @Test
+  fun `importCsv updates existing species if overwrite flag is set`() {
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    insertSpecies(2, "Existing name", organizationId = organizationId)
+
+    val now = clock.instant() + Duration.ofDays(1)
+    every { clock.instant() } returns now
+
+    importer.importCsv(uploadId, userId, true)
+
+    val expected =
+        listOf(
+            SpeciesRow(
+                id = SpeciesId(2),
+                organizationId = organizationId,
+                scientificName = "Existing name",
+                commonName = "Common",
+                familyName = "Family",
+                endangered = true,
+                rare = false,
+                growthFormId = GrowthForm.Shrub,
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = now))
+
+    val actual = speciesDao.findAll()
+    assertEquals(expected, actual)
+    assertStatus(UploadStatus.Completed)
+  }
+
+  @Test
+  fun `importCsv leaves existing species alone if overwrite flag is not set`() {
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    insertSpecies(2, "Existing name", organizationId = organizationId)
+
+    every { clock.instant() } returns Instant.EPOCH + Duration.ofDays(1)
+
+    val expected = speciesDao.findAll()
+
+    importer.importCsv(uploadId, userId, false)
+
+    val actual = speciesDao.findAll()
+    assertEquals(expected, actual)
+    assertStatus(UploadStatus.Completed)
+  }
+
+  @Test
+  fun `importCsv updates existing deleted species even if overwrite flag is not set`() {
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    insertSpecies(2, "Existing name", organizationId = organizationId, deletedTime = Instant.EPOCH)
+
+    val now = clock.instant() + Duration.ofDays(1)
+    every { clock.instant() } returns now
+
+    importer.importCsv(uploadId, userId, false)
+
+    val expected =
+        listOf(
+            SpeciesRow(
+                id = SpeciesId(2),
+                organizationId = organizationId,
+                scientificName = "Existing name",
+                commonName = "Common",
+                familyName = "Family",
+                endangered = true,
+                rare = false,
+                growthFormId = GrowthForm.Shrub,
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = now))
+
+    val actual = speciesDao.findAll()
+    assertEquals(expected, actual)
+    assertStatus(UploadStatus.Completed)
+  }
+
+  @Test
+  fun `importCsv rolls back changes and sets upload to failed if an error occurs`() {
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nNew name,Common,Family,true,false,Shrub,Recalcitrant")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    // Species ID will collide with the autogenerated primary key
+    insertSpecies(1, "Existing name", organizationId = organizationId)
+
+    val expected = speciesDao.findAll()
+
+    importer.importCsv(uploadId, userId, true)
+
+    val actual = speciesDao.findAll()
+    assertEquals(expected, actual)
+    assertStatus(UploadStatus.ProcessingFailed)
+  }
+
+  private fun assertStatus(expectedStatus: UploadStatus, id: UploadId = uploadId) {
+    val actualStatus =
+        dslContext
+            .select(UPLOADS.STATUS_ID)
+            .from(UPLOADS)
+            .where(UPLOADS.ID.eq(id))
+            .fetchOne(UPLOADS.STATUS_ID)
+    assertEquals(expectedStatus, actualStatus, "Upload status")
+  }
+
+  private fun sizedInputStream(content: String) =
+      SizedInputStream(content.byteInputStream(), content.length.toLong())
+}

@@ -22,6 +22,17 @@ abstract class DuplicateEntityException(message: String) : RuntimeException(mess
     get() = super.message!!
 }
 
+/**
+ * Thrown when the system detects that something is in the wrong state to perform an operation that
+ * would otherwise be allowed.
+ *
+ * Subclasses of this are mapped to HTTP 409 Conflict if they are thrown by a controller method.
+ */
+abstract class MismatchedStateException(message: String) : RuntimeException(message) {
+  override val message: String
+    get() = super.message!!
+}
+
 class AccessionNotFoundException(val accessionId: AccessionId) :
     EntityNotFoundException("Accession $accessionId not found")
 
@@ -86,6 +97,9 @@ class TimeseriesNotFoundException(
 ) : EntityNotFoundException(message) {
   constructor(deviceId: DeviceId) : this(deviceId, null, "Timeseries not found on device $deviceId")
 }
+
+class UploadNotAwaitingActionException(val uploadId: UploadId) :
+    MismatchedStateException("Upload $uploadId is not awaiting user action")
 
 class UploadNotFoundException(val uploadId: UploadId) :
     EntityNotFoundException("Upload $uploadId not found")

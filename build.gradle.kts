@@ -113,7 +113,7 @@ dependencies {
 
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.1.1")
 
-  testImplementation("io.mockk:mockk:1.12.3")
+  testImplementation("io.mockk:mockk:1.12.4")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
@@ -128,8 +128,7 @@ dependencies {
 
 tasks.register("downloadDependencies") {
   fun ConfigurationContainer.resolveAll() =
-      this
-          .filter {
+      this.filter {
             it.isCanBeResolved &&
                 (it !is DeprecatableConfiguration || it.resolutionAlternatives == null) &&
                 !it.name.contains("Metadata")
@@ -194,8 +193,8 @@ val generatePostgresDockerConfig by
 // lets us run a single command per Gradle task. Register a separate task for each MJML file.
 
 val processMjmlTasks =
-    project.files(
-            fileTree("$projectDir/src/main/resources/templates/email") { include("*/*.mjml") })
+    project
+        .files(fileTree("$projectDir/src/main/resources/templates/email") { include("*/*.mjml") })
         .mapIndexed { index, mjmlFile ->
           tasks.register<YarnTask>("compileMjml$index") {
             // The upper levels of directory structure are a little different in the src and build
@@ -207,8 +206,9 @@ val processMjmlTasks =
                 buildDir
                     .resolve("resources/main")
                     .resolve(
-                        mjmlFile.withReplacedExtensionOrNull(".mjml", "")!!.relativeTo(
-                            File("$projectDir/src/main/resources")))
+                        mjmlFile
+                            .withReplacedExtensionOrNull(".mjml", "")!!.relativeTo(
+                                File("$projectDir/src/main/resources")))
 
             // Stop these tasks from appearing in "./gradlew tasks" output.
             group = ""
@@ -316,11 +316,11 @@ tasks.getByName<BootJar>("bootJar") {
 
 spotless {
   kotlin {
-    ktfmt("0.31")
+    ktfmt("0.37")
     targetExclude("build/**")
   }
   kotlinGradle {
-    ktfmt("0.31")
+    ktfmt("0.37")
     target("*.gradle.kts", "buildSrc/*.gradle.kts")
   }
 }

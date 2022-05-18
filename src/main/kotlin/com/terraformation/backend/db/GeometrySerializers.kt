@@ -91,11 +91,13 @@ abstract class BaseGeometrySerializer<T : Geometry>(
   }
 
   protected fun JsonGenerator.writePolygonRings(polygon: Polygon) {
-    0.until(polygon.numRings()).map { polygon.getRing(it) }.forEach { ring ->
-      writeStartArray()
-      writePoints(ring.points)
-      writeEndArray()
-    }
+    0.until(polygon.numRings())
+        .map { polygon.getRing(it) }
+        .forEach { ring ->
+          writeStartArray()
+          writePoints(ring.points)
+          writeEndArray()
+        }
   }
 
   /**

@@ -23,9 +23,7 @@ class OrganizationUsersTable(tables: SearchTables, fuzzySearchOperators: FuzzySe
               "organization", ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           projectUsers.asMultiValueSublist(
               "projectMemberships",
-              ORGANIZATION_USERS
-                  .USER_ID
-                  .eq(PROJECT_USERS.USER_ID)
+              ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID)
                   .and(
                       ORGANIZATION_USERS.ORGANIZATION_ID.eq(
                           PROJECT_USERS.projects().ORGANIZATION_ID))),

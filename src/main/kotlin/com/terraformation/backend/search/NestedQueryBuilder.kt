@@ -855,9 +855,10 @@ class NestedQueryBuilder(
       // Fall back on the default sort order for each table to ensure stable ordering of query
       // results if the user doesn't specify precise sort criteria.
       val defaultSortFields =
-          scalarFields.values.map { it.table }.distinct().flatMap { table ->
-            table.defaultOrderFields
-          }
+          scalarFields.values
+              .map { it.table }
+              .distinct()
+              .flatMap { table -> table.defaultOrderFields }
 
       orderByFields + defaultSortFields
     } else {

@@ -473,19 +473,23 @@ class UserStore(
 
       return tokenResponsePayload.refresh_token
     } finally {
-      user.credentials().filter { it.type == "password" }.forEach { credential ->
-        try {
-          user.removeCredential(credential.id)
-        } catch (e: Exception) {
-          log.error(
-              "Failed to remove temporary password from API client user $userId " +
-                  "(${user.toRepresentation().id}) after generating token",
-              e)
+      user
+          .credentials()
+          .filter { it.type == "password" }
+          .forEach { credential ->
+            try {
+              user.removeCredential(credential.id)
+            } catch (e: Exception) {
+              log.error(
+                  "Failed to remove temporary password from API client user $userId " +
+                      "(${user.toRepresentation().id}) after generating token",
+                  e)
 
-          // But return the token anyway; it should be usable and a long random password sticking
-          // around afterwards should be harmless.
-        }
-      }
+              // But return the token anyway; it should be usable and a long random password
+              // sticking
+              // around afterwards should be harmless.
+            }
+          }
     }
   }
 
