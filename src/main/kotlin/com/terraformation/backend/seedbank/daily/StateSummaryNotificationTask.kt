@@ -53,12 +53,15 @@ class StateSummaryNotificationTask(
     val zonedSince = ZonedDateTime.ofInstant(since, clock.zone)
 
     dslContext.transaction { _ ->
-      facilitiesDao.findAll().mapNotNull { it.id }.forEach { facilityId ->
-        pending(facilityId, zonedSince)
-        processed(facilityId, 2, zonedSince)
-        processed(facilityId, 4, zonedSince)
-        dried(facilityId, zonedSince)
-      }
+      facilitiesDao
+          .findAll()
+          .mapNotNull { it.id }
+          .forEach { facilityId ->
+            pending(facilityId, zonedSince)
+            processed(facilityId, 2, zonedSince)
+            processed(facilityId, 4, zonedSince)
+            dried(facilityId, zonedSince)
+          }
     }
 
     eventPublisher.publishEvent(PeriodProcessedEvent())
