@@ -33,7 +33,7 @@ class DeviceController(
   @ApiResponse(responseCode = "200", description = "Successfully listed the facility's devices.")
   @ApiResponse404(
       description = "The facility does not exist or is not accessible by the current user.")
-  @GetMapping("/api/v1/facility/{facilityId}/devices")
+  @GetMapping("/api/v1/facility/{facilityId}/devices", "/api/v1/facilities/{facilityId}/devices")
   @Operation(summary = "Lists the configurations of all the devices at a facility.")
   fun listFacilityDevices(@PathVariable facilityId: FacilityId): ListDeviceConfigsResponse {
     val devices = deviceStore.fetchByFacilityId(facilityId)
