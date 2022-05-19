@@ -19,6 +19,9 @@
     <label for="name">Name</label>
     <input type="text" name="name" id="name" required th:value="${facility.name}"/>
     <br/>
+    <label for="description">Description</label>
+    <input type="text" name="description" id="description" th:value="${facility.description}"/>
+    <br/>
     <label for="type">Type</label>
     <select name="type" id="type">
         <option th:each="type : ${facilityTypes}"

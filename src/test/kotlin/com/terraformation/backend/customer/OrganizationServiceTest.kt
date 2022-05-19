@@ -163,6 +163,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                                         listOf(
                                             FacilityModel(
                                                 createdTime = clock.instant(),
+                                                description = null,
                                                 id = FacilityId(1),
                                                 lastTimeseriesTime = null,
                                                 maxIdleMinutes = 30,

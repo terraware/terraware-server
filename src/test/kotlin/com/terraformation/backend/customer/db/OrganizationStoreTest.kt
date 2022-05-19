@@ -65,6 +65,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   private val facilityModel =
       FacilityModel(
           createdTime = Instant.EPOCH,
+          description = "Description $facilityId",
           id = facilityId,
           lastTimeseriesTime = null,
           maxIdleMinutes = 30,

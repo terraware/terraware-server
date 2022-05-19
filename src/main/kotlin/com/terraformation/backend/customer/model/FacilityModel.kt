@@ -10,6 +10,7 @@ import org.jooq.Record
 
 data class FacilityModel(
     val createdTime: Instant,
+    val description: String?,
     val id: FacilityId,
     val modifiedTime: Instant,
     val name: String,
@@ -22,6 +23,7 @@ data class FacilityModel(
       record: Record
   ) : this(
       record[FACILITIES.CREATED_TIME] ?: throw IllegalArgumentException("Created time is required"),
+      record[FACILITIES.DESCRIPTION],
       record[FACILITIES.ID] ?: throw IllegalArgumentException("ID is required"),
       record[FACILITIES.MODIFIED_TIME]
           ?: throw IllegalArgumentException("Modified time is required"),
@@ -36,6 +38,7 @@ data class FacilityModel(
 fun FacilitiesRow.toModel(): FacilityModel {
   return FacilityModel(
       createdTime ?: throw IllegalArgumentException("Created time is required"),
+      description,
       id ?: throw IllegalArgumentException("ID is required"),
       modifiedTime ?: throw IllegalArgumentException("Modified time is required"),
       name ?: throw IllegalArgumentException("Name is required"),

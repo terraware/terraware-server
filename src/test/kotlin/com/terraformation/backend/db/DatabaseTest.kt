@@ -308,6 +308,7 @@ abstract class DatabaseTest {
       id: Any,
       siteId: Any = "$id".toLong() / 10,
       name: String = "Facility $id",
+      description: String? = "Description $id",
       createdBy: UserId = currentUser().userId,
       type: FacilityType = FacilityType.SeedBank,
       maxIdleMinutes: Int = 30,
@@ -320,6 +321,7 @@ abstract class DatabaseTest {
           .insertInto(FACILITIES)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
+          .set(DESCRIPTION, description)
           .set(ID, id.toIdWrapper { FacilityId(it) })
           .set(IDLE_AFTER_TIME, idleAfterTime)
           .set(IDLE_SINCE_TIME, idleSinceTime)

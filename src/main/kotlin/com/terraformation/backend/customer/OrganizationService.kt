@@ -83,7 +83,7 @@ class OrganizationService(
         val projectModel =
             projectStore.create(orgModel.id, name, hidden = true, organizationWide = true)
         val siteModel = siteStore.create(SitesRow(projectId = projectModel.id, name = name))
-        val facilityModel = facilityStore.create(siteModel.id, name, FacilityType.SeedBank)
+        val facilityModel = facilityStore.create(siteModel.id, FacilityType.SeedBank, name)
 
         (1..3).forEach { num ->
           facilityStore.createStorageLocation(
