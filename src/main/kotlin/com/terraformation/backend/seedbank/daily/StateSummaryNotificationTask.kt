@@ -10,25 +10,32 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
+import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
+import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
+import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import com.terraformation.backend.time.atMostRecent
 import java.time.Clock
 import java.time.Instant
 import java.time.ZonedDateTime
 import javax.annotation.ManagedBean
+import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 /** Generates summary notifications about accessions that are overdue for action. */
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class StateSummaryNotificationTask(
+    private val accessionNotificationStore: AccessionNotificationStore,
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val dailyTaskRunner: DailyTaskRunner,
+    private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
     private val messages: Messages,
-    private val accessionNotificationStore: AccessionNotificationStore,
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -42,18 +49,23 @@ class StateSummaryNotificationTask(
 
   override fun processPeriod(since: Instant, until: Instant) {
     log.info("Generating state update notifications")
+    eventPublisher.publishEvent(StartedEvent())
 
     val zonedSince = ZonedDateTime.ofInstant(since, clock.zone)
 
-    facilitiesDao
-        .findAll()
-        .mapNotNull { it.id }
-        .forEach { facilityId ->
-          pending(facilityId, zonedSince)
-          processed(facilityId, 2, zonedSince)
-          processed(facilityId, 4, zonedSince)
-          dried(facilityId, zonedSince)
-        }
+    dslContext.transaction { _ ->
+      facilitiesDao
+          .findAll()
+          .mapNotNull { it.id }
+          .forEach { facilityId ->
+            pending(facilityId, zonedSince)
+            processed(facilityId, 2, zonedSince)
+            processed(facilityId, 4, zonedSince)
+            dried(facilityId, zonedSince)
+          }
+    }
+
+    eventPublisher.publishEvent(SucceededEvent())
   }
 
   private fun pending(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
@@ -131,19 +143,40 @@ class StateSummaryNotificationTask(
             state,
             sinceAfter = endOfAlreadyCoveredPeriod,
             sinceBefore = stateChangedBefore)
-
     if (newCount > 0) {
       val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
 
       val message = getMessage(count)
       log.info("Generated notification for facility $facilityId: $message")
       accessionNotificationStore.insertStateNotification(facilityId, state, message)
+      when (state) {
+        AccessionState.Pending ->
+            eventPublisher.publishEvent(AccessionsAwaitingProcessingEvent(facilityId, count, state))
+        AccessionState.Processed -> {
+          if (weeks == 2) {
+            eventPublisher.publishEvent(
+                AccessionsReadyForTestingEvent(facilityId, count, weeks, state))
+          }
+        }
+        AccessionState.Dried ->
+            eventPublisher.publishEvent(AccessionsFinishedDryingEvent(facilityId, count, state))
+        else -> log.warn("Unsupported state $state for notification events.")
+      }
     }
   }
 
+  /** Published when the period processed task begins */
+  class StartedEvent
+
+  /**
+   * Published when the period processed task ends successfully, this event will not be published if
+   * there are errors
+   */
+  class SucceededEvent
+
   /**
    * Published when the system has finished generating notifications with summaries of accession
-   * states.
+   * states regardless of error state.
    */
   class FinishedEvent
 }

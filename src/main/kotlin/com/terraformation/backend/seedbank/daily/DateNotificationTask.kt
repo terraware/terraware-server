@@ -42,6 +42,7 @@ class DateNotificationTask(
 
   override fun processPeriod(since: Instant, until: Instant) {
     log.info("Generating date update notifications for due dates since $since")
+    eventPublisher.publishEvent(StartedEvent())
 
     dslContext.transaction { _ ->
       moveToDryingCabinet(since, until)
@@ -49,50 +50,35 @@ class DateNotificationTask(
       germinationTest(since, until)
       withdraw(since, until)
     }
+
+    eventPublisher.publishEvent(SucceededEvent())
   }
 
   private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchDryingMoveDue(after, until).forEach { (number, id) ->
       insert(id, messages.dryingMoveDateNotification(number))
-      try {
-        eventPublisher.publishEvent(AccessionMoveToDryEvent(number, id))
-      } catch (e: Exception) {
-        log.error("Error handling AccessionMoveToDryEvent for accession $id", e)
-      }
+      eventPublisher.publishEvent(AccessionMoveToDryEvent(number, id))
     }
   }
 
   private fun endDrying(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchDryingEndDue(after, until).forEach { (number, id) ->
-      try {
-        eventPublisher.publishEvent(AccessionDryingEndEvent(number, id))
-      } catch (e: Exception) {
-        log.error("Error handling AccessionDryingEndEvent for accession $id", e)
-      }
+      eventPublisher.publishEvent(AccessionDryingEndEvent(number, id))
     }
   }
 
   private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
       insert(test.accessionId!!, messages.germinationTestDateNotification(number, test.testType!!))
-      try {
-        eventPublisher.publishEvent(
-            AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
-      } catch (e: Exception) {
-        log.error(
-            "Error handling AccessionGerminationTestEvent for accession ${test.accessionId}", e)
-      }
+      eventPublisher.publishEvent(
+          AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
     }
   }
 
   private fun withdraw(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchWithdrawalDue(after, until).forEach { (number, id) ->
       insert(id, messages.withdrawalDateNotification(number))
-      try {
-        eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
-      } catch (e: Exception) {
-        log.error("Error handling AccessionWithdrawalEvent for accession $id", e)
-      }
+      eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
     }
   }
 
@@ -101,5 +87,18 @@ class DateNotificationTask(
     accessionNotificationStore.insertDateNotification(accessionId, message)
   }
 
+  /** Published when the period processed task begins */
+  class StartedEvent
+
+  /**
+   * Published when the period processed task ends successfully, this event will not be published if
+   * there are errors
+   */
+  class SucceededEvent
+
+  /**
+   * Published when the system has finished generating notifications for individual accessions
+   * regardless of error state.
+   */
   class FinishedEvent
 }
