@@ -669,7 +669,7 @@
 <!-- facilities -->
 <g id="node12" class="node"><title>facilities</title>
 <g id="a_node12"><a xlink:href="../../tables/facilities.html" xlink:title="facilities" target="_top">
-<polygon fill="#ffffff" stroke="none" points="585.5,-1791.62 585.5,-2161.62 728.5,-2161.62 728.5,-1791.62 585.5,-1791.62"/>
+<polygon fill="#ffffff" stroke="none" points="585.5,-1835.62 585.5,-2161.62 728.5,-2161.62 728.5,-1835.62 585.5,-1835.62"/>
 <polygon fill="#f5f5f5" stroke="none" points="586,-2139.62 586,-2161.62 729,-2161.62 729,-2139.62 586,-2139.62"/>
 <polygon fill="none" stroke="black" points="586,-2139.62 586,-2161.62 729,-2161.62 729,-2139.62 586,-2139.62"/>
 <text text-anchor="start" x="591" y="-2148.82" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">facilities</text>
@@ -685,37 +685,33 @@
 <polygon fill="none" stroke="black" points="586,-2051.62 586,-2073.62 729,-2073.62 729,-2051.62 586,-2051.62"/>
 <text text-anchor="start" x="606" y="-2059.82" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="586,-2029.62 586,-2051.62 729,-2051.62 729,-2029.62 586,-2029.62"/>
-<text text-anchor="start" x="606" y="-2037.82" font-family="Helvetica,sans-Serif" font-size="11.00">latitude</text>
+<text text-anchor="start" x="606" y="-2037.82" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="586,-2007.62 586,-2029.62 729,-2029.62 729,-2007.62 586,-2007.62"/>
-<text text-anchor="start" x="606" y="-2015.82" font-family="Helvetica,sans-Serif" font-size="11.00">longitude</text>
+<text text-anchor="start" x="606" y="-2015.82" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="586,-1985.62 586,-2007.62 729,-2007.62 729,-1985.62 586,-1985.62"/>
-<text text-anchor="start" x="606" y="-1993.82" font-family="Helvetica,sans-Serif" font-size="11.00">enabled</text>
+<text text-anchor="start" x="606" y="-1993.82" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="586,-1963.62 586,-1985.62 729,-1985.62 729,-1963.62 586,-1963.62"/>
-<text text-anchor="start" x="606" y="-1971.82" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="606" y="-1971.82" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="586,-1941.62 586,-1963.62 729,-1963.62 729,-1941.62 586,-1941.62"/>
-<text text-anchor="start" x="606" y="-1949.82" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="606" y="-1949.82" font-family="Helvetica,sans-Serif" font-size="11.00">max_idle_minutes</text>
 <polygon fill="none" stroke="black" points="586,-1919.62 586,-1941.62 729,-1941.62 729,-1919.62 586,-1919.62"/>
-<text text-anchor="start" x="606" y="-1927.82" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="606" y="-1927.82" font-family="Helvetica,sans-Serif" font-size="11.00">last_timeseries_time</text>
+<polygon fill="#ffffff" stroke="none" points="586,-1897.62 586,-1919.62 729,-1919.62 729,-1897.62 586,-1897.62"/>
 <polygon fill="none" stroke="black" points="586,-1897.62 586,-1919.62 729,-1919.62 729,-1897.62 586,-1897.62"/>
-<text text-anchor="start" x="606" y="-1905.82" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="606" y="-1905.82" font-family="Helvetica,sans-Serif" font-size="11.00">idle_after_time</text>
 <polygon fill="none" stroke="black" points="586,-1875.62 586,-1897.62 729,-1897.62 729,-1875.62 586,-1875.62"/>
-<text text-anchor="start" x="606" y="-1883.82" font-family="Helvetica,sans-Serif" font-size="11.00">max_idle_minutes</text>
+<text text-anchor="start" x="606" y="-1883.82" font-family="Helvetica,sans-Serif" font-size="11.00">idle_since_time</text>
 <polygon fill="none" stroke="black" points="586,-1853.62 586,-1875.62 729,-1875.62 729,-1853.62 586,-1853.62"/>
-<text text-anchor="start" x="606" y="-1861.82" font-family="Helvetica,sans-Serif" font-size="11.00">last_timeseries_time</text>
-<polygon fill="#ffffff" stroke="none" points="586,-1831.62 586,-1853.62 729,-1853.62 729,-1831.62 586,-1831.62"/>
-<polygon fill="none" stroke="black" points="586,-1831.62 586,-1853.62 729,-1853.62 729,-1831.62 586,-1831.62"/>
-<text text-anchor="start" x="606" y="-1839.82" font-family="Helvetica,sans-Serif" font-size="11.00">idle_after_time</text>
-<polygon fill="none" stroke="black" points="586,-1809.62 586,-1831.62 729,-1831.62 729,-1809.62 586,-1809.62"/>
-<text text-anchor="start" x="606" y="-1817.82" font-family="Helvetica,sans-Serif" font-size="11.00">idle_since_time</text>
-<polygon fill="#ffffff" stroke="none" points="586,-1791.62 586,-1809.62 636,-1809.62 636,-1791.62 586,-1791.62"/>
-<polygon fill="none" stroke="black" points="586,-1791.62 586,-1809.62 636,-1809.62 636,-1791.62 586,-1791.62"/>
-<text text-anchor="start" x="589" y="-1797.82" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="636,-1791.62 636,-1809.62 692,-1809.62 692,-1791.62 636,-1791.62"/>
-<polygon fill="none" stroke="black" points="636,-1791.62 636,-1809.62 692,-1809.62 692,-1791.62 636,-1791.62"/>
-<text text-anchor="start" x="653" y="-1797.82" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="692,-1791.62 692,-1809.62 729,-1809.62 729,-1791.62 692,-1791.62"/>
-<polygon fill="none" stroke="black" points="692,-1791.62 692,-1809.62 729,-1809.62 729,-1791.62 692,-1791.62"/>
-<text text-anchor="start" x="709" y="-1797.82" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
+<text text-anchor="start" x="606" y="-1861.82" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
+<polygon fill="#ffffff" stroke="none" points="586,-1835.62 586,-1853.62 636,-1853.62 636,-1835.62 586,-1835.62"/>
+<polygon fill="none" stroke="black" points="586,-1835.62 586,-1853.62 636,-1853.62 636,-1835.62 586,-1835.62"/>
+<text text-anchor="start" x="589" y="-1841.82" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="636,-1835.62 636,-1853.62 692,-1853.62 692,-1835.62 636,-1835.62"/>
+<polygon fill="none" stroke="black" points="636,-1835.62 636,-1853.62 692,-1853.62 692,-1835.62 636,-1835.62"/>
+<text text-anchor="start" x="653" y="-1841.82" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="692,-1835.62 692,-1853.62 729,-1853.62 729,-1835.62 692,-1835.62"/>
+<polygon fill="none" stroke="black" points="692,-1835.62 692,-1853.62 729,-1853.62 729,-1835.62 692,-1835.62"/>
+<text text-anchor="start" x="709" y="-1841.82" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>
 </g>
