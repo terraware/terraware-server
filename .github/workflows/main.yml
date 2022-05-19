@@ -62,10 +62,6 @@ jobs:
     - name: Generate OpenAPI docs to test that server can start up
       run: ./gradlew generateOpenApiDocs
 
-    - name: Verify that OpenAPI docs are up to date in repo
-      # This will exit with code 1 if the file is modified.
-      run: git diff --exit-code openapi.yaml
-
     - name: Compile tests
       run: ./gradlew testClasses
 
