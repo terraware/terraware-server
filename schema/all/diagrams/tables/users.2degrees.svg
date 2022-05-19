@@ -1416,14 +1416,14 @@
 <text text-anchor="start" x="637" y="-2204.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="525,-2178 525,-2196 676,-2196 676,-2178 525,-2178"/>
 <text text-anchor="start" x="528" y="-2184.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="525,-2160 525,-2178 579,-2178 579,-2160 525,-2160"/>
-<polygon fill="none" stroke="black" points="525,-2160 525,-2178 579,-2178 579,-2160 525,-2160"/>
+<polygon fill="#ffffff" stroke="none" points="525,-2160 525,-2178 576,-2178 576,-2160 525,-2160"/>
+<polygon fill="none" stroke="black" points="525,-2160 525,-2178 576,-2178 576,-2160 525,-2160"/>
 <text text-anchor="start" x="528" y="-2166.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="579,-2160 579,-2178 637,-2178 637,-2160 579,-2160"/>
-<polygon fill="none" stroke="black" points="579,-2160 579,-2178 637,-2178 637,-2160 579,-2160"/>
-<text text-anchor="start" x="598" y="-2166.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="637,-2160 637,-2178 676,-2178 676,-2160 637,-2160"/>
-<polygon fill="none" stroke="black" points="637,-2160 637,-2178 676,-2178 676,-2160 637,-2160"/>
+<polygon fill="#ffffff" stroke="none" points="576,-2160 576,-2178 639,-2178 639,-2160 576,-2160"/>
+<polygon fill="none" stroke="black" points="576,-2160 576,-2178 639,-2178 639,-2160 576,-2160"/>
+<text text-anchor="start" x="593" y="-2166.2" font-family="Helvetica,sans-Serif" font-size="11.00">11 rows</text>
+<polygon fill="#ffffff" stroke="none" points="639,-2160 639,-2178 676,-2178 676,-2160 639,-2160"/>
+<polygon fill="none" stroke="black" points="639,-2160 639,-2178 676,-2178 676,-2160 639,-2160"/>
 <text text-anchor="start" x="656" y="-2166.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

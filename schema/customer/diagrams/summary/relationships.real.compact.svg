@@ -268,14 +268,14 @@
 <text text-anchor="start" x="426" y="-1315.2" font-family="Helvetica,sans-Serif" font-size="11.00">notification_criticality_id</text>
 <polygon fill="none" stroke="black" points="406,-1289 406,-1307 575,-1307 575,-1289 406,-1289"/>
 <text text-anchor="start" x="409" y="-1295.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="406,-1271 406,-1289 469,-1289 469,-1271 406,-1271"/>
-<polygon fill="none" stroke="black" points="406,-1271 406,-1289 469,-1289 469,-1271 406,-1271"/>
+<polygon fill="#ffffff" stroke="none" points="406,-1271 406,-1289 466,-1289 466,-1271 406,-1271"/>
+<polygon fill="none" stroke="black" points="406,-1271 406,-1289 466,-1289 466,-1271 406,-1271"/>
 <text text-anchor="start" x="409" y="-1277.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="469,-1271 469,-1289 531,-1289 531,-1271 469,-1271"/>
-<polygon fill="none" stroke="black" points="469,-1271 469,-1289 531,-1289 531,-1271 469,-1271"/>
-<text text-anchor="start" x="492" y="-1277.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="531,-1271 531,-1289 575,-1289 575,-1271 531,-1271"/>
-<polygon fill="none" stroke="black" points="531,-1271 531,-1289 575,-1289 575,-1271 531,-1271"/>
+<polygon fill="#ffffff" stroke="none" points="466,-1271 466,-1289 533,-1289 533,-1271 466,-1271"/>
+<polygon fill="none" stroke="black" points="466,-1271 466,-1289 533,-1289 533,-1271 466,-1271"/>
+<text text-anchor="start" x="487" y="-1277.2" font-family="Helvetica,sans-Serif" font-size="11.00">11 rows</text>
+<polygon fill="#ffffff" stroke="none" points="533,-1271 533,-1289 575,-1289 575,-1271 533,-1271"/>
+<polygon fill="none" stroke="black" points="533,-1271 533,-1289 575,-1289 575,-1271 533,-1271"/>
 <text text-anchor="start" x="555" y="-1277.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

@@ -495,14 +495,14 @@
 <text text-anchor="start" x="426" y="-909.545" font-family="Helvetica,sans-Serif" font-size="11.00">notification_criticality_id</text>
 <polygon fill="none" stroke="black" points="406,-883.345 406,-901.345 575,-901.345 575,-883.345 406,-883.345"/>
 <text text-anchor="start" x="409" y="-889.545" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="406,-865.345 406,-883.345 469,-883.345 469,-865.345 406,-865.345"/>
-<polygon fill="none" stroke="black" points="406,-865.345 406,-883.345 469,-883.345 469,-865.345 406,-865.345"/>
+<polygon fill="#ffffff" stroke="none" points="406,-865.345 406,-883.345 466,-883.345 466,-865.345 406,-865.345"/>
+<polygon fill="none" stroke="black" points="406,-865.345 406,-883.345 466,-883.345 466,-865.345 406,-865.345"/>
 <text text-anchor="start" x="409" y="-871.545" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="469,-865.345 469,-883.345 531,-883.345 531,-865.345 469,-865.345"/>
-<polygon fill="none" stroke="black" points="469,-865.345 469,-883.345 531,-883.345 531,-865.345 469,-865.345"/>
-<text text-anchor="start" x="492" y="-871.545" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="531,-865.345 531,-883.345 575,-883.345 575,-865.345 531,-865.345"/>
-<polygon fill="none" stroke="black" points="531,-865.345 531,-883.345 575,-883.345 575,-865.345 531,-865.345"/>
+<polygon fill="#ffffff" stroke="none" points="466,-865.345 466,-883.345 533,-883.345 533,-865.345 466,-865.345"/>
+<polygon fill="none" stroke="black" points="466,-865.345 466,-883.345 533,-883.345 533,-865.345 466,-865.345"/>
+<text text-anchor="start" x="487" y="-871.545" font-family="Helvetica,sans-Serif" font-size="11.00">11 rows</text>
+<polygon fill="#ffffff" stroke="none" points="533,-865.345 533,-883.345 575,-883.345 575,-865.345 533,-865.345"/>
+<polygon fill="none" stroke="black" points="533,-865.345 533,-883.345 575,-883.345 575,-865.345 533,-865.345"/>
 <text text-anchor="start" x="555" y="-871.545" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

@@ -385,14 +385,14 @@
 <text text-anchor="start" x="633" y="-1131.81" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="521,-1105.61 521,-1123.61 672,-1123.61 672,-1105.61 521,-1105.61"/>
 <text text-anchor="start" x="524" y="-1111.81" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="521,-1087.61 521,-1105.61 575,-1105.61 575,-1087.61 521,-1087.61"/>
-<polygon fill="none" stroke="black" points="521,-1087.61 521,-1105.61 575,-1105.61 575,-1087.61 521,-1087.61"/>
+<polygon fill="#ffffff" stroke="none" points="521,-1087.61 521,-1105.61 572,-1105.61 572,-1087.61 521,-1087.61"/>
+<polygon fill="none" stroke="black" points="521,-1087.61 521,-1105.61 572,-1105.61 572,-1087.61 521,-1087.61"/>
 <text text-anchor="start" x="524" y="-1093.81" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="575,-1087.61 575,-1105.61 633,-1105.61 633,-1087.61 575,-1087.61"/>
-<polygon fill="none" stroke="black" points="575,-1087.61 575,-1105.61 633,-1105.61 633,-1087.61 575,-1087.61"/>
-<text text-anchor="start" x="594" y="-1093.81" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="633,-1087.61 633,-1105.61 672,-1105.61 672,-1087.61 633,-1087.61"/>
-<polygon fill="none" stroke="black" points="633,-1087.61 633,-1105.61 672,-1105.61 672,-1087.61 633,-1087.61"/>
+<polygon fill="#ffffff" stroke="none" points="572,-1087.61 572,-1105.61 635,-1105.61 635,-1087.61 572,-1087.61"/>
+<polygon fill="none" stroke="black" points="572,-1087.61 572,-1105.61 635,-1105.61 635,-1087.61 572,-1087.61"/>
+<text text-anchor="start" x="589" y="-1093.81" font-family="Helvetica,sans-Serif" font-size="11.00">11 rows</text>
+<polygon fill="#ffffff" stroke="none" points="635,-1087.61 635,-1105.61 672,-1105.61 672,-1087.61 635,-1087.61"/>
+<polygon fill="none" stroke="black" points="635,-1087.61 635,-1105.61 672,-1105.61 672,-1087.61 635,-1087.61"/>
 <text text-anchor="start" x="652" y="-1093.81" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
