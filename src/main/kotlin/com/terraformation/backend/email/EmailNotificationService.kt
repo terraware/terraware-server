@@ -251,12 +251,12 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: DateNotificationTask.PeriodProcessedStartEvent) {
+  fun on(@Suppress("UNUSED_PARAMETER") event: DateNotificationTask.StartedEvent) {
     accessionDatePendingEmails.clear()
   }
 
   @EventListener
-  fun on(@Suppress("UNUSED_PARAMETER") event: DateNotificationTask.PeriodProcessedFinishedEvent) {
+  fun on(@Suppress("UNUSED_PARAMETER") event: DateNotificationTask.SucceededEvent) {
     accessionDatePendingEmails.forEach { sendEmail(it) }
     accessionDatePendingEmails.clear()
   }
@@ -267,16 +267,12 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(
-      @Suppress("UNUSED_PARAMETER") event: StateSummaryNotificationTask.PeriodProcessedStartEvent
-  ) {
+  fun on(@Suppress("UNUSED_PARAMETER") event: StateSummaryNotificationTask.StartedEvent) {
     accessionStatePendingEmails.clear()
   }
 
   @EventListener
-  fun on(
-      @Suppress("UNUSED_PARAMETER") event: StateSummaryNotificationTask.PeriodProcessedFinishedEvent
-  ) {
+  fun on(@Suppress("UNUSED_PARAMETER") event: StateSummaryNotificationTask.SucceededEvent) {
     accessionStatePendingEmails.forEach { sendEmail(it) }
     accessionStatePendingEmails.clear()
   }
