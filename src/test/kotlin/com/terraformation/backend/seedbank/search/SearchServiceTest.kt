@@ -2526,6 +2526,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               mapOf(
                   "accessions" to expectedAccessions,
                   "createdTime" to "1970-01-01T00:00:00Z",
+                  "description" to "Description 100",
                   "id" to "100",
                   "name" to "ohana",
                   "type" to "Seed Bank",

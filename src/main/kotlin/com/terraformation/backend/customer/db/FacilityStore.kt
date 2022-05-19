@@ -97,10 +97,11 @@ class FacilityStore(
   }
 
   /** Updates the settings of an existing facility. */
-  fun update(facilityId: FacilityId, name: String, type: FacilityType, maxIdleMinutes: Int) {
+  fun update(model: FacilityModel) {
+    val facilityId = model.id
     requirePermissions { updateFacility(facilityId) }
 
-    if (maxIdleMinutes < 1) {
+    if (model.maxIdleMinutes < 1) {
       throw IllegalArgumentException("Maximum idle minutes must be greater than 0")
     }
 
@@ -109,11 +110,12 @@ class FacilityStore(
 
     facilitiesDao.update(
         existingRow.copy(
-            maxIdleMinutes = maxIdleMinutes,
+            description = model.description,
+            maxIdleMinutes = model.maxIdleMinutes,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
-            name = name,
-            typeId = type))
+            name = model.name,
+            typeId = model.type))
   }
 
   fun fetchStorageLocations(facilityId: FacilityId): List<StorageLocationsRow> {

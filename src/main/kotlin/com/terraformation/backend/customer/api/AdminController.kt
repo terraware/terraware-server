@@ -488,6 +488,7 @@ class AdminController(
 
   @PostMapping("/updateFacility")
   fun updateFacility(
+      @RequestParam("description") description: String?,
       @RequestParam("facilityId") facilityId: FacilityId,
       @RequestParam("maxIdleMinutes") maxIdleMinutes: Int,
       @RequestParam("name") name: String,
@@ -501,7 +502,14 @@ class AdminController(
       return facility(facilityId)
     }
 
-    facilityStore.update(facilityId, name, type, maxIdleMinutes)
+    val existing =
+        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    facilityStore.update(
+        existing.copy(
+            name = name,
+            description = description?.ifEmpty { null },
+            type = type,
+            maxIdleMinutes = maxIdleMinutes))
 
     redirectAttributes.addFlashAttribute("successMessage", "Facility updated.")
 

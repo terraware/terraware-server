@@ -36,6 +36,7 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
       listOf(
           timestampField(
               "createdTime", "Facility created time", FACILITIES.CREATED_TIME, nullable = false),
+          textField("description", "Facility description", FACILITIES.DESCRIPTION),
           idWrapperField("id", "Facility ID", FACILITIES.ID) { FacilityId(it) },
           textField("name", "Facility name", FACILITIES.NAME, nullable = false),
           enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),

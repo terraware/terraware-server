@@ -47,10 +47,7 @@ class FacilityController(
   private val log = perClassLogger()
 
   @GetMapping
-  @Operation(
-      summary = "List all accessible facilities",
-      description = "List all the facilities the current user can access.",
-  )
+  @Operation(summary = "Lists all accessible facilities.")
   fun listAllFacilities(): ListFacilitiesResponse {
     val facilities = facilityStore.fetchAll()
 
@@ -59,12 +56,27 @@ class FacilityController(
   }
 
   @GetMapping("/{facilityId}")
-  @Operation(summary = "Gets information about a single facility")
+  @Operation(summary = "Gets information about a single facility.")
   fun getFacility(@PathVariable facilityId: FacilityId): GetFacilityResponse {
     val facility =
         facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     return GetFacilityResponse(FacilityPayload(facility))
+  }
+
+  @PutMapping("/{facilityId}")
+  @Operation(summary = "Updates information about a facility.")
+  fun updateFacility(
+      @PathVariable facilityId: FacilityId,
+      @RequestBody payload: UpdateFacilityRequestPayload
+  ): SimpleSuccessResponsePayload {
+    val facility =
+        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+
+    facilityStore.update(
+        facility.copy(name = payload.name, description = payload.description?.ifEmpty { null }))
+
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponse(responseCode = "200", description = "Success")
@@ -186,8 +198,10 @@ data class AutomationPayload(
   ) : this(model.id, model.facilityId, model.name, model.description, model.configuration)
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class FacilityPayload(
     val createdTime: Instant,
+    val description: String?,
     val id: FacilityId,
     val siteId: SiteId,
     val name: String,
@@ -197,6 +211,7 @@ data class FacilityPayload(
       model: FacilityModel
   ) : this(
       model.createdTime.truncatedTo(ChronoUnit.SECONDS),
+      model.description,
       model.id,
       model.siteId,
       model.name,
@@ -225,3 +240,5 @@ data class SendFacilityAlertRequestPayload(
     @Schema(description = "Alert body in plain text. HTML alerts are not supported yet.")
     val body: String
 )
+
+data class UpdateFacilityRequestPayload(val description: String?, val name: String)
