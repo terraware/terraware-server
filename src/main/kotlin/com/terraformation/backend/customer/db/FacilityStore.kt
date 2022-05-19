@@ -73,8 +73,9 @@ class FacilityStore(
    */
   fun create(
       siteId: SiteId,
-      name: String,
       type: FacilityType,
+      name: String,
+      description: String? = null,
       maxIdleMinutes: Int = defaultMaxIdleMinutes
   ): FacilityModel {
     requirePermissions { createFacility(siteId) }
@@ -83,6 +84,7 @@ class FacilityStore(
         FacilitiesRow(
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
+            description = description,
             maxIdleMinutes = maxIdleMinutes,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),

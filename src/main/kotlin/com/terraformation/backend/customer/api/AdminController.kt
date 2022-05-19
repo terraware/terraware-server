@@ -479,7 +479,7 @@ class AdminController(
       return site(siteId)
     }
 
-    facilityStore.create(siteId, name, type)
+    facilityStore.create(siteId, type, name)
 
     redirectAttributes.addFlashAttribute("successMessage", "Facility created.")
 

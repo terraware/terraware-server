@@ -64,6 +64,16 @@ class FacilityController(
     return GetFacilityResponse(FacilityPayload(facility))
   }
 
+  @Operation(summary = "Creates a new facility.")
+  @PostMapping
+  fun createFacility(
+      @RequestBody payload: CreateFacilityRequestPayload
+  ): CreateFacilityResponsePayload {
+    val model =
+        facilityStore.create(payload.siteId, payload.type, payload.name, payload.description)
+    return CreateFacilityResponsePayload(model.id)
+  }
+
   @PutMapping("/{facilityId}")
   @Operation(summary = "Updates information about a facility.")
   fun updateFacility(
@@ -225,6 +235,15 @@ data class ModifyAutomationRequestPayload(
 )
 
 data class CreateAutomationResponsePayload(val id: AutomationId) : SuccessResponsePayload
+
+data class CreateFacilityRequestPayload(
+    val description: String?,
+    val name: String,
+    val type: FacilityType,
+    val siteId: SiteId,
+)
+
+data class CreateFacilityResponsePayload(val id: FacilityId) : SuccessResponsePayload
 
 data class GetAutomationResponsePayload(val automation: AutomationPayload) : SuccessResponsePayload
 
