@@ -76,7 +76,8 @@ class FacilityStore(
       type: FacilityType,
       name: String,
       description: String? = null,
-      maxIdleMinutes: Int = defaultMaxIdleMinutes
+      maxIdleMinutes: Int = defaultMaxIdleMinutes,
+      createStorageLocations: Boolean = true,
   ): FacilityModel {
     requirePermissions { createFacility(siteId) }
 
@@ -94,8 +95,16 @@ class FacilityStore(
         )
 
     facilitiesDao.insert(row)
+    val model = row.toModel()
 
-    return row.toModel()
+    if (type == FacilityType.SeedBank && createStorageLocations) {
+      (1..3).forEach { num ->
+        createStorageLocation(model.id, "Refrigerator $num", StorageCondition.Refrigerator)
+        createStorageLocation(model.id, "Freezer $num", StorageCondition.Freezer)
+      }
+    }
+
+    return model
   }
 
   /** Updates the settings of an existing facility. */

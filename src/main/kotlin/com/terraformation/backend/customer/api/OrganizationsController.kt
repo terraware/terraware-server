@@ -258,8 +258,8 @@ data class CreateOrganizationRequestPayload(
     val countrySubdivisionCode: String?,
     @Schema(
         description =
-            "If true or not specified, create a project, site, and seed bank facility " +
-                "automatically.",
+            "If true or not specified, automatically create a project and site to hold seed " +
+                "bank facilities.",
         defaultValue = "true")
     val createSeedBank: Boolean?,
     val description: String?,
