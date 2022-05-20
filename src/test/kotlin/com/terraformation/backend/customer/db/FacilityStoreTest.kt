@@ -6,6 +6,8 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
@@ -32,6 +34,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var store: FacilityStore
 
   private val facilityId = FacilityId(100)
+  private val siteId = SiteId(10)
   private val storageLocationId = StorageLocationId(1000)
 
   @BeforeEach
@@ -39,9 +42,11 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     store = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
 
     every { clock.instant() } returns Instant.EPOCH
+    every { user.canCreateFacility(any()) } returns true
     every { user.canCreateStorageLocation(any()) } returns true
     every { user.canDeleteStorageLocation(any()) } returns true
     every { user.canReadFacility(any()) } returns true
+    every { user.canReadSite(any()) } returns true
     every { user.canReadStorageLocation(any()) } returns true
     every { user.canUpdateStorageLocation(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
@@ -236,5 +241,45 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     store.withIdleFacilities { actual.addAll(it) }
 
     assertEquals(setOf(facilityId), actual)
+  }
+
+  @Test
+  fun `create also creates default storage locations`() {
+    val model = store.create(siteId, FacilityType.SeedBank, "Test", createStorageLocations = true)
+
+    val expected =
+        mapOf(
+            StorageCondition.Freezer to listOf("Freezer 1", "Freezer 2", "Freezer 3"),
+            StorageCondition.Refrigerator to
+                listOf("Refrigerator 1", "Refrigerator 2", "Refrigerator 3"))
+
+    val storageLocations = store.fetchStorageLocations(model.id)
+    val actual = storageLocations.sortedBy { it.name }.groupBy({ it.conditionId }, { it.name })
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `create only creates default storage locations if requested by caller`() {
+    val model = store.create(siteId, FacilityType.SeedBank, "Test", createStorageLocations = false)
+    val storageLocations = store.fetchStorageLocations(model.id)
+
+    assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
+  }
+
+  @Test
+  fun `create only creates default storage locations for seed banks`() {
+    val model =
+        store.create(siteId, FacilityType.Desalination, "Test", createStorageLocations = true)
+    val storageLocations = store.fetchStorageLocations(model.id)
+
+    assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
+  }
+
+  @Test
+  fun `create throws exception if no permission to create facilities`() {
+    every { user.canCreateFacility(any()) } returns false
+
+    assertThrows<AccessDeniedException> { store.create(siteId, FacilityType.SeedBank, "Test") }
   }
 }

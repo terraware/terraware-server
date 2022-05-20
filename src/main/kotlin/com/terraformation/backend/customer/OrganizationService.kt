@@ -11,12 +11,10 @@ import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
@@ -83,20 +81,8 @@ class OrganizationService(
         val projectModel =
             projectStore.create(orgModel.id, name, hidden = true, organizationWide = true)
         val siteModel = siteStore.create(SitesRow(projectId = projectModel.id, name = name))
-        val facilityModel = facilityStore.create(siteModel.id, FacilityType.SeedBank, name)
 
-        (1..3).forEach { num ->
-          facilityStore.createStorageLocation(
-              facilityModel.id, "Refrigerator $num", StorageCondition.Refrigerator)
-          facilityStore.createStorageLocation(
-              facilityModel.id, "Freezer $num", StorageCondition.Freezer)
-        }
-
-        orgModel.copy(
-            projects =
-                listOf(
-                    projectModel.copy(
-                        sites = listOf(siteModel.copy(facilities = listOf(facilityModel))))))
+        orgModel.copy(projects = listOf(projectModel.copy(sites = listOf(siteModel))))
       }
     }
   }

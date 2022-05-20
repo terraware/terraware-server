@@ -12,20 +12,16 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationDeletedEvent
-import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.records.OrganizationUsersRecord
@@ -129,7 +125,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `createOrganization creates seed bank`() {
+  fun `createOrganization creates seed bank project and site`() {
     insertUser()
 
     val expected =
@@ -158,45 +154,17 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                                     location = null,
                                     modifiedTime = clock.instant(),
                                     name = seedBankDefaultName,
-                                    projectId = ProjectId(1),
-                                    facilities =
-                                        listOf(
-                                            FacilityModel(
-                                                createdTime = clock.instant(),
-                                                description = null,
-                                                id = FacilityId(1),
-                                                lastTimeseriesTime = null,
-                                                maxIdleMinutes = 30,
-                                                modifiedTime = clock.instant(),
-                                                name = seedBankDefaultName,
-                                                siteId = SiteId(1),
-                                                type = FacilityType.SeedBank)))))),
+                                    projectId = ProjectId(1))))),
             totalUsers = 1)
     val actual =
         service.createOrganization(
             OrganizationsRow(name = "Test Organization"), createSeedBank = true)
 
     assertEquals(expected, actual)
-
-    val storageLocations = facilityStore.fetchStorageLocations(FacilityId(1))
-
-    assertEquals(
-        3,
-        storageLocations.count {
-          it.conditionId == StorageCondition.Refrigerator &&
-              it.name?.startsWith("Refrigerator") == true
-        },
-        "Number of refrigerators")
-    assertEquals(
-        3,
-        storageLocations.count {
-          it.conditionId == StorageCondition.Freezer && it.name?.startsWith("Freezer") == true
-        },
-        "Number of freezers")
   }
 
   @Test
-  fun `createOrganization does not create seed bank if creation flag is false`() {
+  fun `createOrganization does not create seed bank project and site if creation flag is false`() {
     insertUser()
 
     val expected =
