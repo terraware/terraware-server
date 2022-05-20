@@ -642,4 +642,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canDeleteUpload(uploadId) }
     requirements.deleteUpload(uploadId)
   }
+
+  @Test
+  fun updateDeviceTemplates() {
+    assertThrows<AccessDeniedException> { requirements.updateDeviceTemplates() }
+
+    grant { user.canUpdateDeviceTemplates() }
+    requirements.updateDeviceTemplates()
+  }
 }

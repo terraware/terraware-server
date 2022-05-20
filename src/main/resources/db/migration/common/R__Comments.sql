@@ -51,6 +51,10 @@ COMMENT ON COLUMN country_subdivisions.name IS 'Name of subdivision in US Englis
 
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
+COMMENT ON TABLE device_template_categories IS '(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next.';
+
+COMMENT ON TABLE device_templates IS 'Canned device configurations for use in cases where we want to show a list of possible devices to the user and create the selected device with the correct settings so that the device manager can talk to it.';
+
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
 COMMENT ON COLUMN facilities.idle_after_time IS 'Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility.';
 COMMENT ON COLUMN facilities.idle_since_time IS 'Time at which the facility became idle. Null if the facility is not currently considered idle.';

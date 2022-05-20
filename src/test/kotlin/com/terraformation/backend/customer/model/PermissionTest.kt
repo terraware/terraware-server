@@ -569,7 +569,7 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(importGlobalSpeciesData = true)
+    permissions.expect(importGlobalSpeciesData = true, updateDeviceTemplates = true)
   }
 
   @Test
@@ -925,11 +925,16 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     // All checks for globally-scoped permissions go here
-    fun expect(importGlobalSpeciesData: Boolean = false) {
+    fun expect(
+        importGlobalSpeciesData: Boolean = false,
+        updateDeviceTemplates: Boolean = false,
+    ) {
       assertEquals(
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),
           "Can import global species data")
+      assertEquals(
+          updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
 
       hasCheckedGlobalPermissions = true
     }

@@ -134,6 +134,8 @@ class SchemaDocsGenerator : DatabaseTest() {
           "countries" to setOf(ALL, CUSTOMER),
           "country_subdivisions" to setOf(ALL, CUSTOMER),
           "devices" to setOf(ALL, DEVICE),
+          "device_template_categories" to setOf(ALL, DEVICE),
+          "device_templates" to setOf(ALL, DEVICE),
           "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
           "facility_types" to setOf(ALL, CUSTOMER),
           "flyway_schema_history" to emptySet(),

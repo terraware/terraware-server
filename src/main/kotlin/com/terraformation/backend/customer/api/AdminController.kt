@@ -10,6 +10,8 @@ import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.DeviceTemplateCategory
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
@@ -25,6 +27,8 @@ import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
+import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.log.perClassLogger
@@ -46,6 +50,8 @@ import kotlin.io.path.deleteIfExists
 import net.postgis.jdbc.geometry.Point
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.jooq.DSLContext
+import org.jooq.JSONB
+import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
@@ -53,7 +59,10 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.WebDataBinder
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.InitBinder
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -66,6 +75,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminController(
     private val config: TerrawareServerConfig,
+    private val deviceTemplatesDao: DeviceTemplatesDao,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
@@ -217,6 +227,18 @@ class AdminController(
     model.addAttribute("user", user)
 
     return "/admin/user"
+  }
+
+  @GetMapping("/deviceTemplates")
+  fun getDeviceTemplates(model: Model): String {
+    val templates = deviceTemplatesDao.findAll().sortedBy { it.id!!.value }
+
+    model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
+    model.addAttribute("categories", DeviceTemplateCategory.values())
+    model.addAttribute("prefix", prefix)
+    model.addAttribute("templates", templates)
+
+    return "/admin/deviceTemplates"
   }
 
   @PostMapping("/setUserMemberships")
@@ -670,6 +692,59 @@ class AdminController(
     return adminHome()
   }
 
+  @PostMapping("/createDeviceTemplate")
+  fun createDeviceTemplate(
+      redirectAttributes: RedirectAttributes,
+      @ModelAttribute templatesRow: DeviceTemplatesRow,
+      @RequestParam("settings") settings: String?,
+  ): String {
+    requirePermissions { updateDeviceTemplates() }
+
+    templatesRow.settings = settings?.ifEmpty { null }?.let { JSONB.jsonb(it) }
+
+    try {
+      deviceTemplatesDao.insert(templatesRow)
+      redirectAttributes.addFlashAttribute("successMessage", "Device template created.")
+    } catch (e: Exception) {
+      log.error("Failed to create device template", e)
+      redirectAttributes.addFlashAttribute("failureMessage", "Creation failed: ${e.message}")
+    }
+
+    return deviceTemplates()
+  }
+
+  @PostMapping("/deviceTemplates")
+  fun updateTemplate(
+      redirectAttributes: RedirectAttributes,
+      @ModelAttribute templatesRow: DeviceTemplatesRow,
+      @RequestParam("settings") settings: String?,
+      @RequestParam("delete") delete: String?,
+  ): String {
+    requirePermissions { updateDeviceTemplates() }
+
+    templatesRow.settings = settings?.ifEmpty { null }?.let { JSONB.jsonb(it) }
+
+    try {
+      if (delete != null) {
+        deviceTemplatesDao.deleteById(templatesRow.id)
+        redirectAttributes.addFlashAttribute("successMessage", "Device template deleted.")
+      } else {
+        deviceTemplatesDao.update(templatesRow)
+        redirectAttributes.addFlashAttribute("successMessage", "Device template updated.")
+      }
+    } catch (e: Exception) {
+      log.error("Failed to update device template", e)
+      redirectAttributes.addFlashAttribute("failureMessage", "Update failed: ${e.message}")
+    }
+
+    return deviceTemplates()
+  }
+
+  @InitBinder
+  fun initBinder(binder: WebDataBinder) {
+    binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
+  }
+
   /** Returns a redirect view name for an admin endpoint. */
   private fun redirect(endpoint: String) = "redirect:${prefix}$endpoint"
 
@@ -677,6 +752,7 @@ class AdminController(
 
   private fun adminHome() = redirect("/")
   private fun apiKeyAdded(organizationId: OrganizationId) = redirect("/apiKeyAdded/$organizationId")
+  private fun deviceTemplates() = redirect("/deviceTemplates")
   private fun organization(organizationId: OrganizationId) =
       redirect("/organization/$organizationId")
   private fun project(projectId: ProjectId) = redirect("/project/$projectId")

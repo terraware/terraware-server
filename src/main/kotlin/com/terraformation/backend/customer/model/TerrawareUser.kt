@@ -107,6 +107,7 @@ interface TerrawareUser : Principal {
   fun canUpdateAccession(accessionId: AccessionId): Boolean
   fun canUpdateAutomation(automationId: AutomationId): Boolean
   fun canUpdateDevice(deviceId: DeviceId): Boolean
+  fun canUpdateDeviceTemplates(): Boolean
   fun canUpdateFacility(facilityId: FacilityId): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
   fun canUpdateProject(projectId: ProjectId): Boolean
