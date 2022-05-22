@@ -22,7 +22,7 @@ plugins {
 
   id("com.revolut.jooq-docker") version "0.3.7"
   id("com.diffplug.spotless") version "6.4.2"
-  id("org.springframework.boot") version "2.6.7"
+  id("org.springframework.boot") version "2.7.0"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
   // Add the build target to generate Swagger docs
