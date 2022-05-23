@@ -1,6 +1,7 @@
 package com.terraformation.backend.device.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.ErrorDetails
@@ -17,6 +18,9 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
+import javax.validation.constraints.Size
+import javax.ws.rs.WebApplicationException
+import javax.ws.rs.core.Response
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -52,12 +56,21 @@ class TimeseriesController(
           "Successfully processed the request. Note that this status will be returned even if " +
               "the server was unable to record some of the values. In that case, the failed " +
               "values will be returned in the response payload.")
+  @ApiResponse413(
+      "The request had more than ${RecordTimeseriesValuesRequestPayload.MAX_VALUES} values.")
   @Operation(summary = "Records new values for one or more timeseries.")
   @PostMapping("/values")
   fun recordTimeseriesValues(
       @RequestBody payload: RecordTimeseriesValuesRequestPayload
   ): RecordTimeseriesValuesResponsePayload {
     val errors = mutableListOf<TimeseriesValuesErrorPayload>()
+    val maxValues = RecordTimeseriesValuesRequestPayload.MAX_VALUES
+
+    if (payload.timeseries.size > maxValues) {
+      throw WebApplicationException(
+          "Request must contain $maxValues or fewer values",
+          Response.Status.REQUEST_ENTITY_TOO_LARGE)
+    }
 
     payload.timeseries.forEach { valuesEntry ->
       val timeseriesName = valuesEntry.timeseriesName
@@ -182,7 +195,16 @@ data class TimeseriesValuePayload(
 
 data class CreateTimeseriesRequestPayload(val timeseries: List<CreateTimeseriesEntry>)
 
-data class RecordTimeseriesValuesRequestPayload(val timeseries: List<TimeseriesValuesPayload>)
+data class RecordTimeseriesValuesRequestPayload(
+    @Size(
+        max = MAX_VALUES,
+    )
+    val timeseries: List<TimeseriesValuesPayload>
+) {
+  companion object {
+    const val MAX_VALUES = 1000
+  }
+}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Results of a request to record timeseries values.")
