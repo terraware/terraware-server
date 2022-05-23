@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head">
+    <script th:fragment="additionalScript">
+        function showAdvanced() {
+            document.getElementById("advanced").style.display = "block";
+            document.getElementById("showAdvanced").style.display = "none";
+        }
+    </script>
+
+    <style th:fragment="additionalStyle">
+        input {
+            margin-top: 4px;
+        }
+
+        select {
+            margin-top: 4px;
+        }
+
+        label {
+            display: inline-block;
+            min-width: 10em;
+        }
+    </style>
+</head>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a> -
+<a th:if="${facility} == null" th:href="|${prefix}/deviceManagers|">Device Managers</a>
+<a th:if="${facility} != null" th:href="|${prefix}/facility/${facility.id}|"
+   th:text="${facility.name}">Facility</a>
+
+<h2 th:text="|Device Manager ${manager.deviceName} (${manager.id})|">Device Manager foo (1)</h2>
+
+<form th:action="|${prefix}/deviceManagers/${manager.id}|" method="POST">
+
+    <label for="shortCode">Short Code</label>
+    <input type="text" name="shortCode" id="shortCode" th:value="${manager.shortCode}"/>
+    <br/>
+
+    <label for="facilityId">Facility ID</label>
+    <input type="text" name="facilityId" id="facilityId" th:value="${manager.facilityId}"/>
+    If this isn't set, the device manager is not connected yet.
+    <br/>
+
+    <label for="isOnline">Online?</label>
+    <select name="isOnline" id="isOnline">
+        <option value="true" th:selected="${manager.isOnline()}">Yes</option>
+        <option value="false" th:selected="!${manager.isOnline()}">No</option>
+    </select>
+    <br/>
+
+    <label for="updateProgress">Update Progress</label>
+    <input type="number" name="updateProgress" id="updateProgress" min="0" max="100"
+           th:value="${manager.updateProgress}"/>
+    Progress percentage of software update. Null if no update in progress.
+    <br/>
+
+    <span id="advanced" style="display: none;">
+
+    <label for="userId">User ID</label>
+    <input type="text" name="userId" id="userId" th:value="${manager.userId}"/>
+    <br/>
+
+    <label for="balenaId">Balena ID</label>
+    <input type="number" name="balenaId" id="balenaId" th:value="${manager.balenaId}"/>
+    <br/>
+
+    <label for="balenaUuid">Balena UUID</label>
+    <input type="text" name="balenaUuid" id="balenaUuid" th:value="${manager.balenaUuid}"/>
+    <br/>
+
+    <label for="balenaModifiedTime">Balena Modified Time</label>
+    <input type="text" name="balenaModifiedTime" id="balenaModifiedTime"
+           th:value="${manager.balenaModifiedTime}"/>
+    <br/>
+
+    <label for="deviceName">Balena Name</label>
+    <input type="text" name="deviceName" id="deviceName" th:value="${manager.deviceName}"/>
+    <br/>
+
+    <label for="lastConnectivityEvent">Last Connectivity</label>
+    <input type="text" name="lastConnectivityEvent" id="lastConnectivityEvent"
+           th:value="${manager.lastConnectivityEvent}"/>
+    <br/>
+
+    <label for="createdTime">Created Time</label>
+    <input type="text" name="createdTime" id="createdTime" th:value="${manager.createdTime}"/>
+    <br/>
+
+    <label for="refreshedTime">Refreshed Time</label>
+    <input type="text" name="refreshedTime" id="refreshedTime" th:value="${manager.refreshedTime}"/>
+    <br/>
+
+    </span>
+
+    <input type="submit" value="Update"/>
+
+    <p>
+        <a href="#" onclick="showAdvanced()" id="showAdvanced">Show Advanced Settings</a>
+    </p>
+
+</form>
+
+</body>
+</html>

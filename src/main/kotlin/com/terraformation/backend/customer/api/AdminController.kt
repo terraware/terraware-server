@@ -11,7 +11,10 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.DeviceManagerId
+import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceTemplateCategory
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
@@ -28,18 +31,24 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
+import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
+import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
+import com.terraformation.backend.device.db.DeviceManagerStore
+import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
 import java.math.BigDecimal
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.time.Clock
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 import java.util.zip.ZipFile
 import javax.servlet.http.HttpServletRequest
 import javax.validation.constraints.Max
@@ -47,8 +56,10 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
+import kotlin.random.Random
 import net.postgis.jdbc.geometry.Point
 import org.apache.commons.fileupload.servlet.ServletFileUpload
+import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
@@ -74,7 +85,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireExistingAdminRole
 @Validated
 class AdminController(
+    private val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val deviceManagerStore: DeviceManagerStore,
+    private val deviceStore: DeviceStore,
     private val deviceTemplatesDao: DeviceTemplatesDao,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
@@ -199,8 +213,12 @@ class AdminController(
             ?: throw OrganizationNotFoundException(project.organizationId)
     val recipients = projectStore.fetchEmailRecipients(project.id)
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
+    val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
+    val devices = deviceStore.fetchByFacilityId(facilityId)
 
     model.addAttribute("canUpdateFacility", currentUser().canUpdateFacility(facilityId))
+    model.addAttribute("devices", devices)
+    model.addAttribute("deviceManager", deviceManager)
     model.addAttribute("facility", facility)
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
@@ -239,6 +257,36 @@ class AdminController(
     model.addAttribute("templates", templates)
 
     return "/admin/deviceTemplates"
+  }
+
+  @GetMapping("/deviceManagers")
+  fun listDeviceManagers(model: Model): String {
+    val managers = deviceManagerStore.findAll()
+
+    model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
+    model.addAttribute("managers", managers)
+    model.addAttribute("prefix", prefix)
+
+    return "/admin/listDeviceManagers"
+  }
+
+  @GetMapping("/deviceManagers/{deviceManagerId}")
+  fun getDeviceManager(
+      @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
+      model: Model
+  ): String {
+    val manager =
+        deviceManagerStore.fetchOneById(deviceManagerId)
+            ?: throw DeviceManagerNotFoundException(deviceManagerId)
+    val facility = manager.facilityId?.let { facilityStore.fetchById(it) }
+
+    model.addAttribute(
+        "canUpdateDeviceManager", currentUser().canUpdateDeviceManager(deviceManagerId))
+    model.addAttribute("facility", facility)
+    model.addAttribute("manager", manager)
+    model.addAttribute("prefix", prefix)
+
+    return "/admin/deviceManager"
   }
 
   @PostMapping("/setUserMemberships")
@@ -699,6 +747,83 @@ class AdminController(
     return deviceTemplates()
   }
 
+  @PostMapping("/deviceManagers")
+  fun createDeviceManager(
+      redirectAttributes: RedirectAttributes,
+      @RequestParam("shortCode") shortCode: String,
+  ): String {
+    val row =
+        DeviceManagersRow(
+            balenaId = Random.nextLong(),
+            balenaUuid = UUID.randomUUID(),
+            balenaModifiedTime = clock.instant(),
+            createdTime = clock.instant(),
+            deviceName = "Test Device $shortCode",
+            isOnline = true,
+            refreshedTime = clock.instant(),
+            shortCode = shortCode,
+        )
+
+    return try {
+      deviceManagerStore.insert(row)
+      redirectAttributes.successMessage = "Device manager created."
+
+      deviceManager(row.id!!)
+    } catch (e: Exception) {
+      log.error("Failed to create device manager", e)
+      redirectAttributes.failureMessage = "Creation failed: ${e.message}"
+
+      listDeviceManagers()
+    }
+  }
+
+  @PostMapping("/deviceManagers/{deviceManagerId}")
+  fun updateDeviceManager(
+      redirectAttributes: RedirectAttributes,
+      @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
+      @ModelAttribute row: DeviceManagersRow,
+  ): String {
+    row.id = deviceManagerId
+
+    if (row.facilityId != null && row.userId == null) {
+      row.userId = currentUser().userId
+    }
+
+    try {
+      val original = deviceManagerStore.fetchOneById(deviceManagerId)!!
+
+      val originalFacilityId = original.facilityId
+      val newFacilityId = row.facilityId
+
+      when {
+        originalFacilityId != null && newFacilityId == null -> {
+          redirectAttributes.failureMessage = "Cannot disconnect a device manager."
+          return deviceManager(deviceManagerId)
+        }
+        originalFacilityId == null && newFacilityId != null -> {
+          facilityStore.updateConnectionState(
+              newFacilityId,
+              FacilityConnectionState.NotConnected,
+              FacilityConnectionState.Connected)
+        }
+        originalFacilityId != newFacilityId -> {
+          redirectAttributes.failureMessage =
+              "Cannot reassign a device manager to a different facility."
+          return deviceManager(deviceManagerId)
+        }
+      }
+
+      deviceManagerStore.update(row)
+
+      redirectAttributes.successMessage = "Device manager updated."
+    } catch (e: Exception) {
+      log.error("Failed to update device manager", e)
+      redirectAttributes.failureMessage = "Update failed: ${e.message}"
+    }
+
+    return deviceManager(deviceManagerId)
+  }
+
   @PostMapping("/deviceTemplates")
   fun updateTemplate(
       redirectAttributes: RedirectAttributes,
@@ -726,9 +851,52 @@ class AdminController(
     return deviceTemplates()
   }
 
+  @PostMapping("/createDevices")
+  fun createDevices(
+      redirectAttributes: RedirectAttributes,
+      @RequestParam("address") address: String?,
+      @RequestParam("count") count: Int,
+      @RequestParam("facilityId") facilityId: FacilityId,
+      @RequestParam("make") make: String,
+      @RequestParam("model") model: String,
+      @RequestParam("name") name: String?,
+      @RequestParam("protocol") protocol: String?,
+      @RequestParam("type") type: String,
+  ): String {
+    try {
+      repeat(count) {
+        val calculatedName = name ?: HexUtils.toHexString(Random.nextBytes(4)).uppercase()
+        val calculatedAddress = address ?: calculatedName
+
+        val devicesRow =
+            DevicesRow(
+                address = calculatedAddress,
+                deviceType = type,
+                facilityId = facilityId,
+                make = make,
+                model = model,
+                name = calculatedName,
+                protocol = protocol,
+            )
+
+        deviceStore.create(devicesRow)
+      }
+
+      redirectAttributes.successMessage =
+          if (count == 1) "Device created." else "$count devices created."
+    } catch (e: Exception) {
+      log.error("Failed to create devices", e)
+      redirectAttributes.failureMessage = "Creation failed: ${e.message}"
+    }
+
+    return facility(facilityId)
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
+    binder.registerCustomEditor(FacilityId::class.java, StringTrimmerEditor(true))
+    binder.registerCustomEditor(UserId::class.java, StringTrimmerEditor(true))
   }
 
   private var RedirectAttributes.failureMessage: String?
@@ -750,7 +918,10 @@ class AdminController(
 
   private fun adminHome() = redirect("/")
   private fun apiKeyAdded(organizationId: OrganizationId) = redirect("/apiKeyAdded/$organizationId")
+  private fun deviceManager(deviceManagerId: DeviceManagerId) =
+      redirect("/deviceManagers/$deviceManagerId")
   private fun deviceTemplates() = redirect("/deviceTemplates")
+  private fun listDeviceManagers() = redirect("/listDeviceManagers")
   private fun organization(organizationId: OrganizationId) =
       redirect("/organization/$organizationId")
   private fun project(projectId: ProjectId) = redirect("/project/$projectId")

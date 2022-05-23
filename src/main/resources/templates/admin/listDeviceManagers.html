@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+
+<h2>Device Managers</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Short Code</th>
+        <th>Facility ID</th>
+        <th>User ID</th>
+        <th>Online</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="manager : ${managers}">
+        <td>
+            <a th:href="|${prefix}/deviceManagers/${manager.id}|" th:text="${manager.id}">123</a>
+        </td>
+        <td>
+            <a th:href="|${prefix}/deviceManagers/${manager.id}|" th:text="${manager.shortCode}">ABCDE</a>
+        </td>
+        <td th:text="${manager.facilityId}">
+            <a th:href="|${prefix}/facility/${manager.facilityId}|" th:text="${manager.facilityId}">567</a>
+        </td>
+        <td th:text="${manager.userId}">123</td>
+        <td th:text="${manager.isOnline()}">true</td>
+    </tr>
+    </tbody>
+</table>
+
+<div th:if="${canCreateDeviceManager}">
+
+    <h3>Create New Device Manager</h3>
+
+    <p>
+        For development use only!
+    </p>
+
+    <form th:action="|${prefix}/deviceManagers|" method="POST">
+        <label for="shortCode">Short Code</label>
+        <input type="text" name="shortCode" id="shortCode"/>
+        <br/>
+
+        <input type="submit" value="Create"/>
+    </form>
+
+</div>
+
+</body>
+</html>
