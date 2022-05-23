@@ -48,6 +48,11 @@ annotation class ApiResponse409(val description: String = "The request would cau
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
+@ApiResponseSimpleError(responseCode = "413")
+annotation class ApiResponse413(val description: String = "The request was too large.")
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
 @ApiResponse(
     responseCode = "200",
     content =
