@@ -85,6 +85,7 @@ class AccessionsTable(
         integerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
         textField("familyName", "Family name", ACCESSIONS.FAMILY_NAME),
+        aliasField("facilityName", "facility_name"),
         aliasField("geolocation", "geolocations_coordinates"),
         aliasField("germinationEndDate", "germinationTests_endDate"),
         aliasField("germinationPercentGerminated", "germinationTests_percentGerminated"),

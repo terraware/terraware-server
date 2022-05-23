@@ -2451,6 +2451,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "accessionNumber" to "ABCDEFG",
                       "active" to "Active",
                       "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
+                      "facilityName" to "ohana",
                       "id" to "1001",
                       "speciesName" to "Other Dogwood",
                       "state" to "Processing",
@@ -2461,6 +2462,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "active" to "Active",
                       "checkedInTime" to "$checkedInTime",
                       "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
+                      "facilityName" to "ohana",
                       "germinationTests" to
                           listOf(
                               mapOf(
