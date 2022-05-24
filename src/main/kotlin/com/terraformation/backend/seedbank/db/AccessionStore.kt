@@ -7,7 +7,6 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -18,7 +17,6 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
@@ -88,7 +86,6 @@ class AccessionStore(
         dslContext
             .select(
                 ACCESSIONS.asterisk(),
-                ACCESSIONS.collectors().NAME,
                 ACCESSIONS.species().SCIENTIFIC_NAME,
                 ACCESSIONS.STATE_ID,
                 ACCESSIONS.storageLocations().NAME,
@@ -150,7 +147,7 @@ class AccessionStore(
           numberOfTrees = record[TREES_COLLECTED_FROM],
           nurseryStartDate = record[NURSERY_START_DATE],
           photoFilenames = record[photoFilenamesField],
-          primaryCollector = record[collectors().NAME],
+          primaryCollector = record[PRIMARY_COLLECTOR_NAME],
           processingMethod = record[PROCESSING_METHOD_ID],
           processingNotes = record[PROCESSING_NOTES],
           processingStaffResponsible = record[PROCESSING_STAFF_RESPONSIBLE],
@@ -203,7 +200,6 @@ class AccessionStore(
             dslContext.transactionResult { _ ->
               val appDeviceId =
                   accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
-              val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
               val speciesId =
                   accession.species?.let { speciesStore.getOrCreateSpecies(organizationId, it) }
               val state = AccessionState.AwaitingCheckIn
@@ -234,7 +230,7 @@ class AccessionStore(
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
                         .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                        .set(PRIMARY_COLLECTOR_ID, collectorId)
+                        .set(PRIMARY_COLLECTOR_NAME, accession.primaryCollector)
                         .set(RARE_TYPE_ID, accession.rare)
                         .set(RECEIVED_DATE, accession.receivedDate)
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
@@ -265,7 +261,7 @@ class AccessionStore(
                     .execute()
               }
 
-              insertSecondaryCollectors(facilityId, accessionId, accession.secondaryCollectors)
+              insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
               bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
               geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
               germinationStore.updateGerminationTestTypes(
@@ -321,7 +317,7 @@ class AccessionStore(
             .deleteFrom(ACCESSION_SECONDARY_COLLECTORS)
             .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
             .execute()
-        insertSecondaryCollectors(facilityId, accessionId, accession.secondaryCollectors)
+        insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
       }
 
       val existingTests: MutableList<GerminationTestModel> =
@@ -353,7 +349,6 @@ class AccessionStore(
 
       insertStateHistory(existing, accession)
 
-      val collectorId = accession.primaryCollector?.let { getCollectorId(facilityId, it) }
       val speciesId = accession.species?.let { speciesStore.getOrCreateSpecies(organizationId, it) }
 
       val rowsUpdated =
@@ -379,7 +374,7 @@ class AccessionStore(
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                .set(PRIMARY_COLLECTOR_ID, collectorId)
+                .set(PRIMARY_COLLECTOR_NAME, accession.primaryCollector)
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
@@ -566,49 +561,24 @@ class AccessionStore(
 
   private fun secondaryCollectorsMultiset(): Field<Set<String>> {
     return DSL.multiset(
-            DSL.select(COLLECTORS.NAME)
-                .from(COLLECTORS)
-                .join(ACCESSION_SECONDARY_COLLECTORS)
-                .on(COLLECTORS.ID.eq(ACCESSION_SECONDARY_COLLECTORS.COLLECTOR_ID))
+            DSL.select(ACCESSION_SECONDARY_COLLECTORS.NAME)
+                .from(ACCESSION_SECONDARY_COLLECTORS)
                 .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
-                .orderBy(COLLECTORS.NAME))
+                .orderBy(ACCESSION_SECONDARY_COLLECTORS.NAME))
         .convertFrom { result -> result.map { it.value1() }.toSet() }
   }
 
   private fun insertSecondaryCollectors(
-      facilityId: FacilityId,
       accessionId: AccessionId,
       secondaryCollectors: Collection<String>?
   ) {
-    if (secondaryCollectors != null) {
-      val collectorIds = secondaryCollectors.map { name -> getCollectorId(facilityId, name) }
-      collectorIds.forEach { collectorId ->
-        dslContext
-            .insertInto(
-                ACCESSION_SECONDARY_COLLECTORS,
-                ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID,
-                ACCESSION_SECONDARY_COLLECTORS.COLLECTOR_ID)
-            .values(accessionId, collectorId)
-            .execute()
-      }
+    secondaryCollectors?.forEach { name ->
+      dslContext
+          .insertInto(ACCESSION_SECONDARY_COLLECTORS)
+          .set(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID, accessionId)
+          .set(ACCESSION_SECONDARY_COLLECTORS.NAME, name)
+          .execute()
     }
-  }
-
-  private fun getCollectorId(facilityId: FacilityId, name: String): CollectorId {
-    return dslContext
-        .select(COLLECTORS.ID)
-        .from(COLLECTORS.ID.table)
-        .where(COLLECTORS.NAME.eq(name))
-        .and(COLLECTORS.FACILITY_ID.eq(facilityId))
-        .fetchOne(COLLECTORS.ID)
-        ?: (dslContext
-            .insertInto(COLLECTORS)
-            .set(COLLECTORS.NAME, name)
-            .set(COLLECTORS.FACILITY_ID, facilityId)
-            .returning(COLLECTORS.ID)
-            .fetchOne()
-            ?.get(COLLECTORS.ID)
-            ?: throw DataAccessException("Unable to insert new collector $name"))
   }
 
   private fun getStorageLocationId(facilityId: FacilityId, name: String?): StorageLocationId? {

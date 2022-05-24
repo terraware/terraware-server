@@ -24,8 +24,8 @@ import javax.annotation.ManagedBean
 class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val accessionGerminationTestTypes = AccessionGerminationTestTypesTable(this, fuzzySearchOperators)
   val accessions = AccessionsTable(this, fuzzySearchOperators)
+  val accessionSecondaryCollectors = AccessionSecondaryCollectorsTable(this, fuzzySearchOperators)
   val bags = BagsTable(this, fuzzySearchOperators)
-  val collectors = CollectorsTable(this, fuzzySearchOperators)
   val countries = CountriesTable(this, fuzzySearchOperators)
   val countrySubdivisions = CountrySubdivisionsTable(this, fuzzySearchOperators)
   val facilities = FacilitiesTable(this, fuzzySearchOperators)

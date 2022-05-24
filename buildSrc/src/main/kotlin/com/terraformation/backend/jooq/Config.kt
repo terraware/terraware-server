@@ -80,13 +80,11 @@ val ENUM_TABLES =
 val ID_WRAPPERS =
     listOf(
         IdWrapper("AccessionId", listOf("accessions\\.id", ".*\\.accession_id")),
+        IdWrapper("AccessionSecondaryCollectorId", listOf("accession_secondary_collectors\\.id")),
         IdWrapper("AccessionNotificationId", listOf("accession_notifications\\.id")),
         IdWrapper("AppDeviceId", listOf("app_devices\\.id", ".*\\.app_device_id")),
         IdWrapper("AutomationId", listOf("automations\\.id")),
         IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
-        IdWrapper(
-            "CollectorId",
-            listOf("collectors\\.id", ".*\\.collector_id", "accessions\\.primary_collector_id")),
         IdWrapper("DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
         IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
         IdWrapper("FacilityId", listOf("facilities\\.id", ".*\\.facility_id")),

@@ -9,7 +9,6 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.BagId
-import com.terraformation.backend.db.CollectorId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GeolocationId
@@ -234,7 +233,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
     assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
     assertEquals(initialRow.familyName, secondRow.familyName, "Family")
-    assertEquals(initialRow.primaryCollectorId, secondRow.primaryCollectorId, "Primary collector")
+    assertEquals(
+        initialRow.primaryCollectorName, secondRow.primaryCollectorName, "Primary collector")
 
     assertEquals(2, getSecondaryCollectors(AccessionId(1)).size, "Number of secondary collectors")
 
@@ -1613,13 +1613,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     }
   }
 
-  private fun getSecondaryCollectors(accessionId: AccessionId?): Set<CollectorId> {
+  private fun getSecondaryCollectors(accessionId: AccessionId?): Set<String> {
     with(ACCESSION_SECONDARY_COLLECTORS) {
       return dslContext
-          .select(COLLECTOR_ID)
+          .select(NAME)
           .from(ACCESSION_SECONDARY_COLLECTORS)
           .where(ACCESSION_ID.eq(accessionId))
-          .fetch(COLLECTOR_ID)
+          .fetch(NAME)
           .filterNotNull()
           .toSet()
     }

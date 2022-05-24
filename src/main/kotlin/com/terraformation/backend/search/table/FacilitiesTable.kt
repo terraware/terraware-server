@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
@@ -24,7 +23,6 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
     with(tables) {
       listOf(
           accessions.asMultiValueSublist("accessions", FACILITIES.ID.eq(ACCESSIONS.FACILITY_ID)),
-          collectors.asMultiValueSublist("collectors", FACILITIES.ID.eq(COLLECTORS.FACILITY_ID)),
           sites.asSingleValueSublist("site", FACILITIES.SITE_ID.eq(SITES.ID)),
           storageLocations.asMultiValueSublist(
               "storageLocations", FACILITIES.ID.eq(STORAGE_LOCATIONS.FACILITY_ID)),
