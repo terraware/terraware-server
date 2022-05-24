@@ -22,6 +22,10 @@ val ENUM_TABLES =
                 "accessions\\.state_id",
                 ".*\\.accession_state_id",
                 "accession_state_history\\.(old|new)_state_id")),
+        EnumTable(
+            "device_template_categories",
+            listOf("device_templates\\.category_id"),
+            "DeviceTemplateCategory"),
         EnumTable("facility_types", "facilities\\.type_id"),
         EnumTable("germination_seed_types", "germination_tests\\.seed_type_id"),
         EnumTable("germination_substrates", "germination_tests\\.substrate_id"),
@@ -84,6 +88,7 @@ val ID_WRAPPERS =
             "CollectorId",
             listOf("collectors\\.id", ".*\\.collector_id", "accessions\\.primary_collector_id")),
         IdWrapper("DeviceId", listOf("devices\\.id", "devices\\.parent_id", ".*\\.device_id")),
+        IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
         IdWrapper("FacilityId", listOf("facilities\\.id", ".*\\.facility_id")),
         IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
         IdWrapper(

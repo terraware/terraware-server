@@ -394,6 +394,10 @@ data class IndividualUser(
 
   override fun canDeleteUpload(uploadId: UploadId): Boolean = canReadUpload(uploadId)
 
+  override fun canUpdateDeviceTemplates(): Boolean {
+    return userType == UserType.SuperAdmin
+  }
+
   /** Returns true if the user is an admin or owner of any organizations. */
   override fun hasAnyAdminRole(): Boolean =
       organizationRoles.values.any { it == Role.OWNER || it == Role.ADMIN }

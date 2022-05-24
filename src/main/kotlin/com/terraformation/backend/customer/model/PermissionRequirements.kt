@@ -466,4 +466,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
       throw AccessDeniedException("No permission to delete upload")
     }
   }
+
+  fun updateDeviceTemplates() {
+    if (!user.canUpdateDeviceTemplates()) {
+      throw AccessDeniedException("No permission to update device templates")
+    }
+  }
 }

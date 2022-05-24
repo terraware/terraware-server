@@ -15,6 +15,10 @@ VALUES (10, 'Pending', TRUE),
        (80, 'Nursery', FALSE)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO device_template_categories (id, name)
+VALUES (1, 'PV')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO facility_types (id, name)
 VALUES (1, 'Seed Bank'),
        (2, 'Desalination'),

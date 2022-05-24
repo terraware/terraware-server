@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+
+<h2>Device Templates</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th th:if="${canUpdateDeviceTemplates}">Delete</th>
+        <th>Category</th>
+        <th>Description</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Make</th>
+        <th>Model</th>
+        <th>Protocol</th>
+        <th>Address</th>
+        <th>Port</th>
+        <th>Interval</th>
+        <th>Settings</th>
+        <th th:if="${canUpdateDeviceTemplates}">Commands</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="template : ${templates}">
+        <td>
+            <form th:action="|${prefix}/deviceTemplates|" method="POST" th:id="|template${template.id}|"
+                  th:if="${canUpdateDeviceTemplates}">
+                <input type="hidden" name="id" th:value="${template.id}"/>
+            </form>
+            <span th:text="${template.id}">123</span>
+        </td>
+        <td th:if="${canUpdateDeviceTemplates}">
+            <input type="checkbox" name="delete" th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <select name="categoryId" th:form="|template${template.id}|">
+                <option th:each="category : ${categories}"
+                        th:selected="${template.categoryId == category}"
+                        th:text="${category.displayName}">PV
+                </option>
+            </select>
+        </td>
+        <td>
+            <input name="description" th:value="${template.description}"
+                   th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <input name="name" th:value="${template.name}" th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <input name="deviceType" th:value="${template.deviceType}"
+                   th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <input name="make" th:value="${template.make}" th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <input name="model" th:value="${template.model}" th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <input name="protocol" th:value="${template.protocol}"
+                   th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <input name="address" th:value="${template.address}"
+                   th:form="|template${template.id}|"/>
+        </td>
+        <td>
+            <input name="port" th:value="${template.port}" th:form="|template${template.id}|"
+                   maxlength="5" size="5"/>
+        </td>
+        <td>
+            <input name="pollingInterval" th:value="${template.pollingInterval}"
+                   th:form="|template${template.id}|" maxlength="5" size="5"/>
+        </td>
+        <td>
+            <input name="settings" th:value="${template.settings}"
+                   th:form="|template${template.id}|"/>
+        </td>
+        <td th:if="${canUpdateDeviceTemplates}">
+            <input type="submit" value="Update" th:form="|template${template.id}|"/>
+        </td>
+    </tr>
+
+    <tr th:if="${canUpdateDeviceTemplates}">
+        <td>
+            <form th:action="|${prefix}/createDeviceTemplate|" method="POST" id="createTemplate">
+            </form>
+        </td>
+        <td></td>
+        <td>
+            <select name="categoryId" form="createTemplate">
+                <option th:each="category : ${categories}" th:text="${category.displayName}">PV
+                </option>
+            </select>
+        </td>
+        <td>
+            <input name="description" form="createTemplate"/>
+        </td>
+        <td>
+            <input name="name" form="createTemplate"/>
+        </td>
+        <td>
+            <input name="deviceType" form="createTemplate"/>
+        </td>
+        <td>
+            <input name="make" form="createTemplate"/>
+        </td>
+        <td>
+            <input name="model" form="createTemplate"/>
+        </td>
+        <td>
+            <input name="protocol" form="createTemplate"/>
+        </td>
+        <td>
+            <input name="address" form="createTemplate"/>
+        </td>
+        <td>
+            <input name="port" form="createTemplate" maxlength="5" size="5"/>
+        </td>
+        <td>
+            <input name="pollingInterval" form="createTemplate" maxlength="5" size="5"/>
+        </td>
+        <td>
+            <input name="settings" form="createTemplate"/>
+        </td>
+        <td th:if="${canUpdateDeviceTemplates}">
+            <input type="submit" value="Create" form="createTemplate"/>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<p>
+    <b>Category</b> and <b>Description</b> are end-user-facing attributes. Other values are
+    included in the device configuration that's used by the device manager.
+</p>
+</body>
+</html>
