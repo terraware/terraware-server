@@ -1,4 +1,5 @@
 timeseries_values
+device_templates
 automations
 timeseries
 devices
@@ -7,3 +8,4 @@ sites
 projects
 timeseries_types
 organizations
+device_template_categories

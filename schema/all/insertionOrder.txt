@@ -5,6 +5,7 @@ germination_test_types
 storage_conditions
 accession_notification_types
 app_devices
+device_template_categories
 facility_types
 germination_seed_types
 germination_substrates
@@ -42,6 +43,7 @@ notification_types
 timeseries
 uploads
 bags
+device_templates
 geolocations
 germinations
 thumbnails

@@ -16,6 +16,7 @@ timeseries_values
 thumbnails
 germinations
 geolocations
+device_templates
 bags
 uploads
 timeseries
@@ -53,6 +54,7 @@ germination_treatments
 germination_substrates
 germination_seed_types
 facility_types
+device_template_categories
 app_devices
 accession_notification_types
 storage_conditions
