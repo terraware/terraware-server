@@ -1,0 +1,1 @@
+ALTER TABLE accession_secondary_collectors DROP CONSTRAINT accession_secondary_collector_pkey;

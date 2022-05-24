@@ -18,7 +18,7 @@ COMMENT ON COLUMN accession_notifications.accession_state_id IS 'For state notif
 
 COMMENT ON TABLE accession_photos IS 'Linking table between `accessions` and `photos`.';
 
-COMMENT ON TABLE accession_secondary_collectors IS 'Associates additional collectors with accessions. The primary collector is not included here, but is instead stored in `accessions.primary_collector_id`.';
+COMMENT ON TABLE accession_secondary_collectors IS 'Associates additional collectors with accessions. The primary collector is not included here, but is instead stored in `accessions.primary_collector_name`.';
 
 COMMENT ON TABLE accession_state_history IS 'Historical record of when accessions moved to different states. A row is inserted here for every state transition.';
 COMMENT ON COLUMN accession_state_history.old_state_id IS 'Null if this is the initial state for a new accession.';
@@ -37,8 +37,6 @@ COMMENT ON TABLE app_devices IS 'Installations of the mobile app that were used 
 COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the device manager.';
 
 COMMENT ON TABLE bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
-
-COMMENT ON TABLE collectors IS 'People who participated in seed collection. Both primary and secondary collectors are included.';
 
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
 COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code.';

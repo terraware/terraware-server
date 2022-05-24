@@ -6,8 +6,8 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
+import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.BAGS
-import com.terraformation.backend.db.tables.references.COLLECTORS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
@@ -40,11 +40,9 @@ class AccessionsTable(
           accessionGerminationTestTypes.asMultiValueSublist(
               "viabilityTestTypes",
               ACCESSIONS.ID.eq(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID)),
+          accessionSecondaryCollectors.asMultiValueSublist(
+              "secondaryCollectors", ACCESSIONS.ID.eq(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID)),
           bags.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
-          collectors.asSingleValueSublist(
-              "primaryCollector",
-              ACCESSIONS.PRIMARY_COLLECTOR_ID.eq(COLLECTORS.ID),
-              isRequired = false),
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
           geolocations.asMultiValueSublist(
               "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
@@ -107,7 +105,8 @@ class AccessionsTable(
             "Most recent % viability",
             ACCESSIONS.LATEST_VIABILITY_PERCENT),
         dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
-        aliasField("primaryCollectorName", "primaryCollector_name"),
+        textField(
+            "primaryCollectorName", "Primary collector name", ACCESSIONS.PRIMARY_COLLECTOR_NAME),
         enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
         textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
         dateField("processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
