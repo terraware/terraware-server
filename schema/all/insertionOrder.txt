@@ -33,7 +33,6 @@ projects
 sites
 facilities
 devices
-collectors
 storage_locations
 species
 accessions
@@ -42,6 +41,7 @@ germination_tests
 notification_types
 timeseries
 uploads
+accession_secondary_collectors
 bags
 device_templates
 geolocations
@@ -50,7 +50,6 @@ thumbnails
 timeseries_values
 accession_germination_test_types
 accession_photos
-accession_secondary_collectors
 project_type_selections
 upload_problems
 accession_state_history

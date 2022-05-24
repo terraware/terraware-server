@@ -9,7 +9,6 @@ automations
 accession_state_history
 upload_problems
 project_type_selections
-accession_secondary_collectors
 accession_photos
 accession_germination_test_types
 timeseries_values
@@ -18,6 +17,7 @@ germinations
 geolocations
 device_templates
 bags
+accession_secondary_collectors
 uploads
 timeseries
 notification_types
@@ -26,7 +26,6 @@ photos
 accessions
 species
 storage_locations
-collectors
 devices
 facilities
 sites

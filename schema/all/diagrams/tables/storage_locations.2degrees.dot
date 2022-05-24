@@ -25,7 +25,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "accession_photos":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_photos":"elipses":w -> "photos":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "accession_secondary_collectors":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accession_secondary_collectors":"elipses":w -> "collectors":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_state_history":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_state_history":"elipses":w -> "accession_states":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_state_history":"elipses":w -> "accession_states":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -33,7 +32,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "accessions":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accessions":"primary_collector_id":w -> "collectors":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"processing_method_id":w -> "processing_methods":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"rare_type_id":w -> "rare_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"remaining_units_id":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -49,7 +47,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "automations":"elipses":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "automations":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "bags":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "collectors":"elipses":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "devices":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "devices":"elipses":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "devices":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -137,7 +134,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>accession_secondary_collectors</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/accession_secondary_collectors.html"
     target="_top"
@@ -175,7 +172,6 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="number" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">number</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="received_date" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">received_date</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="state_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">state_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="primary_collector_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">primary_collector_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="storage_location_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">storage_location_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="created_time" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">created_time</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="processing_method_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">processing_method_id</TD></TR></TABLE></TD></TR>
@@ -190,7 +186,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 16</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 15</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/accessions.html"
     target="_top"
@@ -229,17 +225,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="bags"
   ];
-  "collectors" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>collectors</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/collectors.html"
-    target="_top"
-    tooltip="collectors"
-  ];
   "devices" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -262,7 +247,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="122" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="idle_after_time" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="122" HEIGHT="16">idle_after_time</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">5 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/facilities.html"
     target="_top"

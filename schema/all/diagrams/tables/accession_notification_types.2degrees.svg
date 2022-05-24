@@ -59,7 +59,7 @@
 <text text-anchor="start" x="296" y="-101.666" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="293,-77.4655 293,-95.4655 329,-95.4655 329,-77.4655 293,-77.4655"/>
 <polygon fill="none" stroke="black" points="293,-77.4655 293,-95.4655 329,-95.4655 329,-77.4655 293,-77.4655"/>
-<text text-anchor="start" x="296" y="-83.6655" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 16</text>
+<text text-anchor="start" x="296" y="-83.6655" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 15</text>
 <polygon fill="#ffffff" stroke="none" points="329,-77.4655 329,-95.4655 374,-95.4655 374,-77.4655 329,-77.4655"/>
 <polygon fill="none" stroke="black" points="329,-77.4655 329,-95.4655 374,-95.4655 374,-77.4655 329,-77.4655"/>
 <text text-anchor="start" x="335" y="-83.6655" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
