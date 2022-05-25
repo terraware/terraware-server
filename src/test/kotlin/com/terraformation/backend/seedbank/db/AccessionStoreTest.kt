@@ -124,7 +124,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   private val facilityId = FacilityId(100)
   private val organizationId = OrganizationId(1)
-  private val anotherOrganizationId = OrganizationId(2)
 
   @BeforeEach
   fun init() {
