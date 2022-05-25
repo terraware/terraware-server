@@ -289,9 +289,15 @@ class AccessionStore(
   fun update(updated: AccessionModel): Boolean {
     val accessionId = updated.id ?: return false
     val existing = fetchById(accessionId) ?: return false
-    val facilityId = existing.facilityId ?: return false
+    val existingFacilityId = existing.facilityId ?: return false
+    val facilityId = updated.facilityId ?: existing.facilityId
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+
+    if (facilityId != existingFacilityId &&
+        organizationId != parentStore.getOrganizationId(existingFacilityId)) {
+      throw FacilityNotFoundException(facilityId)
+    }
 
     requirePermissions { updateAccession(accessionId) }
 
@@ -366,6 +372,7 @@ class AccessionStore(
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
+                .set(FACILITY_ID, facilityId)
                 .set(FAMILY_NAME, accession.family)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)

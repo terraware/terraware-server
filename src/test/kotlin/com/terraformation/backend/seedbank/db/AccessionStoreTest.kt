@@ -11,6 +11,7 @@ import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.BagId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GeolocationId
 import com.terraformation.backend.db.GerminationSeedType
 import com.terraformation.backend.db.GerminationSubstrate
@@ -19,8 +20,10 @@ import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProcessingMethod
+import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.StorageCondition
@@ -1451,6 +1454,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             dryingStartDate = today,
             endangered = SpeciesEndangeredType.Unsure,
             environmentalNotes = "envNotes",
+            facilityId = facilityId,
             family = "family",
             fieldNotes = "fieldNotes",
             founderId = "founderId",
@@ -1565,6 +1569,45 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertNull(afterUpdate?.numberOfTrees, "Update should not have been written")
   }
 
+  @Test
+  fun `update does not write to database if facility id to update does not belong to same organization as previous facility`() {
+    val anotherOrgId = OrganizationId(5)
+    val anotherProjectId = ProjectId(50)
+    val anotherSiteId = SiteId(500)
+    val facilityIdInAnotherOrg = FacilityId(5000)
+    insertOrganization(anotherOrgId, "dev-2")
+    insertProject(anotherProjectId, anotherOrgId)
+    insertSite(anotherSiteId, anotherProjectId)
+    insertFacility(facilityIdInAnotherOrg, anotherSiteId)
+
+    every { user.canUpdateAccession(any()) } returns true
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+
+    assertThrows<FacilityNotFoundException> {
+      store.update(initial.copy(facilityId = facilityIdInAnotherOrg))
+    }
+
+    val afterUpdate = store.fetchById(initial.id!!)
+    assertNotNull(afterUpdate, "Should be able to read accession after updating")
+    assertEquals(afterUpdate?.facilityId, facilityId, "Update should not updated facility id")
+  }
+
+  @Test
+  fun `update writes new facility id if it belongs to the same organization as previous facility`() {
+    val anotherFacilityId = FacilityId(5000)
+    insertFacility(anotherFacilityId, SiteId(10))
+
+    every { user.canUpdateAccession(any()) } returns true
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+
+    store.update(initial.copy(facilityId = anotherFacilityId))
+
+    val afterUpdate = store.fetchById(initial.id!!)
+    assertNotNull(afterUpdate, "Should be able to read accession after updating")
+    assertEquals(
+        afterUpdate?.facilityId, anotherFacilityId, "Update should have updated facility id")
+  }
+
   @Nested
   inner class MultipleFacilities {
     private val otherFacilityId = FacilityId(500)
@@ -1659,6 +1702,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         dryingStartDate = dryingStartDate,
         endangered = endangered,
         environmentalNotes = environmentalNotes,
+        facilityId = facilityId,
         family = family,
         fieldNotes = fieldNotes,
         founderId = founderId,
