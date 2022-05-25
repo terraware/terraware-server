@@ -9,6 +9,7 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
@@ -17,8 +18,11 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.PHOTOS
+import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.debugWithTiming
@@ -637,6 +641,38 @@ class AccessionStore(
     return log.debugWithTiming("Active accessions query") { query.fetchOne()?.value1() ?: 0 }
   }
 
+  fun countActive(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
+    val statesByActive = AccessionState.values().groupBy { it.toActiveEnum() }
+
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(ACCESSIONS)
+            .join(PROJECTS)
+            .on(PROJECTS.ORGANIZATION_ID.eq(organizationId))
+            .join(SITES)
+            .on(SITES.PROJECT_ID.eq(PROJECTS.ID))
+            .join(FACILITIES)
+            .on(FACILITIES.SITE_ID.eq(SITES.ID))
+            .where(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
+            .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
+            .and(
+                ACCESSIONS.STATE_ID.`in`(statesByActive[AccessionActive.Active])
+                    .orNotExists(
+                        dslContext
+                            .selectOne()
+                            .from(ACCESSION_STATE_HISTORY)
+                            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
+                            .and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(asOf.toInstant()))
+                            .and(
+                                ACCESSION_STATE_HISTORY.NEW_STATE_ID.`in`(
+                                    statesByActive[AccessionActive.Inactive]))))
+
+    log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
+
+    return log.debugWithTiming("Active accessions query") { query.fetchOne()?.value1() ?: 0 }
+  }
+
   /**
    * Returns the number of accessions that entered a state during a time period and are still in
    * that state now.
@@ -695,11 +731,90 @@ class AccessionStore(
     }
   }
 
+  fun countInState(
+      organizationId: OrganizationId,
+      state: AccessionState,
+      sinceAfter: TemporalAccessor? = null,
+      sinceBefore: TemporalAccessor? = null,
+  ): Int {
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(
+                DSL.selectDistinct(ACCESSIONS.ID)
+                    .from(ACCESSION_STATE_HISTORY)
+                    .join(PROJECTS)
+                    .on(PROJECTS.ORGANIZATION_ID.eq(organizationId))
+                    .join(SITES)
+                    .on(SITES.PROJECT_ID.eq(PROJECTS.ID))
+                    .join(FACILITIES)
+                    .on(FACILITIES.SITE_ID.eq(SITES.ID))
+                    .join(ACCESSIONS)
+                    .on(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
+                    .where(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
+                    .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(state))
+                    .and(ACCESSIONS.STATE_ID.eq(state))
+                    .apply {
+                      if (sinceAfter != null) {
+                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.ge(sinceAfter.toInstant()))
+                      }
+                    }
+                    .apply {
+                      if (sinceBefore != null) {
+                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(sinceBefore.toInstant()))
+                      }
+                    })
+
+    val sql = query.getSQL(ParamType.INLINED)
+
+    return log.debugWithTiming("Accession state count with time bounds: $sql") {
+      query.fetchOne()?.value1() ?: 0
+    }
+  }
+
+  fun countInState(organizationId: OrganizationId, state: AccessionState): Int {
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(ACCESSIONS)
+            .join(PROJECTS)
+            .on(PROJECTS.ORGANIZATION_ID.eq(organizationId))
+            .join(SITES)
+            .on(SITES.PROJECT_ID.eq(PROJECTS.ID))
+            .join(FACILITIES)
+            .on(FACILITIES.SITE_ID.eq(SITES.ID))
+            .where(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
+            .and(ACCESSIONS.STATE_ID.eq(state))
+
+    val sql = query.getSQL(ParamType.INLINED)
+
+    return log.debugWithTiming("Accession state count query: $sql") {
+      query.fetchOne()?.value1() ?: 0
+    }
+  }
+
   fun countFamilies(facilityId: FacilityId, asOf: TemporalAccessor): Int {
     return dslContext
         .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
         .from(ACCESSIONS)
         .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+        .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
+        .fetchOne()
+        ?.value1()
+        ?: 0
+  }
+
+  fun countFamilies(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
+    return dslContext
+        .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
+        .from(ACCESSIONS)
+        .join(PROJECTS)
+        .on(PROJECTS.ORGANIZATION_ID.eq(organizationId))
+        .join(SITES)
+        .on(SITES.PROJECT_ID.eq(PROJECTS.ID))
+        .join(FACILITIES)
+        .on(FACILITIES.SITE_ID.eq(SITES.ID))
+        .where(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
         .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
         .fetchOne()
         ?.value1()
