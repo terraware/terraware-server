@@ -18,6 +18,7 @@ import java.time.ZonedDateTime
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -73,9 +74,29 @@ class SummaryController(
                 facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek))
   }
 
-  @GetMapping("/organization/{organizationId}")
-  @Operation(summary = "Get summary statistics about all seed banks within an organization")
-  fun getOrgSummary(@PathVariable organizationId: OrganizationId): SummaryResponse {
+  @GetMapping
+  @Operation(
+      summary =
+          "Get summary statistics about a specific seedbank or all seed banks within an organization")
+  fun getSeedBankSummary(
+      @RequestParam("organizationId", required = false)
+      @Schema(description = "If set, return summary on all seedbanks for that organization.")
+      organizationId: OrganizationId?,
+      @RequestParam("facilityId", required = false)
+      @Schema(description = "If set, return summary on that specific seedbank.")
+      facilityId: FacilityId?
+  ): SummaryResponse {
+    if (facilityId != null) {
+      if (organizationId != null) {
+        throw IllegalArgumentException("Specify either one of organizationId or facilityId.")
+      }
+      return getSummary(facilityId)
+    }
+
+    if (organizationId == null) {
+      throw IllegalArgumentException("One of organizationId or facilityId is required.")
+    }
+
     val now = ZonedDateTime.now(clock)
     val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
     val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
