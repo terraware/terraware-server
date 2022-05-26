@@ -2,7 +2,6 @@ package com.terraformation.backend.search
 
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.search.SearchTable.SearchScope
 import com.terraformation.backend.search.field.SearchField
 import javax.annotation.ManagedBean
 import org.jooq.Condition
@@ -187,8 +186,8 @@ class SearchService(private val dslContext: DSLContext) {
    */
   fun fetchAllValues(
       fieldPath: SearchFieldPath,
-      limit: Int = 50,
       searchScopes: List<SearchScope>,
+      limit: Int = 50,
   ): List<String?> {
     if (searchScopes.isEmpty()) {
       throw IllegalArgumentException("No search scopes specified.")
@@ -209,7 +208,7 @@ class SearchService(private val dslContext: DSLContext) {
           val permsCondition = conditionForPermissions(fieldPath.searchTable)
           val searchConditions =
               searchScopes.mapNotNull { fieldPath.searchTable.conditionForScope(it) }
-          val conditions = listOfNotNull(permsCondition, *searchConditions.toTypedArray())
+          val conditions = listOfNotNull(permsCondition) + searchConditions
 
           val fullQuery =
               dslContext

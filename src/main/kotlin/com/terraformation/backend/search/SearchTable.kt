@@ -1,9 +1,7 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FuzzySearchOperators
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.BigDecimalField
 import com.terraformation.backend.search.field.BooleanField
@@ -292,8 +290,4 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
   ) =
       UpperCaseTextField(
           fieldName, displayName, databaseField, this, nullable, fuzzySearchOperators)
-
-  sealed interface SearchScope
-  data class OrganizationIdScope(val organizationId: OrganizationId) : SearchScope
-  data class FacilityIdScope(val facilityId: FacilityId) : SearchScope
 }
