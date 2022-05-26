@@ -54,7 +54,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
   private lateinit var userStore: UserStore
-  private lateinit var notificationStore: NotificationStore
 
   private val keycloakConfig =
       TerrawareServerConfig.KeycloakConfig(
@@ -104,7 +103,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
-    notificationStore = NotificationStore(dslContext, clock)
 
     userStore =
         UserStore(
@@ -119,7 +117,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             permissionStore,
             realmResource,
             usersDao,
-            notificationStore,
         )
   }
 

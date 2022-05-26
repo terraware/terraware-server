@@ -3,7 +3,6 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.AccessionId
@@ -63,7 +62,6 @@ data class IndividualUser(
     override val userType: UserType,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
-    private val notificationStore: NotificationStore,
 ) : TerrawareUser, UserDetails {
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
     permissionStore.fetchOrganizationRoles(userId)
