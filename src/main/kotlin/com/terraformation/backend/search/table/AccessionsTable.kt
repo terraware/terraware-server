@@ -158,7 +158,6 @@ class AccessionsTable(
     return when (scope) {
       is OrganizationIdScope ->
           ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(scope.organizationId)
-      else -> null
     }
   }
 

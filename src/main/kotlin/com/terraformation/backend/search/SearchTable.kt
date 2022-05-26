@@ -292,6 +292,6 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
       UpperCaseTextField(
           fieldName, displayName, databaseField, this, nullable, fuzzySearchOperators)
 
-  open class SearchScope
-  data class OrganizationIdScope(val organizationId: OrganizationId) : SearchScope()
+  sealed interface SearchScope
+  data class OrganizationIdScope(val organizationId: OrganizationId) : SearchScope
 }

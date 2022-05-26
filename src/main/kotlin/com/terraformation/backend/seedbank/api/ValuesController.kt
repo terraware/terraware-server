@@ -76,16 +76,14 @@ class ValuesController(
   ): ListAllFieldValuesResponsePayload {
     val limit = 100
 
+    val searchScope =
+        if (payload.organizationId != null) SearchTable.OrganizationIdScope(payload.organizationId)
+        else null
+
     val values =
         payload.fields.associateWith { fieldName ->
           val searchField = rootPrefix.resolve(fieldName)
-          val values =
-              searchService.fetchAllValues(
-                  searchField,
-                  limit,
-                  if (payload.organizationId != null)
-                      SearchTable.OrganizationIdScope(payload.organizationId)
-                  else null)
+          val values = searchService.fetchAllValues(searchField, limit, searchScope)
 
           val partial = values.size > limit
           AllFieldValuesPayload(values.take(limit), partial)
@@ -122,8 +120,8 @@ data class FieldValuesPayload(
 
 data class ListFieldValuesRequestPayload(
     val facilityId: FacilityId?,
-    val organizationId: OrganizationId?,
     val fields: List<String>,
+    val organizationId: OrganizationId?,
     override val search: SearchNodePayload?,
 ) : HasSearchNode
 

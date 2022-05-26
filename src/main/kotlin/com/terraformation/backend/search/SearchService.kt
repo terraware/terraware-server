@@ -182,7 +182,7 @@ class SearchService(private val dslContext: DSLContext) {
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    * by at most 1 element, which callers can use to detect that the number of values exceeds the
    * limit.
-   * @param condition Condition to narrow down scope of search values
+   * @param searchScope Optional scoping data for the search
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
   fun fetchAllValues(
@@ -206,20 +206,14 @@ class SearchService(private val dslContext: DSLContext) {
           val scopeCondition =
               if (searchScope != null) fieldPath.searchTable.conditionForScope(searchScope)
               else null
-          val conditions =
-              when {
-                (permsCondition != null && scopeCondition != null) ->
-                    permsCondition.and(scopeCondition)
-                permsCondition != null -> permsCondition
-                else -> scopeCondition
-              }
+          val conditions = listOfNotNull(permsCondition, scopeCondition)
 
           val fullQuery =
               dslContext
                   .selectDistinct(selectFields)
                   .from(searchTable.fromTable)
                   .let { joinForPermissions(it, setOf(searchTable), searchTable) }
-                  .let { if (conditions != null) it.where(conditions) else it }
+                  .where(conditions)
                   .orderBy(DSL.field("order_by_field").asc().nullsLast())
                   .limit(limit + 1)
           log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")

@@ -1356,6 +1356,62 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           searchService.fetchAllValues(germinationSeedsSownField),
           "Value from germination_tests table (child of accessions)")
     }
+
+    @Test
+    fun `only includes child table values governed by search scope`() {
+      every { user.facilityRoles } returns
+          mapOf(
+              facilityId to Role.CONTRIBUTOR,
+              FacilityId(1100) to Role.CONTRIBUTOR,
+              FacilityId(2200) to Role.OWNER)
+
+      insertProject(11)
+      insertSite(110)
+      insertFacility(1100)
+
+      val otherOrganizationId = OrganizationId(5)
+      insertOrganization(otherOrganizationId)
+      insertProject(22, otherOrganizationId)
+      insertSite(220, 22)
+      insertFacility(2200, 220)
+
+      accessionsDao.insert(
+          AccessionsRow(
+              id = AccessionId(1100),
+              number = "OtherProject",
+              stateId = AccessionState.Processed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              facilityId = FacilityId(1100),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ),
+          AccessionsRow(
+              id = AccessionId(2200),
+              number = "OtherProject22",
+              stateId = AccessionState.Processed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              facilityId = FacilityId(2200),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
+
+      val expectedUnscoped = listOf("ABCDEFG", "OtherProject", "OtherProject22", "XYZ")
+      val expectedScopedOrg = listOf("ABCDEFG", "OtherProject", "XYZ")
+      val expectedScopedOtherOrg = listOf("OtherProject22")
+
+      assertEquals(expectedUnscoped, searchService.fetchAllValues(accessionNumberField))
+      assertEquals(
+          expectedScopedOrg,
+          searchService.fetchAllValues(
+              accessionNumberField, searchScope = SearchTable.OrganizationIdScope(organizationId)))
+      assertEquals(
+          expectedScopedOtherOrg,
+          searchService.fetchAllValues(
+              accessionNumberField,
+              searchScope = SearchTable.OrganizationIdScope(otherOrganizationId)))
+    }
   }
 
   @Test
