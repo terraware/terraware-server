@@ -75,15 +75,20 @@ class ValuesController(
       @RequestBody payload: ListAllFieldValuesRequestPayload
   ): ListAllFieldValuesResponsePayload {
     val limit = 100
-
-    val searchScope =
+    val organizationIdScope =
         if (payload.organizationId != null) SearchTable.OrganizationIdScope(payload.organizationId)
         else null
+    val facilityIdScope =
+        if (payload.facilityId != null) SearchTable.FacilityIdScope(payload.facilityId) else null
+    val searchScopes = listOfNotNull(organizationIdScope, facilityIdScope)
+    if (searchScopes.isEmpty()) {
+      throw IllegalArgumentException("One of organizationId or facilityId is required.")
+    }
 
     val values =
         payload.fields.associateWith { fieldName ->
           val searchField = rootPrefix.resolve(fieldName)
-          val values = searchService.fetchAllValues(searchField, limit, searchScope)
+          val values = searchService.fetchAllValues(searchField, limit, searchScopes)
 
           val partial = values.size > limit
           AllFieldValuesPayload(values.take(limit), partial)

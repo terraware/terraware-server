@@ -182,14 +182,18 @@ class SearchService(private val dslContext: DSLContext) {
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    * by at most 1 element, which callers can use to detect that the number of values exceeds the
    * limit.
-   * @param searchScope Optional scoping data for the search
+   * @param searchScope Scoping data for the search
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
   fun fetchAllValues(
       fieldPath: SearchFieldPath,
       limit: Int = 50,
-      searchScope: SearchScope? = null
+      searchScopes: List<SearchScope>,
   ): List<String?> {
+    if (searchScopes.isEmpty()) {
+      throw IllegalArgumentException("No search scopes specified.")
+    }
+
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
     val field = fieldPath.searchField
@@ -203,10 +207,9 @@ class SearchService(private val dslContext: DSLContext) {
               field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
           val searchTable = fieldPath.searchTable
           val permsCondition = conditionForPermissions(fieldPath.searchTable)
-          val scopeCondition =
-              if (searchScope != null) fieldPath.searchTable.conditionForScope(searchScope)
-              else null
-          val conditions = listOfNotNull(permsCondition, scopeCondition)
+          val searchConditions =
+              searchScopes.mapNotNull { fieldPath.searchTable.conditionForScope(it) }
+          val conditions = listOfNotNull(permsCondition, *searchConditions.toTypedArray())
 
           val fullQuery =
               dslContext

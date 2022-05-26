@@ -48,6 +48,7 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
     return when (scope) {
       is OrganizationIdScope ->
           FACILITIES.sites().projects().ORGANIZATION_ID.eq(scope.organizationId)
+      is FacilityIdScope -> FACILITIES.ID.eq(scope.facilityId)
     }
   }
 }

@@ -1,6 +1,7 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.search.field.AliasField
@@ -294,4 +295,5 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
 
   sealed interface SearchScope
   data class OrganizationIdScope(val organizationId: OrganizationId) : SearchScope
+  data class FacilityIdScope(val facilityId: FacilityId) : SearchScope
 }
