@@ -1,7 +1,6 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
@@ -96,7 +95,6 @@ internal class PermissionTest : DatabaseTest() {
   private lateinit var parentStore: ParentStore
   private lateinit var permissionStore: PermissionStore
   private lateinit var userStore: UserStore
-  private lateinit var notificationStore: NotificationStore
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
@@ -155,7 +153,6 @@ internal class PermissionTest : DatabaseTest() {
 
     parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
-    notificationStore = NotificationStore(dslContext, clock)
     userStore =
         UserStore(
             clock,
@@ -169,7 +166,7 @@ internal class PermissionTest : DatabaseTest() {
             permissionStore,
             realmResource,
             usersDao,
-            notificationStore)
+        )
 
     insertUser(userId)
     insertUser(otherUserId)

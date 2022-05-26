@@ -120,7 +120,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             PermissionStore(dslContext),
             realmResource,
             usersDao,
-            notificationStore,
         )
     webAppUrls = WebAppUrls(config)
     service =

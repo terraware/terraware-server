@@ -73,7 +73,6 @@ class UserStore(
     private val permissionStore: PermissionStore,
     realmResource: RealmResource,
     private val usersDao: UsersDao,
-    private val notificationStore: NotificationStore,
 ) {
   private val log = perClassLogger()
   private val usersResource = realmResource.users()
@@ -531,7 +530,6 @@ class UserStore(
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),
         parentStore,
         permissionStore,
-        notificationStore,
     )
   }
 
