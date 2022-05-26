@@ -261,7 +261,7 @@ class AdminController(
 
     val user = userStore.fetchById(userId)
     if (user == null) {
-      redirectAttributes.addFlashAttribute("failureMessage", "User not found.")
+      redirectAttributes.failureMessage = "User not found."
       return adminHome()
     }
 
@@ -299,7 +299,7 @@ class AdminController(
       projectsToRemove.forEach { projectId -> projectStore.removeUser(projectId, userId) }
     }
 
-    redirectAttributes.addFlashAttribute("successMessage", "User memberships updated.")
+    redirectAttributes.successMessage = "User memberships updated."
 
     return user(userId)
   }
@@ -311,10 +311,10 @@ class AdminController(
   ): String {
     try {
       val org = organizationStore.createWithAdmin(OrganizationsRow(name = name))
-      redirectAttributes.addFlashAttribute("successMessage", "Created organization ${org.id}")
+      redirectAttributes.successMessage = "Created organization ${org.id}"
     } catch (e: Exception) {
       log.error("Failed to create organization $name", e)
-      redirectAttributes.addFlashAttribute("failureMessage", "Failed to create organization")
+      redirectAttributes.failureMessage = "Failed to create organization"
     }
 
     return adminHome()
@@ -332,7 +332,7 @@ class AdminController(
   ): String {
     val role = Role.of(roleId)
     if (role == null) {
-      redirectAttributes.addFlashAttribute("failureMessage", "Invalid role selected.")
+      redirectAttributes.failureMessage = "Invalid role selected."
       return organization(organizationId)
     }
 
@@ -343,18 +343,16 @@ class AdminController(
           userStore.createUser(
               organizationId, role, email, firstName, lastName, redirectUrl = redirectUrl)
 
-      redirectAttributes.addFlashAttribute("successMessage", "User added to organization.")
+      redirectAttributes.successMessage = "User added to organization."
 
       return user(user.userId)
     } catch (e: DuplicateKeyException) {
-      redirectAttributes.addFlashAttribute("failureMessage", "User is already in the organization.")
+      redirectAttributes.failureMessage = "User is already in the organization."
     } catch (e: AccessDeniedException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "No permission to create users in this organization.")
+      redirectAttributes.failureMessage = "No permission to create users in this organization."
     } catch (e: Exception) {
       log.error("User creation failed", e)
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "Unexpected failure while creating user.")
+      redirectAttributes.failureMessage = "Unexpected failure while creating user."
     }
 
     return organization(organizationId)
@@ -368,13 +366,11 @@ class AdminController(
   ): String {
     try {
       organizationStore.removeUser(organizationId, userId)
-      redirectAttributes.addFlashAttribute("successMessage", "User removed from organization.")
+      redirectAttributes.successMessage = "User removed from organization."
     } catch (e: AccessDeniedException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "No permission to remove users from this organization.")
+      redirectAttributes.failureMessage = "No permission to remove users from this organization."
     } catch (e: UserNotFoundException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "User was not a member of the organization.")
+      redirectAttributes.failureMessage = "User was not a member of the organization."
     }
 
     return organization(organizationId)
@@ -390,19 +386,17 @@ class AdminController(
     val role = Role.of(roleId)
 
     if (role == null) {
-      redirectAttributes.addFlashAttribute("failureMessage", "Invalid role selected.")
+      redirectAttributes.failureMessage = "Invalid role selected."
       return organization(organizationId)
     }
 
     try {
       organizationStore.setUserRole(organizationId, userId, role)
-      redirectAttributes.addFlashAttribute("successMessage", "User role updated.")
+      redirectAttributes.successMessage = "User role updated."
     } catch (e: AccessDeniedException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "No permission to set user roles for this organization.")
+      redirectAttributes.failureMessage = "No permission to set user roles for this organization."
     } catch (e: UserNotFoundException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "User was not a member of the organization.")
+      redirectAttributes.failureMessage = "User was not a member of the organization."
     }
 
     return organization(organizationId)
@@ -416,10 +410,9 @@ class AdminController(
   ): String {
     try {
       projectStore.create(organizationId, name)
-      redirectAttributes.addFlashAttribute("successMessage", "Project created.")
+      redirectAttributes.successMessage = "Project created."
     } catch (e: AccessDeniedException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "No permission to create projects in this organization.")
+      redirectAttributes.failureMessage = "No permission to create projects in this organization."
     }
 
     return organization(organizationId)
@@ -433,13 +426,11 @@ class AdminController(
   ): String {
     try {
       projectStore.removeUser(projectId, userId)
-      redirectAttributes.addFlashAttribute("successMessage", "User removed from project.")
+      redirectAttributes.successMessage = "User removed from project."
     } catch (e: AccessDeniedException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "No permission to remove users from this project.")
+      redirectAttributes.failureMessage = "No permission to remove users from this project."
     } catch (e: UserNotFoundException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "User was not a member of the project.")
+      redirectAttributes.failureMessage = "User was not a member of the project."
     }
 
     return project(projectId)
@@ -453,12 +444,11 @@ class AdminController(
   ): String {
     try {
       projectStore.addUser(projectId, userId)
-      redirectAttributes.addFlashAttribute("successMessage", "User added to project.")
+      redirectAttributes.successMessage = "User added to project."
     } catch (e: AccessDeniedException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "No permission to add users to this project.")
+      redirectAttributes.failureMessage = "No permission to add users to this project."
     } catch (e: DuplicateKeyException) {
-      redirectAttributes.addFlashAttribute("failureMessage", "User is already in this project.")
+      redirectAttributes.failureMessage = "User is already in this project."
     }
 
     return project(projectId)
@@ -478,10 +468,10 @@ class AdminController(
     try {
       siteStore.create(SitesRow(projectId = projectId, name = name, location = location))
 
-      redirectAttributes.addFlashAttribute("successMessage", "Site created.")
+      redirectAttributes.successMessage = "Site created."
     } catch (e: Exception) {
       log.error("Site creation failed", e)
-      redirectAttributes.addFlashAttribute("failureMessage", "Unable to create site.")
+      redirectAttributes.failureMessage = "Unable to create site."
     }
 
     return project(projectId)
@@ -497,13 +487,13 @@ class AdminController(
     val type = FacilityType.forId(typeId)
 
     if (type == null) {
-      redirectAttributes.addFlashAttribute("failureMessage", "Unknown facility type.")
+      redirectAttributes.failureMessage = "Unknown facility type."
       return site(siteId)
     }
 
     facilityStore.create(siteId, type, name)
 
-    redirectAttributes.addFlashAttribute("successMessage", "Facility created.")
+    redirectAttributes.successMessage = "Facility created."
 
     return site(siteId)
   }
@@ -520,7 +510,7 @@ class AdminController(
     val type = FacilityType.forId(typeId)
 
     if (type == null) {
-      redirectAttributes.addFlashAttribute("failureMessage", "Unknown facility type.")
+      redirectAttributes.failureMessage = "Unknown facility type."
       return facility(facilityId)
     }
 
@@ -533,7 +523,7 @@ class AdminController(
             type = type,
             maxIdleMinutes = maxIdleMinutes))
 
-    redirectAttributes.addFlashAttribute("successMessage", "Facility updated.")
+    redirectAttributes.successMessage = "Facility updated."
 
     return facility(facilityId)
   }
@@ -549,17 +539,15 @@ class AdminController(
       publisher.publishEvent(
           FacilityAlertRequestedEvent(facilityId, subject, body, currentUser().userId))
 
-      val successMessage =
+      redirectAttributes.successMessage =
           if (config.email.enabled) {
             "Alert sent."
           } else {
             "Alert generated and logged, but email sending is currently disabled."
           }
-
-      redirectAttributes.addFlashAttribute("successMessage", successMessage)
     } catch (e: Exception) {
       log.error("Failed to send alert", e)
-      redirectAttributes.addFlashAttribute("failureMessage", "Failed to send alert.")
+      redirectAttributes.failureMessage = "Failed to send alert."
     }
 
     return facility(facilityId)
@@ -574,7 +562,7 @@ class AdminController(
   ): String {
     facilityStore.createStorageLocation(facilityId, name, condition)
 
-    redirectAttributes.addFlashAttribute("successMessage", "Storage location created.")
+    redirectAttributes.successMessage = "Storage location created."
 
     return facility(facilityId)
   }
@@ -589,7 +577,7 @@ class AdminController(
   ): String {
     facilityStore.updateStorageLocation(storageLocationId, name, condition)
 
-    redirectAttributes.addFlashAttribute("successMessage", "Storage location updated.")
+    redirectAttributes.successMessage = "Storage location updated."
 
     return facility(facilityId)
   }
@@ -602,10 +590,9 @@ class AdminController(
   ): String {
     try {
       facilityStore.deleteStorageLocation(storageLocationId)
-      redirectAttributes.addFlashAttribute("successMessage", "Storage location deleted.")
+      redirectAttributes.successMessage = "Storage location deleted."
     } catch (e: DataIntegrityViolationException) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "Storage location is in use; can't delete it.")
+      redirectAttributes.failureMessage = "Storage location is in use; can't delete it."
     }
 
     return facility(facilityId)
@@ -637,8 +624,7 @@ class AdminController(
       redirectAttributes: RedirectAttributes
   ): String {
     if (!model.containsAttribute("token")) {
-      redirectAttributes.addFlashAttribute(
-          "failureMessage", "You may not view an API key after it has been created.")
+      redirectAttributes.failureMessage = "You may not view an API key after it has been created."
       return organization(organizationId)
     }
 
@@ -656,9 +642,9 @@ class AdminController(
       redirectAttributes: RedirectAttributes,
   ): String {
     if (userStore.deleteApiClient(userId)) {
-      redirectAttributes.addFlashAttribute("successMessage", "API key deleted.")
+      redirectAttributes.successMessage = "API key deleted."
     } else {
-      redirectAttributes.addFlashAttribute("failureMessage", "Unable to delete API key.")
+      redirectAttributes.failureMessage = "Unable to delete API key."
     }
 
     return organization(organizationId)
@@ -682,9 +668,9 @@ class AdminController(
 
       ZipFile(tempFile.toFile()).use { gbifImporter.import(it) }
 
-      redirectAttributes.addFlashAttribute("successMessage", "GBIF data imported successfully.")
+      redirectAttributes.successMessage = "GBIF data imported successfully."
     } catch (e: Exception) {
-      redirectAttributes.addFlashAttribute("failureMessage", "Import failed: ${e.message}")
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
     } finally {
       tempFile.deleteIfExists()
     }
@@ -704,10 +690,10 @@ class AdminController(
 
     try {
       deviceTemplatesDao.insert(templatesRow)
-      redirectAttributes.addFlashAttribute("successMessage", "Device template created.")
+      redirectAttributes.successMessage = "Device template created."
     } catch (e: Exception) {
       log.error("Failed to create device template", e)
-      redirectAttributes.addFlashAttribute("failureMessage", "Creation failed: ${e.message}")
+      redirectAttributes.failureMessage = "Creation failed: ${e.message}"
     }
 
     return deviceTemplates()
@@ -727,14 +713,14 @@ class AdminController(
     try {
       if (delete != null) {
         deviceTemplatesDao.deleteById(templatesRow.id)
-        redirectAttributes.addFlashAttribute("successMessage", "Device template deleted.")
+        redirectAttributes.successMessage = "Device template deleted."
       } else {
         deviceTemplatesDao.update(templatesRow)
-        redirectAttributes.addFlashAttribute("successMessage", "Device template updated.")
+        redirectAttributes.successMessage = "Device template updated."
       }
     } catch (e: Exception) {
       log.error("Failed to update device template", e)
-      redirectAttributes.addFlashAttribute("failureMessage", "Update failed: ${e.message}")
+      redirectAttributes.failureMessage = "Update failed: ${e.message}"
     }
 
     return deviceTemplates()
@@ -744,6 +730,18 @@ class AdminController(
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
   }
+
+  private var RedirectAttributes.failureMessage: String?
+    get() = flashAttributes["failureMessage"]?.toString()
+    set(value) {
+      addFlashAttribute("failureMessage", value)
+    }
+
+  private var RedirectAttributes.successMessage: String?
+    get() = flashAttributes["successMessage"]?.toString()
+    set(value) {
+      addFlashAttribute("successMessage", value)
+    }
 
   /** Returns a redirect view name for an admin endpoint. */
   private fun redirect(endpoint: String) = "redirect:${prefix}$endpoint"
