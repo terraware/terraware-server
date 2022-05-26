@@ -73,7 +73,6 @@ class SummaryController(
             accessionStore.countInState(
                 facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek))
   }
-
   @GetMapping
   @Operation(
       summary =
@@ -86,17 +85,14 @@ class SummaryController(
       @Schema(description = "If set, return summary on that specific seedbank.")
       facilityId: FacilityId?
   ): SummaryResponse {
-    if (facilityId != null) {
-      if (organizationId != null) {
-        throw IllegalArgumentException("Specify either one of organizationId or facilityId.")
-      }
-      return getSummary(facilityId)
+    return when {
+      facilityId != null && organizationId == null -> getSummary(facilityId)
+      facilityId == null && organizationId != null -> getSummary(organizationId)
+      else -> throw IllegalArgumentException("...")
     }
+  }
 
-    if (organizationId == null) {
-      throw IllegalArgumentException("One of organizationId or facilityId is required.")
-    }
-
+  private fun getSummary(organizationId: OrganizationId): SummaryResponse {
     val now = ZonedDateTime.now(clock)
     val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
     val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)

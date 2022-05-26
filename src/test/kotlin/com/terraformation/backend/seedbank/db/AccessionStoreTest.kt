@@ -1625,7 +1625,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `counts active accessions by facility`() {
       store.create(AccessionModel(facilityId = facilityId))
-      assertEquals(store.countActive(facilityId, ZonedDateTime.now(clock)), 1)
+      assertEquals(1, store.countActive(facilityId, ZonedDateTime.now(clock)))
     }
 
     @Test
@@ -1640,7 +1640,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `counts accession families by facility`() {
       store.create(AccessionModel(facilityId = facilityId, family = "test"))
-      assertEquals(store.countFamilies(facilityId, ZonedDateTime.now(clock)), 1)
+      assertEquals(1, store.countFamilies(facilityId, ZonedDateTime.now(clock)))
     }
 
     @Test
@@ -1655,8 +1655,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `counts accessions state by facility`() {
       store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
-      assertEquals(store.countInState(facilityId, AccessionState.AwaitingCheckIn), 1)
-      assertEquals(store.countInState(facilityId, AccessionState.Dried), 0)
+      assertEquals(1, store.countInState(facilityId, AccessionState.AwaitingCheckIn))
+      assertEquals(0, store.countInState(facilityId, AccessionState.Dried))
     }
 
     @Test
@@ -1675,17 +1675,19 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
       store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
       assertEquals(
+          0,
           store.countInState(
               facilityId,
               AccessionState.AwaitingCheckIn,
               sinceAfter = ZonedDateTime.now(clock).plusDays(1)),
-          0)
+      )
       assertEquals(
+          1,
           store.countInState(
               facilityId,
               AccessionState.AwaitingCheckIn,
               sinceBefore = ZonedDateTime.now(clock).plusDays(1)),
-          1)
+      )
     }
 
     @Test
@@ -1700,7 +1702,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `counts active accessions by organization`() {
       store.create(AccessionModel(facilityId = facilityId))
-      assertEquals(store.countActive(organizationId, ZonedDateTime.now(clock)), 1)
+      assertEquals(1, store.countActive(organizationId, ZonedDateTime.now(clock)))
     }
 
     @Test
@@ -1715,7 +1717,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `counts accession families by organization`() {
       store.create(AccessionModel(facilityId = facilityId, family = "test"))
-      assertEquals(store.countFamilies(organizationId, ZonedDateTime.now(clock)), 1)
+      assertEquals(1, store.countFamilies(organizationId, ZonedDateTime.now(clock)))
     }
 
     @Test
@@ -1730,8 +1732,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `counts accessions state by organization`() {
       store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
-      assertEquals(store.countInState(organizationId, AccessionState.AwaitingCheckIn), 1)
-      assertEquals(store.countInState(organizationId, AccessionState.Dried), 0)
+      assertEquals(1, store.countInState(organizationId, AccessionState.AwaitingCheckIn))
+      assertEquals(0, store.countInState(organizationId, AccessionState.Dried))
     }
 
     @Test
@@ -1750,17 +1752,17 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
       store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
       assertEquals(
+          0,
           store.countInState(
               organizationId,
               AccessionState.AwaitingCheckIn,
-              sinceAfter = ZonedDateTime.now(clock).plusDays(1)),
-          0)
+              sinceAfter = ZonedDateTime.now(clock).plusDays(1)))
       assertEquals(
+          1,
           store.countInState(
               organizationId,
               AccessionState.AwaitingCheckIn,
-              sinceBefore = ZonedDateTime.now(clock).plusDays(1)),
-          1)
+              sinceBefore = ZonedDateTime.now(clock).plusDays(1)))
     }
   }
 
