@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.atMostRecent
@@ -17,6 +18,7 @@ import java.time.ZonedDateTime
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -70,6 +72,62 @@ class SummaryController(
         recentlyWithdrawnAccessions =
             accessionStore.countInState(
                 facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek))
+  }
+  @GetMapping
+  @Operation(
+      summary =
+          "Get summary statistics about a specific seedbank or all seed banks within an organization")
+  fun getSeedBankSummary(
+      @RequestParam("organizationId", required = false)
+      @Schema(description = "If set, return summary on all seedbanks for that organization.")
+      organizationId: OrganizationId?,
+      @RequestParam("facilityId", required = false)
+      @Schema(description = "If set, return summary on that specific seedbank.")
+      facilityId: FacilityId?
+  ): SummaryResponse {
+    return when {
+      facilityId != null && organizationId == null -> getSummary(facilityId)
+      facilityId == null && organizationId != null -> getSummary(organizationId)
+      else -> throw IllegalArgumentException("...")
+    }
+  }
+
+  private fun getSummary(organizationId: OrganizationId): SummaryResponse {
+    val now = ZonedDateTime.now(clock)
+    val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
+    val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
+
+    // For purposes of scanning for overdue accessions, "One week ago" is 6 days before the most
+    // recent start of day because we need to include accessions that happened after start-of-day on
+    // the same day a week earlier. Spec says if it is Monday morning, the count of week-old pending
+    // accessions should include ones that arrived the previous Monday afternoon, so we need to use
+    // start-of-day on the previous Tuesday (6 days earlier) as the cutoff.
+    val oneWeekAgo = startOfDay.minusDays(6)
+    val twoWeeksAgo = startOfDay.minusDays(13)
+
+    return SummaryResponse(
+        activeAccessions =
+            SummaryStatistic(
+                accessionStore.countActive(organizationId, now),
+                accessionStore.countActive(organizationId, startOfWeek)),
+        species =
+            SummaryStatistic(
+                speciesStore.countSpecies(organizationId, now),
+                speciesStore.countSpecies(organizationId, startOfWeek)),
+        families =
+            SummaryStatistic(
+                accessionStore.countFamilies(organizationId, now),
+                accessionStore.countFamilies(organizationId, startOfWeek)),
+        overduePendingAccessions =
+            accessionStore.countInState(
+                organizationId, AccessionState.Pending, sinceBefore = oneWeekAgo),
+        overdueProcessedAccessions =
+            accessionStore.countInState(
+                organizationId, AccessionState.Processed, sinceBefore = twoWeeksAgo),
+        overdueDriedAccessions = accessionStore.countInState(organizationId, AccessionState.Dried),
+        recentlyWithdrawnAccessions =
+            accessionStore.countInState(
+                organizationId, AccessionState.Withdrawn, sinceAfter = startOfWeek))
   }
 }
 

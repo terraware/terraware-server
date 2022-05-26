@@ -19,6 +19,7 @@ import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.RareType
@@ -76,6 +77,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.jooq.Record
@@ -138,6 +140,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateSpecies(organizationId) } returns true
     every { user.canDeleteSpecies(any()) } returns true
     every { user.canReadAccession(any()) } returns true
+    every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateAccession(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
@@ -1606,6 +1609,161 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
     assertEquals(
         afterUpdate?.facilityId, anotherFacilityId, "Update should have updated facility id")
+  }
+
+  @Nested
+  inner class Summary {
+    @Test
+    fun `rejects count active accessions by facility when user cannot read facility`() {
+      every { user.canReadFacility(any()) } returns false
+
+      assertThrows<FacilityNotFoundException> {
+        store.countActive(facilityId, ZonedDateTime.now(clock))
+      }
+    }
+
+    @Test
+    fun `counts active accessions by facility`() {
+      store.create(AccessionModel(facilityId = facilityId))
+      assertEquals(1, store.countActive(facilityId, ZonedDateTime.now(clock)))
+    }
+
+    @Test
+    fun `rejects count accession families by facility when user cannot read facility`() {
+      every { user.canReadFacility(any()) } returns false
+
+      assertThrows<FacilityNotFoundException> {
+        store.countFamilies(facilityId, ZonedDateTime.now(clock))
+      }
+    }
+
+    @Test
+    fun `counts accession families by facility`() {
+      store.create(AccessionModel(facilityId = facilityId, family = "test"))
+      assertEquals(1, store.countFamilies(facilityId, ZonedDateTime.now(clock)))
+    }
+
+    @Test
+    fun `rejects count accessions state by facility when user cannot read facility`() {
+      every { user.canReadFacility(any()) } returns false
+
+      assertThrows<FacilityNotFoundException> {
+        store.countInState(facilityId, AccessionState.Pending)
+      }
+    }
+
+    @Test
+    fun `counts accessions state by facility`() {
+      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
+      assertEquals(1, store.countInState(facilityId, AccessionState.AwaitingCheckIn))
+      assertEquals(0, store.countInState(facilityId, AccessionState.Dried))
+    }
+
+    @Test
+    fun `rejects count accessions state by facility for duration when user cannot read facility`() {
+      every { user.canReadFacility(any()) } returns false
+
+      assertThrows<FacilityNotFoundException> {
+        store.countInState(
+            facilityId, AccessionState.Pending, sinceBefore = ZonedDateTime.now(clock))
+      }
+    }
+
+    @Test
+    fun `counts accessions state by facility for duration`() {
+      every { clock.instant() } returns Instant.now()
+
+      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
+      assertEquals(
+          0,
+          store.countInState(
+              facilityId,
+              AccessionState.AwaitingCheckIn,
+              sinceAfter = ZonedDateTime.now(clock).plusDays(1)),
+      )
+      assertEquals(
+          1,
+          store.countInState(
+              facilityId,
+              AccessionState.AwaitingCheckIn,
+              sinceBefore = ZonedDateTime.now(clock).plusDays(1)),
+      )
+    }
+
+    @Test
+    fun `rejects count active accessions by organization when user cannot read organization`() {
+      every { user.canReadOrganization(any()) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        store.countActive(organizationId, ZonedDateTime.now(clock))
+      }
+    }
+
+    @Test
+    fun `counts active accessions by organization`() {
+      store.create(AccessionModel(facilityId = facilityId))
+      assertEquals(1, store.countActive(organizationId, ZonedDateTime.now(clock)))
+    }
+
+    @Test
+    fun `rejects count accession families by organization when user cannot read organization`() {
+      every { user.canReadOrganization(any()) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        store.countFamilies(organizationId, ZonedDateTime.now(clock))
+      }
+    }
+
+    @Test
+    fun `counts accession families by organization`() {
+      store.create(AccessionModel(facilityId = facilityId, family = "test"))
+      assertEquals(1, store.countFamilies(organizationId, ZonedDateTime.now(clock)))
+    }
+
+    @Test
+    fun `rejects count accessions state by organization when user cannot read organization`() {
+      every { user.canReadOrganization(any()) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        store.countInState(organizationId, AccessionState.Pending)
+      }
+    }
+
+    @Test
+    fun `counts accessions state by organization`() {
+      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
+      assertEquals(1, store.countInState(organizationId, AccessionState.AwaitingCheckIn))
+      assertEquals(0, store.countInState(organizationId, AccessionState.Dried))
+    }
+
+    @Test
+    fun `rejects count accessions state by organization for duration when user cannot read organization`() {
+      every { user.canReadOrganization(any()) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        store.countInState(
+            organizationId, AccessionState.Pending, sinceBefore = ZonedDateTime.now(clock))
+      }
+    }
+
+    @Test
+    fun `counts accessions state by organization for duration`() {
+      every { clock.instant() } returns Instant.now()
+
+      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
+      assertEquals(
+          0,
+          store.countInState(
+              organizationId,
+              AccessionState.AwaitingCheckIn,
+              sinceAfter = ZonedDateTime.now(clock).plusDays(1)))
+      assertEquals(
+          1,
+          store.countInState(
+              organizationId,
+              AccessionState.AwaitingCheckIn,
+              sinceBefore = ZonedDateTime.now(clock).plusDays(1)))
+    }
   }
 
   @Nested

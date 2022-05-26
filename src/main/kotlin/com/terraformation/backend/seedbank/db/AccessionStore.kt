@@ -9,6 +9,7 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
@@ -37,6 +38,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.conf.ParamType
@@ -612,29 +614,15 @@ class AccessionStore(
    * the query will be inefficient.)
    */
   fun countActive(facilityId: FacilityId, asOf: TemporalAccessor): Int {
-    val statesByActive = AccessionState.values().groupBy { it.toActiveEnum() }
+    requirePermissions { readFacility(facilityId) }
+    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
+    return countActive(condition, asOf)
+  }
 
-    val query =
-        dslContext
-            .select(DSL.count())
-            .from(ACCESSIONS)
-            .where(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
-            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
-            .and(
-                ACCESSIONS.STATE_ID.`in`(statesByActive[AccessionActive.Active])
-                    .orNotExists(
-                        dslContext
-                            .selectOne()
-                            .from(ACCESSION_STATE_HISTORY)
-                            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
-                            .and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(asOf.toInstant()))
-                            .and(
-                                ACCESSION_STATE_HISTORY.NEW_STATE_ID.`in`(
-                                    statesByActive[AccessionActive.Inactive]))))
-
-    log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
-
-    return log.debugWithTiming("Active accessions query") { query.fetchOne()?.value1() ?: 0 }
+  fun countActive(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
+    requirePermissions { readOrganization(organizationId) }
+    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    return countActive(condition, asOf)
   }
 
   /**
@@ -650,60 +638,51 @@ class AccessionStore(
       sinceAfter: TemporalAccessor? = null,
       sinceBefore: TemporalAccessor? = null,
   ): Int {
-    val query =
-        dslContext
-            .select(DSL.count())
-            .from(
-                DSL.selectDistinct(ACCESSIONS.ID)
-                    .from(ACCESSION_STATE_HISTORY)
-                    .join(ACCESSIONS)
-                    .on(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
-                    .where(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(state))
-                    .and(ACCESSIONS.STATE_ID.eq(state))
-                    .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
-                    .apply {
-                      if (sinceAfter != null) {
-                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.ge(sinceAfter.toInstant()))
-                      }
-                    }
-                    .apply {
-                      if (sinceBefore != null) {
-                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(sinceBefore.toInstant()))
-                      }
-                    })
+    requirePermissions { readFacility(facilityId) }
 
-    val sql = query.getSQL(ParamType.INLINED)
-
-    return log.debugWithTiming("Accession state count with time bounds: $sql") {
-      query.fetchOne()?.value1() ?: 0
-    }
+    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
+    return countInState(condition, state, sinceAfter, sinceBefore)
   }
 
   /** Returns the number of accessions currently in a given state. */
   fun countInState(facilityId: FacilityId, state: AccessionState): Int {
-    val query =
-        dslContext
-            .select(DSL.count())
-            .from(ACCESSIONS)
-            .where(ACCESSIONS.STATE_ID.eq(state))
-            .and(ACCESSIONS.FACILITY_ID.eq(facilityId))
+    requirePermissions { readFacility(facilityId) }
 
-    val sql = query.getSQL(ParamType.INLINED)
+    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
+    return countInState(condition, state)
+  }
 
-    return log.debugWithTiming("Accession state count query: $sql") {
-      query.fetchOne()?.value1() ?: 0
-    }
+  fun countInState(
+      organizationId: OrganizationId,
+      state: AccessionState,
+      sinceAfter: TemporalAccessor? = null,
+      sinceBefore: TemporalAccessor? = null,
+  ): Int {
+    requirePermissions { readOrganization(organizationId) }
+
+    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    return countInState(condition, state, sinceAfter, sinceBefore)
+  }
+
+  fun countInState(organizationId: OrganizationId, state: AccessionState): Int {
+    requirePermissions { readOrganization(organizationId) }
+
+    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    return countInState(condition, state)
   }
 
   fun countFamilies(facilityId: FacilityId, asOf: TemporalAccessor): Int {
-    return dslContext
-        .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
-        .from(ACCESSIONS)
-        .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
-        .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
-        .fetchOne()
-        ?.value1()
-        ?: 0
+    requirePermissions { readFacility(facilityId) }
+
+    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
+    return countFamilies(condition, asOf)
+  }
+
+  fun countFamilies(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
+    requirePermissions { readOrganization(organizationId) }
+
+    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    return countFamilies(condition, asOf)
   }
 
   fun fetchDryingMoveDue(
@@ -812,5 +791,92 @@ class AccessionStore(
         }
 
     return "%08d%03d".format(todayAsLong, suffix)
+  }
+
+  private fun countActive(condition: Condition, asOf: TemporalAccessor): Int {
+    val statesByActive = AccessionState.values().groupBy { it.toActiveEnum() }
+
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(ACCESSIONS)
+            .where(condition)
+            .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
+            .and(
+                ACCESSIONS.STATE_ID.`in`(statesByActive[AccessionActive.Active])
+                    .orNotExists(
+                        dslContext
+                            .selectOne()
+                            .from(ACCESSION_STATE_HISTORY)
+                            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
+                            .and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(asOf.toInstant()))
+                            .and(
+                                ACCESSION_STATE_HISTORY.NEW_STATE_ID.`in`(
+                                    statesByActive[AccessionActive.Inactive]))))
+
+    log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
+
+    return log.debugWithTiming("Active accessions query") { query.fetchOne()?.value1() ?: 0 }
+  }
+
+  private fun countInState(
+      condition: Condition,
+      state: AccessionState,
+      sinceAfter: TemporalAccessor? = null,
+      sinceBefore: TemporalAccessor? = null,
+  ): Int {
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(
+                DSL.selectDistinct(ACCESSIONS.ID)
+                    .from(ACCESSION_STATE_HISTORY)
+                    .join(ACCESSIONS)
+                    .on(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
+                    .where(condition)
+                    .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(state))
+                    .and(ACCESSIONS.STATE_ID.eq(state))
+                    .apply {
+                      if (sinceAfter != null) {
+                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.ge(sinceAfter.toInstant()))
+                      }
+                    }
+                    .apply {
+                      if (sinceBefore != null) {
+                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(sinceBefore.toInstant()))
+                      }
+                    })
+
+    val sql = query.getSQL(ParamType.INLINED)
+
+    return log.debugWithTiming("Accession state count with time bounds: $sql") {
+      query.fetchOne()?.value1() ?: 0
+    }
+  }
+
+  private fun countInState(condition: Condition, state: AccessionState): Int {
+    val query =
+        dslContext
+            .select(DSL.count())
+            .from(ACCESSIONS)
+            .where(condition)
+            .and(ACCESSIONS.STATE_ID.eq(state))
+
+    val sql = query.getSQL(ParamType.INLINED)
+
+    return log.debugWithTiming("Accession state count query: $sql") {
+      query.fetchOne()?.value1() ?: 0
+    }
+  }
+
+  private fun countFamilies(condition: Condition, asOf: TemporalAccessor): Int {
+    return dslContext
+        .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
+        .from(ACCESSIONS)
+        .where(condition)
+        .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
+        .fetchOne()
+        ?.value1()
+        ?: 0
   }
 }
