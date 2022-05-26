@@ -154,6 +154,14 @@ class AccessionsTable(
     return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 
+  override fun conditionForScope(scope: SearchScope): Condition? {
+    return when (scope) {
+      is OrganizationIdScope ->
+          ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(scope.organizationId)
+      else -> null
+    }
+  }
+
   override val defaultOrderFields: List<OrderField<*>>
     get() = listOf(ACCESSIONS.NUMBER, ACCESSIONS.ID)
 

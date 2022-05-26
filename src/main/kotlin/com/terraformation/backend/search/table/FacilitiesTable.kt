@@ -43,4 +43,12 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
   override fun conditionForPermissions(): Condition {
     return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
   }
+
+  override fun conditionForScope(scope: SearchScope): Condition? {
+    return when (scope) {
+      is OrganizationIdScope ->
+          FACILITIES.sites().projects().ORGANIZATION_ID.eq(scope.organizationId)
+      else -> null
+    }
+  }
 }

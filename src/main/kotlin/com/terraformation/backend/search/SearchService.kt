@@ -2,6 +2,7 @@ package com.terraformation.backend.search
 
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.search.SearchTable.SearchScope
 import com.terraformation.backend.search.field.SearchField
 import javax.annotation.ManagedBean
 import org.jooq.Condition
@@ -181,9 +182,14 @@ class SearchService(private val dslContext: DSLContext) {
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    * by at most 1 element, which callers can use to detect that the number of values exceeds the
    * limit.
+   * @param condition Condition to narrow down scope of search values
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
-  fun fetchAllValues(fieldPath: SearchFieldPath, limit: Int = 50): List<String?> {
+  fun fetchAllValues(
+      fieldPath: SearchFieldPath,
+      limit: Int = 50,
+      searchScope: SearchScope? = null
+  ): List<String?> {
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
     val field = fieldPath.searchField
@@ -197,12 +203,23 @@ class SearchService(private val dslContext: DSLContext) {
               field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
           val searchTable = fieldPath.searchTable
           val permsCondition = conditionForPermissions(fieldPath.searchTable)
+          val scopeCondition =
+              if (searchScope != null) fieldPath.searchTable.conditionForScope(searchScope)
+              else null
+          val conditions =
+              when {
+                (permsCondition != null && scopeCondition != null) ->
+                    permsCondition.and(scopeCondition)
+                permsCondition != null -> permsCondition
+                else -> scopeCondition
+              }
+
           val fullQuery =
               dslContext
                   .selectDistinct(selectFields)
                   .from(searchTable.fromTable)
                   .let { joinForPermissions(it, setOf(searchTable), searchTable) }
-                  .let { if (permsCondition != null) it.where(permsCondition) else it }
+                  .let { if (conditions != null) it.where(conditions) else it }
                   .orderBy(DSL.field("order_by_field").asc().nullsLast())
                   .limit(limit + 1)
           log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")

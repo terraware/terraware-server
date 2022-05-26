@@ -3,9 +3,11 @@ package com.terraformation.backend.seedbank.api
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
+import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.api.HasSearchNode
 import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.table.SearchTables
@@ -77,7 +79,13 @@ class ValuesController(
     val values =
         payload.fields.associateWith { fieldName ->
           val searchField = rootPrefix.resolve(fieldName)
-          val values = searchService.fetchAllValues(searchField, limit)
+          val values =
+              searchService.fetchAllValues(
+                  searchField,
+                  limit,
+                  if (payload.organizationId != null)
+                      SearchTable.OrganizationIdScope(payload.organizationId)
+                  else null)
 
           val partial = values.size > limit
           AllFieldValuesPayload(values.take(limit), partial)
@@ -113,7 +121,8 @@ data class FieldValuesPayload(
 )
 
 data class ListFieldValuesRequestPayload(
-    val facilityId: FacilityId,
+    val facilityId: FacilityId?,
+    val organizationId: OrganizationId?,
     val fields: List<String>,
     override val search: SearchNodePayload?,
 ) : HasSearchNode
@@ -138,7 +147,11 @@ data class AllFieldValuesPayload(
     val partial: Boolean
 )
 
-data class ListAllFieldValuesRequestPayload(val facilityId: FacilityId, val fields: List<String>)
+data class ListAllFieldValuesRequestPayload(
+    val facilityId: FacilityId?,
+    val fields: List<String>,
+    val organizationId: OrganizationId?
+)
 
 data class ListAllFieldValuesResponsePayload(val results: Map<String, AllFieldValuesPayload>) :
     SuccessResponsePayload

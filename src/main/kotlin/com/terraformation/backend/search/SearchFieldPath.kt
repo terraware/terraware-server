@@ -211,10 +211,6 @@ class SearchFieldPath(val prefix: SearchFieldPrefix, val searchField: SearchFiel
       throw IllegalArgumentException("$otherPrefix is not a prefix of $this")
     }
 
-    if (otherPrefix.isRoot) {
-      return this
-    }
-
     return SearchFieldPath(
         SearchFieldPrefix(
             root = otherPrefix.searchTable,
