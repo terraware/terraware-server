@@ -33,16 +33,19 @@ import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
+import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.OrNode
+import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchDirection
 import com.terraformation.backend.search.SearchFieldPath
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
+import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.SearchTable
@@ -78,6 +81,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val facilityId = FacilityId(100)
   private val checkedInTimeString = "2021-08-18T11:33:55Z"
   private val checkedInTime = Instant.parse(checkedInTimeString)
+  private val searchScopes = listOf(OrganizationIdScope(organizationId))
 
   private val tables = SearchTables(PostgresFuzzySearchOperators())
   private val accessionsTable = tables.accessions
@@ -1188,21 +1192,21 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   inner class FetchAllValuesTest {
     @Test
     fun `does not return null for non-nullable field`() {
-      val values = searchService.fetchAllValues(accessionNumberField)
+      val values = searchService.fetchAllValues(accessionNumberField, searchScopes)
       assertFalse(values.any { it == null }, "List of values should not contain null")
     }
 
     @Test
     fun `returns values for enum-mapped field`() {
       val expected = listOf(null) + GerminationTestType.values().map { it.displayName }
-      val values = searchService.fetchAllValues(germinationTestTypeField)
+      val values = searchService.fetchAllValues(germinationTestTypeField, searchScopes)
       assertEquals(expected, values)
     }
 
     @Test
     fun `returns values for free-text field on accession table`() {
       val expected = listOf(null, "Kousa Dogwood", "Other Dogwood")
-      val values = searchService.fetchAllValues(speciesNameField)
+      val values = searchService.fetchAllValues(speciesNameField, searchScopes)
       assertEquals(expected, values)
     }
 
@@ -1243,7 +1247,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           ))
 
       val expected = listOf(null, "Freezer 1", "Freezer 2", "Refrigerator 1")
-      val values = searchService.fetchAllValues(storageLocationNameField)
+      val values = searchService.fetchAllValues(storageLocationNameField, searchScopes)
       assertEquals(expected, values)
     }
 
@@ -1278,7 +1282,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected = listOf(null, "Facility 100 fridge")
 
-      val actual = searchService.fetchAllValues(storageLocationNameField)
+      val actual = searchService.fetchAllValues(storageLocationNameField, searchScopes)
 
       assertEquals(expected, actual)
     }
@@ -1303,7 +1307,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected = listOf(null, "1", "2")
 
-      val actual = searchService.fetchAllValues(treesCollectedFromField)
+      val actual = searchService.fetchAllValues(treesCollectedFromField, searchScopes)
 
       assertEquals(expected, actual)
     }
@@ -1348,13 +1352,123 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(null, "1000"),
-          searchService.fetchAllValues(germinationSeedsGerminatedField),
+          searchService.fetchAllValues(germinationSeedsGerminatedField, searchScopes),
           "Value from germinations table (grandchild of accessions)")
 
       assertEquals(
           listOf(null, "1000"),
-          searchService.fetchAllValues(germinationSeedsSownField),
+          searchService.fetchAllValues(germinationSeedsSownField, searchScopes),
           "Value from germination_tests table (child of accessions)")
+    }
+
+    @Test
+    fun `only includes child table values governed by organization search scope`() {
+      every { user.facilityRoles } returns
+          mapOf(
+              facilityId to Role.CONTRIBUTOR,
+              FacilityId(1100) to Role.CONTRIBUTOR,
+              FacilityId(2200) to Role.OWNER)
+
+      insertProject(11)
+      insertSite(110)
+      insertFacility(1100)
+
+      val otherOrganizationId = OrganizationId(5)
+      insertOrganization(otherOrganizationId)
+      insertProject(22, otherOrganizationId)
+      insertSite(220, 22)
+      insertFacility(2200, 220)
+
+      accessionsDao.insert(
+          AccessionsRow(
+              id = AccessionId(1100),
+              number = "OtherProject",
+              stateId = AccessionState.Processed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              facilityId = FacilityId(1100),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ),
+          AccessionsRow(
+              id = AccessionId(2200),
+              number = "OtherProject22",
+              stateId = AccessionState.Processed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              facilityId = FacilityId(2200),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
+
+      val expectedScopedOrg = listOf("ABCDEFG", "OtherProject", "XYZ")
+      val expectedScopedOtherOrg = listOf("OtherProject22")
+
+      assertEquals(
+          expectedScopedOrg,
+          searchService.fetchAllValues(accessionNumberField, searchScopes),
+          "Expected values for organization $organizationId only.")
+      assertEquals(
+          expectedScopedOtherOrg,
+          searchService.fetchAllValues(
+              accessionNumberField, listOf(OrganizationIdScope(otherOrganizationId))),
+          "Expected values for organization $otherOrganizationId only.")
+    }
+
+    @Test
+    fun `only includes child table values governed by facility search scope`() {
+      every { user.facilityRoles } returns
+          mapOf(
+              facilityId to Role.CONTRIBUTOR,
+              FacilityId(1100) to Role.CONTRIBUTOR,
+              FacilityId(2200) to Role.OWNER)
+
+      insertProject(11)
+      insertSite(110)
+      insertFacility(1100)
+
+      val otherOrganizationId = OrganizationId(5)
+      insertOrganization(otherOrganizationId)
+      insertProject(22, otherOrganizationId)
+      insertSite(220, 22)
+      insertFacility(2200, 220)
+
+      accessionsDao.insert(
+          AccessionsRow(
+              id = AccessionId(1100),
+              number = "OtherProject",
+              stateId = AccessionState.Processed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              facilityId = FacilityId(1100),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ),
+          AccessionsRow(
+              id = AccessionId(2200),
+              number = "OtherProject22",
+              stateId = AccessionState.Processed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              facilityId = FacilityId(2200),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.now(),
+          ))
+
+      val expectedScopedFacility = listOf("OtherProject22")
+
+      assertEquals(
+          expectedScopedFacility,
+          searchService.fetchAllValues(
+              accessionNumberField, listOf(FacilityIdScope(FacilityId(2200)))),
+          "Expected values for facility 2200 only.")
+    }
+
+    @Test
+    fun `throws exception if search scopes is empty`() {
+      assertThrows<IllegalArgumentException> {
+        searchService.fetchAllValues(accessionNumberField, emptyList<SearchScope>())
+      }
     }
   }
 

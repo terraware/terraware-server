@@ -105,6 +105,9 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
    */
   open fun conditionForPermissions(): Condition? = null
 
+  /** Returns a condition for scoping the table's search results where relevant. */
+  open fun conditionForScope(scope: SearchScope): Condition? = null
+
   /**
    * The default fields to sort on. These are included when doing non-distinct queries; if there are
    * user-supplied sort criteria, these come at the end. This allows us to return stable query

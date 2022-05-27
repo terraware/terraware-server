@@ -181,9 +181,18 @@ class SearchService(private val dslContext: DSLContext) {
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    * by at most 1 element, which callers can use to detect that the number of values exceeds the
    * limit.
+   * @param searchScope Scoping data for the search
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
-  fun fetchAllValues(fieldPath: SearchFieldPath, limit: Int = 50): List<String?> {
+  fun fetchAllValues(
+      fieldPath: SearchFieldPath,
+      searchScopes: List<SearchScope>,
+      limit: Int = 50,
+  ): List<String?> {
+    if (searchScopes.isEmpty()) {
+      throw IllegalArgumentException("No search scopes specified.")
+    }
+
     // If the field is in a reference table that gets turned into an enum at build time, we don't
     // need to hit the database.
     val field = fieldPath.searchField
@@ -197,12 +206,16 @@ class SearchService(private val dslContext: DSLContext) {
               field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
           val searchTable = fieldPath.searchTable
           val permsCondition = conditionForPermissions(fieldPath.searchTable)
+          val searchConditions =
+              searchScopes.mapNotNull { fieldPath.searchTable.conditionForScope(it) }
+          val conditions = listOfNotNull(permsCondition) + searchConditions
+
           val fullQuery =
               dslContext
                   .selectDistinct(selectFields)
                   .from(searchTable.fromTable)
                   .let { joinForPermissions(it, setOf(searchTable), searchTable) }
-                  .let { if (permsCondition != null) it.where(permsCondition) else it }
+                  .where(conditions)
                   .orderBy(DSL.field("order_by_field").asc().nullsLast())
                   .limit(limit + 1)
           log.debug("queryAllValues SQL query: ${fullQuery.getSQL(ParamType.INLINED)}")

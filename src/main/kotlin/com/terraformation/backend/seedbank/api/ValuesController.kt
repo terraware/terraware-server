@@ -3,7 +3,10 @@ package com.terraformation.backend.seedbank.api
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.search.FacilityIdScope
+import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.api.HasSearchNode
@@ -73,11 +76,17 @@ class ValuesController(
       @RequestBody payload: ListAllFieldValuesRequestPayload
   ): ListAllFieldValuesResponsePayload {
     val limit = 100
+    val organizationIdScope = payload.organizationId?.let { OrganizationIdScope(it) }
+    val facilityIdScope = payload.facilityId?.let { FacilityIdScope(it) }
+    val searchScopes = listOfNotNull(organizationIdScope, facilityIdScope)
+    if (searchScopes.isEmpty()) {
+      throw IllegalArgumentException("One of organizationId or facilityId is required.")
+    }
 
     val values =
         payload.fields.associateWith { fieldName ->
           val searchField = rootPrefix.resolve(fieldName)
-          val values = searchService.fetchAllValues(searchField, limit)
+          val values = searchService.fetchAllValues(searchField, searchScopes, limit)
 
           val partial = values.size > limit
           AllFieldValuesPayload(values.take(limit), partial)
@@ -113,8 +122,9 @@ data class FieldValuesPayload(
 )
 
 data class ListFieldValuesRequestPayload(
-    val facilityId: FacilityId,
+    val facilityId: FacilityId?,
     val fields: List<String>,
+    val organizationId: OrganizationId?,
     override val search: SearchNodePayload?,
 ) : HasSearchNode
 
@@ -138,7 +148,11 @@ data class AllFieldValuesPayload(
     val partial: Boolean
 )
 
-data class ListAllFieldValuesRequestPayload(val facilityId: FacilityId, val fields: List<String>)
+data class ListAllFieldValuesRequestPayload(
+    val facilityId: FacilityId?,
+    val fields: List<String>,
+    val organizationId: OrganizationId?
+)
 
 data class ListAllFieldValuesResponsePayload(val results: Map<String, AllFieldValuesPayload>) :
     SuccessResponsePayload

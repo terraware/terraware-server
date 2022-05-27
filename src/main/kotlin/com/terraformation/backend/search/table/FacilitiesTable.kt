@@ -7,6 +7,9 @@ import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.search.FacilityIdScope
+import com.terraformation.backend.search.OrganizationIdScope
+import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -42,5 +45,13 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
 
   override fun conditionForPermissions(): Condition {
     return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
+  }
+
+  override fun conditionForScope(scope: SearchScope): Condition? {
+    return when (scope) {
+      is OrganizationIdScope ->
+          FACILITIES.sites().projects().ORGANIZATION_ID.eq(scope.organizationId)
+      is FacilityIdScope -> FACILITIES.ID.eq(scope.facilityId)
+    }
   }
 }
