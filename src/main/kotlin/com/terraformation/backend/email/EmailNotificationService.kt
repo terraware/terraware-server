@@ -98,10 +98,13 @@ class EmailNotificationService(
         facilityStore.fetchById(event.facilityId)
             ?: throw FacilityNotFoundException(event.facilityId)
 
+    val facilityMonitoringUrl =
+        webAppUrls
+            .fullFacilityMonitoring(
+                parentStore.getOrganizationId(event.facilityId)!!, event.facilityId)
+            .toString()
     emailService.sendFacilityNotification(
-        facility.id,
-        "facilityIdle",
-        FacilityIdle(config, facility, messages.dateAndTime(facility.lastTimeseriesTime)))
+        facility.id, "facilityIdle", FacilityIdle(config, facility, facilityMonitoringUrl))
   }
 
   @EventListener
@@ -308,9 +311,7 @@ class EmailNotificationService(
   private fun getRecipients(facilityId: FacilityId): List<IndividualUser> {
     val projectId =
         parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-    return projectStore.fetchEmailRecipients(projectId).toSet().mapNotNull {
-      userStore.fetchByEmail(it)
-    }
+    return projectStore.fetchEmailRecipients(projectId).mapNotNull { userStore.fetchByEmail(it) }
   }
 
   data class EmailRequest(

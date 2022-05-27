@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.Role
@@ -161,6 +162,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             "accession nursery germination test title", "accession nursery germination test body")
     every { messages.accessionWithdrawalNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
+    every { messages.facilityIdle() } returns
+        NotificationMessage("facility idle title", "facility idle body")
     every { user.canCreateAccession(facilityId) } returns true
     every { user.canCreateNotification(any(), organizationId) } returns true
     every { user.canReadOrganization(organizationId) } returns true
@@ -507,5 +510,33 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         expectedNotifications,
         actualNotifications,
         "Notification should match that of accessions finished drying")
+  }
+
+  @Test
+  fun `should store facility idle notification`() {
+    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(user.userId, projectId, user.userId)
+
+    service.on(FacilityIdleEvent(facilityId))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.FacilityIdle,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "facility idle title",
+                body = "facility idle body",
+                localUrl = webAppUrls.facilityMonitoring(facilityId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(
+        expectedNotifications,
+        actualNotifications,
+        "Notification should match that of facility idle")
   }
 }

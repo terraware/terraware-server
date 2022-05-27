@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
@@ -48,16 +47,12 @@ class AppNotificationService(
   private val log = perClassLogger()
 
   @EventListener
-  fun on(event: FacilityAlertRequestedEvent) {
-    log.info(
-        "Creating app notification for facility \"${event.facilityId}\" alert requested event.")
-    // TODO create notification
-  }
-
-  @EventListener
   fun on(event: FacilityIdleEvent) {
     log.info("Creating app notification for facility \"${event.facilityId}\" idle event.")
-    // TODO create notification
+    val facilityUrl = webAppUrls.facilityMonitoring(event.facilityId)
+    val message = messages.facilityIdle()
+    insertFacilityNotifications(
+        event.facilityId, NotificationType.FacilityIdle, message, facilityUrl)
   }
 
   @EventListener
@@ -118,7 +113,7 @@ class AppNotificationService(
     log.info(
         "Creating app notifications for accession ${event.accessionNumber} scheduled for drying.")
 
-    insertAccessionNotifications(
+    insertFacilityNotifications(
         event.accessionId, NotificationType.AccessionScheduledforDrying, message, accessionUrl)
   }
 
@@ -129,7 +124,7 @@ class AppNotificationService(
 
     log.info("Creating app notifications for accession ${event.accessionNumber} ends drying.")
 
-    insertAccessionNotifications(
+    insertFacilityNotifications(
         event.accessionId,
         NotificationType.AccessionScheduledtoEndDrying,
         message,
@@ -146,7 +141,7 @@ class AppNotificationService(
     log.info(
         "Creating app notifications for accession ${event.accessionNumber} germination test ${event.testType}.")
 
-    insertAccessionNotifications(
+    insertFacilityNotifications(
         event.accessionId,
         NotificationType.AccessionScheduledforGerminationTest,
         message,
@@ -161,7 +156,7 @@ class AppNotificationService(
 
     log.info("Creating app notifications for accession ${event.accessionNumber} withdrawal.")
 
-    insertAccessionNotifications(
+    insertFacilityNotifications(
         event.accessionId,
         NotificationType.AccessionScheduledforWithdrawal,
         message,
@@ -177,7 +172,7 @@ class AppNotificationService(
     log.info(
         "Creating app notifications for ${event.numAccessions} accessions awaiting processing.")
 
-    insertAccessionNotifications(
+    insertFacilityNotifications(
         event.facilityId, NotificationType.AccessionsAwaitingProcessing, message, accessionsUrl)
   }
 
@@ -189,7 +184,7 @@ class AppNotificationService(
     log.info(
         "Creating app notifications for ${event.numAccessions} accessions ready for testing since ${event.weeks} weeks.")
 
-    insertAccessionNotifications(
+    insertFacilityNotifications(
         event.facilityId, NotificationType.AccessionsReadyforTesting, message, accessionsUrl)
   }
 
@@ -200,21 +195,21 @@ class AppNotificationService(
 
     log.info("Creating app notifications for ${event.numAccessions} accessions finished drying.")
 
-    insertAccessionNotifications(
+    insertFacilityNotifications(
         event.facilityId, NotificationType.AccessionsFinishedDrying, message, accessionsUrl)
   }
 
-  private fun insertAccessionNotifications(
+  private fun insertFacilityNotifications(
       accessionId: AccessionId,
       notificationType: NotificationType,
       message: NotificationMessage,
       localUrl: URI
   ) {
     val facilityId = parentStore.getFacilityId(accessionId)!!
-    insertAccessionNotifications(facilityId, notificationType, message, localUrl)
+    insertFacilityNotifications(facilityId, notificationType, message, localUrl)
   }
 
-  private fun insertAccessionNotifications(
+  private fun insertFacilityNotifications(
       facilityId: FacilityId,
       notificationType: NotificationType,
       message: NotificationMessage,
@@ -223,7 +218,7 @@ class AppNotificationService(
     val projectId = parentStore.getProjectId(facilityId)!!
     val organizationId = parentStore.getOrganizationId(projectId)!!
     val recipients =
-        projectStore.fetchEmailRecipients(projectId, false).toSet().mapNotNull {
+        projectStore.fetchEmailRecipients(projectId, false).mapNotNull {
           userStore.fetchByEmail(it)
         }
     dslContext.transaction { _ ->

@@ -27,7 +27,7 @@ class FacilityAlertRequested(
 class FacilityIdle(
     config: TerrawareServerConfig,
     val facility: FacilityModel,
-    val lastTimeseriesTime: String,
+    val facilityMonitoringUrl: String,
 ) : EmailTemplateModel(config)
 
 class UserAddedToOrganization(
