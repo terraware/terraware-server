@@ -1,8 +1,20 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityIdle" -->
-Hello,
+Device manager is disconnected. Please go to ${facility.name} and check on it.
 
-It has been over ${facility.maxIdleMinutes} minutes since the most recent update was received from ${facility.name}.
+Submit an issue request at https://www.terraformation.com/contact-us/terraware-support if issues persist.
 
-The most recent update was at ${lastTimeseriesTime}.
 
-This may indicate a problem with the Internet connection or the device manager at ${facility.name}.
+Please click the link below to go to your Terraware account where you can view the seed bank.
+${facilityMonitoringUrl}
+
+
+------------------------------
+
+Terraformation Inc.
+PO Box 3470, PMB 15777, Honolulu, HI 96801-3470
+
+https://twitter.com/TF_Global
+https://www.linkedin.com/company/terraformation/
+https://www.instagram.com/globalterraform/
+https://www.facebook.com/GlobalTerraform
+https://terraformation.com/

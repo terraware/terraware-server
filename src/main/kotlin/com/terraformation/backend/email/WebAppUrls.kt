@@ -86,6 +86,20 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
         .build()
   }
 
+  fun fullFacilityMonitoring(
+      organizationId: OrganizationId,
+      facilityId: FacilityId,
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/monitoring/${facilityId.value}")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun facilityMonitoring(facilityId: FacilityId): URI {
+    return UriBuilder.fromPath("/monitoring/${facilityId.value}").build()
+  }
+
   private fun accessionGerminationTestPath(
       accessionId: AccessionId,
       testType: GerminationTestType

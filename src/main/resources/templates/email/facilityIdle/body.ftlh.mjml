@@ -1,0 +1,27 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.FacilityIdle" --> -->
+<mjml>
+    <mj-include path="../head.ftlh.mjml" />
+
+    <mj-body>
+        <mj-include path="../logo.ftlh.mjml" />
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    Device manager is disconnected. Please go to ${facility.name} and check on it. 
+
+                    Submit an issue request at <a href="https://www.terraformation.com/contact-us/terraware-support" target="_blank">Contact Us: Terraware</a> if issues persist. 
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    Please click the button below to go to your Terraware account where you can view
+                    the seed bank.</mj-text
+                >
+                <mj-button mj-class="btn-productive-primary-md" href="${facilityMonitoringUrl?no_esc}"
+                    >Go to Terraware</mj-button
+                >
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../footer.ftlh.mjml" />
+    </mj-body>
+</mjml>

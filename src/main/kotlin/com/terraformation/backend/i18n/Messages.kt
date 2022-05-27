@@ -159,6 +159,11 @@ class Messages {
   fun accessionsFinishedDrying(count: Int): NotificationMessage =
       NotificationMessage(title = "Accessions need attention!", body = driedNotification(count))
 
+  fun facilityIdle(): NotificationMessage =
+      NotificationMessage(
+          title = "Device manager cannot be detected.",
+          body = "Device manager is disconnected. Please check on it.")
+
   private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
   private val validSeedStorageBehaviors =
       SeedStorageBehavior.values().joinToString { it.displayName }

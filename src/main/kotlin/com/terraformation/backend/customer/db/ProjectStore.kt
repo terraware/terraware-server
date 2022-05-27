@@ -311,5 +311,6 @@ class ProjectStore(
         .and(optedInCondition)
         .fetch(USERS.EMAIL)
         .filterNotNull()
+        .distinct()
   }
 }
