@@ -5,6 +5,8 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.FacilityAlreadyConnectedException
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
@@ -83,6 +85,7 @@ class FacilityStore(
 
     val row =
         FacilitiesRow(
+            connectionStateId = FacilityConnectionState.NotConnected,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             description = description,
@@ -177,6 +180,51 @@ class FacilityStore(
           .set(MODIFIED_TIME, clock.instant())
           .set(NAME, name)
           .execute()
+    }
+  }
+
+  /**
+   * Transitions a facility's connection state.
+   *
+   * @throws FacilityAlreadyConnectedException The facility was already in a connected state.
+   * @throws IllegalStateException The facility wasn't in the expected state. Only thrown if the
+   * expected state is not [FacilityConnectionState.NotConnected].
+   */
+  fun updateConnectionState(
+      facilityId: FacilityId,
+      expectedState: FacilityConnectionState,
+      newState: FacilityConnectionState
+  ) {
+    requirePermissions { updateFacility(facilityId) }
+
+    with(FACILITIES) {
+      val rowsUpdated =
+          dslContext
+              .update(FACILITIES)
+              .set(CONNECTION_STATE_ID, newState)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .where(ID.eq(facilityId))
+              .and(CONNECTION_STATE_ID.eq(expectedState))
+              .execute()
+
+      if (rowsUpdated != 1) {
+        val currentState =
+            dslContext
+                .select(FACILITIES.CONNECTION_STATE_ID)
+                .from(FACILITIES)
+                .where(FACILITIES.ID.eq(facilityId))
+                .fetchOne(FACILITIES.CONNECTION_STATE_ID)
+                ?: throw FacilityNotFoundException(facilityId)
+
+        if (expectedState == FacilityConnectionState.NotConnected) {
+          throw FacilityAlreadyConnectedException(facilityId)
+        } else {
+          log.error(
+              "Facility $facilityId was in connection state $currentState, not $expectedState")
+          throw IllegalStateException("Facility was not in expected connection state")
+        }
+      }
     }
   }
 

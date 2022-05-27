@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
@@ -64,6 +65,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   private val facilityModel =
       FacilityModel(
+          connectionState = FacilityConnectionState.NotConnected,
           createdTime = Instant.EPOCH,
           description = "Description $facilityId",
           id = facilityId,

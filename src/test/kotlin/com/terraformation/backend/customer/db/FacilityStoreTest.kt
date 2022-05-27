@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.SiteId
@@ -17,6 +18,7 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -48,6 +50,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFacility(any()) } returns true
     every { user.canReadSite(any()) } returns true
     every { user.canReadStorageLocation(any()) } returns true
+    every { user.canUpdateFacility(any()) } returns true
     every { user.canUpdateStorageLocation(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
 
@@ -281,5 +284,40 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateFacility(any()) } returns false
 
     assertThrows<AccessDeniedException> { store.create(siteId, FacilityType.SeedBank, "Test") }
+  }
+
+  @Test
+  fun `updateConnectionState transitions expected state to new state`() {
+    val initial = facilitiesDao.fetchOneById(facilityId)!!
+
+    val now = Instant.EPOCH + Duration.ofDays(1)
+    every { clock.instant() } returns now
+
+    store.updateConnectionState(
+        facilityId, FacilityConnectionState.NotConnected, FacilityConnectionState.Connected)
+
+    val expected =
+        initial.copy(connectionStateId = FacilityConnectionState.Connected, modifiedTime = now)
+    val actual = facilitiesDao.fetchOneById(facilityId)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `updateConnectionState throws exception if no permission to update facility`() {
+    every { user.canUpdateFacility(facilityId) } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.updateConnectionState(
+          facilityId, FacilityConnectionState.NotConnected, FacilityConnectionState.Connected)
+    }
+  }
+
+  @Test
+  fun `updateConnectionState throws exception if facility is not in expected state`() {
+    assertThrows<IllegalStateException> {
+      store.updateConnectionState(
+          facilityId, FacilityConnectionState.Connected, FacilityConnectionState.Configured)
+    }
   }
 }

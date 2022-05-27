@@ -5,6 +5,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
@@ -94,6 +95,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
+  override fun canCreateDeviceManager(): Boolean = true
   override fun canCreateFacility(siteId: SiteId): Boolean = true
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
   override fun canCreateSite(projectId: ProjectId): Boolean = true
@@ -117,6 +119,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
+  override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadProject(projectId: ProjectId): Boolean = true
@@ -134,6 +137,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = true
   override fun canUpdateAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
+  override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canUpdateDeviceTemplates(): Boolean = true
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true

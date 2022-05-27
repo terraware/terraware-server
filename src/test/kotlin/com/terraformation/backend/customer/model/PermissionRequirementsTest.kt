@@ -6,6 +6,8 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceManagerId
+import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -53,6 +55,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val accessionId = AccessionId(1)
   private val automationId = AutomationId(1)
   private val deviceId = DeviceId(1)
+  private val deviceManagerId = DeviceManagerId(1)
   private val facilityId = FacilityId(1)
   private val notificationUserId = UserId(2)
   private val notificationId = NotificationId(1)
@@ -649,5 +652,34 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canUpdateDeviceTemplates() }
     requirements.updateDeviceTemplates()
+  }
+
+  @Test
+  fun createDeviceManager() {
+    assertThrows<AccessDeniedException> { requirements.createDeviceManager() }
+
+    grant { user.canCreateDeviceManager() }
+    requirements.createDeviceManager()
+  }
+
+  @Test
+  fun readDeviceManager() {
+    assertThrows<DeviceManagerNotFoundException> { requirements.readDeviceManager(deviceManagerId) }
+
+    grant { user.canReadDeviceManager(deviceManagerId) }
+    requirements.readDeviceManager(deviceManagerId)
+  }
+
+  @Test
+  fun updateDeviceManager() {
+    assertThrows<DeviceManagerNotFoundException> {
+      requirements.updateDeviceManager(deviceManagerId)
+    }
+
+    grant { user.canReadDeviceManager(deviceManagerId) }
+    assertThrows<AccessDeniedException> { requirements.updateDeviceManager(deviceManagerId) }
+
+    grant { user.canUpdateDeviceManager(deviceManagerId) }
+    requirements.updateDeviceManager(deviceManagerId)
   }
 }

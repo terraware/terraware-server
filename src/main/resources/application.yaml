@@ -49,6 +49,7 @@ spring:
       - "classpath:db/migration/common"
     placeholders:
       jsonColumnType: "JSONB"
+      uuidColumnType: "UUID"
 
   mail:
     # Spring Boot Mail checks for the existence of this option; we want to enable it even if

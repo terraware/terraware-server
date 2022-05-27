@@ -5,6 +5,8 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceManagerId
+import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FacilityId
@@ -470,6 +472,25 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateDeviceTemplates() {
     if (!user.canUpdateDeviceTemplates()) {
       throw AccessDeniedException("No permission to update device templates")
+    }
+  }
+
+  fun createDeviceManager() {
+    if (!user.canCreateDeviceManager()) {
+      throw AccessDeniedException("No permission to create device manager")
+    }
+  }
+
+  fun readDeviceManager(deviceManagerId: DeviceManagerId) {
+    if (!user.canReadDeviceManager(deviceManagerId)) {
+      throw DeviceManagerNotFoundException(deviceManagerId)
+    }
+  }
+
+  fun updateDeviceManager(deviceManagerId: DeviceManagerId) {
+    if (!user.canUpdateDeviceManager(deviceManagerId)) {
+      readDeviceManager(deviceManagerId)
+      throw AccessDeniedException("No permission to update device manager")
     }
   }
 }

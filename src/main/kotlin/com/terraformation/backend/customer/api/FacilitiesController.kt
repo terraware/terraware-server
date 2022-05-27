@@ -15,6 +15,7 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
@@ -210,6 +211,7 @@ data class AutomationPayload(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class FacilityPayload(
+    val connectionState: FacilityConnectionState,
     val createdTime: Instant,
     val description: String?,
     val id: FacilityId,
@@ -220,6 +222,7 @@ data class FacilityPayload(
   constructor(
       model: FacilityModel
   ) : this(
+      model.connectionState,
       model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       model.description,
       model.id,
