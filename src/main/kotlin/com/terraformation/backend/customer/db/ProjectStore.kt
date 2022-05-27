@@ -302,6 +302,7 @@ class ProjectStore(
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
         .leftJoin(PROJECT_USERS)
         .on(USERS.ID.eq(PROJECT_USERS.USER_ID))
+        .and(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
         .where(PROJECTS.ID.eq(projectId))
         .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))
         .and(
@@ -311,6 +312,5 @@ class ProjectStore(
         .and(optedInCondition)
         .fetch(USERS.EMAIL)
         .filterNotNull()
-        .distinct()
   }
 }
