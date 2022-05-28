@@ -6,6 +6,7 @@ storage_conditions
 accession_notification_types
 app_devices
 device_template_categories
+facility_connection_states
 facility_types
 germination_seed_types
 germination_substrates
@@ -50,6 +51,7 @@ thumbnails
 timeseries_values
 accession_germination_test_types
 accession_photos
+device_managers
 project_type_selections
 upload_problems
 accession_state_history

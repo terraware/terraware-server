@@ -129,6 +129,10 @@
                                                 <td class="constraint detail">automations_facility_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="device_managers.facility_id references facilities.id via device_managers_facility_id_fkey"><a href='device_managers.html'>device_managers</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">device_managers_facility_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="devices.facility_id references facilities.id via device_site_module_id_fkey"><a href='devices.html'>devices</a><span class='relatedKey'>.facility_id</span></td>
                                                 <td class="constraint detail">device_site_module_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -348,6 +352,27 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="connection_state_id">connection_state_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>1</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="facilities.connection_state_id references facility_connection_states.id via facilities_connection_state_id_fkey"><a href='facility_connection_states.html'>facility_connection_states</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">facilities_connection_state_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -407,21 +432,25 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="611,5,793,181">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="213,128,567,579">
-<area shape="rect" id="node4" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="5,160,169,307">
-<area shape="rect" id="node3" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="616,199,788,375">
+<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="756,5,939,181">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="332,313,685,793">
+<area shape="rect" id="node5" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="5,697,288,815">
+<area shape="rect" id="node6" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="65,345,229,492">
+<area shape="rect" id="node3" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="729,199,965,433">
+<area shape="rect" id="node4" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="761,451,933,627">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/facilities.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="803,5,985,181">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="405,128,759,579">
-<area shape="rect" id="node4" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="197,160,361,307">
-<area shape="rect" id="node3" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="808,199,980,375">
-<area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="5,192,153,280">
-<area shape="rect" id="node6" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1029,201,1196,289">
+<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="948,5,1131,181">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="524,313,877,793">
+<area shape="rect" id="node5" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="197,697,480,815">
+<area shape="rect" id="node6" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="257,345,421,492">
+<area shape="rect" id="node3" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="921,199,1157,433">
+<area shape="rect" id="node4" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="953,451,1125,627">
+<area shape="rect" id="node7" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="5,377,153,465">
+<area shape="rect" id="node8" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1201,453,1368,541">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/facilities.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

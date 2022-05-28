@@ -9,6 +9,7 @@ automations
 accession_state_history
 upload_problems
 project_type_selections
+device_managers
 accession_photos
 accession_germination_test_types
 timeseries_values
@@ -53,6 +54,7 @@ germination_treatments
 germination_substrates
 germination_seed_types
 facility_types
+facility_connection_states
 device_template_categories
 app_devices
 accession_notification_types

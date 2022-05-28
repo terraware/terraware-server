@@ -35,8 +35,46 @@
          <checkConstraint constraint="(((length(code) &gt;= 4) AND (length(code) &lt;= 6)))" name="country_subdivisions_code_length"/>
          <checkConstraint constraint="((substr(code, 1, 2) = country_code))" name="country_subdivisions_code_matches_country"/>
       </table>
-      <table name="facilities" numRows="0" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
+      <table name="device_managers" numRows="0" remarks="Information about device managers. This is a combination of information from the Balena API and locally-generated values." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="balena_id" nullable="false" remarks="Balena-assigned device identifier." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="balena_uuid" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="balena_modified_time" nullable="false" remarks="Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="device_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_online" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="last_connectivity_event" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="update_progress" nullable="true" remarks="Percent complete of software download and installation (0-100). Null if no software update is in progress." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="short_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="created_time" nullable="false" remarks="When this device manager was added to the local database. The Balena device may have been created earlier." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="refreshed_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="device_managers_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="device_managers_balena_uuid_key" unique="true">
+            <column ascending="true" name="balena_uuid"/>
+         </index>
+         <index name="device_managers_facility_id_key" unique="true">
+            <column ascending="true" name="facility_id"/>
+         </index>
+         <index name="device_managers_short_code_key" unique="true">
+            <column ascending="true" name="short_code"/>
+         </index>
+         <index name="device_managers_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+         <checkConstraint constraint="((((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL))))" name="device_managers_user_iff_facility"/>
+      </table>
+      <table name="facilities" numRows="0" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="facility_id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="site_module_site_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
          </column>
@@ -57,12 +95,25 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="idle_after_time" nullable="true" remarks="Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="idle_since_time" nullable="true" remarks="Time at which the facility became idle. Null if the facility is not currently considered idle." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="13" name="connection_state_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_connection_states"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
          <index name="facilities_idle_after_time_idx" unique="false">
             <column ascending="true" name="idle_after_time"/>
+         </index>
+      </table>
+      <table name="facility_connection_states" numRows="3" remarks="(Enum) Progress of the configuration of a device manager for a facility." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="connection_state_id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="facility_connection_states_pkey" unique="true">
+            <column ascending="true" name="id"/>
          </index>
       </table>
       <table name="facility_types" numRows="3" remarks="(Enum) Types of facilities that can be represented in the data model." schema="public" type="TABLE">
@@ -407,6 +458,7 @@
       </table>
       <table name="users" numRows="1" remarks="User identities. A user can be associated with organizations via `organization_users`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="user_id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
             <child column="created_by" foreignKey="facilities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="modified_by" foreignKey="facilities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="user_id" foreignKey="notifications_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>

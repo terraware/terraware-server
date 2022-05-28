@@ -1,5 +1,6 @@
 timeseries_values
 device_templates
+device_managers
 automations
 timeseries
 devices
@@ -8,4 +9,5 @@ sites
 projects
 timeseries_types
 organizations
+facility_connection_states
 device_template_categories
