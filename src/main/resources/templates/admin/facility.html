@@ -1,6 +1,48 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/admin/header :: head"/>
+<head th:replace="/admin/header :: head">
+    <script th:fragment="additionalScript">
+        function fillOut(event, settings) {
+            event.preventDefault();
+            document.getElementById("deviceType").value = settings.type;
+            document.getElementById("make").value = settings.make;
+            document.getElementById("model").value = settings.model;
+            document.getElementById("deviceName").value = settings.name || '';
+            document.getElementById("address").value = settings.address || '';
+            document.getElementById("protocol").value = settings.protocol || '';
+        }
+
+        addEventListener('load', () => {
+            const configurations = {
+                blueIon: {
+                    type: "BMU",
+                    make: "Blue Ion",
+                    model: "LV",
+                    name: "BMU-1",
+                    address: "192.168.10.40",
+                    protocol: "modbus"
+                },
+                omniSense: {
+                    type: "sensor",
+                    make: "OmniSense",
+                    model: "S-11"
+                }
+            };
+
+            for (let elementName in configurations) {
+                document.getElementById(elementName)
+                        .addEventListener('click', (event) => fillOut(event, configurations[elementName]));
+            }
+        });
+    </script>
+
+    <style th:fragment="additionalStyle">
+        label {
+            display: inline-block;
+            min-width: 5em;
+        }
+    </style>
+</head>
 <body>
 
 <span th:include="/admin/header :: top"/>
@@ -45,12 +87,98 @@
     <span th:text="${facility.type.displayName}">Seed Bank</span>
 </div>
 
+<h3>Devices</h3>
+
+<p th:if="${deviceManager} != null">
+    <a th:href="|${prefix}/deviceManagers/${deviceManager.id}|"
+       th:text="|Device manager ${deviceManager.id} connected.|">Device manager 1 connected.</a>
+</p>
+
+<p th:if="${deviceManager} == null">
+    No device manager connected.
+    <a th:href="|${prefix}/deviceManagers|">Go to device manager list</a>
+</p>
+
+<table th:if="!${devices.isEmpty()}">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Make</th>
+        <th>Model</th>
+        <th>Address</th>
+        <th>Protocol</th>
+    </tr>
+
+    <tr th:each="device : ${devices}">
+        <td th:text="${device.id}">1</td>
+        <td th:text="${device.name}">Fridge 1</td>
+        <td th:text="${device.make}">XYZ</td>
+        <td th:text="${device.model}">ABC</td>
+        <td th:text="${device.address}">1.2.3.4</td>
+        <td th:text="${device.protocol}">modbus</td>
+    </tr>
+</table>
+
+<h4 id="createDevices">Create Devices</h4>
+
+<form method="POST" th:action="|${prefix}/createDevices|">
+    <input type="hidden" name="facilityId" th:value="${facility.id}"/>
+
+    <div>
+        Common configurations:
+        <a href="#" id="blueIon">Blue Ion PV</a> -
+        <a href="#" id="omniSense">Temperature/Humidity Sensor</a>
+    </div>
+
+    <div>
+        <label for="deviceType">Type</label>
+        <input type="text" id="deviceType" name="type" required/>
+    </div>
+
+    <div>
+        <label for="make">Make</label>
+        <input type="text" id="make" name="make" required/>
+    </div>
+
+    <div>
+        <label for="model">Model</label>
+        <input type="text" id="model" name="model" required/>
+    </div>
+
+    <div>
+        <label for="model">Protocol</label>
+        <input type="text" id="protocol" name="protocol"/>
+    </div>
+
+    <div>
+        <label for="deviceName">Name</label>
+        <input type="text" id="deviceName" name="name"/>
+        Leave blank for a random hex code.
+    </div>
+
+    <div>
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address"/>
+        Leave blank to use the device name.
+    </div>
+
+    <div>
+        <label for="count">Count</label>
+        <input type="number" id="count" name="count" value="1" min="1" max="50"/>
+        Increase this to create multiple devices at once.
+    </div>
+
+    <div>
+        <input type="submit" value="Create"/>
+    </div>
+</form>
+
 <h3>Storage Locations</h3>
 
 <ul>
     <li th:each="location : ${storageLocations}">
         <form method="POST" th:action="|${prefix}/updateStorageLocation|"
-              th:if="${canUpdateFacility}">
+              th:if="${canUpdateFacility}" style="display: inline-block;">
             <input type="hidden" name="facilityId" th:value="${facility.id}"/>
             <input type="text" name="name" th:value="${location.name}"/>
             <select name="condition">
@@ -63,7 +191,7 @@
             <input type="submit" value=" Update "/>
         </form>
         <form method="POST" th:action="|${prefix}/deleteStorageLocation|"
-              th:if="${canUpdateFacility}">
+              th:if="${canUpdateFacility}" style="display: inline-block;">
             <input type="hidden" name="facilityId" th:value="${facility.id}"/>
             <input type="hidden" name="storageLocationId" th:value="${location.id}"/>
             <input type="submit" value=" Delete "/>
@@ -79,6 +207,7 @@
     <input type="hidden" name="facilityId" th:value="${facility.id}"/>
     <label for="storageLocationName">Name</label>
     <input type="text" name="name" id="storageLocationName" required/>
+    <br/>
     <label for="storageLocationCondition">Condition</label>
     <select name="condition" id="storageLocationCondition">
         <option th:each="condition : ${storageConditions}" th:text="${condition.displayName}"
@@ -86,6 +215,7 @@
             Freezer
         </option>
     </select>
+    <br/>
     <input type="submit" value=" Create Storage Location "/>
 </form>
 

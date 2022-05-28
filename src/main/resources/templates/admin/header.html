@@ -5,9 +5,15 @@
         Terraware Server Placeholder Admin UI
     </title>
 
+    <th:block th:replace="~{::additionalScript} ?: ~{}"/>
+
     <style>
-        li { margin-bottom: 1ex;}
+        input {
+            margin-top: 4px;
+        }
     </style>
+
+    <th:block th:replace="~{::additionalStyle} ?: ~{}"/>
 </head>
 
 <body>
