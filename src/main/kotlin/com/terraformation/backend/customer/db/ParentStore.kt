@@ -5,6 +5,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationId
@@ -18,6 +19,7 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
+import com.terraformation.backend.db.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
@@ -30,6 +32,7 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 /**
  * Lookup methods to get the IDs of the parents of various objects.
@@ -46,6 +49,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(automationId: AutomationId): FacilityId? =
       fetchFieldById(automationId, AUTOMATIONS.ID, AUTOMATIONS.FACILITY_ID)
+
+  fun getFacilityId(deviceManagerId: DeviceManagerId): FacilityId? =
+      fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.FACILITY_ID)
 
   fun getFacilityId(deviceId: DeviceId): FacilityId? =
       fetchFieldById(deviceId, DEVICES.ID, DEVICES.FACILITY_ID)
@@ -83,6 +89,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getUserId(uploadId: UploadId): UserId? =
       fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.CREATED_BY)
+
+  fun exists(deviceManagerId: DeviceManagerId): Boolean =
+      fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
 
   private fun getProjectId(accessionId: AccessionId): ProjectId {
     val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)

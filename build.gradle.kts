@@ -279,6 +279,7 @@ tasks {
                         "src/main/resources/db/migration/common")
                     .joinToString(",") { "filesystem:$projectDir/$it" },
             "flyway.placeholders.jsonColumnType" to "JSONB",
+            "flyway.placeholders.uuidColumnType" to "UUID",
         )
   }
 }

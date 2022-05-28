@@ -10,6 +10,7 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
@@ -21,9 +22,11 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
+import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
+import com.terraformation.backend.db.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
@@ -38,6 +41,7 @@ import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -74,6 +78,9 @@ import org.springframework.beans.factory.annotation.Autowired
  *   Project 20 - No sites
  *   Project 21 - No facilities
  *     Site 210
+ *   Project 22
+ *     Site 220
+ *       Facility 2200
  *
  * Organization 3 - No projects
  *
@@ -111,41 +118,52 @@ internal class PermissionTest : DatabaseTest() {
   private val organizationIds = listOf(1, 2, 3).map { OrganizationId(it.toLong()) }
   private val org1Id = OrganizationId(1)
 
-  private val projectIds = listOf(10, 11, 20, 21).map { ProjectId(it.toLong()) }
+  private val projectIds = listOf(10, 11, 20, 21, 22).map { ProjectId(it.toLong()) }
   private val org1ProjectIds = projectIds.take(2).toTypedArray()
   private val project10Id = ProjectId(10)
 
-  private val siteIds = listOf(100, 101, 110, 111, 210).map { SiteId(it.toLong()) }
+  private val siteIds = listOf(100, 101, 110, 111, 210, 220).map { SiteId(it.toLong()) }
   private val org1SiteIds = siteIds.take(4).toTypedArray()
   private val project10SiteIds = siteIds.take(2).toTypedArray()
 
   private val facilityIds =
-      listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111).map { FacilityId(it.toLong()) }
-  private val org1FacilityIds = facilityIds.toTypedArray()
+      listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111, 2200).map { FacilityId(it.toLong()) }
+  private val org1FacilityIds = facilityIds.take(8).toTypedArray()
   private val project10FacilityIds = facilityIds.take(4).toTypedArray()
 
   private val automationIds = facilityIds.map { AutomationId(it.value) }
-  private val org1AutomationIds = automationIds.toTypedArray()
+  private val org1AutomationIds = automationIds.take(8).toTypedArray()
   private val project10AutomationIds = org1AutomationIds.take(4).toTypedArray()
 
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
-  private val org1DeviceIds = deviceIds.toTypedArray()
+  private val org1DeviceIds = deviceIds.take(8).toTypedArray()
   private val project10DeviceIds = deviceIds.take(4).toTypedArray()
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
-  private val org1AccessionIds = accessionIds.toTypedArray()
+  private val org1AccessionIds = accessionIds.take(8).toTypedArray()
   private val project10AccessionIds = accessionIds.take(4).toTypedArray()
 
   private val speciesIds = organizationIds.map { SpeciesId(it.value) }
   private val org1SpeciesIds = speciesIds.take(1).toTypedArray()
 
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
-  private val org1StorageLocationIds = storageLocationIds.toTypedArray()
-  private val project10StorageLocationIds = storageLocationIds.take(4).toTypedArray()
+  private val org1StorageLocationIds = storageLocationIds.forOrg1()
+
+  private val deviceManagerIds = listOf(1000, 1100, 2200, 3000).map { DeviceManagerId(it.toLong()) }
+  private val org1DeviceManagerIds = deviceManagerIds.forOrg1()
+  private val project10DeviceManagerIds = deviceManagerIds.forProject10()
+  private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 3000 }
 
   private val otherUserId = UserId(8765)
 
   private val uploadId = UploadId(1)
+
+  private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
+      filter(func).toTypedArray()
+  private inline fun <reified T> List<T>.filterRange(min: Int, max: Int): Array<T> =
+      filter { "$it".toInt() in min..max }.toTypedArray()
+  private inline fun <reified T> List<T>.forOrg1() = filterRange(1000, 1999)
+  private inline fun <reified T> List<T>.forProject10() = filterRange(1000, 1099)
 
   @BeforeEach
   fun setUp() {
@@ -200,6 +218,23 @@ internal class PermissionTest : DatabaseTest() {
     speciesIds.forEach { insertSpecies(it, organizationId = it.value, createdBy = userId) }
     storageLocationIds.forEach {
       insertStorageLocation(it, facilityId = it.value, createdBy = userId)
+    }
+
+    deviceManagerIds.forEach { deviceManagerId ->
+      val facilityId = FacilityId(deviceManagerId.value)
+      deviceManagersDao.insert(
+          DeviceManagersRow(
+              balenaId = deviceManagerId.value,
+              balenaUuid = UUID.randomUUID(),
+              balenaModifiedTime = Instant.EPOCH,
+              deviceName = "$deviceManagerId",
+              id = deviceManagerId,
+              isOnline = true,
+              createdTime = Instant.EPOCH,
+              refreshedTime = Instant.EPOCH,
+              shortCode = "$deviceManagerId",
+              facilityId = if (facilityId in facilityIds) facilityId else null,
+              userId = if (facilityId in facilityIds) userId else null))
     }
   }
 
@@ -267,6 +302,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *org1DeviceManagerIds,
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
+        updateDeviceManager = true,
+    )
+
+    permissions.expect(
         *org1DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
@@ -310,6 +352,12 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeOrganizationSelf = true,
         createSpecies = true,
+    )
+
+    permissions.expect(
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
+        updateDeviceManager = true,
     )
 
     permissions.expect(
@@ -386,6 +434,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *org1DeviceManagerIds,
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
+        updateDeviceManager = true,
+    )
+
+    permissions.expect(
         *org1DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
@@ -442,7 +497,6 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
-        updateFacility = true,
         listAutomations = true,
         sendAlert = true,
     )
@@ -461,6 +515,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *project10DeviceManagerIds,
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
+    )
+
+    permissions.expect(
         *project10DeviceIds,
         createTimeseries = true,
         readTimeseries = true,
@@ -475,7 +535,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *project10StorageLocationIds,
+        *storageLocationIds.forProject10(),
         readStorageLocation = true,
     )
 
@@ -514,7 +574,6 @@ internal class PermissionTest : DatabaseTest() {
         createAccession = true,
         createAutomation = true,
         createDevice = true,
-        updateFacility = true,
         listAutomations = true,
         sendAlert = true,
     )
@@ -530,6 +589,12 @@ internal class PermissionTest : DatabaseTest() {
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
+    )
+
+    permissions.expect(
+        *org1DeviceManagerIds,
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
     )
 
     permissions.expect(
@@ -556,8 +621,14 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `user with no organization memberships has no organization-level permissions`() {
-    // No givenRole() here; user has no roles anywhere.
-    PermissionsTracker().andNothingElse()
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
+    )
+
+    permissions.andNothingElse()
   }
 
   @Test
@@ -566,7 +637,11 @@ internal class PermissionTest : DatabaseTest() {
 
     val permissions = PermissionsTracker()
 
-    permissions.expect(importGlobalSpeciesData = true, updateDeviceTemplates = true)
+    permissions.expect(
+        createDeviceManager = true,
+        importGlobalSpeciesData = true,
+        updateDeviceTemplates = true,
+    )
   }
 
   @Test
@@ -622,6 +697,7 @@ internal class PermissionTest : DatabaseTest() {
 
     dslContext.deleteFrom(STORAGE_LOCATIONS).execute()
     dslContext.deleteFrom(TIMESERIES).execute()
+    dslContext.deleteFrom(DEVICE_MANAGERS).execute()
     dslContext.deleteFrom(DEVICES).execute()
     dslContext.deleteFrom(AUTOMATIONS).execute()
     dslContext.deleteFrom(ACCESSIONS).execute()
@@ -643,6 +719,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedFacilities = facilityIds.toMutableSet()
     private val uncheckedAccessions = accessionIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
+    private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
@@ -849,6 +926,25 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg deviceManagerIds: DeviceManagerId,
+        readDeviceManager: Boolean = false,
+        updateDeviceManager: Boolean = false,
+    ) {
+      deviceManagerIds.forEach { deviceManagerId ->
+        assertEquals(
+            readDeviceManager,
+            user.canReadDeviceManager(deviceManagerId),
+            "Can read device manager $deviceManagerId")
+        assertEquals(
+            updateDeviceManager,
+            user.canUpdateDeviceManager(deviceManagerId),
+            "Can update device manager $deviceManagerId")
+
+        uncheckedDeviceManagers.remove(deviceManagerId)
+      }
+    }
+
     // All checks keyed on device IDs go here
     fun expect(
         vararg devices: DeviceId,
@@ -923,9 +1019,11 @@ internal class PermissionTest : DatabaseTest() {
 
     // All checks for globally-scoped permissions go here
     fun expect(
+        createDeviceManager: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
         updateDeviceTemplates: Boolean = false,
     ) {
+      assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
       assertEquals(
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),
@@ -943,6 +1041,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
+      expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())

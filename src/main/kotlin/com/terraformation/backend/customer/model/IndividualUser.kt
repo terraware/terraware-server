@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
@@ -158,7 +159,11 @@ data class IndividualUser(
   }
 
   override fun canUpdateFacility(facilityId: FacilityId): Boolean {
-    return facilityId in facilityRoles
+    return when (facilityRoles[facilityId]) {
+      Role.ADMIN,
+      Role.OWNER -> true
+      else -> false
+    }
   }
 
   override fun canSendAlert(facilityId: FacilityId): Boolean {
@@ -394,6 +399,32 @@ data class IndividualUser(
 
   override fun canUpdateDeviceTemplates(): Boolean {
     return userType == UserType.SuperAdmin
+  }
+
+  override fun canCreateDeviceManager(): Boolean {
+    return userType == UserType.SuperAdmin
+  }
+
+  override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean {
+    val facilityId = parentStore.getFacilityId(deviceManagerId)
+    return if (facilityId != null) {
+      canReadFacility(facilityId)
+    } else {
+      parentStore.exists(deviceManagerId)
+    }
+  }
+
+  override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean {
+    val facilityId = parentStore.getFacilityId(deviceManagerId)
+    return if (facilityId != null) {
+      when (facilityRoles[facilityId]) {
+        Role.OWNER,
+        Role.ADMIN -> true
+        else -> false
+      }
+    } else {
+      hasAnyAdminRole()
+    }
   }
 
   /** Returns true if the user is an admin or owner of any organizations. */

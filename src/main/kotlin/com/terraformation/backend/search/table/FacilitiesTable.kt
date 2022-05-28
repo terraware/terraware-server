@@ -35,6 +35,11 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
 
   override val fields: List<SearchField> =
       listOf(
+          enumField(
+              "connectionState",
+              "Facility connection state",
+              FACILITIES.CONNECTION_STATE_ID,
+              nullable = false),
           timestampField(
               "createdTime", "Facility created time", FACILITIES.CREATED_TIME, nullable = false),
           textField("description", "Facility description", FACILITIES.DESCRIPTION),

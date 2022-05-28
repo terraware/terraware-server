@@ -42,8 +42,14 @@ class AutomationNotFoundException(val automationId: AutomationId) :
 class CannotRemoveLastOwnerException(val organizationId: OrganizationId) :
     RuntimeException("Cannot remove last owner of organization $organizationId")
 
+class DeviceManagerNotFoundException(val deviceManagerId: DeviceManagerId) :
+    EntityNotFoundException("Device manager $deviceManagerId not found")
+
 class DeviceNotFoundException(val deviceId: DeviceId) :
     EntityNotFoundException("Device $deviceId not found")
+
+class FacilityAlreadyConnectedException(val facilityId: FacilityId) :
+    DuplicateEntityException("Facility $facilityId already connected")
 
 class FacilityNotFoundException(val facilityId: FacilityId) :
     EntityNotFoundException("Facility $facilityId not found")

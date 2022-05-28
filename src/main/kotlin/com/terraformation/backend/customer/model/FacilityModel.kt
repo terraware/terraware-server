@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.SiteId
@@ -9,6 +10,7 @@ import java.time.Instant
 import org.jooq.Record
 
 data class FacilityModel(
+    val connectionState: FacilityConnectionState,
     val createdTime: Instant,
     val description: String?,
     val id: FacilityId,
@@ -22,6 +24,8 @@ data class FacilityModel(
   constructor(
       record: Record
   ) : this(
+      record[FACILITIES.CONNECTION_STATE_ID]
+          ?: throw IllegalArgumentException("Connection state is required"),
       record[FACILITIES.CREATED_TIME] ?: throw IllegalArgumentException("Created time is required"),
       record[FACILITIES.DESCRIPTION],
       record[FACILITIES.ID] ?: throw IllegalArgumentException("ID is required"),
@@ -37,6 +41,7 @@ data class FacilityModel(
 
 fun FacilitiesRow.toModel(): FacilityModel {
   return FacilityModel(
+      connectionStateId ?: throw IllegalArgumentException("Connection state is required"),
       createdTime ?: throw IllegalArgumentException("Created time is required"),
       description,
       id ?: throw IllegalArgumentException("ID is required"),

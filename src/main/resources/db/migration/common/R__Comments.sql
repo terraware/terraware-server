@@ -49,6 +49,12 @@ COMMENT ON COLUMN country_subdivisions.name IS 'Name of subdivision in US Englis
 
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
+COMMENT ON TABLE device_managers IS 'Information about device managers. This is a combination of information from the Balena API and locally-generated values.';
+COMMENT ON COLUMN device_managers.balena_id IS 'Balena-assigned device identifier.';
+COMMENT ON COLUMN device_managers.balena_modified_time IS 'Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally.';
+COMMENT ON COLUMN device_managers.created_time IS 'When this device manager was added to the local database. The Balena device may have been created earlier.';
+COMMENT ON COLUMN device_managers.update_progress IS 'Percent complete of software download and installation (0-100). Null if no software update is in progress.';
+
 COMMENT ON TABLE device_template_categories IS '(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next.';
 
 COMMENT ON TABLE device_templates IS 'Canned device configurations for use in cases where we want to show a list of possible devices to the user and create the selected device with the correct settings so that the device manager can talk to it.';
@@ -58,6 +64,8 @@ COMMENT ON COLUMN facilities.idle_after_time IS 'Time at which the facility will
 COMMENT ON COLUMN facilities.idle_since_time IS 'Time at which the facility became idle. Null if the facility is not currently considered idle.';
 COMMENT ON COLUMN facilities.last_timeseries_time IS 'When the most recent timeseries data was received from the facility.';
 COMMENT ON COLUMN facilities.max_idle_minutes IS 'Send an alert if this many minutes pass without new timeseries data from a facility''s device manager.';
+
+COMMENT ON TABLE facility_connection_states IS '(Enum) Progress of the configuration of a device manager for a facility.';
 
 COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be represented in the data model.';
 

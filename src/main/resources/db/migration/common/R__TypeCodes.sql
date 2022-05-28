@@ -25,6 +25,12 @@ VALUES (1, 'Seed Bank'),
        (3, 'Reverse Osmosis')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO facility_connection_states (id, name)
+VALUES (1, 'Not Connected'),
+       (2, 'Connected'),
+       (3, 'Configured')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO germination_seed_types (id, name)
 VALUES (1, 'Fresh'),
        (2, 'Stored')

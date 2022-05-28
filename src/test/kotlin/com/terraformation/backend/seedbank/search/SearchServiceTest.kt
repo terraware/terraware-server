@@ -2639,6 +2639,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               mapOf(
                   "accessions" to expectedAccessions,
+                  "connectionState" to "Not Connected",
                   "createdTime" to "1970-01-01T00:00:00Z",
                   "description" to "Description 100",
                   "id" to "100",

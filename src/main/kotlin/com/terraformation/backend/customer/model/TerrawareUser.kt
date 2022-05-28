@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
@@ -69,6 +70,7 @@ interface TerrawareUser : Principal {
   fun canCreateApiKey(organizationId: OrganizationId): Boolean
   fun canCreateAutomation(facilityId: FacilityId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
+  fun canCreateDeviceManager(): Boolean
   fun canCreateFacility(siteId: SiteId): Boolean
   fun canCreateProject(organizationId: OrganizationId): Boolean
   fun canCreateSite(projectId: ProjectId): Boolean
@@ -92,6 +94,7 @@ interface TerrawareUser : Principal {
   fun canReadAccession(accessionId: AccessionId): Boolean
   fun canReadAutomation(automationId: AutomationId): Boolean
   fun canReadDevice(deviceId: DeviceId): Boolean
+  fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadProject(projectId: ProjectId): Boolean
@@ -107,6 +110,7 @@ interface TerrawareUser : Principal {
   fun canUpdateAccession(accessionId: AccessionId): Boolean
   fun canUpdateAutomation(automationId: AutomationId): Boolean
   fun canUpdateDevice(deviceId: DeviceId): Boolean
+  fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canUpdateDeviceTemplates(): Boolean
   fun canUpdateFacility(facilityId: FacilityId): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
