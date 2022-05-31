@@ -8,8 +8,10 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.TimeseriesId
-import com.terraformation.backend.db.tables.pojos.TimeseriesRow
+import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.device.db.TimeseriesStore
+import com.terraformation.backend.device.model.TimeseriesModel
+import com.terraformation.backend.device.model.TimeseriesValueModel
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -18,10 +20,12 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import java.time.Instant
+import javax.ws.rs.BadRequestException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.ResponseEntity
 
@@ -37,6 +41,8 @@ internal class TimeseriesControllerTest : RunsAsUser {
   private val deviceId2 = DeviceId(2)
   private val tsId1 = TimeseriesId(1)
   private val tsId2 = TimeseriesId(2)
+  private val tsId3 = TimeseriesId(3)
+  private val tsId4 = TimeseriesId(4)
 
   @BeforeEach
   fun setUp() {
@@ -48,14 +54,9 @@ internal class TimeseriesControllerTest : RunsAsUser {
     every { user.canUpdateTimeseries(any()) } returns true
   }
 
-  private fun valuePayload(value: String) =
-      TimeseriesValuePayload(Instant.ofEpochMilli(value.hashCode().toLong()), value)
-
-  private fun valuePayloads(vararg values: String) = values.map { valuePayload(it) }
-
   @Test
   fun `recordTimeseriesValues updates facilities`() {
-    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns timeseriesModel(tsId1)
     every { timeseriesStore.insertValue(any(), any(), any(), any()) } just Runs
 
     controller.recordTimeseriesValues(
@@ -67,9 +68,8 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
   @Test
   fun `recordTimeseriesValues groups similar errors`() {
-
-    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
-    every { timeseriesStore.fetchOneByName(deviceId1, "ts2") } returns TimeseriesRow(id = tsId2)
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns timeseriesModel(tsId1)
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts2") } returns timeseriesModel(tsId2)
     every { timeseriesStore.fetchOneByName(deviceId2, "ts1") } returns null
 
     every { timeseriesStore.insertValue(deviceId1, tsId1, "v10", any()) } just Runs
@@ -118,7 +118,7 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
   @Test
   fun `recordTimeseriesValues does not include failures list if nothing failed`() {
-    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns TimeseriesRow(id = tsId1)
+    every { timeseriesStore.fetchOneByName(deviceId1, "ts1") } returns timeseriesModel(tsId1)
     every { timeseriesStore.insertValue(any(), any(), any(), any()) } just Runs
 
     val response =
@@ -145,4 +145,134 @@ internal class TimeseriesControllerTest : RunsAsUser {
 
     assertEquals(expected, response)
   }
+
+  @Test
+  fun `getTimeseriesHistory accepts start and end times`() {
+    val startTime = Instant.ofEpochSecond(60)
+    val endTime = Instant.ofEpochSecond(70)
+
+    every { timeseriesStore.fetchOneByName(any(), any()) } returns null
+    every { timeseriesStore.fetchHistory(any(), any(), any(), any()) } returns emptyMap()
+
+    val response =
+        controller.getTimeseriesHistory(
+            GetTimeseriesHistoryRequestPayload(
+                startTime,
+                endTime,
+                seconds = null,
+                count = 1,
+                listOf(TimeseriesIdPayload(deviceId1, "test"))))
+
+    val expected = GetTimeseriesHistoryResponsePayload(emptyList())
+
+    verify { timeseriesStore.fetchHistory(startTime, endTime, 1, emptySet()) }
+    assertEquals(expected, response)
+  }
+
+  @Test
+  fun `getTimeseriesHistory accepts number of seconds`() {
+    every { timeseriesStore.fetchOneByName(any(), any()) } returns null
+    every { timeseriesStore.fetchHistory(any(), any(), any()) } returns emptyMap()
+
+    val response =
+        controller.getTimeseriesHistory(
+            GetTimeseriesHistoryRequestPayload(
+                startTime = null,
+                endTime = null,
+                seconds = 10,
+                count = 1,
+                listOf(TimeseriesIdPayload(deviceId1, "test"))))
+
+    val expected = GetTimeseriesHistoryResponsePayload(emptyList())
+
+    verify { timeseriesStore.fetchHistory(10, 1, emptySet()) }
+    assertEquals(expected, response)
+  }
+
+  @Test
+  fun `getTimeseriesHistory requires time range`() {
+    assertThrows<BadRequestException> {
+      controller.getTimeseriesHistory(
+          GetTimeseriesHistoryRequestPayload(null, null, null, 1, emptyList()))
+    }
+  }
+
+  @Test
+  fun `getTimeseriesHistory returns one list of values per available timeseries`() {
+    // 2 timeseries on same device
+    every { timeseriesStore.fetchOneByName(deviceId1, "test1") } returns
+        timeseriesModel(tsId1, deviceId1, "test1")
+    every { timeseriesStore.fetchOneByName(deviceId1, "test2") } returns
+        timeseriesModel(tsId2, deviceId1, "test2")
+    // timeseries with same name on different device
+    every { timeseriesStore.fetchOneByName(deviceId2, "test1") } returns
+        timeseriesModel(tsId3, deviceId2, "test1")
+    // valid timeseries with no values
+    every { timeseriesStore.fetchOneByName(deviceId2, "test2") } returns
+        timeseriesModel(tsId4, deviceId2, "test2")
+    // nonexistent timeseries
+    every { timeseriesStore.fetchOneByName(deviceId2, "bogus") } returns null
+
+    every { timeseriesStore.fetchHistory(any(), any(), any()) } returns
+        mapOf(
+            tsId1 to
+                listOf(
+                    TimeseriesValueModel(tsId1, Instant.ofEpochSecond(1), "1"),
+                    TimeseriesValueModel(tsId1, Instant.ofEpochSecond(2), "2")),
+            tsId2 to listOf(TimeseriesValueModel(tsId2, Instant.ofEpochSecond(3), "3")),
+            tsId3 to listOf(TimeseriesValueModel(tsId3, Instant.ofEpochSecond(4), "4")),
+            tsId4 to emptyList(),
+        )
+
+    val request =
+        GetTimeseriesHistoryRequestPayload(
+            startTime = null,
+            endTime = null,
+            seconds = 5,
+            count = 1,
+            listOf(
+                TimeseriesIdPayload(deviceId1, "test1"),
+                TimeseriesIdPayload(deviceId1, "test2"),
+                TimeseriesIdPayload(deviceId2, "test1"),
+                TimeseriesIdPayload(deviceId2, "test2"),
+                TimeseriesIdPayload(deviceId2, "bogus")))
+    val response = controller.getTimeseriesHistory(request)
+
+    val expected =
+        GetTimeseriesHistoryResponsePayload(
+            listOf(
+                TimeseriesValuesPayload(
+                    deviceId1,
+                    "test1",
+                    listOf(
+                        TimeseriesValuePayload(Instant.ofEpochSecond(1), "1"),
+                        TimeseriesValuePayload(Instant.ofEpochSecond(2), "2"))),
+                TimeseriesValuesPayload(
+                    deviceId1,
+                    "test2",
+                    listOf(TimeseriesValuePayload(Instant.ofEpochSecond(3), "3"))),
+                TimeseriesValuesPayload(
+                    deviceId2,
+                    "test1",
+                    listOf(TimeseriesValuePayload(Instant.ofEpochSecond(4), "4"))),
+                TimeseriesValuesPayload(deviceId2, "test2", emptyList()),
+            ),
+        )
+
+    assertEquals(expected, response)
+  }
+
+  private fun timeseriesModel(
+      id: TimeseriesId,
+      deviceId: DeviceId = DeviceId(id.value),
+      name: String = "ts$id",
+      type: TimeseriesType = TimeseriesType.Numeric,
+      decimalPlaces: Int? = null,
+      units: String? = null
+  ) = TimeseriesModel(id, deviceId, name, type, decimalPlaces, units)
+
+  private fun valuePayload(value: String) =
+      TimeseriesValuePayload(Instant.ofEpochMilli(value.hashCode().toLong()), value)
+
+  private fun valuePayloads(vararg values: String) = values.map { valuePayload(it) }
 }
