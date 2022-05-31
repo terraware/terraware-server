@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -27,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.ws.rs.InternalServerErrorException
+import javax.ws.rs.WebApplicationException
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -188,6 +190,27 @@ class FacilitiesController(
     }
 
     return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse409(
+      description = "The facility's device manager was not in the process of being configured.")
+  @ApiResponseSimpleSuccess
+  @Operation(
+      summary = "Marks a facility as fully configured.",
+      description =
+          "After connecting a device manager and finishing any necessary configuration of the " +
+              "facility's devices, send this request to enable processing of timeseries values " +
+              "and alerts from the device manager. Only valid if the facility's connection " +
+              "state is `Connected`.")
+  @PostMapping("/{facilityId}/configured")
+  fun postConfigured(@PathVariable facilityId: FacilityId): SimpleSuccessResponsePayload {
+    try {
+      facilityStore.updateConnectionState(
+          facilityId, FacilityConnectionState.Connected, FacilityConnectionState.Configured)
+      return SimpleSuccessResponsePayload()
+    } catch (e: IllegalStateException) {
+      throw WebApplicationException("Facility's devices are not being configured.")
+    }
   }
 }
 

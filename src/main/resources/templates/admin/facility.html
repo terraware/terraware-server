@@ -79,6 +79,16 @@
            required th:value="${facility.maxIdleMinutes}"/>
     minutes (for updates from device manager)
     <br/>
+    <label for="connectionState">Connection</label>
+    <select name="connectionState" id="connectionState">
+        <option th:each="state: ${connectionStates}"
+                th:selected="${facility.connectionState} == ${state}"
+                th:text="${state.displayName}"
+                th:value="${state}">
+            State
+        </option>
+    </select>
+    <br/>
     <input type="submit" value=" Update Facility "/>
 </form>
 

@@ -217,6 +217,7 @@ class AdminController(
     val devices = deviceStore.fetchByFacilityId(facilityId)
 
     model.addAttribute("canUpdateFacility", currentUser().canUpdateFacility(facilityId))
+    model.addAttribute("connectionStates", FacilityConnectionState.values())
     model.addAttribute("devices", devices)
     model.addAttribute("deviceManager", deviceManager)
     model.addAttribute("facility", facility)
@@ -548,6 +549,7 @@ class AdminController(
 
   @PostMapping("/updateFacility")
   fun updateFacility(
+      @RequestParam("connectionState") connectionState: FacilityConnectionState,
       @RequestParam("description") description: String?,
       @RequestParam("facilityId") facilityId: FacilityId,
       @RequestParam("maxIdleMinutes") maxIdleMinutes: Int,
@@ -570,6 +572,10 @@ class AdminController(
             description = description?.ifEmpty { null },
             type = type,
             maxIdleMinutes = maxIdleMinutes))
+
+    if (connectionState != existing.connectionState) {
+      facilityStore.updateConnectionState(facilityId, existing.connectionState, connectionState)
+    }
 
     redirectAttributes.successMessage = "Facility updated."
 
