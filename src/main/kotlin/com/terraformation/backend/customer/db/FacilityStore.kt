@@ -110,7 +110,10 @@ class FacilityStore(
     return model
   }
 
-  /** Updates the settings of an existing facility. */
+  /**
+   * Updates the settings of an existing facility. Connection state is ignored here; use
+   * [updateConnectionState] to modify it.
+   */
   fun update(model: FacilityModel) {
     val facilityId = model.id
     requirePermissions { updateFacility(facilityId) }
