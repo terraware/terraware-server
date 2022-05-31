@@ -29,6 +29,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.ws.rs.InternalServerErrorException
 import javax.ws.rs.WebApplicationException
+import javax.ws.rs.core.Response
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -209,7 +210,8 @@ class FacilitiesController(
           facilityId, FacilityConnectionState.Connected, FacilityConnectionState.Configured)
       return SimpleSuccessResponsePayload()
     } catch (e: IllegalStateException) {
-      throw WebApplicationException("Facility's devices are not being configured.")
+      throw WebApplicationException(
+          "Facility's devices are not being configured.", Response.Status.CONFLICT)
     }
   }
 }
