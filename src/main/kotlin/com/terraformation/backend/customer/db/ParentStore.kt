@@ -6,6 +6,8 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceManagerId
+import com.terraformation.backend.db.DeviceNotFoundException
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationId
@@ -79,6 +81,11 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(accessionId: AccessionId): OrganizationId {
     return getOrganizationId(getProjectId(accessionId))
         ?: throw AccessionNotFoundException(accessionId)
+  }
+
+  fun getFacilityConnectionState(deviceId: DeviceId): FacilityConnectionState {
+    return fetchFieldById(deviceId, DEVICES.ID, DEVICES.facilities().CONNECTION_STATE_ID)
+        ?: throw DeviceNotFoundException(deviceId)
   }
 
   fun getFacilityName(accessionId: AccessionId): String {
