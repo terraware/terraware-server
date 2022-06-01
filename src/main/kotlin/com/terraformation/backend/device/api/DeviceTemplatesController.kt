@@ -11,9 +11,11 @@ import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 
 @DeviceManagerAppEndpoint
 @RequestMapping("/api/v1/devices/templates")
+@RestController
 class DeviceTemplatesController(
     private val deviceTemplatesDao: DeviceTemplatesDao,
     private val objectMapper: ObjectMapper,
