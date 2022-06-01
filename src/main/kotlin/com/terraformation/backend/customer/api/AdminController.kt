@@ -589,6 +589,13 @@ class AdminController(
       @RequestParam("body") body: String,
       redirectAttributes: RedirectAttributes
   ): String {
+    if (facilityStore.fetchById(facilityId)?.connectionState !=
+        FacilityConnectionState.Configured) {
+      redirectAttributes.successMessage =
+          "Alert received, but facility is not configured so alert would be ignored."
+      return facility(facilityId)
+    }
+
     try {
       publisher.publishEvent(
           FacilityAlertRequestedEvent(facilityId, subject, body, currentUser().userId))

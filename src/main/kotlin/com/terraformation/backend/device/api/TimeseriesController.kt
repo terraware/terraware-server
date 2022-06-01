@@ -9,7 +9,9 @@ import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.device.db.TimeseriesStore
@@ -22,6 +24,7 @@ import javax.validation.constraints.Size
 import javax.ws.rs.WebApplicationException
 import javax.ws.rs.core.Response
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class TimeseriesController(
     private val facilityStore: FacilityStore,
+    private val parentStore: ParentStore,
     private val timeSeriesStore: TimeseriesStore
 ) {
   private val log = perClassLogger()
@@ -56,13 +60,18 @@ class TimeseriesController(
           "Successfully processed the request. Note that this status will be returned even if " +
               "the server was unable to record some of the values. In that case, the failed " +
               "values will be returned in the response payload.")
+  @ApiResponse(
+      responseCode = "202",
+      description =
+          "The request was valid, but the user is still configuring or placing sensors, so the " +
+              "timeseries values have not been recorded.")
   @ApiResponse413(
       "The request had more than ${RecordTimeseriesValuesRequestPayload.MAX_VALUES} values.")
   @Operation(summary = "Records new values for one or more timeseries.")
   @PostMapping("/values")
   fun recordTimeseriesValues(
       @RequestBody payload: RecordTimeseriesValuesRequestPayload
-  ): RecordTimeseriesValuesResponsePayload {
+  ): ResponseEntity<RecordTimeseriesValuesResponsePayload> {
     val errors = mutableListOf<TimeseriesValuesErrorPayload>()
     val maxValues = RecordTimeseriesValuesRequestPayload.MAX_VALUES
 
@@ -70,6 +79,18 @@ class TimeseriesController(
       throw WebApplicationException(
           "Request must contain $maxValues or fewer values",
           Response.Status.REQUEST_ENTITY_TOO_LARGE)
+    }
+
+    val facilityNotConfigured =
+        payload.timeseries
+            .asSequence()
+            .map { it.deviceId }
+            .distinct()
+            .any {
+              parentStore.getFacilityConnectionState(it) != FacilityConnectionState.Configured
+            }
+    if (facilityNotConfigured) {
+      return ResponseEntity.accepted().body(RecordTimeseriesValuesResponsePayload())
     }
 
     payload.timeseries.forEach { valuesEntry ->
@@ -119,9 +140,9 @@ class TimeseriesController(
     facilityStore.updateLastTimeseriesTimes(payload.timeseries.map { it.deviceId })
 
     return if (errors.isEmpty()) {
-      RecordTimeseriesValuesResponsePayload()
+      ResponseEntity.ok(RecordTimeseriesValuesResponsePayload())
     } else {
-      RecordTimeseriesValuesResponsePayload(errors)
+      ResponseEntity.ok(RecordTimeseriesValuesResponsePayload(errors))
     }
   }
 }

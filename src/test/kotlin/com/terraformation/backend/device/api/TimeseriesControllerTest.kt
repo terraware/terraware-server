@@ -1,9 +1,12 @@
 package com.terraformation.backend.device.api
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.device.db.TimeseriesStore
@@ -20,13 +23,15 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.http.ResponseEntity
 
 internal class TimeseriesControllerTest : RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private val facilityStore: FacilityStore = mockk()
+  private val parentStore: ParentStore = mockk()
   private val timeseriesStore: TimeseriesStore = mockk()
 
-  private val controller = TimeseriesController(facilityStore, timeseriesStore)
+  private val controller = TimeseriesController(facilityStore, parentStore, timeseriesStore)
 
   private val deviceId1 = DeviceId(1)
   private val deviceId2 = DeviceId(2)
@@ -36,6 +41,8 @@ internal class TimeseriesControllerTest : RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { facilityStore.updateLastTimeseriesTimes(any()) } just runs
+    every { parentStore.getFacilityConnectionState(any()) } returns
+        FacilityConnectionState.Configured
     every { user.canCreateTimeseries(any()) } returns true
     every { user.canReadTimeseries(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
@@ -85,22 +92,26 @@ internal class TimeseriesControllerTest : RunsAsUser {
                 )))
 
     val expected =
-        RecordTimeseriesValuesResponsePayload(
-            listOf(
-                TimeseriesValuesErrorPayload(
-                    deviceId1,
-                    "ts1",
-                    valuePayloads("v11", "v12"),
-                    "Already have a value with this timestamp"),
-                TimeseriesValuesErrorPayload(
-                    deviceId1, "ts2", valuePayloads("v20"), "Unexpected error while saving value"),
-                TimeseriesValuesErrorPayload(
-                    deviceId1,
-                    "ts2",
-                    valuePayloads("v21"),
-                    "Already have a value with this timestamp"),
-                TimeseriesValuesErrorPayload(
-                    deviceId2, "ts1", valuePayloads("v30", "v31"), "Timeseries not found")))
+        ResponseEntity.ok(
+            RecordTimeseriesValuesResponsePayload(
+                listOf(
+                    TimeseriesValuesErrorPayload(
+                        deviceId1,
+                        "ts1",
+                        valuePayloads("v11", "v12"),
+                        "Already have a value with this timestamp"),
+                    TimeseriesValuesErrorPayload(
+                        deviceId1,
+                        "ts2",
+                        valuePayloads("v20"),
+                        "Unexpected error while saving value"),
+                    TimeseriesValuesErrorPayload(
+                        deviceId1,
+                        "ts2",
+                        valuePayloads("v21"),
+                        "Already have a value with this timestamp"),
+                    TimeseriesValuesErrorPayload(
+                        deviceId2, "ts1", valuePayloads("v30", "v31"), "Timeseries not found"))))
 
     assertEquals(expected, actual)
   }
@@ -115,6 +126,23 @@ internal class TimeseriesControllerTest : RunsAsUser {
             RecordTimeseriesValuesRequestPayload(
                 listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))))
 
-    assertNull(response.failures, "Failures list")
+    assertNull(response.body!!.failures, "Failures list")
+  }
+
+  @Test
+  fun `recordTimeseriesValues does not record values if facility is not configured`() {
+    every { parentStore.getFacilityConnectionState(any()) } returns
+        FacilityConnectionState.Connected
+
+    val response =
+        controller.recordTimeseriesValues(
+            RecordTimeseriesValuesRequestPayload(
+                listOf(TimeseriesValuesPayload(deviceId1, "ts1", valuePayloads("1", "2", "3")))))
+
+    val expected =
+        ResponseEntity.accepted()
+            .body(RecordTimeseriesValuesResponsePayload(null, SuccessOrError.Ok, null))
+
+    assertEquals(expected, response)
   }
 }

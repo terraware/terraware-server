@@ -31,6 +31,7 @@ import javax.ws.rs.InternalServerErrorException
 import javax.ws.rs.WebApplicationException
 import javax.ws.rs.core.Response
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -173,13 +174,26 @@ class FacilitiesController(
   }
 
   @ApiResponseSimpleSuccess
+  @ApiResponse(
+      responseCode = "202",
+      description =
+          "The request was received, but the user is still configuring or placing sensors, so no " +
+              "notification has been generated.")
   @PostMapping("/{facilityId}/alert/send")
   @Operation(summary = "Sends an alert to the facility's configured alert recipients.")
   fun sendFacilityAlert(
       @PathVariable facilityId: FacilityId,
       @RequestBody payload: SendFacilityAlertRequestPayload
-  ): SimpleSuccessResponsePayload {
+  ): ResponseEntity<SimpleSuccessResponsePayload> {
     requirePermissions { sendAlert(facilityId) }
+
+    val connectionState = facilityStore.fetchById(facilityId)?.connectionState
+    if (connectionState != FacilityConnectionState.Configured) {
+      log.warn("Dropping alert from facility $facilityId with connection state $connectionState")
+      log.info("Subject ${payload.subject}")
+      log.info("Body ${payload.body}")
+      return ResponseEntity.accepted().body(SimpleSuccessResponsePayload())
+    }
 
     try {
       publisher.publishEvent(
@@ -190,7 +204,7 @@ class FacilitiesController(
       throw InternalServerErrorException("Unable to send email message.")
     }
 
-    return SimpleSuccessResponsePayload()
+    return ResponseEntity.ok(SimpleSuccessResponsePayload())
   }
 
   @ApiResponse409(
