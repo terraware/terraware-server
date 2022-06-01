@@ -9,12 +9,15 @@ import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
+import com.terraformation.backend.device.model.TimeseriesModel
+import com.terraformation.backend.device.model.TimeseriesValueModel
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Clock
 import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @ManagedBean
 class TimeseriesStore(private val clock: Clock, private val dslContext: DSLContext) {
@@ -29,6 +32,27 @@ class TimeseriesStore(private val clock: Clock, private val dslContext: DSLConte
         .where(TIMESERIES.DEVICE_ID.eq(deviceId))
         .and(TIMESERIES.NAME.eq(name))
         .fetchOneInto(TimeseriesRow::class.java)
+  }
+
+  fun fetchByDeviceId(deviceId: DeviceId): List<TimeseriesModel> {
+    requirePermissions { readTimeseries(deviceId) }
+
+    val valuesMultiset =
+        DSL.multiset(
+                DSL.selectFrom(TIMESERIES_VALUES)
+                    .where(TIMESERIES_VALUES.TIMESERIES_ID.eq(TIMESERIES.ID))
+                    .orderBy(TIMESERIES_VALUES.CREATED_TIME.desc())
+                    .limit(1))
+            .convertFrom { result ->
+              result.firstOrNull()?.let { TimeseriesValueModel.ofRecord(it) }
+            }
+
+    return dslContext
+        .select(TIMESERIES.asterisk(), valuesMultiset)
+        .from(TIMESERIES)
+        .where(TIMESERIES.DEVICE_ID.eq(deviceId))
+        .orderBy(TIMESERIES.NAME)
+        .fetch { TimeseriesModel(it, it[valuesMultiset]) }
   }
 
   /**

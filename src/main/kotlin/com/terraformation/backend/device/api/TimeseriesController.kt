@@ -8,6 +8,7 @@ import com.terraformation.backend.api.ErrorDetails
 import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DeviceId
@@ -15,6 +16,7 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.TimeseriesType
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.device.db.TimeseriesStore
+import com.terraformation.backend.device.model.TimeseriesModel
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -25,9 +27,11 @@ import javax.ws.rs.WebApplicationException
 import javax.ws.rs.core.Response
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @DeviceManagerAppEndpoint
@@ -52,6 +56,17 @@ class TimeseriesController(
   ): SimpleSuccessResponsePayload {
     timeSeriesStore.createOrUpdate(payload.timeseries.map { it.toRow() })
     return SimpleSuccessResponsePayload()
+  }
+
+  @GetMapping
+  @Operation(summary = "Lists the timeseries for one or more devices.")
+  fun listTimeseries(
+      @RequestParam("deviceId") deviceIds: List<DeviceId>
+  ): ListTimeseriesResponsePayload {
+    val timeseries =
+        deviceIds.flatMap { timeSeriesStore.fetchByDeviceId(it) }.map { TimeseriesPayload(it) }
+
+    return ListTimeseriesResponsePayload(timeseries)
   }
 
   @ApiResponse(
@@ -246,3 +261,35 @@ data class RecordTimeseriesValuesResponsePayload(
       SuccessOrError.Error,
       ErrorDetails("One or more timeseries values could not be recorded."))
 }
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class TimeseriesPayload(
+    @Schema(
+        description = "ID of device that produces this timeseries.",
+    )
+    val deviceId: DeviceId,
+    val timeseriesName: String,
+    val type: TimeseriesType,
+    @Schema(
+        description =
+            "Number of significant fractional digits (after the decimal point), if this is a " +
+                "timeseries with non-integer numeric values.")
+    val decimalPlaces: Int?,
+    @Schema(description = "Units of measure for values in this timeseries.", example = "volts")
+    val units: String?,
+    @Schema(description = "If any values have been recorded for the timeseries, the latest one.")
+    val latestValue: TimeseriesValuePayload?,
+) {
+  constructor(
+      model: TimeseriesModel
+  ) : this(
+      model.deviceId,
+      model.name,
+      model.type,
+      model.decimalPlaces,
+      model.units,
+      model.latestValue?.let { TimeseriesValuePayload(it.createdTime, it.value) })
+}
+
+data class ListTimeseriesResponsePayload(val timeseries: List<TimeseriesPayload>) :
+    SuccessResponsePayload
