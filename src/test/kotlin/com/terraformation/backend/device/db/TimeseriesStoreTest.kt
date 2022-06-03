@@ -12,10 +12,13 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.tables.pojos.TimeseriesValuesRow
 import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
+import com.terraformation.backend.device.model.TimeseriesModel
+import com.terraformation.backend.device.model.TimeseriesValueModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -211,5 +214,61 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `insertValue throws exception if timeseries does not exist`() {
     assertThrows<Exception> { store.insertValue(deviceId, TimeseriesId(1), "1", Instant.EPOCH) }
+  }
+
+  @Test
+  fun `fetchByDeviceId throws exception if user has no permission to read timeseries`() {
+    timeseriesDao.insert(timeseriesRow)
+
+    every { user.canReadTimeseries(any()) } returns false
+
+    assertThrows<TimeseriesNotFoundException> { store.fetchByDeviceId(deviceId) }
+  }
+
+  @Test
+  fun `fetchByDeviceId returns latest value for timeseries with values`() {
+    val time1 = Instant.EPOCH
+    val time2 = time1 + Duration.ofMinutes(5)
+    val timeseriesWithoutValues = timeseriesRow.copy(name = "second")
+
+    timeseriesDao.insert(timeseriesRow)
+    timeseriesDao.insert(timeseriesWithoutValues)
+
+    // Insert the newer row first to increase the chances that they'd be returned in the wrong
+    // order if the implementation code was missing an "ORDER BY" clause.
+    dslContext
+        .insertInto(
+            TIMESERIES_VALUES,
+            TIMESERIES_VALUES.TIMESERIES_ID,
+            TIMESERIES_VALUES.CREATED_TIME,
+            TIMESERIES_VALUES.VALUE)
+        .values(timeseriesRow.id, time2, "2")
+        .values(timeseriesRow.id, time1, "1")
+        .execute()
+
+    val expected =
+        listOf(
+            TimeseriesModel(
+                id = timeseriesWithoutValues.id!!,
+                deviceId = deviceId,
+                name = timeseriesWithoutValues.name!!,
+                type = timeseriesWithoutValues.typeId!!,
+                decimalPlaces = timeseriesWithoutValues.decimalPlaces,
+                units = timeseriesWithoutValues.units,
+                latestValue = null,
+            ),
+            TimeseriesModel(
+                id = timeseriesRow.id!!,
+                deviceId = deviceId,
+                name = timeseriesRow.name!!,
+                type = timeseriesRow.typeId!!,
+                decimalPlaces = timeseriesRow.decimalPlaces,
+                units = timeseriesRow.units,
+                latestValue = TimeseriesValueModel(timeseriesRow.id!!, time2, "2"),
+            ),
+        )
+
+    val actual = store.fetchByDeviceId(deviceId)
+    assertEquals(expected, actual)
   }
 }
