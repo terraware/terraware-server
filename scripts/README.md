@@ -56,3 +56,38 @@ To advance that server's clock by 3 days:
 ```
 ./clock.py -d 3
 ```
+
+## Generating fake timeseries data for a facility's devices
+
+If you have already created temperature/humidity sensor devices and PV system devices using
+the admin UI, you can use a script to fill your database with random timeseries data so you
+can test working with it.
+
+By default, the script will create timeseries for all devices with makes/models it knows
+about under all the facilities the user has access to. Initially it will create 30 days of
+dummy data; if run again, it will add new data to the existing data to fill in the gap
+between the previous time it was run and the current time. For dev environments that's
+usually reasonable since it means you can run it like:
+
+```
+./timeseries.py --session SESSION_COOKIE_VALUE
+```
+
+or, if you have an access token from Keycloak:
+
+```
+./timeseries.py --bearer ACCESS_TOKEN_VALUE
+```
+
+To simulate a device manager submitting new data periodically, you can run it in a loop
+in the shell:
+
+```
+while true; do
+  ./timeseries.py --session SESSION_COOKIE_VALUE
+  sleep 30
+done
+```
+
+There are additional options to limit the devices and/or facilities it touches; run it
+with the `--help` option for details.
