@@ -1,5 +1,5 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.EmailTemplateModel" --> -->
 <mj-hero>
-    <mj-image mj-class="logo-img" src="${webAppUrl}/assets/logo-terraformation.svg">
+    <mj-image mj-class="logo-img" src="${webAppUrl}/assets/logo-terraformation.png">
     </mj-image>
 </mj-hero>
