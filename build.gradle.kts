@@ -94,7 +94,7 @@ dependencies {
   implementation("org.apache.tika:tika-core:2.4.0")
   implementation("org.flywaydb:flyway-core:8.5.11")
   implementation("org.freemarker:freemarker:2.3.31")
-  implementation("org.jobrunr:jobrunr-spring-boot-starter:5.1.2")
+  implementation("org.jobrunr:jobrunr-spring-boot-starter:5.1.3")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation(platform("org.keycloak.bom:keycloak-adapter-bom:$keycloakVersion"))
   implementation("org.keycloak:keycloak-spring-boot-starter")
