@@ -118,40 +118,22 @@ internal class PermissionTest : DatabaseTest() {
   private val organizationIds = listOf(1, 2, 3).map { OrganizationId(it.toLong()) }
   private val org1Id = OrganizationId(1)
 
+  private val speciesIds = organizationIds.map { SpeciesId(it.value) }
+
   private val projectIds = listOf(10, 11, 20, 21, 22).map { ProjectId(it.toLong()) }
-  private val org1ProjectIds = projectIds.take(2).toTypedArray()
   private val project10Id = ProjectId(10)
 
   private val siteIds = listOf(100, 101, 110, 111, 210, 220).map { SiteId(it.toLong()) }
-  private val org1SiteIds = siteIds.take(4).toTypedArray()
-  private val project10SiteIds = siteIds.take(2).toTypedArray()
 
   private val facilityIds =
       listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111, 2200).map { FacilityId(it.toLong()) }
-  private val org1FacilityIds = facilityIds.take(8).toTypedArray()
-  private val project10FacilityIds = facilityIds.take(4).toTypedArray()
-
-  private val automationIds = facilityIds.map { AutomationId(it.value) }
-  private val org1AutomationIds = automationIds.take(8).toTypedArray()
-  private val project10AutomationIds = org1AutomationIds.take(4).toTypedArray()
-
-  private val deviceIds = facilityIds.map { DeviceId(it.value) }
-  private val org1DeviceIds = deviceIds.take(8).toTypedArray()
-  private val project10DeviceIds = deviceIds.take(4).toTypedArray()
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
-  private val org1AccessionIds = accessionIds.take(8).toTypedArray()
-  private val project10AccessionIds = accessionIds.take(4).toTypedArray()
-
-  private val speciesIds = organizationIds.map { SpeciesId(it.value) }
-  private val org1SpeciesIds = speciesIds.take(1).toTypedArray()
-
+  private val automationIds = facilityIds.map { AutomationId(it.value) }
+  private val deviceIds = facilityIds.map { DeviceId(it.value) }
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
-  private val org1StorageLocationIds = storageLocationIds.forOrg1()
 
-  private val deviceManagerIds = listOf(1000, 1100, 2200, 3000).map { DeviceManagerId(it.toLong()) }
-  private val org1DeviceManagerIds = deviceManagerIds.forOrg1()
-  private val project10DeviceManagerIds = deviceManagerIds.forProject10()
+  private val deviceManagerIds = listOf(1000L, 1100L, 2200L, 3000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 3000 }
 
   private val otherUserId = UserId(8765)
@@ -160,10 +142,10 @@ internal class PermissionTest : DatabaseTest() {
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
-  private inline fun <reified T> List<T>.filterRange(min: Int, max: Int): Array<T> =
-      filter { "$it".toInt() in min..max }.toTypedArray()
-  private inline fun <reified T> List<T>.forOrg1() = filterRange(1000, 1999)
-  private inline fun <reified T> List<T>.forProject10() = filterRange(1000, 1099)
+  private inline fun <reified T> List<T>.filterStartsWith(prefix: String): Array<T> =
+      filter { "$it".startsWith(prefix) }.toTypedArray()
+  private inline fun <reified T> List<T>.forOrg1() = filterStartsWith("1")
+  private inline fun <reified T> List<T>.forProject10() = filterStartsWith("10")
 
   @BeforeEach
   fun setUp() {
@@ -258,7 +240,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1ProjectIds,
+        *projectIds.forOrg1(),
         readProject = true,
         updateProject = true,
         addProjectUser = true,
@@ -269,7 +251,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1SiteIds,
+        *siteIds.forOrg1(),
         createFacility = true,
         listFacilities = true,
         readSite = true,
@@ -278,7 +260,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1FacilityIds,
+        *facilityIds.forOrg1(),
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -289,27 +271,27 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1AccessionIds,
+        *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        *org1AutomationIds,
+        *automationIds.forOrg1(),
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        *org1DeviceManagerIds,
+        *deviceManagerIds.forOrg1(),
         *nonConnectedDeviceManagerIds,
         readDeviceManager = true,
         updateDeviceManager = true,
     )
 
     permissions.expect(
-        *org1DeviceIds,
+        *deviceIds.forOrg1(),
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -318,14 +300,14 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1SpeciesIds,
+        *speciesIds.forOrg1(),
         readSpecies = true,
         updateSpecies = true,
         deleteSpecies = true,
     )
 
     permissions.expect(
-        *org1StorageLocationIds,
+        *storageLocationIds.forOrg1(),
         readStorageLocation = true,
         updateStorageLocation = true,
         deleteStorageLocation = true,
@@ -390,7 +372,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1ProjectIds,
+        *projectIds.forOrg1(),
         readProject = true,
         updateProject = true,
         addProjectUser = true,
@@ -401,7 +383,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1SiteIds,
+        *siteIds.forOrg1(),
         createFacility = true,
         listFacilities = true,
         readSite = true,
@@ -410,7 +392,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1FacilityIds,
+        *facilityIds.forOrg1(),
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -421,27 +403,27 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1AccessionIds,
+        *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        *org1AutomationIds,
+        *automationIds.forOrg1(),
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        *org1DeviceManagerIds,
+        *deviceManagerIds.forOrg1(),
         *nonConnectedDeviceManagerIds,
         readDeviceManager = true,
         updateDeviceManager = true,
     )
 
     permissions.expect(
-        *org1DeviceIds,
+        *deviceIds.forOrg1(),
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -450,14 +432,14 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1SpeciesIds,
+        *speciesIds.forOrg1(),
         readSpecies = true,
         updateSpecies = true,
         deleteSpecies = true,
     )
 
     permissions.expect(
-        *org1StorageLocationIds,
+        *storageLocationIds.forOrg1(),
         readStorageLocation = true,
         updateStorageLocation = true,
         deleteStorageLocation = true,
@@ -487,13 +469,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *project10SiteIds,
+        *siteIds.forProject10(),
         listFacilities = true,
         readSite = true,
     )
 
     permissions.expect(
-        *project10FacilityIds,
+        *facilityIds.forProject10(),
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -502,26 +484,26 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *project10AccessionIds,
+        *accessionIds.forProject10(),
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        *project10AutomationIds,
+        *automationIds.forProject10(),
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        *project10DeviceManagerIds,
+        *deviceManagerIds.forProject10(),
         *nonConnectedDeviceManagerIds,
         readDeviceManager = true,
     )
 
     permissions.expect(
-        *project10DeviceIds,
+        *deviceIds.forProject10(),
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -530,7 +512,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1SpeciesIds,
+        *speciesIds.forOrg1(),
         readSpecies = true,
     )
 
@@ -557,20 +539,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1ProjectIds,
+        *projectIds.forOrg1(),
         readProject = true,
         listSites = true,
         removeProjectSelf = true,
     )
 
     permissions.expect(
-        *org1SiteIds,
+        *siteIds.forOrg1(),
         listFacilities = true,
         readSite = true,
     )
 
     permissions.expect(
-        *org1FacilityIds,
+        *facilityIds.forOrg1(),
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -579,26 +561,26 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1AccessionIds,
+        *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        *org1AutomationIds,
+        *automationIds.forOrg1(),
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
     )
 
     permissions.expect(
-        *org1DeviceManagerIds,
+        *deviceManagerIds.forOrg1(),
         *nonConnectedDeviceManagerIds,
         readDeviceManager = true,
     )
 
     permissions.expect(
-        *org1DeviceIds,
+        *deviceIds.forOrg1(),
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -607,12 +589,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *org1SpeciesIds,
+        *speciesIds.forOrg1(),
         readSpecies = true,
     )
 
     permissions.expect(
-        *org1StorageLocationIds,
+        *storageLocationIds.forOrg1(),
         readStorageLocation = true,
     )
 
@@ -726,7 +708,6 @@ internal class PermissionTest : DatabaseTest() {
 
     private var hasCheckedGlobalPermissions = false
 
-    // All checks keyed on organization IDs go here
     fun expect(
         vararg organizations: OrganizationId,
         createProject: Boolean = false,
@@ -786,7 +767,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on project IDs go here
     fun expect(
         vararg projects: ProjectId,
         readProject: Boolean = false,
@@ -820,7 +800,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on site IDs go here
     fun expect(
         vararg sites: SiteId,
         createFacility: Boolean = false,
@@ -842,7 +821,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on facility IDs go here
     fun expect(
         vararg facilities: FacilityId,
         createAccession: Boolean = false,
@@ -883,7 +861,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on accession IDs go here
     fun expect(
         vararg accessions: AccessionId,
         readAccession: Boolean = false,
@@ -901,7 +878,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on automation IDs go here
     fun expect(
         vararg automations: AutomationId,
         readAutomation: Boolean = false,
@@ -945,7 +921,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on device IDs go here
     fun expect(
         vararg devices: DeviceId,
         createTimeseries: Boolean = false,
@@ -974,7 +949,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on species IDs go here
     fun expect(
         vararg speciesIds: SpeciesId,
         readSpecies: Boolean = false,
@@ -992,7 +966,6 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks keyed on storage location IDs go here
     fun expect(
         vararg storageLocationIds: StorageLocationId,
         readStorageLocation: Boolean = false,
@@ -1017,7 +990,7 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
-    // All checks for globally-scoped permissions go here
+    /** Checks for globally-scoped permissions. */
     fun expect(
         createDeviceManager: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
@@ -1035,14 +1008,14 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun andNothingElse() {
-      expect(*uncheckedOrgs.toTypedArray())
-      expect(*uncheckedProjects.toTypedArray())
-      expect(*uncheckedSites.toTypedArray())
-      expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
+      expect(*uncheckedFacilities.toTypedArray())
+      expect(*uncheckedOrgs.toTypedArray())
+      expect(*uncheckedProjects.toTypedArray())
+      expect(*uncheckedSites.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())
 
