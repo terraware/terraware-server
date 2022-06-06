@@ -23,6 +23,7 @@ import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
@@ -70,8 +71,18 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchOneByName returns timeseries if it exists`() {
     timeseriesDao.insert(timeseriesRow)
 
-    val actual = store.fetchOneByName(deviceId, timeseriesRow.name!!)
-    assertEquals(timeseriesRow, actual)
+    val name = timeseriesRow.name!!
+    val expected =
+        TimeseriesModel(
+            timeseriesRow.id!!,
+            deviceId,
+            name,
+            timeseriesRow.typeId!!,
+            timeseriesRow.decimalPlaces,
+            timeseriesRow.units)
+
+    val actual = store.fetchOneByName(deviceId, name)
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -270,5 +281,179 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchByDeviceId(deviceId)
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchHistory with seconds uses consistent time slice boundaries`() {
+    timeseriesDao.insert(timeseriesRow)
+    val timeseriesId = timeseriesRow.id!!
+
+    // We will query a 100-second duration with a count of 2, which should give us time slices of
+    // 50 seconds. Given the rounding behavior, running the query any time after the 50-second mark
+    // and at or before the 100-second mark should result in slice boundaries of (0 <= t < 50) and
+    // (50 <= t < 100). From each of those slices, we want the newest entry.
+    dslContext
+        .insertInto(
+            TIMESERIES_VALUES,
+            TIMESERIES_VALUES.TIMESERIES_ID,
+            TIMESERIES_VALUES.CREATED_TIME,
+            TIMESERIES_VALUES.VALUE)
+        .values(timeseriesId, Instant.ofEpochSecond(0), "0")
+        .values(timeseriesId, Instant.ofEpochSecond(10), "10")
+        // Newest value in the first slice
+        .values(timeseriesId, Instant.ofEpochSecond(20), "20")
+        // Newest value in the second slice (also confirms that slice end times are exclusive)
+        .values(timeseriesId, Instant.ofEpochSecond(50), "50")
+        .execute()
+
+    val queryTimes =
+        listOf(
+            Instant.ofEpochSecond(51),
+            Instant.ofEpochSecond(60),
+            Instant.ofEpochSecond(61),
+            Instant.ofEpochSecond(100),
+        )
+
+    val expected =
+        queryTimes.associateWith {
+          mapOf(
+              timeseriesId to
+                  listOf(
+                      TimeseriesValueModel(timeseriesId, Instant.ofEpochSecond(20), "20"),
+                      TimeseriesValueModel(timeseriesId, Instant.ofEpochSecond(50), "50")))
+        }
+
+    val actual =
+        queryTimes.associateWith { currentTime ->
+          every { clock.instant() } returns currentTime
+          store.fetchHistory(100, 2, listOf(timeseriesId))
+        }
+
+    assertEquals(expected, actual)
+  }
+
+  @Nested
+  inner class FetchHistoryWithStartAndEndTimes {
+    private lateinit var timeseriesId1: TimeseriesId
+    private lateinit var timeseriesId2: TimeseriesId
+
+    @BeforeEach
+    fun insertValues() {
+      val timeseriesRow2 = timeseriesRow.copy(name = "second")
+      timeseriesDao.insert(timeseriesRow, timeseriesRow2)
+      timeseriesId1 = timeseriesRow.id!!
+      timeseriesId2 = timeseriesRow2.id!!
+
+      dslContext
+          .insertInto(
+              TIMESERIES_VALUES,
+              TIMESERIES_VALUES.TIMESERIES_ID,
+              TIMESERIES_VALUES.CREATED_TIME,
+              TIMESERIES_VALUES.VALUE)
+          .values(timeseriesId1, Instant.ofEpochSecond(0), "0")
+          .values(timeseriesId1, Instant.ofEpochSecond(10), "10")
+          .values(timeseriesId1, Instant.ofEpochSecond(19), "19")
+          .values(timeseriesId1, Instant.ofEpochSecond(20), "20")
+          .values(timeseriesId1, Instant.ofEpochSecond(21), "21")
+          .values(timeseriesId1, Instant.ofEpochSecond(50), "50")
+          .values(timeseriesId2, Instant.ofEpochSecond(20), "20.2")
+          .execute()
+    }
+
+    @Test
+    fun `excludes values outside of range`() {
+      val expected =
+          mapOf(
+              timeseriesId1 to
+                  listOf(TimeseriesValueModel(timeseriesId1, Instant.ofEpochSecond(10), "10")))
+      val actual =
+          store.fetchHistory(
+              Instant.ofEpochSecond(10), Instant.ofEpochSecond(15), 1, listOf(timeseriesId1))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `treats end time as exclusive`() {
+      val expected =
+          mapOf(
+              timeseriesId1 to
+                  listOf(TimeseriesValueModel(timeseriesId1, Instant.ofEpochSecond(10), "10")))
+      val actual =
+          store.fetchHistory(
+              Instant.ofEpochSecond(10), Instant.ofEpochSecond(19), 1, listOf(timeseriesId1))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `divides time range into slices based on count`() {
+      val expected =
+          mapOf(
+              timeseriesId1 to
+                  listOf(
+                      // 0 <= t < 20
+                      TimeseriesValueModel(timeseriesId1, Instant.ofEpochSecond(19), "19"),
+                      // 20 <= t < 40
+                      TimeseriesValueModel(timeseriesId1, Instant.ofEpochSecond(21), "21"),
+                      // 40 <= t < 60
+                      TimeseriesValueModel(timeseriesId1, Instant.ofEpochSecond(50), "50"),
+                  ))
+
+      val actual =
+          store.fetchHistory(
+              Instant.ofEpochSecond(0), Instant.ofEpochSecond(80), 4, listOf(timeseriesId1))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns values from multiple timeseries`() {
+      val expected =
+          mapOf(
+              timeseriesId1 to
+                  listOf(TimeseriesValueModel(timeseriesId1, Instant.ofEpochSecond(50), "50")),
+              timeseriesId2 to
+                  listOf(TimeseriesValueModel(timeseriesId2, Instant.ofEpochSecond(20), "20.2")))
+
+      val actual =
+          store.fetchHistory(
+              Instant.ofEpochSecond(0),
+              Instant.ofEpochSecond(100),
+              1,
+              listOf(timeseriesId1, timeseriesId2))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns empty result if no values in selected time range`() {
+      val expected = emptyMap<TimeseriesId, List<TimeseriesValueModel>>()
+
+      val actual =
+          store.fetchHistory(
+              Instant.ofEpochSecond(1), Instant.ofEpochSecond(9), 1, listOf(timeseriesId1))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `handles large numbers of slices`() {
+      // This is kind of an implementation-details test; want to make sure the logic for chunking
+      // big UNION ALL queries and assembling the results is working.
+      val expected =
+          mapOf(
+              timeseriesId2 to
+                  listOf(TimeseriesValueModel(timeseriesId2, Instant.ofEpochSecond(20), "20.2")))
+
+      val actual =
+          store.fetchHistory(
+              Instant.ofEpochSecond(0),
+              Instant.ofEpochSecond(21),
+              TimeseriesStore.MAX_SLICES_PER_HISTORY_QUERY * 5,
+              listOf(timeseriesId2))
+
+      assertEquals(expected, actual)
+    }
   }
 }

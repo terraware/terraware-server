@@ -14,45 +14,49 @@ import com.terraformation.backend.device.model.TimeseriesValueModel
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import javax.annotation.ManagedBean
+import kotlin.math.ceil
+import kotlin.math.roundToLong
 import org.jooq.DSLContext
+import org.jooq.Record3
+import org.jooq.Select
 import org.jooq.impl.DSL
 
 @ManagedBean
 class TimeseriesStore(private val clock: Clock, private val dslContext: DSLContext) {
+  /** Subquery to retrieve the latest value when querying the TIMESERIES table. */
+  private val latestValueMultiset =
+      DSL.multiset(
+              DSL.selectFrom(TIMESERIES_VALUES)
+                  .where(TIMESERIES_VALUES.TIMESERIES_ID.eq(TIMESERIES.ID))
+                  .orderBy(TIMESERIES_VALUES.CREATED_TIME.desc())
+                  .limit(1))
+          .convertFrom { result -> result.firstOrNull()?.let { TimeseriesValueModel.ofRecord(it) } }
 
-  fun fetchOneByName(deviceId: DeviceId, name: String): TimeseriesRow? {
+  fun fetchOneByName(deviceId: DeviceId, name: String): TimeseriesModel? {
     if (!currentUser().canReadTimeseries(deviceId)) {
       return null
     }
 
     return dslContext
-        .selectFrom(TIMESERIES)
+        .select(TIMESERIES.asterisk(), latestValueMultiset)
+        .from(TIMESERIES)
         .where(TIMESERIES.DEVICE_ID.eq(deviceId))
         .and(TIMESERIES.NAME.eq(name))
-        .fetchOneInto(TimeseriesRow::class.java)
+        .fetchOne { TimeseriesModel(it, it[latestValueMultiset]) }
   }
 
   fun fetchByDeviceId(deviceId: DeviceId): List<TimeseriesModel> {
     requirePermissions { readTimeseries(deviceId) }
 
-    val valuesMultiset =
-        DSL.multiset(
-                DSL.selectFrom(TIMESERIES_VALUES)
-                    .where(TIMESERIES_VALUES.TIMESERIES_ID.eq(TIMESERIES.ID))
-                    .orderBy(TIMESERIES_VALUES.CREATED_TIME.desc())
-                    .limit(1))
-            .convertFrom { result ->
-              result.firstOrNull()?.let { TimeseriesValueModel.ofRecord(it) }
-            }
-
     return dslContext
-        .select(TIMESERIES.asterisk(), valuesMultiset)
+        .select(TIMESERIES.asterisk(), latestValueMultiset)
         .from(TIMESERIES)
         .where(TIMESERIES.DEVICE_ID.eq(deviceId))
         .orderBy(TIMESERIES.NAME)
-        .fetch { TimeseriesModel(it, it[valuesMultiset]) }
+        .fetch { TimeseriesModel(it, it[latestValueMultiset]) }
   }
 
   /**
@@ -137,5 +141,109 @@ class TimeseriesStore(private val clock: Clock, private val dslContext: DSLConte
           .set(VALUE, roundedValue)
           .execute()
     }
+  }
+
+  /**
+   * Returns sample timeseries values from a time range in the past. The time range is divided into
+   * equal-sized slices, and a value is returned from each slice for each of the requested
+   * timeseries.
+   */
+  fun fetchHistory(
+      startTime: Instant,
+      endTime: Instant,
+      count: Int,
+      timeseriesIds: Collection<TimeseriesId>
+  ): Map<TimeseriesId, List<TimeseriesValueModel>> {
+    val interval = Duration.between(startTime, endTime).dividedBy(count.toLong())
+
+    /*
+     * Based on experimentation, there doesn't appear to be a good way to get PostgreSQL to generate
+     * an efficient execution plan for "get the latest value from each time slice for a list of
+     * timeseries ID" queries; it always ends up scanning much more data than needed. So instead,
+     * we query each slice for each timeseries separately. But we don't want thousands of round
+     * trips to the database, so we combine them using the `UNION ALL` operator. That could end up
+     * being a gargantuan query if the list of timeseries IDs is large or the count is high, so we
+     * split it up into chunks and combine the results.
+     *
+     * In tests on PostgreSQL 13, this approach gives a more than 10x speedup compared to more
+     * compact approaches such as using an `IN` clause to query all the timeseries IDs for a slice
+     * at the same time or using `PARTITION` to calculate the slice boundaries as part of the query.
+     * It may be worth repeating this experiment as we move to newer database versions over time.
+     */
+    val timeSlices =
+        sequence<Pair<Instant, Instant>> {
+          var sliceStart = startTime
+
+          while (sliceStart < endTime) {
+            val sliceEnd = sliceStart + interval
+            yield(sliceStart to sliceEnd)
+            sliceStart = sliceEnd
+          }
+        }
+
+    val sliceQueries =
+        timeSlices.flatMap { (sliceStart, sliceEnd) ->
+          timeseriesIds.map { id ->
+            with(TIMESERIES_VALUES) {
+              @Suppress("USELESS_CAST") // Needs to be a supertype of unionAll()'s type
+              dslContext
+                  .select(TIMESERIES_ID, CREATED_TIME, VALUE)
+                  .from(TIMESERIES_VALUES)
+                  .where(CREATED_TIME.ge(sliceStart))
+                  .and(CREATED_TIME.lt(sliceEnd))
+                  .and(TIMESERIES_ID.eq(id))
+                  .orderBy(CREATED_TIME.desc())
+                  .limit(1) as Select<Record3<TimeseriesId?, Instant?, String?>>
+            }
+          }
+        }
+
+    return sliceQueries
+        .chunked(MAX_SLICES_PER_HISTORY_QUERY)
+        .map { chunk ->
+          chunk.reduce { combinedQuery, sliceQuery -> combinedQuery.unionAll(sliceQuery) }
+        }
+        .flatMap { combinedQuery -> combinedQuery.fetch() }
+        .mapNotNull { TimeseriesValueModel.ofRecord(it) }
+        .groupBy { it.timeseriesId }
+  }
+
+  /**
+   * Returns sample timeseries values from a time range starting at some number of seconds in the
+   * past and extending to the current time. The time range is divided into equal-sized slices, and
+   * a value is returned from each slice for each of the requested timeseries.
+   */
+  fun fetchHistory(
+      seconds: Long,
+      count: Int,
+      timeseriesIds: Collection<TimeseriesId>
+  ): Map<TimeseriesId, List<TimeseriesValueModel>> {
+    /*
+     * We want this method to return consistent results for a given timeseries if it's called
+     * repeatedly with the same [seconds] and [count] values. Since we're going to be dividing the
+     * time range up into slices and returning the newest value from each slice, that means the
+     * slice boundaries need to be consistent across calls, which means we can't just naively
+     * subtract [seconds] from the current time and divide the resulting range by [count].
+     *
+     * Instead, we calculate the amount of time per slice and round the current time up to the
+     * next interval to get the end time, then subtract the number of seconds from that to get the
+     * start time.
+     */
+    val interval = seconds.toFloat() * 1000.0 / count.toFloat()
+    val endTime =
+        Instant.ofEpochMilli(
+            (ceil(clock.instant().toEpochMilli() / interval) * interval).roundToLong())
+    val startTime = endTime.minusSeconds(seconds)
+
+    return fetchHistory(startTime, endTime, count, timeseriesIds)
+  }
+
+  companion object {
+    /**
+     * When pulling history data from the database, limit each SQL query to this many individual
+     * time slices. Each slice turns into a separate `SELECT` statement, joined together with `UNION
+     * ALL`.
+     */
+    const val MAX_SLICES_PER_HISTORY_QUERY = 500
   }
 }
