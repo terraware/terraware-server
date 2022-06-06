@@ -88,7 +88,8 @@ class SummaryController(
     return when {
       facilityId != null && organizationId == null -> getSummary(facilityId)
       facilityId == null && organizationId != null -> getSummary(organizationId)
-      else -> throw IllegalArgumentException("...")
+      else ->
+          throw IllegalArgumentException("Must specify organization or facility ID but not both")
     }
   }
 
