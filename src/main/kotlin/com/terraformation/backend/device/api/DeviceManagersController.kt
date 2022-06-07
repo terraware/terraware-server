@@ -29,12 +29,22 @@ class DeviceManagersController(
 ) {
   @GetMapping
   fun getDeviceManagers(
-      @RequestParam("shortCode") shortCode: String
+      @RequestParam("shortCode") shortCode: String?,
+      @RequestParam("facilityId") facilityId: FacilityId?,
   ): GetDeviceManagersResponsePayload {
-    val manager =
-        deviceManagerStore.fetchOneByShortCode(shortCode)?.let { DeviceManagerPayload(it) }
-
-    return GetDeviceManagersResponsePayload(listOfNotNull(manager))
+    return when {
+      shortCode != null && facilityId == null -> {
+        val manager =
+            deviceManagerStore.fetchOneByShortCode(shortCode)?.let { DeviceManagerPayload(it) }
+        GetDeviceManagersResponsePayload(listOfNotNull(manager))
+      }
+      shortCode == null && facilityId != null -> {
+        val manager =
+            deviceManagerStore.fetchOneByFacilityId(facilityId)?.let { DeviceManagerPayload(it) }
+        GetDeviceManagersResponsePayload(listOfNotNull(manager))
+      }
+      else -> throw IllegalArgumentException("Must specify shortCode or facility ID but not both")
+    }
   }
 
   @GetMapping("/{deviceManagerId}")
