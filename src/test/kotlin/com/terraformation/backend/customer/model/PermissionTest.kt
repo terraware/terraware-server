@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.PermissionTest.PermissionsTrack
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
+import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceManagerId
@@ -206,8 +207,8 @@ internal class PermissionTest : DatabaseTest() {
       val facilityId = FacilityId(deviceManagerId.value)
       deviceManagersDao.insert(
           DeviceManagersRow(
-              balenaId = deviceManagerId.value,
-              balenaUuid = UUID.randomUUID(),
+              balenaId = BalenaDeviceId(deviceManagerId.value),
+              balenaUuid = UUID.randomUUID().toString(),
               balenaModifiedTime = Instant.EPOCH,
               deviceName = "$deviceManagerId",
               id = deviceManagerId,

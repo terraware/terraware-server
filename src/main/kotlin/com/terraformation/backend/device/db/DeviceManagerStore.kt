@@ -2,6 +2,7 @@ package com.terraformation.backend.device.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.FacilityId
@@ -21,6 +22,10 @@ class DeviceManagerStore(
     private val deviceManagersDao: DeviceManagersDao,
     private val dslContext: DSLContext,
 ) {
+  fun fetchOneByBalenaId(balenaId: BalenaDeviceId): DeviceManagersRow? {
+    return deviceManagersDao.fetchOneByBalenaId(balenaId)?.unlessInaccessible()
+  }
+
   fun fetchOneByFacilityId(facilityId: FacilityId): DeviceManagersRow? {
     return deviceManagersDao.fetchOneByFacilityId(facilityId)?.unlessInaccessible()
   }
