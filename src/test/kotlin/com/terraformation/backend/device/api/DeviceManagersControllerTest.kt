@@ -22,14 +22,14 @@ internal class DeviceManagersControllerTest : RunsAsUser {
       DeviceManagersController(deviceManagerService, deviceManagerStore)
 
   @Test
-  fun `throws exception when neither shortCode nor facility ID are specificed`() {
+  fun `throws exception when neither shortCode nor facility ID are specified`() {
     assertThrows<IllegalArgumentException> {
       deviceManagersController.getDeviceManagers(null, null)
     }
   }
 
   @Test
-  fun `throws exception when both shortCode and facility ID are specificed`() {
+  fun `throws exception when both shortCode and facility ID are specified`() {
     assertThrows<IllegalArgumentException> {
       deviceManagersController.getDeviceManagers("123456", FacilityId(1))
     }

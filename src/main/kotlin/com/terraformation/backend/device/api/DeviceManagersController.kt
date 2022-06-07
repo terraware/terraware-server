@@ -30,7 +30,7 @@ class DeviceManagersController(
   @GetMapping
   fun getDeviceManagers(
       @RequestParam("shortCode") shortCode: String?,
-      @RequestParam("facilityId") facilityId: FacilityId?
+      @RequestParam("facilityId") facilityId: FacilityId?,
   ): GetDeviceManagersResponsePayload {
     return when {
       shortCode != null && facilityId == null -> {
