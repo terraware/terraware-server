@@ -2,6 +2,7 @@ package com.terraformation.backend.config
 
 import java.net.URI
 import java.nio.file.Path
+import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -222,12 +223,20 @@ class TerrawareServerConfig(
       val apiKey: String? = null,
       @DefaultValue("false") val enabled: Boolean = false,
       val fleetId: Long? = null,
+      /**
+       * How frequently to poll for device updates. Value must be in
+       * [ISO 8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations).
+       */
+      @DefaultValue("PT1M") val pollInterval: Duration = Duration.ofMinutes(1),
       @DefaultValue(BALENA_API_URL) val url: URI = URI(BALENA_API_URL),
   ) {
     init {
       if (enabled) {
         if (apiKey == null || fleetId == null) {
-          throw IllegalArgumentException("API key and fleet name are required if Balena is enabled")
+          throw IllegalArgumentException("API key and fleet ID are required if Balena is enabled")
+        }
+        if (pollInterval <= Duration.ZERO) {
+          throw IllegalArgumentException("Poll interval must be greater than 0")
         }
       }
     }
