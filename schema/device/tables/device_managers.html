@@ -133,7 +133,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="balena_id">balena_id</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="balena_id">balena_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title=''></td>
@@ -148,23 +148,6 @@
                                         </table>
                                     </td>
                                     <td><p>Balena-assigned device identifier.</p></td>
-                                </tr>
-                                <tr>
-                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="balena_uuid">balena_uuid</span></td>
-                                    <td>uuid</td>
-                                    <td>2147483647</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
                                 </tr>
                                 <tr>
                                     <td><span id="balena_modified_time">balena_modified_time</span></td>
@@ -340,6 +323,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="balena_uuid">balena_uuid</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -371,7 +371,13 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> device_managers_balena_uuid_key</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> device_managers_balena_id_unique</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>balena_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> device_managers_balena_uuid_unique</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>balena_uuid</td>
@@ -443,19 +449,19 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="261,5,643,456">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="5,301,217,507">
+<area shape="rect" id="node1" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="261,5,639,456">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="5,272,217,477">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/device_managers.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="687,5,870,93">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="332,407,544,612">
-<area shape="rect" id="node5" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="5,520,288,608">
-<area shape="rect" id="node6" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="77,415,216,503">
-<area shape="rect" id="node3" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="588,111,969,561">
-<area shape="rect" id="node4" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="707,579,850,667">
+<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="685,5,868,93">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="332,377,544,583">
+<area shape="rect" id="node5" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="5,491,288,579">
+<area shape="rect" id="node6" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="77,385,216,473">
+<area shape="rect" id="node3" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="588,111,965,561">
+<area shape="rect" id="node4" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="705,579,848,667">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/device_managers.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

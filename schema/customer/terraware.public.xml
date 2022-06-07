@@ -38,26 +38,29 @@
       <table name="device_managers" numRows="0" remarks="Information about device managers. This is a combination of information from the Balena API and locally-generated values." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="balena_id" nullable="false" remarks="Balena-assigned device identifier." size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="balena_uuid" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="balena_modified_time" nullable="false" remarks="Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="device_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_online" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="last_connectivity_event" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="update_progress" nullable="true" remarks="Percent complete of software download and installation (0-100). Null if no software update is in progress." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="short_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="balena_modified_time" nullable="false" remarks="Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_online" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="last_connectivity_event" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="update_progress" nullable="true" remarks="Percent complete of software download and installation (0-100). Null if no software update is in progress." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="short_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="device_managers_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="created_time" nullable="false" remarks="When this device manager was added to the local database. The Balena device may have been created earlier." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="refreshed_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="created_time" nullable="false" remarks="When this device manager was added to the local database. The Balena device may have been created earlier." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="refreshed_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="balena_uuid" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="device_managers_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <index name="device_managers_balena_uuid_key" unique="true">
+         <index name="device_managers_balena_id_unique" unique="true">
+            <column ascending="true" name="balena_id"/>
+         </index>
+         <index name="device_managers_balena_uuid_unique" unique="true">
             <column ascending="true" name="balena_uuid"/>
          </index>
          <index name="device_managers_facility_id_key" unique="true">

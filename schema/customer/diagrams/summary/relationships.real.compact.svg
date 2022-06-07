@@ -73,7 +73,7 @@
 <!-- device_managers -->
 <g id="node3" class="node"><title>device_managers</title>
 <g id="a_node3"><a xlink:href="../../tables/device_managers.html" xlink:title="device_managers" target="_top">
-<polygon fill="#ffffff" stroke="none" points="1290,-738 1290,-906 1451,-906 1451,-738 1290,-738"/>
+<polygon fill="#ffffff" stroke="none" points="1290,-716 1290,-906 1451,-906 1451,-716 1290,-716"/>
 <polygon fill="#f5f5f5" stroke="none" points="1290.5,-884 1290.5,-906 1451.5,-906 1451.5,-884 1290.5,-884"/>
 <polygon fill="none" stroke="black" points="1290.5,-884 1290.5,-906 1451.5,-906 1451.5,-884 1290.5,-884"/>
 <text text-anchor="start" x="1295.5" y="-893.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">device_managers</text>
@@ -83,7 +83,7 @@
 <text text-anchor="start" x="1310.5" y="-870.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="#ffffff" stroke="none" points="1290.5,-840 1290.5,-862 1451.5,-862 1451.5,-840 1290.5,-840"/>
 <polygon fill="none" stroke="black" points="1290.5,-840 1290.5,-862 1451.5,-862 1451.5,-840 1290.5,-840"/>
-<text text-anchor="start" x="1310.5" y="-848.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_uuid</text>
+<text text-anchor="start" x="1310.5" y="-848.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_id</text>
 <polygon fill="#ffffff" stroke="none" points="1290.5,-818 1290.5,-840 1451.5,-840 1451.5,-818 1290.5,-818"/>
 <polygon fill="none" stroke="black" points="1290.5,-818 1290.5,-840 1451.5,-840 1451.5,-818 1290.5,-818"/>
 <text text-anchor="start" x="1310.5" y="-826.2" font-family="Helvetica,sans-Serif" font-size="11.00">short_code</text>
@@ -95,17 +95,20 @@
 <polygon fill="none" stroke="black" points="1290.5,-774 1290.5,-796 1451.5,-796 1451.5,-774 1290.5,-774"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1295.5" y="-791"/>
 <text text-anchor="start" x="1310.5" y="-782.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
-<polygon fill="none" stroke="black" points="1290.5,-756 1290.5,-774 1451.5,-774 1451.5,-756 1290.5,-756"/>
-<text text-anchor="start" x="1293.5" y="-762.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="1290.5,-738 1290.5,-756 1354.5,-756 1354.5,-738 1290.5,-738"/>
-<polygon fill="none" stroke="black" points="1290.5,-738 1290.5,-756 1354.5,-756 1354.5,-738 1290.5,-738"/>
-<text text-anchor="start" x="1293.5" y="-744.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="1354.5,-738 1354.5,-756 1417.5,-756 1417.5,-738 1354.5,-738"/>
-<polygon fill="none" stroke="black" points="1354.5,-738 1354.5,-756 1417.5,-756 1417.5,-738 1354.5,-738"/>
-<text text-anchor="start" x="1378.5" y="-744.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="1417.5,-738 1417.5,-756 1451.5,-756 1451.5,-738 1417.5,-738"/>
-<polygon fill="none" stroke="black" points="1417.5,-738 1417.5,-756 1451.5,-756 1451.5,-738 1417.5,-738"/>
-<text text-anchor="start" x="1441.5" y="-744.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="1290.5,-752 1290.5,-774 1451.5,-774 1451.5,-752 1290.5,-752"/>
+<polygon fill="none" stroke="black" points="1290.5,-752 1290.5,-774 1451.5,-774 1451.5,-752 1290.5,-752"/>
+<text text-anchor="start" x="1310.5" y="-760.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_uuid</text>
+<polygon fill="none" stroke="black" points="1290.5,-734 1290.5,-752 1451.5,-752 1451.5,-734 1290.5,-734"/>
+<text text-anchor="start" x="1293.5" y="-740.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="1290.5,-716 1290.5,-734 1354.5,-734 1354.5,-716 1290.5,-716"/>
+<polygon fill="none" stroke="black" points="1290.5,-716 1290.5,-734 1354.5,-734 1354.5,-716 1290.5,-716"/>
+<text text-anchor="start" x="1293.5" y="-722.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="1354.5,-716 1354.5,-734 1417.5,-734 1417.5,-716 1354.5,-716"/>
+<polygon fill="none" stroke="black" points="1354.5,-716 1354.5,-734 1417.5,-734 1417.5,-716 1354.5,-716"/>
+<text text-anchor="start" x="1378.5" y="-722.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="1417.5,-716 1417.5,-734 1451.5,-734 1451.5,-716 1417.5,-716"/>
+<polygon fill="none" stroke="black" points="1417.5,-716 1417.5,-734 1451.5,-734 1451.5,-716 1417.5,-716"/>
+<text text-anchor="start" x="1441.5" y="-722.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>

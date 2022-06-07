@@ -1233,36 +1233,37 @@
 <polygon fill="none" stroke="black" points="1329.5,-2197 1329.5,-2219 1490.5,-2219 1490.5,-2197 1329.5,-2197"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1334.5" y="-2214"/>
 <text text-anchor="start" x="1349.5" y="-2205.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="none" points="1329.5,-2175 1329.5,-2197 1490.5,-2197 1490.5,-2175 1329.5,-2175"/>
 <polygon fill="none" stroke="black" points="1329.5,-2175 1329.5,-2197 1490.5,-2197 1490.5,-2175 1329.5,-2175"/>
 <text text-anchor="start" x="1349.5" y="-2183.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_id</text>
-<polygon fill="#ffffff" stroke="none" points="1329.5,-2153 1329.5,-2175 1490.5,-2175 1490.5,-2153 1329.5,-2153"/>
 <polygon fill="none" stroke="black" points="1329.5,-2153 1329.5,-2175 1490.5,-2175 1490.5,-2153 1329.5,-2153"/>
-<text text-anchor="start" x="1349.5" y="-2161.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_uuid</text>
+<text text-anchor="start" x="1349.5" y="-2161.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_modified_time</text>
 <polygon fill="none" stroke="black" points="1329.5,-2131 1329.5,-2153 1490.5,-2153 1490.5,-2131 1329.5,-2131"/>
-<text text-anchor="start" x="1349.5" y="-2139.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_modified_time</text>
+<text text-anchor="start" x="1349.5" y="-2139.2" font-family="Helvetica,sans-Serif" font-size="11.00">device_name</text>
 <polygon fill="none" stroke="black" points="1329.5,-2109 1329.5,-2131 1490.5,-2131 1490.5,-2109 1329.5,-2109"/>
-<text text-anchor="start" x="1349.5" y="-2117.2" font-family="Helvetica,sans-Serif" font-size="11.00">device_name</text>
+<text text-anchor="start" x="1349.5" y="-2117.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_online</text>
 <polygon fill="none" stroke="black" points="1329.5,-2087 1329.5,-2109 1490.5,-2109 1490.5,-2087 1329.5,-2087"/>
-<text text-anchor="start" x="1349.5" y="-2095.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_online</text>
+<text text-anchor="start" x="1349.5" y="-2095.2" font-family="Helvetica,sans-Serif" font-size="11.00">last_connectivity_event</text>
 <polygon fill="none" stroke="black" points="1329.5,-2065 1329.5,-2087 1490.5,-2087 1490.5,-2065 1329.5,-2065"/>
-<text text-anchor="start" x="1349.5" y="-2073.2" font-family="Helvetica,sans-Serif" font-size="11.00">last_connectivity_event</text>
+<text text-anchor="start" x="1349.5" y="-2073.2" font-family="Helvetica,sans-Serif" font-size="11.00">update_progress</text>
+<polygon fill="#ffffff" stroke="none" points="1329.5,-2043 1329.5,-2065 1490.5,-2065 1490.5,-2043 1329.5,-2043"/>
 <polygon fill="none" stroke="black" points="1329.5,-2043 1329.5,-2065 1490.5,-2065 1490.5,-2043 1329.5,-2043"/>
-<text text-anchor="start" x="1349.5" y="-2051.2" font-family="Helvetica,sans-Serif" font-size="11.00">update_progress</text>
+<text text-anchor="start" x="1349.5" y="-2051.2" font-family="Helvetica,sans-Serif" font-size="11.00">short_code</text>
 <polygon fill="#ffffff" stroke="none" points="1329.5,-2021 1329.5,-2043 1490.5,-2043 1490.5,-2021 1329.5,-2021"/>
 <polygon fill="none" stroke="black" points="1329.5,-2021 1329.5,-2043 1490.5,-2043 1490.5,-2021 1329.5,-2021"/>
-<text text-anchor="start" x="1349.5" y="-2029.2" font-family="Helvetica,sans-Serif" font-size="11.00">short_code</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1334.5" y="-2038"/>
+<text text-anchor="start" x="1349.5" y="-2029.2" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>
 <polygon fill="#ffffff" stroke="none" points="1329.5,-1999 1329.5,-2021 1490.5,-2021 1490.5,-1999 1329.5,-1999"/>
 <polygon fill="none" stroke="black" points="1329.5,-1999 1329.5,-2021 1490.5,-2021 1490.5,-1999 1329.5,-1999"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1334.5" y="-2016"/>
-<text text-anchor="start" x="1349.5" y="-2007.2" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>
-<polygon fill="#ffffff" stroke="none" points="1329.5,-1977 1329.5,-1999 1490.5,-1999 1490.5,-1977 1329.5,-1977"/>
+<text text-anchor="start" x="1349.5" y="-2007.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
 <polygon fill="none" stroke="black" points="1329.5,-1977 1329.5,-1999 1490.5,-1999 1490.5,-1977 1329.5,-1977"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1334.5" y="-1994"/>
-<text text-anchor="start" x="1349.5" y="-1985.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<text text-anchor="start" x="1349.5" y="-1985.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="1329.5,-1955 1329.5,-1977 1490.5,-1977 1490.5,-1955 1329.5,-1955"/>
-<text text-anchor="start" x="1349.5" y="-1963.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="1349.5" y="-1963.2" font-family="Helvetica,sans-Serif" font-size="11.00">refreshed_time</text>
+<polygon fill="#ffffff" stroke="none" points="1329.5,-1933 1329.5,-1955 1490.5,-1955 1490.5,-1933 1329.5,-1933"/>
 <polygon fill="none" stroke="black" points="1329.5,-1933 1329.5,-1955 1490.5,-1955 1490.5,-1933 1329.5,-1933"/>
-<text text-anchor="start" x="1349.5" y="-1941.2" font-family="Helvetica,sans-Serif" font-size="11.00">refreshed_time</text>
+<text text-anchor="start" x="1349.5" y="-1941.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_uuid</text>
 <polygon fill="#ffffff" stroke="none" points="1329.5,-1915 1329.5,-1933 1393.5,-1933 1393.5,-1915 1329.5,-1915"/>
 <polygon fill="none" stroke="black" points="1329.5,-1915 1329.5,-1933 1393.5,-1933 1393.5,-1915 1329.5,-1915"/>
 <text text-anchor="start" x="1332.5" y="-1921.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
@@ -1277,16 +1278,16 @@
 </g>
 <!-- device_managers&#45;&gt;facilities -->
 <g id="edge33" class="edge"><title>device_managers:facility_id:w&#45;&gt;facilities:id:e</title>
-<path fill="none" stroke="black" d="M1317.95,-1985.66C1253.83,-1954.4 1335.71,-1621 1256.5,-1621"/>
-<polygon fill="black" stroke="black" points="1328.59,-1983.92 1326.85,-1991.73 1325.29,-1991.38 1327.02,-1983.57 1328.59,-1983.92"/>
-<polyline fill="none" stroke="black" points="1328.5,-1988 1324.6,-1987.13 "/>
-<ellipse fill="none" stroke="black" cx="1321.47" cy="-1986.44" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M1318.2,-2007.91C1249.16,-1977.29 1340.64,-1621 1256.5,-1621"/>
+<polygon fill="black" stroke="black" points="1328.51,-2005.92 1326.92,-2013.76 1325.35,-2013.44 1326.94,-2005.6 1328.51,-2005.92"/>
+<polyline fill="none" stroke="black" points="1328.5,-2010 1324.58,-2009.2 "/>
+<ellipse fill="none" stroke="black" cx="1321.44" cy="-2008.57" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- device_managers&#45;&gt;users -->
 <g id="edge34" class="edge"><title>device_managers:user_id:w&#45;&gt;users:id:e</title>
-<path fill="none" stroke="black" d="M1313.95,-2009.14C1199.19,-1994.33 1365.01,-1793 1269,-1695 1214.95,-1639.83 1158.76,-1711.68 1098,-1664 1069.67,-1641.77 1093.71,-1611.74 1065,-1590 989.093,-1532.5 928.907,-1616.5 853,-1559 824.294,-1537.26 850.207,-1504.6 820,-1485 740.777,-1433.59 488.737,-1473.46 395,-1485 376.812,-1487.24 373.325,-1495 355,-1495"/>
-<polygon fill="black" stroke="black" points="1320.51,-2009.53 1328.29,-2013.59 1324.51,-2009.76 1328.5,-2010 1328.5,-2010 1328.5,-2010 1324.51,-2009.76 1328.71,-2006.41 1320.51,-2009.53 1320.51,-2009.53"/>
-<ellipse fill="none" stroke="black" cx="1317.32" cy="-2009.34" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1314.53,-2027.99C1261.66,-1993.38 1318.48,-1745.5 1269,-1695 1214.95,-1639.83 1158.76,-1711.68 1098,-1664 1069.67,-1641.77 1093.71,-1611.74 1065,-1590 989.093,-1532.5 928.907,-1616.5 853,-1559 824.294,-1537.26 850.207,-1504.6 820,-1485 740.777,-1433.59 488.737,-1473.46 395,-1485 376.812,-1487.24 373.325,-1495 355,-1495"/>
+<polygon fill="black" stroke="black" points="1320.81,-2029.79 1327.51,-2035.46 1324.66,-2030.9 1328.5,-2032 1328.5,-2032 1328.5,-2032 1324.66,-2030.9 1329.49,-2028.54 1320.81,-2029.79 1320.81,-2029.79"/>
+<ellipse fill="none" stroke="black" cx="1317.74" cy="-2028.91" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- device_template_categories -->
 <g id="node15" class="node"><title>device_template_categories</title>
