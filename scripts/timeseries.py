@@ -26,7 +26,7 @@ timeseries_config = {
     ("Blue Ion", "LV"): {
         "interval": 30,
         "timeseries": {
-            "system_current": {"min": -0.5, "max": 0},
+            "system_current": {"min": 60, "max": 120},
             "system_voltage": {"min": 53, "max": 56},
             "relative_state_of_charge": {"min": 80, "max": 100},
             "state_of_health": {"min": 90, "max": 100},
@@ -195,8 +195,10 @@ def create_missing_timeseries(client, device_id, config, dry_run, verbose):
 
     if timeseries_to_create:
         if verbose:
-            names = [element["timeseriesName"] for element in timeseries_to_create]
-            print(f"Create timeseries: {names.join(' ')}")
+            names = " ".join(
+                [element["timeseriesName"] for element in timeseries_to_create]
+            )
+            print(f"Create timeseries: {names}")
         if not dry_run:
             client.create_timeseries({"timeseries": timeseries_to_create})
 
