@@ -150,7 +150,8 @@ abstract class DatabaseTest {
                     SQLDataType.VARCHAR,
                     DSL.value(table.name),
                     DSL.value(field.name)))
-            .fetchOne()!!.value1()
+            .fetchOne()!!
+            .value1()
       }
 
   /**

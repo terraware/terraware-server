@@ -462,10 +462,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `sorts enum fields by display name rather than ID`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!.copy(targetStorageCondition = StorageCondition.Freezer))
+            .fetchOneByNumber("ABCDEFG")!!
+            .copy(targetStorageCondition = StorageCondition.Freezer))
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("XYZ")!!.copy(targetStorageCondition = StorageCondition.Refrigerator))
+            .fetchOneByNumber("XYZ")!!
+            .copy(targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
     val sortOrder = listOf(SearchSortField(targetStorageConditionField, SearchDirection.Descending))
@@ -515,7 +517,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `search leaves out null values`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!.copy(targetStorageCondition = StorageCondition.Freezer))
+            .fetchOneByNumber("ABCDEFG")!!
+            .copy(targetStorageCondition = StorageCondition.Freezer))
 
     val fields = listOf(targetStorageConditionField)
 
@@ -548,10 +551,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             stateId = AccessionState.Processing))
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!.copy(targetStorageCondition = StorageCondition.Freezer))
+            .fetchOneByNumber("ABCDEFG")!!
+            .copy(targetStorageCondition = StorageCondition.Freezer))
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("XYZ")!!.copy(targetStorageCondition = StorageCondition.Refrigerator))
+            .fetchOneByNumber("XYZ")!!
+            .copy(targetStorageCondition = StorageCondition.Refrigerator))
 
     val fields = listOf(targetStorageConditionField)
     val searchNode = FieldNode(targetStorageConditionField, listOf("Freezer", null))
@@ -607,7 +612,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `can specify weight units when searching by grams`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!.copy(
+            .fetchOneByNumber("ABCDEFG")!!
+            .copy(
                 processingMethodId = ProcessingMethod.Weight,
                 totalGrams = BigDecimal(1000),
                 totalQuantity = BigDecimal(1),
@@ -632,7 +638,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `searching on grams field defaults to grams if no units explicitly specified`() {
     accessionsDao.update(
         accessionsDao
-            .fetchOneByNumber("ABCDEFG")!!.copy(
+            .fetchOneByNumber("ABCDEFG")!!
+            .copy(
                 processingMethodId = ProcessingMethod.Weight,
                 totalGrams = BigDecimal(1000),
                 totalQuantity = BigDecimal(1),
