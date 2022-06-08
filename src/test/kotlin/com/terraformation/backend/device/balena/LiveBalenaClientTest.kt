@@ -219,7 +219,7 @@ internal class LiveBalenaClientTest {
     val response =
         client.sendRequest<Map<String, Any?>>(
             LiveBalenaClient.FLEET_PATH,
-            body = mapOf("app_name" to fleetName, "device_type" to "raspberrypi4-64"))
+            body = mapOf("app_name" to fleetName, "device_type" to RASPBERRY_PI_DEVICE_TYPE_SLUG))
     val fleetId = response.body().get()["id"].toString().toLong()
 
     log.info("Created fleet $fleetId")
