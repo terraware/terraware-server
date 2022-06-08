@@ -16,6 +16,7 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -27,6 +28,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import javax.ws.rs.BadRequestException
 import javax.ws.rs.InternalServerErrorException
 import javax.ws.rs.WebApplicationException
 import javax.ws.rs.core.Response
@@ -113,7 +115,19 @@ class FacilitiesController(
       @RequestBody payload: ModifyAutomationRequestPayload
   ): CreateAutomationResponsePayload {
     val automationId =
-        automationStore.create(facilityId, payload.name, payload.description, payload.configuration)
+        automationStore.create(
+            description = payload.description,
+            deviceId = payload.deviceId,
+            facilityId = facilityId,
+            lowerThreshold = payload.lowerThreshold,
+            name = payload.name,
+            settings = payload.settings,
+            timeseriesName = payload.timeseriesName,
+            type = payload.type,
+            upperThreshold = payload.upperThreshold,
+            verbosity = payload.verbosity,
+        )
+
     return CreateAutomationResponsePayload(automationId)
   }
 
@@ -149,9 +163,16 @@ class FacilitiesController(
 
     automationStore.update(
         model.copy(
-            configuration = payload.configuration,
             description = payload.description,
-            name = payload.name))
+            deviceId = payload.deviceId,
+            name = payload.name,
+            lowerThreshold = payload.lowerThreshold,
+            settings = payload.settings,
+            timeseriesName = payload.timeseriesName,
+            type = payload.type,
+            upperThreshold = payload.upperThreshold,
+            verbosity = payload.verbosity,
+        ))
 
     return SimpleSuccessResponsePayload()
   }
@@ -245,7 +266,44 @@ data class AutomationPayload(
 ) {
   constructor(
       model: AutomationModel
-  ) : this(model.id, model.facilityId, model.name, model.description, model.configuration)
+  ) : this(
+      model.id,
+      model.facilityId,
+      model.name,
+      model.description,
+      model.backwardCompatibleConfiguration())
+}
+
+private const val DEVICE_ID_KEY = "monitorDeviceId"
+private const val LOWER_THRESHOLD_KEY = "lowerThreshold"
+private const val TIMESERIES_NAME_KEY = "monitorTimeseriesName"
+private const val TYPE_KEY = "type"
+private const val UPPER_THRESHOLD_KEY = "upperThreshold"
+private const val VERBOSITY_KEY = "verbosity"
+
+private val backwardCompatibilityKeys =
+    setOf(
+        DEVICE_ID_KEY,
+        LOWER_THRESHOLD_KEY,
+        TIMESERIES_NAME_KEY,
+        TYPE_KEY,
+        UPPER_THRESHOLD_KEY,
+        VERBOSITY_KEY,
+    )
+
+private fun AutomationModel.backwardCompatibleConfiguration(): Map<String, Any?> {
+  val generatedSettings =
+      listOfNotNull(
+              TYPE_KEY to type,
+              VERBOSITY_KEY to verbosity,
+              deviceId?.let { DEVICE_ID_KEY to it.value },
+              timeseriesName?.let { TIMESERIES_NAME_KEY to it },
+              lowerThreshold?.let { LOWER_THRESHOLD_KEY to it },
+              upperThreshold?.let { UPPER_THRESHOLD_KEY to it },
+          )
+          .toMap()
+
+  return settings?.plus(generatedSettings) ?: generatedSettings
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -274,7 +332,22 @@ data class ModifyAutomationRequestPayload(
     val name: String,
     val description: String?,
     val configuration: Map<String, Any?>?,
-)
+) {
+  val deviceId: DeviceId?
+    get() = configuration?.get(DEVICE_ID_KEY)?.toString()?.let { DeviceId(it) }
+  val lowerThreshold: Double?
+    get() = configuration?.get(LOWER_THRESHOLD_KEY)?.toString()?.toDouble()
+  val settings: Map<String, Any?>?
+    get() = configuration?.filterKeys { it !in backwardCompatibilityKeys }?.ifEmpty { null }
+  val timeseriesName: String?
+    get() = configuration?.get(TIMESERIES_NAME_KEY)?.toString()
+  val type: String
+    get() = configuration?.get(TYPE_KEY)?.toString() ?: throw BadRequestException("Missing type")
+  val upperThreshold: Double?
+    get() = configuration?.get(UPPER_THRESHOLD_KEY)?.toString()?.toDouble()
+  val verbosity: Int
+    get() = configuration?.get(VERBOSITY_KEY)?.toString()?.toInt() ?: 0
+}
 
 data class CreateAutomationResponsePayload(val id: AutomationId) : SuccessResponsePayload
 

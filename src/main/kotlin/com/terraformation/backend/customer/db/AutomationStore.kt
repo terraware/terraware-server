@@ -16,9 +16,7 @@ import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.jooq.Field
 import org.jooq.JSONB
-import org.jooq.impl.DSL
 
 @ManagedBean
 class AutomationStore(
@@ -32,22 +30,34 @@ class AutomationStore(
 
   fun create(
       facilityId: FacilityId,
+      type: String,
       name: String,
-      description: String?,
-      configuration: Map<String, Any?>?
+      description: String? = null,
+      deviceId: DeviceId? = null,
+      timeseriesName: String? = null,
+      verbosity: Int = 0,
+      lowerThreshold: Double? = null,
+      upperThreshold: Double? = null,
+      settings: Map<String, Any?>? = null,
   ): AutomationId {
     requirePermissions { createAutomation(facilityId) }
 
     val row =
         AutomationsRow(
-            configuration = toJsonb(configuration),
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             description = description,
+            deviceId = deviceId,
             facilityId = facilityId,
+            lowerThreshold = lowerThreshold,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
+            settings = settings?.toJsonb(),
+            timeseriesName = timeseriesName,
+            type = type,
+            upperThreshold = upperThreshold,
+            verbosity = verbosity,
         )
 
     automationsDao.insert(row)
@@ -71,18 +81,23 @@ class AutomationStore(
   fun fetchByDeviceId(deviceId: DeviceId): List<AutomationModel> {
     val facilityId = parentStore.getFacilityId(deviceId) ?: throw DeviceNotFoundException(deviceId)
 
-    requirePermissions { listAutomations(facilityId) }
+    requirePermissions {
+      listAutomations(facilityId)
+      readDevice(deviceId)
+    }
 
     return dslContext
         .selectFrom(AUTOMATIONS)
-        .where(AUTOMATIONS.FACILITY_ID.eq(facilityId))
-        .and(configurationField(AutomationModel.DEVICE_ID_KEY, DeviceId::class.java).eq(deviceId))
+        .where(AUTOMATIONS.DEVICE_ID.eq(deviceId))
         .fetchInto(AutomationsRow::class.java)
         .map { AutomationModel(it, objectMapper) }
   }
 
   fun update(model: AutomationModel) {
-    requirePermissions { updateAutomation(model.id) }
+    requirePermissions {
+      updateAutomation(model.id)
+      model.deviceId?.let { updateDevice(it) }
+    }
 
     val row = automationsDao.fetchOneById(model.id) ?: throw AutomationNotFoundException(model.id)
 
@@ -94,11 +109,17 @@ class AutomationStore(
 
     val modified =
         row.copy(
-            configuration = toJsonb(model.configuration),
             description = model.description,
+            deviceId = model.deviceId,
+            lowerThreshold = model.lowerThreshold,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = model.name,
+            settings = model.settings?.toJsonb(),
+            timeseriesName = model.timeseriesName,
+            type = model.type,
+            upperThreshold = model.upperThreshold,
+            verbosity = model.verbosity,
         )
 
     automationsDao.update(modified)
@@ -110,14 +131,5 @@ class AutomationStore(
     automationsDao.deleteById(automationId)
   }
 
-  private fun toJsonb(value: Map<String, Any?>?): JSONB? {
-    return if (value == null) {
-      null
-    } else {
-      JSONB.jsonb(objectMapper.writeValueAsString(value))
-    }
-  }
-
-  private fun <T> configurationField(name: String, type: Class<T>): Field<T?> =
-      DSL.jsonbValue(AUTOMATIONS.CONFIGURATION, "\$.\"$name\"").cast(type)
+  private fun Map<String, Any?>.toJsonb() = JSONB.jsonb(objectMapper.writeValueAsString(this))
 }

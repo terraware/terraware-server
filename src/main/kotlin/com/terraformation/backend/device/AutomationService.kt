@@ -25,26 +25,20 @@ class AutomationService(
     requirePermissions { triggerAutomation(automationId) }
 
     val automation = automationStore.fetchOneById(automationId)
-    val automationType =
-        automation.type
-            ?: run {
-              log.warn("Ignoring trigger for automation $automationId with no type")
-              return
-            }
 
     val event =
-        when (automationType) {
+        when (automation.type) {
           AutomationModel.SENSOR_BOUNDS_TYPE -> {
             if (timeseriesValue == null) {
               throw IllegalArgumentException("Sensor bounds alert must include a timeseries value")
             }
             SensorBoundsAlertTriggeredEvent(automationId, timeseriesValue)
           }
-          else -> UnknownAutomationTriggeredEvent(automationId, automationType, message)
+          else -> UnknownAutomationTriggeredEvent(automationId, automation.type, message)
         }
 
     log.info(
-        "Automation $automationId ($automationType ${automation.name}) triggered with " +
+        "Automation $automationId (${automation.type} ${automation.name}) triggered with " +
             "value $timeseriesValue")
     eventPublisher.publishEvent(event)
   }

@@ -610,7 +610,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
     insertProjectUser(user.userId, projectId, user.userId)
-    insertAutomation(automationId, facilityId, name = automationName, type = automationType)
+    insertAutomation(
+        automationId, facilityId, name = automationName, type = automationType, deviceId = null)
 
     val title = "Automation $automationId triggered at $facilityName"
     every { messages.unknownAutomationTriggered(automationName, facilityName, message) } returns

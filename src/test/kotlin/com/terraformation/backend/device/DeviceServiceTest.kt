@@ -1,17 +1,11 @@
 package com.terraformation.backend.device
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.AutomationModel.Companion.DEVICE_ID_KEY
-import com.terraformation.backend.customer.model.AutomationModel.Companion.LOWER_THRESHOLD_KEY
 import com.terraformation.backend.customer.model.AutomationModel.Companion.SENSOR_BOUNDS_TYPE
-import com.terraformation.backend.customer.model.AutomationModel.Companion.TIMESERIES_NAME_KEY
-import com.terraformation.backend.customer.model.AutomationModel.Companion.TYPE_KEY
-import com.terraformation.backend.customer.model.AutomationModel.Companion.UPPER_THRESHOLD_KEY
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
@@ -87,30 +81,31 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
       private val temperature: Pair<Double, Double>? = null,
       private val humidity: Pair<Double, Double>? = null,
   ) {
-    fun toAutomationConfigs(deviceId: DeviceId): Map<String, Map<String, Any?>> {
-      return listOfNotNull(
-              humidity?.let { (min, max) ->
-                "$name humidity" to
-                    mapOf(
-                        TYPE_KEY to SENSOR_BOUNDS_TYPE,
-                        DEVICE_ID_KEY to deviceId.value.toInt(),
-                        TIMESERIES_NAME_KEY to "humidity",
-                        LOWER_THRESHOLD_KEY to min,
-                        UPPER_THRESHOLD_KEY to max,
-                    )
-              },
-              temperature?.let { (min, max) ->
-                "$name temperature" to
-                    mapOf(
-                        TYPE_KEY to SENSOR_BOUNDS_TYPE,
-                        DEVICE_ID_KEY to deviceId.value.toInt(),
-                        TIMESERIES_NAME_KEY to "temperature",
-                        LOWER_THRESHOLD_KEY to min,
-                        UPPER_THRESHOLD_KEY to max,
-                    )
-              },
-          )
-          .toMap()
+    fun toAutomationConfigs(deviceId: DeviceId): Set<AutomationsRow> {
+      return setOfNotNull(
+          humidity?.let { (min, max) ->
+            AutomationsRow(
+                deviceId = deviceId,
+                name = "$name humidity",
+                type = SENSOR_BOUNDS_TYPE,
+                timeseriesName = "humidity",
+                lowerThreshold = min,
+                upperThreshold = max,
+                verbosity = 0,
+            )
+          },
+          temperature?.let { (min, max) ->
+            AutomationsRow(
+                deviceId = deviceId,
+                name = "$name temperature",
+                type = SENSOR_BOUNDS_TYPE,
+                timeseriesName = "temperature",
+                lowerThreshold = min,
+                upperThreshold = max,
+                verbosity = 0,
+            )
+          },
+      )
     }
   }
 
@@ -178,7 +173,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   fun `create does not create automations for sensor with unrecognized name`() {
     service.create(omniSenseRow)
 
-    assertAutomationConfigsEqual(emptyMap())
+    assertAutomationConfigsEqual(emptySet())
   }
 
   @MethodSource("getKnownSensors")
@@ -203,7 +198,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     val deviceId = service.create(omniSenseRow.copy(name = "Fridge 1"))
     service.update(omniSenseRow.copy(id = deviceId))
 
-    assertAutomationConfigsEqual(emptyMap())
+    assertAutomationConfigsEqual(emptySet())
   }
 
   @Test
@@ -224,7 +219,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     assertThrows<AccessDeniedException> { service.create(omniSenseRow.copy(name = "Fridge 1")) }
 
     assertEquals(emptyList<DevicesRow>(), devicesDao.findAll())
-    assertAutomationConfigsEqual(emptyMap())
+    assertAutomationConfigsEqual(emptySet())
   }
 
   @Test
@@ -239,7 +234,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     assertEquals(expectedDevices, devicesDao.findAll())
-    assertAutomationConfigsEqual(emptyMap())
+    assertAutomationConfigsEqual(emptySet())
   }
 
   @Test
@@ -265,19 +260,23 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun assertHasBmuAutomations(deviceId: DeviceId) {
-    val commonFields =
-        mapOf(
-            TYPE_KEY to SENSOR_BOUNDS_TYPE,
-            DEVICE_ID_KEY to deviceId.value.toInt(),
-            TIMESERIES_NAME_KEY to "relative_state_of_charge",
-        )
-
     val expected =
-        mapOf(
-            "PV 25% charge" to commonFields + mapOf(LOWER_THRESHOLD_KEY to 25.1),
-            "PV 10% charge" to commonFields + mapOf(LOWER_THRESHOLD_KEY to 10.1),
-            "PV 0% charge" to commonFields + mapOf(LOWER_THRESHOLD_KEY to 0.1),
-        )
+        listOf(
+                "PV 25% charge" to 25.1,
+                "PV 10% charge" to 10.1,
+                "PV 0% charge" to 0.1,
+            )
+            .map {
+              AutomationsRow(
+                  deviceId = deviceId,
+                  facilityId = facilityId,
+                  name = it.first,
+                  lowerThreshold = it.second,
+                  timeseriesName = "relative_state_of_charge",
+                  type = SENSOR_BOUNDS_TYPE,
+                  verbosity = 0,
+              )
+            }
 
     assertAutomationConfigsEqual(expected)
   }
@@ -342,17 +341,22 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(expected, actual)
   }
 
-  private fun assertAutomationConfigsEqual(expected: Map<String, Map<String, Any?>>) {
-    val actual =
-        automationsDao
-            .findAll()
-            .mapNotNull { row ->
-              row.configuration?.let { configuration ->
-                row.name to objectMapper.readValue<Map<String, Any?>>(configuration.data())
-              }
+  private fun assertAutomationConfigsEqual(expected: Collection<AutomationsRow>) {
+    val expectedWithTimes =
+        expected
+            .map {
+              it.copy(
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  facilityId = facilityId,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
+              )
             }
-            .toMap()
+            .toSet()
 
-    assertEquals(expected, actual)
+    val actual = automationsDao.findAll().map { it.copy(id = null) }.toSet()
+
+    assertEquals(expectedWithTimes, actual)
   }
 }

@@ -74,13 +74,20 @@ internal class AutomationServiceTest : RunsAsUser {
     assertThrows<AccessDeniedException> { service.trigger(automationId, 1.0, null) }
   }
 
-  private fun automationModel(type: String?): AutomationModel =
+  private fun automationModel(type: String): AutomationModel =
       AutomationModel(
-          automationId,
-          FacilityId(1),
-          "name",
-          "description",
-          Instant.EPOCH,
-          Instant.EPOCH,
-          mapOf(AutomationModel.TYPE_KEY to type))
+          createdTime = Instant.EPOCH,
+          description = "description",
+          deviceId = null,
+          facilityId = FacilityId(1),
+          id = automationId,
+          lowerThreshold = null,
+          modifiedTime = Instant.EPOCH,
+          name = "name",
+          settings = null,
+          timeseriesName = null,
+          type = type,
+          upperThreshold = null,
+          verbosity = 0,
+      )
 }
