@@ -207,8 +207,8 @@ val processMjmlTasks =
                     .resolve("resources/main")
                     .resolve(
                         mjmlFile
-                            .withReplacedExtensionOrNull(".mjml", "")!!.relativeTo(
-                                File("$projectDir/src/main/resources")))
+                            .withReplacedExtensionOrNull(".mjml", "")!!
+                            .relativeTo(File("$projectDir/src/main/resources")))
 
             // Stop these tasks from appearing in "./gradlew tasks" output.
             group = ""
@@ -316,12 +316,13 @@ tasks.getByName<BootJar>("bootJar") {
 }
 
 spotless {
+  val ktfmtVersion: String by project
   kotlin {
-    ktfmt("0.37")
+    ktfmt(ktfmtVersion)
     targetExclude("build/**")
   }
   kotlinGradle {
-    ktfmt("0.37")
+    ktfmt(ktfmtVersion)
     target("*.gradle.kts", "buildSrc/*.gradle.kts")
   }
 }
