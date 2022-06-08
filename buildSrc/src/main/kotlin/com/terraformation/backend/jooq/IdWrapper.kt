@@ -21,11 +21,7 @@ class IdWrapper(
   }
 
   fun render(out: JavaWriter) {
-    // JsonAutoDetect is needed to allow ID wrappers to be passed as parameters in JobRunr jobs.
-    // https://github.com/jobrunr/jobrunr/issues/451
     out.println("""
-      @JsonAutoDetect(
-          fieldVisibility = NONE, getterVisibility = PUBLIC_ONLY, creatorVisibility = PUBLIC_ONLY)
       class $className @JsonCreator constructor(@get:JsonValue val value: Long) {
         constructor(value: String) : this(value.toLong())
         override fun equals(other: Any?): Boolean = other is $className && other.value == value

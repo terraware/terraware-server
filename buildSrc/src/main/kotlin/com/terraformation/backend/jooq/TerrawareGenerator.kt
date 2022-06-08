@@ -28,9 +28,6 @@ class TerrawareGenerator : KotlinGenerator() {
     out.printImports()
     out.println(
         """
-      import com.fasterxml.jackson.annotation.JsonAutoDetect
-      import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE
-      import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.PUBLIC_ONLY
       import com.fasterxml.jackson.annotation.JsonCreator
       import com.fasterxml.jackson.annotation.JsonValue
       import org.jooq.impl.AbstractConverter
