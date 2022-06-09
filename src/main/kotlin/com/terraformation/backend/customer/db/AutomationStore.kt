@@ -6,19 +6,27 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.AutomationNotFoundException
+import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.AutomationsDao
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
+import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
+import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.JSONB
+import org.jooq.impl.DSL
 
 @ManagedBean
 class AutomationStore(
     private val automationsDao: AutomationsDao,
     private val clock: Clock,
-    private val objectMapper: ObjectMapper
+    private val dslContext: DSLContext,
+    private val objectMapper: ObjectMapper,
+    private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
 
@@ -60,6 +68,19 @@ class AutomationStore(
         ?: throw AutomationNotFoundException(automationId)
   }
 
+  fun fetchByDeviceId(deviceId: DeviceId): List<AutomationModel> {
+    val facilityId = parentStore.getFacilityId(deviceId) ?: throw DeviceNotFoundException(deviceId)
+
+    requirePermissions { listAutomations(facilityId) }
+
+    return dslContext
+        .selectFrom(AUTOMATIONS)
+        .where(AUTOMATIONS.FACILITY_ID.eq(facilityId))
+        .and(configurationField(AutomationModel.DEVICE_ID_KEY, DeviceId::class.java).eq(deviceId))
+        .fetchInto(AutomationsRow::class.java)
+        .map { AutomationModel(it, objectMapper) }
+  }
+
   fun update(model: AutomationModel) {
     requirePermissions { updateAutomation(model.id) }
 
@@ -96,4 +117,7 @@ class AutomationStore(
       JSONB.jsonb(objectMapper.writeValueAsString(value))
     }
   }
+
+  private fun <T> configurationField(name: String, type: Class<T>): Field<T?> =
+      DSL.jsonbValue(AUTOMATIONS.CONFIGURATION, "\$.\"$name\"").cast(type)
 }

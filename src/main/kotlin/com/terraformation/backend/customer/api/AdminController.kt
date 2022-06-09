@@ -37,6 +37,7 @@ import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
+import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.log.perClassLogger
@@ -89,6 +90,7 @@ class AdminController(
     private val clock: Clock,
     private val config: TerrawareServerConfig,
     private val deviceManagerStore: DeviceManagerStore,
+    private val deviceService: DeviceService,
     private val deviceStore: DeviceStore,
     private val deviceTemplatesDao: DeviceTemplatesDao,
     private val dslContext: DSLContext,
@@ -893,7 +895,7 @@ class AdminController(
                 protocol = protocol,
             )
 
-        deviceStore.create(devicesRow)
+        deviceService.create(devicesRow)
       }
 
       redirectAttributes.successMessage =

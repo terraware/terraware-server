@@ -12,6 +12,7 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 @DeviceManagerAppEndpoint
 @RestController
 class DeviceController(
+    private val deviceService: DeviceService,
     private val deviceStore: DeviceStore,
     private val objectMapper: ObjectMapper,
 ) {
@@ -44,7 +46,7 @@ class DeviceController(
   @PostMapping("/api/v1/devices")
   fun createDevice(@RequestBody payload: CreateDeviceRequestPayload): CreateDeviceResponsePayload {
     val devicesRow = payload.toRow(objectMapper)
-    val deviceId = deviceStore.create(devicesRow)
+    val deviceId = deviceService.create(devicesRow)
     return CreateDeviceResponsePayload(deviceId)
   }
 
@@ -66,7 +68,7 @@ class DeviceController(
       @RequestBody payload: UpdateDeviceRequestPayload
   ): SimpleSuccessResponsePayload {
     val devicesRow = payload.toRow(deviceId, objectMapper)
-    deviceStore.update(devicesRow)
+    deviceService.update(devicesRow)
     return SimpleSuccessResponsePayload()
   }
 }
