@@ -10,6 +10,7 @@ import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -37,16 +38,40 @@ internal class DeviceManagersControllerTest : RunsAsUser {
 
   @Test
   fun `returns device manager for shortCode`() {
-    val deviceManager = DeviceManagersRow(id = DeviceManagerId(1), shortCode = "123456")
+    val deviceManager =
+        DeviceManagersRow(
+            id = DeviceManagerId(1),
+            isOnline = true,
+            lastConnectivityEvent = Instant.ofEpochSecond(1000),
+            shortCode = "123456",
+            updateProgress = 12345)
+
     every { deviceManagerStore.fetchOneByShortCode("123456") } returns deviceManager
-    val expected = GetDeviceManagersResponsePayload(listOf(DeviceManagerPayload(deviceManager)))
+
+    val expected =
+        GetDeviceManagersResponsePayload(
+            listOf(
+                DeviceManagerPayload(
+                    available = true,
+                    facilityId = null,
+                    id = deviceManager.id!!,
+                    isOnline = true,
+                    onlineChangedTime = deviceManager.lastConnectivityEvent!!,
+                    shortCode = deviceManager.shortCode!!,
+                    updateProgress = deviceManager.updateProgress!!,
+                )))
+
     assertEquals(expected, deviceManagersController.getDeviceManagers("123456", null))
   }
 
   @Test
   fun `returns device manager for facilityID`() {
     val deviceManager =
-        DeviceManagersRow(id = DeviceManagerId(1), shortCode = "123456", facilityId = FacilityId(2))
+        DeviceManagersRow(
+            id = DeviceManagerId(1),
+            isOnline = false,
+            shortCode = "123456",
+            facilityId = FacilityId(2))
     every { deviceManagerStore.fetchOneByFacilityId(FacilityId(2)) } returns deviceManager
     val expected = GetDeviceManagersResponsePayload(listOf(DeviceManagerPayload(deviceManager)))
     assertEquals(expected, deviceManagersController.getDeviceManagers(null, FacilityId(2)))

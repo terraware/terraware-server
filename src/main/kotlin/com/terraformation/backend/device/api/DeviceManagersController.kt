@@ -12,6 +12,7 @@ import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -78,6 +79,15 @@ data class DeviceManagerPayload(
         description =
             "The facility this device manager is connected to, or null if it is not connected.")
     val facilityId: FacilityId?,
+    @Schema(description = "If true, this device manager is currently online.")
+    val isOnline: Boolean,
+    @Schema(
+        description =
+            "When the device manager's isOnline value changed most recently. In other words, " +
+                "if isOnline is true, the device manager has been online since this time; if " +
+                "isOnline is false, the device manager has been offline since this time. This " +
+                "may be null if the device manager has not come online for the first time yet.")
+    val onlineChangedTime: Instant?,
     @Schema(
         description =
             "If an update is being downloaded or installed, its progress as a percentage. Not " +
@@ -92,6 +102,8 @@ data class DeviceManagerPayload(
       available = row.facilityId == null,
       facilityId = row.facilityId,
       id = row.id!!,
+      isOnline = row.isOnline!!,
+      onlineChangedTime = row.lastConnectivityEvent,
       shortCode = row.shortCode!!,
       updateProgress = row.updateProgress,
   )
