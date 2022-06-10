@@ -27,4 +27,22 @@ data class AutomationModel(
       createdTime = row.createdTime ?: throw IllegalArgumentException("createdTime is required"),
       modifiedTime = row.modifiedTime ?: throw IllegalArgumentException("modifiedTime is required"),
       configuration = row.configuration?.data()?.let { objectMapper.readValue(it) })
+
+  val type: String?
+    get() = configuration?.get(TYPE_KEY)?.toString()
+
+  companion object {
+    // Configuration keys recognized by the device manager.
+
+    const val DEVICE_ID_KEY = "monitorDeviceId"
+    const val LOWER_THRESHOLD_KEY = "lowerThreshold"
+    const val TIMESERIES_NAME_KEY = "monitorTimeseriesName"
+    const val TYPE_KEY = "type"
+    const val UPPER_THRESHOLD_KEY = "upperThreshold"
+
+    // Automation types recognized by the device manager (not a complete list; just the ones the
+    // server needs to know about).
+
+    const val SENSOR_BOUNDS_TYPE = "SensorBoundsAlert"
+  }
 }
