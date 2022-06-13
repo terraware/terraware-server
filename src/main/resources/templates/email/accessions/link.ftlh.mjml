@@ -1,0 +1,9 @@
+<!-- <#-- @ftlvariable name="accessionsUrl" type="String" --> -->
+<mjml>
+    <mj-text mj-class="text-body03">
+        Please click the button below to go to your Terraware account where you can view
+        the accessions.
+    </mj-text>
+    <mj-button mj-class="btn-productive-primary-md" href="${accessionsUrl?no_esc}">Go to Terraware
+    </mj-button>
+</mjml>

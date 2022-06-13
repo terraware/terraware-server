@@ -1,9 +1,9 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UserAddedToOrganization" --> -->
 <mjml>
-    <mj-include path="../head.ftlh.mjml" />
+    <mj-include path="../../head.ftlh.mjml" />
 
     <mj-body>
-        <mj-include path="../logo.ftlh.mjml" />
+        <mj-include path="../../logo.ftlh.mjml" />
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
@@ -23,6 +23,6 @@
             </mj-column>
         </mj-section>
 
-        <mj-include path="../footer.ftlh.mjml" />
+        <mj-include path="../../footer.ftlh.mjml" />
     </mj-body>
 </mjml>
