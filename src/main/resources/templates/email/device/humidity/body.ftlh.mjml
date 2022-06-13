@@ -1,0 +1,26 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.SensorBoundsAlert" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    <p>
+                        ${device.name} has been or is ${value}% RH for the past 5 minutes, which
+                        is out of threshold.
+                    </p>
+
+                    <p>
+                        Please go to ${facility.name} and check on it.
+                    </p>
+                </mj-text>
+                <mj-include path="../../facility/link.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

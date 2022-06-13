@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.AutomationId
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
 import java.time.Instant
@@ -28,6 +29,10 @@ data class AutomationModel(
       modifiedTime = row.modifiedTime ?: throw IllegalArgumentException("modifiedTime is required"),
       configuration = row.configuration?.data()?.let { objectMapper.readValue(it) })
 
+  val deviceId: DeviceId?
+    get() = configuration?.get(DEVICE_ID_KEY)?.toString()?.let { DeviceId(it) }
+  val timeseriesName: String?
+    get() = configuration?.get(TIMESERIES_NAME_KEY)?.toString()
   val type: String?
     get() = configuration?.get(TYPE_KEY)?.toString()
 

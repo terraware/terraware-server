@@ -1,11 +1,13 @@
 package com.terraformation.backend.email.model
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.tables.pojos.DevicesRow
 
 /**
  * Common attributes for classes that can be passed as models when rendering email templates. This
@@ -40,6 +42,39 @@ class FacilityIdle(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "facility/idle"
+}
+
+class SensorBoundsAlert(
+    config: TerrawareServerConfig,
+    val automation: AutomationModel,
+    val device: DevicesRow,
+    val facility: FacilityModel,
+    val value: Any,
+    val facilityMonitoringUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() {
+      return when {
+        device.deviceType == "BMU" && automation.timeseriesName == "relative_state_of_charge" ->
+            "device/lowPower"
+        device.deviceType == "sensor" && automation.timeseriesName == "humidity" ->
+            "device/humidity"
+        device.deviceType == "sensor" && automation.timeseriesName == "temperature" ->
+            "device/temperature"
+        else -> "device/sensorBounds"
+      }
+    }
+}
+
+class UnknownAutomationTriggered(
+    config: TerrawareServerConfig,
+    val automation: AutomationModel,
+    val facility: FacilityModel,
+    val message: String?,
+    val facilityMonitoringUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "device/unknownAutomation"
 }
 
 class UserAddedToOrganization(

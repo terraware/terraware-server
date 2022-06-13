@@ -5,6 +5,8 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AppDeviceStore
+import com.terraformation.backend.customer.db.AutomationStore
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
@@ -17,7 +19,9 @@ import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.NotificationId
@@ -29,6 +33,9 @@ import com.terraformation.backend.db.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
+import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
+import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
@@ -78,6 +85,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private val realmResource: RealmResource = mockk()
 
   private lateinit var accessionStore: AccessionStore
+  private lateinit var automationStore: AutomationStore
+  private lateinit var deviceStore: DeviceStore
+  private lateinit var facilityStore: FacilityStore
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
@@ -89,6 +99,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    val objectMapper = jacksonObjectMapper()
+
     every { realmResource.users() } returns mockk()
 
     notificationStore = NotificationStore(dslContext, clock)
@@ -108,6 +120,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             WithdrawalStore(dslContext, clock),
             clock,
         )
+    automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
+    deviceStore = DeviceStore(devicesDao)
+    facilityStore = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
     userStore =
         UserStore(
             clock,
@@ -115,7 +130,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             dslContext,
             mockk(),
             mockk(),
-            jacksonObjectMapper(),
+            objectMapper,
             organizationStore,
             ParentStore(dslContext),
             PermissionStore(dslContext),
@@ -125,7 +140,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     webAppUrls = WebAppUrls(config)
     service =
         AppNotificationService(
+            automationStore,
+            deviceStore,
             dslContext,
+            facilityStore,
             notificationStore,
             organizationStore,
             parentStore,
@@ -165,7 +183,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { messages.facilityIdle() } returns
         NotificationMessage("facility idle title", "facility idle body")
     every { user.canCreateAccession(facilityId) } returns true
+    every { user.canCreateAutomation(any()) } returns true
     every { user.canCreateNotification(any(), organizationId) } returns true
+    every { user.canReadAutomation(any()) } returns true
+    every { user.canReadDevice(any()) } returns true
+    every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
     every { user.organizationRoles } returns mapOf(organizationId to Role.ADMIN)
@@ -538,5 +560,79 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         expectedNotifications,
         actualNotifications,
         "Notification should match that of facility idle")
+  }
+
+  @Test
+  fun `should store sensor bounds alert notification`() {
+    val automationId = AutomationId(1)
+    val deviceId = DeviceId(1)
+    val timeseriesName = "test timeseries"
+    val facilityName = "ohana"
+    val badValue = 5.678
+
+    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(user.userId, projectId, user.userId)
+    insertDevice(deviceId, facilityId)
+    insertAutomation(automationId, facilityId, deviceId = deviceId, timeseriesName = timeseriesName)
+
+    every {
+      messages.sensorBoundsAlert(
+          devicesDao.fetchOneById(deviceId)!!, facilityName, timeseriesName, badValue)
+    } returns NotificationMessage("bounds title", "bounds body")
+
+    service.on(SensorBoundsAlertTriggeredEvent(automationId, badValue))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.SensorOutOfBounds,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "bounds title",
+                body = "bounds body",
+                localUrl = webAppUrls.facilityMonitoring(facilityId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store unknown automation triggered notification`() {
+    val automationId = AutomationId(1)
+    val automationName = "automation name"
+    val automationType = "unknown"
+    val facilityName = "ohana"
+    val message = "message"
+
+    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(user.userId, projectId, user.userId)
+    insertAutomation(automationId, facilityId, name = automationName, type = automationType)
+
+    val title = "Automation $automationId triggered at $facilityName"
+    every { messages.unknownAutomationTriggered(automationName, facilityName, message) } returns
+        NotificationMessage(title, message)
+
+    service.on(UnknownAutomationTriggeredEvent(automationId, automationType, message))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.UnknownAutomationTriggered,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = title,
+                body = message,
+                localUrl = webAppUrls.facilityMonitoring(facilityId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
   }
 }

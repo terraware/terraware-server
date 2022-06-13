@@ -1,6 +1,7 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
@@ -14,6 +15,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GerminationTestType
@@ -22,6 +24,9 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
+import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
 import com.terraformation.backend.email.model.AccessionGerminationTest
 import com.terraformation.backend.email.model.AccessionMoveToDry
@@ -32,6 +37,8 @@ import com.terraformation.backend.email.model.AccessionsReadyForTesting
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
+import com.terraformation.backend.email.model.SensorBoundsAlert
+import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToProject
 import com.terraformation.backend.log.perClassLogger
@@ -49,7 +56,9 @@ import org.springframework.context.event.EventListener
 
 @ManagedBean
 class EmailNotificationService(
+    private val automationStore: AutomationStore,
     private val config: TerrawareServerConfig,
+    private val deviceStore: DeviceStore,
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val organizationsDao: OrganizationsDao,
@@ -102,6 +111,45 @@ class EmailNotificationService(
             .toString()
     emailService.sendFacilityNotification(
         facility.id, FacilityIdle(config, facility, facilityMonitoringUrl))
+  }
+
+  @EventListener
+  fun on(event: SensorBoundsAlertTriggeredEvent) {
+    val automation = automationStore.fetchOneById(event.automationId)
+    val deviceId =
+        automation.deviceId
+            ?: throw IllegalStateException("Automation ${automation.id} has no device ID")
+    val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val facility =
+        facilityStore.fetchById(automation.facilityId)
+            ?: throw FacilityNotFoundException(automation.facilityId)
+    val organizationId =
+        parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
+
+    val facilityMonitoringUrl =
+        webAppUrls.fullFacilityMonitoring(organizationId, facility.id).toString()
+
+    emailService.sendFacilityNotification(
+        facility.id,
+        SensorBoundsAlert(config, automation, device, facility, event.value, facilityMonitoringUrl))
+  }
+
+  @EventListener
+  fun on(event: UnknownAutomationTriggeredEvent) {
+    val automation = automationStore.fetchOneById(event.automationId)
+    val facility =
+        facilityStore.fetchById(automation.facilityId)
+            ?: throw FacilityNotFoundException(automation.facilityId)
+    val organizationId =
+        parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
+
+    val facilityMonitoringUrl =
+        webAppUrls.fullFacilityMonitoring(organizationId, facility.id).toString()
+
+    emailService.sendFacilityNotification(
+        facility.id,
+        UnknownAutomationTriggered(
+            config, automation, facility, event.message, facilityMonitoringUrl))
   }
 
   @EventListener
