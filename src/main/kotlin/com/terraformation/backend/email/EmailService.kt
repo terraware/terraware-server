@@ -58,8 +58,6 @@ class EmailService(
    * Sends an email notification to all the people who should be notified about something happening
    * at or to a particular facility.
    *
-   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
-   * Freemarker templates to render.
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
    * opted out of email notifications. The default is to obey the user's notification preference,
@@ -67,22 +65,19 @@ class EmailService(
    */
   fun sendFacilityNotification(
       facilityId: FacilityId,
-      templateDir: String,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true
   ) {
     val projectId =
         parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    sendProjectNotification(projectId, templateDir, model, requireOptIn)
+    sendProjectNotification(projectId, model, requireOptIn)
   }
 
   /**
    * Sends an email notification to all the people who should be notified about something happening
    * to a particular project.
    *
-   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
-   * Freemarker templates to render.
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
    * opted out of email notifications. The default is to obey the user's notification preference,
@@ -90,21 +85,18 @@ class EmailService(
    */
   fun sendProjectNotification(
       projectId: ProjectId,
-      templateDir: String,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true
   ) {
     val recipients = projectStore.fetchEmailRecipients(projectId, requireOptIn)
 
-    send(templateDir, model, recipients)
+    send(model, recipients)
   }
 
   /**
    * Sends an email notification to all the people who should be notified about something happening
    * to a particular organization.
    *
-   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
-   * Freemarker templates to render.
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
    * opted out of email notifications. The default is to obey the user's notification preference,
@@ -112,20 +104,17 @@ class EmailService(
    */
   fun sendOrganizationNotification(
       organizationId: OrganizationId,
-      templateDir: String,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true,
   ) {
     val recipients = organizationStore.fetchEmailRecipients(organizationId, requireOptIn)
 
-    send(templateDir, model, recipients)
+    send(model, recipients)
   }
 
   /**
    * Sends an email notification to a specific user.
    *
-   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
-   * Freemarker templates to render.
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [requireOptIn] If false, send the notification even if the user has not opted into email
    * notifications. The default is to obey the user's notification preference, which is the correct
@@ -133,14 +122,13 @@ class EmailService(
    */
   fun sendUserNotification(
       user: IndividualUser,
-      templateDir: String,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true
   ) {
     if (requireOptIn && !user.emailNotificationsEnabled) {
       log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
     } else {
-      send(templateDir, model, listOf(user.email))
+      send(model, listOf(user.email))
     }
   }
 
@@ -163,13 +151,13 @@ class EmailService(
   /**
    * Renders an email message from a template and sends it to some recipients.
    *
-   * @param [templateDir] Subdirectory of `src/main/resources/templates/email` containing the
-   * Freemarker templates to render.
    * @param [model] Model object containing values that can be referenced by the template.
    * @param [recipients] Email addresses to send the message to. This will be overridden in dev/test
    * environments when [TerrawareServerConfig.EmailConfig.alwaysSendToOverrideAddress] is true.
    */
-  private fun send(templateDir: String, model: EmailTemplateModel, recipients: List<String>) {
+  private fun send(model: EmailTemplateModel, recipients: List<String>) {
+    val templateDir = model.templateDir
+
     if (recipients.isEmpty()) {
       log.info("No recipients found for email notification $templateDir, so not sending any email.")
       // Don't log the contents of the email; it may contain sensitive information.
