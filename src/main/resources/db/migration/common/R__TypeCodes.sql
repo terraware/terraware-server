@@ -182,5 +182,6 @@ VALUES (1, 'User Added to Organization', 1),
        (10, 'Accessions Ready for Testing', 1),
        (11, 'Accessions Finished Drying', 1),
        (12, 'Sensor Out Of Bounds', 3),
-       (13, 'Unknown Automation Triggered', 3)
+       (13, 'Unknown Automation Triggered', 3),
+       (14, 'Device Unresponsive', 3)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name, notification_criticality_id = excluded.notification_criticality_id;

@@ -34,6 +34,7 @@ import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.WebAppUrls
@@ -57,6 +58,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
 import org.jooq.Record
@@ -627,6 +629,38 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 title = title,
                 body = message,
+                localUrl = webAppUrls.facilityMonitoring(facilityId),
+                createdTime = Instant.EPOCH,
+                isRead = false))
+
+    val actualNotifications = notificationsDao.findAll()
+
+    assertEquals(expectedNotifications, actualNotifications)
+  }
+
+  @Test
+  fun `should store device unresponsive notification`() {
+    val deviceId = DeviceId(1)
+    val deviceName = "test device"
+
+    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
+    insertProjectUser(user.userId, projectId, user.userId)
+    insertDevice(deviceId, facilityId, deviceName)
+
+    every { messages.deviceUnresponsive(deviceName) } returns
+        NotificationMessage("unresponsive title", "unresponsive body")
+
+    service.on(DeviceUnresponsiveEvent(deviceId, Instant.EPOCH, Duration.ofSeconds(1)))
+
+    val expectedNotifications =
+        listOf(
+            NotificationsRow(
+                id = NotificationId(1),
+                notificationTypeId = NotificationType.DeviceUnresponsive,
+                userId = user.userId,
+                organizationId = organizationId,
+                title = "unresponsive title",
+                body = "unresponsive body",
                 localUrl = webAppUrls.facilityMonitoring(facilityId),
                 createdTime = Instant.EPOCH,
                 isRead = false))

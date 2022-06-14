@@ -2,19 +2,25 @@ package com.terraformation.backend.device
 
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.model.AutomationModel
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.log.perClassLogger
+import java.time.Duration
+import java.time.Instant
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 
 @ManagedBean
 class DeviceService(
     private val automationStore: AutomationStore,
     private val deviceStore: DeviceStore,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   private val log = perClassLogger()
 
@@ -41,6 +47,17 @@ class DeviceService(
         updateAutomations(deviceId, row.copy(facilityId = existingRow.facilityId))
       }
     }
+  }
+
+  fun markUnresponsive(
+      deviceId: DeviceId,
+      lastRespondedTime: Instant?,
+      expectedInterval: Duration?,
+  ) {
+    requirePermissions { updateDevice(deviceId) }
+
+    eventPublisher.publishEvent(
+        DeviceUnresponsiveEvent(deviceId, lastRespondedTime, expectedInterval))
   }
 
   private fun updateAutomations(deviceId: DeviceId, row: DevicesRow) {
