@@ -22,7 +22,6 @@ import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
-import com.terraformation.backend.db.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
@@ -178,20 +177,12 @@ internal class PermissionTest : DatabaseTest() {
     facilityIds.forEach { facilityId ->
       insertFacility(facilityId, createdBy = userId)
       insertDevice(facilityId.value, facilityId, createdBy = userId)
+      insertAutomation(facilityId.value, facilityId, createdBy = userId)
       accessionsDao.insert(
           AccessionsRow(
               id = AccessionId(facilityId.value),
               facilityId = facilityId,
               stateId = AccessionState.Pending,
-              createdBy = userId,
-              createdTime = Instant.EPOCH,
-              modifiedBy = userId,
-              modifiedTime = Instant.EPOCH))
-      automationsDao.insert(
-          AutomationsRow(
-              id = AutomationId(facilityId.value),
-              facilityId = facilityId,
-              name = "Automation $facilityId",
               createdBy = userId,
               createdTime = Instant.EPOCH,
               modifiedBy = userId,
