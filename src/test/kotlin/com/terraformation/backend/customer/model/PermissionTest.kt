@@ -273,6 +273,7 @@ internal class PermissionTest : DatabaseTest() {
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
+        triggerAutomation = true,
     )
 
     permissions.expect(
@@ -405,6 +406,7 @@ internal class PermissionTest : DatabaseTest() {
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
+        triggerAutomation = true,
     )
 
     permissions.expect(
@@ -486,6 +488,7 @@ internal class PermissionTest : DatabaseTest() {
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
+        triggerAutomation = true,
     )
 
     permissions.expect(
@@ -563,6 +566,7 @@ internal class PermissionTest : DatabaseTest() {
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
+        triggerAutomation = true,
     )
 
     permissions.expect(
@@ -875,6 +879,7 @@ internal class PermissionTest : DatabaseTest() {
         readAutomation: Boolean = false,
         updateAutomation: Boolean = false,
         deleteAutomation: Boolean = false,
+        triggerAutomation: Boolean = false,
     ) {
       automations.forEach { automationId ->
         assertEquals(
@@ -889,6 +894,10 @@ internal class PermissionTest : DatabaseTest() {
             deleteAutomation,
             user.canDeleteAutomation(automationId),
             "Can delete automation $automationId")
+        assertEquals(
+            triggerAutomation,
+            user.canTriggerAutomation(automationId),
+            "Can trigger automation $automationId")
 
         uncheckedAutomations.remove(automationId)
       }
