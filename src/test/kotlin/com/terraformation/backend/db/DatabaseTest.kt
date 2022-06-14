@@ -1,7 +1,10 @@
 package com.terraformation.backend.db
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
@@ -30,6 +33,7 @@ import com.terraformation.backend.db.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.tables.daos.UploadsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
+import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
@@ -50,6 +54,7 @@ import kotlin.reflect.full.isSupertypeOf
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Configuration
 import org.jooq.DSLContext
+import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.Sequence
 import org.jooq.Table
@@ -359,6 +364,43 @@ abstract class DatabaseTest {
           .set(MODIFIED_BY, createdBy)
           .set(NAME, name)
           .set(PROTOCOL, "protocol")
+          .execute()
+    }
+  }
+
+  protected fun insertAutomation(
+      id: Any,
+      facilityId: Any = "$id".toLong() / 10,
+      name: String = "automation $id",
+      type: String? = AutomationModel.SENSOR_BOUNDS_TYPE,
+      deviceId: Any? = "$id".toLong(),
+      timeseriesName: String? = "timeseries",
+      lowerThreshold: Double? = 10.0,
+      upperThreshold: Double? = 20.0,
+      createdBy: UserId = currentUser().userId,
+      objectMapper: ObjectMapper = jacksonObjectMapper(),
+  ) {
+    val configuration =
+        listOfNotNull(
+                type?.let { AutomationModel.TYPE_KEY to it },
+                deviceId?.let { AutomationModel.DEVICE_ID_KEY to it },
+                timeseriesName?.let { AutomationModel.TIMESERIES_NAME_KEY to it },
+                lowerThreshold?.let { AutomationModel.LOWER_THRESHOLD_KEY to it },
+                upperThreshold?.let { AutomationModel.UPPER_THRESHOLD_KEY to it },
+            )
+            .toMap()
+
+    with(AUTOMATIONS) {
+      dslContext
+          .insertInto(AUTOMATIONS)
+          .set(CONFIGURATION, JSONB.valueOf(objectMapper.writeValueAsString(configuration)))
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, Instant.EPOCH)
+          .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
+          .set(ID, id.toIdWrapper { AutomationId(it) })
+          .set(MODIFIED_BY, createdBy)
+          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(NAME, name)
           .execute()
     }
   }
