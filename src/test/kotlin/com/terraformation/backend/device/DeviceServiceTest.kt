@@ -18,10 +18,15 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.mockUser
+import io.mockk.CapturingSlot
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -29,18 +34,21 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
+  private val eventPublisher: ApplicationEventPublisher = mockk()
   private val objectMapper = jacksonObjectMapper()
   private val service: DeviceService by lazy {
     DeviceService(
         AutomationStore(automationsDao, clock, dslContext, objectMapper, ParentStore(dslContext)),
         DeviceStore(devicesDao),
-        dslContext)
+        dslContext,
+        eventPublisher)
   }
 
   private val facilityId = FacilityId(100)
@@ -222,6 +230,28 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(expectedDevices, devicesDao.findAll())
     assertAutomationConfigsEqual(emptyMap())
+  }
+
+  @Test
+  fun `markDeviceUnresponsive publishes event`() {
+    val slot = CapturingSlot<DeviceUnresponsiveEvent>()
+
+    every { eventPublisher.publishEvent(capture(slot)) } just Runs
+
+    val expected =
+        DeviceUnresponsiveEvent(DeviceId(1), Instant.ofEpochSecond(123), Duration.ofSeconds(30))
+
+    service.markUnresponsive(
+        expected.deviceId, expected.lastRespondedTime, expected.expectedInterval)
+
+    assertEquals(expected, slot.captured)
+  }
+
+  @Test
+  fun `markDeviceUnresponsive throws exception if no permission to update device`() {
+    every { user.canUpdateDevice(any()) } returns false
+
+    assertThrows<AccessDeniedException> { service.markUnresponsive(DeviceId(1), null, null) }
   }
 
   private fun assertHasBmuAutomations(deviceId: DeviceId) {

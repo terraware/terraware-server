@@ -25,6 +25,7 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
@@ -34,6 +35,7 @@ import com.terraformation.backend.email.model.AccessionWithdrawal
 import com.terraformation.backend.email.model.AccessionsAwaitingProcessing
 import com.terraformation.backend.email.model.AccessionsFinishedDrying
 import com.terraformation.backend.email.model.AccessionsReadyForTesting
+import com.terraformation.backend.email.model.DeviceUnresponsive
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
@@ -150,6 +152,24 @@ class EmailNotificationService(
         facility.id,
         UnknownAutomationTriggered(
             config, automation, facility, event.message, facilityMonitoringUrl))
+  }
+
+  @EventListener
+  fun on(event: DeviceUnresponsiveEvent) {
+    val device =
+        deviceStore.fetchOneById(event.deviceId) ?: throw DeviceNotFoundException(event.deviceId)
+    val facilityId =
+        device.facilityId ?: throw IllegalStateException("Device ${event.deviceId} has no facility")
+    val facility =
+        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+
+    val facilityMonitoringUrl =
+        webAppUrls.fullFacilityMonitoring(organizationId, facilityId).toString()
+
+    emailService.sendFacilityNotification(
+        facilityId, DeviceUnresponsive(config, device, facility, facilityMonitoringUrl))
   }
 
   @EventListener

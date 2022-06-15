@@ -200,6 +200,11 @@ class Messages {
           title = "$automationName triggered at $facilityName",
           body = message ?: "Please check on it.")
 
+  fun deviceUnresponsive(deviceName: String): NotificationMessage =
+      NotificationMessage(
+          title = "$deviceName cannot be detected.",
+          body = "$deviceName cannot be detected. Please check on it.")
+
   private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
   private val validSeedStorageBehaviors =
       SeedStorageBehavior.values().joinToString { it.displayName }

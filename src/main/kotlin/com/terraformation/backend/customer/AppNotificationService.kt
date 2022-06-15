@@ -22,6 +22,7 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.WebAppUrls
@@ -98,6 +99,22 @@ class AppNotificationService(
 
     insertFacilityNotifications(
         facility.id, NotificationType.UnknownAutomationTriggered, message, facilityUrl)
+  }
+
+  @EventListener
+  fun on(event: DeviceUnresponsiveEvent) {
+    val device =
+        deviceStore.fetchOneById(event.deviceId) ?: throw DeviceNotFoundException(event.deviceId)
+    val deviceName =
+        device.name ?: throw IllegalStateException("Device ${event.deviceId} has no name")
+    val facilityId =
+        device.facilityId ?: throw IllegalStateException("Device ${event.deviceId} has no facility")
+
+    val facilityUrl = webAppUrls.facilityMonitoring(facilityId)
+    val message = messages.deviceUnresponsive(deviceName)
+
+    insertFacilityNotifications(
+        facilityId, NotificationType.DeviceUnresponsive, message, facilityUrl)
   }
 
   @EventListener
