@@ -3,7 +3,7 @@
         <mj-class
             name="logo-img"
             width="205px"
-            align="left"
+            align="center"
             padding="0px"
             padding-top="64px"
             padding-bottom="32px"

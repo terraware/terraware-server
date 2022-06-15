@@ -7,6 +7,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.tables.pojos.DevicesRow
 import java.net.URI
 import javax.annotation.ManagedBean
 import javax.ws.rs.core.UriBuilder
@@ -89,15 +90,27 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
   fun fullFacilityMonitoring(
       organizationId: OrganizationId,
       facilityId: FacilityId,
+      device: DevicesRow? = null,
   ): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/monitoring/${facilityId.value}")
         .queryParam("organizationId", organizationId)
+        .let { devicePath(it, device) }
         .build()
   }
 
-  fun facilityMonitoring(facilityId: FacilityId): URI {
-    return UriBuilder.fromPath("/monitoring/${facilityId.value}").build()
+  fun facilityMonitoring(facilityId: FacilityId, device: DevicesRow? = null): URI {
+    return UriBuilder.fromPath("/monitoring/${facilityId.value}")
+        .let { devicePath(it, device) }
+        .build()
+  }
+
+  private fun devicePath(uriBuilder: UriBuilder, device: DevicesRow?): UriBuilder {
+    return if (device?.deviceType == "sensor") {
+      uriBuilder.queryParam("sensor", device.id)
+    } else {
+      uriBuilder
+    }
   }
 
   private fun accessionGerminationTestPath(

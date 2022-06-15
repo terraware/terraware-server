@@ -171,7 +171,11 @@ class EmailService(
     val multipart = textBody != null && htmlBody != null
     val helper = MimeMessageHelper(sender.createMimeMessage(), multipart)
 
-    helper.setSubject(subject)
+    if (config.email.subjectPrefix != null) {
+      helper.setSubject("${config.email.subjectPrefix} $subject")
+    } else {
+      helper.setSubject(subject)
+    }
 
     when {
       textBody != null && htmlBody != null -> helper.setText(textBody, htmlBody)
@@ -212,10 +216,6 @@ class EmailService(
       helper.setTo(overrideEmailAddress)
       helper.setCc(emptyArray<InternetAddress>())
       helper.setBcc(emptyArray<InternetAddress>())
-    }
-
-    if (config.email.subjectPrefix != null) {
-      helper.setSubject("${config.email.subjectPrefix} ${message.subject}")
     }
 
     val rawMessage =
