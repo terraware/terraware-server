@@ -19,6 +19,7 @@ CREATE INDEX IF NOT EXISTS withdrawal__date_ix ON withdrawals (date);
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE INDEX IF NOT EXISTS accession__number_trgm ON accessions USING gin (number gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS gbif_names__name_trgm ON gbif_names USING gin (name gin_trgm_ops);
 
 -- Partial indexes.
 CREATE INDEX species__not_checked_ix ON species (id) WHERE checked_time IS NULL;
