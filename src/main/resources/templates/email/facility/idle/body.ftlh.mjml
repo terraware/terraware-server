@@ -12,13 +12,7 @@
 
                     Submit an issue request at <a href="https://www.terraformation.com/contact-us/terraware-support" target="_blank">Contact Us: Terraware</a> if issues persist. 
                 </mj-text>
-                <mj-text mj-class="text-body03">
-                    Please click the button below to go to your Terraware account where you can view
-                    the seed bank.</mj-text
-                >
-                <mj-button mj-class="btn-productive-primary-md" href="${facilityMonitoringUrl?no_esc}"
-                    >Go to Terraware</mj-button
-                >
+                <mj-include path="../link.ftlh.mjml" />
             </mj-column>
         </mj-section>
 

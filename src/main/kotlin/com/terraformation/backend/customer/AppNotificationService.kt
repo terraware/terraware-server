@@ -1,5 +1,7 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.customer.db.AutomationStore
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
@@ -10,13 +12,18 @@ import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.device.db.DeviceStore
+import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
+import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
@@ -35,7 +42,10 @@ import org.springframework.context.event.EventListener
 
 @ManagedBean
 class AppNotificationService(
+    private val automationStore: AutomationStore,
+    private val deviceStore: DeviceStore,
     private val dslContext: DSLContext,
+    private val facilityStore: FacilityStore,
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
@@ -53,6 +63,41 @@ class AppNotificationService(
     val message = messages.facilityIdle()
     insertFacilityNotifications(
         event.facilityId, NotificationType.FacilityIdle, message, facilityUrl)
+  }
+
+  @EventListener
+  fun on(event: SensorBoundsAlertTriggeredEvent) {
+    val automation = automationStore.fetchOneById(event.automationId)
+    val timeseriesName =
+        automation.timeseriesName
+            ?: throw IllegalStateException("Automation ${automation.id} has no timeseries name")
+    val deviceId =
+        automation.deviceId
+            ?: throw IllegalStateException("Automation ${automation.id} has no device ID")
+    val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val facility =
+        facilityStore.fetchById(automation.facilityId)
+            ?: throw FacilityNotFoundException(automation.facilityId)
+
+    val facilityUrl = webAppUrls.facilityMonitoring(facility.id)
+    val message = messages.sensorBoundsAlert(device, facility.name, timeseriesName, event.value)
+
+    insertFacilityNotifications(
+        facility.id, NotificationType.SensorOutOfBounds, message, facilityUrl)
+  }
+
+  @EventListener
+  fun on(event: UnknownAutomationTriggeredEvent) {
+    val automation = automationStore.fetchOneById(event.automationId)
+    val facility =
+        facilityStore.fetchById(automation.facilityId)
+            ?: throw FacilityNotFoundException(automation.facilityId)
+
+    val facilityUrl = webAppUrls.facilityMonitoring(facility.id)
+    val message = messages.unknownAutomationTriggered(automation.name, facility.name, event.message)
+
+    insertFacilityNotifications(
+        facility.id, NotificationType.UnknownAutomationTriggered, message, facilityUrl)
   }
 
   @EventListener

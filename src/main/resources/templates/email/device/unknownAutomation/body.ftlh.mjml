@@ -1,0 +1,23 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.UnknownAutomationTriggered" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    Automation ${automation.name} has been triggered at ${facility.name}.
+
+                    <!-- htmlmin:ignore --><#if message?has_content><!-- htmlmin:ignore -->
+                        <p>Additional details: ${message}</p>
+                    <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
+                </mj-text>
+                <mj-include path="../../facility/link.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

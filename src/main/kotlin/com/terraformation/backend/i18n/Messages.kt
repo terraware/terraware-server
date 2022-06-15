@@ -3,6 +3,7 @@ package com.terraformation.backend.i18n
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.SeedStorageBehavior
+import com.terraformation.backend.db.tables.pojos.DevicesRow
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -163,6 +164,41 @@ class Messages {
       NotificationMessage(
           title = "Device manager cannot be detected.",
           body = "Device manager is disconnected. Please check on it.")
+
+  fun sensorBoundsAlert(
+      device: DevicesRow,
+      facilityName: String,
+      timeseriesName: String,
+      value: Any
+  ): NotificationMessage =
+      NotificationMessage(
+          title =
+              when {
+                device.deviceType == "BMU" && timeseriesName == "relative_state_of_charge" ->
+                    "Low power warning for $facilityName"
+                else -> "${device.name} is out of range."
+              },
+          body =
+              when {
+                device.deviceType == "BMU" && timeseriesName == "relative_state_of_charge" ->
+                    "The relative state of charge of the solar power system is at $value%."
+                device.deviceType == "sensor" && timeseriesName == "humidity" ->
+                    "${device.name} has been or is at $value% RH for the past 5 minutes, which " +
+                        "is out of threshold. Please check on it."
+                device.deviceType == "sensor" && timeseriesName == "temperature" ->
+                    "${device.name} has been or is at $value°C for the past 5 minutes, which is " +
+                        "out of threshold. Please check on it."
+                else -> "$timeseriesName on ${device.name} is $value, which is out of threshold."
+              })
+
+  fun unknownAutomationTriggered(
+      automationName: String,
+      facilityName: String,
+      message: String?
+  ): NotificationMessage =
+      NotificationMessage(
+          title = "$automationName triggered at $facilityName",
+          body = message ?: "Please check on it.")
 
   private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
   private val validSeedStorageBehaviors =

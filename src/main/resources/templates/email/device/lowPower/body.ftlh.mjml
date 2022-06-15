@@ -1,0 +1,19 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.SensorBoundsAlert" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    The relative state of charge of the solar power system is at ${value}%.
+                </mj-text>
+                <mj-include path="../../facility/link.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>
