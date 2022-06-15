@@ -160,6 +160,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun triggerAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.triggerAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    assertThrows<AccessDeniedException> { requirements.triggerAutomation(automationId) }
+
+    grant { user.canTriggerAutomation(automationId) }
+    requirements.triggerAutomation(automationId)
+  }
+
+  @Test
   fun createFacility() {
     assertThrows<SiteNotFoundException> { requirements.createFacility(siteId) }
 

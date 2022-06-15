@@ -142,6 +142,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun triggerAutomation(automationId: AutomationId) {
+    if (!user.canTriggerAutomation(automationId)) {
+      readAutomation(automationId)
+      throw AccessDeniedException("No permission to trigger automation $automationId")
+    }
+  }
+
   fun createFacility(siteId: SiteId) {
     if (!user.canCreateFacility(siteId)) {
       readSite(siteId)

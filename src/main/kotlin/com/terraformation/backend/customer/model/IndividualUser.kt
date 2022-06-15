@@ -144,6 +144,10 @@ data class IndividualUser(
     return canAccessAutomation(automationId)
   }
 
+  override fun canTriggerAutomation(automationId: AutomationId): Boolean {
+    return canAccessAutomation(automationId)
+  }
+
   override fun canCreateFacility(siteId: SiteId): Boolean {
     val role = siteRoles[siteId]
     return role == Role.ADMIN || role == Role.OWNER
