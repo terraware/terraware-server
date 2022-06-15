@@ -1,0 +1,21 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionWithdrawal" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    ${accessionNumber} (located in ${facilityName}) is scheduled for a withdrawal
+                    today! Make sure to account for what seeds are withdrawn in Terraware to keep
+                    your seed inventory accurate.
+                </mj-text>
+                <mj-include path="../link.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

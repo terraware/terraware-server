@@ -194,7 +194,10 @@ val generatePostgresDockerConfig by
 
 val processMjmlTasks =
     project
-        .files(fileTree("$projectDir/src/main/resources/templates/email") { include("*/*.mjml") })
+        .files(
+            fileTree("$projectDir/src/main/resources/templates/email") {
+              include("**/body.ftlh.mjml")
+            })
         .mapIndexed { index, mjmlFile ->
           tasks.register<YarnTask>("compileMjml$index") {
             // The upper levels of directory structure are a little different in the src and build

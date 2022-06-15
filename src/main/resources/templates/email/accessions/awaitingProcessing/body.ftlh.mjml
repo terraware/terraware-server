@@ -1,0 +1,27 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionsAwaitingProcessing" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    <!-- htmlmin:ignore --><#if numAccessions == 1><!-- htmlmin:ignore -->
+                    ${organizationName} has 1 accession that has been waiting since drop off for at
+                    least 1 week and is ready to be processed. Please check it in for processing
+                    now.
+                    <!-- htmlmin:ignore --><#else><!-- htmlmin:ignore -->
+                    ${organizationName} has ${numAccessions} accessions that have been waiting since
+                    drop off for at least 1 week and are ready to be processed. Please check them in
+                    for processing now.
+                    <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
+                </mj-text>
+                <mj-include path="../link.ftlh.mjml" />
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

@@ -88,7 +88,7 @@ class EmailNotificationService(
 
     emailService.sendFacilityNotification(
         event.facilityId,
-        "facilityAlert",
+        "facility/alert",
         FacilityAlertRequested(config, event.body, facility, requestedByUser, event.subject))
   }
 
@@ -104,7 +104,7 @@ class EmailNotificationService(
                 parentStore.getOrganizationId(event.facilityId)!!, event.facilityId)
             .toString()
     emailService.sendFacilityNotification(
-        facility.id, "facilityIdle", FacilityIdle(config, facility, facilityMonitoringUrl))
+        facility.id, "facility/idle", FacilityIdle(config, facility, facilityMonitoringUrl))
   }
 
   @EventListener
@@ -119,7 +119,7 @@ class EmailNotificationService(
 
     emailService.sendUserNotification(
         user,
-        "userAddedToOrganization",
+        "user/addedToOrganization",
         UserAddedToOrganization(config, admin, organization, organizationHomeUrl),
         requireOptIn = false)
   }
@@ -139,7 +139,7 @@ class EmailNotificationService(
 
     emailService.sendUserNotification(
         user,
-        "userAddedToProject",
+        "user/addedToProject",
         UserAddedToProject(config, admin, project, organization, organizationProjectUrl))
   }
 
@@ -152,7 +152,7 @@ class EmailNotificationService(
       accessionDatePendingEmails.add(
           EmailRequest(
               user,
-              "accessionMoveToDry",
+              "accession/moveToDry",
               AccessionMoveToDry(config, event.accessionNumber, facilityName, accessionUrl)))
     }
   }
@@ -166,7 +166,7 @@ class EmailNotificationService(
       accessionDatePendingEmails.add(
           EmailRequest(
               user,
-              "accessionDryingEnd",
+              "accession/dryingEnd",
               AccessionDryingEnd(config, event.accessionNumber, facilityName, accessionUrl)))
     }
   }
@@ -188,7 +188,7 @@ class EmailNotificationService(
       accessionDatePendingEmails.add(
           EmailRequest(
               user,
-              "accessionGerminationTest",
+              "accession/germinationTest",
               AccessionGerminationTest(
                   config, event.accessionNumber, testType, facilityName, accessionUrl)))
     }
@@ -203,7 +203,7 @@ class EmailNotificationService(
       accessionDatePendingEmails.add(
           EmailRequest(
               user,
-              "accessionWithdrawal",
+              "accession/withdrawal",
               AccessionWithdrawal(config, event.accessionNumber, facilityName, accessionUrl)))
     }
   }
@@ -217,7 +217,7 @@ class EmailNotificationService(
       accessionStatePendingEmails.add(
           EmailRequest(
               user,
-              "accessionsAwaitingProcessing",
+              "accessions/awaitingProcessing",
               AccessionsAwaitingProcessing(
                   config, event.numAccessions, organization.name!!, accessionsUrl)))
     }
@@ -232,7 +232,7 @@ class EmailNotificationService(
       accessionStatePendingEmails.add(
           EmailRequest(
               user,
-              "accessionsReadyForTesting",
+              "accessions/readyForTesting",
               AccessionsReadyForTesting(
                   config, event.numAccessions, event.weeks, organization.name!!, accessionsUrl)))
     }
@@ -247,7 +247,7 @@ class EmailNotificationService(
       accessionStatePendingEmails.add(
           EmailRequest(
               user,
-              "accessionsFinishedDrying",
+              "accessions/finishedDrying",
               AccessionsFinishedDrying(
                   config, event.numAccessions, organization.name!!, accessionsUrl)))
     }
