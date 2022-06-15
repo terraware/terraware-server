@@ -12,8 +12,14 @@ import com.terraformation.backend.customer.model.TerrawareUser
  * includes all the values that are used by the generic header and footer sections but aren't
  * related to the main content of the email.
  */
-open class EmailTemplateModel(config: TerrawareServerConfig) {
+abstract class EmailTemplateModel(config: TerrawareServerConfig) {
   val webAppUrl: String = "${config.webAppUrl}".trimEnd('/')
+
+  /**
+   * Subdirectory of `src/main/resources/templates/email` containing the Freemarker templates to
+   * render.
+   */
+  abstract val templateDir: String
 }
 
 class FacilityAlertRequested(
@@ -22,20 +28,29 @@ class FacilityAlertRequested(
     val facility: FacilityModel,
     val requestedBy: TerrawareUser,
     val subject: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "facility/alert"
+}
 
 class FacilityIdle(
     config: TerrawareServerConfig,
     val facility: FacilityModel,
     val facilityMonitoringUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "facility/idle"
+}
 
 class UserAddedToOrganization(
     config: TerrawareServerConfig,
     val admin: IndividualUser,
     val organization: OrganizationModel,
     val organizationHomeUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "user/addedToOrganization"
+}
 
 class UserAddedToProject(
     config: TerrawareServerConfig,
@@ -43,21 +58,30 @@ class UserAddedToProject(
     val project: ProjectModel,
     val organization: OrganizationModel,
     val organizationProjectUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "user/addedToProject"
+}
 
 class AccessionMoveToDry(
     config: TerrawareServerConfig,
     val accessionNumber: String,
     val facilityName: String,
     val accessionUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accession/moveToDry"
+}
 
 class AccessionDryingEnd(
     config: TerrawareServerConfig,
     val accessionNumber: String,
     val facilityName: String,
     val accessionUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accession/dryingEnd"
+}
 
 class AccessionGerminationTest(
     config: TerrawareServerConfig,
@@ -65,21 +89,30 @@ class AccessionGerminationTest(
     val testType: String,
     val facilityName: String,
     val accessionUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accession/germinationTest"
+}
 
 class AccessionWithdrawal(
     config: TerrawareServerConfig,
     val accessionNumber: String,
     val facilityName: String,
     val accessionUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accession/withdrawal"
+}
 
 class AccessionsAwaitingProcessing(
     config: TerrawareServerConfig,
     val numAccessions: Number,
     val organizationName: String,
     val accessionsUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accessions/awaitingProcessing"
+}
 
 class AccessionsReadyForTesting(
     config: TerrawareServerConfig,
@@ -87,11 +120,17 @@ class AccessionsReadyForTesting(
     val weeks: Int,
     val organizationName: String,
     val accessionsUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accessions/readyForTesting"
+}
 
 class AccessionsFinishedDrying(
     config: TerrawareServerConfig,
     val numAccessions: Number,
     val organizationName: String,
     val accessionsUrl: String,
-) : EmailTemplateModel(config)
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "accessions/finishedDrying"
+}
