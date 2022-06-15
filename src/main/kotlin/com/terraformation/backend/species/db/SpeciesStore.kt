@@ -5,6 +5,11 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.SpeciesProblemField
+import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
+import com.terraformation.backend.db.SpeciesProblemId
+import com.terraformation.backend.db.SpeciesProblemNotFoundException
+import com.terraformation.backend.db.SpeciesProblemType
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
@@ -91,6 +96,42 @@ class SpeciesStore(
         .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .fetch(SPECIES.ID)
         .filterNotNull()
+  }
+
+  /** Returns a list of problems for a particular species, if any. */
+  fun fetchProblemsBySpeciesId(speciesId: SpeciesId): List<SpeciesProblemsRow> {
+    requirePermissions { readSpecies(speciesId) }
+
+    return speciesProblemsDao.fetchBySpeciesId(speciesId)
+  }
+
+  /** Returns details of a single species problem. */
+  fun fetchProblemById(problemId: SpeciesProblemId): SpeciesProblemsRow {
+    val row = speciesProblemsDao.fetchOneById(problemId)
+    val speciesId = row?.speciesId ?: throw SpeciesProblemNotFoundException(problemId)
+
+    requirePermissions { readSpecies(speciesId) }
+
+    return row
+  }
+
+  /**
+   * Returns a map of all the problems with an organization's species. Species without problems are
+   * not included in the map.
+   */
+  fun findAllProblems(organizationId: OrganizationId): Map<SpeciesId, List<SpeciesProblemsRow>> {
+    requirePermissions { readOrganization(organizationId) }
+
+    return dslContext
+        .select(SPECIES_PROBLEMS.asterisk())
+        .from(SPECIES_PROBLEMS)
+        .join(SPECIES)
+        .on(SPECIES_PROBLEMS.SPECIES_ID.eq(SPECIES.ID))
+        .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .fetchInto(SpeciesProblemsRow::class.java)
+        .groupBy { row ->
+          row.speciesId ?: throw IllegalStateException("Species problem has no species ID")
+        }
   }
 
   /**
@@ -198,6 +239,15 @@ class SpeciesStore(
     }
   }
 
+  fun deleteProblem(problemId: SpeciesProblemId) {
+    val problem = speciesProblemsDao.fetchOneById(problemId)
+    val speciesId = problem?.speciesId ?: throw SpeciesProblemNotFoundException(problemId)
+
+    requirePermissions { updateSpecies(speciesId) }
+
+    speciesProblemsDao.deleteById(problemId)
+  }
+
   /**
    * Records the result of checking a species for problems. Inserts the problems, if any, into
    * `species_problems`, and sets the species' checked time so it won't be scanned again. Any
@@ -222,6 +272,34 @@ class SpeciesStore(
           .set(SPECIES.CHECKED_TIME, clock.instant())
           .where(SPECIES.ID.eq(speciesId))
           .execute()
+    }
+  }
+
+  fun acceptProblemSuggestion(problemId: SpeciesProblemId): SpeciesRow {
+    val problem = fetchProblemById(problemId)
+    val speciesId = problem.speciesId ?: throw SpeciesProblemNotFoundException(problemId)
+    val existingSpecies = fetchSpeciesById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
+
+    val fieldId = problem.fieldId ?: throw IllegalStateException("Species problem had no field")
+    val typeId = problem.typeId ?: throw IllegalStateException("Species problem had no type")
+
+    val correctedSpecies =
+        when (typeId) {
+          SpeciesProblemType.NameNotFound -> throw SpeciesProblemHasNoSuggestionException(problemId)
+          SpeciesProblemType.NameIsSynonym,
+          SpeciesProblemType.NameMisspelled -> {
+            // Only one field defined right now but use a "when" so this will break the build if
+            // we add a second field and forget to handle it here.
+            when (fieldId) {
+              SpeciesProblemField.ScientificName ->
+                  existingSpecies.copy(scientificName = problem.suggestedValue)
+            }
+          }
+        }
+
+    return dslContext.transactionResult { _ ->
+      deleteProblem(problemId)
+      updateSpecies(correctedSpecies)
     }
   }
 }
