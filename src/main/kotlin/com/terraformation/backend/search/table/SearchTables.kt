@@ -39,6 +39,7 @@ class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
   val projectUsers = ProjectUsersTable(this, fuzzySearchOperators)
   val sites = SitesTable(this, fuzzySearchOperators)
   val species = SpeciesTable(this, fuzzySearchOperators)
+  val speciesProblems = SpeciesProblemsTable(this, fuzzySearchOperators)
   val storageLocations = StorageLocationsTable(this, fuzzySearchOperators)
   val users = UsersTable(this, fuzzySearchOperators)
   val withdrawals = WithdrawalsTable(this, fuzzySearchOperators)

@@ -114,6 +114,16 @@ VALUES (1, 'Wild'),
        (2, 'Outplant')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO species_problem_fields (id, name)
+VALUES (1, 'Scientific Name')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO species_problem_types (id, name)
+VALUES (1, 'Name Misspelled'),
+       (2, 'Name Not Found'),
+       (3, 'Name Is Synonym')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO storage_conditions (id, name)
 VALUES (1, 'Refrigerator'),
        (2, 'Freezer')

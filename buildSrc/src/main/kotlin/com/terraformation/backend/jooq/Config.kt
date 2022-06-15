@@ -61,6 +61,8 @@ val ENUM_TABLES =
             listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),
         EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
         EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
+        EnumTable("species_problem_fields", "species_problems\\.field_id"),
+        EnumTable("species_problem_types", "species_problems\\.type_id"),
         EnumTable(
             "storage_conditions",
             listOf("accessions\\.target_storage_condition", "storage_locations\\.condition_id")),
@@ -105,6 +107,7 @@ val ID_WRAPPERS =
         IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
         IdWrapper("SiteId", listOf("sites\\.id", ".*\\.site_id")),
         IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
+        IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
         IdWrapper(
             "StorageLocationId", listOf("storage_locations\\.id", ".*\\.storage_location_id")),
         IdWrapper("ThumbnailId", listOf("thumbnails\\.id")),
