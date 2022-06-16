@@ -130,6 +130,17 @@ internal class GbifStoreTest : DatabaseTest() {
       val actual = store.findNamesByWordPrefixes(listOf("species"), maxResults = 2)
       assertEquals(expected, actual)
     }
+
+    @Test
+    fun `does not return duplicate scientific names`() {
+      insertTaxon(1, "Species a", fullScientificName = "Species a (Someone 1985)")
+      insertTaxon(2, "Species a", fullScientificName = "Species a (Someone else 1986)")
+
+      val expected = listOf(namesRow(1, 1, "Species a"))
+
+      val actual = store.findNamesByWordPrefixes(listOf("species"))
+      assertEquals(expected, actual)
+    }
   }
 
   @Nested
@@ -194,13 +205,14 @@ internal class GbifStoreTest : DatabaseTest() {
       commonNames: Collection<Pair<String, String?>> = emptyList(),
       familyName: String = scientificName.substringBefore(' '),
       threatStatus: String? = null,
+      fullScientificName: String = scientificName,
   ): GbifTaxonId {
     val taxonId = id.toIdWrapper { GbifTaxonId(it) }
 
     dslContext
         .insertInto(GBIF_TAXA)
         .set(GBIF_TAXA.TAXON_ID, taxonId)
-        .set(GBIF_TAXA.SCIENTIFIC_NAME, scientificName)
+        .set(GBIF_TAXA.SCIENTIFIC_NAME, fullScientificName)
         .set(GBIF_TAXA.FAMILY, familyName)
         .set(GBIF_TAXA.TAXON_RANK, "species")
         .set(GBIF_TAXA.TAXONOMIC_STATUS, "accepted")
