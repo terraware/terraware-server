@@ -54,7 +54,8 @@ class GbifStore(private val dslContext: DSLContext) {
     // order-sensitive, but we don't require them to start at the beginning of the name. That is,
     // this search should match species 'Abc def' and 'Xyz abc var. def' but not species 'Def abc'.
 
-    val selectFrom = dslContext.selectDistinct(GBIF_NAMES.asterisk()).from(GBIF_NAMES)
+    val selectFrom =
+        dslContext.selectDistinct(GBIF_NAMES.asterisk()).on(GBIF_NAMES.NAME).from(GBIF_NAMES)
 
     // A separate table alias for each prefix
     val wordsAliases = normalizedPrefixes.indices.map { GBIF_NAME_WORDS.`as`("gnw_$it") }
