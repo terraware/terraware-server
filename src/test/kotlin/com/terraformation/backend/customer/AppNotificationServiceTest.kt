@@ -22,6 +22,7 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.NotificationId
@@ -645,13 +646,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
     insertProjectUser(user.userId, projectId, user.userId)
-    insertDevice(deviceId, facilityId, deviceName)
+    insertDevice(deviceId, facilityId, deviceName, type = "sensor")
 
     every { messages.deviceUnresponsive(deviceName) } returns
         NotificationMessage("unresponsive title", "unresponsive body")
 
     service.on(DeviceUnresponsiveEvent(deviceId, Instant.EPOCH, Duration.ofSeconds(1)))
 
+    val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
     val expectedNotifications =
         listOf(
             NotificationsRow(
@@ -661,7 +663,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 title = "unresponsive title",
                 body = "unresponsive body",
-                localUrl = webAppUrls.facilityMonitoring(facilityId),
+                localUrl = webAppUrls.facilityMonitoring(facilityId, device),
                 createdTime = Instant.EPOCH,
                 isRead = false))
 

@@ -350,13 +350,14 @@ abstract class DatabaseTest {
       facilityId: Any = "$id".toLong() / 10,
       name: String = "device $id",
       createdBy: UserId = currentUser().userId,
+      type: String = "type"
   ) {
     with(DEVICES) {
       dslContext
           .insertInto(DEVICES)
           .set(ADDRESS, "address")
           .set(CREATED_BY, createdBy)
-          .set(DEVICE_TYPE, "type")
+          .set(DEVICE_TYPE, type)
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
           .set(ID, id.toIdWrapper { DeviceId(it) })
           .set(MAKE, "make")

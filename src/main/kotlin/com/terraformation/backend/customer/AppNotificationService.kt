@@ -80,7 +80,7 @@ class AppNotificationService(
         facilityStore.fetchById(automation.facilityId)
             ?: throw FacilityNotFoundException(automation.facilityId)
 
-    val facilityUrl = webAppUrls.facilityMonitoring(facility.id)
+    val facilityUrl = webAppUrls.facilityMonitoring(facility.id, device)
     val message = messages.sensorBoundsAlert(device, facility.name, timeseriesName, event.value)
 
     insertFacilityNotifications(
@@ -110,7 +110,7 @@ class AppNotificationService(
     val facilityId =
         device.facilityId ?: throw IllegalStateException("Device ${event.deviceId} has no facility")
 
-    val facilityUrl = webAppUrls.facilityMonitoring(facilityId)
+    val facilityUrl = webAppUrls.facilityMonitoring(facilityId, device)
     val message = messages.deviceUnresponsive(deviceName)
 
     insertFacilityNotifications(

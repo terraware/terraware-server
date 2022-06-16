@@ -129,7 +129,7 @@ class EmailNotificationService(
         parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
 
     val facilityMonitoringUrl =
-        webAppUrls.fullFacilityMonitoring(organizationId, facility.id).toString()
+        webAppUrls.fullFacilityMonitoring(organizationId, facility.id, device).toString()
 
     emailService.sendFacilityNotification(
         facility.id,
@@ -166,7 +166,7 @@ class EmailNotificationService(
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     val facilityMonitoringUrl =
-        webAppUrls.fullFacilityMonitoring(organizationId, facilityId).toString()
+        webAppUrls.fullFacilityMonitoring(organizationId, facilityId, device).toString()
 
     emailService.sendFacilityNotification(
         facilityId, DeviceUnresponsive(config, device, facility, facilityMonitoringUrl))
