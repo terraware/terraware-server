@@ -316,6 +316,8 @@ data class IndividualUser(
   }
 
   override fun canReadSpecies(speciesId: SpeciesId): Boolean {
+    // If this logic changes, make sure to also change code that bakes this rule into SQL queries
+    // for efficiency. Example: SpeciesStore.fetchUncheckedSpeciesIds
     val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
     return canReadOrganization(organizationId)
   }

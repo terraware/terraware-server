@@ -26,6 +26,7 @@ import com.terraformation.backend.db.tables.daos.ProjectUsersDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
+import com.terraformation.backend.db.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
 import com.terraformation.backend.db.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.tables.daos.TimeseriesDao
@@ -216,6 +217,7 @@ abstract class DatabaseTest {
   protected val projectUsersDao: ProjectUsersDao by lazyDao()
   protected val sitesDao: SitesDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
+  protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()
   protected val thumbnailsDao: ThumbnailsDao by lazyDao()
   protected val timeseriesDao: TimeseriesDao by lazyDao()
@@ -414,6 +416,7 @@ abstract class DatabaseTest {
       modifiedTime: Instant = Instant.EPOCH,
       organizationId: Any = "$speciesId".toLong() / 10,
       deletedTime: Instant? = null,
+      checkedTime: Instant? = null,
   ) {
     val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -421,6 +424,7 @@ abstract class DatabaseTest {
     with(SPECIES) {
       dslContext
           .insertInto(SPECIES)
+          .set(CHECKED_TIME, checkedTime)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
           .set(DELETED_BY, if (deletedTime != null) createdBy else null)

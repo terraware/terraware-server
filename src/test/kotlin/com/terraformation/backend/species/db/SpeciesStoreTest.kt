@@ -36,7 +36,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store = SpeciesStore(clock, dslContext, speciesDao)
+    store = SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
 
     every { clock.instant() } returns Instant.EPOCH
 
@@ -299,6 +299,17 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     store.deleteSpecies(speciesId)
 
     assertNull(store.fetchSpeciesById(speciesId))
+  }
+
+  @Test
+  fun `fetchAllUncheckedSpecies only returns unchecked species`() {
+    val checkedSpeciesId = SpeciesId(1)
+    val uncheckedSpeciesId = SpeciesId(2)
+
+    insertSpecies(checkedSpeciesId, organizationId = organizationId, checkedTime = Instant.EPOCH)
+    insertSpecies(uncheckedSpeciesId, organizationId = organizationId)
+
+    assertEquals(listOf(uncheckedSpeciesId), store.fetchUncheckedSpeciesIds(organizationId))
   }
 
   @Test

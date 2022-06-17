@@ -69,8 +69,11 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.species.SpeciesService
+import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.net.URI
@@ -132,10 +135,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun init() {
     parentStore = ParentStore(dslContext)
 
-    val speciesStore = SpeciesStore(clock, dslContext, speciesDao)
+    val speciesStore = SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
+    val speciesChecker: SpeciesChecker = mockk()
 
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
+
+    every { speciesChecker.checkSpecies(any()) } just Runs
+    every { speciesChecker.recheckSpecies(any(), any()) } just Runs
 
     every { user.canCreateAccession(any()) } returns true
     every { user.canCreateSpecies(organizationId) } returns true
@@ -154,7 +161,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
             parentStore,
-            SpeciesService(speciesStore),
+            SpeciesService(dslContext, speciesChecker, speciesStore),
             WithdrawalStore(dslContext, clock),
             clock,
         )

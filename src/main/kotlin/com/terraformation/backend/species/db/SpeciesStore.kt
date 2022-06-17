@@ -6,8 +6,11 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.tables.daos.SpeciesDao
+import com.terraformation.backend.db.tables.daos.SpeciesProblemsDao
+import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
@@ -24,6 +27,7 @@ class SpeciesStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val speciesDao: SpeciesDao,
+    private val speciesProblemsDao: SpeciesProblemsDao,
 ) {
   private val log = perClassLogger()
 
@@ -72,6 +76,21 @@ class SpeciesStore(
         .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
         .fetchInto(SpeciesRow::class.java)
+  }
+
+  /**
+   * Returns a list of IDs of species that haven't yet been checked for possible suggested edits.
+   */
+  fun fetchUncheckedSpeciesIds(organizationId: OrganizationId): List<SpeciesId> {
+    requirePermissions { readOrganization(organizationId) }
+
+    return dslContext
+        .select(SPECIES.ID)
+        .from(SPECIES)
+        .where(SPECIES.CHECKED_TIME.isNull)
+        .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .fetch(SPECIES.ID)
+        .filterNotNull()
   }
 
   /**
@@ -176,6 +195,33 @@ class SpeciesStore(
 
     if (rowsUpdated != 1) {
       throw SpeciesNotFoundException(speciesId)
+    }
+  }
+
+  /**
+   * Records the result of checking a species for problems. Inserts the problems, if any, into
+   * `species_problems`, and sets the species' checked time so it won't be scanned again. Any
+   * existing problems are discarded.
+   */
+  fun updateProblems(speciesId: SpeciesId, problems: Collection<SpeciesProblemsRow>) {
+    requirePermissions { updateSpecies(speciesId) }
+
+    val problemsWithMetadata =
+        problems.map { it.copy(speciesId = speciesId, createdTime = clock.instant()) }
+
+    dslContext.transaction { _ ->
+      dslContext
+          .deleteFrom(SPECIES_PROBLEMS)
+          .where(SPECIES_PROBLEMS.SPECIES_ID.eq(speciesId))
+          .execute()
+
+      speciesProblemsDao.insert(problemsWithMetadata)
+
+      dslContext
+          .update(SPECIES)
+          .set(SPECIES.CHECKED_TIME, clock.instant())
+          .where(SPECIES.ID.eq(speciesId))
+          .execute()
     }
   }
 }
