@@ -30,7 +30,7 @@ import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.toActiveEnum
-import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.LocalDate
@@ -54,7 +54,7 @@ class AccessionStore(
     private val geolocationStore: GeolocationStore,
     private val germinationStore: GerminationStore,
     private val parentStore: ParentStore,
-    private val speciesStore: SpeciesStore,
+    private val speciesService: SpeciesService,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
 ) {
@@ -203,7 +203,7 @@ class AccessionStore(
               val appDeviceId =
                   accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
               val speciesId =
-                  accession.species?.let { speciesStore.getOrCreateSpecies(organizationId, it) }
+                  accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
               val state = AccessionState.AwaitingCheckIn
 
               val accessionId =
@@ -357,7 +357,8 @@ class AccessionStore(
 
       insertStateHistory(existing, accession)
 
-      val speciesId = accession.species?.let { speciesStore.getOrCreateSpecies(organizationId, it) }
+      val speciesId =
+          accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
 
       val rowsUpdated =
           with(ACCESSIONS) {

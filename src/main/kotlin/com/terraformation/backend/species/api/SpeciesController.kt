@@ -13,6 +13,7 @@ import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.seedbank.api.ValuesController
+import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -48,7 +49,10 @@ import org.springframework.web.bind.annotation.RestController
 @SeedBankAppEndpoint
 @RequestMapping("/api/v1/species")
 @RestController
-class SpeciesController(private val speciesStore: SpeciesStore) {
+class SpeciesController(
+    private val speciesService: SpeciesService,
+    private val speciesStore: SpeciesStore,
+) {
   @GetMapping
   @Operation(summary = "Lists all the species available in an organization.")
   fun listSpecies(
@@ -68,7 +72,7 @@ class SpeciesController(private val speciesStore: SpeciesStore) {
   @PostMapping
   fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
     try {
-      val speciesId = speciesStore.createSpecies(payload.toRow())
+      val speciesId = speciesService.createSpecies(payload.toRow())
       return CreateSpeciesResponsePayload(speciesId)
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
@@ -102,7 +106,7 @@ class SpeciesController(private val speciesStore: SpeciesStore) {
       @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesStore.updateSpecies(payload.toRow(speciesId))
+    speciesService.updateSpecies(payload.toRow(speciesId))
     return SimpleSuccessResponsePayload()
   }
 

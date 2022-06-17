@@ -17,7 +17,6 @@ import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -274,35 +273,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `getOrCreateSpecies returns existing species ID for organization`() {
-    val speciesId = SpeciesId(1)
-    val scientificName = "test"
-
-    insertSpecies(speciesId.value, scientificName = scientificName, organizationId = organizationId)
-
-    assertEquals(speciesId, store.getOrCreateSpecies(organizationId, scientificName))
-  }
-
-  @Test
-  fun `getOrCreateSpecies creates new species if it does not exist in organization`() {
-    val otherOrgId = OrganizationId(2)
-    val otherOrgSpeciesId = SpeciesId(10)
-    val scientificName = "test"
-
-    insertOrganization(otherOrgId.value)
-    insertSpecies(
-        otherOrgSpeciesId.value,
-        scientificName = scientificName,
-        organizationId = otherOrgId.value,
-    )
-
-    val speciesId = store.getOrCreateSpecies(organizationId, scientificName)
-
-    assertNotNull(speciesId, "Should have created species")
-    assertNotEquals(otherOrgSpeciesId, speciesId, "Should not use species ID from other org")
-  }
-
-  @Test
   fun `fetchSpeciesById returns species if it is not deleted`() {
     val speciesId =
         store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "test"))
@@ -346,7 +316,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     assertThrows<OrganizationNotFoundException> {
-      store.getOrCreateSpecies(organizationId, scientificName)
+      store.fetchSpeciesIdByName(organizationId, scientificName)
     }
 
     assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
