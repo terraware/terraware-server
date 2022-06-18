@@ -19,14 +19,21 @@
                     make: "Blue Ion",
                     model: "LV",
                     name: "BMU-1",
-                    address: "192.168.10.40",
+                    address: "192.168.2.40",
                     protocol: "modbus"
                 },
                 omniSense: {
                     type: "sensor",
                     make: "OmniSense",
                     model: "S-11"
-                }
+                },
+                omniSenseHub: {
+                    type: "hub",
+                    make: "OmniSense",
+                    model: "G-4",
+                    name: "OmniSense Hub",
+                    address: "192.168.2.30",
+                },
             };
 
             for (let elementName in configurations) {
@@ -137,7 +144,8 @@
     <div>
         Common configurations:
         <a href="#" id="blueIon">Blue Ion PV</a> -
-        <a href="#" id="omniSense">Temperature/Humidity Sensor</a>
+        <a href="#" id="omniSense">Temperature/Humidity Sensor</a> -
+        <a href="#" id="omniSenseHub">OmniSense Hub</a>
     </div>
 
     <div>

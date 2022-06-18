@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.db.DeviceTemplateCategory
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
@@ -37,6 +38,19 @@ data class FacilityModel(
       record[FACILITIES.LAST_TIMESERIES_TIME],
       record[FACILITIES.MAX_IDLE_MINUTES]
           ?: throw IllegalArgumentException("Max idle minutes is required"))
+
+  /**
+   * The device template category that holds the list of default devices to create when a sensor kit
+   * is connected to this facility. Null if the facility doesn't need default devices. Currently,
+   * this is based on facility type.
+   */
+  val defaultDeviceTemplateCategory: DeviceTemplateCategory?
+    get() =
+        when (type) {
+          FacilityType.SeedBank -> DeviceTemplateCategory.SeedBankDefault
+          FacilityType.Desalination,
+          FacilityType.ReverseOsmosis -> null
+        }
 }
 
 fun FacilitiesRow.toModel(): FacilityModel {

@@ -32,7 +32,8 @@
     <tbody>
     <tr th:each="template : ${templates}">
         <td>
-            <form th:action="|${prefix}/deviceTemplates|" method="POST" th:id="|template${template.id}|"
+            <form th:action="|${prefix}/deviceTemplates|" method="POST"
+                  th:id="|template${template.id}|"
                   th:if="${canUpdateDeviceTemplates}">
                 <input type="hidden" name="id" th:value="${template.id}"/>
             </form>
@@ -45,7 +46,8 @@
             <select name="categoryId" th:form="|template${template.id}|">
                 <option th:each="category : ${categories}"
                         th:selected="${template.categoryId == category}"
-                        th:text="${category.displayName}">PV
+                        th:text="${category.displayName}"
+                        th:value="${category.name}">PV
                 </option>
             </select>
         </td>
@@ -99,7 +101,8 @@
         <td></td>
         <td>
             <select name="categoryId" form="createTemplate">
-                <option th:each="category : ${categories}" th:text="${category.displayName}">PV
+                <option th:each="category : ${categories}" th:text="${category.displayName}"
+                        th:value="${category.name}">PV
                 </option>
             </select>
         </td>
