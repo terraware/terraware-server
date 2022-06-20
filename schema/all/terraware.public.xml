@@ -365,7 +365,7 @@
          </index>
          <checkConstraint constraint="((((user_id IS NOT NULL) AND (facility_id IS NOT NULL)) OR ((user_id IS NULL) AND (facility_id IS NULL))))" name="device_managers_user_iff_facility"/>
       </table>
-      <table name="device_template_categories" numRows="1" remarks="(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next." schema="public" type="TABLE">
+      <table name="device_template_categories" numRows="2" remarks="(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="category_id" foreignKey="device_templates_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_templates"/>
          </column>
