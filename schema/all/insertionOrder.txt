@@ -21,6 +21,8 @@ roles
 seed_storage_behaviors
 source_plant_origins
 species_endangered_types
+species_problem_fields
+species_problem_types
 timeseries_types
 upload_problem_types
 upload_statuses
@@ -34,8 +36,8 @@ projects
 sites
 facilities
 devices
-storage_locations
 species
+storage_locations
 accessions
 photos
 germination_tests
@@ -57,6 +59,7 @@ upload_problems
 accession_state_history
 automations
 notifications
+species_problems
 accession_notifications
 project_users
 organization_users

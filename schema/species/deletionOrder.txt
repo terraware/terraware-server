@@ -2,8 +2,11 @@ species_endangered_types
 rare_types
 gbif_vernacular_names
 gbif_distributions
-species
+species_problems
 gbif_name_words
+species
 gbif_names
+species_problem_types
+species_problem_fields
 organizations
 gbif_taxa

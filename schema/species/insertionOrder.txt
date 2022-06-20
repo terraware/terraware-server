@@ -1,8 +1,11 @@
 gbif_taxa
 organizations
+species_problem_fields
+species_problem_types
 gbif_names
-gbif_name_words
 species
+gbif_name_words
+species_problems
 gbif_distributions
 gbif_vernacular_names
 rare_types

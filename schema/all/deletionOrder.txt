@@ -4,6 +4,7 @@ withdrawals
 organization_users
 project_users
 accession_notifications
+species_problems
 notifications
 automations
 accession_state_history
@@ -25,8 +26,8 @@ notification_types
 germination_tests
 photos
 accessions
-species
 storage_locations
+species
 devices
 facilities
 sites
@@ -40,6 +41,8 @@ upload_types
 upload_statuses
 upload_problem_types
 timeseries_types
+species_problem_types
+species_problem_fields
 species_endangered_types
 source_plant_origins
 seed_storage_behaviors

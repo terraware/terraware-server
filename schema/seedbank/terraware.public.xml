@@ -589,8 +589,12 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="deleted_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="14" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="15" name="checked_time" nullable="true" remarks="If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey1" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species__not_checked_ix" unique="false">
             <column ascending="true" name="id"/>
          </index>
          <index name="species_organization_id_scientific_name_key" unique="true">

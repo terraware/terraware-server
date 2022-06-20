@@ -386,6 +386,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="checked_time">checked_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -413,6 +430,12 @@
                                 <tr>
                                     <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> species_pkey1</td>
                                     <td>Primary key</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>id</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>species__not_checked_ix</td>
+                                    <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>id</td>
                                 </tr>
@@ -446,7 +469,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="751,5,1076,533">
-<area shape="rect" id="node2" href="../../tables/species.html" target="_top" title="species" alt="" coords="313,413,707,923">
+<area shape="rect" id="node2" href="../../tables/species.html" target="_top" title="species" alt="" coords="313,413,707,952">
 <area shape="rect" id="node3" href="../../tables/growth_forms.html" target="_top" title="growth_forms" alt="" coords="42,600,233,717">
 <area shape="rect" id="node4" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="11,445,264,563">
 <area shape="rect" id="node5" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="5,735,269,852">
@@ -463,7 +486,7 @@
 <area shape="rect" id="node10" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="391,548,629,636">
 <area shape="rect" id="node11" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="391,795,629,883">
 <area shape="rect" id="node12" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="390,689,630,777">
-<area shape="rect" id="node13" href="../../tables/species.html" target="_top" title="species" alt="" coords="313,1005,707,1515">
+<area shape="rect" id="node13" href="../../tables/species.html" target="_top" title="species" alt="" coords="313,1005,707,1544">
 <area shape="rect" id="node14" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="401,443,619,531">
 <area shape="rect" id="node15" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="23,537,251,625">
 <area shape="rect" id="node3" href="../../tables/accession_notifications.html" target="_top" title="accession_notifications" alt="" coords="1161,111,1421,199">

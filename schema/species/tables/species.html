@@ -124,6 +124,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="species_problems.species_id references species.id via species_problems_species_id_fkey"><a href='species_problems.html'>species_problems</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">species_problems_species_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -374,6 +378,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="checked_time">checked_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -405,6 +426,12 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>species__not_checked_ix</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>id</td>
+                                </tr>
+                                <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> species_organization_id_scientific_name_key</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
@@ -428,14 +455,26 @@
                                 <h5>Close relationships within degrees of separation</h5>
                                 <ul class="nav nav-tabs pull-left ui-sortable-handle">
                                     <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,5,696,515">
-<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,37,259,155">
+<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,32,696,571">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,64,259,181">
+<area shape="rect" id="node3" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="740,5,959,211">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/species.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
+<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,5,696,544">
+<area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,37,259,155">
+<area shape="rect" id="node3" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="740,500,959,705">
+<area shape="rect" id="node4" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="370,561,629,649">
+<area shape="rect" id="node5" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="369,667,629,755">
+</map>
+                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
                             </div>

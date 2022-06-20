@@ -108,7 +108,9 @@
          </index>
       </table>
       <table name="species" numRows="0" remarks="Per-organization information about species." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="species_id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problems"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
          </column>
@@ -125,8 +127,12 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="deleted_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="14" name="deleted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="15" name="checked_time" nullable="true" remarks="If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey1" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species__not_checked_ix" unique="false">
             <column ascending="true" name="id"/>
          </index>
          <index name="species_organization_id_scientific_name_key" unique="true">
@@ -140,6 +146,47 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_endangered_type_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="species_problem_fields" numRows="1" remarks="(Enum) Species fields that can be scanned for problems." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="field_id" foreignKey="species_problems_field_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_problem_fields_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="species_problem_types" numRows="3" remarks="(Enum) Specific types of problems that can be detected in species data." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="type_id" foreignKey="species_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problems"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_problem_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="species_problems" numRows="0" remarks="Problems found in species data. Rows are deleted from this table when the problem is marked as ignored by the user or the user accepts the suggested fix." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="field_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_problems_field_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problem_fields"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problem_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="suggested_value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_problems_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species_problems_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
          </index>
       </table>
    </tables>
