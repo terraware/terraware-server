@@ -22,4 +22,4 @@ CREATE INDEX IF NOT EXISTS accession__number_trgm ON accessions USING gin (numbe
 CREATE INDEX IF NOT EXISTS gbif_names__name_trgm ON gbif_names USING gin (name gin_trgm_ops);
 
 -- Partial indexes.
-CREATE INDEX species__not_checked_ix ON species (id) WHERE checked_time IS NULL;
+CREATE INDEX IF NOT EXISTS species__not_checked_ix ON species (id) WHERE checked_time IS NULL;
