@@ -146,9 +146,28 @@ private constructor(
       throw IllegalArgumentException("Cannot set clock back to an earlier time")
     }
 
-    val adjustment = Duration.between(baseRealTime, baseFakeTime) + duration
+    val offset = Duration.between(baseRealTime, baseFakeTime) + duration
+    updateFakeTimeOffset(offset)
+
+    publisher.publishEvent(ClockAdvancedEvent(duration))
+  }
+
+  /** Resets the clock to the current system time. */
+  fun reset() {
+    requirePermissions { setTestClock() }
+
+    if (!useTestClock) {
+      throw IllegalStateException("Test clock is not enabled")
+    }
+
+    updateFakeTimeOffset(Duration.ZERO)
+
+    publisher.publishEvent(ClockResetEvent())
+  }
+
+  private fun updateFakeTimeOffset(offset: Duration) {
     val realTime = systemClock.instant()
-    val fakeTime = realTime + adjustment
+    val fakeTime = realTime + offset
 
     dslContext.transaction { _ ->
       dslContext.deleteFrom(TEST_CLOCK).execute()
@@ -163,7 +182,5 @@ private constructor(
       baseRealTime = realTime
       baseFakeTime = fakeTime
     }
-
-    publisher.publishEvent(ClockAdvancedEvent(duration))
   }
 }

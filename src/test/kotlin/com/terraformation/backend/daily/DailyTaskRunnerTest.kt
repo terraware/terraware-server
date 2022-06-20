@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.time.ClockResetEvent
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.justRun
@@ -30,8 +31,8 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
   private lateinit var task: TimePeriodTask
 
   private val now = Instant.parse("2021-01-01T00:00:00Z")
-  private val startTimeForFirstRun = Instant.parse("2020-01-01T00:00:00Z")
   private val maximumPeriod = Duration.ofDays(7)
+  private val startTimeForFirstRun = now - maximumPeriod
   private val timeoutPeriod = Duration.ofHours(4)
 
   @BeforeEach
@@ -133,5 +134,21 @@ internal class DailyTaskRunnerTest : DatabaseTest() {
     dailyTaskRunner.runTask(task)
 
     verify(exactly = 1) { task.processPeriod(any(), any()) }
+  }
+
+  @Test
+  fun `resetting clock causes next task run to scan for work based on updated time`() {
+    justRun { task.processPeriod(any(), any()) }
+
+    dailyTaskRunner.runTask(task)
+
+    val pastTime = now - Duration.ofDays(5)
+    every { clock.instant() } returns pastTime
+
+    dailyTaskRunner.handle(ClockResetEvent())
+
+    dailyTaskRunner.runTask(task)
+
+    verify(exactly = 1) { task.processPeriod(any(), pastTime) }
   }
 }

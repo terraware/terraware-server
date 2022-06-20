@@ -102,7 +102,21 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `publishes event when clock is adjusted`() {
+  fun `reset removes time offset`() {
+    dslContext
+        .insertInto(TEST_CLOCK)
+        .set(TEST_CLOCK.REAL_TIME, Instant.now())
+        .set(TEST_CLOCK.FAKE_TIME, Instant.EPOCH)
+        .execute()
+    clock.initialize(applicationStartedEvent)
+
+    clock.reset()
+
+    assertSameInstant(Instant.now(), clock.instant())
+  }
+
+  @Test
+  fun `publishes event when clock is advanced`() {
     val expectedAdjustment = Duration.ofMinutes(1)
 
     clock.initialize(applicationStartedEvent)
@@ -112,13 +126,21 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `publishes event when clock is reset`() {
+    clock.initialize(applicationStartedEvent)
+    clock.reset()
+
+    verify { publisher.publishEvent(ClockResetEvent()) }
+  }
+
+  @Test
   fun `does not allow clock to be advanced by a negative amount`() {
     clock.initialize(applicationStartedEvent)
     assertThrows<IllegalArgumentException> { clock.advance(Duration.ofSeconds(-1)) }
   }
 
   @Test
-  fun `does not allow clock to be set to an earlier time`() {
+  fun `does not allow clock to be advanced to an earlier time`() {
     clock.initialize(applicationStartedEvent)
     assertThrows<IllegalArgumentException> {
       clock.setFakeTime(clock.instant() - Duration.ofSeconds(1))
@@ -130,6 +152,13 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
     every { user.canSetTestClock() } returns false
 
     assertThrows<AccessDeniedException> { clock.advance(Duration.ofDays(5)) }
+  }
+
+  @Test
+  fun `reset throws exception if no permission to set test clock`() {
+    every { user.canSetTestClock() } returns false
+
+    assertThrows<AccessDeniedException> { clock.reset() }
   }
 
   /** Tests for default pass-through behavior. */
