@@ -2,6 +2,8 @@ package com.terraformation.backend.species.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponse409
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SeedBankAppEndpoint
@@ -11,6 +13,10 @@ import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
+import com.terraformation.backend.db.SpeciesProblemField
+import com.terraformation.backend.db.SpeciesProblemId
+import com.terraformation.backend.db.SpeciesProblemType
+import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.SpeciesService
@@ -60,7 +66,11 @@ class SpeciesController(
       @Schema(description = "Organization whose species should be listed.")
       organizationId: OrganizationId
   ): ListSpeciesResponsePayload {
-    val elements = speciesStore.findAllSpecies(organizationId).map { SpeciesResponseElement(it) }
+    val problems = speciesStore.findAllProblems(organizationId)
+    val elements =
+        speciesStore.findAllSpecies(organizationId).map {
+          SpeciesResponseElement(it, problems[it.id])
+        }
     return ListSpeciesResponsePayload(elements)
   }
 
@@ -92,8 +102,9 @@ class SpeciesController(
     val speciesRow =
         speciesStore.fetchSpeciesById(speciesId)
             ?: throw NotFoundException("Species $speciesId not found.")
+    val problems = speciesStore.fetchProblemsBySpeciesId(speciesId)
 
-    val element = SpeciesResponseElement(speciesRow)
+    val element = SpeciesResponseElement(speciesRow, problems)
     return GetSpeciesResponsePayload(element)
   }
 
@@ -135,6 +146,69 @@ class SpeciesController(
       throw ResourceInUseException("Species $speciesId is currently in use.")
     }
   }
+
+  @ApiResponse(responseCode = "200", description = "Problem retrieved.")
+  @ApiResponse404
+  @GetMapping("/problems/{problemId}")
+  @Operation(description = "Returns details about a problem with a species.")
+  fun getSpeciesProblem(
+      @PathVariable("problemId") problemId: SpeciesProblemId
+  ): GetSpeciesProblemResponsePayload {
+    val problem = speciesStore.fetchProblemById(problemId)
+    return GetSpeciesProblemResponsePayload(SpeciesProblemElement(problem))
+  }
+
+  @ApiResponse(
+      responseCode = "200",
+      description = "Suggestion applied. Response contains the updated species information.")
+  @ApiResponse404
+  @ApiResponse409("There is no suggested change for this problem.")
+  @Operation(
+      summary = "Applies suggested changes to fix a problem with a species.",
+      description = "Only valid for problems that include suggested changes.")
+  @PostMapping("/problems/{problemId}")
+  fun acceptProblemSuggestion(
+      @PathVariable("problemId") problemId: SpeciesProblemId
+  ): GetSpeciesResponsePayload {
+    val updatedRow = speciesStore.acceptProblemSuggestion(problemId)
+    val remainingProblems = speciesStore.fetchProblemsBySpeciesId(updatedRow.id!!)
+    return GetSpeciesResponsePayload(SpeciesResponseElement(updatedRow, remainingProblems))
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @DeleteMapping("/problems/{problemId}")
+  @Operation(
+      summary =
+          "Deletes information about a problem with a species without applying any suggested " +
+              "changes.")
+  fun deleteProblem(
+      @PathVariable("problemId") problemId: SpeciesProblemId
+  ): SimpleSuccessResponsePayload {
+    speciesStore.deleteProblem(problemId)
+    return SimpleSuccessResponsePayload()
+  }
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SpeciesProblemElement(
+    val id: SpeciesProblemId,
+    val field: SpeciesProblemField,
+    val type: SpeciesProblemType,
+    @Schema(
+        description =
+            "Value for the field in question that would correct the problem. Absent if the " +
+                "system is unable to calculate a corrected value.")
+    val suggestedValue: String?,
+) {
+  constructor(
+      row: SpeciesProblemsRow
+  ) : this(
+      field = row.fieldId!!,
+      id = row.id!!,
+      suggestedValue = row.suggestedValue,
+      type = row.typeId!!,
+  )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -144,18 +218,21 @@ data class SpeciesResponseElement(
     val familyName: String?,
     val growthForm: GrowthForm?,
     val id: SpeciesId,
+    val problems: List<SpeciesProblemElement>?,
     val rare: Boolean?,
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
 ) {
   constructor(
-      row: SpeciesRow
+      row: SpeciesRow,
+      problems: List<SpeciesProblemsRow>?,
   ) : this(
       commonName = row.commonName,
       endangered = row.endangered,
       familyName = row.familyName,
       growthForm = row.growthFormId,
       id = row.id!!,
+      problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
       rare = row.rare,
       scientificName = row.scientificName!!,
       seedStorageBehavior = row.seedStorageBehaviorId,
@@ -192,4 +269,7 @@ data class CreateSpeciesResponsePayload(val id: SpeciesId) : SuccessResponsePayl
 data class GetSpeciesResponsePayload(val species: SpeciesResponseElement) : SuccessResponsePayload
 
 data class ListSpeciesResponsePayload(val species: List<SpeciesResponseElement>) :
+    SuccessResponsePayload
+
+data class GetSpeciesProblemResponsePayload(val problem: SpeciesProblemElement) :
     SuccessResponsePayload

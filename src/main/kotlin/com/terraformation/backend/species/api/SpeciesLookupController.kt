@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.SpeciesProblemType
+import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
@@ -78,7 +80,8 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
     val model =
         gbifStore.fetchOneByScientificName(scientificName, language)
             ?: throw NotFoundException("No species found for scientific name")
-    return SpeciesLookupDetailsResponsePayload(model)
+    val problem = gbifStore.checkScientificName(scientificName)
+    return SpeciesLookupDetailsResponsePayload(model, problem)
   }
 }
 
@@ -116,12 +119,25 @@ data class SpeciesLookupDetailsResponsePayload(
                 "be endangered. This value will not be present if the server's taxonomic " +
                 "database doesn't indicate whether or not the species is endangered.")
     val endangered: Boolean?,
+    @Schema(
+        description =
+            "If this is not the accepted name for the species, the type of problem the name has. " +
+                "Currently, this will always be \"Name Is Synonym\".")
+    val problemType: SpeciesProblemType?,
+    @Schema(
+        description =
+            "If this is not the accepted name for the species, the name to suggest as an " +
+                "alternative.")
+    val suggestedScientificName: String?,
 ) {
   constructor(
-      model: GbifTaxonModel
+      model: GbifTaxonModel,
+      problem: SpeciesProblemsRow?,
   ) : this(
       model.scientificName,
       model.vernacularNames.map { SpeciesLookupCommonNamePayload(it) }.ifEmpty { null },
       model.familyName,
-      model.isEndangered)
+      model.isEndangered,
+      problem?.typeId,
+      problem?.suggestedValue)
 }
