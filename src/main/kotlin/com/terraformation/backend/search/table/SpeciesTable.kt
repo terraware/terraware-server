@@ -5,6 +5,7 @@ import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -22,12 +23,15 @@ class SpeciesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperat
       listOf(
           organizations.asSingleValueSublist(
               "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+          speciesProblems.asMultiValueSublist(
+              "problems", SPECIES.ID.eq(SPECIES_PROBLEMS.SPECIES_ID)),
       )
     }
   }
 
   override val fields: List<SearchField> =
       listOf(
+          timestampField("checkedTime", "Species checked time", SPECIES.CHECKED_TIME),
           textField("commonName", "Species common name", SPECIES.COMMON_NAME),
           booleanField("endangered", "Species is endangered", SPECIES.ENDANGERED),
           textField("familyName", "Species family name", SPECIES.FAMILY_NAME, nullable = false),

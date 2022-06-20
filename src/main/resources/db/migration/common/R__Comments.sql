@@ -139,8 +139,15 @@ COMMENT ON TABLE source_plant_origins IS '(Enum) Types of origins of plants from
 COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (coordinate) systems. Managed by the PostGIS extension, not the application.';
 
 COMMENT ON TABLE species IS 'Per-organization information about species.';
+COMMENT ON COLUMN species.checked_time IS 'If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet.';
 
 COMMENT ON TABLE species_endangered_types IS '(Enum) Possible values for the "Endangered" attribute of an accession. This is not used for plants whose locations are being tracked; see `conservation_statuses` instead.';
+
+COMMENT ON TABLE species_problem_fields IS '(Enum) Species fields that can be scanned for problems.';
+
+COMMENT ON TABLE species_problem_types IS '(Enum) Specific types of problems that can be detected in species data.';
+
+COMMENT ON TABLE species_problems IS 'Problems found in species data. Rows are deleted from this table when the problem is marked as ignored by the user or the user accepts the suggested fix.';
 
 COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Session, not the application.';
 
