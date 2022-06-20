@@ -933,6 +933,13 @@ class AdminController(
     return testClock()
   }
 
+  @PostMapping("/resetTestClock")
+  fun resetTestClock(redirectAttributes: RedirectAttributes): String {
+    clock.reset()
+    redirectAttributes.successMessage = "Test clock reset to real time and date."
+    return testClock()
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))

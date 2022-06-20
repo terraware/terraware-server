@@ -23,6 +23,11 @@
     <input type="submit" value="Do It!"/>
 </form>
 
+<p>
+<form method="POST" th:action="|${prefix}/resetTestClock|">
+    <input type="submit" value="Reset Clock to Current Time"/>
+</form>
+
 <h2>About the test clock</h2>
 
 <p>
@@ -55,6 +60,19 @@
         dates will be visible in the user interface. If you're testing and you forgot you advanced
         the clock, this might look like a bug ("the app is showing tomorrow's date, not today's
         like I expected").
+    </li>
+    <li>
+        Resetting the clock does not update any existing data. The future dates will still be
+        visible.
+    </li>
+    <li>
+        Some parts of the system keep track of the most recent time they did a particular kind of
+        work, so that the next time they run, they can catch up on anything that has happened since
+        the previous run. For example, the process that scans for recently-updated accessions only
+        looks for accessions that have changed since the last time it ran. Advancing the system
+        clock will cause the system to think that the most recent run is in the future. If you then
+        reset the clock, the system will think there's no work to do since it thinks it has already
+        caught up with everything.
     </li>
 </ul>
 </body>
