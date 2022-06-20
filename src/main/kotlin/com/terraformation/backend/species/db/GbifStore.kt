@@ -1,6 +1,11 @@
 package com.terraformation.backend.species.db
 
+import com.terraformation.backend.db.FuzzySearchOperators
+import com.terraformation.backend.db.SpeciesProblemField
+import com.terraformation.backend.db.SpeciesProblemType
+import com.terraformation.backend.db.UsesFuzzySearchOperators
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
+import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
 import com.terraformation.backend.db.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
@@ -13,7 +18,10 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 @ManagedBean
-class GbifStore(private val dslContext: DSLContext) {
+class GbifStore(
+    private val dslContext: DSLContext,
+    override val fuzzySearchOperators: FuzzySearchOperators
+) : UsesFuzzySearchOperators {
   /**
    * Returns the species names whose words begin with a list of prefixes.
    *
@@ -142,5 +150,80 @@ class GbifStore(private val dslContext: DSLContext) {
               threatStatus = record[GBIF_DISTRIBUTIONS.THREAT_STATUS],
           )
         }
+  }
+
+  /**
+   * Checks a scientific name for validity. If it's not valid, returns the details of the problem,
+   * possibly including a suggested fix.
+   *
+   * Attempts to suggest a properly-spelled name that is regarded as the accepted name for the
+   * species.
+   *
+   * @param [name] Scientific name to look up.
+   * @return A [SpeciesProblemsRow] with the [SpeciesProblemsRow.fieldId],
+   * [SpeciesProblemsRow.typeId], and [SpeciesProblemsRow.suggestedValue] fields populated.
+   */
+  fun checkScientificName(name: String): SpeciesProblemsRow? {
+    // Queries will be joining gbif_names against itself, so need to distinguish the two instances.
+    val gbifNames2 = GBIF_NAMES.`as`("gbif_names_2")
+
+    // Exact matches are faster than fuzzy ones, so be optimistic and see if the user already
+    // spelled the name correctly. This should be the case pretty often given that we support
+    // autocomplete in the UI.
+    val exactMatch =
+        dslContext
+            .select(gbifNames2.NAME)
+            .from(GBIF_NAMES)
+            .join(GBIF_TAXA)
+            .on(GBIF_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID))
+            .leftJoin(gbifNames2)
+            .on(GBIF_TAXA.ACCEPTED_NAME_USAGE_ID.eq(gbifNames2.TAXON_ID))
+            .and(gbifNames2.IS_SCIENTIFIC)
+            .where(GBIF_NAMES.IS_SCIENTIFIC)
+            .and(GBIF_NAMES.NAME.eq(name))
+            .fetchOne()
+
+    if (exactMatch != null) {
+      // If the name is obsolete, return the accepted name; otherwise the name is correct.
+      return exactMatch[gbifNames2.NAME]?.let { acceptedName ->
+        SpeciesProblemsRow(
+            fieldId = SpeciesProblemField.ScientificName,
+            typeId = SpeciesProblemType.NameIsSynonym,
+            suggestedValue = acceptedName)
+      }
+    }
+
+    val names =
+        dslContext
+            .select(gbifNames2.NAME, GBIF_NAMES.NAME)
+            .from(GBIF_NAMES)
+            .join(GBIF_TAXA)
+            .on(GBIF_NAMES.TAXON_ID.eq(GBIF_TAXA.TAXON_ID))
+            .leftJoin(gbifNames2)
+            .on(GBIF_TAXA.ACCEPTED_NAME_USAGE_ID.eq(gbifNames2.TAXON_ID))
+            .and(gbifNames2.IS_SCIENTIFIC)
+            .where(GBIF_NAMES.IS_SCIENTIFIC)
+            .and(GBIF_NAMES.NAME.likeFuzzy(name))
+            .orderBy(GBIF_NAMES.NAME.similarity(name).desc())
+            .limit(1)
+            .fetchOne()
+
+    return if (names != null) {
+      val (acceptedName, correctedName) = names
+      if (acceptedName != null) {
+        SpeciesProblemsRow(
+            fieldId = SpeciesProblemField.ScientificName,
+            typeId = SpeciesProblemType.NameIsSynonym,
+            suggestedValue = acceptedName)
+      } else {
+        SpeciesProblemsRow(
+            fieldId = SpeciesProblemField.ScientificName,
+            typeId = SpeciesProblemType.NameMisspelled,
+            suggestedValue = correctedName)
+      }
+    } else {
+      SpeciesProblemsRow(
+          fieldId = SpeciesProblemField.ScientificName, typeId = SpeciesProblemType.NameNotFound)
+    }
   }
 }

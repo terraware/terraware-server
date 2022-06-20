@@ -3,7 +3,11 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GbifNameId
 import com.terraformation.backend.db.GbifTaxonId
+import com.terraformation.backend.db.PostgresFuzzySearchOperators
+import com.terraformation.backend.db.SpeciesProblemField
+import com.terraformation.backend.db.SpeciesProblemType
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
+import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
 import com.terraformation.backend.db.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
@@ -20,7 +24,7 @@ import org.junit.jupiter.api.assertThrows
 internal class GbifStoreTest : DatabaseTest() {
   override val tablesToResetSequences = listOf(GBIF_NAMES)
 
-  private val store: GbifStore by lazy { GbifStore(dslContext) }
+  private val store: GbifStore by lazy { GbifStore(dslContext, PostgresFuzzySearchOperators()) }
 
   @Nested
   inner class FindNamesByWordPrefixes {
@@ -199,6 +203,79 @@ internal class GbifStoreTest : DatabaseTest() {
     }
   }
 
+  @Nested
+  inner class GetSuggestedScientificName {
+    @Test
+    fun `returns null if name is already correct`() {
+      val scientificName = "Scientific name"
+      insertTaxon(1, scientificName)
+
+      val actual = store.checkScientificName(scientificName)
+      assertNull(actual)
+    }
+
+    @Test
+    fun `returns not-found problem if there are no close matches`() {
+      insertTaxon(1, "Scientific name")
+
+      val expected =
+          SpeciesProblemsRow(
+              fieldId = SpeciesProblemField.ScientificName,
+              typeId = SpeciesProblemType.NameNotFound)
+
+      val actual = store.checkScientificName("Nowhere close")
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns suggested name if it is a close match`() {
+      val scientificName = "Scientific name"
+      insertTaxon(1, scientificName)
+
+      val expected =
+          SpeciesProblemsRow(
+              fieldId = SpeciesProblemField.ScientificName,
+              typeId = SpeciesProblemType.NameMisspelled,
+              suggestedValue = scientificName)
+
+      val actual = store.checkScientificName("Scietific nam")
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns accepted name if input is a synonym`() {
+      val newName = "New name"
+      val oldName = "Older synonym"
+      insertTaxon(1, oldName, taxonomicStatus = "synonym", acceptedNameUsageId = 2)
+      insertTaxon(2, newName)
+
+      val expected =
+          SpeciesProblemsRow(
+              fieldId = SpeciesProblemField.ScientificName,
+              typeId = SpeciesProblemType.NameIsSynonym,
+              suggestedValue = newName)
+
+      val actual = store.checkScientificName(oldName)
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `returns accepted name if input is a misspelled synonym`() {
+      val newName = "New name"
+      insertTaxon(1, "Correct synonym", taxonomicStatus = "synonym", acceptedNameUsageId = 2)
+      insertTaxon(2, newName)
+
+      val expected =
+          SpeciesProblemsRow(
+              fieldId = SpeciesProblemField.ScientificName,
+              typeId = SpeciesProblemType.NameIsSynonym,
+              suggestedValue = newName)
+
+      val actual = store.checkScientificName("Corect synonm")
+      assertEquals(expected, actual)
+    }
+  }
+
   private fun insertTaxon(
       id: Any,
       scientificName: String,
@@ -206,6 +283,8 @@ internal class GbifStoreTest : DatabaseTest() {
       familyName: String = scientificName.substringBefore(' '),
       threatStatus: String? = null,
       fullScientificName: String = scientificName,
+      acceptedNameUsageId: Any? = null,
+      taxonomicStatus: String = "accepted",
   ): GbifTaxonId {
     val taxonId = id.toIdWrapper { GbifTaxonId(it) }
 
@@ -215,7 +294,8 @@ internal class GbifStoreTest : DatabaseTest() {
         .set(GBIF_TAXA.SCIENTIFIC_NAME, fullScientificName)
         .set(GBIF_TAXA.FAMILY, familyName)
         .set(GBIF_TAXA.TAXON_RANK, "species")
-        .set(GBIF_TAXA.TAXONOMIC_STATUS, "accepted")
+        .set(GBIF_TAXA.TAXONOMIC_STATUS, taxonomicStatus)
+        .set(GBIF_TAXA.ACCEPTED_NAME_USAGE_ID, acceptedNameUsageId?.toIdWrapper { GbifTaxonId(it) })
         .execute()
 
     insertName(taxonId, scientificName, true)
