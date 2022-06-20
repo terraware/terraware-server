@@ -18,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException
 class DeviceManagerService(
     private val balenaClient: BalenaClient,
     private val deviceManagerStore: DeviceManagerStore,
+    private val deviceService: DeviceService,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     private val parentStore: ParentStore,
@@ -43,6 +44,8 @@ class DeviceManagerService(
 
       facilityStore.updateConnectionState(
           facilityId, FacilityConnectionState.NotConnected, FacilityConnectionState.Connected)
+
+      deviceService.createDefaultDevices(facilityId)
 
       val apiUser = userStore.createApiClient(organizationId, "Balena ${manager.balenaUuid}")
       val userId = apiUser.userId

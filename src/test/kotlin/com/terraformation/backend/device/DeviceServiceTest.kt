@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.AutomationStore
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.AutomationModel.Companion.DEVICE_ID_KEY
 import com.terraformation.backend.customer.model.AutomationModel.Companion.LOWER_THRESHOLD_KEY
@@ -14,9 +15,13 @@ import com.terraformation.backend.customer.model.AutomationModel.Companion.UPPER
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.DeviceTemplateCategory
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.tables.pojos.AutomationsRow
+import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.mockUser
@@ -28,6 +33,7 @@ import io.mockk.mockk
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,6 +44,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
+  override val tablesToResetSequences = listOf(DEVICES)
   override val user: TerrawareUser = mockUser()
 
   private val clock: Clock = mockk()
@@ -47,8 +54,11 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     DeviceService(
         AutomationStore(automationsDao, clock, dslContext, objectMapper, ParentStore(dslContext)),
         DeviceStore(devicesDao),
+        deviceTemplatesDao,
         dslContext,
-        eventPublisher)
+        eventPublisher,
+        FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao),
+    )
   }
 
   private val facilityId = FacilityId(100)
@@ -270,6 +280,66 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
         )
 
     assertAutomationConfigsEqual(expected)
+  }
+
+  @Test
+  fun `createDefaultDevices does nothing if facility has no default template category`() {
+    val desalFacilityId = FacilityId(2)
+    insertFacility(desalFacilityId, siteId = 10, type = FacilityType.Desalination)
+    deviceTemplatesDao.insert(
+        DeviceTemplatesRow(
+            categoryId = DeviceTemplateCategory.SeedBankDefault,
+            deviceType = "type",
+            name = "name",
+            make = "make",
+            model = "model"))
+
+    service.createDefaultDevices(desalFacilityId)
+
+    assertEquals(emptyList<DevicesRow>(), devicesDao.findAll())
+  }
+
+  @Test
+  fun `createDefaultDevices creates seed bank devices from templates`() {
+    val template =
+        DeviceTemplatesRow(
+            address = "address",
+            categoryId = DeviceTemplateCategory.SeedBankDefault,
+            deviceType = "type",
+            make = "make",
+            model = "model",
+            name = "name",
+            pollingInterval = 50,
+            port = 123,
+            protocol = "protocol",
+            settings = JSONB.jsonb("{\"data\":\"abc\"}"),
+        )
+
+    deviceTemplatesDao.insert(template)
+
+    service.createDefaultDevices(facilityId)
+
+    val expected =
+        listOf(
+            DevicesRow(
+                address = template.address,
+                createdBy = user.userId,
+                deviceType = template.deviceType,
+                enabled = true,
+                facilityId = facilityId,
+                id = DeviceId(1),
+                make = template.make,
+                model = template.model,
+                modifiedBy = user.userId,
+                name = template.name,
+                pollingInterval = template.pollingInterval,
+                port = template.port,
+                protocol = template.protocol,
+                settings = template.settings,
+            ))
+
+    val actual = devicesDao.findAll()
+    assertEquals(expected, actual)
   }
 
   private fun assertAutomationConfigsEqual(expected: Map<String, Map<String, Any?>>) {

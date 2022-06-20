@@ -1,10 +1,13 @@
 package com.terraformation.backend.device
 
 import com.terraformation.backend.customer.db.AutomationStore
+import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
+import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
@@ -19,8 +22,10 @@ import org.springframework.context.ApplicationEventPublisher
 class DeviceService(
     private val automationStore: AutomationStore,
     private val deviceStore: DeviceStore,
+    private val deviceTemplatesDao: DeviceTemplatesDao,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val facilityStore: FacilityStore,
 ) {
   private val log = perClassLogger()
 
@@ -58,6 +63,41 @@ class DeviceService(
 
     eventPublisher.publishEvent(
         DeviceUnresponsiveEvent(deviceId, lastRespondedTime, expectedInterval))
+  }
+
+  /**
+   * Creates a default set of devices based on the facility type. Facility types that need default
+   * devices have corresponding device template categories, and this method makes a device for each
+   * template in the appropriate category.
+   *
+   * This is used to tell the device manager about devices that will always be present at a certain
+   * type of facility, but that it can't detect automatically.
+   */
+  fun createDefaultDevices(facilityId: FacilityId) {
+    val category = facilityStore.fetchById(facilityId)?.defaultDeviceTemplateCategory
+
+    if (category != null) {
+      dslContext.transaction { _ ->
+        deviceTemplatesDao
+            .fetchByCategoryId(category)
+            .map { template ->
+              DevicesRow(
+                  facilityId = facilityId,
+                  name = template.name,
+                  deviceType = template.deviceType,
+                  make = template.make,
+                  model = template.model,
+                  protocol = template.protocol,
+                  address = template.address,
+                  port = template.port,
+                  pollingInterval = template.pollingInterval,
+                  enabled = true,
+                  settings = template.settings,
+              )
+            }
+            .forEach { create(it) }
+      }
+    }
   }
 
   private fun updateAutomations(deviceId: DeviceId, row: DevicesRow) {

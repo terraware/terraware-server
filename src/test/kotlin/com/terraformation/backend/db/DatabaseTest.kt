@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.daos.AutomationsDao
 import com.terraformation.backend.db.tables.daos.BagsDao
 import com.terraformation.backend.db.tables.daos.DeviceManagersDao
+import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
@@ -205,6 +206,7 @@ abstract class DatabaseTest {
   protected val bagsDao: BagsDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
+  protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val germinationsDao: GerminationsDao by lazyDao()

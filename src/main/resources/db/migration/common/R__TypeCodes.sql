@@ -16,7 +16,8 @@ VALUES (10, 'Pending', TRUE),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO device_template_categories (id, name)
-VALUES (1, 'PV')
+VALUES (1, 'PV'),
+       (2, 'Seed Bank Default')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO facility_types (id, name)
@@ -194,4 +195,5 @@ VALUES (1, 'User Added to Organization', 1),
        (12, 'Sensor Out Of Bounds', 3),
        (13, 'Unknown Automation Triggered', 3),
        (14, 'Device Unresponsive', 3)
-ON CONFLICT (id) DO UPDATE SET name = excluded.name, notification_criticality_id = excluded.notification_criticality_id;
+ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
+                               notification_criticality_id = excluded.notification_criticality_id;
