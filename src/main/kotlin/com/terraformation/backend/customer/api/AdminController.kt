@@ -42,11 +42,12 @@ import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
+import com.terraformation.backend.time.DatabaseBackedClock
 import java.math.BigDecimal
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
-import java.time.Clock
+import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -87,7 +88,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireExistingAdminRole
 @Validated
 class AdminController(
-    private val clock: Clock,
+    private val clock: DatabaseBackedClock,
     private val config: TerrawareServerConfig,
     private val deviceManagerStore: DeviceManagerStore,
     private val deviceService: DeviceService,
@@ -116,6 +117,7 @@ class AdminController(
     val organizations = organizationStore.fetchAll().sortedBy { it.id.value }
 
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
+    model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
 
@@ -291,6 +293,21 @@ class AdminController(
     model.addAttribute("prefix", prefix)
 
     return "/admin/deviceManager"
+  }
+
+  @GetMapping("/testClock")
+  fun getTestClock(model: Model, redirectAttributes: RedirectAttributes): String {
+    if (!config.useTestClock) {
+      redirectAttributes.failureMessage = "Test clock is not enabled."
+      return adminHome()
+    }
+
+    val now = ZonedDateTime.now(clock)
+    val currentTime = DateTimeFormatter.RFC_1123_DATE_TIME.format(now)
+    model.addAttribute("currentTime", currentTime)
+    model.addAttribute("prefix", prefix)
+
+    return "/admin/testClock"
   }
 
   @PostMapping("/setUserMemberships")
@@ -908,6 +925,14 @@ class AdminController(
     return facility(facilityId)
   }
 
+  @PostMapping("/advanceTestClock")
+  fun advanceTestClock(@RequestParam days: Long, redirectAttributes: RedirectAttributes): String {
+    clock.advance(Duration.ofDays(days))
+    val daysWord = if (days == 1L) "day" else "days"
+    redirectAttributes.successMessage = "Clock advanced by $days $daysWord."
+    return testClock()
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
@@ -943,5 +968,6 @@ class AdminController(
   private fun project(projectId: ProjectId) = redirect("/project/$projectId")
   private fun site(siteId: SiteId) = redirect("/site/$siteId")
   private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")
+  private fun testClock() = redirect("/testClock")
   private fun user(userId: UserId) = redirect("/user/$userId")
 }

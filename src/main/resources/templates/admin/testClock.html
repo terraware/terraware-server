@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head">
+    <script th:fragment="additionalScript">
+        setTimeout(() => location.reload(), 30000);
+    </script>
+</head>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+
+<h2>Test Clock Adjustment</h2>
+
+<p>Current server time is <b th:text="${currentTime}"></b>. (Will refresh every 30 seconds.)
+
+<p>
+<form method="POST" th:action="|${prefix}/advanceTestClock|">
+    Advance clock by
+    <input name="days" size="2" maxlength="2" type="text" value="1"/>
+    day(s):
+    <input type="submit" value="Do It!"/>
+</form>
+
+<h2>About the test clock</h2>
+
+<p>
+    The test clock is intended for testing time-based triggers such as "accession is ready for
+    storage" notifications. The intended usage pattern:
+</p>
+<ol>
+    <li>
+        Create some data that will trigger an action some number of days in the future.
+    </li>
+    <li>
+        Advance the clock by less than the number of days in question to make sure the action isn't
+        triggered erroneously.
+    </li>
+    <li>
+        Advance the clock the rest of the way to the expected date to make sure the action is
+        triggered.
+    </li>
+</ol>
+<p>
+    Some caveats:
+</p>
+<ul>
+    <li>
+        The clock is server-wide. If someone else is testing on the same server when you advance the
+        clock, it will advance for them as well.
+    </li>
+    <li>
+        Advancing the clock will cause future dates to be written to the database. Some of those
+        dates will be visible in the user interface. If you're testing and you forgot you advanced
+        the clock, this might look like a bug ("the app is showing tomorrow's date, not today's
+        like I expected").
+    </li>
+</ul>
+</body>
+</html>

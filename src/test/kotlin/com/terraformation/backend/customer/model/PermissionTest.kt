@@ -618,6 +618,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         createDeviceManager = true,
         importGlobalSpeciesData = true,
+        setTestClock = true,
         updateDeviceTemplates = true,
     )
   }
@@ -995,6 +996,7 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         createDeviceManager: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
+        setTestClock: Boolean = false,
         updateDeviceTemplates: Boolean = false,
     ) {
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
@@ -1002,6 +1004,7 @@ internal class PermissionTest : DatabaseTest() {
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),
           "Can import global species data")
+      assertEquals(setTestClock, user.canSetTestClock(), "Can set test clock")
       assertEquals(
           updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
 
