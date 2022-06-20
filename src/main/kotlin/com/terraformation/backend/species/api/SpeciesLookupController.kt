@@ -128,7 +128,7 @@ data class SpeciesLookupDetailsResponsePayload(
         description =
             "If this is not the accepted name for the species, the name to suggest as an " +
                 "alternative.")
-    val suggestedName: String?,
+    val suggestedScientificName: String?,
 ) {
   constructor(
       model: GbifTaxonModel,

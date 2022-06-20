@@ -3,7 +3,6 @@ package com.terraformation.backend.species.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
-import com.terraformation.backend.api.ApiResponse413
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DuplicateNameException
 import com.terraformation.backend.api.ResourceInUseException
@@ -164,7 +163,6 @@ class SpeciesController(
       description = "Suggestion applied. Response contains the updated species information.")
   @ApiResponse404
   @ApiResponse409("There is no suggested change for this problem.")
-  @ApiResponse413
   @Operation(
       summary = "Applies suggested changes to fix a problem with a species.",
       description = "Only valid for problems that include suggested changes.")
