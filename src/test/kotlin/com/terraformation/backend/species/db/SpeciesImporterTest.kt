@@ -50,6 +50,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private val fileStore: FileStore = mockk()
   private val messages = Messages()
   private val scheduler: JobScheduler = mockk()
+  private val speciesChecker: SpeciesChecker = mockk()
   private val uploadService: UploadService = mockk()
   private val uploadStore: UploadStore by lazy {
     UploadStore(dslContext, uploadProblemsDao, uploadsDao)
@@ -62,6 +63,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         fileStore,
         messages,
         scheduler,
+        speciesChecker,
         uploadProblemsDao,
         uploadsDao,
         uploadService,
@@ -83,6 +85,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     insertOrganization(organizationId)
 
     every { clock.instant() } returns Instant.EPOCH
+    every { speciesChecker.checkAllUncheckedSpecies(organizationId) } just Runs
     every { user.canCreateSpecies(organizationId) } returns true
     every { user.canDeleteUpload(uploadId) } returns true
     every { user.canReadOrganization(organizationId) } returns true

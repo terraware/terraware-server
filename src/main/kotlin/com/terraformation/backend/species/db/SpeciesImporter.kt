@@ -40,6 +40,7 @@ class SpeciesImporter(
     private val messages: Messages,
     // JobRunr is disabled when generating OpenAPI docs from Gradle
     @Lazy private val scheduler: JobScheduler,
+    private val speciesChecker: SpeciesChecker,
     private val uploadProblemsDao: UploadProblemsDao,
     private val uploadsDao: UploadsDao,
     private val uploadService: UploadService,
@@ -185,6 +186,13 @@ class SpeciesImporter(
               }
             }
           }
+
+          // Check for misspelled species names or other problems by scanning all the unchecked
+          // species in the organization. In theory, this could check species that we didn't just
+          // import. But in practice, we try to run checks synchronously in the same transactions
+          // that make changes to species data, so the only unchecked species that should be visible
+          // here are the ones that have been newly inserted in the current transaction.
+          speciesChecker.checkAllUncheckedSpecies(organizationId)
 
           updateStatus(uploadId, UploadStatus.Completed)
         }
