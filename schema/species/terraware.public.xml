@@ -41,6 +41,9 @@
          <index name="gbif_names_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
+         <index name="gbif_names__name_trgm" unique="false">
+            <column ascending="true" name="name"/>
+         </index>
          <index name="gbif_names_taxon_id_idx" unique="false">
             <column ascending="true" name="taxon_id"/>
          </index>

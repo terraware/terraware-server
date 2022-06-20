@@ -56,6 +56,7 @@
 <text text-anchor="start" x="249" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">taxon_id</text>
 <polygon fill="none" stroke="black" points="318,-123 318,-145 419,-145 419,-123 318,-123"/>
 <text text-anchor="start" x="321" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="229,-101 229,-123 318,-123 318,-101 229,-101"/>
 <polygon fill="none" stroke="black" points="229,-101 229,-123 318,-123 318,-101 229,-101"/>
 <text text-anchor="start" x="249" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="318,-101 318,-123 419,-123 419,-101 318,-101"/>
