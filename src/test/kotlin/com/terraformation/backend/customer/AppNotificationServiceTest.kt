@@ -55,7 +55,6 @@ import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEve
 import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
 import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
-import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -97,7 +96,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var projectStore: ProjectStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
-  private lateinit var speciesStore: SpeciesStore
   private lateinit var webAppUrls: WebAppUrls
 
   @BeforeEach
@@ -110,7 +108,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     parentStore = ParentStore(dslContext)
     projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
-    speciesStore = SpeciesStore(clock, dslContext, speciesDao)
     accessionStore =
         AccessionStore(
             dslContext,
@@ -119,7 +116,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
             parentStore,
-            speciesStore,
+            mockk(),
             WithdrawalStore(dslContext, clock),
             clock,
         )

@@ -68,6 +68,7 @@ import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
+import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.every
 import io.mockk.mockk
@@ -153,7 +154,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             GeolocationStore(dslContext, clock),
             GerminationStore(dslContext),
             parentStore,
-            speciesStore,
+            SpeciesService(speciesStore),
             WithdrawalStore(dslContext, clock),
             clock,
         )

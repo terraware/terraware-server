@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.temporal.TemporalAccessor
@@ -26,24 +27,16 @@ class SpeciesStore(
 ) {
   private val log = perClassLogger()
 
-  fun getOrCreateSpecies(organizationId: OrganizationId, scientificName: String): SpeciesId {
+  fun fetchSpeciesIdByName(organizationId: OrganizationId, scientificName: String): SpeciesId? {
     requirePermissions { readOrganization(organizationId) }
 
-    val existing =
-        dslContext
-            .select(SPECIES.ID, SPECIES.DELETED_TIME)
-            .from(SPECIES)
-            .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
-            .and(SPECIES.SCIENTIFIC_NAME.eq(scientificName))
-            .fetchOne()
-    val existingId = existing?.value1()
-    val availableInOrganization = existing?.value2() == null
-
-    return if (existingId != null && availableInOrganization) {
-      existingId
-    } else {
-      createSpecies(SpeciesRow(organizationId = organizationId, scientificName = scientificName))
-    }
+    return dslContext
+        .select(SPECIES.ID)
+        .from(SPECIES)
+        .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .and(SPECIES.SCIENTIFIC_NAME.eq(scientificName))
+        .and(SPECIES.DELETED_TIME.isNull)
+        .fetchOne(SPECIES.ID)
   }
 
   fun fetchSpeciesById(speciesId: SpeciesId): SpeciesRow? {
@@ -81,6 +74,10 @@ class SpeciesStore(
         .fetchInto(SpeciesRow::class.java)
   }
 
+  /**
+   * Creates a new species. You probably want to call [SpeciesService.createSpecies] instead of
+   * this.
+   */
   fun createSpecies(row: SpeciesRow): SpeciesId {
     val organizationId = row.organizationId!!
     requirePermissions { createSpecies(organizationId) }
@@ -98,6 +95,7 @@ class SpeciesStore(
 
       val rowWithExistingId =
           row.copy(
+              checkedTime = existingRow.checkedTime,
               createdBy = existingRow.createdBy,
               createdTime = existingRow.createdTime,
               deletedBy = null,
@@ -112,6 +110,7 @@ class SpeciesStore(
     } else {
       val rowWithMetadata =
           row.copy(
+              checkedTime = null,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
               deletedBy = null,
@@ -127,21 +126,21 @@ class SpeciesStore(
   }
 
   /**
-   * Updates the data for an existing species.
+   * Updates the data for an existing species. You probably want to call
+   * [SpeciesService.updateSpecies] instead of this.
    *
+   * @return The updated row. This is a new object; the input row is not modified.
    * @throws DuplicateKeyException The requested name was already in use.
    * @throws SpeciesNotFoundException No species with the requested ID exists.
    */
-  fun updateSpecies(row: SpeciesRow) {
+  fun updateSpecies(row: SpeciesRow): SpeciesRow {
     val speciesId = row.id ?: throw IllegalArgumentException("No species ID specified")
-
-    val existing = speciesDao.fetchOneById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
-
-    val organizationId = existing.organizationId!!
 
     requirePermissions { updateSpecies(speciesId) }
 
-    speciesDao.update(
+    val existing = speciesDao.fetchOneById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
+
+    val updatedRow =
         row.copy(
             createdBy = existing.createdBy,
             createdTime = existing.createdTime,
@@ -149,8 +148,12 @@ class SpeciesStore(
             deletedTime = existing.deletedTime,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
-            organizationId = organizationId,
-        ))
+            organizationId = existing.organizationId,
+        )
+
+    speciesDao.update(updatedRow)
+
+    return updatedRow
   }
 
   /**
