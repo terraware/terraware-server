@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tables.pojos.TaskProcessedTimesRow
 import com.terraformation.backend.db.tables.references.TASK_PROCESSED_TIMES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
+import com.terraformation.backend.time.ClockResetEvent
 import java.time.Clock
 import java.time.Instant
 import javax.annotation.ManagedBean
@@ -56,6 +57,22 @@ class DailyTaskRunner(
   @EventListener
   fun handle(@Suppress("UNUSED_PARAMETER") event: ClockAdvancedEvent) {
     runDailyTasks()
+  }
+
+  /**
+   * Resets the last runtime of the daily tasks when the application clock is reset. This is needed
+   * so that subsequent runs will see data that's added after the clock is reset.
+   */
+  @EventListener
+  fun handle(@Suppress("UNUSED_PARAMETER") event: ClockResetEvent) {
+    val now = clock.instant()
+    dslContext.transaction { _ ->
+      dslContext
+          .update(TASK_PROCESSED_TIMES)
+          .set(TASK_PROCESSED_TIMES.PROCESSED_UP_TO, now)
+          .where(TASK_PROCESSED_TIMES.PROCESSED_UP_TO.gt(now))
+          .execute()
+    }
   }
 
   /**
