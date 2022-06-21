@@ -249,6 +249,5 @@ class TerrawareServerConfig(
   companion object {
     const val BALENA_ENABLED_PROPERTY = "terraware.balena.enabled"
     const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"
-    const val USE_TEST_CLOCK_PROPERTY = "terraware.use-test-clock"
   }
 }
