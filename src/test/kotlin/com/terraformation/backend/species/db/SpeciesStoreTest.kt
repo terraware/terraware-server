@@ -9,7 +9,10 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.SpeciesProblemField
+import com.terraformation.backend.db.SpeciesProblemType
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -302,7 +305,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchAllUncheckedSpecies only returns unchecked species`() {
+  fun `fetchAllUncheckedSpeciesIds only returns unchecked species`() {
     val checkedSpeciesId = SpeciesId(1)
     val uncheckedSpeciesId = SpeciesId(2)
 
@@ -310,6 +313,32 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertSpecies(uncheckedSpeciesId, organizationId = organizationId)
 
     assertEquals(listOf(uncheckedSpeciesId), store.fetchUncheckedSpeciesIds(organizationId))
+  }
+
+  @Test
+  fun `fetchAllUncheckedSpeciesIds does not return deleted species`() {
+    val speciesId =
+        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+    store.deleteSpecies(speciesId)
+
+    assertEquals(emptyList<SpeciesId>(), store.fetchUncheckedSpeciesIds(organizationId))
+  }
+
+  @Test
+  fun `findAllProblems does not return problems with deleted species`() {
+    val speciesId =
+        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+    speciesProblemsDao.insert(
+        SpeciesProblemsRow(
+            createdTime = Instant.EPOCH,
+            fieldId = SpeciesProblemField.ScientificName,
+            speciesId = speciesId,
+            typeId = SpeciesProblemType.NameNotFound,
+        ))
+    store.deleteSpecies(speciesId)
+
+    assertEquals(
+        emptyMap<SpeciesId, List<SpeciesProblemsRow>>(), store.findAllProblems(organizationId))
   }
 
   @Test
