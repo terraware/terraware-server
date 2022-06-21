@@ -8,8 +8,11 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
+import java.util.Timer
 import javax.annotation.ManagedBean
+import javax.annotation.PreDestroy
 import javax.inject.Inject
+import kotlin.concurrent.timer
 import org.jooq.DSLContext
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.ApplicationEventPublisher
@@ -54,17 +57,31 @@ private constructor(
     private val timeZone: ZoneId,
     private val useTestClock: Boolean = false,
     private val systemClock: Clock = system(timeZone),
+    /**
+     * How often to poll for changes to the clock offset. This is needed to support setting the
+     * clock in clustered environments. This can screw up tests since it launches a background timer
+     * job; set to null to disable.
+     */
+    private val refreshInterval: Duration? = Duration.ofSeconds(5),
     private var baseRealTime: Instant = systemClock.instant(),
-    private var baseFakeTime: Instant = baseRealTime
+    private var baseFakeTime: Instant = baseRealTime,
 ) : Clock() {
   @Inject
   constructor(
       config: TerrawareServerConfig,
       dslContext: DSLContext,
       publisher: ApplicationEventPublisher,
-  ) : this(dslContext, publisher, config.timeZone, config.useTestClock)
+      refreshInterval: Duration? = Duration.ofSeconds(5),
+  ) : this(
+      dslContext,
+      publisher,
+      config.timeZone,
+      config.useTestClock,
+      refreshInterval = refreshInterval)
 
   private val log = perClassLogger()
+
+  private var refreshTask: Timer? = null
 
   /**
    * Loads the clock settings from the database after database migrations have finished. This allows
@@ -73,21 +90,35 @@ private constructor(
   @EventListener
   @Order(1)
   fun initialize(@Suppress("UNUSED_PARAMETER") event: ApplicationStartedEvent) {
-    readFromDatabase()
+    if (useTestClock) {
+      readFromDatabase()
+
+      refreshTask =
+          refreshInterval?.toMillis()?.let { refreshMillis ->
+            timer(period = refreshMillis) { readFromDatabase() }
+          }
+    }
+  }
+
+  @PreDestroy
+  fun shutDownRefreshTask() {
+    refreshTask?.cancel()
   }
 
   private fun readFromDatabase() {
     if (useTestClock) {
       val record = dslContext.selectFrom(TEST_CLOCK).fetchOne()
       if (record != null) {
-        synchronized(this) {
-          baseFakeTime = record.fakeTime!!
-          baseRealTime = record.realTime!!
-        }
+        if (baseFakeTime != record.fakeTime || baseRealTime != record.realTime) {
+          val offset =
+              synchronized(this) {
+                baseFakeTime = record.fakeTime!!
+                baseRealTime = record.realTime!!
+                Duration.between(baseRealTime, baseFakeTime)
+              }
 
-        log.info(
-            "Clock has been adjusted forward by ${Duration.between(baseRealTime, baseFakeTime)}; " +
-                "fake time is ${instant()}")
+          log.info("Clock offset is now $offset; fake time is ${instant()}")
+        }
       } else {
         log.warn("Test clock is not initialized; setting it to the current time")
         advance(Duration.ZERO)
@@ -107,8 +138,10 @@ private constructor(
           zone,
           useTestClock,
           systemClock.withZone(zone),
+          refreshInterval,
           baseRealTime,
-          baseFakeTime)
+          baseFakeTime,
+      )
     }
   }
 

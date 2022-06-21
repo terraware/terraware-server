@@ -35,9 +35,7 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   private val publisher: ApplicationEventPublisher = mockk()
 
   /** Lazily-instantiated test subject; this will pick up per-test config values. */
-  private val clock: DatabaseBackedClock by lazy {
-    DatabaseBackedClock(config, dslContext, publisher)
-  }
+  private val clock: DatabaseBackedClock by lazy { newDatabaseBackedClock() }
 
   private val applicationStartedEvent =
       ApplicationStartedEvent(SpringApplication(Application::class.java), null, null, Duration.ZERO)
@@ -96,7 +94,7 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
 
     assertSameInstant(newFake, clock.instant(), "Time from existing instance")
 
-    val newClock = DatabaseBackedClock(config, dslContext, publisher)
+    val newClock = newDatabaseBackedClock()
     newClock.initialize(applicationStartedEvent)
     assertSameInstant(newFake, newClock.instant(), "Time from fresh instance")
   }
@@ -202,5 +200,10 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
             .joinToString(": ")
       }
     }
+  }
+
+  private fun newDatabaseBackedClock(): DatabaseBackedClock {
+    val clock = DatabaseBackedClock(config, dslContext, publisher, refreshInterval = null)
+    return clock
   }
 }
