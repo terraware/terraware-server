@@ -500,4 +500,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
       throw AccessDeniedException("No permission to update device manager")
     }
   }
+
+  fun setTestClock() {
+    if (!user.canSetTestClock()) {
+      throw AccessDeniedException("No permission to set test clock")
+    }
+  }
 }

@@ -1,6 +1,7 @@
 package com.terraformation.backend.time
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tables.references.TEST_CLOCK
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
@@ -124,6 +125,8 @@ private constructor(
    * time.
    */
   fun setFakeTime(fakeTime: Instant) {
+    requirePermissions { setTestClock() }
+
     advance(Duration.between(instant(), fakeTime))
   }
 
@@ -133,6 +136,8 @@ private constructor(
    * [Duration.ZERO] to update the base real time without advancing the clock.
    */
   fun advance(duration: Duration) {
+    requirePermissions { setTestClock() }
+
     if (!useTestClock) {
       throw IllegalStateException("Test clock is not enabled")
     }

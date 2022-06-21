@@ -45,5 +45,12 @@
     <a th:href="|${prefix}/deviceTemplates|">Device Templates</a>
 </p>
 
+<div th:if="${canSetTestClock}">
+    <h2>Test utilities</h2>
+
+    <p>
+        <a th:href="|${prefix}/testClock|">Test clock adjustment</a>
+    </p>
+</div>
 </body>
 </html>

@@ -134,6 +134,7 @@ class SystemUser(usersDao: UsersDao) : TerrawareUser {
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       true
+  override fun canSetTestClock(): Boolean = false
   override fun canTriggerAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = true
   override fun canUpdateAutomation(automationId: AutomationId): Boolean = true

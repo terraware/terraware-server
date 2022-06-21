@@ -693,4 +693,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canUpdateDeviceManager(deviceManagerId) }
     requirements.updateDeviceManager(deviceManagerId)
   }
+
+  @Test
+  fun setTestClock() {
+    assertThrows<AccessDeniedException> { requirements.setTestClock() }
+
+    grant { user.canSetTestClock() }
+    requirements.setTestClock()
+  }
 }

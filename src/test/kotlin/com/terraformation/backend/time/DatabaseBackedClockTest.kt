@@ -1,9 +1,12 @@
 package com.terraformation.backend.time
 
 import com.terraformation.backend.Application
+import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tables.references.TEST_CLOCK
+import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -23,8 +26,11 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.security.access.AccessDeniedException
 
-internal class DatabaseBackedClockTest : DatabaseTest() {
+internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
+  override val user: TerrawareUser = mockUser()
+
   private val config: TerrawareServerConfig = mockk()
   private val publisher: ApplicationEventPublisher = mockk()
 
@@ -41,6 +47,7 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
     every { config.timeZone } returns ZoneOffset.UTC
     every { config.useTestClock } returns true
     every { publisher.publishEvent(any<ClockAdvancedEvent>()) } just runs
+    every { user.canSetTestClock() } returns true
   }
 
   @Test
@@ -116,6 +123,13 @@ internal class DatabaseBackedClockTest : DatabaseTest() {
     assertThrows<IllegalArgumentException> {
       clock.setFakeTime(clock.instant() - Duration.ofSeconds(1))
     }
+  }
+
+  @Test
+  fun `advance throws exception if no permission to set test clock`() {
+    every { user.canSetTestClock() } returns false
+
+    assertThrows<AccessDeniedException> { clock.advance(Duration.ofDays(5)) }
   }
 
   /** Tests for default pass-through behavior. */
