@@ -110,14 +110,14 @@ private constructor(
       val record = dslContext.selectFrom(TEST_CLOCK).fetchOne()
       if (record != null) {
         if (baseFakeTime != record.fakeTime || baseRealTime != record.realTime) {
-          synchronized(this) {
-            baseFakeTime = record.fakeTime!!
-            baseRealTime = record.realTime!!
-          }
+          val offset =
+              synchronized(this) {
+                baseFakeTime = record.fakeTime!!
+                baseRealTime = record.realTime!!
+                Duration.between(baseRealTime, baseFakeTime)
+              }
 
-          log.info(
-              "Clock has been adjusted forward by ${Duration.between(baseRealTime, baseFakeTime)}; " +
-                  "fake time is ${instant()}")
+          log.info("Clock offset is now $offset; fake time is ${instant()}")
         }
       } else {
         log.warn("Test clock is not initialized; setting it to the current time")
