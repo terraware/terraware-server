@@ -302,7 +302,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchAllUncheckedSpecies only returns unchecked species`() {
+  fun `fetchAllUncheckedSpeciesIds only returns unchecked species`() {
     val checkedSpeciesId = SpeciesId(1)
     val uncheckedSpeciesId = SpeciesId(2)
 
@@ -310,6 +310,15 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertSpecies(uncheckedSpeciesId, organizationId = organizationId)
 
     assertEquals(listOf(uncheckedSpeciesId), store.fetchUncheckedSpeciesIds(organizationId))
+  }
+
+  @Test
+  fun `fetchAllUncheckedSpeciesIds does not return deleted species`() {
+    val speciesId =
+        store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "dummy"))
+    store.deleteSpecies(speciesId)
+
+    assertEquals(emptyList<SpeciesId>(), store.fetchUncheckedSpeciesIds(organizationId))
   }
 
   @Test

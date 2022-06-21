@@ -94,6 +94,7 @@ class SpeciesStore(
         .from(SPECIES)
         .where(SPECIES.CHECKED_TIME.isNull)
         .and(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .and(SPECIES.DELETED_TIME.isNull)
         .fetch(SPECIES.ID)
         .filterNotNull()
   }
