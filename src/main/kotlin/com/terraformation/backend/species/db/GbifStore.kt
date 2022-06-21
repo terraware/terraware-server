@@ -136,7 +136,11 @@ class GbifStore(
         .on(GBIF_NAMES.TAXON_ID.eq(GBIF_DISTRIBUTIONS.TAXON_ID))
         .where(GBIF_NAMES.NAME.eq(scientificName))
         .and(GBIF_NAMES.IS_SCIENTIFIC.isTrue)
-        .orderBy(GBIF_NAMES.NAME, GBIF_NAMES.TAXON_ID)
+        .orderBy(
+            DSL.case_()
+                .`when`(GBIF_TAXA.TAXONOMIC_STATUS.eq(TAXONOMIC_STATUS_ACCEPTED), 1)
+                .else_(2),
+            GBIF_NAMES.TAXON_ID)
         .limit(1)
         .fetchOne { record ->
           GbifTaxonModel(
@@ -181,6 +185,16 @@ class GbifStore(
             .and(gbifNames2.IS_SCIENTIFIC)
             .where(GBIF_NAMES.IS_SCIENTIFIC)
             .and(GBIF_NAMES.NAME.eq(name))
+            .orderBy(
+                // Since we rewrite scientific names to remove things like publication dates, we can
+                // end up having two identical names in gbif_names that map to different taxon IDs.
+                // For purposes of figuring out if the name is already valid, prefer the taxon whose
+                // name is considered accepted.
+                DSL.case_()
+                    .`when`(GBIF_TAXA.TAXONOMIC_STATUS.eq(TAXONOMIC_STATUS_ACCEPTED), 1)
+                    .else_(2),
+                GBIF_NAMES.TAXON_ID)
+            .limit(1)
             .fetchOne()
 
     if (exactMatch != null) {
@@ -225,5 +239,9 @@ class GbifStore(
       SpeciesProblemsRow(
           fieldId = SpeciesProblemField.ScientificName, typeId = SpeciesProblemType.NameNotFound)
     }
+  }
+
+  companion object {
+    const val TAXONOMIC_STATUS_ACCEPTED = "accepted"
   }
 }

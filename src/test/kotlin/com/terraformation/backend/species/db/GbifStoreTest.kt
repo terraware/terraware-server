@@ -201,10 +201,35 @@ internal class GbifStoreTest : DatabaseTest() {
       val actual = store.fetchOneByScientificName("Scientific name", "en")
       assertEquals(expected, actual)
     }
+
+    @Test
+    fun `returns data for accepted name if multiple taxa have same name`() {
+      insertTaxon(
+          1,
+          "Scientific name",
+          fullScientificName = "Scientific name (1)",
+          taxonomicStatus = "doubtful")
+      insertTaxon(
+          2,
+          "Scientific name",
+          fullScientificName = "Scientific name (2)",
+          taxonomicStatus = "accepted")
+      insertTaxon(
+          3,
+          "Scientific name",
+          fullScientificName = "Scientific name (3)",
+          taxonomicStatus = "synonym")
+
+      val expected =
+          GbifTaxonModel(GbifTaxonId(2), "Scientific name", "Scientific", emptyList(), null)
+
+      val actual = store.fetchOneByScientificName("Scientific name", "en")
+      assertEquals(expected, actual)
+    }
   }
 
   @Nested
-  inner class GetSuggestedScientificName {
+  inner class CheckScientificName {
     @Test
     fun `returns null if name is already correct`() {
       val scientificName = "Scientific name"
@@ -274,6 +299,18 @@ internal class GbifStoreTest : DatabaseTest() {
       val actual = store.checkScientificName("Corect synonm")
       assertEquals(expected, actual)
     }
+
+    @Test
+    fun `returns null if there are multiple taxa whose scientific names we render identically`() {
+      insertTaxon(1, "Scientific name", fullScientificName = "Scientific name (author1)")
+      insertTaxon(
+          2,
+          "Scientific name",
+          fullScientificName = "Scientific name (author2)",
+          taxonomicStatus = "doubtful")
+
+      assertNull(store.checkScientificName("Scientific name"))
+    }
   }
 
   private fun insertTaxon(
@@ -284,7 +321,7 @@ internal class GbifStoreTest : DatabaseTest() {
       threatStatus: String? = null,
       fullScientificName: String = scientificName,
       acceptedNameUsageId: Any? = null,
-      taxonomicStatus: String = "accepted",
+      taxonomicStatus: String = GbifStore.TAXONOMIC_STATUS_ACCEPTED,
   ): GbifTaxonId {
     val taxonId = id.toIdWrapper { GbifTaxonId(it) }
 
