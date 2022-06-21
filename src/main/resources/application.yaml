@@ -73,6 +73,17 @@ spring:
   session:
     store-type: jdbc
 
+management:
+  health:
+    diskspace:
+      # Disable checking of disk space; the server runs in a Docker container so this would be
+      # measuring the free space in the container's filesystem which isn't too useful.
+      enabled: false
+    mail:
+      # Disable checking health of mail server; we don't want to mark terraware-server as down
+      # if the mail service is having an unrelated outage.
+      enabled: false
+
 # Configuration for the Swagger API explorer. These settings are used when the server is running
 # and serving real requests; there are also settings in application-apidoc.yaml that are used when
 # generating the API documentation from the command line.
