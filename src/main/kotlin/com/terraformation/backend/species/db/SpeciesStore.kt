@@ -129,6 +129,7 @@ class SpeciesStore(
         .join(SPECIES)
         .on(SPECIES_PROBLEMS.SPECIES_ID.eq(SPECIES.ID))
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
+        .and(SPECIES.DELETED_TIME.isNull)
         .fetchInto(SpeciesProblemsRow::class.java)
         .groupBy { row ->
           row.speciesId ?: throw IllegalStateException("Species problem has no species ID")
