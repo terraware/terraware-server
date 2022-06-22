@@ -48,7 +48,7 @@ class GbifStore(
     // Dynamically construct a query that has a separate join to the gbif_name_words table for each
     // prefix string. For prefixes == listOf("abc", "def") we want to end up with a query like
     //
-    // SELECT name
+    // SELECT *
     // FROM gbif_names
     // JOIN gbif_name_words gnw_0 ON gbif_names.id = gnw_0.id
     // JOIN gbif_name_words gnw_1 ON gbif_names.id = gnw_1.id
@@ -56,14 +56,28 @@ class GbifStore(
     // AND gnw_1.word LIKE 'def%'
     // AND gbif_names.is_scientific = TRUE
     // AND LOWER(gbif_names.name) LIKE '%abc%def%'
-    // ORDER by gbif_names.name
+    // ORDER BY CASE WHEN LOWER(gbif_names.name) LIKE 'abc%' THEN 1 ELSE 2 END,
+    //     LOWER(gbif_names.name)
     //
     // The LOWER(gbif_names.name) LIKE '%abc%def%' is needed because we want the prefixes to be
     // order-sensitive, but we don't require them to start at the beginning of the name. That is,
     // this search should match species 'Abc def' and 'Xyz abc var. def' but not species 'Def abc'.
+    //
+    // The ORDER BY CASE causes results where the first search prefix matches the first word of
+    // the species name to be sorted above matches on other words in the species name.
+
+    val firstWordPattern = normalizedPrefixes.first() + "%"
+    val firstWordSortPosition =
+        DSL.case_()
+            .`when`(DSL.lower(GBIF_NAMES.NAME).like(firstWordPattern), 1)
+            .else_(2)
+            .`as`("first_word_sort_position")
 
     val selectFrom =
-        dslContext.selectDistinct(GBIF_NAMES.asterisk()).on(GBIF_NAMES.NAME).from(GBIF_NAMES)
+        dslContext
+            .selectDistinct(GBIF_NAMES.asterisk(), firstWordSortPosition)
+            .on(firstWordSortPosition, GBIF_NAMES.NAME)
+            .from(GBIF_NAMES)
 
     // A separate table alias for each prefix
     val wordsAliases = normalizedPrefixes.indices.map { GBIF_NAME_WORDS.`as`("gnw_$it") }
@@ -85,7 +99,7 @@ class GbifStore(
         .where(prefixMatchConditions)
         .and(GBIF_NAMES.IS_SCIENTIFIC.eq(scientific))
         .and(DSL.lower(GBIF_NAMES.NAME).like(orderSensitivePattern))
-        .orderBy(GBIF_NAMES.NAME)
+        .orderBy(firstWordSortPosition, GBIF_NAMES.NAME)
         .limit(maxResults)
         .fetchInto(GbifNamesRow::class.java)
         .filterNotNull()
