@@ -103,16 +103,18 @@ internal class GbifStoreTest : DatabaseTest() {
     }
 
     @Test
-    fun `returns results in alphabetical order`() {
+    fun `returns results in alphabetical order with first-word matches at the top`() {
       insertTaxon(1, "Species c")
       insertTaxon(2, "Species a")
       insertTaxon(3, "Species b")
+      insertTaxon(4, "Another species")
 
       val expected =
           listOf(
               namesRow(2, 2, "Species a"),
               namesRow(3, 3, "Species b"),
               namesRow(1, 1, "Species c"),
+              namesRow(4, 4, "Another species"),
           )
 
       val actual = store.findNamesByWordPrefixes(listOf("species"))
