@@ -13,9 +13,11 @@ import com.terraformation.backend.db.UploadProblemId
 import com.terraformation.backend.db.UploadProblemType
 import com.terraformation.backend.db.UploadStatus
 import com.terraformation.backend.db.UploadType
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.tables.references.UPLOADS
 import com.terraformation.backend.db.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.file.FileStore
@@ -43,7 +45,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
-  override val tablesToResetSequences = listOf(SPECIES, UPLOADS, UPLOAD_PROBLEMS)
+  override val tablesToResetSequences = listOf(SPECIES, SPECIES_PROBLEMS, UPLOADS, UPLOAD_PROBLEMS)
   override val user = mockUser()
 
   private val clock: Clock = mockk()
@@ -77,10 +79,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private val storageUrl = URI.create("file:///test")
   private val organizationId = OrganizationId(1)
   private val uploadId = UploadId(10)
-  private val userId = user.userId
+  private lateinit var userId: UserId
 
   @BeforeEach
   fun setUp() {
+    userId = user.userId
     insertUser()
     insertOrganization(organizationId)
 
@@ -89,7 +92,9 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateSpecies(organizationId) } returns true
     every { user.canDeleteUpload(uploadId) } returns true
     every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadSpecies(any()) } returns true
     every { user.canReadUpload(uploadId) } returns true
+    every { user.canUpdateSpecies(any()) } returns true
     every { user.canUpdateUpload(uploadId) } returns true
     every { userStore.fetchById(userId) } returns user
   }
@@ -185,6 +190,38 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `validateCsv detects duplicate species even if they were renamed`() {
+    every { fileStore.read(storageUrl) } answers { sizedInputStream("$header\nInitial name,,,,,,") }
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    insertSpecies(
+        2,
+        "Corrected name",
+        organizationId = organizationId,
+        initialScientificName = "Initial name")
+
+    importer.validateCsv(uploadId, userId)
+
+    val expectedProblems =
+        listOf(
+            UploadProblemsRow(
+                UploadProblemId(1),
+                uploadId,
+                UploadProblemType.DuplicateValue,
+                false,
+                2,
+                "Scientific Name",
+                messages.speciesCsvScientificNameExists(),
+                "Corrected name (Initial name)"))
+
+    val actualProblems = uploadProblemsDao.findAll()
+    assertEquals(expectedProblems, actualProblems)
+  }
+
+  @Test
   fun `validateCsv does not treat deleted species as name collisions`() {
     every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
@@ -264,6 +301,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 id = SpeciesId(1),
                 organizationId = organizationId,
                 scientificName = "New name",
+                initialScientificName = "New name",
                 commonName = "Common",
                 familyName = "Family",
                 endangered = true,
@@ -278,6 +316,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 id = SpeciesId(2),
                 organizationId = organizationId,
                 scientificName = "Existing name",
+                initialScientificName = "Existing name",
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
                 modifiedBy = userId,
@@ -303,13 +342,18 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv updates existing species if overwrite flag is set`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant")
+        sizedInputStream(
+            "$header\n" +
+                "Existing name,Common,Family,true,false,Shrub,Recalcitrant\n" +
+                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant")
     insertUpload(
         uploadId,
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
     insertSpecies(2, "Existing name", organizationId = organizationId)
+    insertSpecies(
+        3, "New name", organizationId = organizationId, initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
@@ -322,10 +366,26 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 id = SpeciesId(2),
                 organizationId = organizationId,
                 scientificName = "Existing name",
+                initialScientificName = "Existing name",
                 commonName = "Common",
                 familyName = "Family",
                 endangered = true,
                 rare = false,
+                growthFormId = GrowthForm.Shrub,
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = now),
+            SpeciesRow(
+                id = SpeciesId(3),
+                organizationId = organizationId,
+                scientificName = "New name",
+                initialScientificName = "Initial name",
+                commonName = "New common",
+                familyName = "NewFamily",
+                endangered = false,
+                rare = true,
                 growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
@@ -339,15 +399,78 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `importCsv leaves existing species alone if overwrite flag is not set`() {
+  fun `importCsv prefers current name over initial name when updating existing species`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant")
+        sizedInputStream(
+            "$header\nDuplicate name,New common,NewFamily,false,true,Shrub,Recalcitrant")
     insertUpload(
         uploadId,
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(2, "Existing name", organizationId = organizationId)
+    insertSpecies(
+        2,
+        "Duplicate name",
+        organizationId = organizationId,
+        initialScientificName = "Initial name")
+    insertSpecies(
+        3,
+        "Nonduplicate name",
+        organizationId = organizationId,
+        initialScientificName = "Duplicate name")
+
+    val now = clock.instant() + Duration.ofDays(1)
+    every { clock.instant() } returns now
+
+    importer.importCsv(uploadId, userId, true)
+
+    val expected =
+        setOf(
+            SpeciesRow(
+                id = SpeciesId(2),
+                organizationId = organizationId,
+                scientificName = "Duplicate name",
+                initialScientificName = "Initial name",
+                commonName = "New common",
+                familyName = "NewFamily",
+                endangered = false,
+                rare = true,
+                growthFormId = GrowthForm.Shrub,
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = now),
+            SpeciesRow(
+                id = SpeciesId(3),
+                organizationId = organizationId,
+                scientificName = "Nonduplicate name",
+                initialScientificName = "Duplicate name",
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = Instant.EPOCH))
+
+    val actual = speciesDao.findAll().toSet()
+    assertEquals(expected, actual)
+    assertStatus(UploadStatus.Completed)
+  }
+
+  @Test
+  fun `importCsv leaves existing species alone if overwrite flag is not set`() {
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream(
+            "$header\n" +
+                "Existing name,Common,Family,true,false,Shrub,Recalcitrant\n" +
+                "Initial name,New common,NewFamily,false,true,Shrub,Recalcitrant")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    insertSpecies(10, "Existing name", organizationId = organizationId)
+    insertSpecies(
+        11, "New name", organizationId = organizationId, initialScientificName = "Initial name")
 
     every { clock.instant() } returns Instant.EPOCH + Duration.ofDays(1)
 
@@ -363,7 +486,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `importCsv updates existing deleted species even if overwrite flag is not set`() {
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant")
+        sizedInputStream("$header\nExisting name,Common,Family,true,false,Shrub,Recalcitrant\n")
     insertUpload(
         uploadId,
         organizationId = organizationId,
@@ -382,6 +505,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 id = SpeciesId(2),
                 organizationId = organizationId,
                 scientificName = "Existing name",
+                initialScientificName = "Existing name",
                 commonName = "Common",
                 familyName = "Family",
                 endangered = true,
@@ -392,6 +516,62 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 modifiedBy = userId,
                 modifiedTime = now))
+
+    val actual = speciesDao.findAll()
+    assertEquals(expected, actual)
+    assertStatus(UploadStatus.Completed)
+  }
+
+  @Test
+  fun `importCsv does not apply renames from deleted species`() {
+    every { fileStore.read(storageUrl) } returns
+        sizedInputStream("$header\nInitial name,New common,NewFamily,false,true,Shrub,Recalcitrant")
+    insertUpload(
+        uploadId,
+        organizationId = organizationId,
+        status = UploadStatus.AwaitingProcessing,
+        storageUrl = storageUrl)
+    insertSpecies(
+        2,
+        "Renamed name",
+        organizationId = organizationId,
+        deletedTime = Instant.EPOCH,
+        initialScientificName = "Initial name")
+
+    val now = clock.instant() + Duration.ofDays(1)
+    every { clock.instant() } returns now
+
+    importer.importCsv(uploadId, userId, false)
+
+    val expected =
+        listOf(
+            SpeciesRow(
+                id = SpeciesId(2),
+                organizationId = organizationId,
+                scientificName = "Renamed name",
+                initialScientificName = "Initial name",
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                deletedBy = userId,
+                deletedTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = Instant.EPOCH),
+            SpeciesRow(
+                id = SpeciesId(1),
+                organizationId = organizationId,
+                scientificName = "Initial name",
+                initialScientificName = "Initial name",
+                commonName = "New common",
+                familyName = "NewFamily",
+                endangered = false,
+                rare = true,
+                growthFormId = GrowthForm.Shrub,
+                seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                createdBy = userId,
+                createdTime = now,
+                modifiedBy = userId,
+                modifiedTime = now),
+        )
 
     val actual = speciesDao.findAll()
     assertEquals(expected, actual)

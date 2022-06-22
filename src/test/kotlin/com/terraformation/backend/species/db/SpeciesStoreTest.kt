@@ -75,6 +75,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         listOf(
             row.copy(
                 id = speciesId,
+                initialScientificName = "test",
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 deletedBy = null,
@@ -151,6 +152,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             createdBy = originalRow.createdBy,
             createdTime = originalRow.createdTime,
             id = originalSpeciesId,
+            initialScientificName = "test",
             modifiedBy = user.userId,
             modifiedTime = clock.instant())
     val actual = speciesDao.fetchOneById(reusedSpeciesId)
@@ -207,6 +209,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             familyName = "new family",
             growthFormId = GrowthForm.Fern,
             id = speciesId,
+            initialScientificName = "new initial",
             modifiedBy = bogusUserId,
             modifiedTime = bogusInstant,
             organizationId = bogusOrganizationId,
@@ -221,6 +224,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             createdTime = Instant.EPOCH,
             deletedBy = null,
             deletedTime = null,
+            initialScientificName = "original scientific",
             modifiedBy = user.userId,
             modifiedTime = newInstant,
             organizationId = organizationId,
@@ -285,6 +289,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = clock.instant(),
             id = speciesId,
+            initialScientificName = "test",
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             organizationId = organizationId,
