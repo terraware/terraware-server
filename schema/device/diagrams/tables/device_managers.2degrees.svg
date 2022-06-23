@@ -168,7 +168,7 @@
 <text text-anchor="start" x="611.5" y="-276.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="#ffffff" stroke="none" points="447.5,-246 447.5,-268 608.5,-268 608.5,-246 447.5,-246"/>
 <polygon fill="none" stroke="black" points="447.5,-246 447.5,-268 608.5,-268 608.5,-246 447.5,-246"/>
-<text text-anchor="start" x="467.5" y="-254.2" font-family="Helvetica,sans-Serif" font-size="11.00">short_code</text>
+<text text-anchor="start" x="467.5" y="-254.2" font-family="Helvetica,sans-Serif" font-size="11.00">sensor_kit_id</text>
 <polygon fill="none" stroke="black" points="608.5,-246 608.5,-268 710.5,-268 710.5,-246 608.5,-246"/>
 <text text-anchor="start" x="611.5" y="-254.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
 <polygon fill="#ffffff" stroke="none" points="447.5,-224 447.5,-246 608.5,-246 608.5,-224 447.5,-224"/>

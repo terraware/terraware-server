@@ -98,7 +98,7 @@
 <text text-anchor="start" x="867.5" y="-433.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_id</text>
 <polygon fill="#ffffff" stroke="none" points="847.5,-403 847.5,-425 1008.5,-425 1008.5,-403 847.5,-403"/>
 <polygon fill="none" stroke="black" points="847.5,-403 847.5,-425 1008.5,-425 1008.5,-403 847.5,-403"/>
-<text text-anchor="start" x="867.5" y="-411.2" font-family="Helvetica,sans-Serif" font-size="11.00">short_code</text>
+<text text-anchor="start" x="867.5" y="-411.2" font-family="Helvetica,sans-Serif" font-size="11.00">sensor_kit_id</text>
 <polygon fill="#ffffff" stroke="none" points="847.5,-381 847.5,-403 1008.5,-403 1008.5,-381 847.5,-381"/>
 <polygon fill="none" stroke="black" points="847.5,-381 847.5,-403 1008.5,-403 1008.5,-381 847.5,-381"/>
 <text text-anchor="start" x="867.5" y="-389.2" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>

@@ -33,7 +33,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_online" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="last_connectivity_event" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="update_progress" nullable="true" remarks="Percent complete of software download and installation (0-100). Null if no software update is in progress." size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="short_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="sensor_kit_id" nullable="false" remarks="ID code that is physically printed on the sensor kit and set as a tag value in the Balena device configuration." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
@@ -55,7 +55,7 @@
             <column ascending="true" name="facility_id"/>
          </index>
          <index name="device_managers_short_code_key" unique="true">
-            <column ascending="true" name="short_code"/>
+            <column ascending="true" name="sensor_kit_id"/>
          </index>
          <index name="device_managers_user_id_idx" unique="false">
             <column ascending="true" name="user_id"/>

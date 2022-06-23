@@ -210,7 +210,7 @@
 <text text-anchor="start" x="715.5" y="-433.2" font-family="Helvetica,sans-Serif" font-size="11.00">balena_id</text>
 <polygon fill="#ffffff" stroke="none" points="695.5,-403 695.5,-425 856.5,-425 856.5,-403 695.5,-403"/>
 <polygon fill="none" stroke="black" points="695.5,-403 695.5,-425 856.5,-425 856.5,-403 695.5,-403"/>
-<text text-anchor="start" x="715.5" y="-411.2" font-family="Helvetica,sans-Serif" font-size="11.00">short_code</text>
+<text text-anchor="start" x="715.5" y="-411.2" font-family="Helvetica,sans-Serif" font-size="11.00">sensor_kit_id</text>
 <polygon fill="#ffffff" stroke="none" points="695.5,-381 695.5,-403 856.5,-403 856.5,-381 695.5,-381"/>
 <polygon fill="none" stroke="black" points="695.5,-381 695.5,-403 856.5,-403 856.5,-381 695.5,-381"/>
 <text text-anchor="start" x="715.5" y="-389.2" font-family="Helvetica,sans-Serif" font-size="11.00">user_id</text>

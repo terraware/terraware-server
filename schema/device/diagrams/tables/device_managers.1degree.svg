@@ -50,7 +50,7 @@
 <text text-anchor="start" x="366.5" y="-213.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="#ffffff" stroke="none" points="202.5,-183 202.5,-205 363.5,-205 363.5,-183 202.5,-183"/>
 <polygon fill="none" stroke="black" points="202.5,-183 202.5,-205 363.5,-205 363.5,-183 202.5,-183"/>
-<text text-anchor="start" x="222.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">short_code</text>
+<text text-anchor="start" x="222.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">sensor_kit_id</text>
 <polygon fill="none" stroke="black" points="363.5,-183 363.5,-205 465.5,-205 465.5,-183 363.5,-183"/>
 <text text-anchor="start" x="366.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
 <polygon fill="#ffffff" stroke="none" points="202.5,-161 202.5,-183 363.5,-183 363.5,-161 202.5,-161"/>
