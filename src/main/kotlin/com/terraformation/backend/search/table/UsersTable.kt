@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.USERS
@@ -43,12 +44,17 @@ class UsersTable(
   override val primaryKey: TableField<out Record, out Any?>
     get() = USERS.ID
 
-  // Users are only visible to other people in the same organizations.
+  // Users are only visible to other people in the same organizations, and API client users are not
+  // visible via this table.
   override fun conditionForPermissions(): Condition {
-    return DSL.exists(
-        DSL.selectOne()
-            .from(ORGANIZATION_USERS)
-            .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
-            .and(ORGANIZATION_USERS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
+    return USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin)
+        .and(
+            DSL.exists(
+                DSL.selectOne()
+                    .from(ORGANIZATION_USERS)
+                    .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
+                    .and(
+                        ORGANIZATION_USERS.ORGANIZATION_ID.`in`(
+                            currentUser().organizationRoles.keys))))
   }
 }

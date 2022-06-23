@@ -23,6 +23,7 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.AccessionGerminationTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
@@ -1601,14 +1602,17 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     private val otherOrgProjectId = ProjectId(20)
     private val bothOrgsUserId = UserId(4)
     private val otherOrgUserId = UserId(5)
+    private val apiClientUserId = UserId(6)
 
     @BeforeEach
     fun insertOtherUsers() {
+      insertUser(apiClientUserId, type = UserType.APIClient)
       insertUser(bothOrgsUserId)
       insertUser(otherOrgUserId)
 
       insertOrganization(otherOrganizationId)
 
+      insertOrganizationUser(apiClientUserId, organizationId)
       insertOrganizationUser(bothOrgsUserId, organizationId, Role.ADMIN)
       insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.ADMIN)
       insertOrganizationUser(otherOrgUserId, otherOrganizationId)

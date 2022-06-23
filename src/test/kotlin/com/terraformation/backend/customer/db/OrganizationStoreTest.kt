@@ -381,7 +381,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 "user2@x.com",
                 "First2",
                 "Last2",
-                UserType.Individual,
+                UserType.SuperAdmin,
                 clock.instant(),
                 organizationId,
                 Role.CONTRIBUTOR,
@@ -390,6 +390,17 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     insertProject(otherProjectId)
     expected.forEach { configureUser(it) }
+    configureUser(
+        OrganizationUserModel(
+            UserId(102),
+            "balena-12345",
+            "Api",
+            "Client",
+            UserType.APIClient,
+            clock.instant(),
+            organizationId,
+            Role.CONTRIBUTOR,
+            emptyList()))
 
     val actual = store.fetchUsers(organizationId)
 
@@ -430,6 +441,42 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     val expected = listOf(model)
     val actual = store.fetchUsers(organizationId)
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchApiClients returns information about API client users`() {
+    val otherProjectId = ProjectId(11)
+    val expected =
+        listOf(
+            OrganizationUserModel(
+                UserId(100),
+                "balena-12345",
+                "Api",
+                "Client",
+                UserType.APIClient,
+                clock.instant(),
+                organizationId,
+                Role.CONTRIBUTOR,
+                emptyList()))
+
+    insertProject(otherProjectId)
+    expected.forEach { configureUser(it) }
+    configureUser(
+        OrganizationUserModel(
+            UserId(101),
+            "user1@x.com",
+            "First1",
+            "Last1",
+            UserType.Individual,
+            clock.instant(),
+            organizationId,
+            Role.ADMIN,
+            emptyList()),
+    )
+
+    val actual = store.fetchApiClients(organizationId)
 
     assertEquals(expected, actual)
   }
