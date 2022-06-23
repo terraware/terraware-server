@@ -30,12 +30,9 @@ class DeviceManagersController(
 ) {
   @GetMapping
   fun getDeviceManagers(
-      @RequestParam("sensorKitId") sensorKitIdParam: String?,
-      // TODO: Remove this once frontend is updated to use sensorKitId
-      @RequestParam("shortCode") shortCode: String?,
+      @RequestParam("sensorKitId") sensorKitId: String?,
       @RequestParam("facilityId") facilityId: FacilityId?,
   ): GetDeviceManagersResponsePayload {
-    val sensorKitId: String? = sensorKitIdParam ?: shortCode
     return when {
       sensorKitId != null && facilityId == null -> {
         val manager =
@@ -76,8 +73,6 @@ class DeviceManagersController(
 data class DeviceManagerPayload(
     val id: DeviceManagerId,
     val sensorKitId: String,
-    // TODO: Remove this once frontend is updated to use sensorKitId
-    val shortCode: String,
     @Schema(description = "If true, this device manager is available to connect to a facility.")
     val available: Boolean,
     @Schema(
@@ -110,7 +105,6 @@ data class DeviceManagerPayload(
       isOnline = row.isOnline!!,
       onlineChangedTime = row.lastConnectivityEvent,
       sensorKitId = row.sensorKitId!!,
-      shortCode = row.sensorKitId!!,
       updateProgress = row.updateProgress,
   )
 }

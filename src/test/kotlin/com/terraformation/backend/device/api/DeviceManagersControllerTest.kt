@@ -25,14 +25,14 @@ internal class DeviceManagersControllerTest : RunsAsUser {
   @Test
   fun `throws exception when neither sensorKitId nor facility ID are specified`() {
     assertThrows<IllegalArgumentException> {
-      deviceManagersController.getDeviceManagers(null, null, null)
+      deviceManagersController.getDeviceManagers(null, null)
     }
   }
 
   @Test
   fun `throws exception when both sensorKitId and facility ID are specified`() {
     assertThrows<IllegalArgumentException> {
-      deviceManagersController.getDeviceManagers("123456", null, FacilityId(1))
+      deviceManagersController.getDeviceManagers("123456", FacilityId(1))
     }
   }
 
@@ -58,11 +58,10 @@ internal class DeviceManagersControllerTest : RunsAsUser {
                     isOnline = true,
                     onlineChangedTime = deviceManager.lastConnectivityEvent!!,
                     sensorKitId = deviceManager.sensorKitId!!,
-                    shortCode = deviceManager.sensorKitId!!,
                     updateProgress = deviceManager.updateProgress!!,
                 )))
 
-    assertEquals(expected, deviceManagersController.getDeviceManagers("123456", null, null))
+    assertEquals(expected, deviceManagersController.getDeviceManagers("123456", null))
   }
 
   @Test
@@ -75,44 +74,6 @@ internal class DeviceManagersControllerTest : RunsAsUser {
             facilityId = FacilityId(2))
     every { deviceManagerStore.fetchOneByFacilityId(FacilityId(2)) } returns deviceManager
     val expected = GetDeviceManagersResponsePayload(listOf(DeviceManagerPayload(deviceManager)))
-    assertEquals(expected, deviceManagersController.getDeviceManagers(null, null, FacilityId(2)))
-  }
-
-  // TODO: Remove this once frontend is updated to use sensorKitId
-  @Test
-  fun `throws exception when both shortCode and facility ID are specified`() {
-    assertThrows<IllegalArgumentException> {
-      deviceManagersController.getDeviceManagers(null, "123456", FacilityId(1))
-    }
-  }
-
-  // TODO: Remove this once frontend is updated to use sensorKitId
-  @Test
-  fun `returns device manager for shortCode`() {
-    val deviceManager =
-        DeviceManagersRow(
-            id = DeviceManagerId(1),
-            isOnline = true,
-            lastConnectivityEvent = Instant.ofEpochSecond(1000),
-            sensorKitId = "123456",
-            updateProgress = 12345)
-
-    every { deviceManagerStore.fetchOneBySensorKitId("123456") } returns deviceManager
-
-    val expected =
-        GetDeviceManagersResponsePayload(
-            listOf(
-                DeviceManagerPayload(
-                    available = true,
-                    facilityId = null,
-                    id = deviceManager.id!!,
-                    isOnline = true,
-                    onlineChangedTime = deviceManager.lastConnectivityEvent!!,
-                    sensorKitId = deviceManager.sensorKitId!!,
-                    shortCode = deviceManager.sensorKitId!!,
-                    updateProgress = deviceManager.updateProgress!!,
-                )))
-
-    assertEquals(expected, deviceManagersController.getDeviceManagers(null, "123456", null))
+    assertEquals(expected, deviceManagersController.getDeviceManagers(null, FacilityId(2)))
   }
 }
