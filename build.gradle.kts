@@ -92,7 +92,7 @@ dependencies {
   implementation("net.coobird:thumbnailator:0.4.17")
   implementation("net.postgis:postgis-jdbc:2021.1.0")
   implementation("org.apache.tika:tika-core:2.4.1")
-  implementation("org.flywaydb:flyway-core:8.5.12")
+  implementation("org.flywaydb:flyway-core:8.5.13")
   implementation("org.freemarker:freemarker:2.3.31")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.1.3")
   implementation("org.jooq:jooq:$jooqVersion")
