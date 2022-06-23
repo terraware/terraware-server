@@ -53,6 +53,7 @@ COMMENT ON TABLE device_managers IS 'Information about device managers. This is 
 COMMENT ON COLUMN device_managers.balena_id IS 'Balena-assigned device identifier.';
 COMMENT ON COLUMN device_managers.balena_modified_time IS 'Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally.';
 COMMENT ON COLUMN device_managers.created_time IS 'When this device manager was added to the local database. The Balena device may have been created earlier.';
+COMMENT ON COLUMN device_managers.sensor_kit_id IS 'ID code that is physically printed on the sensor kit and set as a tag value in the Balena device configuration.';
 COMMENT ON COLUMN device_managers.update_progress IS 'Percent complete of software download and installation (0-100). Null if no software update is in progress.';
 
 COMMENT ON TABLE device_template_categories IS '(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next.';

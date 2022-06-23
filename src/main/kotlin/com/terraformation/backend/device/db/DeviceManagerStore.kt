@@ -34,8 +34,8 @@ class DeviceManagerStore(
     return deviceManagersDao.fetchOneById(id)?.unlessInaccessible()
   }
 
-  fun fetchOneByShortCode(shortCode: String): DeviceManagersRow? {
-    return deviceManagersDao.fetchOneByShortCode(shortCode)?.unlessInaccessible()
+  fun fetchOneBySensorKitId(sensorKitId: String): DeviceManagersRow? {
+    return deviceManagersDao.fetchOneBySensorKitId(sensorKitId)?.unlessInaccessible()
   }
 
   /** Returns all device managers the current user has permission to see. */

@@ -206,7 +206,7 @@ internal class PermissionTest : DatabaseTest() {
               isOnline = true,
               createdTime = Instant.EPOCH,
               refreshedTime = Instant.EPOCH,
-              shortCode = "$deviceManagerId",
+              sensorKitId = "$deviceManagerId",
               facilityId = if (facilityId in facilityIds) facilityId else null,
               userId = if (facilityId in facilityIds) userId else null))
     }

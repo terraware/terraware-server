@@ -71,33 +71,33 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchOneByShortCode returns row for device manager`() {
-    val shortCode = "xyzzy"
+  fun `fetchOneBySensorKitId returns row for device manager`() {
+    val sensorKitId = "xyzzy"
 
-    insertDeviceManager(newRow(shortCode = shortCode))
+    insertDeviceManager(newRow(sensorKitId = sensorKitId))
 
     val expected = deviceManagersDao.fetchOneById(deviceManagerId)!!
-    val actual = store.fetchOneByShortCode(shortCode)
+    val actual = store.fetchOneBySensorKitId(sensorKitId)
 
     assertEquals(expected, actual)
   }
 
   @Test
-  fun `fetchOneByShortCode returns null if user has no read permission`() {
-    val shortCode = "xyzzy"
+  fun `fetchOneBySensorKitId returns null if user has no read permission`() {
+    val sensorKitId = "xyzzy"
 
-    insertDeviceManager(newRow(shortCode = shortCode))
+    insertDeviceManager(newRow(sensorKitId = sensorKitId))
 
     every { user.canReadDeviceManager(deviceManagerId) } returns false
 
-    assertNull(store.fetchOneByShortCode(shortCode))
+    assertNull(store.fetchOneBySensorKitId(sensorKitId))
   }
 
   @Test
-  fun `fetchOneByShortCode returns null if no device manager has the short code`() {
+  fun `fetchOneBySensorKitId returns null if no device manager has the short code`() {
     insertDeviceManager()
 
-    assertNull(store.fetchOneByShortCode("nonexistentShortCode"))
+    assertNull(store.fetchOneBySensorKitId("nonexistentSensorKitId"))
   }
 
   @Test
@@ -167,7 +167,7 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
       id: Any? = this.deviceManagerId,
       balenaId: Long = id?.toString()?.toLong() ?: 1L,
       balenaUuid: String = UUID.randomUUID().toString(),
-      shortCode: String = "$id",
+      sensorKitId: String = "$id",
       userId: Any? = null,
       facilityId: Any? = null,
   ): DeviceManagersRow {
@@ -181,7 +181,7 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
         id = id?.toIdWrapper { DeviceManagerId(it) },
         isOnline = true,
         refreshedTime = Instant.EPOCH,
-        shortCode = shortCode,
+        sensorKitId = sensorKitId,
         userId = userId?.toIdWrapper { UserId(it) },
     )
   }

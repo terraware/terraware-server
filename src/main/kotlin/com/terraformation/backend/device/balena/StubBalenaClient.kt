@@ -24,7 +24,7 @@ class StubBalenaClient : BalenaClient {
         "Would configure Balena device $balenaId with facility $facilityId, token $tokenExcerpt")
   }
 
-  override fun getShortCodeForBalenaId(balenaId: BalenaDeviceId): String? {
+  override fun getSensorKitIdForBalenaId(balenaId: BalenaDeviceId): String? {
     return null
   }
 

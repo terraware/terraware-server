@@ -74,7 +74,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
     val device = balenaDevice(1)
 
     every { balenaClient.listModifiedDevices(any()) } returns listOf(device)
-    every { balenaClient.getShortCodeForBalenaId(device.id) } returns "${device.id}"
+    every { balenaClient.getSensorKitIdForBalenaId(device.id) } returns "${device.id}"
 
     poller.updateBalenaDevices()
 
@@ -89,7 +89,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
     val device = balenaDevice(1)
 
     every { balenaClient.listModifiedDevices(any()) } returns listOf(device)
-    every { balenaClient.getShortCodeForBalenaId(device.id) } returns null
+    every { balenaClient.getSensorKitIdForBalenaId(device.id) } returns null
 
     poller.updateBalenaDevices()
 
@@ -162,7 +162,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
       balenaModifiedTime: Instant = Instant.EPOCH,
       facilityId: Any? = null,
       isOnline: Boolean = false,
-      shortCode: String = "$balenaId",
+      sensorKitId: String = "$balenaId",
       refreshedTime: Instant = Instant.EPOCH,
   ): DeviceManagersRow {
     return DeviceManagersRow(
@@ -175,7 +175,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
         id = id?.toIdWrapper { DeviceManagerId(it) },
         isOnline = isOnline,
         refreshedTime = refreshedTime,
-        shortCode = shortCode,
+        sensorKitId = sensorKitId,
         userId = if (facilityId != null) user.userId else null,
     )
   }
@@ -187,7 +187,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
       balenaModifiedTime: Instant = Instant.EPOCH,
       facilityId: Any? = null,
       isOnline: Boolean = false,
-      shortCode: String = "$balenaId",
+      sensorKitId: String = "$balenaId",
       refreshedTime: Instant = Instant.EPOCH,
   ): DeviceManagersRow {
     val row =
@@ -198,7 +198,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
             balenaModifiedTime,
             facilityId,
             isOnline,
-            shortCode,
+            sensorKitId,
             refreshedTime)
 
     deviceManagersDao.insert(row)
