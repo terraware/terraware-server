@@ -14,6 +14,8 @@ import org.apache.commons.lang3.BooleanUtils
 class SpeciesCsvValidator(
     private val uploadId: UploadId,
     private val existingScientificNames: Set<String>,
+    /** Map of initial scientific names to current names for species that have been renamed. */
+    private val existingRenames: Map<String, String>,
     private val messages: Messages,
 ) {
   private var rowNum = 1
@@ -106,6 +108,12 @@ class SpeciesCsvValidator(
             UploadProblemType.DuplicateValue,
             field,
             value,
+            messages.speciesCsvScientificNameExists())
+      } else if (value in existingRenames) {
+        addWarning(
+            UploadProblemType.DuplicateValue,
+            field,
+            "${existingRenames[value]} ($value)",
             messages.speciesCsvScientificNameExists())
       }
     }

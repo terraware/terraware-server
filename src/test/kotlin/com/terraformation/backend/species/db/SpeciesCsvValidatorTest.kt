@@ -16,7 +16,8 @@ import org.junit.jupiter.params.provider.ValueSource
 
 internal class SpeciesCsvValidatorTest {
   private val messages = Messages()
-  private val existingScientificNames = setOf("Existing a", "Existing b", "Existing c")
+  private val existingRenames = mapOf("Initial d" to "Renamed d")
+  private val existingScientificNames = setOf("Existing a", "Existing b", "Existing c", "Renamed d")
   private val uploadId = UploadId(1)
 
   private val header =
@@ -125,6 +126,24 @@ internal class SpeciesCsvValidatorTest {
                       uploadId = uploadId,
                       value = "Existing b"),
               ))
+    }
+
+    @Test
+    fun `duplicate initial names are flagged as duplicates of the current names`() {
+      val csv = "$header\nInitial d,,,,,,\n"
+
+      assertValidationResults(
+          csv,
+          warnings =
+              setOf(
+                  UploadProblemsRow(
+                      field = "Scientific Name",
+                      isError = false,
+                      message = messages.speciesCsvScientificNameExists(),
+                      position = 2,
+                      typeId = DuplicateValue,
+                      uploadId = uploadId,
+                      value = "Renamed d (Initial d)")))
     }
 
     private fun csvWithScientificName(scientificName: String): String =
@@ -279,7 +298,8 @@ internal class SpeciesCsvValidatorTest {
       errors: Set<UploadProblemsRow> = emptySet(),
       warnings: Set<UploadProblemsRow> = emptySet()
   ) {
-    val validator = SpeciesCsvValidator(uploadId, existingScientificNames, messages)
+    val validator =
+        SpeciesCsvValidator(uploadId, existingScientificNames, existingRenames, messages)
     validator.validate(csv.byteInputStream())
 
     val expected = mapOf("errors" to errors, "warnings" to warnings)

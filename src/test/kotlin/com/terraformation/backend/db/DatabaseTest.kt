@@ -419,6 +419,7 @@ abstract class DatabaseTest {
       organizationId: Any = "$speciesId".toLong() / 10,
       deletedTime: Instant? = null,
       checkedTime: Instant? = null,
+      initialScientificName: String = scientificName,
   ) {
     val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -432,6 +433,7 @@ abstract class DatabaseTest {
           .set(DELETED_BY, if (deletedTime != null) createdBy else null)
           .set(DELETED_TIME, deletedTime)
           .set(ID, speciesIdWrapper)
+          .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, modifiedTime)
           .set(ORGANIZATION_ID, organizationIdWrapper)

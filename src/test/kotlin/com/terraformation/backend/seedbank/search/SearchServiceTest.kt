@@ -126,6 +126,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SpeciesRow(
             id = SpeciesId(10000),
             scientificName = "Kousa Dogwood",
+            initialScientificName = "Kousa Dogwood",
             commonName = "Common 1",
             rare = false,
             growthFormId = GrowthForm.Graminoid,
@@ -138,6 +139,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         SpeciesRow(
             id = SpeciesId(10001),
             scientificName = "Other Dogwood",
+            initialScientificName = "Other Dogwood",
             commonName = "Common 2",
             endangered = true,
             seedStorageBehaviorId = SeedStorageBehavior.Orthodox,

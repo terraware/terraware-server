@@ -178,6 +178,7 @@ class SpeciesStore(
               deletedBy = null,
               deletedTime = null,
               id = null,
+              initialScientificName = row.scientificName,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
           )
@@ -208,6 +209,7 @@ class SpeciesStore(
             createdTime = existing.createdTime,
             deletedBy = existing.deletedBy,
             deletedTime = existing.deletedTime,
+            initialScientificName = existing.initialScientificName,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             organizationId = existing.organizationId,

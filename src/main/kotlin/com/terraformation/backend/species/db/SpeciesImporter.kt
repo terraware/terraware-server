@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedStorageBehavior
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.UploadNotFoundException
@@ -115,8 +116,27 @@ class SpeciesImporter(
               .fetch(SPECIES.SCIENTIFIC_NAME)
               .filterNotNull()
               .toSet()
+      val existingRenames =
+          dslContext
+              .selectDistinct(SPECIES.INITIAL_SCIENTIFIC_NAME, SPECIES.SCIENTIFIC_NAME)
+              .on(SPECIES.INITIAL_SCIENTIFIC_NAME)
+              .from(SPECIES)
+              .where(SPECIES.ORGANIZATION_ID.eq(uploadsRow.organizationId))
+              .and(SPECIES.DELETED_TIME.isNull)
+              .and(SPECIES.INITIAL_SCIENTIFIC_NAME.ne(SPECIES.SCIENTIFIC_NAME))
+              .orderBy(SPECIES.INITIAL_SCIENTIFIC_NAME, SPECIES.SCIENTIFIC_NAME)
+              .fetch { (initial, scientific) ->
+                if (initial != null && scientific != null) {
+                  initial to scientific
+                } else {
+                  null
+                }
+              }
+              .filterNotNull()
+              .toMap()
 
-      val validator = SpeciesCsvValidator(uploadId, existingScientificNames, messages)
+      val validator =
+          SpeciesCsvValidator(uploadId, existingScientificNames, existingRenames, messages)
 
       fileStore.read(storageUrl).use { inputStream -> validator.validate(inputStream) }
 
@@ -205,6 +225,50 @@ class SpeciesImporter(
     }
   }
 
+  /**
+   * Inserts or updates a single species based on a row from the CSV.
+   *
+   * Species are matched based on their scientific names, but this is a little tricky because we
+   * track renamed species and want to match on the original name. The use case is someone uploading
+   * a CSV, accepting a suggested name change, then uploading the CSV again; we want to remember
+   * that species X in the CSV is really species Y in our database because the user renamed it.
+   *
+   * In addition, this needs to behave differently if there is an existing species but it is marked
+   * as deleted; sometimes we want to undelete the existing row and sometimes we want to ignore it.
+   * And it also needs to act differently depending on whether the user wants to overwrite existing
+   * data or only import new entries.
+   *
+   * Exhaustive list of the possible cases:
+   *
+   * * Current = the scientific name from the CSV is the same as the scientific name of an existing
+   * species (regardless of whether the existing species is deleted or not)
+   * * Initial = the scientific name from the CSV is the same as the initial scientific name of an
+   * existing species (regardless of whether the existing species is deleted or not)
+   * * Deleted = the existing species, if any, is marked as deleted
+   * * Overwrite = the [overwriteExisting] parameter is true, meaning the user wants to update
+   * existing species rather than ignore them
+   *
+   * ```
+   * | Current | Initial | Deleted | Overwrite | Action |
+   * | ------- | ------- | ------- | --------- | ------ |
+   * | No      | No      | No      | No        | Insert |
+   * | No      | No      | No      | Yes       | Insert |
+   * | No      | No      | Yes     | No        | (impossible) |
+   * | No      | No      | Yes     | Yes       | (impossible) |
+   * | No      | Yes     | No      | No        | No-op |
+   * | No      | Yes     | No      | Yes       | Update but use current name instead of CSV's |
+   * | No      | Yes     | Yes     | No        | Insert |
+   * | No      | Yes     | Yes     | Yes       | Insert |
+   * | Yes     | No      | No      | No        | No-op |
+   * | Yes     | No      | No      | Yes       | Update |
+   * | Yes     | No      | Yes     | No        | Update and undelete |
+   * | Yes     | No      | Yes     | Yes       | Update and undelete |
+   * | Yes     | Yes     | No      | No        | No-op |
+   * | Yes     | Yes     | No      | Yes       | Update species with same current name |
+   * | Yes     | Yes     | Yes     | No        | Update species with same current name; undelete |
+   * | Yes     | Yes     | Yes     | Yes       | Update species with same current name; undelete |
+   * ```
+   */
   private fun importRow(
       rawValues: Array<out String>,
       organizationId: OrganizationId,
@@ -221,32 +285,15 @@ class SpeciesImporter(
     val growthForm = values[5]?.let { GrowthForm.forDisplayName(it) }
     val seedStorageBehavior = values[6]?.let { SeedStorageBehavior.forDisplayName(it) }
 
-    val rowsTouched =
-        with(SPECIES) {
-          // If the user wants to overwrite existing data, this is a straightforward upsert. But if
-          // they want to keep existing data, there's a wrinkle: there might be a species with a
-          // colliding scientific name that is marked as deleted. In that case, we need to overwrite
-          // its details and mark it as no longer deleted.
-          val insertStatement =
-              dslContext
-                  .insertInto(SPECIES)
-                  .set(SCIENTIFIC_NAME, scientificName)
-                  .set(COMMON_NAME, commonName)
-                  .set(FAMILY_NAME, familyName)
-                  .set(ENDANGERED, endangered)
-                  .set(RARE, rare)
-                  .set(GROWTH_FORM_ID, growthForm)
-                  .set(SEED_STORAGE_BEHAVIOR_ID, seedStorageBehavior)
-                  .set(CREATED_BY, userId)
-                  .set(CREATED_TIME, clock.instant())
-                  .set(MODIFIED_BY, userId)
-                  .set(MODIFIED_TIME, clock.instant())
-                  .set(ORGANIZATION_ID, organizationId)
-
-          if (overwriteExisting) {
-            insertStatement
-                .onConflict(ORGANIZATION_ID, SCIENTIFIC_NAME)
-                .doUpdate()
+    return with(SPECIES) {
+      /**
+       * Updates the editable values of an existing species and marks it as not deleted. Leaves the
+       * initial scientific name as is.
+       */
+      fun updateExisting(speciesId: SpeciesId): Boolean {
+        val rowsUpdated =
+            dslContext
+                .update(SPECIES)
                 .set(COMMON_NAME, commonName)
                 .set(FAMILY_NAME, familyName)
                 .set(ENDANGERED, endangered)
@@ -257,35 +304,66 @@ class SpeciesImporter(
                 .setNull(DELETED_BY)
                 .set(MODIFIED_BY, userId)
                 .set(MODIFIED_TIME, clock.instant())
+                .where(ID.eq(speciesId))
                 .execute()
-          } else {
-            val rowsInserted =
-                insertStatement.onConflict(ORGANIZATION_ID, SCIENTIFIC_NAME).doNothing().execute()
-
-            if (rowsInserted == 0) {
-              dslContext
-                  .update(SPECIES)
-                  .set(COMMON_NAME, commonName)
-                  .set(FAMILY_NAME, familyName)
-                  .set(ENDANGERED, endangered)
-                  .set(RARE, rare)
-                  .set(GROWTH_FORM_ID, growthForm)
-                  .set(SEED_STORAGE_BEHAVIOR_ID, seedStorageBehavior)
-                  .setNull(DELETED_TIME)
-                  .setNull(DELETED_BY)
-                  .set(MODIFIED_BY, userId)
-                  .set(MODIFIED_TIME, clock.instant())
-                  .where(ORGANIZATION_ID.eq(organizationId))
-                  .and(SCIENTIFIC_NAME.eq(scientificName))
-                  .and(DELETED_TIME.isNotNull)
-                  .execute()
-            } else {
-              1
-            }
-          }
+        return if (rowsUpdated == 1) {
+          true
+        } else {
+          log.error("Expected to update 1 row for species $speciesId but got $rowsUpdated")
+          false
         }
+      }
 
-    return rowsTouched > 0
+      val existingByCurrentName =
+          dslContext
+              .select(SPECIES.ID, SPECIES.DELETED_TIME)
+              .from(SPECIES)
+              .where(ORGANIZATION_ID.eq(organizationId))
+              .and(SCIENTIFIC_NAME.eq(scientificName))
+              .fetchOne()
+      val existingIdByCurrentName = existingByCurrentName?.get(ID)
+
+      if (existingIdByCurrentName != null) {
+        if (overwriteExisting || existingByCurrentName[DELETED_TIME] != null) {
+          updateExisting(existingIdByCurrentName)
+        } else {
+          false
+        }
+      } else {
+        val existingIdByInitialName =
+            dslContext
+                .select(SPECIES.ID)
+                .from(SPECIES)
+                .where(ORGANIZATION_ID.eq(organizationId))
+                .and(INITIAL_SCIENTIFIC_NAME.eq(scientificName))
+                .and(DELETED_TIME.isNull)
+                .fetchOne(SPECIES.ID)
+
+        if (existingIdByInitialName == null) {
+          dslContext
+              .insertInto(SPECIES)
+              .set(SCIENTIFIC_NAME, scientificName)
+              .set(INITIAL_SCIENTIFIC_NAME, scientificName)
+              .set(COMMON_NAME, commonName)
+              .set(FAMILY_NAME, familyName)
+              .set(ENDANGERED, endangered)
+              .set(RARE, rare)
+              .set(GROWTH_FORM_ID, growthForm)
+              .set(SEED_STORAGE_BEHAVIOR_ID, seedStorageBehavior)
+              .set(CREATED_BY, userId)
+              .set(CREATED_TIME, clock.instant())
+              .set(MODIFIED_BY, userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .set(ORGANIZATION_ID, organizationId)
+              .execute()
+          true
+        } else if (overwriteExisting) {
+          updateExisting(existingIdByInitialName)
+        } else {
+          false
+        }
+      }
+    }
   }
 
   private fun updateStatus(uploadId: UploadId, status: UploadStatus) {
