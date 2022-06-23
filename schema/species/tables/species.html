@@ -395,6 +395,23 @@
                                     </td>
                                     <td><p>If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="initial_scientific_name">initial_scientific_name</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -432,6 +449,12 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>species_organization_id_initial_scientific_name_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>organization_id + initial_scientific_name</td>
+                                </tr>
+                                <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> species_organization_id_scientific_name_key</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
@@ -460,7 +483,7 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,32,696,571">
+<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,32,696,600">
 <area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,64,259,181">
 <area shape="rect" id="node3" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="740,5,959,211">
 </map>
@@ -468,11 +491,11 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,5,696,544">
+<area shape="rect" id="node1" href="../../tables/species.html" target="_top" title="species" alt="" coords="303,5,696,573">
 <area shape="rect" id="node2" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,37,259,155">
-<area shape="rect" id="node3" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="740,500,959,705">
-<area shape="rect" id="node4" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="370,561,629,649">
-<area shape="rect" id="node5" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="369,667,629,755">
+<area shape="rect" id="node3" href="../../tables/species_problems.html" target="_top" title="species_problems" alt="" coords="740,529,959,735">
+<area shape="rect" id="node4" href="../../tables/species_problem_fields.html" target="_top" title="species_problem_fields" alt="" coords="370,591,629,679">
+<area shape="rect" id="node5" href="../../tables/species_problem_types.html" target="_top" title="species_problem_types" alt="" coords="369,696,629,784">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/species.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
