@@ -57,7 +57,7 @@ internal class LiveBalenaClientTest {
   private lateinit var client: LiveBalenaClient
 
   private val fleetName = "test-${System.currentTimeMillis()}"
-  private val shortCode = Random.nextInt(100000, 999999).toString()
+  private val sensorKitId = Random.nextInt(100000, 999999).toString()
 
   private lateinit var deviceId: BalenaDeviceId
   private var fleetId: Long = System.getenv("TEST_BALENA_FLEET_ID")?.toLongOrNull() ?: -1
@@ -93,7 +93,7 @@ internal class LiveBalenaClientTest {
       createdFleet = true
     }
 
-    deviceId = createDevice(shortCode)
+    deviceId = createDevice(sensorKitId)
     createdDevice = true
 
     every { config.balena } returns
@@ -130,8 +130,8 @@ internal class LiveBalenaClientTest {
   }
 
   @Test
-  fun `getShortCodeForBalenaId returns short code`() {
-    Assertions.assertEquals(shortCode, client.getShortCodeForBalenaId(deviceId))
+  fun `getSensorKitIdForBalenaId returns short code`() {
+    Assertions.assertEquals(sensorKitId, client.getSensorKitIdForBalenaId(deviceId))
   }
 
   @Test
@@ -232,7 +232,7 @@ internal class LiveBalenaClientTest {
     return response.body().get().d.first { it.slug == RASPBERRY_PI_DEVICE_TYPE_SLUG }.id
   }
 
-  private fun createDevice(shortCode: String): BalenaDeviceId {
+  private fun createDevice(sensorKitId: String): BalenaDeviceId {
     val response =
         client.sendRequest<BalenaDevice>(
             LiveBalenaClient.DEVICE_PATH,
@@ -249,8 +249,8 @@ internal class LiveBalenaClientTest {
         body =
             mapOf(
                 "device" to deviceId,
-                "tag_key" to LiveBalenaClient.SHORT_CODE_TAG_KEY,
-                "value" to shortCode))
+                "tag_key" to LiveBalenaClient.SENSOR_KIT_ID_TAG_KEY,
+                "value" to sensorKitId))
 
     return deviceId
   }

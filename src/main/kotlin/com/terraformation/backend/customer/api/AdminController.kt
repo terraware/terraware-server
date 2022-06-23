@@ -781,7 +781,7 @@ class AdminController(
   @PostMapping("/deviceManagers")
   fun createDeviceManager(
       redirectAttributes: RedirectAttributes,
-      @RequestParam("shortCode") shortCode: String,
+      @RequestParam("sensorKitId") sensorKitId: String,
   ): String {
     val row =
         DeviceManagersRow(
@@ -789,10 +789,10 @@ class AdminController(
             balenaUuid = UUID.randomUUID().toString(),
             balenaModifiedTime = clock.instant(),
             createdTime = clock.instant(),
-            deviceName = "Test Device $shortCode",
+            deviceName = "Test Device $sensorKitId",
             isOnline = true,
             refreshedTime = clock.instant(),
-            shortCode = shortCode,
+            sensorKitId = sensorKitId,
         )
 
     return try {

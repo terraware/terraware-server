@@ -10,10 +10,10 @@ interface BalenaClient {
   fun configureDeviceManager(balenaId: BalenaDeviceId, facilityId: FacilityId, token: String)
 
   /**
-   * Returns the value of the `short_code` tag for a particular Balena device. If the tag is not
+   * Returns the value of the sensor kit ID tag for a particular Balena device. If the tag is not
    * present or the device does not exist, returns null.
    */
-  fun getShortCodeForBalenaId(balenaId: BalenaDeviceId): String?
+  fun getSensorKitIdForBalenaId(balenaId: BalenaDeviceId): String?
 
   /**
    * Returns a list of the Balena devices that have been modified after a particular time. This is

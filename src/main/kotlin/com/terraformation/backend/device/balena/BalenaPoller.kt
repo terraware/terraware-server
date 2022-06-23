@@ -55,10 +55,10 @@ class BalenaPoller(
           modifiedDevices.forEach { device ->
             val existingRow = deviceManagerStore.fetchOneByBalenaId(device.id)
             if (existingRow == null) {
-              val shortCode = balenaClient.getShortCodeForBalenaId(device.id)
+              val sensorKitId = balenaClient.getSensorKitIdForBalenaId(device.id)
 
-              if (shortCode == null) {
-                log.warn("No short code found for Balena device ${device.id}")
+              if (sensorKitId == null) {
+                log.warn("No sensor kit ID found for Balena device ${device.id}")
               } else {
                 val newRow =
                     DeviceManagersRow(
@@ -70,7 +70,7 @@ class BalenaPoller(
                         isOnline = device.isOnline,
                         lastConnectivityEvent = device.lastConnectivityEvent,
                         refreshedTime = clock.instant(),
-                        shortCode = shortCode,
+                        sensorKitId = sensorKitId,
                         updateProgress = device.overallProgress,
                     )
 
@@ -78,7 +78,7 @@ class BalenaPoller(
 
                 log.info(
                     "Added device manager ${newRow.id} for Balena device ${device.id} with " +
-                        "short code $shortCode")
+                        "sensor kit ID $sensorKitId")
               }
             } else {
               existingRow.apply {

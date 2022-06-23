@@ -26,7 +26,7 @@
             <a th:href="|${prefix}/deviceManagers/${manager.id}|" th:text="${manager.id}">123</a>
         </td>
         <td>
-            <a th:href="|${prefix}/deviceManagers/${manager.id}|" th:text="${manager.shortCode}">ABCDE</a>
+            <a th:href="|${prefix}/deviceManagers/${manager.id}|" th:text="${manager.sensorKitId}">ABCDE</a>
         </td>
         <td th:text="${manager.facilityId}">
             <a th:href="|${prefix}/facility/${manager.facilityId}|" th:text="${manager.facilityId}">567</a>
@@ -46,8 +46,8 @@
     </p>
 
     <form th:action="|${prefix}/deviceManagers|" method="POST">
-        <label for="shortCode">Short Code</label>
-        <input type="text" name="shortCode" id="shortCode"/>
+        <label for="sensorKitId">Sensor Kit ID</label>
+        <input type="text" name="sensorKitId" id="sensorKitId"/>
         <br/>
 
         <input type="submit" value="Create"/>

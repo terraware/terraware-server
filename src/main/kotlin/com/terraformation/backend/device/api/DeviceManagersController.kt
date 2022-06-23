@@ -30,21 +30,24 @@ class DeviceManagersController(
 ) {
   @GetMapping
   fun getDeviceManagers(
+      @RequestParam("sensorKitId") sensorKitIdParam: String?,
+      // TODO: Remove this once frontend is updated to use sensorKitId
       @RequestParam("shortCode") shortCode: String?,
       @RequestParam("facilityId") facilityId: FacilityId?,
   ): GetDeviceManagersResponsePayload {
+    val sensorKitId: String? = sensorKitIdParam ?: shortCode
     return when {
-      shortCode != null && facilityId == null -> {
+      sensorKitId != null && facilityId == null -> {
         val manager =
-            deviceManagerStore.fetchOneByShortCode(shortCode)?.let { DeviceManagerPayload(it) }
+            deviceManagerStore.fetchOneBySensorKitId(sensorKitId)?.let { DeviceManagerPayload(it) }
         GetDeviceManagersResponsePayload(listOfNotNull(manager))
       }
-      shortCode == null && facilityId != null -> {
+      sensorKitId == null && facilityId != null -> {
         val manager =
             deviceManagerStore.fetchOneByFacilityId(facilityId)?.let { DeviceManagerPayload(it) }
         GetDeviceManagersResponsePayload(listOfNotNull(manager))
       }
-      else -> throw IllegalArgumentException("Must specify shortCode or facility ID but not both")
+      else -> throw IllegalArgumentException("Must specify sensorKitId or facility ID but not both")
     }
   }
 
@@ -72,6 +75,8 @@ class DeviceManagersController(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DeviceManagerPayload(
     val id: DeviceManagerId,
+    val sensorKitId: String,
+    // TODO: Remove this once frontend is updated to use sensorKitId
     val shortCode: String,
     @Schema(description = "If true, this device manager is available to connect to a facility.")
     val available: Boolean,
@@ -104,7 +109,8 @@ data class DeviceManagerPayload(
       id = row.id!!,
       isOnline = row.isOnline!!,
       onlineChangedTime = row.lastConnectivityEvent,
-      shortCode = row.shortCode!!,
+      sensorKitId = row.sensorKitId!!,
+      shortCode = row.sensorKitId!!,
       updateProgress = row.updateProgress,
   )
 }

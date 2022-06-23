@@ -52,7 +52,7 @@ class LiveBalenaClient(
     setDeviceEnvironmentVar(balenaId, TOKEN_ENV_VAR_NAME, token, overwrite = false)
   }
 
-  override fun getShortCodeForBalenaId(balenaId: BalenaDeviceId): String? {
+  override fun getSensorKitIdForBalenaId(balenaId: BalenaDeviceId): String? {
     val response =
         sendRequest<GetTagsForDeviceResponse>(
             DEVICE_TAG_PATH,
@@ -61,7 +61,7 @@ class LiveBalenaClient(
                 listOf(
                     filterTerm("device/belongs_to__application", fleetId),
                     filterTerm("device/id", balenaId),
-                    filterTerm("tag_key", SHORT_CODE_TAG_KEY)),
+                    filterTerm("tag_key", SENSOR_KIT_ID_TAG_KEY)),
             select = listOf("value"))
 
     return response.body().get().d.firstOrNull()?.value
@@ -275,7 +275,7 @@ class LiveBalenaClient(
     const val DEVICE_TYPE_PATH = "/v6/device_type"
     const val FLEET_PATH = "/v6/application"
 
-    const val SHORT_CODE_TAG_KEY = "short_code"
+    const val SENSOR_KIT_ID_TAG_KEY = "sensor_kit_id"
 
     const val FACILITIES_ENV_VAR_NAME = "FACILITIES"
     const val TOKEN_ENV_VAR_NAME = "OFFLINE_REFRESH_TOKEN"
