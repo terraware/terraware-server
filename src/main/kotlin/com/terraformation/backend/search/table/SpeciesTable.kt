@@ -51,5 +51,6 @@ class SpeciesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperat
 
   override fun conditionForPermissions(): Condition {
     return SPECIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
+        .and(SPECIES.DELETED_TIME.isNull)
   }
 }

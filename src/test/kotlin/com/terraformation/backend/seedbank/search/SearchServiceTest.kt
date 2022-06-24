@@ -148,6 +148,18 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             modifiedBy = user.userId,
             modifiedTime = now,
             organizationId = organizationId))
+    speciesDao.insert(
+        SpeciesRow(
+            id = SpeciesId(10002),
+            scientificName = "Deleted species",
+            initialScientificName = "Deleted species",
+            createdBy = user.userId,
+            createdTime = now,
+            modifiedBy = user.userId,
+            modifiedTime = now,
+            deletedBy = user.userId,
+            deletedTime = now,
+            organizationId = organizationId))
 
     accessionsDao.insert(
         AccessionsRow(
