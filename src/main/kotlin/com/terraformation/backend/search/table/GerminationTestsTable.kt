@@ -42,10 +42,10 @@ class GerminationTestsTable(
           enumField("type", "Germination test type", GERMINATION_TESTS.TEST_TYPE),
       )
 
-  override val inheritsPermissionsFrom: SearchTable
+  override val inheritsVisibilityFrom: SearchTable
     get() = tables.accessions
 
-  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(ACCESSIONS).on(GERMINATION_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID))
   }
 }

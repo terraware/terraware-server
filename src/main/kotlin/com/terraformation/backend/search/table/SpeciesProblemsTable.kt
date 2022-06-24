@@ -37,10 +37,10 @@ class SpeciesProblemsTable(
           enumField("type", "Species problem type", SPECIES_PROBLEMS.TYPE_ID),
       )
 
-  override val inheritsPermissionsFrom: SearchTable
+  override val inheritsVisibilityFrom: SearchTable
     get() = tables.species
 
-  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(SPECIES).on(SPECIES_PROBLEMS.SPECIES_ID.eq(SPECIES.ID))
   }
 }

@@ -153,7 +153,7 @@ class AccessionsTable(
     )
   }
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 

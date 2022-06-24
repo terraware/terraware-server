@@ -35,10 +35,10 @@ class GerminationsTable(
               "seedsGerminated", "Number of seeds germinated", GERMINATIONS.SEEDS_GERMINATED),
       )
 
-  override val inheritsPermissionsFrom: SearchTable
+  override val inheritsVisibilityFrom: SearchTable
     get() = tables.germinationTests
 
-  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(GERMINATION_TESTS).on(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
   }
 }

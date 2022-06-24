@@ -34,7 +34,7 @@ class StorageLocationsTable(tables: SearchTables, fuzzySearchOperators: FuzzySea
           textField("name", "Storage location name", STORAGE_LOCATIONS.NAME),
       )
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return STORAGE_LOCATIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 }

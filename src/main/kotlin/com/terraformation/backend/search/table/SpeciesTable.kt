@@ -49,7 +49,7 @@ class SpeciesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperat
               SPECIES.SEED_STORAGE_BEHAVIOR_ID),
       )
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return SPECIES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
         .and(SPECIES.DELETED_TIME.isNull)
   }

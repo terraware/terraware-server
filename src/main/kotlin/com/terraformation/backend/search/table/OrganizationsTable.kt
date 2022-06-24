@@ -54,7 +54,7 @@ class OrganizationsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearch
           textField("name", "Organization name", ORGANIZATIONS.NAME, nullable = false),
       )
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return ORGANIZATIONS.ID.`in`(currentUser().organizationRoles.keys)
   }
 }

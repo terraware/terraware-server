@@ -22,7 +22,7 @@ class ProjectTypeSelectionsTable(fuzzySearchOperators: FuzzySearchOperators) :
           enumField("type", "Project type", PROJECT_TYPE_SELECTIONS.PROJECT_TYPE_ID),
       )
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return PROJECT_TYPE_SELECTIONS.PROJECT_ID.`in`(currentUser().projectRoles.keys)
   }
 }

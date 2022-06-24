@@ -36,7 +36,7 @@ class SitesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperator
           textField("name", "Site name", SITES.NAME, nullable = false),
       )
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return SITES.PROJECT_ID.`in`(currentUser().projectRoles.keys)
   }
 }

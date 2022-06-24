@@ -29,13 +29,13 @@ class SearchService(private val dslContext: DSLContext) {
 
   /** Returns a condition that filters search results based on a list of criteria. */
   private fun filterResults(rootPrefix: SearchFieldPrefix, criteria: SearchNode): Condition {
-    // Filter out results the user doesn't have permission to see. NestedQueryBuilder will include
-    // the permissions check on the root table, but not on parent tables.
+    // Filter out results the user doesn't have the ability to see. NestedQueryBuilder will include
+    // the visibility check on the root table, but not on parent tables.
     val rootTable = rootPrefix.root
     val conditions =
         listOfNotNull(
             criteria.toCondition(),
-            rootTable.inheritsPermissionsFrom?.let { conditionForPermissions(it) })
+            rootTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) })
 
     val primaryKey = rootTable.primaryKey
 
@@ -181,7 +181,7 @@ class SearchService(private val dslContext: DSLContext) {
    * @param limit Maximum number of results desired. The return value may be larger than this limit
    * by at most 1 element, which callers can use to detect that the number of values exceeds the
    * limit.
-   * @param searchScope Scoping data for the search
+   * @param searchScopes Scoping data for the search
    * @return A list of values, which may include `null` if the field is not mandatory.
    */
   fun fetchAllValues(
@@ -205,7 +205,7 @@ class SearchService(private val dslContext: DSLContext) {
           val selectFields =
               field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
           val searchTable = fieldPath.searchTable
-          val permsCondition = conditionForPermissions(fieldPath.searchTable)
+          val permsCondition = conditionForVisibility(fieldPath.searchTable)
           val searchConditions =
               searchScopes.mapNotNull { fieldPath.searchTable.conditionForScope(it) }
           val conditions = listOfNotNull(permsCondition) + searchConditions
@@ -214,7 +214,7 @@ class SearchService(private val dslContext: DSLContext) {
               dslContext
                   .selectDistinct(selectFields)
                   .from(searchTable.fromTable)
-                  .let { joinForPermissions(it, setOf(searchTable), searchTable) }
+                  .let { joinForVisibility(it, setOf(searchTable), searchTable) }
                   .where(conditions)
                   .orderBy(DSL.field("order_by_field").asc().nullsLast())
                   .limit(limit + 1)
@@ -233,48 +233,47 @@ class SearchService(private val dslContext: DSLContext) {
 
   /**
    * Joins a query with any additional tables that are needed in order to determine which results
-   * the user has permission to see. This is needed when the query's root prefix points at a table
-   * that doesn't include enough information to do permissions filtering.
+   * the user has the ability to see. This is needed when the query's root prefix points at a table
+   * that doesn't include enough information to do visibility filtering.
    *
    * This can potentially join with multiple additional tables if the required information is more
    * than one hop away in the graph of search tables.
    *
    * The resulting query will include all the tables that will be referenced by
-   * [conditionForPermissions].
+   * [conditionForVisibility].
    *
    * @param referencedTables Which tables are already referenced in the query. This method will not
    * join with these tables. Should not include tables that are only referenced in subqueries.
    */
-  private fun <T : Record> joinForPermissions(
+  private fun <T : Record> joinForVisibility(
       query: SelectJoinStep<T>,
       referencedTables: Set<SearchTable>,
       searchTable: SearchTable
   ): SelectJoinStep<T> {
-    val inheritsPermissionsFrom = searchTable.inheritsPermissionsFrom ?: return query
+    val inheritsVisibilityFrom = searchTable.inheritsVisibilityFrom ?: return query
 
-    return if (inheritsPermissionsFrom in referencedTables) {
+    return if (inheritsVisibilityFrom in referencedTables) {
       // We've already joined with the next table in the chain, so no need to do it again. But we
       // might still need to join with additional tables beyond the next one.
-      joinForPermissions(query, referencedTables, inheritsPermissionsFrom)
+      joinForVisibility(query, referencedTables, inheritsVisibilityFrom)
     } else {
       // The query doesn't already include the table we need to join with from this one in order to
-      // evaluate permissions; join with it and then see if there are additional tables that also
-      joinForPermissions(
-          searchTable.joinForPermissions(query),
-          referencedTables + inheritsPermissionsFrom,
-          inheritsPermissionsFrom)
+      // evaluate visibility; join with it and then see if there are additional tables that also
+      joinForVisibility(
+          searchTable.joinForVisibility(query),
+          referencedTables + inheritsVisibilityFrom,
+          inheritsVisibilityFrom)
     }
   }
 
   /**
-   * Returns a condition that checks whether the user has permission to view a particular search
-   * result.
+   * Returns a condition that checks whether the user is able to view a particular search result.
    *
-   * The condition can refer to columns in any tables that are added by [joinForPermissions].
+   * The condition can refer to columns in any tables that are added by [joinForVisibility].
    */
-  private fun conditionForPermissions(searchTable: SearchTable): Condition? {
-    return searchTable.conditionForPermissions()
-        ?: searchTable.inheritsPermissionsFrom?.let { conditionForPermissions(it) }
+  private fun conditionForVisibility(searchTable: SearchTable): Condition? {
+    return searchTable.conditionForVisibility()
+        ?: searchTable.inheritsVisibilityFrom?.let { conditionForVisibility(it) }
   }
 
   /**
@@ -297,6 +296,6 @@ class SearchService(private val dslContext: DSLContext) {
           query.leftJoin(sublist.searchTable.fromTable).on(sublist.conditionForMultiset)
         }
 
-    return joinForPermissions(joinedQuery, referencedTables, rootPrefix.root)
+    return joinForVisibility(joinedQuery, referencedTables, rootPrefix.root)
   }
 }

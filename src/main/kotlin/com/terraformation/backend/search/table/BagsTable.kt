@@ -28,10 +28,10 @@ class BagsTable(private val tables: SearchTables, fuzzySearchOperators: FuzzySea
           textField("number", "Bag number", BAGS.BAG_NUMBER),
       )
 
-  override val inheritsPermissionsFrom: SearchTable
+  override val inheritsVisibilityFrom: SearchTable
     get() = tables.accessions
 
-  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(ACCESSIONS).on(BAGS.ACCESSION_ID.eq(ACCESSIONS.ID))
   }
 }

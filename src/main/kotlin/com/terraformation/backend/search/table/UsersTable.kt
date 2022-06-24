@@ -46,7 +46,7 @@ class UsersTable(
 
   // Users are only visible to other people in the same organizations, and API client users are not
   // visible via this table.
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin)
         .and(
             DSL.exists(
