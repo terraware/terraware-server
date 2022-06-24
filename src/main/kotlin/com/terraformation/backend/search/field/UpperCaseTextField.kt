@@ -23,13 +23,14 @@ class UpperCaseTextField(
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
-    val values = fieldNode.values.mapNotNull { it?.uppercase() }
     return when (fieldNode.type) {
-      SearchFilterType.Exact ->
-          DSL.or(
-              listOfNotNull(
-                  if (values.isNotEmpty()) databaseField.`in`(values) else null,
-                  if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+      SearchFilterType.Exact -> {
+        val values = fieldNode.values.mapNotNull { it?.uppercase() }
+        DSL.or(
+            listOfNotNull(
+                if (values.isNotEmpty()) databaseField.`in`(values) else null,
+                if (fieldNode.values.any { it == null }) databaseField.isNull else null))
+      }
       SearchFilterType.Fuzzy ->
           DSL.or(
               fieldNode.values
