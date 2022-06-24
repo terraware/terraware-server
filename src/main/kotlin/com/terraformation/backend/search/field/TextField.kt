@@ -26,20 +26,24 @@ class TextField(
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
-    val nonNullValues = fieldNode.values.filterNotNull()
+    val nonNullValues = fieldNode.values.filterNotNull().map { it.lowercase() }
     return when (fieldNode.type) {
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(
-                  if (nonNullValues.isNotEmpty()) databaseField.`in`(nonNullValues) else null,
+                  if (nonNullValues.isNotEmpty()) {
+                    DSL.lower(databaseField).`in`(nonNullValues)
+                  } else {
+                    null
+                  },
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null))
       SearchFilterType.Fuzzy ->
           DSL.or(
-              fieldNode.values.flatMap { value ->
+              fieldNode.values.map { value ->
                 if (value != null) {
-                  listOf(databaseField.likeFuzzy(value), databaseField.like("$value%"))
+                  databaseField.likeFuzzy(value)
                 } else {
-                  listOf(databaseField.isNull)
+                  databaseField.isNull
                 }
               })
       SearchFilterType.Range ->

@@ -46,7 +46,6 @@ import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchNode
 import com.terraformation.backend.search.SearchResults
-import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
 import com.terraformation.backend.search.SearchTable
@@ -607,6 +606,57 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                 mapOf("id" to "1", "accessionNumber" to "MISSING"),
             ),
             cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `fuzzy search on text fields is case-insensitive`() {
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "Some Matching Notes"))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "Not It"))
+
+    val fields = listOf(accessionNumberField)
+    val searchNode = FieldNode(storageNotesField, listOf("matc"), SearchFilterType.Fuzzy)
+
+    val result = accessionSearchService.search(facilityId, fields, searchNode)
+
+    val expected =
+        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `fuzzy search on text fields handles single-character search values`() {
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "Some Matching Notes"))
+    accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "Not It"))
+
+    val fields = listOf(accessionNumberField)
+    val searchNode = FieldNode(storageNotesField, listOf("G"), SearchFilterType.Fuzzy)
+
+    val result = accessionSearchService.search(facilityId, fields, searchNode)
+
+    val expected =
+        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `exact search on text fields is case-insensitive`() {
+    accessionsDao.update(
+        accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "Some Matching Notes"))
+
+    val fields = listOf(accessionNumberField)
+    val searchNode =
+        FieldNode(storageNotesField, listOf("some matching Notes"), SearchFilterType.Exact)
+
+    val result = accessionSearchService.search(facilityId, fields, searchNode)
+
+    val expected =
+        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
 
     assertEquals(expected, result)
   }
@@ -1477,7 +1527,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if search scopes is empty`() {
       assertThrows<IllegalArgumentException> {
-        searchService.fetchAllValues(accessionNumberField, emptyList<SearchScope>())
+        searchService.fetchAllValues(accessionNumberField, emptyList())
       }
     }
   }

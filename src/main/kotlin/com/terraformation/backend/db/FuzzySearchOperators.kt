@@ -14,8 +14,16 @@ interface FuzzySearchOperators {
 /** Renders fuzzy text search SQL for PostgreSQL with the pg\_trgm extension. */
 @ManagedBean
 class PostgresFuzzySearchOperators : FuzzySearchOperators {
-  override fun likeFuzzy(field: Field<String?>, value: String) =
-      DSL.condition("{0} %>> {1}", field, DSL.`val`(value))
+  override fun likeFuzzy(field: Field<String?>, value: String): Condition {
+    // Trigram searches don't work for single-character search strings, so fall back to LIKE.
+    return if (value.length > 1) {
+      DSL.condition("{0} %> {1}", field, DSL.`val`(value))
+    } else {
+      val escapedValue = escapeLikePattern(value.lowercase())
+      DSL.lower(field).like("%$escapedValue%")
+    }
+  }
+
   override fun similarity(field: Field<String?>, value: String) =
       DSL.field("similarity({0},{1})", Double::class.java, field, DSL.`val`(value))
 }
@@ -32,4 +40,9 @@ interface UsesFuzzySearchOperators {
   fun Field<String?>.likeFuzzy(value: String) = fuzzySearchOperators.likeFuzzy(this, value)
 
   fun Field<String?>.similarity(value: String) = fuzzySearchOperators.similarity(this, value)
+}
+
+/** Escapes special characters in a string for use in a SQL "LIKE" clause. */
+fun escapeLikePattern(pattern: String): String {
+  return pattern.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%")
 }
