@@ -51,10 +51,10 @@ class WithdrawalsTable(
               WITHDRAWALS.WITHDRAWN_UNITS_ID),
       )
 
-  override val inheritsPermissionsFrom: SearchTable
+  override val inheritsVisibilityFrom: SearchTable
     get() = tables.accessions
 
-  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(ACCESSIONS).on(WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID))
   }
 }

@@ -50,7 +50,7 @@ class ProjectsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpera
           enumField("status", "Project status", PROJECTS.STATUS_ID),
       )
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return PROJECTS.ID.`in`(currentUser().projectRoles.keys)
   }
 }

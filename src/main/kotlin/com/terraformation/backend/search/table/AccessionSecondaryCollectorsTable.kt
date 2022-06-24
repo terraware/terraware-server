@@ -31,9 +31,9 @@ class AccessionSecondaryCollectorsTable(
           textField("name", "Collector name", ACCESSION_SECONDARY_COLLECTORS.NAME),
       )
 
-  override val inheritsPermissionsFrom: SearchTable = tables.accessions
+  override val inheritsVisibilityFrom: SearchTable = tables.accessions
 
-  override fun <T : Record> joinForPermissions(query: SelectJoinStep<T>): SelectJoinStep<T> {
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(ACCESSIONS).on(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
   }
 }

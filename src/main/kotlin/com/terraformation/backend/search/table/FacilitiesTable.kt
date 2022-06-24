@@ -48,7 +48,7 @@ class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOpe
           enumField("type", "Facility type", FACILITIES.TYPE_ID, nullable = false),
       )
 
-  override fun conditionForPermissions(): Condition {
+  override fun conditionForVisibility(): Condition {
     return FACILITIES.ID.`in`(currentUser().facilityRoles.keys)
   }
 
