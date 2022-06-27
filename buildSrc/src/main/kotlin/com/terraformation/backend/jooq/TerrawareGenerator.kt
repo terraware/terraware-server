@@ -148,8 +148,8 @@ class TerrawareGenerator : KotlinGenerator() {
                 .withConverter("com.terraformation.backend.db.UriConverter")
                 .withUserType("java.net.URI"))
 
-    ENUM_TABLES.forEach { types.add(it.forcedType(targetPackage)) }
-    ID_WRAPPERS.forEach { types.add(it.forcedType(targetPackage)) }
+    ENUM_TABLES.mapNotNull { it.forcedType(targetPackage) }.forEach { types.add(it) }
+    ID_WRAPPERS.mapNotNull { it.forcedType(targetPackage) }.forEach { types.add(it) }
 
     return types
   }
