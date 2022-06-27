@@ -40,7 +40,8 @@ val ENUM_TABLES =
         EnumTable(
             "notification_criticalities",
             listOf(".*\\.notification_criticality_id"),
-            "NotificationCriticality"),
+            "NotificationCriticality",
+            generateForcedType = false),
         EnumTable(
             "notification_types",
             listOf(".*\\.notification_type_id"),
