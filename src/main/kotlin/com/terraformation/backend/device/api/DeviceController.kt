@@ -130,8 +130,9 @@ data class DeviceConfig(
                 "the exact settings depend on the device type.")
     val settings: Map<String, Any?>?,
     @Schema(
-        description = "How often the device manager should poll for status updates, in seconds.")
-    val pollingInterval: Int?,
+        description = "Level of diagnostic information to log.",
+    )
+    val verbosity: Int?,
     @Schema(description = "ID of parent device such as a hub or gateway, if any.")
     val parentId: DeviceId?,
 ) {
@@ -148,10 +149,35 @@ data class DeviceConfig(
       protocol = row.protocol,
       address = row.address,
       port = row.port,
-      settings = row.settings?.let { objectMapper.readValue(it.data()) },
-      pollingInterval = row.pollingInterval,
+      settings = row.settingsWithVerbosity(objectMapper),
+      verbosity = row.verbosity,
       parentId = row.parentId,
   )
+}
+
+/**
+ * Settings key for the device's verbosity level, for backward compatibility.
+ *
+ * TODO: Remove this once the device manager uses the verbosity payload field.
+ */
+private const val VERBOSITY_KEY = "diagnosticMode"
+
+private fun DevicesRow.settingsWithVerbosity(objectMapper: ObjectMapper): Map<String, Any?>? {
+  val settingsMap = settings?.let { objectMapper.readValue<Map<String, Any?>>(it.data()) }
+
+  return if (verbosity == null) {
+    settingsMap
+  } else {
+    val verbosityMap = mapOf(VERBOSITY_KEY to verbosity)
+
+    settingsMap?.plus(verbosityMap) ?: verbosityMap
+  }
+}
+
+private fun Map<String, Any?>.toJsonbWithoutVerbosity(objectMapper: ObjectMapper): JSONB? {
+  return minus(VERBOSITY_KEY)
+      .ifEmpty { null }
+      ?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) }
 }
 
 data class CreateDeviceRequestPayload(
@@ -187,8 +213,9 @@ data class CreateDeviceRequestPayload(
                 "the exact settings depend on the device type.")
     val settings: Map<String, Any?>? = null,
     @Schema(
-        description = "How often the device manager should poll for status updates, in seconds.")
-    val pollingInterval: Int? = null,
+        description = "Level of diagnostic information to log.",
+    )
+    val verbosity: Int?,
     @Schema(
         description =
             "ID of parent device such as a hub or gateway, if any. The parent device must exist.")
@@ -205,9 +232,9 @@ data class CreateDeviceRequestPayload(
         protocol = protocol,
         address = address,
         port = port,
-        pollingInterval = pollingInterval,
+        verbosity = verbosity ?: settings?.get(VERBOSITY_KEY)?.toString()?.toInt(),
         enabled = true,
-        settings = settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        settings = settings?.toJsonbWithoutVerbosity(objectMapper),
         parentId = parentId,
     )
   }
@@ -244,8 +271,9 @@ data class UpdateDeviceRequestPayload(
                 "the exact settings depend on the device type.")
     val settings: Map<String, Any?>? = null,
     @Schema(
-        description = "How often the device manager should poll for status updates, in seconds.")
-    val pollingInterval: Int? = null,
+        description = "Level of diagnostic information to log.",
+    )
+    val verbosity: Int?,
     @Schema(
         description =
             "ID of parent device such as a hub or gateway, if any. The parent device must exist.")
@@ -262,9 +290,9 @@ data class UpdateDeviceRequestPayload(
         protocol = protocol,
         address = address,
         port = port,
-        pollingInterval = pollingInterval,
+        verbosity = verbosity ?: settings?.get(VERBOSITY_KEY)?.toString()?.toInt(),
         enabled = true,
-        settings = settings?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        settings = settings?.toJsonbWithoutVerbosity(objectMapper),
         parentId = parentId,
     )
   }

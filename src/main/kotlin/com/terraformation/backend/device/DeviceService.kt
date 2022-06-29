@@ -90,9 +90,9 @@ class DeviceService(
                   protocol = template.protocol,
                   address = template.address,
                   port = template.port,
-                  pollingInterval = template.pollingInterval,
                   enabled = true,
                   settings = template.settings,
+                  verbosity = template.verbosity,
               )
             }
             .forEach { create(it) }

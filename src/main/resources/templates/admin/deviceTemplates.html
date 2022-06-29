@@ -23,7 +23,7 @@
         <th>Protocol</th>
         <th>Address</th>
         <th>Port</th>
-        <th>Interval</th>
+        <th>Verbosity</th>
         <th>Settings</th>
         <th th:if="${canUpdateDeviceTemplates}">Commands</th>
     </tr>
@@ -81,7 +81,7 @@
                    maxlength="5" size="5"/>
         </td>
         <td>
-            <input name="pollingInterval" th:value="${template.pollingInterval}"
+            <input name="verbosity" th:value="${template.verbosity}"
                    th:form="|template${template.id}|" maxlength="5" size="5"/>
         </td>
         <td>
@@ -131,7 +131,7 @@
             <input name="port" form="createTemplate" maxlength="5" size="5"/>
         </td>
         <td>
-            <input name="pollingInterval" form="createTemplate" maxlength="5" size="5"/>
+            <input name="verbosity" form="createTemplate" maxlength="5" size="5"/>
         </td>
         <td>
             <input name="settings" form="createTemplate"/>
