@@ -8,7 +8,6 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationSeedType
@@ -101,8 +100,7 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   @GetMapping("/{id}")
   @Operation(summary = "Retrieve an existing accession.")
   fun read(@PathVariable("id") accessionId: AccessionId): GetAccessionResponsePayload {
-    val accession =
-        accessionStore.fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    val accession = accessionStore.fetchOneById(accessionId)
     return GetAccessionResponsePayload(AccessionPayload(accession, clock))
   }
 

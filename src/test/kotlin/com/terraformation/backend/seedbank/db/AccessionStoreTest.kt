@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.BagId
@@ -284,7 +285,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val desired = initial.copy(bagNumbers = setOf("bag 2", "bag 3"))
 
-    assertTrue(store.update(desired), "Update succeeded")
+    store.update(desired)
 
     val updatedBags = bagsDao.fetchByAccessionId(AccessionId(1))
 
@@ -314,10 +315,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         AccessionModel(deviceInfo = AppDeviceModel(model = "model"), facilityId = facilityId)
     val initial = store.create(payload)
 
-    val fetched = store.fetchById(initial.id!!)
+    val fetched = store.fetchOneById(initial.id!!)
 
-    assertNotNull(fetched?.deviceInfo)
-    assertEquals("model", fetched?.deviceInfo?.model)
+    assertNotNull(fetched.deviceInfo)
+    assertEquals("model", fetched.deviceInfo?.model)
     assertEquals(AccessionSource.SeedCollectorApp, initial.source)
   }
 
@@ -348,7 +349,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                     Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                     Geolocation(BigDecimal(5), BigDecimal(6))))
 
-    assertTrue(store.update(desired), "Update succeeded")
+    store.update(desired)
 
     val updatedGeos = geolocationsDao.fetchByAccessionId(AccessionId(1))
 
@@ -413,7 +414,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertNull(updatedRow?.latestViabilityPercent, "latestViabilityPercent")
     assertNull(updatedRow?.latestGerminationRecordingDate, "latestGerminationRecordingDate")
 
-    val updatedAccession = store.fetchById(AccessionId(1))!!
+    val updatedAccession = store.fetchOneById(AccessionId(1))
     assertNull(
         updatedAccession.germinationTests.first().germinations,
         "Empty list of germinations should be null in model")
@@ -691,7 +692,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         accessionsDao.fetchOneById(AccessionId(1))?.storageLocationId,
         "Existing storage location ID was used")
 
-    val updated = store.fetchById(initial.id!!)!!
+    val updated = store.fetchOneById(initial.id!!)
     assertEquals(locationName, updated.storageLocation, "Location name")
     assertEquals(StorageCondition.Freezer, updated.storageCondition, "Storage condition")
   }
@@ -724,9 +725,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     accessionPhotosDao.insert(
         AccessionPhotosRow(accessionId = AccessionId(1), photoId = photosRow.id))
 
-    val fetched = store.fetchById(initial.id!!)
+    val fetched = store.fetchOneById(initial.id!!)
 
-    assertEquals(listOf("photo.jpg"), fetched?.photoFilenames)
+    assertEquals(listOf("photo.jpg"), fetched.photoFilenames)
   }
 
   @Test
@@ -738,13 +739,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             subsetCount = 1,
             subsetWeightQuantity = SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Ounces),
             total = SeedQuantityModel(BigDecimal.TEN, SeedQuantityUnits.Pounds)))
-    val fetched = store.fetchById(initial.id!!)!!
+    val fetched = store.fetchOneById(initial.id!!)
 
     assertEquals(160, fetched.estimatedSeedCount, "Estimated seed count is added")
 
     store.update(fetched.copy(total = null))
 
-    val fetchedAfterClear = store.fetchById(initial.id!!)!!
+    val fetchedAfterClear = store.fetchOneById(initial.id!!)
 
     assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
   }
@@ -753,18 +754,18 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `update recalculates seeds remaining when seed count is filled in`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
-    val fetched = store.fetchById(initial.id!!)
+    val fetched = store.fetchOneById(initial.id!!)
 
-    assertEquals(seeds<SeedQuantityModel>(10), fetched?.remaining)
+    assertEquals(seeds<SeedQuantityModel>(10), fetched.remaining)
   }
 
   @Test
   fun `update recalculates seeds remaining on withdrawal`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(10)))
-    val fetched = store.fetchById(initial.id!!)
+    val fetched = store.fetchOneById(initial.id!!)
 
-    assertEquals(seeds(10), fetched?.remaining)
+    assertEquals(seeds(10), fetched.remaining)
   }
 
   @Test
@@ -797,7 +798,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     store.update(requested)
 
-    val actual = store.fetchById(initial.id!!)
+    val actual = store.fetchOneById(initial.id!!)
 
     assertEquals(initial, actual)
   }
@@ -817,7 +818,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     store.update(desired)
 
-    val actual = store.fetchById(initial.id!!)
+    val actual = store.fetchOneById(initial.id!!)
 
     assertEquals(desired, actual)
   }
@@ -958,7 +959,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 updatedTime = clock.instant())),
         historyRecords)
 
-    assertEquals(store.fetchById(initial.id!!), updated, "Return value should match database")
+    assertEquals(store.fetchOneById(initial.id!!), updated, "Return value should match database")
   }
 
   @Test
@@ -977,7 +978,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
     store.update(initial.copy(checkedInTime = Instant.EPOCH, primaryCollector = "test"))
-    val updated = store.fetchById(initial.id!!)!!
+    val updated = store.fetchOneById(initial.id!!)
 
     assertEquals(AccessionState.AwaitingCheckIn, updated.state, "State")
     assertNull(updated.checkedInTime, "Checked-in time")
@@ -987,10 +988,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `state transitions to Processing when seed count entered`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     store.update(initial.copy(processingMethod = ProcessingMethod.Count, total = seeds(100)))
-    val fetched = store.fetchById(initial.id!!)
+    val fetched = store.fetchOneById(initial.id!!)
 
-    assertEquals(AccessionState.Processing, fetched?.state)
-    assertEquals(LocalDate.now(clock), fetched?.processingStartDate)
+    assertEquals(AccessionState.Processing, fetched.state)
+    assertEquals(LocalDate.now(clock), fetched.processingStartDate)
 
     val historyRecords =
         dslContext
@@ -1014,9 +1015,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `dryRun does not persist changes`() {
     val initial = store.create(AccessionModel(species = "Initial Species", facilityId = facilityId))
     store.dryRun(initial.copy(species = "Modified Species"))
-    val fetched = store.fetchById(initial.id!!)
+    val fetched = store.fetchOneById(initial.id!!)
 
-    assertEquals(initial.species, fetched?.species)
+    assertEquals(initial.species, fetched.species)
   }
 
   @Test
@@ -1560,12 +1561,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchByNumber does not return accession if user does not have permission`() {
-    every { user.canReadAccession(any()) } returns false
-
+  fun `fetchOneById throws exception if user does not have permission`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     assertNotNull(initial, "Should have created accession successfully")
-    assertNull(store.fetchById(initial.id!!), "Should not have been able to read accession")
+
+    every { user.canReadAccession(any()) } returns false
+
+    assertThrows<AccessionNotFoundException> { store.fetchOneById(initial.id!!) }
   }
 
   @Test
@@ -1575,9 +1577,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertThrows<AccessDeniedException> { store.update(initial.copy(numberOfTrees = 1)) }
 
-    val afterUpdate = store.fetchById(initial.id!!)
+    val afterUpdate = store.fetchOneById(initial.id!!)
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
-    assertNull(afterUpdate?.numberOfTrees, "Update should not have been written")
+    assertNull(afterUpdate.numberOfTrees, "Update should not have been written")
   }
 
   @Test
@@ -1598,9 +1600,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       store.update(initial.copy(facilityId = facilityIdInAnotherOrg))
     }
 
-    val afterUpdate = store.fetchById(initial.id!!)
+    val afterUpdate = store.fetchOneById(initial.id!!)
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
-    assertEquals(afterUpdate?.facilityId, facilityId, "Update should not updated facility id")
+    assertEquals(afterUpdate.facilityId, facilityId, "Update should not updated facility id")
   }
 
   @Test
@@ -1613,10 +1615,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     store.update(initial.copy(facilityId = anotherFacilityId))
 
-    val afterUpdate = store.fetchById(initial.id!!)
+    val afterUpdate = store.fetchOneById(initial.id!!)
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
     assertEquals(
-        afterUpdate?.facilityId, anotherFacilityId, "Update should have updated facility id")
+        afterUpdate.facilityId, anotherFacilityId, "Update should have updated facility id")
   }
 
   @Nested
