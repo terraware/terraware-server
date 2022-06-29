@@ -1,1 +1,0 @@
--- Constrain features.geom to only store sperical Mercator coordinates. No-op on generic databases.

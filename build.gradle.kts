@@ -275,12 +275,6 @@ tasks {
 
     flywayProperties =
         mapOf(
-            "flyway.locations" to
-                listOf(
-                        "src/main/resources/db/migration/dev",
-                        "src/main/resources/db/migration/postgres",
-                        "src/main/resources/db/migration/common")
-                    .joinToString(",") { "filesystem:$projectDir/$it" },
             "flyway.placeholders.jsonColumnType" to "JSONB",
             "flyway.placeholders.uuidColumnType" to "UUID",
         )

@@ -2,8 +2,7 @@ spring:
   flyway:
     locations:
       - "classpath:db/migration/dev"
-      - "classpath:db/migration/postgres"
-      - "classpath:db/migration/common"
+      - "classpath:db/migration"
 
 terraware:
   web-app-url: "http://dummy/"

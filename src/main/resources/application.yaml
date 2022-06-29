@@ -44,9 +44,6 @@ spring:
     password: "${DATABASE_PASSWORD:}"
 
   flyway:
-    locations:
-      - "classpath:db/migration/postgres"
-      - "classpath:db/migration/common"
     placeholders:
       jsonColumnType: "JSONB"
       uuidColumnType: "UUID"
