@@ -48,7 +48,7 @@ data class DeviceTemplatePayload(
     val address: String?,
     val port: Int?,
     val settings: Map<String, Any?>?,
-    val pollingInterval: Int?,
+    val verbosity: Int?,
 ) {
   constructor(
       row: DeviceTemplatesRow,
@@ -64,7 +64,7 @@ data class DeviceTemplatePayload(
       row.address,
       row.port,
       row.settings?.let { objectMapper.readValue(it.data()) },
-      row.pollingInterval)
+      row.verbosity)
 }
 
 data class ListDeviceTemplatesResponsePayload(val templates: List<DeviceTemplatePayload>) :

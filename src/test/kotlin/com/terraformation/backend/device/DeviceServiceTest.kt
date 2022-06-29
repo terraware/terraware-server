@@ -308,10 +308,10 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             make = "make",
             model = "model",
             name = "name",
-            pollingInterval = 50,
             port = 123,
             protocol = "protocol",
             settings = JSONB.jsonb("{\"data\":\"abc\"}"),
+            verbosity = 3,
         )
 
     deviceTemplatesDao.insert(template)
@@ -331,10 +331,10 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
                 model = template.model,
                 modifiedBy = user.userId,
                 name = template.name,
-                pollingInterval = template.pollingInterval,
                 port = template.port,
                 protocol = template.protocol,
                 settings = template.settings,
+                verbosity = template.verbosity,
             ))
 
     val actual = devicesDao.findAll()
