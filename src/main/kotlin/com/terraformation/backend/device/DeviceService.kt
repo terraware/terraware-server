@@ -103,7 +103,6 @@ class DeviceService(
   private fun updateAutomations(deviceId: DeviceId, row: DevicesRow) {
     val facilityId = row.facilityId ?: throw IllegalArgumentException("No facility ID specified")
     val existingAutomations = automationStore.fetchByDeviceId(deviceId)
-    val desiredAutomations = automationsForDevice(deviceId, row)
 
     existingAutomations.forEach { existingAutomation ->
       if (existingAutomation.type == AutomationModel.SENSOR_BOUNDS_TYPE) {
@@ -116,77 +115,73 @@ class DeviceService(
       }
     }
 
-    desiredAutomations.forEach { (name, configuration) ->
-      log.info("Creating automation $name for device $deviceId")
-      automationStore.create(facilityId, name, null, configuration)
-    }
+    createAutomations(facilityId, deviceId, row)
   }
 
-  private fun automationsForDevice(
-      deviceId: DeviceId,
-      row: DevicesRow
-  ): Map<String, Map<String, Any?>> {
+  private fun createAutomations(facilityId: FacilityId, deviceId: DeviceId, row: DevicesRow) {
     val name = row.name ?: throw IllegalArgumentException("No device name specified")
 
-    return if (row.deviceType == "sensor" && row.make == "OmniSense" && row.model == "S-11") {
-      automationsForTemperatureHumiditySensor(deviceId, name)
+    if (row.deviceType == "sensor" && row.make == "OmniSense" && row.model == "S-11") {
+      createTemperatureHumiditySensorAutomations(facilityId, deviceId, name)
     } else if (row.deviceType == "BMU") {
-      automationsForBMU(deviceId, name)
-    } else {
-      emptyMap()
+      createBmuAutomations(facilityId, deviceId, name)
     }
   }
 
-  private fun automationsForBMU(deviceId: DeviceId, name: String): Map<String, Map<String, Any?>> {
-    return mapOf(
-        "$name 25% charge" to sensorBounds(deviceId, "relative_state_of_charge", 25.1, null),
-        "$name 10% charge" to sensorBounds(deviceId, "relative_state_of_charge", 10.1, null),
-        "$name 0% charge" to sensorBounds(deviceId, "relative_state_of_charge", 0.1, null),
-    )
+  private fun createBmuAutomations(facilityId: FacilityId, deviceId: DeviceId, name: String) {
+    createBoundsAutomation(
+        "$name 25% charge", facilityId, deviceId, "relative_state_of_charge", 25.1, null)
+    createBoundsAutomation(
+        "$name 10% charge", facilityId, deviceId, "relative_state_of_charge", 10.1, null)
+    createBoundsAutomation(
+        "$name 0% charge", facilityId, deviceId, "relative_state_of_charge", 0.1, null)
   }
 
-  private fun automationsForTemperatureHumiditySensor(
+  private fun createTemperatureHumiditySensorAutomations(
+      facilityId: FacilityId,
       deviceId: DeviceId,
       name: String
-  ): Map<String, Map<String, Any?>> {
-    return when {
-      name.startsWith("Ambient ") ->
-          mapOf(
-              "$name humidity" to sensorBounds(deviceId, "humidity", 34.0, 40.0),
-              "$name temperature" to sensorBounds(deviceId, "temperature", 21.0, 25.0),
-          )
-      name.startsWith("Dry Cabinet ") ->
-          mapOf(
-              "$name humidity" to sensorBounds(deviceId, "humidity", 27.0, 33.0),
-              "$name temperature" to sensorBounds(deviceId, "temperature", 21.0, 25.0),
-          )
-      name.startsWith("Freezer ") ->
-          mapOf(
-              "$name temperature" to sensorBounds(deviceId, "temperature", -25.0, -15.0),
-          )
-      name.startsWith("Fridge ") ->
-          mapOf(
-              "$name temperature" to sensorBounds(deviceId, "temperature", 0.0, 10.0),
-          )
-      else -> emptyMap()
+  ) {
+    when {
+      name.startsWith("Ambient ") -> {
+        createBoundsAutomation("$name humidity", facilityId, deviceId, "humidity", 34.0, 40.0)
+        createBoundsAutomation("$name temperature", facilityId, deviceId, "temperature", 21.0, 25.0)
+      }
+      name.startsWith("Dry Cabinet ") -> {
+        createBoundsAutomation("$name humidity", facilityId, deviceId, "humidity", 27.0, 33.0)
+        createBoundsAutomation("$name temperature", facilityId, deviceId, "temperature", 21.0, 25.0)
+      }
+      name.startsWith("Freezer ") -> {
+        createBoundsAutomation(
+            "$name temperature", facilityId, deviceId, "temperature", -25.0, -15.0)
+      }
+      name.startsWith("Fridge ") -> {
+        createBoundsAutomation("$name temperature", facilityId, deviceId, "temperature", 0.0, 10.0)
+      }
     }
   }
 
-  private fun sensorBounds(
+  private fun createBoundsAutomation(
+      name: String,
+      facilityId: FacilityId,
       deviceId: DeviceId,
       timeseriesName: String,
-      lowerBound: Double?,
-      upperBound: Double?,
-  ): Map<String, Any?> {
-    return with(AutomationModel) {
-      listOfNotNull(
-              TYPE_KEY to SENSOR_BOUNDS_TYPE,
-              DEVICE_ID_KEY to deviceId,
-              TIMESERIES_NAME_KEY to timeseriesName,
-              lowerBound?.let { LOWER_THRESHOLD_KEY to it },
-              upperBound?.let { UPPER_THRESHOLD_KEY to it },
-          )
-          .toMap()
-    }
+      lowerThreshold: Double?,
+      upperThreshold: Double?,
+  ) {
+    val configuration =
+        with(AutomationModel) {
+          listOfNotNull(
+                  TYPE_KEY to SENSOR_BOUNDS_TYPE,
+                  DEVICE_ID_KEY to deviceId,
+                  TIMESERIES_NAME_KEY to timeseriesName,
+                  lowerThreshold?.let { LOWER_THRESHOLD_KEY to it },
+                  upperThreshold?.let { UPPER_THRESHOLD_KEY to it },
+              )
+              .toMap()
+        }
+
+    log.info("Creating automation $name for device $deviceId")
+    automationStore.create(facilityId, name, null, configuration)
   }
 }
