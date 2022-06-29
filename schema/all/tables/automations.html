@@ -222,7 +222,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="configuration">configuration</span></td>
+                                    <td><span id="settings">settings</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -280,6 +280,112 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="type">type</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="device_id">device_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="automations.device_id references devices.id via automations_device_id_fkey"><a href='devices.html'>devices</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">automations_device_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="timeseries_name">timeseries_name</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="verbosity">verbosity</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>0</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="lower_threshold">lower_threshold</span></td>
+                                    <td>float8</td>
+                                    <td>17,17</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="upper_threshold">upper_threshold</span></td>
+                                    <td>float8</td>
+                                    <td>17,17</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -311,6 +417,12 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>automations_device_id_timeseries_name_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>device_id + timeseries_name</td>
+                                </tr>
+                                <tr>
                                     <td title='Indexed'>automations_facility_id_name_idx</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
@@ -339,34 +451,35 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="577,68,893,401">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,200,277,405">
-<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="321,5,533,299">
+<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="793,72,1129,581">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,295,277,500">
+<area shape="rect" id="node3" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="577,388,749,623">
+<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="321,5,533,299">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/automations.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1978,61,2143,149">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,542,488,748">
-<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1361,289,1573,582">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="807,142,948,230">
-<area shape="rect" id="node5" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="1667,61,1884,149">
-<area shape="rect" id="node20" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,633,172,721">
-<area shape="rect" id="node9" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="1035,485,1317,573">
-<area shape="rect" id="node10" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="1107,202,1245,290">
-<area shape="rect" id="node11" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="1082,308,1270,396">
-<area shape="rect" id="node13" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="532,477,720,565">
-<area shape="rect" id="node6" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1617,513,1933,846">
-<area shape="rect" id="node7" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1667,864,1883,952">
-<area shape="rect" id="node8" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1704,1021,1847,1109">
-<area shape="rect" id="node17" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="803,336,951,424">
-<area shape="rect" id="node12" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="786,477,969,565">
-<area shape="rect" id="node14" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="764,582,991,670">
-<area shape="rect" id="node15" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="557,1073,695,1161">
-<area shape="rect" id="node16" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="1083,756,1269,844">
-<area shape="rect" id="node18" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1977,940,2144,1028">
-<area shape="rect" id="node19" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="804,688,951,776">
+<area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="1964,145,2129,233">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,620,488,825">
+<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1361,357,1573,651">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="807,220,948,308">
+<area shape="rect" id="node5" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="1617,69,1835,157">
+<area shape="rect" id="node20" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,711,172,799">
+<area shape="rect" id="node9" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="1035,555,1317,643">
+<area shape="rect" id="node10" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="1107,272,1245,360">
+<area shape="rect" id="node11" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="1082,377,1270,465">
+<area shape="rect" id="node13" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="532,555,720,643">
+<area shape="rect" id="node6" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1879,715,2215,1224">
+<area shape="rect" id="node7" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1640,1031,1812,1265">
+<area shape="rect" id="node8" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1618,648,1834,736">
+<area shape="rect" id="node17" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="803,413,951,501">
+<area shape="rect" id="node12" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="786,555,969,643">
+<area shape="rect" id="node14" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="764,660,991,748">
+<area shape="rect" id="node15" href="../../tables/photos.html" target="_top" title="photos" alt="" coords="557,1335,695,1423">
+<area shape="rect" id="node16" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="1083,833,1269,921">
+<area shape="rect" id="node18" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1963,1253,2130,1341">
+<area shape="rect" id="node19" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="804,765,951,853">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/automations.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -7,7 +7,7 @@ sites
 facilities
 devices
 timeseries
-automations
 device_managers
 device_templates
 timeseries_values
+automations

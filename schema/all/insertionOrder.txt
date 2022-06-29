@@ -57,10 +57,10 @@ device_managers
 project_type_selections
 upload_problems
 accession_state_history
-automations
 notifications
 species_problems
 accession_notifications
+automations
 project_users
 organization_users
 withdrawals

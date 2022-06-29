@@ -1,7 +1,7 @@
+automations
 timeseries_values
 device_templates
 device_managers
-automations
 timeseries
 devices
 facilities

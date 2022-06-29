@@ -13,12 +13,24 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="configuration" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="settings" nullable="true" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="device_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="timeseries_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="verbosity" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="13" name="lower_threshold" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
+         <column autoUpdated="false" defaultValue="null" digits="17" id="14" name="upper_threshold" nullable="true" remarks="" size="17" type="float8" typeCode="8"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="automations_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="automations_device_id_timeseries_name_idx" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="timeseries_name"/>
          </index>
          <index name="automations_facility_id_name_idx" unique="false">
             <column ascending="true" name="facility_id"/>
@@ -98,6 +110,7 @@
       </table>
       <table name="devices" numRows="0" remarks="Hardware devices managed by the device manager at a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="device_id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
             <child column="parent_id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
             <child column="device_id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
          </column>

@@ -3,10 +3,10 @@ task_processed_times
 withdrawals
 organization_users
 project_users
+automations
 accession_notifications
 species_problems
 notifications
-automations
 accession_state_history
 upload_problems
 project_type_selections
