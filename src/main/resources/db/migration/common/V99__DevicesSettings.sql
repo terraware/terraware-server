@@ -13,5 +13,7 @@ ALTER TABLE device_templates ADD COLUMN verbosity INTEGER;
 
 UPDATE device_templates
 SET verbosity = (settings ->> 'diagnosticMode')::INTEGER,
-    settings  = settings - 'diagnosticMode'
+    settings  = CASE
+                    WHEN settings - 'diagnosticMode' = '{}' THEN NULL
+                    ELSE settings - 'diagnosticMode' END
 WHERE settings ? 'diagnosticMode';

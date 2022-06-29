@@ -174,6 +174,12 @@ private fun DevicesRow.settingsWithVerbosity(objectMapper: ObjectMapper): Map<St
   }
 }
 
+private fun Map<String, Any?>.toJsonbWithoutVerbosity(objectMapper: ObjectMapper): JSONB? {
+  return minus(VERBOSITY_KEY)
+      .ifEmpty { null }
+      ?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) }
+}
+
 data class CreateDeviceRequestPayload(
     @Schema(description = "Identifier of facility where this device is located.")
     val facilityId: FacilityId,
@@ -228,11 +234,7 @@ data class CreateDeviceRequestPayload(
         port = port,
         verbosity = verbosity ?: settings?.get(VERBOSITY_KEY)?.toString()?.toInt(),
         enabled = true,
-        settings =
-            settings
-                ?.minus(VERBOSITY_KEY)
-                ?.ifEmpty { null }
-                ?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        settings = settings?.toJsonbWithoutVerbosity(objectMapper),
         parentId = parentId,
     )
   }
@@ -290,11 +292,7 @@ data class UpdateDeviceRequestPayload(
         port = port,
         verbosity = verbosity ?: settings?.get(VERBOSITY_KEY)?.toString()?.toInt(),
         enabled = true,
-        settings =
-            settings
-                ?.minus(VERBOSITY_KEY)
-                ?.ifEmpty { null }
-                ?.let { JSONB.jsonb(objectMapper.writeValueAsString(it)) },
+        settings = settings?.toJsonbWithoutVerbosity(objectMapper),
         parentId = parentId,
     )
   }
