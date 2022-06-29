@@ -5,22 +5,13 @@ The server uses [Flyway](https://flywaydb.org) to create and modify the database
 * Numbered migrations, whose filenames are prefixed with `V`, are run in numeric order. Once run, a numbered migration is never run again.
 * Replayable migrations, whose filenames are prefixed with `R`, are run whenever they are modified or created. They should be idempotent. They are run after numbered migrations.
 
-The migrations are split up into subdirectories to allow finer control over how they're applied in different environments:
+The migrations for production systems all live in this directory.
 
-| Subdirectory | Description |
-| --- | --- |
-| `common` | Scripts that only use standards-compliant SQL syntax. The vast majority of migrations should live here. |
-| `dev` | Scripts that are only executed in development environments. Typically these will insert dummy data for local testing. Scripts in here should all be replayable, not numbered. |
-| `generic` | Standards-compliant versions of database-specific scripts. There should be one of these corresponding to each database-specific numbered script. |
-| `postgres` | Scripts that use PostgreSQL-specific syntax. |
+The server runs on PostgreSQL and there are no plans to support multiple database engines. It is fine to use PostgreSQL-only syntax in migrations.
 
-## Support for multiple database engines
+## Development-only migrations
 
-The project's officially supported database is PostgreSQL, and it freely uses PostgreSQL-specific functionality as needed.
-
-In anticipation of users wanting to run the code with other database engines, you should make reasonable attempts to segregate PostgreSQL-specific schema elements into separate migrations in the `postgres` subdirectory.
-
-If there is a straightforward alternative using standards-compliant syntax (for example, using a text column instead of a JSON column), create a migration script with the same version number in the `generic` directory. If not, still create a script to keep the numbering consistent, but just include a comment describing what's missing and why.
+There is a `dev` subdirectory that has migrations that should only be applied in dev environments (e.g., to insert dummy data for testing). Scripts in `dev` should be replayable, not numbered, so they don't pollute the migration number sequence.
 
 ## Migrations and the build process
 

@@ -16,8 +16,7 @@ spring:
     locations:
       # Allow dev-specific migrations, e.g., to insert dummy test data
       - "classpath:db/migration/dev"
-      - "classpath:db/migration/postgres"
-      - "classpath:db/migration/common"
+      - "classpath:db/migration"
 
     # During development, it is convenient to temporarily add a repeatable migration and work on it
     # until it's correct, then make it a versioned migration. By default, Flyway would bomb out due
