@@ -56,7 +56,6 @@ import kotlin.reflect.full.isSupertypeOf
 import net.postgis.jdbc.geometry.Point
 import org.jooq.Configuration
 import org.jooq.DSLContext
-import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.Sequence
 import org.jooq.Table
@@ -377,7 +376,7 @@ abstract class DatabaseTest {
       id: Any,
       facilityId: Any = "$id".toLong() / 10,
       name: String = "automation $id",
-      type: String? = AutomationModel.SENSOR_BOUNDS_TYPE,
+      type: String = AutomationModel.SENSOR_BOUNDS_TYPE,
       deviceId: Any? = "$id".toLong(),
       timeseriesName: String? = "timeseries",
       lowerThreshold: Double? = 10.0,
@@ -385,27 +384,21 @@ abstract class DatabaseTest {
       createdBy: UserId = currentUser().userId,
       objectMapper: ObjectMapper = jacksonObjectMapper(),
   ) {
-    val configuration =
-        listOfNotNull(
-                type?.let { AutomationModel.TYPE_KEY to it },
-                deviceId?.let { AutomationModel.DEVICE_ID_KEY to it },
-                timeseriesName?.let { AutomationModel.TIMESERIES_NAME_KEY to it },
-                lowerThreshold?.let { AutomationModel.LOWER_THRESHOLD_KEY to it },
-                upperThreshold?.let { AutomationModel.UPPER_THRESHOLD_KEY to it },
-            )
-            .toMap()
-
     with(AUTOMATIONS) {
       dslContext
           .insertInto(AUTOMATIONS)
-          .set(CONFIGURATION, JSONB.valueOf(objectMapper.writeValueAsString(configuration)))
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
+          .set(DEVICE_ID, deviceId?.toIdWrapper { DeviceId(it) })
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
           .set(ID, id.toIdWrapper { AutomationId(it) })
+          .set(LOWER_THRESHOLD, lowerThreshold)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
+          .set(TIMESERIES_NAME, timeseriesName)
+          .set(TYPE, type)
+          .set(UPPER_THRESHOLD, upperThreshold)
           .execute()
     }
   }

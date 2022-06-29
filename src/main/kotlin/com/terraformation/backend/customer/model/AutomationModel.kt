@@ -9,42 +9,40 @@ import com.terraformation.backend.db.tables.pojos.AutomationsRow
 import java.time.Instant
 
 data class AutomationModel(
-    val id: AutomationId,
-    val facilityId: FacilityId,
-    val name: String,
-    val description: String?,
     val createdTime: Instant,
+    val description: String?,
+    val deviceId: DeviceId?,
+    val facilityId: FacilityId,
+    val id: AutomationId,
+    val lowerThreshold: Double?,
     val modifiedTime: Instant,
-    val configuration: Map<String, Any?>?
+    val name: String,
+    val settings: Map<String, Any?>?,
+    val timeseriesName: String?,
+    val type: String,
+    val upperThreshold: Double?,
+    val verbosity: Int,
 ) {
   constructor(
       row: AutomationsRow,
       objectMapper: ObjectMapper
   ) : this(
-      id = row.id ?: throw IllegalArgumentException("id is required"),
-      facilityId = row.facilityId ?: throw IllegalArgumentException("facilityId is required"),
-      name = row.name ?: throw IllegalArgumentException("name is required"),
-      description = row.description,
       createdTime = row.createdTime ?: throw IllegalArgumentException("createdTime is required"),
+      description = row.description,
+      deviceId = row.deviceId,
+      facilityId = row.facilityId ?: throw IllegalArgumentException("facilityId is required"),
+      id = row.id ?: throw IllegalArgumentException("id is required"),
+      lowerThreshold = row.lowerThreshold,
       modifiedTime = row.modifiedTime ?: throw IllegalArgumentException("modifiedTime is required"),
-      configuration = row.configuration?.data()?.let { objectMapper.readValue(it) })
-
-  val deviceId: DeviceId?
-    get() = configuration?.get(DEVICE_ID_KEY)?.toString()?.let { DeviceId(it) }
-  val timeseriesName: String?
-    get() = configuration?.get(TIMESERIES_NAME_KEY)?.toString()
-  val type: String?
-    get() = configuration?.get(TYPE_KEY)?.toString()
+      name = row.name ?: throw IllegalArgumentException("name is required"),
+      settings = row.settings?.data()?.let { objectMapper.readValue(it) },
+      timeseriesName = row.timeseriesName,
+      type = row.type ?: throw IllegalArgumentException("type is required"),
+      upperThreshold = row.upperThreshold,
+      verbosity = row.verbosity ?: throw IllegalArgumentException("verbosity is required"),
+  )
 
   companion object {
-    // Configuration keys recognized by the device manager.
-
-    const val DEVICE_ID_KEY = "monitorDeviceId"
-    const val LOWER_THRESHOLD_KEY = "lowerThreshold"
-    const val TIMESERIES_NAME_KEY = "monitorTimeseriesName"
-    const val TYPE_KEY = "type"
-    const val UPPER_THRESHOLD_KEY = "upperThreshold"
-
     // Automation types recognized by the device manager (not a complete list; just the ones the
     // server needs to know about).
 

@@ -169,19 +169,16 @@ class DeviceService(
       lowerThreshold: Double?,
       upperThreshold: Double?,
   ) {
-    val configuration =
-        with(AutomationModel) {
-          listOfNotNull(
-                  TYPE_KEY to SENSOR_BOUNDS_TYPE,
-                  DEVICE_ID_KEY to deviceId,
-                  TIMESERIES_NAME_KEY to timeseriesName,
-                  lowerThreshold?.let { LOWER_THRESHOLD_KEY to it },
-                  upperThreshold?.let { UPPER_THRESHOLD_KEY to it },
-              )
-              .toMap()
-        }
-
     log.info("Creating automation $name for device $deviceId")
-    automationStore.create(facilityId, name, null, configuration)
+
+    automationStore.create(
+        deviceId = deviceId,
+        facilityId = facilityId,
+        lowerThreshold = lowerThreshold,
+        name = name,
+        timeseriesName = timeseriesName,
+        type = AutomationModel.SENSOR_BOUNDS_TYPE,
+        upperThreshold = upperThreshold,
+    )
   }
 }

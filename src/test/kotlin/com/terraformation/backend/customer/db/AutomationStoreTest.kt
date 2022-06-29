@@ -33,6 +33,7 @@ internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { clock.instant() } returns Instant.EPOCH
     every { user.canListAutomations(any()) } returns true
+    every { user.canReadDevice(any()) } returns true
 
     insertSiteData()
     insertDevice(deviceId)
