@@ -543,63 +543,63 @@
 <!-- devices -->
 <g id="node7" class="node"><title>devices</title>
 <g id="a_node7"><a xlink:href="../../tables/devices.html" xlink:title="devices" target="_top">
-<polygon fill="#ffffff" stroke="none" points="1343,-469 1343,-637 1456,-637 1456,-469 1343,-469"/>
-<polygon fill="#f5f5f5" stroke="none" points="1343.5,-615 1343.5,-637 1456.5,-637 1456.5,-615 1343.5,-615"/>
-<polygon fill="none" stroke="black" points="1343.5,-615 1343.5,-637 1456.5,-637 1456.5,-615 1343.5,-615"/>
-<text text-anchor="start" x="1348.5" y="-624.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">devices</text>
-<text text-anchor="start" x="1417.5" y="-623.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1343.5,-593 1343.5,-615 1456.5,-615 1456.5,-593 1343.5,-593"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1348.5" y="-610"/>
-<text text-anchor="start" x="1363.5" y="-601.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="1343.5,-571 1343.5,-593 1456.5,-593 1456.5,-571 1343.5,-571"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1348.5" y="-588"/>
-<text text-anchor="start" x="1363.5" y="-579.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
-<polygon fill="none" stroke="black" points="1343.5,-549 1343.5,-571 1456.5,-571 1456.5,-549 1343.5,-549"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1348.5" y="-566"/>
-<text text-anchor="start" x="1363.5" y="-557.2" font-family="Helvetica,sans-Serif" font-size="11.00">parent_id</text>
-<polygon fill="none" stroke="black" points="1343.5,-527 1343.5,-549 1456.5,-549 1456.5,-527 1343.5,-527"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1348.5" y="-544"/>
-<text text-anchor="start" x="1363.5" y="-535.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
-<polygon fill="none" stroke="black" points="1343.5,-505 1343.5,-527 1456.5,-527 1456.5,-505 1343.5,-505"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1348.5" y="-522"/>
-<text text-anchor="start" x="1363.5" y="-513.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="none" stroke="black" points="1343.5,-487 1343.5,-505 1456.5,-505 1456.5,-487 1343.5,-487"/>
-<text text-anchor="start" x="1346.5" y="-493.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="1343.5,-469 1343.5,-487 1378.5,-487 1378.5,-469 1343.5,-469"/>
-<polygon fill="none" stroke="black" points="1343.5,-469 1343.5,-487 1378.5,-487 1378.5,-469 1343.5,-469"/>
-<text text-anchor="start" x="1346.5" y="-475.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="none" points="1378.5,-469 1378.5,-487 1426.5,-487 1426.5,-469 1378.5,-469"/>
-<polygon fill="none" stroke="black" points="1378.5,-469 1378.5,-487 1426.5,-487 1426.5,-469 1378.5,-469"/>
-<text text-anchor="start" x="1387.5" y="-475.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="1426.5,-469 1426.5,-487 1456.5,-487 1456.5,-469 1426.5,-469"/>
-<polygon fill="none" stroke="black" points="1426.5,-469 1426.5,-487 1456.5,-487 1456.5,-469 1426.5,-469"/>
-<text text-anchor="start" x="1436.5" y="-475.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="1353,-469 1353,-637 1446,-637 1446,-469 1353,-469"/>
+<polygon fill="#f5f5f5" stroke="none" points="1353.5,-615 1353.5,-637 1446.5,-637 1446.5,-615 1353.5,-615"/>
+<polygon fill="none" stroke="black" points="1353.5,-615 1353.5,-637 1446.5,-637 1446.5,-615 1353.5,-615"/>
+<text text-anchor="start" x="1358.5" y="-624.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">devices</text>
+<text text-anchor="start" x="1407.5" y="-623.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1353.5,-593 1353.5,-615 1446.5,-615 1446.5,-593 1353.5,-593"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1358.5" y="-610"/>
+<text text-anchor="start" x="1373.5" y="-601.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="1353.5,-571 1353.5,-593 1446.5,-593 1446.5,-571 1353.5,-571"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1358.5" y="-588"/>
+<text text-anchor="start" x="1373.5" y="-579.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<polygon fill="none" stroke="black" points="1353.5,-549 1353.5,-571 1446.5,-571 1446.5,-549 1353.5,-549"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1358.5" y="-566"/>
+<text text-anchor="start" x="1373.5" y="-557.2" font-family="Helvetica,sans-Serif" font-size="11.00">parent_id</text>
+<polygon fill="none" stroke="black" points="1353.5,-527 1353.5,-549 1446.5,-549 1446.5,-527 1353.5,-527"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1358.5" y="-544"/>
+<text text-anchor="start" x="1373.5" y="-535.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<polygon fill="none" stroke="black" points="1353.5,-505 1353.5,-527 1446.5,-527 1446.5,-505 1353.5,-505"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1358.5" y="-522"/>
+<text text-anchor="start" x="1373.5" y="-513.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<polygon fill="none" stroke="black" points="1353.5,-487 1353.5,-505 1446.5,-505 1446.5,-487 1353.5,-487"/>
+<text text-anchor="start" x="1356.5" y="-493.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="1353.5,-469 1353.5,-487 1378.5,-487 1378.5,-469 1353.5,-469"/>
+<polygon fill="none" stroke="black" points="1353.5,-469 1353.5,-487 1378.5,-487 1378.5,-469 1353.5,-469"/>
+<text text-anchor="start" x="1356.5" y="-475.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="none" points="1378.5,-469 1378.5,-487 1421.5,-487 1421.5,-469 1378.5,-469"/>
+<polygon fill="none" stroke="black" points="1378.5,-469 1378.5,-487 1421.5,-487 1421.5,-469 1378.5,-469"/>
+<text text-anchor="start" x="1382.5" y="-475.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="1421.5,-469 1421.5,-487 1446.5,-487 1446.5,-469 1421.5,-469"/>
+<polygon fill="none" stroke="black" points="1421.5,-469 1421.5,-487 1446.5,-487 1446.5,-469 1421.5,-469"/>
+<text text-anchor="start" x="1426.5" y="-475.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>
 </g>
 <!-- automations&#45;&gt;devices -->
 <g id="edge7" class="edge"><title>automations:device_id:w&#45;&gt;devices:id:e</title>
-<path fill="none" stroke="black" d="M1566.37,-640.122C1521.66,-634.519 1509.54,-604 1457.5,-604"/>
-<polygon fill="black" stroke="black" points="1573.01,-640.521 1580.78,-644.594 1577.01,-640.76 1581,-641 1581,-641 1581,-641 1577.01,-640.76 1581.22,-637.406 1573.01,-640.521 1573.01,-640.521"/>
-<ellipse fill="none" stroke="black" cx="1569.82" cy="-640.329" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1566.51,-640.261C1517.33,-635.046 1503.9,-604 1447.5,-604"/>
+<polygon fill="black" stroke="black" points="1573.01,-640.592 1580.82,-644.595 1577.01,-640.796 1581,-641 1581,-641 1581,-641 1577.01,-640.796 1581.18,-637.405 1573.01,-640.592 1573.01,-640.592"/>
+<ellipse fill="none" stroke="black" cx="1569.81" cy="-640.429" rx="3.2" ry="3.2"/>
 </g>
 <!-- devices&#45;&gt;users -->
 <g id="edge12" class="edge"><title>devices:created_by:w&#45;&gt;users:id.type:e</title>
-<path fill="none" stroke="black" d="M1328.04,-538.007C1195.23,-538.134 1156.72,-540 1017,-540 1017,-540 1017,-540 817.5,-540 747.065,-540 551.55,-507.951 501,-557 460.988,-595.823 514.751,-1057 459,-1057"/>
-<polygon fill="black" stroke="black" points="1334.5,-538.004 1342.5,-541.6 1338.5,-538.002 1342.5,-538 1342.5,-538 1342.5,-538 1338.5,-538.002 1342.5,-534.4 1334.5,-538.004 1334.5,-538.004"/>
-<ellipse fill="none" stroke="black" cx="1331.3" cy="-538.005" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1338.01,-538.006C1200.79,-538.131 1161.16,-540 1017,-540 1017,-540 1017,-540 817.5,-540 747.065,-540 551.55,-507.951 501,-557 460.988,-595.823 514.751,-1057 459,-1057"/>
+<polygon fill="black" stroke="black" points="1344.5,-538.004 1352.5,-541.6 1348.5,-538.002 1352.5,-538 1352.5,-538 1352.5,-538 1348.5,-538.002 1352.5,-534.4 1344.5,-538.004 1344.5,-538.004"/>
+<ellipse fill="none" stroke="black" cx="1341.3" cy="-538.005" rx="3.2" ry="3.2"/>
 </g>
 <!-- devices&#45;&gt;users -->
 <g id="edge14" class="edge"><title>devices:modified_by:w&#45;&gt;users:id.type:e</title>
-<path fill="none" stroke="black" d="M1328.04,-515.99C1195.23,-515.798 1156.73,-513 1017,-513 1017,-513 1017,-513 817.5,-513 676.715,-513 602.418,-428.353 501,-526 458.365,-567.049 518.184,-1057 459,-1057"/>
-<polygon fill="black" stroke="black" points="1334.5,-515.994 1342.5,-519.6 1338.5,-515.997 1342.5,-516 1342.5,-516 1342.5,-516 1338.5,-515.997 1342.5,-512.4 1334.5,-515.994 1334.5,-515.994"/>
-<ellipse fill="none" stroke="black" cx="1331.3" cy="-515.992" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1338.01,-515.99C1200.78,-515.804 1161.17,-513 1017,-513 1017,-513 1017,-513 817.5,-513 676.715,-513 602.418,-428.353 501,-526 458.365,-567.049 518.184,-1057 459,-1057"/>
+<polygon fill="black" stroke="black" points="1344.5,-515.995 1352.5,-519.6 1348.5,-515.997 1352.5,-516 1352.5,-516 1352.5,-516 1348.5,-515.997 1352.5,-512.4 1344.5,-515.995 1344.5,-515.995"/>
+<ellipse fill="none" stroke="black" cx="1341.3" cy="-515.992" rx="3.2" ry="3.2"/>
 </g>
 <!-- devices&#45;&gt;facilities -->
 <g id="edge13" class="edge"><title>devices:facility_id:w&#45;&gt;facilities:id:e</title>
-<path fill="none" stroke="black" d="M1329.87,-588.992C1268.7,-665.105 1350.99,-1337 1271.5,-1337"/>
-<polygon fill="black" stroke="black" points="1335.5,-585.874 1344.24,-585.15 1339,-583.937 1342.5,-582 1342.5,-582 1342.5,-582 1339,-583.937 1340.76,-578.85 1335.5,-585.874 1335.5,-585.874"/>
-<ellipse fill="none" stroke="black" cx="1332.7" cy="-587.423" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M1343.82,-593.859C1310.56,-689.911 1310.55,-1337 1271.5,-1337"/>
+<polygon fill="black" stroke="black" points="1347.78,-588.456 1355.41,-584.126 1350.14,-585.228 1352.5,-582 1352.5,-582 1352.5,-582 1350.14,-585.228 1349.59,-579.874 1347.78,-588.456 1347.78,-588.456"/>
+<ellipse fill="none" stroke="black" cx="1345.89" cy="-591.039" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- device_managers -->
 <g id="node8" class="node"><title>device_managers</title>
@@ -1016,9 +1016,9 @@
 </g>
 <!-- timeseries&#45;&gt;devices -->
 <g id="edge47" class="edge"><title>timeseries:device_id:w&#45;&gt;devices:id:e</title>
-<path fill="none" stroke="black" d="M1572.56,-279.054C1442.83,-299.289 1608.23,-604 1457.5,-604"/>
-<polygon fill="black" stroke="black" points="1579.02,-278.583 1587.26,-281.59 1583.01,-278.291 1587,-278 1587,-278 1587,-278 1583.01,-278.291 1586.74,-274.41 1579.02,-278.583 1579.02,-278.583"/>
-<ellipse fill="none" stroke="black" cx="1575.83" cy="-278.816" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1572.38,-279.054C1440.7,-299.289 1599.86,-604 1447.5,-604"/>
+<polygon fill="black" stroke="black" points="1579.02,-278.575 1587.26,-281.591 1583.01,-278.288 1587,-278 1587,-278 1587,-278 1583.01,-278.288 1586.74,-274.409 1579.02,-278.575 1579.02,-278.575"/>
+<ellipse fill="none" stroke="black" cx="1575.83" cy="-278.806" rx="3.2" ry="3.2"/>
 </g>
 <!-- uploads -->
 <g id="node17" class="node"><title>uploads</title>
