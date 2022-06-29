@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.tables.references.COUNTRIES
 import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
@@ -16,8 +15,7 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
 
-class OrganizationsTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperators) :
-    SearchTable(fuzzySearchOperators) {
+class OrganizationsTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = ORGANIZATIONS.ID
 

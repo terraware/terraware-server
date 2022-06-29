@@ -14,7 +14,6 @@ import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -83,7 +82,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val checkedInTime = Instant.parse(checkedInTimeString)
   private val searchScopes = listOf(OrganizationIdScope(organizationId))
 
-  private val tables = SearchTables(PostgresFuzzySearchOperators())
+  private val tables = SearchTables()
   private val accessionsTable = tables.accessions
   private val rootPrefix = SearchFieldPrefix(root = accessionsTable)
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")

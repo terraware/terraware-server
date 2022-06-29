@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.search.FieldNode
@@ -16,10 +15,7 @@ import org.jooq.SelectJoinStep
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class GeolocationsTable(
-    private val tables: SearchTables,
-    fuzzySearchOperators: FuzzySearchOperators
-) : SearchTable(fuzzySearchOperators) {
+class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = GEOLOCATIONS.ID
 

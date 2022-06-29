@@ -1,9 +1,9 @@
 package com.terraformation.backend.species.db
 
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.SpeciesProblemField
 import com.terraformation.backend.db.SpeciesProblemType
-import com.terraformation.backend.db.UsesFuzzySearchOperators
+import com.terraformation.backend.db.likeFuzzy
+import com.terraformation.backend.db.similarity
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
 import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
@@ -18,10 +18,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 @ManagedBean
-class GbifStore(
-    private val dslContext: DSLContext,
-    override val fuzzySearchOperators: FuzzySearchOperators
-) : UsesFuzzySearchOperators {
+class GbifStore(private val dslContext: DSLContext) {
   /**
    * Returns the species names whose words begin with a list of prefixes.
    *

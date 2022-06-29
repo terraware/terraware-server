@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.search.SearchTable
 import javax.annotation.ManagedBean
 
@@ -21,26 +20,26 @@ import javax.annotation.ManagedBean
  * successfully initialized.
  */
 @ManagedBean
-class SearchTables(val fuzzySearchOperators: FuzzySearchOperators) {
-  val accessionGerminationTestTypes = AccessionGerminationTestTypesTable(this, fuzzySearchOperators)
-  val accessions = AccessionsTable(this, fuzzySearchOperators)
-  val accessionSecondaryCollectors = AccessionSecondaryCollectorsTable(this, fuzzySearchOperators)
-  val bags = BagsTable(this, fuzzySearchOperators)
-  val countries = CountriesTable(this, fuzzySearchOperators)
-  val countrySubdivisions = CountrySubdivisionsTable(this, fuzzySearchOperators)
-  val facilities = FacilitiesTable(this, fuzzySearchOperators)
-  val geolocations = GeolocationsTable(this, fuzzySearchOperators)
-  val germinations = GerminationsTable(this, fuzzySearchOperators)
-  val germinationTests = GerminationTestsTable(this, fuzzySearchOperators)
-  val organizations = OrganizationsTable(this, fuzzySearchOperators)
-  val organizationUsers = OrganizationUsersTable(this, fuzzySearchOperators)
-  val projects = ProjectsTable(this, fuzzySearchOperators)
-  val projectTypeSelections = ProjectTypeSelectionsTable(fuzzySearchOperators)
-  val projectUsers = ProjectUsersTable(this, fuzzySearchOperators)
-  val sites = SitesTable(this, fuzzySearchOperators)
-  val species = SpeciesTable(this, fuzzySearchOperators)
-  val speciesProblems = SpeciesProblemsTable(this, fuzzySearchOperators)
-  val storageLocations = StorageLocationsTable(this, fuzzySearchOperators)
-  val users = UsersTable(this, fuzzySearchOperators)
-  val withdrawals = WithdrawalsTable(this, fuzzySearchOperators)
+class SearchTables {
+  val accessionGerminationTestTypes = AccessionGerminationTestTypesTable(this)
+  val accessions = AccessionsTable(this)
+  val accessionSecondaryCollectors = AccessionSecondaryCollectorsTable(this)
+  val bags = BagsTable(this)
+  val countries = CountriesTable(this)
+  val countrySubdivisions = CountrySubdivisionsTable(this)
+  val facilities = FacilitiesTable(this)
+  val geolocations = GeolocationsTable(this)
+  val germinations = GerminationsTable(this)
+  val germinationTests = GerminationTestsTable(this)
+  val organizations = OrganizationsTable(this)
+  val organizationUsers = OrganizationUsersTable(this)
+  val projects = ProjectsTable(this)
+  val projectTypeSelections = ProjectTypeSelectionsTable()
+  val projectUsers = ProjectUsersTable(this)
+  val sites = SitesTable(this)
+  val species = SpeciesTable(this)
+  val speciesProblems = SpeciesProblemsTable(this)
+  val storageLocations = StorageLocationsTable(this)
+  val users = UsersTable(this)
+  val withdrawals = WithdrawalsTable(this)
 }

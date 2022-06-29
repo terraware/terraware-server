@@ -2,7 +2,6 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.SITES
@@ -17,8 +16,7 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
 
-class FacilitiesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperators) :
-    SearchTable(fuzzySearchOperators) {
+class FacilitiesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = FACILITIES.ID
 

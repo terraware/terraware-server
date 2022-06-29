@@ -3,7 +3,6 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GbifNameId
 import com.terraformation.backend.db.GbifTaxonId
-import com.terraformation.backend.db.PostgresFuzzySearchOperators
 import com.terraformation.backend.db.SpeciesProblemField
 import com.terraformation.backend.db.SpeciesProblemType
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
@@ -24,7 +23,7 @@ import org.junit.jupiter.api.assertThrows
 internal class GbifStoreTest : DatabaseTest() {
   override val tablesToResetSequences = listOf(GBIF_NAMES)
 
-  private val store: GbifStore by lazy { GbifStore(dslContext, PostgresFuzzySearchOperators()) }
+  private val store: GbifStore by lazy { GbifStore(dslContext) }
 
   @Nested
   inner class FindNamesByWordPrefixes {

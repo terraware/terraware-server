@@ -1,45 +1,29 @@
 package com.terraformation.backend.db
 
-import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.impl.DSL
 
-/** Renders vendor-specific SQL syntax for fuzzy text search. */
-interface FuzzySearchOperators {
-  fun likeFuzzy(field: Field<String?>, value: String): Condition
-  fun similarity(field: Field<String?>, value: String): Field<Double>
-}
-
-/** Renders fuzzy text search SQL for PostgreSQL with the pg\_trgm extension. */
-@ManagedBean
-class PostgresFuzzySearchOperators : FuzzySearchOperators {
-  override fun likeFuzzy(field: Field<String?>, value: String): Condition {
-    // Trigram searches don't work for single-character search strings, so fall back to LIKE.
-    return if (value.length > 1) {
-      DSL.condition("{0} %> {1}", field, DSL.`val`(value))
-    } else {
-      val escapedValue = escapeLikePattern(value.lowercase())
-      DSL.lower(field).like("%$escapedValue%")
-    }
+/**
+ * Returns a condition that checks if a field's value is sufficiently similar to a given string.
+ * This uses the PostgreSQL `pg\_trgm` extension.
+ */
+fun Field<String?>.likeFuzzy(value: String): Condition {
+  // Trigram searches don't work for single-character search strings, so fall back to LIKE.
+  return if (value.length > 1) {
+    DSL.condition("{0} %> {1}", this, DSL.`val`(value))
+  } else {
+    val escapedValue = escapeLikePattern(value.lowercase())
+    DSL.lower(this).like("%$escapedValue%")
   }
-
-  override fun similarity(field: Field<String?>, value: String) =
-      DSL.field("similarity({0},{1})", Double::class.java, field, DSL.`val`(value))
 }
 
 /**
- * Allows use of jOOQ-style fluent syntax for rendering fuzzy search syntax. A class that wants to
- * use one of the methods from [FuzzySearchOperators] can implement this interface and include
- * [fuzzySearchOperators] as a dependency, and then it will be able to use the extension functions
- * on jOOQ [Field] objects so the query syntax is consistent with the built-in operators.
+ * Returns a calculated field whose value is the similarity between the receiver field and a given
+ * string. This uses the PostgreSQL `pg\_trgm` extension.
  */
-interface UsesFuzzySearchOperators {
-  val fuzzySearchOperators: FuzzySearchOperators
-
-  fun Field<String?>.likeFuzzy(value: String) = fuzzySearchOperators.likeFuzzy(this, value)
-
-  fun Field<String?>.similarity(value: String) = fuzzySearchOperators.similarity(this, value)
+fun Field<String?>.similarity(value: String): Field<Double> {
+  return DSL.field("similarity({0},{1})", Double::class.java, this, DSL.`val`(value))
 }
 
 /** Escapes special characters in a string for use in a SQL "LIKE" clause. */

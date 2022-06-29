@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.search.SearchTable
@@ -10,8 +9,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class BagsTable(private val tables: SearchTables, fuzzySearchOperators: FuzzySearchOperators) :
-    SearchTable(fuzzySearchOperators) {
+class BagsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = BAGS.ID
 
