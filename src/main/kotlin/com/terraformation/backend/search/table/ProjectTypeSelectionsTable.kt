@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -10,8 +9,7 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
 
-class ProjectTypeSelectionsTable(fuzzySearchOperators: FuzzySearchOperators) :
-    SearchTable(fuzzySearchOperators) {
+class ProjectTypeSelectionsTable : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = PROJECT_TYPE_SELECTIONS.PROJECT_ID
 

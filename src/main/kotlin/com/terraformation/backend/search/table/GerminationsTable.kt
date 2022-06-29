@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.GERMINATIONS
 import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.search.SearchTable
@@ -10,10 +9,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class GerminationsTable(
-    private val tables: SearchTables,
-    fuzzySearchOperators: FuzzySearchOperators,
-) : SearchTable(fuzzySearchOperators) {
+class GerminationsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = GERMINATIONS.ID
 

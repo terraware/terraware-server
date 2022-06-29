@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.field
 
-import com.terraformation.backend.db.FuzzySearchOperators
-import com.terraformation.backend.db.UsesFuzzySearchOperators
+import com.terraformation.backend.db.likeFuzzy
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
@@ -20,8 +19,7 @@ class TextField(
     override val databaseField: Field<String?>,
     override val table: SearchTable,
     override val nullable: Boolean = true,
-    override val fuzzySearchOperators: FuzzySearchOperators,
-) : SingleColumnSearchField<String>(), UsesFuzzySearchOperators {
+) : SingleColumnSearchField<String>() {
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy)
 

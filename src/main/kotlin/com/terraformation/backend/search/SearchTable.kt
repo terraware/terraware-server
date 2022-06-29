@@ -1,7 +1,6 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.BigDecimalField
 import com.terraformation.backend.search.field.BooleanField
@@ -50,7 +49,7 @@ import org.jooq.TableField
  * code goes to look up names when it is turning a client-specified field name into a
  * [SearchFieldPath].
  */
-abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
+abstract class SearchTable {
   /** Scalar fields that are valid in this table. Subclasses must supply this. */
   abstract val fields: List<SearchField>
 
@@ -275,7 +274,7 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
       displayName: String,
       databaseField: Field<String?>,
       nullable: Boolean = true
-  ) = TextField(fieldName, displayName, databaseField, this, nullable, fuzzySearchOperators)
+  ) = TextField(fieldName, displayName, databaseField, this, nullable)
 
   fun timestampField(
       fieldName: String,
@@ -289,7 +288,5 @@ abstract class SearchTable(val fuzzySearchOperators: FuzzySearchOperators) {
       displayName: String,
       databaseField: Field<String?>,
       nullable: Boolean = true
-  ) =
-      UpperCaseTextField(
-          fieldName, displayName, databaseField, this, nullable, fuzzySearchOperators)
+  ) = UpperCaseTextField(fieldName, displayName, databaseField, this, nullable)
 }

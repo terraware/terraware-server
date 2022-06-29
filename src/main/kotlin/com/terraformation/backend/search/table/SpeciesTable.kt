@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.SPECIES
@@ -13,8 +12,7 @@ import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
 
-class SpeciesTable(tables: SearchTables, fuzzySearchOperators: FuzzySearchOperators) :
-    SearchTable(fuzzySearchOperators) {
+class SpeciesTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = SPECIES.ID
 

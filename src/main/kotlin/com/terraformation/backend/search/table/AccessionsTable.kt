@@ -3,7 +3,6 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.FuzzySearchOperators
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
@@ -30,10 +29,7 @@ import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class AccessionsTable(
-    private val tables: SearchTables,
-    fuzzySearchOperators: FuzzySearchOperators
-) : SearchTable(fuzzySearchOperators) {
+class AccessionsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = ACCESSIONS.ID
 
