@@ -113,8 +113,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     insertSiteData()
 
-    insertOrganizationUser(user.userId, organizationId, role = Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     val now = Instant.now()
 
@@ -1283,7 +1283,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1000),
-              facilityId = FacilityId(100),
+              facilityId = facilityId,
               name = "Refrigerator 1",
               conditionId = StorageCondition.Refrigerator,
               createdBy = user.userId,
@@ -1294,7 +1294,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1001),
-              facilityId = FacilityId(100),
+              facilityId = facilityId,
               name = "Freezer 1",
               conditionId = StorageCondition.Freezer,
               createdBy = user.userId,
@@ -1305,7 +1305,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       storageLocationsDao.insert(
           StorageLocationsRow(
               id = StorageLocationId(1002),
-              facilityId = FacilityId(100),
+              facilityId = facilityId,
               name = "Freezer 2",
               conditionId = StorageCondition.Freezer,
               createdBy = user.userId,
@@ -1670,8 +1670,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       insertOrganization(otherOrganizationId)
 
-      insertOrganizationUser(apiClientUserId, organizationId)
-      insertOrganizationUser(bothOrgsUserId, organizationId, Role.ADMIN)
+      insertOrganizationUser(apiClientUserId)
+      insertOrganizationUser(bothOrgsUserId, role = Role.ADMIN)
       insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.ADMIN)
       insertOrganizationUser(otherOrgUserId, otherOrganizationId)
 
@@ -2009,7 +2009,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val orgNameField =
           germinationsPrefix.resolve(
               "germinationTest.accession.facility.site.project.organization.name")
-      val orgName = "dev"
+      val orgName = "Organization $organizationId"
 
       val result =
           searchService.search(
@@ -2044,7 +2044,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
       val flattenedFieldName = "germinationTest_accession_facility_site_project_organization_name"
       val orgNameField = germinationsPrefix.resolve(flattenedFieldName)
-      val orgName = "dev"
+      val orgName = "Organization $organizationId"
 
       val result =
           searchService.search(
@@ -2492,7 +2492,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "facility" to mapOf("name" to "ohana"))),
+                      "facility" to mapOf("name" to "Facility $facilityId"))),
               cursor = null)
 
       assertEquals(expected, result)
@@ -2714,7 +2714,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "createdTime" to "1970-01-01T00:00:00Z",
                   "description" to "Description 100",
                   "id" to "100",
-                  "name" to "ohana",
+                  "name" to "Facility 100",
                   "type" to "Seed Bank",
               ))
 
@@ -2724,7 +2724,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "createdTime" to "1970-01-01T00:00:00Z",
                   "facilities" to expectedFacilities,
                   "id" to "10",
-                  "name" to "sim",
+                  "name" to "Site 10",
                   "location" to
                       """{"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[1,2,0]}""",
               ))
@@ -2762,7 +2762,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "hidden" to "false",
                   "id" to "2",
                   "members" to expectedProjectUsers,
-                  "name" to "project",
+                  "name" to "Project 2",
                   "organizationWide" to "false",
                   "sites" to expectedSites,
               ))
@@ -2785,7 +2785,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               mapOf(
                   "createdTime" to "1970-01-01T00:00:00Z",
                   "id" to "1",
-                  "name" to "dev",
+                  "name" to "Organization 1",
                   "projects" to expectedProjects,
                   "members" to expectedOrganizationUsers,
                   "species" to expectedSpecies,

@@ -203,7 +203,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store a notification of type User Added To Organization`() {
     insertUser(otherUserId)
-    insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(otherUserId)
 
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
 
@@ -231,8 +231,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store a notification of type User Added To Project`() {
     insertUser(otherUserId)
-    insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(otherUserId, projectId, user.userId)
+    insertOrganizationUser(otherUserId)
+    insertProjectUser(otherUserId)
 
     service.on(UserAddedToProjectEvent(otherUserId, projectId, user.userId))
 
@@ -261,10 +261,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accession move to drying racks notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
-    insertProjectUser(otherUserId, projectId, user.userId)
+    insertOrganizationUser()
+    insertOrganizationUser(otherUserId)
+    insertProjectUser()
+    insertProjectUser(otherUserId)
 
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
@@ -307,8 +307,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accession drying end date notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
@@ -340,8 +340,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accession germination test in a lab, notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
@@ -377,8 +377,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accession germination test in a nursery, notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
@@ -414,8 +414,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accession scheduled for withdrawal notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
     assertNotNull(accessionModel)
@@ -447,8 +447,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store accessions awaiting processing notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     service.on(AccessionsAwaitingProcessingEvent(facilityId, 5, AccessionState.Pending))
 
@@ -475,8 +475,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store accessions ready for testing notification`() {
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     service.on(AccessionsReadyForTestingEvent(facilityId, 5, 2, AccessionState.Processed))
 
@@ -503,8 +503,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store accessions finished drying notification`() {
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     service.on(AccessionsFinishedDryingEvent(facilityId, 5, AccessionState.Dried))
 
@@ -531,8 +531,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store facility idle notification`() {
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
+    insertOrganizationUser()
+    insertProjectUser()
 
     service.on(FacilityIdleEvent(facilityId))
 
@@ -562,13 +562,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val automationId = AutomationId(1)
     val deviceId = DeviceId(1)
     val timeseriesName = "test timeseries"
-    val facilityName = "ohana"
+    val facilityName = "Facility $facilityId"
     val badValue = 5.678
 
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
-    insertDevice(deviceId, facilityId)
-    insertAutomation(automationId, facilityId, deviceId = deviceId, timeseriesName = timeseriesName)
+    insertOrganizationUser()
+    insertProjectUser()
+    insertDevice(deviceId)
+    insertAutomation(automationId, deviceId = deviceId, timeseriesName = timeseriesName)
 
     every {
       messages.sensorBoundsAlert(
@@ -600,13 +600,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val automationId = AutomationId(1)
     val automationName = "automation name"
     val automationType = "unknown"
-    val facilityName = "ohana"
+    val facilityName = "Facility $facilityId"
     val message = "message"
 
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
-    insertAutomation(
-        automationId, facilityId, name = automationName, type = automationType, deviceId = null)
+    insertOrganizationUser()
+    insertProjectUser()
+    insertAutomation(automationId, name = automationName, type = automationType, deviceId = null)
 
     val title = "Automation $automationId triggered at $facilityName"
     every { messages.unknownAutomationTriggered(automationName, facilityName, message) } returns
@@ -637,9 +636,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val deviceId = DeviceId(1)
     val deviceName = "test device"
 
-    insertOrganizationUser(user.userId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(user.userId, projectId, user.userId)
-    insertDevice(deviceId, facilityId, deviceName, type = "sensor")
+    insertOrganizationUser()
+    insertProjectUser()
+    insertDevice(deviceId, name = deviceName, type = "sensor")
 
     every { messages.deviceUnresponsive(deviceName) } returns
         NotificationMessage("unresponsive title", "unresponsive body")

@@ -125,18 +125,17 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         organizationId,
         insertOrganization(
+            null,
             name = organizationModel.name,
             countryCode = organizationModel.countryCode,
             countrySubdivisionCode = organizationModel.countrySubdivisionCode))
     insertProject(
-        projectId,
-        organizationId,
         description = projectModel.description,
         startDate = projectModel.startDate,
         status = projectModel.status,
         types = projectModel.types)
-    insertSite(siteId, projectId, description = siteModel.description, location = location)
-    insertFacility(facilityId, siteId)
+    insertSite(description = siteModel.description, location = location)
+    insertFacility()
   }
 
   @Test
@@ -204,7 +203,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     (baseUserId until expectedTotalUsers + baseUserId).forEach { userId ->
       insertUser(userId)
-      insertOrganizationUser(userId, organizationId)
+      insertOrganizationUser(userId)
     }
 
     assertEquals(expectedTotalUsers, store.fetchById(organizationId)!!.totalUsers)
@@ -515,7 +514,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val otherOrgId = OrganizationId(5)
     val otherProjectId = ProjectId(50)
     insertOrganization(otherOrgId)
-    insertProject(otherProjectId, organizationId = otherOrgId)
+    insertProject(otherProjectId, otherOrgId)
     insertOrganizationUser(model.userId, otherOrgId)
     insertProjectUser(model.userId, otherProjectId)
 
@@ -617,9 +616,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     insertUser(optedInMember, email = "optedInMember@x.com", emailNotificationsEnabled = true)
     insertUser(optedOutMember, email = "optedOutMember@x.com")
 
-    insertOrganizationUser(optedInNonMember, otherOrganizationId, Role.CONTRIBUTOR)
-    insertOrganizationUser(optedInMember, organizationId, Role.CONTRIBUTOR)
-    insertOrganizationUser(optedOutMember, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(optedInNonMember, otherOrganizationId)
+    insertOrganizationUser(optedInMember, organizationId)
+    insertOrganizationUser(optedOutMember, organizationId)
 
     val expected = setOf("optedInMember@x.com")
     val actual = store.fetchEmailRecipients(organizationId).toSet()

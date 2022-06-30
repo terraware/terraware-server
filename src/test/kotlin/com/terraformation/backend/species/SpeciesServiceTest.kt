@@ -50,7 +50,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     val speciesId = SpeciesId(1)
     val scientificName = "test"
 
-    insertSpecies(speciesId, scientificName = scientificName, organizationId = organizationId)
+    insertSpecies(speciesId, scientificName = scientificName)
 
     assertEquals(speciesId, service.getOrCreateSpecies(organizationId, scientificName))
   }
@@ -89,7 +89,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   fun `updateSpecies checks for problems with species data`() {
     val speciesId = SpeciesId(1)
 
-    insertSpecies(speciesId, "Old name", organizationId = organizationId)
+    insertSpecies(speciesId, "Old name")
     val originalRow = speciesDao.fetchOneById(speciesId)!!
 
     val updatedRow = service.updateSpecies(originalRow.copy(scientificName = "New name"))

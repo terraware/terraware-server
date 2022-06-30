@@ -83,7 +83,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     userId = user.userId
     insertUser()
-    insertOrganization(organizationId)
+    insertOrganization()
 
     every { clock.instant() } returns Instant.EPOCH
     every { speciesChecker.checkAllUncheckedSpecies(organizationId) } just Runs
@@ -166,7 +166,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingValidation,
         storageUrl = storageUrl)
-    insertSpecies(1, "Existing name", organizationId = organizationId)
+    insertSpecies(1, "Existing name")
 
     importer.validateCsv(uploadId, user.userId)
 
@@ -195,11 +195,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(
-        2,
-        "Corrected name",
-        organizationId = organizationId,
-        initialScientificName = "Initial name")
+    insertSpecies(2, "Corrected name", initialScientificName = "Initial name")
 
     importer.validateCsv(uploadId, userId)
 
@@ -228,7 +224,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingValidation,
         storageUrl = storageUrl)
-    insertSpecies(1, "Existing name", deletedTime = Instant.EPOCH, organizationId = organizationId)
+    insertSpecies(1, "Existing name", deletedTime = Instant.EPOCH)
 
     importer.validateCsv(uploadId, userId)
 
@@ -289,7 +285,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(2, "Existing name", organizationId = organizationId)
+    insertSpecies(2, "Existing name")
 
     importer.importCsv(uploadId, userId, true)
 
@@ -349,9 +345,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(2, "Existing name", organizationId = organizationId)
-    insertSpecies(
-        3, "New name", organizationId = organizationId, initialScientificName = "Initial name")
+    insertSpecies(2, "Existing name")
+    insertSpecies(3, "New name", initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
@@ -406,16 +401,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(
-        2,
-        "Duplicate name",
-        organizationId = organizationId,
-        initialScientificName = "Initial name")
-    insertSpecies(
-        3,
-        "Nonduplicate name",
-        organizationId = organizationId,
-        initialScientificName = "Duplicate name")
+    insertSpecies(2, "Duplicate name", initialScientificName = "Initial name")
+    insertSpecies(3, "Nonduplicate name", initialScientificName = "Duplicate name")
 
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
@@ -466,9 +453,8 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(10, "Existing name", organizationId = organizationId)
-    insertSpecies(
-        11, "New name", organizationId = organizationId, initialScientificName = "Initial name")
+    insertSpecies(10, "Existing name")
+    insertSpecies(11, "New name", initialScientificName = "Initial name")
 
     every { clock.instant() } returns Instant.EPOCH + Duration.ofDays(1)
 
@@ -490,7 +476,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(2, "Existing name", organizationId = organizationId, deletedTime = Instant.EPOCH)
+    insertSpecies(2, "Existing name", deletedTime = Instant.EPOCH)
 
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
@@ -530,11 +516,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
     insertSpecies(
-        2,
-        "Renamed name",
-        organizationId = organizationId,
-        deletedTime = Instant.EPOCH,
-        initialScientificName = "Initial name")
+        2, "Renamed name", deletedTime = Instant.EPOCH, initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
     every { clock.instant() } returns now
@@ -586,7 +568,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
     // Species ID will collide with the autogenerated primary key
-    insertSpecies(1, "Existing name", organizationId = organizationId)
+    insertSpecies(1, "Existing name")
 
     val expected = speciesDao.findAll()
 

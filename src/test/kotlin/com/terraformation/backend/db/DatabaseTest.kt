@@ -234,8 +234,20 @@ abstract class DatabaseTest {
   protected val usersDao: UsersDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
 
+  /**
+   * Creates a user, organization, project, site, and facility that can be referenced by various
+   * tests.
+   */
+  fun insertSiteData() {
+    insertUser()
+    insertOrganization()
+    insertProject()
+    insertSite()
+    insertFacility()
+  }
+
   protected fun insertOrganization(
-      id: Any? = null,
+      id: Any? = this.organizationId,
       name: String = "Organization $id",
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
@@ -258,8 +270,8 @@ abstract class DatabaseTest {
   }
 
   protected fun insertProject(
-      id: Any,
-      organizationId: Any = "$id".toLong() / 10,
+      id: Any = this.projectId,
+      organizationId: Any = this.organizationId,
       name: String = "Project $id",
       createdBy: UserId = currentUser().userId,
       description: String? = null,
@@ -299,8 +311,8 @@ abstract class DatabaseTest {
   }
 
   protected fun insertSite(
-      id: Any,
-      projectId: Any = "$id".toLong() / 10,
+      id: Any = this.siteId,
+      projectId: Any = this.projectId,
       name: String = "Site $id",
       location: Point = mercatorPoint(1.0, 2.0, 0.0),
       createdBy: UserId = currentUser().userId,
@@ -323,8 +335,8 @@ abstract class DatabaseTest {
   }
 
   protected fun insertFacility(
-      id: Any,
-      siteId: Any = "$id".toLong() / 10,
+      id: Any = this.facilityId,
+      siteId: Any = this.siteId,
       name: String = "Facility $id",
       description: String? = "Description $id",
       createdBy: UserId = currentUser().userId,
@@ -357,7 +369,7 @@ abstract class DatabaseTest {
 
   protected fun insertDevice(
       id: Any,
-      facilityId: Any = "$id".toLong() / 10,
+      facilityId: Any = this.facilityId,
       name: String = "device $id",
       createdBy: UserId = currentUser().userId,
       type: String = "type"
@@ -381,7 +393,7 @@ abstract class DatabaseTest {
 
   protected fun insertAutomation(
       id: Any,
-      facilityId: Any = "$id".toLong() / 10,
+      facilityId: Any = this.facilityId,
       name: String = "automation $id",
       type: String = AutomationModel.SENSOR_BOUNDS_TYPE,
       deviceId: Any? = "$id".toLong(),
@@ -416,7 +428,7 @@ abstract class DatabaseTest {
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = Instant.EPOCH,
-      organizationId: Any = "$speciesId".toLong() / 10,
+      organizationId: Any = this.organizationId,
       deletedTime: Instant? = null,
       checkedTime: Instant? = null,
       initialScientificName: String = scientificName,
@@ -440,15 +452,6 @@ abstract class DatabaseTest {
           .set(SCIENTIFIC_NAME, scientificName)
           .execute()
     }
-  }
-
-  /** Creates an organization, site, and facility that can be referenced by various tests. */
-  fun insertSiteData() {
-    insertUser()
-    insertOrganization(organizationId, "dev")
-    insertProject(projectId, organizationId, "project")
-    insertSite(siteId, projectId, "sim")
-    insertFacility(facilityId, siteId, "ohana")
   }
 
   /** Creates a user that can be referenced by various tests. */
@@ -480,7 +483,7 @@ abstract class DatabaseTest {
   /** Adds a user to an organization. */
   fun insertOrganizationUser(
       userId: Any = currentUser().userId,
-      organizationId: Any,
+      organizationId: Any = this.organizationId,
       role: Role = Role.CONTRIBUTOR,
       createdBy: UserId = currentUser().userId,
   ) {
@@ -501,7 +504,7 @@ abstract class DatabaseTest {
   /** Adds a user to a project. */
   fun insertProjectUser(
       userId: Any = currentUser().userId,
-      projectId: Any,
+      projectId: Any = this.projectId,
       createdBy: UserId = currentUser().userId,
   ) {
     with(PROJECT_USERS) {
@@ -520,7 +523,7 @@ abstract class DatabaseTest {
   /** Adds a storage location to a facility. */
   fun insertStorageLocation(
       id: Any,
-      facilityId: Any = "$id".toLong() / 10,
+      facilityId: Any = this.facilityId,
       name: String = "Location $id",
       condition: StorageCondition = StorageCondition.Freezer,
       createdBy: UserId = currentUser().userId,

@@ -176,7 +176,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `updateLastTimeseriesTimes resets idle timestamps`() {
     val deviceId = DeviceId(1)
-    insertDevice(deviceId, facilityId)
+    insertDevice(deviceId)
 
     val initial = facilitiesDao.fetchOneById(facilityId)!!
     facilitiesDao.update(

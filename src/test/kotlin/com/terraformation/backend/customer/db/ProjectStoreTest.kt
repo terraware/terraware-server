@@ -42,16 +42,14 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     store = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
 
-    insertUser()
-    insertOrganization(organizationId)
-    insertProject(projectId, organizationId = organizationId)
+    insertSiteData()
   }
 
   @Test
   fun `addProjectUser adds user to project`() {
     val userId = UserId(100)
     insertUser(userId)
-    insertOrganizationUser(userId, organizationId)
+    insertOrganizationUser(userId)
 
     store.addUser(projectId, userId)
 
@@ -88,7 +86,7 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   fun `addProjectUser throws exception if project is organization-wide`() {
     val userId = UserId(100)
     insertUser(userId)
-    insertOrganizationUser(userId, organizationId)
+    insertOrganizationUser(userId)
 
     projectsDao.update(projectsDao.fetchOneById(projectId)!!.copy(organizationWide = true))
 
@@ -98,12 +96,12 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `removeProjectUser removes user from project`() {
     val otherProjectId = ProjectId(3)
-    insertProject(otherProjectId, organizationId = organizationId)
+    insertProject(otherProjectId)
 
     val userId = UserId(100)
     insertUser(userId)
-    insertOrganizationUser(userId, organizationId)
-    insertProjectUser(userId, projectId)
+    insertOrganizationUser(userId)
+    insertProjectUser(userId)
     insertProjectUser(userId, otherProjectId)
 
     store.removeUser(projectId, userId)
@@ -143,12 +141,12 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     val contributorUserId = UserId(101)
     val otherProjectId = ProjectId(3)
 
-    insertProject(otherProjectId, organizationId)
+    insertProject(otherProjectId)
     insertUser(adminUserId)
     insertUser(contributorUserId)
-    insertOrganizationUser(adminUserId, organizationId, Role.ADMIN)
-    insertOrganizationUser(contributorUserId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(contributorUserId, projectId)
+    insertOrganizationUser(adminUserId, role = Role.ADMIN)
+    insertOrganizationUser(contributorUserId, role = Role.CONTRIBUTOR)
+    insertProjectUser(contributorUserId)
 
     val expected = mapOf(projectId to 2, otherProjectId to 1)
     val actual = store.countUsers(listOf(projectId, otherProjectId))
@@ -162,11 +160,11 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     val contributorUserId = UserId(101)
     val orgWideProjectId = ProjectId(3)
 
-    insertProject(orgWideProjectId, organizationId, organizationWide = true)
+    insertProject(orgWideProjectId, organizationWide = true)
     insertUser(adminUserId)
     insertUser(contributorUserId)
-    insertOrganizationUser(adminUserId, organizationId, Role.ADMIN)
-    insertOrganizationUser(contributorUserId, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(adminUserId, role = Role.ADMIN)
+    insertOrganizationUser(contributorUserId, role = Role.CONTRIBUTOR)
 
     val expected = mapOf(projectId to 1, orgWideProjectId to 2)
     val actual = store.countUsers(listOf(projectId, orgWideProjectId))
@@ -181,10 +179,10 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     insertUser(adminUserId)
     insertUser(contributorUserId)
-    insertOrganizationUser(adminUserId, organizationId, Role.ADMIN)
-    insertOrganizationUser(contributorUserId, organizationId, Role.CONTRIBUTOR)
-    insertProjectUser(adminUserId, projectId)
-    insertProjectUser(contributorUserId, projectId)
+    insertOrganizationUser(adminUserId, role = Role.ADMIN)
+    insertOrganizationUser(contributorUserId, role = Role.CONTRIBUTOR)
+    insertProjectUser(adminUserId)
+    insertProjectUser(contributorUserId)
 
     val actual = store.countUsers(projectId)
 
@@ -217,14 +215,14 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     insertUser(optedInMember, email = "optedInMember@x.com", emailNotificationsEnabled = true)
     insertUser(optedOutMember, email = "optedOutMember@x.com")
 
-    insertOrganizationUser(optedInAdmin, organizationId, Role.ADMIN)
-    insertOrganizationUser(optedOutAdmin, organizationId, Role.ADMIN)
-    insertOrganizationUser(optedInNonMember, organizationId, Role.CONTRIBUTOR)
-    insertOrganizationUser(optedInMember, organizationId, Role.CONTRIBUTOR)
-    insertOrganizationUser(optedOutMember, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(optedInAdmin, role = Role.ADMIN)
+    insertOrganizationUser(optedOutAdmin, role = Role.ADMIN)
+    insertOrganizationUser(optedInNonMember, role = Role.CONTRIBUTOR)
+    insertOrganizationUser(optedInMember, role = Role.CONTRIBUTOR)
+    insertOrganizationUser(optedOutMember, role = Role.CONTRIBUTOR)
 
-    insertProjectUser(optedInMember, projectId)
-    insertProjectUser(optedOutMember, projectId)
+    insertProjectUser(optedInMember)
+    insertProjectUser(optedOutMember)
 
     val expected = setOf("optedInAdmin@x.com", "optedInMember@x.com")
     val actual = store.fetchEmailRecipients(projectId).toSet()

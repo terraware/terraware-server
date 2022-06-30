@@ -312,8 +312,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val checkedSpeciesId = SpeciesId(1)
     val uncheckedSpeciesId = SpeciesId(2)
 
-    insertSpecies(checkedSpeciesId, organizationId = organizationId, checkedTime = Instant.EPOCH)
-    insertSpecies(uncheckedSpeciesId, organizationId = organizationId)
+    insertSpecies(checkedSpeciesId, checkedTime = Instant.EPOCH)
+    insertSpecies(uncheckedSpeciesId)
 
     assertEquals(listOf(uncheckedSpeciesId), store.fetchUncheckedSpeciesIds(organizationId))
   }
