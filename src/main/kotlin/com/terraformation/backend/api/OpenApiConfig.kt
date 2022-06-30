@@ -1,5 +1,6 @@
 package com.terraformation.backend.api
 
+import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.customer.api.AutomationPayload
 import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.responses.ApiResponses
+import io.swagger.v3.oas.models.security.SecurityScheme
 import javax.annotation.ManagedBean
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
@@ -35,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * - PostGIS geometry classes use a schema defined in [GeoJsonOpenApiSchema].
  */
 @ManagedBean
-class OpenApiConfig : OpenApiCustomiser {
+class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser {
   @Autowired(required = false) var dslContext: DSLContext? = null
 
   init {
@@ -71,6 +73,17 @@ class OpenApiConfig : OpenApiCustomiser {
     addDescriptionsToRefs(openApi)
     useRefForGeometry(openApi)
     removeAdditionalProperties(openApi)
+    addSecurityScheme(openApi)
+  }
+
+  private fun addSecurityScheme(openApi: OpenAPI) {
+    openApi.components.addSecuritySchemes(
+        "openId",
+        SecurityScheme().apply {
+          type = SecurityScheme.Type.OPENIDCONNECT
+          description = "OpenID Connect"
+          openIdConnectUrl = "${keycloakInfo.openIdConnectConfigUrl}"
+        })
   }
 
   /**
