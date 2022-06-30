@@ -65,7 +65,9 @@ class AccessionStore(
 
   private val log = perClassLogger()
 
-  fun fetchById(accessionId: AccessionId, skipPermissionCheck: Boolean = false): AccessionModel? {
+  fun fetchOneById(accessionId: AccessionId): AccessionModel {
+    requirePermissions { readAccession(accessionId) }
+
     // The accession data forms a tree structure. The parent node is the data from the accessions
     // table itself, as well as data in reference tables where a given accession can only have a
     // single value. For example, there is a species table, but an accession only has one species,
@@ -107,13 +109,7 @@ class AccessionStore(
             .from(ACCESSIONS)
             .where(ACCESSIONS.ID.eq(accessionId))
             .fetchOne()
-            ?: return null
-
-    if (!skipPermissionCheck && !currentUser().canReadAccession(accessionId)) {
-      log.warn(
-          "No permission to read accession $accessionId in facility ${record[ACCESSIONS.FACILITY_ID]}")
-      return null
-    }
+            ?: throw AccessionNotFoundException(accessionId)
 
     val source =
         if (record[appDeviceField] != null) AccessionSource.SeedCollectorApp
@@ -275,7 +271,7 @@ class AccessionStore(
               accessionId
             }
 
-        return fetchById(accessionId, true)!!
+        return fetchOneById(accessionId)
       } catch (ex: DuplicateKeyException) {
         log.info("Accession number $accessionNumber already existed; trying again")
         if (attemptsRemaining <= 0) {
@@ -288,10 +284,11 @@ class AccessionStore(
     throw RuntimeException("BUG! Inserting accession failed but error was not caught.")
   }
 
-  fun update(updated: AccessionModel): Boolean {
-    val accessionId = updated.id ?: return false
-    val existing = fetchById(accessionId) ?: return false
-    val existingFacilityId = existing.facilityId ?: return false
+  fun update(updated: AccessionModel) {
+    val accessionId = updated.id ?: throw IllegalArgumentException("No accession ID specified")
+    val existing = fetchOneById(accessionId)
+    val existingFacilityId =
+        existing.facilityId ?: throw IllegalStateException("Accession has no facility ID")
     val facilityId = updated.facilityId ?: existing.facilityId
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
@@ -424,8 +421,6 @@ class AccessionStore(
         throw DataAccessException("Unable to update accession $accessionId")
       }
     }
-
-    return true
   }
 
   /**
@@ -459,19 +454,11 @@ class AccessionStore(
   /**
    * Updates an accession and returns the modified accession data including any computed field
    * values.
-   *
-   * @return null if the accession didn't exist.
    */
   fun updateAndFetch(accession: AccessionModel): AccessionModel {
     val accessionId = accession.id ?: throw IllegalArgumentException("Missing accession ID")
-    val updated =
-        if (update(accession)) {
-          fetchById(accessionId)
-        } else {
-          null
-        }
-
-    return updated ?: throw AccessionNotFoundException(accessionId)
+    update(accession)
+    return fetchOneById(accessionId)
   }
 
   /**
@@ -482,7 +469,7 @@ class AccessionStore(
    * current user.
    */
   fun checkIn(accessionId: AccessionId): AccessionModel {
-    val accession = fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    val accession = fetchOneById(accessionId)
 
     requirePermissions { updateAccession(accessionId) }
 
@@ -525,7 +512,7 @@ class AccessionStore(
    */
   fun dryRun(accession: AccessionModel): AccessionModel {
     val accessionId = accession.id ?: throw IllegalArgumentException("Missing accession ID")
-    val existing = fetchById(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    val existing = fetchOneById(accessionId)
     return accession.withCalculatedValues(clock, existing)
   }
 
@@ -553,7 +540,7 @@ class AccessionStore(
           .mapNotNull { accessionId ->
             // This is an N+1 query which isn't ideal but we are going to be processing these one
             // at a time anyway so optimizing this to a single SELECT wouldn't help much.
-            fetchById(accessionId!!)
+            fetchOneById(accessionId!!)
           }
     }
   }
