@@ -6,7 +6,10 @@ on:
     branches:
       - main
     paths:
+      - build.gradle.kts
+      - gradle.properties
       - docs/**
+      - src/docs/**
       - src/main/resources/db/migration/**
       - src/test/kotlin/com/terraformation/backend/db/SchemaDocsGenerator.kt
       - .github/workflows/docs.yaml
@@ -58,6 +61,9 @@ jobs:
         SCHEMA_DOCS_DIR: docs/schema
         # We want diagnostic output from schema generation, but not from Spring's test harness.
         LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: ERROR
+
+    - name: Generate license report
+      run: ./gradlew generateLicenseReport
 
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4.3.3

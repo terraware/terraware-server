@@ -1,4 +1,6 @@
-# Database schema documentation
+# Terraware Server
+
+## Database schema
 
 Available slices:
 
@@ -7,3 +9,7 @@ Available slices:
 * [Device](schema/device/relationships.html)
 * [Seed Bank](schema/seedbank/relationships.html)
 * [Species](schema/species/relationships.html)
+
+## Other docs
+
+* [Dependency license report](license-report/index.html)

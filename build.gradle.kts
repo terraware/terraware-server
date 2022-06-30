@@ -1,4 +1,6 @@
 import com.github.gradle.node.yarn.task.YarnTask
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.InventoryHtmlReportRenderer
 import com.terraformation.gradle.computeGitVersion
 import java.nio.file.Files
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -31,6 +33,8 @@ plugins {
 
   // The MJML -> HTML translator for email messages is a Node.js utility.
   id("com.github.node-gradle.node") version "3.2.1"
+
+  id("com.github.jk1.dependency-license-report") version "2.1"
 }
 
 buildscript {
@@ -344,4 +348,21 @@ tasks.register<JavaExec>("generateFrontEndTestSession") {
   description = "Generates a fake login session for the frontend integration test suite."
   classpath = sourceSets.test.get().runtimeClasspath
   mainClass.set("com.terraformation.backend.customer.FrontEndTestSessionGeneratorKt")
+}
+
+licenseReport {
+  configurations =
+      project.configurations.filter { it.isCanBeResolved }.map { it.name }.toTypedArray()
+  excludeBoms = true
+  excludes =
+      arrayOf(
+          // Spring Boot has licenses in the individual dependencies, not the umbrella artifact.
+          "org.springframework.boot:spring-boot-dependencies",
+          // https://github.com/jk1/Gradle-License-Report/pull/243
+          "software.amazon.awssdk:bom",
+      )
+  filters =
+      arrayOf(LicenseBundleNormalizer("$projectDir/src/docs/license-normalizer-bundle.json", true))
+  outputDir = "$projectDir/docs/license-report"
+  renderers = arrayOf(InventoryHtmlReportRenderer())
 }
