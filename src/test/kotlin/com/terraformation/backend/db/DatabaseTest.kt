@@ -132,6 +132,13 @@ abstract class DatabaseTest {
   protected val tablesToResetSequences: List<Table<out Record>>
     get() = emptyList()
 
+  // ID values inserted by insertSiteData(). These are used in most database-backed tests. They are
+  // marked as final so they can be referenced in constructor-initialized properties in subclasses.
+  protected final val organizationId: OrganizationId = OrganizationId(1)
+  protected final val projectId: ProjectId = ProjectId(2)
+  protected final val siteId: SiteId = SiteId(10)
+  protected final val facilityId: FacilityId = FacilityId(100)
+
   @BeforeEach
   fun resetSequences() {
     sequencesToReset.forEach { sequence -> dslContext.alterSequence(sequence).restart().execute() }
@@ -438,10 +445,10 @@ abstract class DatabaseTest {
   /** Creates an organization, site, and facility that can be referenced by various tests. */
   fun insertSiteData() {
     insertUser()
-    insertOrganization(1, "dev")
-    insertProject(2, 1, "project")
-    insertSite(10, 2, "sim")
-    insertFacility(100, 10, "ohana")
+    insertOrganization(organizationId, "dev")
+    insertProject(projectId, organizationId, "project")
+    insertSite(siteId, projectId, "sim")
+    insertFacility(facilityId, siteId, "ohana")
   }
 
   /** Creates a user that can be referenced by various tests. */

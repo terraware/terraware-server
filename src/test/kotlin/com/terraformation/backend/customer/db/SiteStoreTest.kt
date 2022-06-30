@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.pojos.SitesRow
@@ -26,10 +25,6 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private lateinit var parentStore: ParentStore
   private lateinit var store: SiteStore
-
-  private val organizationId = OrganizationId(1)
-  private val projectId = ProjectId(2)
-  private val siteId = SiteId(10)
 
   @BeforeEach
   fun setUp() {

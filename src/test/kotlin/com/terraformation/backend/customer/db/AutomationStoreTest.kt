@@ -7,7 +7,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
@@ -27,7 +26,6 @@ internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   private val deviceId = DeviceId(1000)
-  private val facilityId = FacilityId(100)
 
   @BeforeEach
   fun setUp() {

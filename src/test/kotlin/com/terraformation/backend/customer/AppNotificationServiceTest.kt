@@ -23,12 +23,9 @@ import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
@@ -77,10 +74,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
-  private val facilityId = FacilityId(100)
-  private val organizationId = OrganizationId(1)
   private val otherUserId = UserId(100)
-  private val projectId = ProjectId(2)
 
   private val clock: Clock = mockk()
   private val messages: Messages = mockk()

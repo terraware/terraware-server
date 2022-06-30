@@ -4,7 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GrowthForm
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.UploadId
@@ -77,7 +76,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
       "Scientific Name,Common Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior"
 
   private val storageUrl = URI.create("file:///test")
-  private val organizationId = OrganizationId(1)
   private val uploadId = UploadId(10)
   private lateinit var userId: UserId
 

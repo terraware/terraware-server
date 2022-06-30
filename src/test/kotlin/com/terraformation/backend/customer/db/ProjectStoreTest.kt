@@ -4,7 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ProjectOrganizationWideException
@@ -28,9 +27,6 @@ internal class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock: Clock = mockk()
   private lateinit var store: ProjectStore
-
-  private val organizationId = OrganizationId(1)
-  private val projectId = ProjectId(2)
 
   @BeforeEach
   fun setUp() {

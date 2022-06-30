@@ -32,8 +32,6 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     SpeciesService(dslContext, speciesChecker, speciesStore)
   }
 
-  private val organizationId = OrganizationId(1)
-
   @BeforeEach
   fun setUp() {
     every { clock.instant() } returns Instant.EPOCH

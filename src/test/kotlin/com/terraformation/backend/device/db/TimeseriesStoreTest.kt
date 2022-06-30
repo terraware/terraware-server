@@ -4,7 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.TimeseriesId
 import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.TimeseriesType
@@ -36,7 +35,6 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var store: TimeseriesStore
 
   private val deviceId = DeviceId(1)
-  private val facilityId = FacilityId(100)
 
   private lateinit var timeseriesRow: TimeseriesRow
 
