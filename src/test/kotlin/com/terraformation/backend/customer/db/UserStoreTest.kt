@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -110,7 +111,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             config,
             dslContext,
             httpClient,
-            keycloakProperties,
+            KeycloakInfo(keycloakProperties),
             jacksonObjectMapper(),
             organizationStore,
             parentStore,

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.auth.KeycloakRequiredActions
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -35,7 +36,6 @@ import javax.ws.rs.core.Response
 import kotlin.random.Random
 import org.apache.commons.codec.binary.Base32
 import org.jooq.DSLContext
-import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
@@ -66,7 +66,7 @@ class UserStore(
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val httpClient: HttpClient,
-    private val keycloakProperties: KeycloakSpringBootProperties,
+    private val keycloakInfo: KeycloakInfo,
     private val objectMapper: ObjectMapper,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
@@ -245,9 +245,8 @@ class UserStore(
 
       if (redirectUrl != null) {
         // Client ID is required when specifying a redirect URL.
-        val keycloakClientId = keycloakProperties.resource
         userResource.executeActionsEmail(
-            keycloakClientId, "$redirectUrl", linkLifetimeSecs, keycloakUser.requiredActions)
+            keycloakInfo.clientId, "$redirectUrl", linkLifetimeSecs, keycloakUser.requiredActions)
       } else {
         userResource.executeActionsEmail(keycloakUser.requiredActions, linkLifetimeSecs)
       }
@@ -433,9 +432,7 @@ class UserStore(
     user.resetPassword(credentials)
 
     try {
-      val authUrl = URI(keycloakProperties.authServerUrl)
-      val tokenUrl =
-          authUrl.resolve("/auth/realms/${keycloakProperties.realm}/protocol/openid-connect/token")
+      val tokenUrl = keycloakInfo.realmBaseUrl.resolve("protocol/openid-connect/token")
 
       val formSubmission =
           mapOf(

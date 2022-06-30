@@ -2,8 +2,12 @@ package com.terraformation.backend
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.info.License
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.security.SecurityScheme
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
@@ -18,9 +22,21 @@ import org.springframework.scheduling.annotation.EnableScheduling
     info =
         Info(
             title = "Terraware Server",
-            version = "0.1-SNAPSHOT",
+            version = VERSION,
             description = "Back end for Terraware applications",
-            license = License(name = "MIT")))
+            license = License(name = "MIT")),
+    security =
+        [
+            SecurityRequirement(name = "cookie"),
+            SecurityRequirement(
+                name = "openId", scopes = ["email", "offline_access", "openid", "profile"]),
+        ])
+@SecurityScheme(
+    type = SecuritySchemeType.APIKEY,
+    name = "cookie",
+    paramName = "SESSION",
+    `in` = SecuritySchemeIn.COOKIE,
+    description = "Session cookie")
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @EnableScheduling
 @SpringBootApplication(
