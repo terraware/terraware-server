@@ -30,8 +30,6 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
-  private val organizationId = OrganizationId(1)
-
   private val clock: Clock = mockk()
   override val user: TerrawareUser = mockUser()
 

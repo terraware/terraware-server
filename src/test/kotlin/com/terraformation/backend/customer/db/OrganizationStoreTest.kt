@@ -12,7 +12,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityConnectionState
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -20,7 +19,6 @@ import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
@@ -52,11 +50,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private lateinit var permissionStore: PermissionStore
   private lateinit var store: OrganizationStore
-
-  private val organizationId = OrganizationId(1)
-  private val projectId = ProjectId(10)
-  private val siteId = SiteId(100)
-  private val facilityId = FacilityId(1000)
 
   // This gets converted to Mercator in the DB; using smaller values causes floating-point
   // inaccuracies that make assertEquals() fail. The values here work on x86_64; keep an eye on
@@ -137,12 +130,13 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             countrySubdivisionCode = organizationModel.countrySubdivisionCode))
     insertProject(
         projectId,
+        organizationId,
         description = projectModel.description,
         startDate = projectModel.startDate,
         status = projectModel.status,
         types = projectModel.types)
-    insertSite(siteId, description = siteModel.description, location = location)
-    insertFacility(facilityId)
+    insertSite(siteId, projectId, description = siteModel.description, location = location)
+    insertFacility(facilityId, siteId)
   }
 
   @Test

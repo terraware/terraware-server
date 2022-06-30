@@ -75,9 +75,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var accessionSearchService: AccessionSearchService
   private lateinit var searchService: SearchService
 
-  private val organizationId = OrganizationId(1)
-  private val projectId = ProjectId(2)
-  private val facilityId = FacilityId(100)
   private val checkedInTimeString = "2021-08-18T11:33:55Z"
   private val checkedInTime = Instant.parse(checkedInTimeString)
   private val searchScopes = listOf(OrganizationIdScope(organizationId))

@@ -7,7 +7,6 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
@@ -73,7 +72,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val accessionNumber = "ZYXWVUTSRQPO"
   private val capturedTime = Instant.ofEpochMilli(1000)
   private val contentType = MediaType.IMAGE_JPEG_VALUE
-  private val facilityId = FacilityId(100)
   private val filename = "test-photo.jpg"
   private val latitude = 23.456
   private val longitude = 76.5432

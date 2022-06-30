@@ -8,7 +8,6 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
@@ -35,8 +34,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private lateinit var store: FacilityStore
 
-  private val facilityId = FacilityId(100)
-  private val siteId = SiteId(10)
   private val storageLocationId = StorageLocationId(1000)
 
   @BeforeEach

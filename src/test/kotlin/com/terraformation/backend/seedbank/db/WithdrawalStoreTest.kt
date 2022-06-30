@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -41,7 +40,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
 
   private val accessionId = AccessionId(9999)
-  private val facilityId = FacilityId(100)
   private val germinationTestId = GerminationTestId(9998)
 
   override val tablesToResetSequences: List<Table<out Record>>

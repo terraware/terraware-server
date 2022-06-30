@@ -55,8 +55,6 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  private val facilityId = FacilityId(100)
-
   private val bmuRow =
       DevicesRow(
           facilityId = facilityId,

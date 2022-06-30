@@ -10,7 +10,6 @@ import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
@@ -40,9 +39,6 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private lateinit var permissionStore: PermissionStore
   private lateinit var store: NotificationStore
-
-  private val organizationId = OrganizationId(1)
-  private val projectId = ProjectId(2)
 
   private fun notificationModel(
       globalNotification: Boolean = false,

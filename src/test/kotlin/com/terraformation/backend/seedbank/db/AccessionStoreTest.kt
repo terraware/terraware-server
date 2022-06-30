@@ -129,9 +129,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var store: AccessionStore
   private lateinit var parentStore: ParentStore
 
-  private val facilityId = FacilityId(100)
-  private val organizationId = OrganizationId(1)
-
   @BeforeEach
   fun init() {
     parentStore = ParentStore(dslContext)

@@ -8,7 +8,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
@@ -66,7 +65,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val keycloakProperties = KeycloakSpringBootProperties()
 
   private val authId = "authId"
-  private val organizationId = OrganizationId(1)
   private val userRepresentation =
       UserRepresentation().apply {
         email = "email"

@@ -32,7 +32,6 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   private val deviceManagerId = DeviceManagerId(1)
-  private val facilityId = FacilityId(100)
 
   @BeforeEach
   fun setUp() {
