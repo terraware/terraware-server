@@ -17,23 +17,17 @@ import freemarker.template.TemplateNotFoundException
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import javax.annotation.ManagedBean
-import javax.mail.Message
 import javax.mail.internet.InternetAddress
-import javax.mail.internet.MimeMessage
 import org.apache.commons.validator.routines.EmailValidator
-import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
-import software.amazon.awssdk.core.SdkBytes
-import software.amazon.awssdk.services.sesv2.SesV2Client
-import software.amazon.awssdk.services.sesv2.model.Destination
-import software.amazon.awssdk.services.sesv2.model.EmailContent
-import software.amazon.awssdk.services.sesv2.model.RawMessage
 
 /**
  * Renders email messages from templates and sends them to people using the configured mail server.
  *
  * Email templates are loaded from the `src/main/resources/templates/email` directory. Please see
  * the README file in that directory for more details.
+ *
+ * This class does not interact with any email services; that's done in [EmailSender].
  */
 @ManagedBean
 class EmailService(
@@ -42,17 +36,10 @@ class EmailService(
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
-    private val sender: JavaMailSender,
+    private val sender: EmailSender,
 ) {
-  private lateinit var sesClient: SesV2Client
   private val emailValidator = EmailValidator.getInstance()
   private val log = perClassLogger()
-
-  init {
-    if (config.email.enabled && config.email.useSes) {
-      sesClient = SesV2Client.create()
-    }
-  }
 
   /**
    * Sends an email notification to all the people who should be notified about something happening
@@ -83,7 +70,7 @@ class EmailService(
    * opted out of email notifications. The default is to obey the user's notification preference,
    * which is the correct thing to do in the vast majority of cases.
    */
-  fun sendProjectNotification(
+  private fun sendProjectNotification(
       projectId: ProjectId,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true
@@ -102,6 +89,7 @@ class EmailService(
    * opted out of email notifications. The default is to obey the user's notification preference,
    * which is the correct thing to do in the vast majority of cases.
    */
+  @Suppress("UNUSED")
   fun sendOrganizationNotification(
       organizationId: OrganizationId,
       model: EmailTemplateModel,
@@ -234,12 +222,7 @@ class EmailService(
 
     if (config.email.enabled) {
       try {
-        val messageId =
-            if (config.email.useSes) {
-              sendSes(message, rawMessage)
-            } else {
-              sendSmtp(message)
-            }
+        val messageId = sender.send(message, rawMessage)
 
         log.info(
             "Sent email $messageId with subject \"${message.subject}\" ${message.getAllRecipientsString()}")
@@ -257,47 +240,5 @@ class EmailService(
     } else {
       log.info("Email sending is disabled; did not send the generated message.")
     }
-  }
-
-  /** Sends the message using the SES SendEmail API. */
-  private fun sendSes(message: MimeMessage, rawMessage: ByteArray): String? {
-    val sdkBytes = SdkBytes.fromByteArrayUnsafe(rawMessage)
-    val sender =
-        message.from?.getOrNull(0)?.toString()
-            ?: throw IllegalArgumentException("No sender address specified")
-
-    val response =
-        sesClient.sendEmail { builder ->
-          builder.fromEmailAddress(sender)
-          builder.destination(
-              Destination.builder()
-                  .toAddresses(message.getRecipientsString(Message.RecipientType.TO))
-                  .ccAddresses(message.getRecipientsString(Message.RecipientType.CC))
-                  .bccAddresses(message.getRecipientsString(Message.RecipientType.BCC))
-                  .build(),
-          )
-          builder.content(
-              EmailContent.builder().raw(RawMessage.builder().data(sdkBytes).build()).build())
-        }
-
-    return response.messageId()
-  }
-
-  /** Sends the message using SMTP. */
-  private fun sendSmtp(message: MimeMessage): String? {
-    sender.send(message)
-    return message.messageID
-  }
-
-  /** Returns the list of recipients of a certain type as strings. */
-  private fun MimeMessage.getRecipientsString(type: Message.RecipientType): List<String> {
-    return getRecipients(type)?.map { "$it" } ?: emptyList()
-  }
-
-  /** Returns the list of recipients as a single string suitable for use in a log message. */
-  private fun MimeMessage.getAllRecipientsString(): String {
-    return "To: ${getRecipientsString(Message.RecipientType.TO)} " +
-        "Cc: ${getRecipientsString(Message.RecipientType.CC)} " +
-        "Bcc: ${getRecipientsString(Message.RecipientType.BCC)}"
   }
 }
