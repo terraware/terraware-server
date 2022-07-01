@@ -22,7 +22,6 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
@@ -182,7 +181,7 @@ class AdminController(
 
   @GetMapping("/site/{siteId}")
   fun getSite(@PathVariable siteId: SiteId, model: Model): String {
-    val site = siteStore.fetchById(siteId) ?: throw SiteNotFoundException(siteId)
+    val site = siteStore.fetchOneById(siteId)
     val projectId = site.projectId
     val project = projectStore.fetchOneById(projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
@@ -202,7 +201,7 @@ class AdminController(
   @GetMapping("/facility/{facilityId}")
   fun getFacility(@PathVariable facilityId: FacilityId, model: Model): String {
     val facility = facilityStore.fetchOneById(facilityId)
-    val site = siteStore.fetchById(facility.siteId) ?: throw SiteNotFoundException(facility.siteId)
+    val site = siteStore.fetchOneById(facility.siteId)
     val project = projectStore.fetchOneById(site.projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
     val recipients = projectStore.fetchEmailRecipients(project.id)
