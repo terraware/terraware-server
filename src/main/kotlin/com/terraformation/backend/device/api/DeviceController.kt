@@ -9,7 +9,6 @@ import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.DeviceService
@@ -57,7 +56,7 @@ class DeviceController(
   @GetMapping("/api/v1/devices/{id}")
   @Operation(summary = "Gets the configuration of a single device.")
   fun getDevice(@PathVariable("id") deviceId: DeviceId): GetDeviceResponsePayload {
-    val devicesRow = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val devicesRow = deviceStore.fetchOneById(deviceId)
     return GetDeviceResponsePayload(DeviceConfig(devicesRow, objectMapper))
   }
 

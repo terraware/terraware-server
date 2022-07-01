@@ -15,7 +15,6 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
-import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GerminationTestType
@@ -113,7 +112,7 @@ class EmailNotificationService(
     val deviceId =
         automation.deviceId
             ?: throw IllegalStateException("Automation ${automation.id} has no device ID")
-    val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val device = deviceStore.fetchOneById(deviceId)
     val facility = facilityStore.fetchOneById(automation.facilityId)
     val organizationId =
         parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
@@ -144,8 +143,7 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: DeviceUnresponsiveEvent) {
-    val device =
-        deviceStore.fetchOneById(event.deviceId) ?: throw DeviceNotFoundException(event.deviceId)
+    val device = deviceStore.fetchOneById(event.deviceId)
     val facilityId =
         device.facilityId ?: throw IllegalStateException("Device ${event.deviceId} has no facility")
     val facility = facilityStore.fetchOneById(facilityId)

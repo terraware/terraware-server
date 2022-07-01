@@ -12,12 +12,10 @@ import javax.annotation.ManagedBean
 /** Permission-aware database operations for device configuration data. */
 @ManagedBean
 class DeviceStore(private val devicesDao: DevicesDao) {
-  fun fetchOneById(deviceId: DeviceId): DevicesRow? {
-    return if (!currentUser().canReadDevice(deviceId)) {
-      null
-    } else {
-      devicesDao.fetchOneById(deviceId)
-    }
+  fun fetchOneById(deviceId: DeviceId): DevicesRow {
+    requirePermissions { readDevice(deviceId) }
+
+    return devicesDao.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
   }
 
   fun fetchByFacilityId(facilityId: FacilityId): List<DevicesRow> {
