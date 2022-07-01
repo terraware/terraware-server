@@ -1,5 +1,6 @@
 package com.terraformation.backend.species.db
 
+import com.terraformation.backend.db.ScientificNameNotFoundException
 import com.terraformation.backend.db.SpeciesProblemField
 import com.terraformation.backend.db.SpeciesProblemType
 import com.terraformation.backend.db.likeFuzzy
@@ -112,7 +113,7 @@ class GbifStore(private val dslContext: DSLContext) {
   fun fetchOneByScientificName(
       scientificName: String,
       vernacularNameLanguage: String? = null
-  ): GbifTaxonModel? {
+  ): GbifTaxonModel {
     val languageCondition =
         if (vernacularNameLanguage != null) {
           GBIF_VERNACULAR_NAMES.LANGUAGE.isNull.or(
@@ -165,6 +166,7 @@ class GbifStore(private val dslContext: DSLContext) {
               threatStatus = record[GBIF_DISTRIBUTIONS.THREAT_STATUS],
           )
         }
+        ?: throw ScientificNameNotFoundException(scientificName)
   }
 
   /**
