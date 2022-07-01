@@ -38,6 +38,7 @@ import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
@@ -561,6 +562,33 @@ abstract class DatabaseTest {
           .set(STATUS_ID, status)
           .set(STORAGE_URL, storageUrl)
           .set(TYPE_ID, type)
+          .execute()
+    }
+  }
+
+  fun insertNotification(
+      id: NotificationId,
+      userId: UserId = currentUser().userId,
+      type: NotificationType = NotificationType.FacilityIdle,
+      organizationId: OrganizationId? = null,
+      title: String = "",
+      body: String = "",
+      localUrl: URI = URI.create(""),
+      createdTime: Instant = Instant.EPOCH,
+      isRead: Boolean = false,
+  ) {
+    with(NOTIFICATIONS) {
+      dslContext
+          .insertInto(NOTIFICATIONS)
+          .set(ID, id)
+          .set(USER_ID, userId)
+          .set(NOTIFICATION_TYPE_ID, type)
+          .set(ORGANIZATION_ID, organizationId)
+          .set(TITLE, title)
+          .set(BODY, body)
+          .set(LOCAL_URL, localUrl)
+          .set(CREATED_TIME, createdTime)
+          .set(IS_READ, isRead)
           .execute()
     }
   }
