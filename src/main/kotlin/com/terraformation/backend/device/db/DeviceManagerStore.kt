@@ -30,8 +30,9 @@ class DeviceManagerStore(
     return deviceManagersDao.fetchOneByFacilityId(facilityId)?.unlessInaccessible()
   }
 
-  fun fetchOneById(id: DeviceManagerId): DeviceManagersRow? {
+  fun fetchOneById(id: DeviceManagerId): DeviceManagersRow {
     return deviceManagersDao.fetchOneById(id)?.unlessInaccessible()
+        ?: throw DeviceManagerNotFoundException(id)
   }
 
   fun fetchOneBySensorKitId(sensorKitId: String): DeviceManagersRow? {
