@@ -94,7 +94,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { user.canReadUpload(uploadId) } returns true
     every { user.canUpdateSpecies(any()) } returns true
     every { user.canUpdateUpload(uploadId) } returns true
-    every { userStore.fetchById(userId) } returns user
+    every { userStore.fetchOneById(userId) } returns user
   }
 
   @Test

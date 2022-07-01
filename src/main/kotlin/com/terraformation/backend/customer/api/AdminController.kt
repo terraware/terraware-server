@@ -228,7 +228,7 @@ class AdminController(
 
   @GetMapping("/user/{userId}")
   fun getUser(@PathVariable userId: UserId, model: Model): String {
-    val user = userStore.fetchById(userId)
+    val user = userStore.fetchOneById(userId)
     val organizations = organizationStore.fetchAll() // TODO: Only ones where currentUser is admin?
     val projects = projectStore.findAll().groupBy { it.organizationId }
 
@@ -316,11 +316,13 @@ class AdminController(
             ?.associate { OrganizationId(it[0].toLong()) to Role.of(it[1].toInt()) }
             ?: emptyMap()
 
-    val user = userStore.fetchById(userId)
-    if (user == null) {
-      redirectAttributes.failureMessage = "User not found."
-      return adminHome()
-    }
+    val user =
+        try {
+          userStore.fetchOneById(userId)
+        } catch (e: UserNotFoundException) {
+          redirectAttributes.failureMessage = "User not found."
+          return adminHome()
+        }
 
     // We need to know which boxes were unchecked; the UI would have shown all the orgs and projects
     // the current user can administer.
@@ -709,9 +711,10 @@ class AdminController(
       @RequestParam("userId") userId: UserId,
       redirectAttributes: RedirectAttributes,
   ): String {
-    if (userStore.deleteApiClient(userId)) {
+    try {
+      userStore.deleteApiClient(userId)
       redirectAttributes.successMessage = "API key deleted."
-    } else {
+    } catch (e: Exception) {
       redirectAttributes.failureMessage = "Unable to delete API key."
     }
 

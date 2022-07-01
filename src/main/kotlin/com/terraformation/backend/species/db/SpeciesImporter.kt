@@ -14,7 +14,6 @@ import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UploadStatus
 import com.terraformation.backend.db.UploadType
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.tables.daos.UploadsDao
 import com.terraformation.backend.db.tables.references.SPECIES
@@ -104,7 +103,7 @@ class SpeciesImporter(
     val storageUrl =
         uploadsRow.storageUrl ?: throw IllegalStateException("Storage URL must be non-null")
 
-    val uploadUser = userStore.fetchById(userId) ?: throw UserNotFoundException(userId)
+    val uploadUser = userStore.fetchOneById(userId)
 
     uploadUser.run {
       val existingScientificNames =
@@ -166,7 +165,7 @@ class SpeciesImporter(
   fun importCsv(uploadId: UploadId, userId: UserId, overwriteExisting: Boolean) {
     log.info("Importing species list $uploadId for organization")
 
-    val uploadUser = userStore.fetchById(userId) ?: throw UserNotFoundException(userId)
+    val uploadUser = userStore.fetchOneById(userId)
     uploadUser.run {
       val uploadsRow = uploadsDao.fetchOneById(uploadId) ?: throw UploadNotFoundException(uploadId)
       val storageUrl =
