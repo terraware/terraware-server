@@ -56,17 +56,17 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchOneById returns null if user has no read permission`() {
+  fun `fetchOneById throws exception if user has no read permission`() {
     insertDeviceManager()
 
     every { user.canReadDeviceManager(deviceManagerId) } returns false
 
-    assertNull(store.fetchOneById(deviceManagerId))
+    assertThrows<DeviceManagerNotFoundException> { store.fetchOneById(deviceManagerId) }
   }
 
   @Test
-  fun `fetchOneById returns null if the device manager does not exist`() {
-    assertNull(store.fetchOneById(deviceManagerId))
+  fun `fetchOneById throws exception if the device manager does not exist`() {
+    assertThrows<DeviceManagerNotFoundException> { store.fetchOneById(deviceManagerId) }
   }
 
   @Test

@@ -5,7 +5,6 @@ import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.DeviceManagerId
-import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.device.DeviceManagerService
@@ -52,9 +51,7 @@ class DeviceManagersController(
   fun getDeviceManager(
       @PathVariable deviceManagerId: DeviceManagerId
   ): GetDeviceManagerResponsePayload {
-    val manager =
-        deviceManagerStore.fetchOneById(deviceManagerId)
-            ?: throw DeviceManagerNotFoundException(deviceManagerId)
+    val manager = deviceManagerStore.fetchOneById(deviceManagerId)
 
     return GetDeviceManagerResponsePayload(DeviceManagerPayload(manager))
   }

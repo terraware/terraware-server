@@ -13,7 +13,6 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.DeviceManagerId
-import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceTemplateCategory
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
@@ -269,9 +268,7 @@ class AdminController(
       @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
       model: Model
   ): String {
-    val manager =
-        deviceManagerStore.fetchOneById(deviceManagerId)
-            ?: throw DeviceManagerNotFoundException(deviceManagerId)
+    val manager = deviceManagerStore.fetchOneById(deviceManagerId)
     val facility = manager.facilityId?.let { facilityStore.fetchOneById(it) }
 
     model.addAttribute(
@@ -813,7 +810,7 @@ class AdminController(
     }
 
     try {
-      val original = deviceManagerStore.fetchOneById(deviceManagerId)!!
+      val original = deviceManagerStore.fetchOneById(deviceManagerId)
 
       val originalFacilityId = original.facilityId
       val newFacilityId = row.facilityId
