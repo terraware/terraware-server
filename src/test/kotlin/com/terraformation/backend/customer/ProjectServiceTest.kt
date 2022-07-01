@@ -8,8 +8,6 @@ import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
@@ -91,7 +89,7 @@ internal class ProjectServiceTest : DatabaseTest(), RunsAsUser {
         projectId in permissionStore.fetchProjectRoles(otherUserId),
         "User should not have project roles for project that user was not added to")
 
-    insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(otherUserId)
 
     service.addUser(projectId, otherUserId)
 
@@ -102,13 +100,11 @@ internal class ProjectServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `addUser publishes event on success`() {
-    val organizationId = OrganizationId(1)
     val userId = currentUser().userId
-    val projectId = ProjectId(2)
     val otherUserId = UserId(100)
 
     insertUser(otherUserId)
-    insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
+    insertOrganizationUser(otherUserId)
 
     service.addUser(projectId, otherUserId)
 

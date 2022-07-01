@@ -179,14 +179,13 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization throws exception if organization has users other than the current one`() {
-    val organizationId = OrganizationId(1)
     val otherUserId = UserId(100)
 
     insertUser(user.userId)
     insertUser(otherUserId)
-    insertOrganization(organizationId)
-    insertOrganizationUser(user.userId, organizationId, Role.OWNER)
-    insertOrganizationUser(otherUserId, organizationId, Role.CONTRIBUTOR)
+    insertOrganization()
+    insertOrganizationUser(role = Role.OWNER)
+    insertOrganizationUser(otherUserId)
 
     assertThrows<OrganizationHasOtherUsersException> { service.deleteOrganization(organizationId) }
   }
@@ -201,11 +200,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization removes current user from organization`() {
-    val organizationId = OrganizationId(1)
-
     insertUser()
-    insertOrganization(organizationId)
-    insertOrganizationUser(user.userId, organizationId, Role.OWNER)
+    insertOrganization()
+    insertOrganizationUser(role = Role.OWNER)
 
     every { publisher.publishEvent(any<OrganizationDeletedEvent>()) } just Runs
 
@@ -218,11 +215,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization publishes event on success`() {
-    val organizationId = OrganizationId(1)
-
     insertUser()
-    insertOrganization(organizationId)
-    insertOrganizationUser(user.userId, organizationId, Role.OWNER)
+    insertOrganization()
+    insertOrganizationUser(role = Role.OWNER)
 
     every { publisher.publishEvent(any<OrganizationDeletedEvent>()) } just Runs
 

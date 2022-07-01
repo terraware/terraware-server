@@ -1605,7 +1605,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update writes new facility id if it belongs to the same organization as previous facility`() {
     val anotherFacilityId = FacilityId(5000)
-    insertFacility(anotherFacilityId, SiteId(10))
+    insertFacility(anotherFacilityId)
 
     every { user.canUpdateAccession(any()) } returns true
     val initial = store.create(AccessionModel(facilityId = facilityId))
@@ -1779,7 +1779,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun createOtherFacility() {
-      insertFacility(otherFacilityId, 10)
+      insertFacility(otherFacilityId)
     }
 
     @Test

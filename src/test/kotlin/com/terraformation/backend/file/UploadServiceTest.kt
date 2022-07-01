@@ -3,7 +3,6 @@ package com.terraformation.backend.file
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadStatus
 import com.terraformation.backend.db.UploadType
@@ -61,11 +60,10 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     val fileName = "test"
     val contentType = "text/csv"
     val type = UploadType.SpeciesCSV
-    val organizationId = OrganizationId(1)
 
     every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
     every { fileStore.write(storageUrl, any()) } just Runs
-    insertOrganization(organizationId)
+    insertOrganization()
 
     val expected =
         listOf(

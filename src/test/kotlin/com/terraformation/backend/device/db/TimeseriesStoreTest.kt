@@ -43,7 +43,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     store = TimeseriesStore(clock, dslContext)
 
     insertSiteData()
-    insertDevice(deviceId, facilityId)
+    insertDevice(deviceId)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateTimeseries(any()) } returns true

@@ -171,11 +171,11 @@ internal class PermissionTest : DatabaseTest() {
     insertUser(userId)
     insertUser(otherUserId)
     organizationIds.forEach { insertOrganization(it, createdBy = userId) }
-    projectIds.forEach { insertProject(it, createdBy = userId) }
-    siteIds.forEach { insertSite(it, createdBy = userId) }
+    projectIds.forEach { insertProject(it, it.value / 10, createdBy = userId) }
+    siteIds.forEach { insertSite(it, it.value / 10, createdBy = userId) }
 
     facilityIds.forEach { facilityId ->
-      insertFacility(facilityId, createdBy = userId)
+      insertFacility(facilityId, facilityId.value / 10, createdBy = userId)
       insertDevice(facilityId.value, facilityId, createdBy = userId)
       insertAutomation(facilityId.value, facilityId, createdBy = userId)
       accessionsDao.insert(

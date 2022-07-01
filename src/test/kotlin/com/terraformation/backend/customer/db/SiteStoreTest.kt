@@ -80,7 +80,7 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
   fun `update can move site between projects`() {
     val newProjectId = ProjectId(3)
 
-    insertProject(newProjectId, organizationId)
+    insertProject(newProjectId)
 
     val rowWithNewProject = sitesDao.fetchOneById(siteId)!!.copy(projectId = newProjectId)
 
@@ -115,7 +115,7 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update throws exception if user has no permission to delete site from current project`() {
     val newProjectId = ProjectId(3)
-    insertProject(newProjectId, organizationId)
+    insertProject(newProjectId)
 
     every { user.canDeleteSite(siteId) } returns false
 
@@ -127,7 +127,7 @@ internal class SiteStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update throws exception if user has no permission to create site in target project`() {
     val newProjectId = ProjectId(3)
-    insertProject(newProjectId, organizationId)
+    insertProject(newProjectId)
 
     every { user.canCreateSite(newProjectId) } returns false
 

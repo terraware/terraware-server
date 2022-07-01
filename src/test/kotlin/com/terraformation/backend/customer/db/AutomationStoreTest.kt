@@ -43,8 +43,8 @@ internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
 
     insertDevice(otherDeviceId)
 
-    insertAutomation(1, facilityId, deviceId = deviceId, objectMapper = objectMapper)
-    insertAutomation(2, facilityId, deviceId = otherDeviceId, objectMapper = objectMapper)
+    insertAutomation(1, deviceId = deviceId, objectMapper = objectMapper)
+    insertAutomation(2, deviceId = otherDeviceId, objectMapper = objectMapper)
 
     val expectedRow = automationsDao.fetchOneById(AutomationId(1))!!
     val expected = listOf(AutomationModel(expectedRow, objectMapper))

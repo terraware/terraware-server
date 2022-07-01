@@ -215,7 +215,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUpOrganization() {
       insertUser()
-      insertOrganization(organizationId)
+      insertOrganization()
     }
 
     @Test
@@ -299,7 +299,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUpOrganization() {
       insertUser()
-      insertOrganization(organizationId)
+      insertOrganization()
     }
 
     @Test

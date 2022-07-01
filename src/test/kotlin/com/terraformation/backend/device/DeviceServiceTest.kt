@@ -282,7 +282,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `createDefaultDevices does nothing if facility has no default template category`() {
     val desalFacilityId = FacilityId(2)
-    insertFacility(desalFacilityId, siteId = 10, type = FacilityType.Desalination)
+    insertFacility(desalFacilityId, type = FacilityType.Desalination)
     deviceTemplatesDao.insert(
         DeviceTemplatesRow(
             categoryId = DeviceTemplateCategory.SeedBankDefault,
