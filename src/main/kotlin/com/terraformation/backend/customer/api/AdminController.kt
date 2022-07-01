@@ -316,7 +316,13 @@ class AdminController(
             ?.associate { OrganizationId(it[0].toLong()) to Role.of(it[1].toInt()) }
             ?: emptyMap()
 
-    val user = userStore.fetchOneById(userId)
+    val user =
+        try {
+          userStore.fetchOneById(userId)
+        } catch (e: UserNotFoundException) {
+          redirectAttributes.failureMessage = "User not found."
+          return adminHome()
+        }
 
     // We need to know which boxes were unchecked; the UI would have shown all the orgs and projects
     // the current user can administer.
