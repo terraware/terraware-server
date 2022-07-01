@@ -79,22 +79,16 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 
 /**
- * Postgresql function name that retrieves serial sequence name. This is also the column name that
- * holds the result in a successful response.
- * @see https://www.postgresql.org/docs/9.2/functions-info.html
- */
-const val PG_GET_SERIAL_SEQUENCE = "pg_get_serial_sequence"
-
-/**
  * Base class for database-backed tests. Subclass this to get a fully-configured database with a
- * [DSLContext] ready to use. The database is run in a Docker container which is torn down after all
- * tests have finished. This cuts down on the chance that tests will behave differently from one
- * development environment to the next.
+ * [DSLContext] and a set of jOOQ DAO objects ready to use. The database is run in a Docker
+ * container which is torn down after all tests have finished. This cuts down on the chance that
+ * tests will behave differently from one development environment to the next.
  *
  * In general, you should only use this for testing database-centric code! Do not put SQL queries in
- * the middle of business logic. Instead, pull the queries out into data-access classes (the code
- * base uses the term "fetcher" for these) and stub out the fetchers. Database-backed tests are
- * slower and are usually not as easy to read or maintain.
+ * the middle of business logic. If you want to test code that _uses_ data from the database, pull
+ * the queries out into data-access classes (the code base uses the suffix "Store" for these
+ * classes) and stub out the stores. Then test the store classes separately. Database-backed tests
+ * are slower and are usually not as easy to read or maintain.
  *
  * Some things to be aware of:
  *
@@ -106,7 +100,8 @@ const val PG_GET_SERIAL_SEQUENCE = "pg_get_serial_sequence"
  * - Sequences, including the ones used to generate auto-increment primary keys, are normally not
  * reset when transactions are rolled back. But it is useful to have a predictable set of IDs to
  * compare against. So subclasses can override the [sequencesToReset] value with a list of sequences
- * to reset before each test method. Use `\ds` in the `psql` shell to list all the sequence names.
+ * to reset before each test method. Or, often more convenient, they can override
+ * [tablesToResetSequences] with a list of tables whose primary key sequences should be reset.
  */
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -587,8 +582,16 @@ abstract class DatabaseTest {
     }
   }
 
-  @Suppress("UPPER_BOUND_VIOLATED_WARNING")
+  @Suppress("UPPER_BOUND_VIOLATED_WARNING") // For PostgreSQLContainer recursive type
   companion object {
+    /**
+     * PostgreSQL function name that retrieves serial sequence name. This is also the column name
+     * that holds the result in a successful response.
+     *
+     * [Docs here](https://www.postgresql.org/docs/13/functions-info.html).
+     */
+    const val PG_GET_SERIAL_SEQUENCE = "pg_get_serial_sequence"
+
     private val imageName: DockerImageName =
         DockerImageName.parse("$POSTGRES_DOCKER_REPOSITORY:$POSTGRES_DOCKER_TAG")
             .asCompatibleSubstituteFor("postgres")
