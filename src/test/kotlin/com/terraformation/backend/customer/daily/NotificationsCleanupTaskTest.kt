@@ -56,8 +56,9 @@ internal class NotificationsCleanupTaskTest : DatabaseTest() {
     insertNotification(NotificationId(2), UserId(1), createdTime = now.minus(Duration.ofDays(6)))
 
     val beforeCleanup = notificationsDao.findAll()
-    assertTrue(
-        setOf(1L, 2L) == beforeCleanup.map { it.id?.value }.toSet(),
+    assertEquals(
+        setOf(1L, 2L),
+        beforeCleanup.map { it.id?.value }.toSet(),
         "Expected notification IDs 1 and 2")
 
     notificationsCleanupTask.cleanup(DailyTaskTimeArrivedEvent())
