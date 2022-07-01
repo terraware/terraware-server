@@ -2,7 +2,6 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import javax.annotation.ManagedBean
 
@@ -16,8 +15,7 @@ class SpeciesChecker(
   }
 
   fun checkSpecies(speciesId: SpeciesId) {
-    val speciesRow =
-        speciesStore.fetchSpeciesById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
+    val speciesRow = speciesStore.fetchSpeciesById(speciesId)
     if (speciesRow.checkedTime == null) {
       createProblems(speciesId, speciesRow)
     }

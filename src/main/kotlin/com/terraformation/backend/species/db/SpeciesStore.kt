@@ -48,7 +48,7 @@ class SpeciesStore(
         .fetchOne(SPECIES.ID)
   }
 
-  fun fetchSpeciesById(speciesId: SpeciesId): SpeciesRow? {
+  fun fetchSpeciesById(speciesId: SpeciesId): SpeciesRow {
     requirePermissions { readSpecies(speciesId) }
 
     return dslContext
@@ -56,6 +56,7 @@ class SpeciesStore(
         .where(SPECIES.ID.eq(speciesId))
         .and(SPECIES.DELETED_TIME.isNull)
         .fetchOneInto(SpeciesRow::class.java)
+        ?: throw SpeciesNotFoundException(speciesId)
   }
 
   fun countSpecies(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
@@ -282,7 +283,7 @@ class SpeciesStore(
   fun acceptProblemSuggestion(problemId: SpeciesProblemId): SpeciesRow {
     val problem = fetchProblemById(problemId)
     val speciesId = problem.speciesId ?: throw SpeciesProblemNotFoundException(problemId)
-    val existingSpecies = fetchSpeciesById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
+    val existingSpecies = fetchSpeciesById(speciesId)
 
     val fieldId = problem.fieldId ?: throw IllegalStateException("Species problem had no field")
     val typeId = problem.typeId ?: throw IllegalStateException("Species problem had no type")
