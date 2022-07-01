@@ -17,7 +17,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -112,8 +111,8 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: UserAddedToOrganizationEvent) {
-    userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
-    val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
+    userStore.fetchOneById(event.addedBy)
+    val user = userStore.fetchOneById(event.userId)
     val organization = organizationStore.fetchOneById(event.organizationId)
 
     val organizationHomeUrl = webAppUrls.organizationHome(event.organizationId)
@@ -134,8 +133,8 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: UserAddedToProjectEvent) {
-    userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
-    val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
+    userStore.fetchOneById(event.addedBy)
+    val user = userStore.fetchOneById(event.userId)
     val project = projectStore.fetchOneById(event.projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
 

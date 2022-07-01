@@ -10,6 +10,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -270,9 +271,11 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `deleteApiClient causes user to no longer be findable`() {
       val user = userStore.createApiClient(organizationId, null)
 
-      assertTrue(userStore.deleteApiClient(user.userId), "Deletion should have succeeded")
+      userStore.deleteApiClient(user.userId)
 
-      assertNull(userStore.fetchById(user.userId), "Looking up by user ID should fail")
+      assertThrows<UserNotFoundException>("Looking up by user ID should fail") {
+        userStore.fetchOneById(user.userId)
+      }
       assertNull(userStore.fetchByEmail(user.email), "Looking up by username should fail")
       assertThrows<IllegalArgumentException>("Should not be able to generate token for user") {
         userStore.generateOfflineToken(user.userId)
@@ -288,9 +291,11 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       usersResource.delete(user.authId)
 
-      assertTrue(userStore.deleteApiClient(user.userId), "Deletion should have succeeded")
+      userStore.deleteApiClient(user.userId)
 
-      assertNull(userStore.fetchById(user.userId), "User should not exist after deletion")
+      assertThrows<UserNotFoundException>("User should not exist after deletion") {
+        userStore.fetchOneById(user.userId)
+      }
     }
   }
 
@@ -398,7 +403,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             emailNotificationsEnabled = true)
     userStore.updateUser(modelWithEdits)
 
-    val updatedModel = userStore.fetchById(model.userId)!!
+    val updatedModel = userStore.fetchOneById(model.userId)
 
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")

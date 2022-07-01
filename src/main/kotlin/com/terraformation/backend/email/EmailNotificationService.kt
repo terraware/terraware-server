@@ -20,7 +20,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.device.db.DeviceStore
@@ -79,9 +78,7 @@ class EmailNotificationService(
    */
   @EventListener
   fun on(event: FacilityAlertRequestedEvent) {
-    val requestedByUser =
-        userStore.fetchById(event.requestedBy)
-            ?: throw IllegalArgumentException("Alert requested by nonexistent user")
+    val requestedByUser = userStore.fetchOneById(event.requestedBy)
     requirePermissions(requestedByUser) { sendAlert(event.facilityId) }
 
     log.info(
@@ -164,8 +161,8 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: UserAddedToOrganizationEvent) {
-    val admin = userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
-    val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
+    val admin = userStore.fetchOneById(event.addedBy)
+    val user = userStore.fetchOneById(event.userId)
     val organization = organizationStore.fetchOneById(event.organizationId)
 
     val organizationHomeUrl = webAppUrls.fullOrganizationHome(event.organizationId).toString()
@@ -178,8 +175,8 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: UserAddedToProjectEvent) {
-    val admin = userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
-    val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
+    val admin = userStore.fetchOneById(event.addedBy)
+    val user = userStore.fetchOneById(event.userId)
     val project = projectStore.fetchOneById(event.projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
 

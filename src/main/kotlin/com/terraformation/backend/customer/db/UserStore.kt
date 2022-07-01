@@ -15,6 +15,7 @@ import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
@@ -158,11 +159,10 @@ class UserStore(
   /**
    * Returns the details for the user with a given user ID. This does not pull information from
    * Keycloak; it only works for users whose data was previously inserted into our users table.
-   *
-   * @return null if the user doesn't exist.
    */
-  fun fetchById(userId: UserId): IndividualUser? {
+  fun fetchOneById(userId: UserId): IndividualUser {
     return usersDao.fetchOneById(userId)?.let { rowToModel(it) }
+        ?: throw UserNotFoundException(userId)
   }
 
   /**
@@ -316,8 +316,8 @@ class UserStore(
   }
 
   /** Deletes an API client user including its Keycloak registration. */
-  fun deleteApiClient(userId: UserId): Boolean {
-    val user = fetchById(userId) ?: return false
+  fun deleteApiClient(userId: UserId) {
+    val user = fetchOneById(userId)
 
     if (user.userType != UserType.APIClient) {
       throw IllegalArgumentException("User is not an API client")
@@ -350,8 +350,6 @@ class UserStore(
     }
 
     usersDao.deleteById(userId)
-
-    return true
   }
 
   /**
