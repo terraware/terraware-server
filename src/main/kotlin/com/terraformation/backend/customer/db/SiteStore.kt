@@ -25,12 +25,11 @@ class SiteStore(
     private val parentStore: ParentStore,
     private val sitesDao: SitesDao
 ) {
-  fun fetchById(siteId: SiteId, srid: Int = SRID.LONG_LAT): SiteModel? {
-    return if (currentUser().canReadSite(siteId)) {
-      return fetchModelsWhere(srid, SITES.ID.eq(siteId)).firstOrNull()
-    } else {
-      null
-    }
+  fun fetchOneById(siteId: SiteId, srid: Int = SRID.LONG_LAT): SiteModel {
+    requirePermissions { readSite(siteId) }
+
+    return fetchModelsWhere(srid, SITES.ID.eq(siteId)).firstOrNull()
+        ?: throw SiteNotFoundException(siteId)
   }
 
   fun fetchByProjectId(projectId: ProjectId, srid: Int = SRID.LONG_LAT): List<SiteModel> {
@@ -42,7 +41,7 @@ class SiteStore(
   }
 
   /** Returns all the sites the user has access to. */
-  fun fetchAll(srid: Int = SRID.LONG_LAT): List<SiteModel> {
+  fun findAll(srid: Int = SRID.LONG_LAT): List<SiteModel> {
     val user = currentUser()
     val listableProjects = user.projectRoles.keys.filter { user.canListSites(it) }
 
