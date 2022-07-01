@@ -3,6 +3,7 @@ package com.terraformation.backend.species.db
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.GbifNameId
 import com.terraformation.backend.db.GbifTaxonId
+import com.terraformation.backend.db.ScientificNameNotFoundException
 import com.terraformation.backend.db.SpeciesProblemField
 import com.terraformation.backend.db.SpeciesProblemType
 import com.terraformation.backend.db.tables.pojos.GbifNamesRow
@@ -151,8 +152,10 @@ internal class GbifStoreTest : DatabaseTest() {
   @Nested
   inner class FetchOneByScientificName {
     @Test
-    fun `returns null if scientific name does not exist`() {
-      assertNull(store.fetchOneByScientificName("nonexistent"))
+    fun `throws exception if scientific name does not exist`() {
+      assertThrows<ScientificNameNotFoundException> {
+        store.fetchOneByScientificName("nonexistent")
+      }
     }
 
     @Test

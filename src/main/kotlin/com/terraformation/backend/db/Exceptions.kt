@@ -88,6 +88,9 @@ class ProjectNotFoundException(val projectId: ProjectId) :
 class ProjectOrganizationWideException(val projectId: ProjectId) :
     Exception("Project $projectId is organization-wide")
 
+class ScientificNameNotFoundException(val name: String) :
+    EntityNotFoundException("Scientific name $name not found")
+
 class SiteNotFoundException(val siteId: SiteId) : EntityNotFoundException("Site $siteId not found")
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
