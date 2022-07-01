@@ -43,7 +43,7 @@ class ProjectStore(
   private val log = perClassLogger()
 
   /** Returns all the projects the user has access to. */
-  fun fetchAll(): List<ProjectModel> {
+  fun findAll(): List<ProjectModel> {
     val projectIds = currentUser().projectRoles.keys
 
     return if (projectIds.isEmpty()) {
@@ -54,13 +54,11 @@ class ProjectStore(
   }
 
   /** Returns a project if the user has access to it. */
-  fun fetchById(projectId: ProjectId): ProjectModel? {
-    return if (projectId in currentUser().projectRoles) {
-      fetch(PROJECTS.ID.eq(projectId)).firstOrNull()
-    } else {
-      log.warn("User ${currentUser().userId} attempted to fetch project $projectId")
-      null
-    }
+  fun fetchOneById(projectId: ProjectId): ProjectModel {
+    requirePermissions { readProject(projectId) }
+
+    return fetch(PROJECTS.ID.eq(projectId)).firstOrNull()
+        ?: throw ProjectNotFoundException(projectId)
   }
 
   /** Returns all the projects the user has access to in an organization. */
@@ -138,7 +136,7 @@ class ProjectStore(
   ) {
     requirePermissions { updateProject(projectId) }
 
-    val existing = fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val existing = fetchOneById(projectId)
     val typesSet = types.toSet()
 
     dslContext.transaction { _ ->

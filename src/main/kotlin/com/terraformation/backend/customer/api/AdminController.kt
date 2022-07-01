@@ -20,7 +20,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
@@ -163,7 +162,7 @@ class AdminController(
 
   @GetMapping("/project/{projectId}")
   fun getProject(@PathVariable projectId: ProjectId, model: Model): String {
-    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val project = projectStore.fetchOneById(projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
     val orgUsers = organizationStore.fetchUsers(project.organizationId).sortedBy { it.email }
     val projectUsers = orgUsers.filter { projectId in it.projectIds }
@@ -185,7 +184,7 @@ class AdminController(
   fun getSite(@PathVariable siteId: SiteId, model: Model): String {
     val site = siteStore.fetchById(siteId) ?: throw SiteNotFoundException(siteId)
     val projectId = site.projectId
-    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val project = projectStore.fetchOneById(projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
     val facilities = facilityStore.fetchBySiteId(siteId).sortedBy { it.name }
 
@@ -204,8 +203,7 @@ class AdminController(
   fun getFacility(@PathVariable facilityId: FacilityId, model: Model): String {
     val facility = facilityStore.fetchOneById(facilityId)
     val site = siteStore.fetchById(facility.siteId) ?: throw SiteNotFoundException(facility.siteId)
-    val project =
-        projectStore.fetchById(site.projectId) ?: throw ProjectNotFoundException(site.projectId)
+    val project = projectStore.fetchOneById(site.projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
     val recipients = projectStore.fetchEmailRecipients(project.id)
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
@@ -233,7 +231,7 @@ class AdminController(
   fun getUser(@PathVariable userId: UserId, model: Model): String {
     val user = userStore.fetchById(userId)
     val organizations = organizationStore.fetchAll() // TODO: Only ones where currentUser is admin?
-    val projects = projectStore.fetchAll().groupBy { it.organizationId }
+    val projects = projectStore.findAll().groupBy { it.organizationId }
 
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
@@ -334,7 +332,7 @@ class AdminController(
             .filter { currentUser().canAddOrganizationUser(it) }
             .toSet()
     val adminProjectIds =
-        projectStore.fetchAll().map { it.id }.filter { currentUser().canAddProjectUser(it) }.toSet()
+        projectStore.findAll().map { it.id }.filter { currentUser().canAddProjectUser(it) }.toSet()
 
     val organizationsToAdd = organizationIds - user.organizationRoles.keys
     val organizationsToRemove = adminOrganizationIds - organizationIds
