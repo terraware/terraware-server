@@ -21,7 +21,6 @@ import java.time.Clock
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -299,12 +298,12 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchSpeciesById returns null if species is deleted`() {
+  fun `fetchSpeciesById throws exception if species is deleted`() {
     val speciesId =
         store.createSpecies(SpeciesRow(organizationId = organizationId, scientificName = "test"))
     store.deleteSpecies(speciesId)
 
-    assertNull(store.fetchSpeciesById(speciesId))
+    assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
   }
 
   @Test

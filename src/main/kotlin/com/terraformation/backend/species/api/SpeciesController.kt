@@ -25,7 +25,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import javax.ws.rs.NotFoundException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -99,9 +98,7 @@ class SpeciesController(
       @Schema(description = "Organization whose information about the species should be returned.")
       organizationId: OrganizationId,
   ): GetSpeciesResponsePayload {
-    val speciesRow =
-        speciesStore.fetchSpeciesById(speciesId)
-            ?: throw NotFoundException("Species $speciesId not found.")
+    val speciesRow = speciesStore.fetchSpeciesById(speciesId)
     val problems = speciesStore.fetchProblemsBySpeciesId(speciesId)
 
     val element = SpeciesResponseElement(speciesRow, problems)

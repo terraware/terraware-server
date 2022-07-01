@@ -2,7 +2,6 @@ package com.terraformation.backend.species
 
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
@@ -35,8 +34,7 @@ class SpeciesService(
   fun updateSpecies(row: SpeciesRow): SpeciesRow {
     return dslContext.transactionResult { _ ->
       val speciesId = row.id ?: throw IllegalArgumentException("ID must be non-null")
-      val existingRow =
-          speciesStore.fetchSpeciesById(speciesId) ?: throw SpeciesNotFoundException(speciesId)
+      val existingRow = speciesStore.fetchSpeciesById(speciesId)
 
       val updatedRow = speciesStore.updateSpecies(row)
       speciesChecker.recheckSpecies(existingRow, updatedRow)
