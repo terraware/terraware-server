@@ -12,7 +12,6 @@ import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
@@ -71,7 +70,7 @@ class AppNotificationService(
     val deviceId =
         automation.deviceId
             ?: throw IllegalStateException("Automation ${automation.id} has no device ID")
-    val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val device = deviceStore.fetchOneById(deviceId)
     val facility = facilityStore.fetchOneById(automation.facilityId)
 
     val facilityUrl = webAppUrls.facilityMonitoring(facility.id, device)
@@ -95,8 +94,7 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: DeviceUnresponsiveEvent) {
-    val device =
-        deviceStore.fetchOneById(event.deviceId) ?: throw DeviceNotFoundException(event.deviceId)
+    val device = deviceStore.fetchOneById(event.deviceId)
     val deviceName =
         device.name ?: throw IllegalStateException("Device ${event.deviceId} has no name")
     val facilityId =

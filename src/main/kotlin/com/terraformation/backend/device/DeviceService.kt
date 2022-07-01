@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.tables.pojos.DevicesRow
@@ -40,7 +39,7 @@ class DeviceService(
 
   fun update(row: DevicesRow) {
     val deviceId = row.id ?: throw IllegalArgumentException("No device ID specified")
-    val existingRow = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val existingRow = deviceStore.fetchOneById(deviceId)
 
     dslContext.transaction { _ ->
       deviceStore.update(row)

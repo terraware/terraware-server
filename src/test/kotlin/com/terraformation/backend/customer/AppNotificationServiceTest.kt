@@ -22,7 +22,6 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
@@ -646,7 +645,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     service.on(DeviceUnresponsiveEvent(deviceId, Instant.EPOCH, Duration.ofSeconds(1)))
 
-    val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
+    val device = deviceStore.fetchOneById(deviceId)
     val expectedNotifications =
         listOf(
             NotificationsRow(
