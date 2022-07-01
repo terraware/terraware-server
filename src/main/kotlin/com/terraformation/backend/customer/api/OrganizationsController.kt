@@ -79,9 +79,7 @@ class OrganizationsController(
       @Schema(description = "Return this level of information about the organization's contents.")
       depth: OrganizationStore.FetchDepth,
   ): GetOrganizationResponsePayload {
-    val model =
-        organizationStore.fetchById(organizationId, depth)
-            ?: throw OrganizationNotFoundException(organizationId)
+    val model = organizationStore.fetchOneById(organizationId, depth)
     return GetOrganizationResponsePayload(OrganizationPayload(model, getRole(model)))
   }
 

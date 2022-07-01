@@ -19,7 +19,6 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.SRID
@@ -125,9 +124,7 @@ class AdminController(
 
   @GetMapping("/organization/{organizationId}")
   fun getOrganization(@PathVariable organizationId: OrganizationId, model: Model): String {
-    val organization =
-        organizationStore.fetchById(organizationId)
-            ?: throw OrganizationNotFoundException(organizationId)
+    val organization = organizationStore.fetchOneById(organizationId)
     val projects = projectStore.fetchByOrganization(organizationId).sortedBy { it.name }
     val users = organizationStore.fetchUsers(organizationId).sortedBy { it.email }
 
@@ -167,7 +164,7 @@ class AdminController(
   @GetMapping("/project/{projectId}")
   fun getProject(@PathVariable projectId: ProjectId, model: Model): String {
     val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
-    val organization = organizationStore.fetchById(project.organizationId)
+    val organization = organizationStore.fetchOneById(project.organizationId)
     val orgUsers = organizationStore.fetchUsers(project.organizationId).sortedBy { it.email }
     val projectUsers = orgUsers.filter { projectId in it.projectIds }
     val availableUsers = orgUsers.filter { projectId !in it.projectIds }
@@ -189,7 +186,7 @@ class AdminController(
     val site = siteStore.fetchById(siteId) ?: throw SiteNotFoundException(siteId)
     val projectId = site.projectId
     val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
-    val organization = organizationStore.fetchById(project.organizationId)
+    val organization = organizationStore.fetchOneById(project.organizationId)
     val facilities = facilityStore.fetchBySiteId(siteId).sortedBy { it.name }
 
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(siteId))
@@ -209,9 +206,7 @@ class AdminController(
     val site = siteStore.fetchById(facility.siteId) ?: throw SiteNotFoundException(facility.siteId)
     val project =
         projectStore.fetchById(site.projectId) ?: throw ProjectNotFoundException(site.projectId)
-    val organization =
-        organizationStore.fetchById(project.organizationId)
-            ?: throw OrganizationNotFoundException(project.organizationId)
+    val organization = organizationStore.fetchOneById(project.organizationId)
     val recipients = projectStore.fetchEmailRecipients(project.id)
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
     val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
@@ -704,7 +699,7 @@ class AdminController(
       return organization(organizationId)
     }
 
-    val organization = organizationStore.fetchById(organizationId)
+    val organization = organizationStore.fetchOneById(organizationId)
 
     model.addAttribute("organization", organization)
 

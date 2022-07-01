@@ -11,6 +11,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserId
@@ -51,18 +52,14 @@ class OrganizationStore(
     return selectForDepth(depth)
   }
 
-  fun fetchById(
+  fun fetchOneById(
       organizationId: OrganizationId,
       depth: FetchDepth = FetchDepth.Organization
-  ): OrganizationModel? {
-    val user = currentUser()
+  ): OrganizationModel {
+    requirePermissions { readOrganization(organizationId) }
 
-    return if (user.canReadOrganization(organizationId)) {
-      selectForDepth(depth, ORGANIZATIONS.ID.eq(organizationId)).firstOrNull()
-    } else {
-      log.warn("User ${user.userId} attempted to fetch organization $organizationId")
-      null
-    }
+    return selectForDepth(depth, ORGANIZATIONS.ID.eq(organizationId)).firstOrNull()
+        ?: throw OrganizationNotFoundException(organizationId)
   }
 
   private fun selectForDepth(
