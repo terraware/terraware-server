@@ -8,8 +8,5 @@ import javax.ws.rs.core.Response
 class DuplicateNameException(message: String = "A resource with that name already exists") :
     ClientErrorException(message, Response.Status.CONFLICT)
 
-class NotAuthenticatedException(message: String = "Client is not authenticated") :
-    ClientErrorException(message, Response.Status.UNAUTHORIZED)
-
 class ResourceInUseException(message: String = "The resource is currently in use") :
     ClientErrorException(message, Response.Status.CONFLICT)

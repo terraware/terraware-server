@@ -4,9 +4,6 @@ import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.DevicesRow
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import javax.annotation.ManagedBean
 
 /** Helper class to encapsulate notification message semantics */
@@ -28,12 +25,6 @@ class Messages {
 
   fun withdrawalDateNotification(accessionNumber: String) =
       "$accessionNumber is scheduled for a withdrawal today!"
-
-  /**
-   * The name to use for the project, site, and facility that's automatically created when a new
-   * organization is created.
-   */
-  fun seedBankDefaultName() = "Seed Bank"
 
   fun speciesCsvBadHeader() = "Incorrect column headings"
 
@@ -65,13 +56,6 @@ class Messages {
 
   fun speciesCsvSeedStorageBehaviorInvalid() =
       "Seed storage behavior must be one of: $validSeedStorageBehaviors"
-
-  fun dateAndTime(instant: Instant?): String =
-      if (instant != null) {
-        DateTimeFormatter.RFC_1123_DATE_TIME.format(instant.atZone(ZoneOffset.UTC))
-      } else {
-        "unknown"
-      }
 
   /** Title and body to use for "user added to organization" app notification */
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =

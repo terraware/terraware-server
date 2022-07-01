@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.KeycloakInfo
-import com.terraformation.backend.auth.KeycloakRequiredActions
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.DeviceManagerUser
@@ -23,14 +22,12 @@ import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.log.perClassLogger
-import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.time.Clock
-import java.time.Duration
 import java.time.Instant
 import java.util.Base64
 import javax.annotation.ManagedBean
@@ -194,70 +191,6 @@ class UserStore(
   }
 
   /**
-   * Creates a new user as a member of an organization. This registers them in Keycloak and also
-   * adds them to the `users` table.
-   *
-   * @param sendPasswordEmail If true, send an email notification to the user with a link to set
-   * their password.
-   * @param linkLifetime How long the link in the password change email will remain valid. Only
-   * relevant if [sendPasswordEmail] is true.
-   * @param redirectUrl Where to redirect the user after they have changed their password using the
-   * link in the generated email. Only relevant if [sendPasswordEmail] is true. If this is null,
-   * Keycloak will display a page with a success message after the user sets their password.
-   */
-  fun createUser(
-      organizationId: OrganizationId,
-      role: Role,
-      email: String,
-      firstName: String? = null,
-      lastName: String? = null,
-      sendPasswordEmail: Boolean = true,
-      redirectUrl: URI? = null,
-      linkLifetime: Duration = Duration.ofDays(3),
-  ): IndividualUser {
-    requirePermissions { addOrganizationUser(organizationId) }
-
-    val existingUser = fetchByEmail(email)
-    if (existingUser != null) {
-      if (organizationId in existingUser.organizationRoles) {
-        throw DuplicateKeyException("User is already in the organization")
-      }
-
-      log.info("User $email already exists; adding to organization $organizationId")
-      organizationStore.addUser(organizationId, existingUser.userId, role)
-      return existingUser
-    }
-
-    log.info("Creating new user $email")
-
-    val keycloakUser =
-        registerKeycloakUser(
-            email,
-            firstName,
-            lastName,
-            requiredActions = setOf(KeycloakRequiredActions.UpdatePassword))
-    val usersRow = insertKeycloakUser(keycloakUser)
-    val user = rowToIndividualUser(usersRow)
-
-    organizationStore.addUser(organizationId, user.userId, role)
-
-    if (sendPasswordEmail) {
-      val linkLifetimeSecs = linkLifetime.seconds.toInt()
-      val userResource = usersResource.get(user.authId)
-
-      if (redirectUrl != null) {
-        // Client ID is required when specifying a redirect URL.
-        userResource.executeActionsEmail(
-            keycloakInfo.clientId, "$redirectUrl", linkLifetimeSecs, keycloakUser.requiredActions)
-      } else {
-        userResource.executeActionsEmail(keycloakUser.requiredActions, linkLifetimeSecs)
-      }
-    }
-
-    return user
-  }
-
-  /**
    * Updates a user's profile information. Applies changes to the `users` table as well as Keycloak.
    * Currently, only the first and last name can be modified.
    */
@@ -333,7 +266,6 @@ class UserStore(
       firstName: String?,
       lastName: String?,
       type: UserType = UserType.Individual,
-      requiredActions: Collection<KeycloakRequiredActions>? = null,
   ): UserRepresentation {
     val newKeycloakUser = UserRepresentation()
     newKeycloakUser.isEmailVerified = true
@@ -343,7 +275,6 @@ class UserStore(
     newKeycloakUser.groups = defaultKeycloakGroups[type]
     newKeycloakUser.lastName = lastName
     newKeycloakUser.username = username
-    newKeycloakUser.requiredActions = requiredActions?.map { it.keyword }
 
     log.debug("Creating user $username in Keycloak")
 

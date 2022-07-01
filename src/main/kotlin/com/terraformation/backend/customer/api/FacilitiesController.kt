@@ -8,7 +8,6 @@ import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.FacilityService
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
@@ -48,7 +47,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/facility", "/api/v1/facilities")
 class FacilitiesController(
     private val automationStore: AutomationStore,
-    private val facilityService: FacilityService,
     private val facilityStore: FacilityStore,
     private val publisher: ApplicationEventPublisher,
 ) {
