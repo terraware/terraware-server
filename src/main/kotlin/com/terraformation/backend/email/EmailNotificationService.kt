@@ -20,7 +20,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
@@ -181,8 +180,7 @@ class EmailNotificationService(
   fun on(event: UserAddedToProjectEvent) {
     val admin = userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
     val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
-    val project =
-        projectStore.fetchById(event.projectId) ?: throw ProjectNotFoundException(event.projectId)
+    val project = projectStore.fetchOneById(event.projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
 
     val organizationProjectUrl =

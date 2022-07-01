@@ -12,7 +12,6 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.ProjectOrganizationWideException
 import com.terraformation.backend.db.ProjectStatus
 import com.terraformation.backend.db.ProjectType
@@ -54,7 +53,7 @@ class ProjectsController(
       @Schema(description = "If true, include the total number of users in the project.")
       totalUsers: Boolean?,
   ): ListProjectsResponsePayload {
-    val projects = projectStore.fetchAll()
+    val projects = projectStore.findAll()
     val userTotals =
         if (totalUsers == true) {
           projectStore.countUsers(projects.map { it.id })
@@ -76,7 +75,7 @@ class ProjectsController(
       @Schema(description = "If true, include the total number of users in the project.")
       totalUsers: Boolean?,
   ): GetProjectResponsePayload {
-    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val project = projectStore.fetchOneById(projectId)
     val count =
         if (totalUsers == true) {
           projectStore.countUsers(projectId)

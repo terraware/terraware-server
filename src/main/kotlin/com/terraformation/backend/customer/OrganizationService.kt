@@ -14,7 +14,6 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.pojos.SitesRow
@@ -50,8 +49,7 @@ class OrganizationService(
       projectIds.forEach { addProjectUser(it) }
     }
 
-    val projects =
-        projectIds.map { projectStore.fetchById(it) ?: throw ProjectNotFoundException(it) }
+    val projects = projectIds.map { projectStore.fetchOneById(it) }
     if (projects.any { it.organizationId != organizationId }) {
       throw IllegalArgumentException("Cannot add user to projects from a different organization")
     }
