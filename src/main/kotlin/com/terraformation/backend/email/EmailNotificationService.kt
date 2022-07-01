@@ -91,9 +91,7 @@ class EmailNotificationService(
     log.info("Alert subject: ${event.subject}")
     log.info("Alert body: ${event.body}")
 
-    val facility =
-        facilityStore.fetchById(event.facilityId)
-            ?: throw FacilityNotFoundException(event.facilityId)
+    val facility = facilityStore.fetchOneById(event.facilityId)
 
     emailService.sendFacilityNotification(
         event.facilityId,
@@ -102,9 +100,7 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: FacilityIdleEvent) {
-    val facility =
-        facilityStore.fetchById(event.facilityId)
-            ?: throw FacilityNotFoundException(event.facilityId)
+    val facility = facilityStore.fetchOneById(event.facilityId)
 
     val facilityMonitoringUrl =
         webAppUrls
@@ -122,9 +118,7 @@ class EmailNotificationService(
         automation.deviceId
             ?: throw IllegalStateException("Automation ${automation.id} has no device ID")
     val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
-    val facility =
-        facilityStore.fetchById(automation.facilityId)
-            ?: throw FacilityNotFoundException(automation.facilityId)
+    val facility = facilityStore.fetchOneById(automation.facilityId)
     val organizationId =
         parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
 
@@ -139,9 +133,7 @@ class EmailNotificationService(
   @EventListener
   fun on(event: UnknownAutomationTriggeredEvent) {
     val automation = automationStore.fetchOneById(event.automationId)
-    val facility =
-        facilityStore.fetchById(automation.facilityId)
-            ?: throw FacilityNotFoundException(automation.facilityId)
+    val facility = facilityStore.fetchOneById(automation.facilityId)
     val organizationId =
         parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
 
@@ -160,8 +152,7 @@ class EmailNotificationService(
         deviceStore.fetchOneById(event.deviceId) ?: throw DeviceNotFoundException(event.deviceId)
     val facilityId =
         device.facilityId ?: throw IllegalStateException("Device ${event.deviceId} has no facility")
-    val facility =
-        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val facility = facilityStore.fetchOneById(facilityId)
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 

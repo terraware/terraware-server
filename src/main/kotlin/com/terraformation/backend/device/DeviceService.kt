@@ -74,7 +74,7 @@ class DeviceService(
    * type of facility, but that it can't detect automatically.
    */
   fun createDefaultDevices(facilityId: FacilityId) {
-    val category = facilityStore.fetchById(facilityId)?.defaultDeviceTemplateCategory
+    val category = facilityStore.fetchOneById(facilityId).defaultDeviceTemplateCategory
 
     if (category != null) {
       dslContext.transaction { _ ->

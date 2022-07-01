@@ -40,12 +40,11 @@ class FacilityStore(
 
   private val log = perClassLogger()
 
-  fun fetchById(facilityId: FacilityId): FacilityModel? {
-    return if (!currentUser().canReadFacility(facilityId)) {
-      null
-    } else {
-      facilitiesDao.fetchOneById(facilityId)?.toModel()
-    }
+  fun fetchOneById(facilityId: FacilityId): FacilityModel {
+    requirePermissions { readFacility(facilityId) }
+
+    return facilitiesDao.fetchOneById(facilityId)?.toModel()
+        ?: throw FacilityNotFoundException(facilityId)
   }
 
   /** Returns a list of all the facilities the current user can access. */
