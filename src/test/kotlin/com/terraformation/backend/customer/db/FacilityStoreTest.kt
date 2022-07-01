@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
@@ -316,5 +317,12 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
       store.updateConnectionState(
           facilityId, FacilityConnectionState.Connected, FacilityConnectionState.Configured)
     }
+  }
+
+  @Test
+  fun `fetchOneById throws exception if no permission to read facility`() {
+    every { user.canReadFacility(facilityId) } returns false
+
+    assertThrows<FacilityNotFoundException> { store.fetchOneById(facilityId) }
   }
 }

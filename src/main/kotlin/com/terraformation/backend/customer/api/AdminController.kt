@@ -17,7 +17,6 @@ import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceTemplateCategory
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -206,8 +205,7 @@ class AdminController(
 
   @GetMapping("/facility/{facilityId}")
   fun getFacility(@PathVariable facilityId: FacilityId, model: Model): String {
-    val facility =
-        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val facility = facilityStore.fetchOneById(facilityId)
     val site = siteStore.fetchById(facility.siteId) ?: throw SiteNotFoundException(facility.siteId)
     val project =
         projectStore.fetchById(site.projectId) ?: throw ProjectNotFoundException(site.projectId)
@@ -282,7 +280,7 @@ class AdminController(
     val manager =
         deviceManagerStore.fetchOneById(deviceManagerId)
             ?: throw DeviceManagerNotFoundException(deviceManagerId)
-    val facility = manager.facilityId?.let { facilityStore.fetchById(it) }
+    val facility = manager.facilityId?.let { facilityStore.fetchOneById(it) }
 
     model.addAttribute(
         "canUpdateDeviceManager", currentUser().canUpdateDeviceManager(deviceManagerId))
@@ -582,8 +580,7 @@ class AdminController(
       return facility(facilityId)
     }
 
-    val existing =
-        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val existing = facilityStore.fetchOneById(facilityId)
     facilityStore.update(
         existing.copy(
             name = name,
@@ -607,7 +604,7 @@ class AdminController(
       @RequestParam("body") body: String,
       redirectAttributes: RedirectAttributes
   ): String {
-    if (facilityStore.fetchById(facilityId)?.connectionState !=
+    if (facilityStore.fetchOneById(facilityId).connectionState !=
         FacilityConnectionState.Configured) {
       redirectAttributes.successMessage =
           "Alert received, but facility is not configured so alert would be ignored."

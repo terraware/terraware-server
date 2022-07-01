@@ -19,7 +19,6 @@ import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.log.perClassLogger
@@ -65,8 +64,7 @@ class FacilitiesController(
   @GetMapping("/{facilityId}")
   @Operation(summary = "Gets information about a single facility.")
   fun getFacility(@PathVariable facilityId: FacilityId): GetFacilityResponse {
-    val facility =
-        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val facility = facilityStore.fetchOneById(facilityId)
 
     return GetFacilityResponse(FacilityPayload(facility))
   }
@@ -87,8 +85,7 @@ class FacilitiesController(
       @PathVariable facilityId: FacilityId,
       @RequestBody payload: UpdateFacilityRequestPayload
   ): SimpleSuccessResponsePayload {
-    val facility =
-        facilityStore.fetchById(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val facility = facilityStore.fetchOneById(facilityId)
 
     facilityStore.update(
         facility.copy(name = payload.name, description = payload.description?.ifEmpty { null }))
@@ -208,7 +205,7 @@ class FacilitiesController(
   ): ResponseEntity<SimpleSuccessResponsePayload> {
     requirePermissions { sendAlert(facilityId) }
 
-    val connectionState = facilityStore.fetchById(facilityId)?.connectionState
+    val connectionState = facilityStore.fetchOneById(facilityId).connectionState
     if (connectionState != FacilityConnectionState.Configured) {
       log.warn("Dropping alert from facility $facilityId with connection state $connectionState")
       log.info("Subject ${payload.subject}")

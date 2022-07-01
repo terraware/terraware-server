@@ -14,7 +14,6 @@ import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -76,9 +75,7 @@ class AppNotificationService(
         automation.deviceId
             ?: throw IllegalStateException("Automation ${automation.id} has no device ID")
     val device = deviceStore.fetchOneById(deviceId) ?: throw DeviceNotFoundException(deviceId)
-    val facility =
-        facilityStore.fetchById(automation.facilityId)
-            ?: throw FacilityNotFoundException(automation.facilityId)
+    val facility = facilityStore.fetchOneById(automation.facilityId)
 
     val facilityUrl = webAppUrls.facilityMonitoring(facility.id, device)
     val message = messages.sensorBoundsAlert(device, facility.name, timeseriesName, event.value)
@@ -90,9 +87,7 @@ class AppNotificationService(
   @EventListener
   fun on(event: UnknownAutomationTriggeredEvent) {
     val automation = automationStore.fetchOneById(event.automationId)
-    val facility =
-        facilityStore.fetchById(automation.facilityId)
-            ?: throw FacilityNotFoundException(automation.facilityId)
+    val facility = facilityStore.fetchOneById(automation.facilityId)
 
     val facilityUrl = webAppUrls.facilityMonitoring(facility.id)
     val message = messages.unknownAutomationTriggered(automation.name, facility.name, event.message)
