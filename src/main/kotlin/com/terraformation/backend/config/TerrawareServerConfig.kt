@@ -103,7 +103,7 @@ class TerrawareServerConfig(
     val balena: BalenaConfig = BalenaConfig(),
 
     /** Configures notifications processing. */
-    val notificationsCleanup: NotificationsCleanupConfig = NotificationsCleanupConfig(),
+    val notifications: NotificationsConfig = NotificationsConfig(),
 ) {
   @ConstructorBinding
   class DailyTasksConfig(
@@ -250,9 +250,9 @@ class TerrawareServerConfig(
   }
 
   @ConstructorBinding
-  class NotificationsCleanupConfig(
+  class NotificationsConfig(
       /** If true, delete older notifications. If false, avoid deleting older notifications. */
-      @DefaultValue("false") val enabled: Boolean = false,
+      @DefaultValue("true") val cleanupEnabled: Boolean = true,
 
       /**
        * The number of days to keep notifications around before deleting them, if deletion is
@@ -264,6 +264,6 @@ class TerrawareServerConfig(
   companion object {
     const val BALENA_ENABLED_PROPERTY = "terraware.balena.enabled"
     const val DAILY_TASKS_ENABLED_PROPERTY = "terraware.daily-tasks.enabled"
-    const val NOTIFICATIONS_CLEANUP_ENABLED_PROPERTY = "terraware.notifications-cleanup.enabled"
+    const val NOTIFICATIONS_CLEANUP_ENABLED_PROPERTY = "terraware.notifications.cleanup-enabled"
   }
 }
