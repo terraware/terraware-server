@@ -11,7 +11,6 @@ import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.tables.pojos.SitesRow
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -44,7 +43,7 @@ class SitesController(private val siteStore: SiteStore) {
           defaultValue = "4326")
       srid: Int? = null
   ): ListSitesResponsePayload {
-    val sites = siteStore.fetchAll(srid ?: SRID.LONG_LAT)
+    val sites = siteStore.findAll(srid ?: SRID.LONG_LAT)
 
     return ListSitesResponsePayload(sites.map { SiteElement(it) })
   }
@@ -61,8 +60,7 @@ class SitesController(private val siteStore: SiteStore) {
           defaultValue = "4326")
       srid: Int? = null
   ): GetSiteResponsePayload {
-    val site =
-        siteStore.fetchById(siteId, srid ?: SRID.LONG_LAT) ?: throw SiteNotFoundException(siteId)
+    val site = siteStore.fetchOneById(siteId, srid ?: SRID.LONG_LAT)
 
     return GetSiteResponsePayload(SiteElement(site))
   }
