@@ -16,7 +16,6 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.device.db.DeviceStore
@@ -137,8 +136,7 @@ class AppNotificationService(
   fun on(event: UserAddedToProjectEvent) {
     userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
     val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
-    val project =
-        projectStore.fetchById(event.projectId) ?: throw ProjectNotFoundException(event.projectId)
+    val project = projectStore.fetchOneById(event.projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
 
     val organizationProjectUrl = webAppUrls.organizationProject(event.projectId)

@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.UserId
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -24,7 +23,7 @@ class ProjectService(
   fun addUser(projectId: ProjectId, userId: UserId) {
     requirePermissions { addProjectUser(projectId) }
 
-    val project = projectStore.fetchById(projectId) ?: throw ProjectNotFoundException(projectId)
+    val project = projectStore.fetchOneById(projectId)
     val organizationId = project.organizationId
     if (organizationId !in permissionStore.fetchOrganizationRoles(userId)) {
       throw IllegalArgumentException(
