@@ -167,9 +167,7 @@ class EmailNotificationService(
   fun on(event: UserAddedToOrganizationEvent) {
     val admin = userStore.fetchById(event.addedBy) ?: throw UserNotFoundException(event.addedBy)
     val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
-    val organization =
-        organizationStore.fetchById(event.organizationId)
-            ?: throw OrganizationNotFoundException(event.organizationId)
+    val organization = organizationStore.fetchOneById(event.organizationId)
 
     val organizationHomeUrl = webAppUrls.fullOrganizationHome(event.organizationId).toString()
 
@@ -185,9 +183,7 @@ class EmailNotificationService(
     val user = userStore.fetchById(event.userId) ?: throw UserNotFoundException(event.userId)
     val project =
         projectStore.fetchById(event.projectId) ?: throw ProjectNotFoundException(event.projectId)
-    val organization =
-        organizationStore.fetchById(project.organizationId)
-            ?: throw OrganizationNotFoundException(project.organizationId)
+    val organization = organizationStore.fetchOneById(project.organizationId)
 
     val organizationProjectUrl =
         webAppUrls.fullOrganizationProject(event.projectId, project.organizationId).toString()

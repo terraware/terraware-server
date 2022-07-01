@@ -36,7 +36,6 @@ import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -168,24 +167,24 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchById honors fetch depth`() {
     assertEquals(
         organizationModel,
-        store.fetchById(organizationId, OrganizationStore.FetchDepth.Facility),
+        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Facility),
         "Fetch depth = Facility")
 
     assertEquals(
         organizationModel.copy(
             projects =
                 listOf(projectModel.copy(sites = listOf(siteModel.copy(facilities = null))))),
-        store.fetchById(organizationId, OrganizationStore.FetchDepth.Site),
+        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Site),
         "Fetch depth = Site")
 
     assertEquals(
         organizationModel.copy(projects = listOf(projectModel.copy(sites = null))),
-        store.fetchById(organizationId, OrganizationStore.FetchDepth.Project),
+        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Project),
         "Fetch depth = Project")
 
     assertEquals(
         organizationModel.copy(projects = null),
-        store.fetchById(organizationId, OrganizationStore.FetchDepth.Organization),
+        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization),
         "Fetch depth = Organization")
   }
 
@@ -193,7 +192,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchById requires user to be in the organization`() {
     every { user.organizationRoles } returns emptyMap()
 
-    assertNull(store.fetchById(organizationId))
+    assertThrows<OrganizationNotFoundException> { store.fetchOneById(organizationId) }
   }
 
   @Test
@@ -206,7 +205,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       insertOrganizationUser(userId)
     }
 
-    assertEquals(expectedTotalUsers, store.fetchById(organizationId)!!.totalUsers)
+    assertEquals(expectedTotalUsers, store.fetchOneById(organizationId).totalUsers)
   }
 
   @Test
@@ -222,7 +221,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     val expected = organizationModel.copy(projects = emptyList())
 
-    val actual = store.fetchById(organizationId, OrganizationStore.FetchDepth.Project)
+    val actual = store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Project)
     assertEquals(expected, actual)
   }
 
