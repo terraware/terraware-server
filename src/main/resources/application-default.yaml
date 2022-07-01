@@ -7,6 +7,8 @@ terraware:
   email:
     always-send-to-override-address: true
     subject-prefix: "[DEV]"
+  notifications-cleanup:
+    enabled: true
 
 keycloak:
   resource: "dev-terraware-server"
