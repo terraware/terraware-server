@@ -75,17 +75,15 @@ internal class EmailNotificationServiceTest {
 
   private val webAppUrls: WebAppUrls = WebAppUrls(config)
 
+  private val freeMarkerConfig =
+      Configuration(Configuration.VERSION_2_3_31).apply {
+        // Load the email template files from the templates folder in the build output.
+        setClassLoaderForTemplateLoading(
+            EmailNotificationServiceTest::class.java.classLoader, "templates")
+      }
+
   private val emailService =
-      EmailService(
-          config,
-          Configuration(Configuration.VERSION_2_3_28).apply {
-            setClassLoaderForTemplateLoading(
-                EmailNotificationServiceTest::class.java.classLoader, "templates")
-          },
-          organizationStore,
-          parentStore,
-          projectStore,
-          sender)
+      EmailService(config, freeMarkerConfig, organizationStore, parentStore, projectStore, sender)
 
   private val service =
       EmailNotificationService(
