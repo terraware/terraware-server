@@ -3,10 +3,7 @@ package com.terraformation.backend.seedbank.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskRunner
 import com.terraformation.backend.daily.TimePeriodTask
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
@@ -26,8 +23,6 @@ class DateNotificationTask(
     private val accessionStore: AccessionStore,
     private val dailyTaskRunner: DailyTaskRunner,
     private val dslContext: DSLContext,
-    private val messages: Messages,
-    private val accessionNotificationStore: AccessionNotificationStore,
     private val eventPublisher: ApplicationEventPublisher
 ) : TimePeriodTask {
   private val log = perClassLogger()
@@ -56,7 +51,6 @@ class DateNotificationTask(
 
   private fun moveToDryingCabinet(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchDryingMoveDue(after, until).forEach { (number, id) ->
-      insert(id, messages.dryingMoveDateNotification(number))
       eventPublisher.publishEvent(AccessionMoveToDryEvent(number, id))
     }
   }
@@ -69,7 +63,6 @@ class DateNotificationTask(
 
   private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
-      insert(test.accessionId!!, messages.germinationTestDateNotification(number, test.testType!!))
       eventPublisher.publishEvent(
           AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
     }
@@ -77,14 +70,8 @@ class DateNotificationTask(
 
   private fun withdraw(after: TemporalAccessor, until: TemporalAccessor) {
     accessionStore.fetchWithdrawalDue(after, until).forEach { (number, id) ->
-      insert(id, messages.withdrawalDateNotification(number))
       eventPublisher.publishEvent(AccessionWithdrawalEvent(number, id))
     }
-  }
-
-  private fun insert(accessionId: AccessionId, message: String) {
-    log.info("Generated notification: $message")
-    accessionNotificationStore.insertDateNotification(accessionId, message)
   }
 
   /** Published when the period processed task begins */
