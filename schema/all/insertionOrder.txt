@@ -3,7 +3,6 @@ accession_states
 countries
 germination_test_types
 storage_conditions
-accession_notification_types
 app_devices
 device_template_categories
 facility_connection_states
@@ -59,7 +58,6 @@ upload_problems
 accession_state_history
 notifications
 species_problems
-accession_notifications
 automations
 project_users
 organization_users

@@ -4,7 +4,6 @@ withdrawals
 organization_users
 project_users
 automations
-accession_notifications
 species_problems
 notifications
 accession_state_history
@@ -60,7 +59,6 @@ facility_types
 facility_connection_states
 device_template_categories
 app_devices
-accession_notification_types
 storage_conditions
 germination_test_types
 countries

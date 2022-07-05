@@ -4,7 +4,6 @@ germination_test_types
 organizations
 photos
 storage_conditions
-accession_notification_types
 app_devices
 germination_seed_types
 germination_substrates
@@ -29,5 +28,4 @@ thumbnails
 accession_germination_test_types
 accession_photos
 accession_state_history
-accession_notifications
 withdrawals
