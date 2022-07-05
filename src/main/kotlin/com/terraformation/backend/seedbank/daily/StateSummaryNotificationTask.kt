@@ -6,9 +6,7 @@ import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
-import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.seedbank.db.AccessionNotificationStore
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
 import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
@@ -27,7 +25,6 @@ import org.springframework.context.event.EventListener
 @ConditionalOnProperty(TerrawareServerConfig.DAILY_TASKS_ENABLED_PROPERTY, matchIfMissing = true)
 @ManagedBean
 class StateSummaryNotificationTask(
-    private val accessionNotificationStore: AccessionNotificationStore,
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
@@ -35,7 +32,6 @@ class StateSummaryNotificationTask(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val facilitiesDao: FacilitiesDao,
-    private val messages: Messages,
 ) : TimePeriodTask {
   private val log = perClassLogger()
 
@@ -69,25 +65,18 @@ class StateSummaryNotificationTask(
   }
 
   private fun pending(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
-    generateNotification(facilityId, AccessionState.Pending, 1, lastNotificationTime) { count ->
-      messages.longPendingNotification(count)
-    }
+    generateNotification(facilityId, AccessionState.Pending, 1, lastNotificationTime)
   }
 
   private fun processed(facilityId: FacilityId, weeks: Int, lastNotificationTime: ZonedDateTime) {
     // Accessions transition from Processing to Processed after 2 weeks have elapsed, but the
     // notification should be based on the time of the transition to Processing.
-    generateNotification(facilityId, AccessionState.Processed, weeks - 2, lastNotificationTime) {
-        count ->
-      messages.longProcessedNotification(count, weeks)
-    }
+    generateNotification(facilityId, AccessionState.Processed, weeks - 2, lastNotificationTime)
   }
 
   private fun dried(facilityId: FacilityId, lastNotificationTime: ZonedDateTime) {
     // Notification should go out the same day as the transition to Dried, so weeks is 0.
-    generateNotification(facilityId, AccessionState.Dried, 0, lastNotificationTime) { count ->
-      messages.driedNotification(count)
-    }
+    generateNotification(facilityId, AccessionState.Dried, 0, lastNotificationTime)
   }
 
   /**
@@ -121,8 +110,7 @@ class StateSummaryNotificationTask(
       facilityId: FacilityId,
       state: AccessionState,
       weeks: Int,
-      lastNotificationTime: ZonedDateTime,
-      getMessage: (Int) -> String
+      lastNotificationTime: ZonedDateTime
   ) {
     val days = weeks * 7 - 1L
     val endOfAlreadyCoveredPeriod =
@@ -146,9 +134,7 @@ class StateSummaryNotificationTask(
     if (newCount > 0) {
       val count = accessionStore.countInState(facilityId, state, sinceBefore = stateChangedBefore)
 
-      val message = getMessage(count)
-      log.info("Generated notification for facility $facilityId: $message")
-      accessionNotificationStore.insertStateNotification(facilityId, state, message)
+      log.info("Publishing notification events for facility $facilityId")
       when (state) {
         AccessionState.Pending ->
             eventPublisher.publishEvent(AccessionsAwaitingProcessingEvent(facilityId, count, state))

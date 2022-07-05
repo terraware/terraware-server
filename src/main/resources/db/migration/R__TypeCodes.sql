@@ -1,9 +1,3 @@
-INSERT INTO accession_notification_types (id, name)
-VALUES (1, 'Alert'),
-       (2, 'State'),
-       (3, 'Date')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO accession_states (id, name, active)
 VALUES (10, 'Pending', TRUE),
        (20, 'Processing', TRUE),

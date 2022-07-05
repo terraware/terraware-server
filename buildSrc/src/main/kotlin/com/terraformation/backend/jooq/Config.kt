@@ -15,7 +15,6 @@ import org.jooq.meta.jaxb.EmbeddableDefinitionType
  */
 val ENUM_TABLES =
     listOf(
-        EnumTable("accession_notification_types", "accession_notifications\\.type_id"),
         EnumTable(
             "accession_states",
             listOf(
@@ -85,7 +84,6 @@ val ID_WRAPPERS =
     listOf(
         IdWrapper("AccessionId", listOf("accessions\\.id", ".*\\.accession_id")),
         IdWrapper("AccessionSecondaryCollectorId", listOf("accession_secondary_collectors\\.id")),
-        IdWrapper("AccessionNotificationId", listOf("accession_notifications\\.id")),
         IdWrapper("AppDeviceId", listOf("app_devices\\.id", ".*\\.app_device_id")),
         IdWrapper("AutomationId", listOf("automations\\.id")),
         IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
