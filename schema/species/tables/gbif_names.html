@@ -192,7 +192,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="is_scientific">is_scientific</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="is_scientific">is_scientific</span></td>
                                     <td>bool</td>
                                     <td>1</td>
                                     <td title=''></td>
@@ -243,6 +243,12 @@
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>name</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>gbif_names_name_is_scientific_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>name + is_scientific</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>gbif_names_taxon_id_idx</td>

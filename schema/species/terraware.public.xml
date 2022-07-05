@@ -44,6 +44,10 @@
          <index name="gbif_names__name_trgm" unique="false">
             <column ascending="true" name="name"/>
          </index>
+         <index name="gbif_names_name_is_scientific_idx" unique="false">
+            <column ascending="true" name="name"/>
+            <column ascending="true" name="is_scientific"/>
+         </index>
          <index name="gbif_names_taxon_id_idx" unique="false">
             <column ascending="true" name="taxon_id"/>
          </index>

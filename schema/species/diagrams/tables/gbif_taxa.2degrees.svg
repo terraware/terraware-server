@@ -35,7 +35,7 @@
 <!-- gbif_names -->
 <g id="node2" class="node"><title>gbif_names</title>
 <g id="a_node2"><a xlink:href="../../tables/gbif_names.html" xlink:title="gbif_names" target="_top">
-<polygon fill="#ffffff" stroke="none" points="332,-373 332,-497 444,-497 444,-373 332,-373"/>
+<polygon fill="#ffffff" stroke="none" points="332,-351 332,-497 444,-497 444,-351 332,-351"/>
 <polygon fill="#f5f5f5" stroke="none" points="332,-475 332,-497 444,-497 444,-475 332,-475"/>
 <polygon fill="none" stroke="black" points="332,-475 332,-497 444,-497 444,-475 332,-475"/>
 <text text-anchor="start" x="337" y="-484.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">gbif_names</text>
@@ -50,17 +50,20 @@
 <polygon fill="#ffffff" stroke="none" points="332,-409 332,-431 444,-431 444,-409 332,-409"/>
 <polygon fill="none" stroke="black" points="332,-409 332,-431 444,-431 444,-409 332,-409"/>
 <text text-anchor="start" x="364" y="-417.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="none" stroke="black" points="332,-391 332,-409 444,-409 444,-391 332,-391"/>
-<text text-anchor="start" x="335" y="-397.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="332,-373 332,-391 367,-391 367,-373 332,-373"/>
-<polygon fill="none" stroke="black" points="332,-373 332,-391 367,-391 367,-373 332,-373"/>
-<text text-anchor="start" x="335" y="-379.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="367,-373 367,-391 415,-391 415,-373 367,-373"/>
-<polygon fill="none" stroke="black" points="367,-373 367,-391 415,-391 415,-373 367,-373"/>
-<text text-anchor="start" x="376" y="-379.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="415,-373 415,-391 444,-391 444,-373 415,-373"/>
-<polygon fill="none" stroke="black" points="415,-373 415,-391 444,-391 444,-373 415,-373"/>
-<text text-anchor="start" x="424" y="-379.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="332,-387 332,-409 444,-409 444,-387 332,-387"/>
+<polygon fill="none" stroke="black" points="332,-387 332,-409 444,-409 444,-387 332,-387"/>
+<text text-anchor="start" x="364" y="-395.2" font-family="Helvetica,sans-Serif" font-size="11.00">is_scientific</text>
+<polygon fill="none" stroke="black" points="332,-369 332,-387 444,-387 444,-369 332,-369"/>
+<text text-anchor="start" x="335" y="-375.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="332,-351 332,-369 367,-369 367,-351 332,-351"/>
+<polygon fill="none" stroke="black" points="332,-351 332,-369 367,-369 367,-351 332,-351"/>
+<text text-anchor="start" x="335" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="367,-351 367,-369 415,-369 415,-351 367,-351"/>
+<polygon fill="none" stroke="black" points="367,-351 367,-369 415,-369 415,-351 367,-351"/>
+<text text-anchor="start" x="376" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="415,-351 415,-369 444,-369 444,-351 415,-351"/>
+<polygon fill="none" stroke="black" points="415,-351 415,-369 444,-369 444,-351 415,-351"/>
+<text text-anchor="start" x="424" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
