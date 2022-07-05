@@ -12,15 +12,13 @@ import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GerminationTestType
-import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.tables.daos.OrganizationsDao
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -60,7 +58,6 @@ class EmailNotificationService(
     private val deviceStore: DeviceStore,
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
-    private val organizationsDao: OrganizationsDao,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val projectStore: ProjectStore,
@@ -128,12 +125,13 @@ class EmailNotificationService(
   @EventListener
   fun on(event: UnknownAutomationTriggeredEvent) {
     val automation = automationStore.fetchOneById(event.automationId)
+    val devicesRow = automation.deviceId?.let { deviceStore.fetchOneById(it) }
     val facility = facilityStore.fetchOneById(automation.facilityId)
     val organizationId =
         parentStore.getOrganizationId(facility.id) ?: throw FacilityNotFoundException(facility.id)
 
     val facilityMonitoringUrl =
-        webAppUrls.fullFacilityMonitoring(organizationId, facility.id).toString()
+        webAppUrls.fullFacilityMonitoring(organizationId, facility.id, devicesRow).toString()
 
     emailService.sendFacilityNotification(
         facility.id,
@@ -247,13 +245,13 @@ class EmailNotificationService(
   fun on(event: AccessionsAwaitingProcessingEvent) {
     val organization = getOrganization(event.facilityId)
     val accessionsUrl =
-        webAppUrls.fullAccessions(organization.id!!, event.facilityId, event.state).toString()
+        webAppUrls.fullAccessions(organization.id, event.facilityId, event.state).toString()
     getRecipients(event.facilityId).forEach { user ->
       accessionStatePendingEmails.add(
           EmailRequest(
               user,
               AccessionsAwaitingProcessing(
-                  config, event.numAccessions, organization.name!!, accessionsUrl)))
+                  config, event.numAccessions, organization.name, accessionsUrl)))
     }
   }
 
@@ -261,13 +259,13 @@ class EmailNotificationService(
   fun on(event: AccessionsReadyForTestingEvent) {
     val organization = getOrganization(event.facilityId)
     val accessionsUrl =
-        webAppUrls.fullAccessions(organization.id!!, event.facilityId, event.state).toString()
+        webAppUrls.fullAccessions(organization.id, event.facilityId, event.state).toString()
     getRecipients(event.facilityId).forEach { user ->
       accessionStatePendingEmails.add(
           EmailRequest(
               user,
               AccessionsReadyForTesting(
-                  config, event.numAccessions, event.weeks, organization.name!!, accessionsUrl)))
+                  config, event.numAccessions, event.weeks, organization.name, accessionsUrl)))
     }
   }
 
@@ -275,13 +273,13 @@ class EmailNotificationService(
   fun on(event: AccessionsFinishedDryingEvent) {
     val organization = getOrganization(event.facilityId)
     val accessionsUrl =
-        webAppUrls.fullAccessions(organization.id!!, event.facilityId, event.state).toString()
+        webAppUrls.fullAccessions(organization.id, event.facilityId, event.state).toString()
     getRecipients(event.facilityId).forEach { user ->
       accessionStatePendingEmails.add(
           EmailRequest(
               user,
               AccessionsFinishedDrying(
-                  config, event.numAccessions, organization.name!!, accessionsUrl)))
+                  config, event.numAccessions, organization.name, accessionsUrl)))
     }
   }
 
@@ -327,11 +325,10 @@ class EmailNotificationService(
     }
   }
 
-  private fun getOrganization(facilityId: FacilityId): OrganizationsRow {
+  private fun getOrganization(facilityId: FacilityId): OrganizationModel {
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-    return organizationsDao.fetchOneById(organizationId)
-        ?: throw OrganizationNotFoundException(organizationId)
+    return organizationStore.fetchOneById(organizationId)
   }
 
   private fun getRecipients(accessionId: AccessionId): List<IndividualUser> {

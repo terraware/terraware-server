@@ -206,23 +206,23 @@ class EmailService(
       helper.setBcc(emptyArray<InternetAddress>())
     }
 
-    val rawMessage =
-        ByteArrayOutputStream().use { stream ->
-          message.writeTo(stream)
-          stream.toByteArray()
-        }
-
     // If we're not sending the message to real recipients, log the whole thing since we're probably
     // in a dev environment. But for real messages, just log the recipients and subjects since the
     // body could contain sensitive information.
 
     if (!config.email.enabled || config.email.alwaysSendToOverrideAddress) {
+      val rawMessage =
+          ByteArrayOutputStream().use { stream ->
+            message.writeTo(stream)
+            stream.toByteArray()
+          }
+
       log.info("Generated email: ${rawMessage.toString(StandardCharsets.UTF_8)}")
     }
 
     if (config.email.enabled) {
       try {
-        val messageId = sender.send(message, rawMessage)
+        val messageId = sender.send(message)
 
         log.info(
             "Sent email $messageId with subject \"${message.subject}\" ${message.getAllRecipientsString()}")
