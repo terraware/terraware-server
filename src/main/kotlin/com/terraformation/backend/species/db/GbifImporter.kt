@@ -80,6 +80,20 @@ class GbifImporter(
      * inserted into [GBIF_NAMES] or [GBIF_NAME_WORDS].
      */
     private val SEARCHABLE_TAXON_RANKS = setOf("species", "subspecies", "variety", "form")
+
+    /**
+     * All the tables affected by the import process. The order is important here: it needs to start
+     * at the leaf nodes of the tree of foreign key relationships (that is, child tables first)
+     * since the bulk delete at the start of the import is done in the order listed here.
+     */
+    private val GBIF_TABLES =
+        listOf(
+            GBIF_NAME_WORDS,
+            GBIF_NAMES,
+            GBIF_VERNACULAR_NAMES,
+            GBIF_DISTRIBUTIONS,
+            GBIF_TAXA,
+        )
   }
 
   private val log = perClassLogger()
@@ -117,6 +131,7 @@ class GbifImporter(
         }
 
         insertWords()
+        analyzeAll()
       }
     } catch (e: DataAccessException) {
       log.error("GBIF import aborted; changes have been rolled back.", e.cause ?: e)
@@ -127,18 +142,24 @@ class GbifImporter(
   private fun deleteAll() {
     log.info("Deleting existing GBIF data")
 
-    val tables =
-        listOf(
-            GBIF_NAME_WORDS,
-            GBIF_NAMES,
-            GBIF_VERNACULAR_NAMES,
-            GBIF_DISTRIBUTIONS,
-            GBIF_TAXA,
-        )
-
-    tables.forEach { table ->
+    GBIF_TABLES.forEach { table ->
       log.debug("Deleting from ${table.name}")
       dslContext.deleteFrom(table).execute()
+    }
+  }
+
+  /**
+   * Analyzes all the tables after everything has been imported. This is needed because the
+   * PostgreSQL autovacuum daemon doesn't always analyze tables after big bulk inserts, and it can
+   * generate very inefficient query plans if it doesn't have accurate statistics for the various
+   * tables.
+   */
+  private fun analyzeAll() {
+    log.info("Analyzing GBIF tables")
+
+    GBIF_TABLES.forEach { table ->
+      log.debug("Analyzing ${table.name}")
+      dslContext.query("ANALYZE ${table.name}").execute()
     }
   }
 
