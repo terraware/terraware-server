@@ -9,7 +9,10 @@ java.targetCompatibility = JavaVersion.VERSION_1_8
 
 tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion }
 
-repositories { mavenCentral() }
+repositories {
+  gradlePluginPortal()
+  mavenCentral()
+}
 
 // buildSrc is considered a separate project from the parent, so we don't have access to properties
 // from the parent by default. Load the parent's properties explicitly so we can define dependency
@@ -22,6 +25,7 @@ val rootProjectProperties =
 dependencies {
   val jooqVersion = rootProjectProperties["jooqVersion"]
 
+  implementation("com.github.node-gradle:gradle-node-plugin:3.4.0")
   implementation("org.jooq:jooq-codegen:$jooqVersion")
   implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.+")
 }

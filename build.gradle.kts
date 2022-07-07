@@ -1,13 +1,12 @@
-import com.github.gradle.node.yarn.task.YarnTask
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.InventoryHtmlReportRenderer
+import com.terraformation.gradle.PostgresDockerConfigTask
+import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
-import java.nio.file.Files
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.utils.fileUtils.withReplacedExtensionOrNull
 import org.jooq.meta.jaxb.Strategy
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
@@ -31,9 +30,6 @@ plugins {
   id("com.github.johnrengelman.processes") version "0.5.0"
   id("org.springdoc.openapi-gradle-plugin") version "1.3.4"
 
-  // The MJML -> HTML translator for email messages is a Node.js utility.
-  id("com.github.node-gradle.node") version "3.2.1"
-
   id("com.github.jk1.dependency-license-report") version "2.1"
 }
 
@@ -50,6 +46,10 @@ buildscript {
       )
     }
   }
+
+  // The MJML -> HTML translator for email messages is a Node.js utility. This plugin is a
+  // dependency of buildSrc, but we need it here as well so we can configure it.
+  apply(plugin = "com.github.node-gradle.node")
 }
 
 group = "com.terraformation"
@@ -150,97 +150,16 @@ tasks.test {
   testLogging { exceptionFormat = TestExceptionFormat.FULL }
 }
 
-val generateVersionFile by
-    tasks.registering {
-      val generatedPath =
-          File("$buildDir/generated/kotlin/com/terraformation/backend/Version.kt").toPath()
+val generateVersionFile = tasks.register<VersionFileTask>("generateVersionFile")
 
-      inputs.property("version", project.version)
-      outputs.file(generatedPath)
+val generatePostgresDockerConfig =
+    tasks.register<PostgresDockerConfigTask>("generatePostgresDockerConfig")
 
-      doLast {
-        Files.createDirectories(generatedPath.parent)
-        Files.writeString(
-            generatedPath,
-            """package com.terraformation.backend
-          |const val VERSION = "$version"
-          |""".trimMargin())
-      }
-    }
-
-val generatePostgresDockerConfig by
-    tasks.registering {
-      val postgresDockerRepository: String by project
-      val postgresDockerTag: String by project
-
-      val generatedPath =
-          File("$buildDir/generated-test/kotlin/com/terraformation/backend/db/DockerImage.kt")
-              .toPath()
-
-      inputs.property("postgresDockerRepository", postgresDockerRepository)
-      inputs.property("postgresDockerTag", postgresDockerTag)
-      outputs.file(generatedPath)
-
-      doLast {
-        Files.createDirectories(generatedPath.parent)
-        Files.writeString(
-            generatedPath,
-            """package com.terraformation.backend.db
-              |const val POSTGRES_DOCKER_REPOSITORY = "$postgresDockerRepository"
-              |const val POSTGRES_DOCKER_TAG = "$postgresDockerTag"
-              |""".trimMargin())
-      }
-    }
-
-// The MJML -> HTML translator can only operate on one file at a time if the source and target files
-// are in different directories, so we need to run it once per modified MJML file. But YarnTask only
-// lets us run a single command per Gradle task. Register a separate task for each MJML file.
-
-val processMjmlTasks =
-    project
-        .files(
-            fileTree("$projectDir/src/main/resources/templates/email") {
-              include("**/body.ftlh.mjml")
-            })
-        .mapIndexed { index, mjmlFile ->
-          tasks.register<YarnTask>("compileMjml$index") {
-            // The upper levels of directory structure are a little different in the src and build
-            // directories; we want the following mapping:
-            //
-            // src/main/resources/templates/email/a/b.ftlh.mjml ->
-            // build/resources/main/templates/email/a/b.ftlh
-            val htmlFile =
-                buildDir
-                    .resolve("resources/main")
-                    .resolve(
-                        mjmlFile
-                            .withReplacedExtensionOrNull(".mjml", "")!!
-                            .relativeTo(File("$projectDir/src/main/resources")))
-
-            // Stop these tasks from appearing in "./gradlew tasks" output.
-            group = ""
-
-            dependsOn("yarn")
-
-            inputs.file(mjmlFile)
-            outputs.file(htmlFile)
-
-            args.set(
-                listOf(
-                    "mjml",
-                    "--config.minify",
-                    "true",
-                    "--config.beautify",
-                    "false",
-                    "-o",
-                    "$htmlFile",
-                    "$mjmlFile"))
-          }
-        }
+val renderMjmlTask = tasks.register<com.terraformation.gradle.RenderMjmlTask>("renderMjml")
 
 tasks {
   processResources {
-    processMjmlTasks.forEach { dependsOn(it.get()) }
+    dependsOn(renderMjmlTask)
     exclude("**/*.mjml")
   }
 
