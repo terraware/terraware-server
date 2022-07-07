@@ -329,7 +329,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="roles" numRows="3" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
+      <table name="roles" numRows="4" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
          </column>
