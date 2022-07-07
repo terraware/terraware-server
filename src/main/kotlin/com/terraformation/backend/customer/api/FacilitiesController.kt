@@ -20,6 +20,7 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
@@ -309,8 +310,9 @@ data class FacilityPayload(
     val createdTime: Instant,
     val description: String?,
     val id: FacilityId,
-    val siteId: SiteId,
     val name: String,
+    val organizationId: OrganizationId,
+    val siteId: SiteId,
     val type: FacilityType,
 ) {
   constructor(
@@ -320,8 +322,9 @@ data class FacilityPayload(
       model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       model.description,
       model.id,
-      model.siteId,
       model.name,
+      model.organizationId,
+      model.siteId,
       model.type)
 }
 

@@ -333,6 +333,7 @@ abstract class DatabaseTest {
   protected fun insertFacility(
       id: Any = this.facilityId,
       siteId: Any = this.siteId,
+      organizationId: Any = this.organizationId,
       name: String = "Facility $id",
       description: String? = "Description $id",
       createdBy: UserId = currentUser().userId,
@@ -357,6 +358,7 @@ abstract class DatabaseTest {
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(NAME, name)
+          .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(SITE_ID, siteId.toIdWrapper { SiteId(it) })
           .set(TYPE_ID, type)
           .execute()

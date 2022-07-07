@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.search.FacilityIdScope
@@ -24,6 +25,8 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           accessions.asMultiValueSublist("accessions", FACILITIES.ID.eq(ACCESSIONS.FACILITY_ID)),
+          organizations.asSingleValueSublist(
+              "organization", FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           sites.asSingleValueSublist("site", FACILITIES.SITE_ID.eq(SITES.ID)),
           storageLocations.asMultiValueSublist(
               "storageLocations", FACILITIES.ID.eq(STORAGE_LOCATIONS.FACILITY_ID)),

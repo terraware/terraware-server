@@ -44,14 +44,15 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private val eventPublisher: ApplicationEventPublisher = mockk()
   private val objectMapper = jacksonObjectMapper()
+  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val service: DeviceService by lazy {
     DeviceService(
-        AutomationStore(automationsDao, clock, dslContext, objectMapper, ParentStore(dslContext)),
+        AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore),
         DeviceStore(devicesDao),
         deviceTemplatesDao,
         dslContext,
         eventPublisher,
-        FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao),
+        FacilityStore(clock, dslContext, facilitiesDao, parentStore, storageLocationsDao),
     )
   }
 
