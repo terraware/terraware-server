@@ -107,13 +107,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     searchService = SearchService(dslContext)
     accessionSearchService = AccessionSearchService(tables, searchService)
 
-    every { user.organizationRoles } returns mapOf(organizationId to Role.CONTRIBUTOR)
-    every { user.projectRoles } returns mapOf(projectId to Role.CONTRIBUTOR)
-    every { user.facilityRoles } returns mapOf(facilityId to Role.CONTRIBUTOR)
+    every { user.organizationRoles } returns mapOf(organizationId to Role.MANAGER)
+    every { user.projectRoles } returns mapOf(projectId to Role.MANAGER)
+    every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
     insertSiteData()
 
-    insertOrganizationUser()
+    insertOrganizationUser(role = Role.MANAGER)
     insertProjectUser()
 
     val now = Instant.now()
@@ -1230,7 +1230,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `includes values from accessions at multiple facilities`() {
       every { user.facilityRoles } returns
-          mapOf(facilityId to Role.CONTRIBUTOR, FacilityId(1100) to Role.CONTRIBUTOR)
+          mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
 
       insertProject(11)
       insertSite(110)
@@ -1614,7 +1614,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `search only includes results from requested facility`() {
     every { user.facilityRoles } returns
-        mapOf(facilityId to Role.CONTRIBUTOR, FacilityId(1100) to Role.CONTRIBUTOR)
+        mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
 
     insertProject(11)
     insertSite(110)
@@ -1701,7 +1701,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "members" to
                           listOf(
                               mapOf(
-                                  "roleName" to "Contributor",
+                                  "roleName" to "Manager",
                                   "user" to
                                       mapOf(
                                           "id" to "${user.userId}",
@@ -2745,7 +2745,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                   mapOf(
                                       "createdTime" to "1970-01-01T00:00:00Z",
                                   )),
-                          "roleName" to "Contributor",
+                          "roleName" to "Manager",
                       )),
               "projectMemberships" to
                   listOf(
@@ -2776,7 +2776,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                           mapOf(
                               "createdTime" to "1970-01-01T00:00:00Z",
                           )),
-                  "roleName" to "Contributor",
+                  "roleName" to "Manager",
                   "user" to expectedUser,
               ))
 

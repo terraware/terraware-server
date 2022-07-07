@@ -84,6 +84,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO roles (id, name)
 VALUES (1, 'Contributor'),
+       (2, 'Manager'),
        (3, 'Admin'),
        (4, 'Owner')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
