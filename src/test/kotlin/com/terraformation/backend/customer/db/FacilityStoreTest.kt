@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
@@ -9,6 +10,9 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.ProjectId
+import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
@@ -39,7 +43,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
+    store =
+        FacilityStore(
+            clock, dslContext, facilitiesDao, ParentStore(dslContext), storageLocationsDao)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateFacility(any()) } returns true
@@ -278,10 +284,38 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `create automatically populates organization ID`() {
+    val model = store.create(siteId, FacilityType.SeedBank, "Test")
+
+    val actual = facilitiesDao.fetchOneById(model.id)!!
+    assertEquals(organizationId, actual.organizationId)
+  }
+
+  @Test
   fun `create throws exception if no permission to create facilities`() {
     every { user.canCreateFacility(any()) } returns false
 
     assertThrows<AccessDeniedException> { store.create(siteId, FacilityType.SeedBank, "Test") }
+  }
+
+  @Test
+  fun `update does not allow changing site or organization ID`() {
+    val otherOrganizationId = OrganizationId(10)
+    val otherProjectId = ProjectId(11)
+    val otherSiteId = SiteId(12)
+
+    insertOrganization(otherOrganizationId)
+    insertOrganizationUser(organizationId = otherOrganizationId, role = Role.ADMIN)
+    insertProject(otherProjectId, otherOrganizationId)
+    insertSite(otherSiteId, otherProjectId)
+
+    val model = store.create(siteId, FacilityType.SeedBank, "Test")
+
+    store.update(model.copy(organizationId = otherOrganizationId, siteId = otherSiteId))
+
+    val actual = facilitiesDao.fetchOneById(model.id)!!
+    assertEquals(organizationId, actual.organizationId, "Organization ID")
+    assertEquals(siteId, actual.siteId, "Site ID")
   }
 
   @Test

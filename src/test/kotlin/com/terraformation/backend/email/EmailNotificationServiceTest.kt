@@ -120,6 +120,7 @@ internal class EmailNotificationServiceTest {
           description = null,
           id = FacilityId(123),
           modifiedTime = Instant.EPOCH,
+          organizationId = organization.id,
           siteId = SiteId(1),
           name = "Test Facility",
           type = FacilityType.SeedBank,

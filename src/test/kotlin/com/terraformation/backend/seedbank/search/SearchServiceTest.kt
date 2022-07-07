@@ -2784,6 +2784,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               mapOf(
                   "createdTime" to "1970-01-01T00:00:00Z",
+                  "facilities" to expectedFacilities,
                   "id" to "1",
                   "name" to "Organization 1",
                   "projects" to expectedProjects,

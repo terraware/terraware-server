@@ -115,7 +115,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         )
     automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
     deviceStore = DeviceStore(devicesDao)
-    facilityStore = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
+    facilityStore =
+        FacilityStore(clock, dslContext, facilitiesDao, parentStore, storageLocationsDao)
     userStore =
         UserStore(
             clock,

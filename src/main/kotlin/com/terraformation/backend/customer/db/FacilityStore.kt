@@ -11,6 +11,7 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.SiteId
+import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
@@ -33,6 +34,7 @@ class FacilityStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao,
+    private val parentStore: ParentStore,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
   /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
@@ -82,6 +84,9 @@ class FacilityStore(
   ): FacilityModel {
     requirePermissions { createFacility(siteId) }
 
+    val organizationId =
+        parentStore.getOrganizationId(siteId) ?: throw SiteNotFoundException(siteId)
+
     val row =
         FacilitiesRow(
             connectionStateId = FacilityConnectionState.NotConnected,
@@ -92,6 +97,7 @@ class FacilityStore(
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = name,
+            organizationId = organizationId,
             siteId = siteId,
             typeId = type,
         )

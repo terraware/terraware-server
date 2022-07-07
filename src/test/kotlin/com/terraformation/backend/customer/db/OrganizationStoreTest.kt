@@ -65,6 +65,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           maxIdleMinutes = 30,
           modifiedTime = Instant.EPOCH,
           name = "Facility $facilityId",
+          organizationId = organizationId,
           siteId = siteId,
           type = FacilityType.SeedBank)
   private val siteModel =
