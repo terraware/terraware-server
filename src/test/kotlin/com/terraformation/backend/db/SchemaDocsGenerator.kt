@@ -228,7 +228,7 @@ class SchemaDocsGenerator : DatabaseTest() {
       log.info("Writing output to $sliceDir")
 
       val container =
-          GenericContainer<GenericContainer<*>>(schemaSpyDockerImage)
+          GenericContainer(schemaSpyDockerImage)
               .withCommand(
                   // Use the driver for Postgres 11 and up
                   "-t",

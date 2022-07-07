@@ -612,7 +612,6 @@ abstract class DatabaseTest {
     }
   }
 
-  @Suppress("UPPER_BOUND_VIOLATED_WARNING") // For PostgreSQLContainer recursive type
   companion object {
     /**
      * PostgreSQL function name that retrieves serial sequence name. This is also the column name
@@ -627,7 +626,7 @@ abstract class DatabaseTest {
             .asCompatibleSubstituteFor("postgres")
 
     val postgresContainer: PostgreSQLContainer<*> =
-        PostgreSQLContainer<PostgreSQLContainer<*>>(imageName)
+        PostgreSQLContainer(imageName)
             .withDatabaseName("terraware")
             .withExposedPorts(PostgreSQLContainer.POSTGRESQL_PORT)
             .withNetwork(Network.newNetwork())
