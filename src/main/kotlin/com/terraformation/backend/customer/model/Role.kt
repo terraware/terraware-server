@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonValue
  */
 enum class Role(val id: Int, @get:JsonValue val displayName: String) {
   CONTRIBUTOR(1, "Contributor"),
+  MANAGER(2, "Manager"),
   ADMIN(3, "Admin"),
   OWNER(4, "Owner");
 

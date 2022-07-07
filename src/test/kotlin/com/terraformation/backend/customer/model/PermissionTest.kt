@@ -443,6 +443,89 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
+  fun `managers can add users to their project, access all data associated with their project`() {
+    givenRole(org1Id, Role.MANAGER, project10Id)
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        org1Id,
+        listProjects = true,
+        readOrganization = true,
+        listOrganizationUsers = true,
+        removeOrganizationSelf = true,
+        createSpecies = true,
+    )
+
+    permissions.expect(
+        project10Id,
+        readProject = true,
+        addProjectUser = true,
+        listSites = true,
+        removeProjectUser = true,
+        removeProjectSelf = true,
+    )
+
+    permissions.expect(
+        *siteIds.forProject10(),
+        listFacilities = true,
+        readSite = true,
+    )
+
+    permissions.expect(
+        *facilityIds.forProject10(),
+        createAccession = true,
+        createAutomation = true,
+        createDevice = true,
+        listAutomations = true,
+        sendAlert = true,
+    )
+
+    permissions.expect(
+        *accessionIds.forProject10(),
+        readAccession = true,
+        updateAccession = true,
+    )
+
+    permissions.expect(
+        *automationIds.forProject10(),
+        readAutomation = true,
+        updateAutomation = true,
+        deleteAutomation = true,
+        triggerAutomation = true,
+    )
+
+    permissions.expect(
+        *deviceManagerIds.forProject10(),
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
+    )
+
+    permissions.expect(
+        *deviceIds.forProject10(),
+        createTimeseries = true,
+        readTimeseries = true,
+        updateTimeseries = true,
+        readDevice = true,
+        updateDevice = true,
+    )
+
+    permissions.expect(
+        *speciesIds.forOrg1(),
+        readSpecies = true,
+        updateSpecies = true,
+        deleteSpecies = true,
+    )
+
+    permissions.expect(
+        *storageLocationIds.forProject10(),
+        readStorageLocation = true,
+    )
+
+    permissions.andNothingElse()
+  }
+
+  @Test
   fun `contributors have access to data associated with their project(s)`() {
     givenRole(org1Id, Role.CONTRIBUTOR, project10Id)
 

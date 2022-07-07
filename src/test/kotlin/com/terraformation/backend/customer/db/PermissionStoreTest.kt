@@ -28,7 +28,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchFacilityRoles only includes non-organization-wide projects the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(FacilityId(1000) to Role.CONTRIBUTOR, FacilityId(1001) to Role.CONTRIBUTOR),
+        mapOf(FacilityId(1000) to Role.MANAGER, FacilityId(1001) to Role.MANAGER),
         permissionStore.fetchFacilityRoles(UserId(5)))
   }
 
@@ -39,9 +39,9 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         mapOf(
-            FacilityId(1000) to Role.CONTRIBUTOR,
-            FacilityId(1001) to Role.CONTRIBUTOR,
-            FacilityId(1100) to Role.CONTRIBUTOR),
+            FacilityId(1000) to Role.MANAGER,
+            FacilityId(1001) to Role.MANAGER,
+            FacilityId(1100) to Role.MANAGER),
         permissionStore.fetchFacilityRoles(UserId(5)))
   }
 
@@ -53,7 +53,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
             FacilityId(1000) to Role.CONTRIBUTOR,
             FacilityId(1001) to Role.CONTRIBUTOR,
             FacilityId(1100) to Role.CONTRIBUTOR,
-            FacilityId(2000) to Role.CONTRIBUTOR),
+            FacilityId(2000) to Role.MANAGER),
         permissionStore.fetchFacilityRoles(UserId(7)))
   }
 
@@ -68,15 +68,14 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchOrganizationRoles includes all organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(OrganizationId(1) to Role.CONTRIBUTOR, OrganizationId(2) to Role.CONTRIBUTOR),
+        mapOf(OrganizationId(1) to Role.CONTRIBUTOR, OrganizationId(2) to Role.MANAGER),
         permissionStore.fetchOrganizationRoles(UserId(7)))
   }
 
   @Test
   fun `fetchProjectRoles only includes organization-wide projects the user is in`() {
     insertTestData()
-    assertEquals(
-        mapOf(ProjectId(10) to Role.CONTRIBUTOR), permissionStore.fetchProjectRoles(UserId(5)))
+    assertEquals(mapOf(ProjectId(10) to Role.MANAGER), permissionStore.fetchProjectRoles(UserId(5)))
   }
 
   @Test
@@ -88,7 +87,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
         projectsDao.fetchOneById(organizationWideProjectId)!!.copy(organizationWide = true))
 
     assertEquals(
-        mapOf(ProjectId(10) to Role.CONTRIBUTOR, organizationWideProjectId to Role.CONTRIBUTOR),
+        mapOf(ProjectId(10) to Role.MANAGER, organizationWideProjectId to Role.MANAGER),
         permissionStore.fetchProjectRoles(UserId(5)))
   }
 
@@ -99,7 +98,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
         mapOf(
             ProjectId(10) to Role.CONTRIBUTOR,
             ProjectId(11) to Role.CONTRIBUTOR,
-            ProjectId(20) to Role.CONTRIBUTOR),
+            ProjectId(20) to Role.MANAGER),
         permissionStore.fetchProjectRoles(UserId(7)))
   }
 
@@ -107,7 +106,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchSiteRoles only includes sites from non-organization-wide projects the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(SiteId(100) to Role.CONTRIBUTOR, SiteId(101) to Role.CONTRIBUTOR),
+        mapOf(SiteId(100) to Role.MANAGER, SiteId(101) to Role.MANAGER),
         permissionStore.fetchSiteRoles(UserId(5)))
   }
 
@@ -118,9 +117,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         mapOf(
-            SiteId(100) to Role.CONTRIBUTOR,
-            SiteId(101) to Role.CONTRIBUTOR,
-            SiteId(110) to Role.CONTRIBUTOR),
+            SiteId(100) to Role.MANAGER, SiteId(101) to Role.MANAGER, SiteId(110) to Role.MANAGER),
         permissionStore.fetchSiteRoles(UserId(5)))
   }
 
@@ -132,7 +129,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
             SiteId(100) to Role.CONTRIBUTOR,
             SiteId(101) to Role.CONTRIBUTOR,
             SiteId(110) to Role.CONTRIBUTOR,
-            SiteId(200) to Role.CONTRIBUTOR),
+            SiteId(200) to Role.MANAGER),
         permissionStore.fetchSiteRoles(UserId(7)))
   }
 
@@ -155,7 +152,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
    *       - Facility 2000
    *
    * - User 5
-   *   - Org 1 role: contributor
+   *   - Org 1 role: manager
    *     - Member of project 10
    * - User 6
    *   - Org 2 role: owner
@@ -163,7 +160,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
    *   - Org 1 role: contributor
    *     - Member of project 10
    *     - Member of project 11
-   *   - Org 2 role: contributor
+   *   - Org 2 role: manager
    *     - Member of project 20
    * ```
    */
@@ -211,9 +208,9 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
       }
     }
 
-    configureUser(5, mapOf(1 to Role.CONTRIBUTOR), listOf(10))
+    configureUser(5, mapOf(1 to Role.MANAGER), listOf(10))
     configureUser(6, mapOf(2 to Role.OWNER), emptyList())
-    configureUser(7, mapOf(1 to Role.CONTRIBUTOR, 2 to Role.CONTRIBUTOR), listOf(10, 11, 20))
+    configureUser(7, mapOf(1 to Role.CONTRIBUTOR, 2 to Role.MANAGER), listOf(10, 11, 20))
   }
 
   private fun configureUser(userId: Long, roles: Map<Int, Role>, projects: List<Int>) {

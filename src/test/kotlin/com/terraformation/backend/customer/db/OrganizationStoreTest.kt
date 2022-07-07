@@ -587,6 +587,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val expected =
         mapOf(
             Role.ADMIN to 0,
+            Role.MANAGER to 0,
             Role.CONTRIBUTOR to 1,
             Role.OWNER to 2,
         )
