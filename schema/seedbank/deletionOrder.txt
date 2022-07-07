@@ -25,7 +25,7 @@ germination_seed_types
 app_devices
 storage_conditions
 photos
-organizations
 germination_test_types
+organizations
 accession_states
 seed_quantity_units

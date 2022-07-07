@@ -377,6 +377,27 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="organization_id">organization_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="facilities.organization_id references organizations.id via facilities_organization_id_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">facilities_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -413,6 +434,12 @@
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>idle_after_time</td>
                                 </tr>
+                                <tr>
+                                    <td title='Indexed'>facilities_organization_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>organization_id</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -436,30 +463,33 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1045,12,1281,276">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="648,220,1001,700">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,169,277,374">
-<area shape="rect" id="node4" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="321,604,604,721">
-<area shape="rect" id="node5" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="381,81,545,286">
-<area shape="rect" id="node6" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="369,304,557,421">
+<area shape="rect" id="node1" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1045,24,1281,288">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="648,232,1001,741">
+<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,410,277,616">
+<area shape="rect" id="node4" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="321,522,604,640">
+<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="336,657,589,892">
+<area shape="rect" id="node6" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="381,93,545,298">
+<area shape="rect" id="node7" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="369,316,557,433">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/facilities.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1759,5,1995,269">
-<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1361,219,1715,699">
-<area shape="rect" id="node3" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,411,488,616">
-<area shape="rect" id="node4" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="1035,797,1317,915">
-<area shape="rect" id="node5" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="1094,69,1258,275">
-<area shape="rect" id="node6" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="1082,292,1270,409">
-<area shape="rect" id="node13" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,501,172,589">
-<area shape="rect" id="node11" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="803,236,951,324">
-<area shape="rect" id="node7" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="786,377,969,465">
-<area shape="rect" id="node8" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="532,413,720,501">
-<area shape="rect" id="node9" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="764,483,991,571">
-<area shape="rect" id="node10" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="1083,656,1269,744">
-<area shape="rect" id="node12" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="804,588,951,676">
+<area shape="rect" id="node1" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="229,191,475,279">
+<area shape="rect" id="node2" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="9,155,168,243">
+<area shape="rect" id="node3" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1824,89,2060,353">
+<area shape="rect" id="node4" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1427,387,1780,896">
+<area shape="rect" id="node5" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,449,488,655">
+<area shape="rect" id="node6" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="1100,783,1383,900">
+<area shape="rect" id="node7" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="532,107,785,341">
+<area shape="rect" id="node8" href="../../tables/sites.html" target="_top" title="sites" alt="" coords="1159,248,1323,453">
+<area shape="rect" id="node9" href="../../tables/facility_types.html" target="_top" title="facility_types" alt="" coords="1147,471,1335,588">
+<area shape="rect" id="node15" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,540,172,628">
+<area shape="rect" id="node13" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="869,469,1017,557">
+<area shape="rect" id="node10" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="851,71,1034,159">
+<area shape="rect" id="node11" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="829,223,1056,311">
+<area shape="rect" id="node12" href="../../tables/project_users.html" target="_top" title="project_users" alt="" coords="1148,641,1335,729">
+<area shape="rect" id="node14" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="869,328,1016,416">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/facilities.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

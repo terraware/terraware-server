@@ -1,6 +1,6 @@
+organizations
 device_template_categories
 facility_connection_states
-organizations
 timeseries_types
 projects
 sites
