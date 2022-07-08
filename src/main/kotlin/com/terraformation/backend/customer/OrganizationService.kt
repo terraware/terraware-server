@@ -73,15 +73,13 @@ class OrganizationService(
       val orgModel = organizationStore.createWithAdmin(row)
       val name = messages.seedBankDefaultName()
 
-      if (!createSeedBank) {
-        orgModel
-      } else {
+      if (createSeedBank) {
         val projectModel =
             projectStore.create(orgModel.id, name, hidden = true, organizationWide = true)
-        val siteModel = siteStore.create(SitesRow(projectId = projectModel.id, name = name))
-
-        orgModel.copy(projects = listOf(projectModel.copy(sites = listOf(siteModel))))
+        siteStore.create(SitesRow(projectId = projectModel.id, name = name))
       }
+
+      orgModel
     }
   }
 

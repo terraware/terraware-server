@@ -12,15 +12,11 @@ import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationDeletedEvent
 import com.terraformation.backend.customer.model.OrganizationModel
-import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.records.OrganizationUsersRecord
@@ -127,31 +123,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     val expected =
         OrganizationModel(
-            createdTime = clock.instant(),
             id = OrganizationId(1),
             name = "Test Organization",
-            projects =
-                listOf(
-                    ProjectModel(
-                        createdTime = clock.instant(),
-                        hidden = true,
-                        id = ProjectId(1),
-                        organizationId = OrganizationId(1),
-                        organizationWide = true,
-                        name = seedBankDefaultName,
-                        description = null,
-                        startDate = null,
-                        status = null,
-                        sites =
-                            listOf(
-                                SiteModel(
-                                    createdTime = clock.instant(),
-                                    description = null,
-                                    id = SiteId(1),
-                                    location = null,
-                                    modifiedTime = clock.instant(),
-                                    name = seedBankDefaultName,
-                                    projectId = ProjectId(1))))),
+            createdTime = clock.instant(),
             totalUsers = 1)
     val actual =
         service.createOrganization(
@@ -166,10 +140,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     val expected =
         OrganizationModel(
-            createdTime = clock.instant(),
             id = OrganizationId(1),
             name = "Test Organization",
-            projects = null,
+            createdTime = clock.instant(),
             totalUsers = 1)
     val actual =
         service.createOrganization(

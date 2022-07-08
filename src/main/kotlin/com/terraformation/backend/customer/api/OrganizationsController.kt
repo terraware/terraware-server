@@ -17,12 +17,10 @@ import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -88,8 +86,7 @@ class OrganizationsController(
   fun createOrganization(
       @RequestBody @Valid payload: CreateOrganizationRequestPayload
   ): GetOrganizationResponsePayload {
-    val model =
-        organizationService.createOrganization(payload.toRow(), payload.createSeedBank ?: true)
+    val model = organizationService.createOrganization(payload.toRow(), true)
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.OWNER))
   }
 
@@ -150,8 +147,7 @@ class OrganizationsController(
     }
 
     val userId =
-        organizationService.addUser(
-            payload.email, organizationId, payload.role, payload.projectIds ?: emptyList())
+        organizationService.addUser(payload.email, organizationId, payload.role, emptyList())
     return CreateOrganizationUserResponsePayload(userId)
   }
 
@@ -178,7 +174,7 @@ class OrganizationsController(
       "The user is the organization's only owner and an organization must have at least one owner.")
   @DeleteMapping("/{organizationId}/users/{userId}")
   @Operation(
-      summary = "Removes a user from an organization and all its projects.",
+      summary = "Removes a user from an organization.",
       description = "Does not remove any data created by the user.")
   fun deleteOrganizationUser(
       @PathVariable("organizationId") organizationId: OrganizationId,
@@ -203,8 +199,7 @@ class OrganizationsController(
       summary = "Updates the user's organization information.",
       description =
           "Only includes organization-level information that can be modified by organization " +
-              "administrators. Use /api/v1/projects/{projectId}/users/{userId} to change the " +
-              "user's projects.")
+              "administrators.")
   fun updateOrganizationUser(
       @PathVariable("organizationId") organizationId: OrganizationId,
       @PathVariable("userId") userId: UserId,
@@ -231,7 +226,6 @@ class OrganizationsController(
 data class AddOrganizationUserRequestPayload(
     val email: String,
     val role: Role,
-    val projectIds: List<ProjectId>?,
 )
 
 data class UpdateOrganizationUserRequestPayload(
@@ -254,12 +248,6 @@ data class CreateOrganizationRequestPayload(
         minLength = 4,
         maxLength = 6)
     val countrySubdivisionCode: String?,
-    @Schema(
-        description =
-            "If true or not specified, automatically create a project and site to hold seed " +
-                "bank facilities.",
-        defaultValue = "true")
-    val createSeedBank: Boolean?,
     val description: String?,
     @field:NotEmpty val name: String,
 ) {
@@ -325,8 +313,6 @@ data class OrganizationPayload(
     val facilities: List<FacilityPayload>?,
     val id: OrganizationId,
     val name: String,
-    @Schema(description = "This organization's projects. Omitted if depth is \"Organization\".")
-    val projects: List<ProjectPayload>?,
     @Schema(
         description = "The current user's role in the organization.",
     )
@@ -346,7 +332,6 @@ data class OrganizationPayload(
       model.facilities?.map { FacilityPayload(it) },
       model.id,
       model.name,
-      model.projects?.map { ProjectPayload(it) },
       role,
       model.totalUsers,
   )
@@ -374,13 +359,6 @@ data class OrganizationUserPayload(
             "The user's last name. Not present if the user has been added to the organization " +
                 "but has not signed up for an account yet.")
     val lastName: String?,
-    @ArraySchema(
-        arraySchema =
-            Schema(
-                description =
-                    "IDs of projects the user is in. Users with admin and owner roles always " +
-                        "have access to all projects."))
-    val projectIds: List<ProjectId>,
     val role: Role,
 ) {
   constructor(
@@ -391,7 +369,6 @@ data class OrganizationUserPayload(
       firstName = model.firstName,
       id = model.userId,
       lastName = model.lastName,
-      projectIds = model.projectIds,
       role = model.role,
   )
 }
