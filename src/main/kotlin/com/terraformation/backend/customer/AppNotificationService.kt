@@ -262,10 +262,9 @@ class AppNotificationService(
       message: NotificationMessage,
       localUrl: URI
   ) {
-    val projectId = parentStore.getProjectId(facilityId)!!
-    val organizationId = parentStore.getOrganizationId(projectId)!!
+    val organizationId = parentStore.getOrganizationId(facilityId)!!
     val recipients =
-        projectStore.fetchEmailRecipients(projectId, false).mapNotNull {
+        organizationStore.fetchEmailRecipients(organizationId, false).mapNotNull {
           userStore.fetchByEmail(it)
         }
     dslContext.transaction { _ ->

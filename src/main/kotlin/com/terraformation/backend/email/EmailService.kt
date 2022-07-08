@@ -8,7 +8,6 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.processToString
@@ -55,29 +54,10 @@ class EmailService(
       model: EmailTemplateModel,
       requireOptIn: Boolean = true
   ) {
-    val projectId =
-        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
-    sendProjectNotification(projectId, model, requireOptIn)
-  }
-
-  /**
-   * Sends an email notification to all the people who should be notified about something happening
-   * to a particular project.
-   *
-   * @param [model] Model object containing values that can be referenced by the template.
-   * @param [requireOptIn] If false, send the notification to all eligible users, even if they have
-   * opted out of email notifications. The default is to obey the user's notification preference,
-   * which is the correct thing to do in the vast majority of cases.
-   */
-  private fun sendProjectNotification(
-      projectId: ProjectId,
-      model: EmailTemplateModel,
-      requireOptIn: Boolean = true
-  ) {
-    val recipients = projectStore.fetchEmailRecipients(projectId, requireOptIn)
-
-    send(model, recipients)
+    sendOrganizationNotification(organizationId, model, requireOptIn)
   }
 
   /**
@@ -89,8 +69,7 @@ class EmailService(
    * opted out of email notifications. The default is to obey the user's notification preference,
    * which is the correct thing to do in the vast majority of cases.
    */
-  @Suppress("UNUSED")
-  fun sendOrganizationNotification(
+  private fun sendOrganizationNotification(
       organizationId: OrganizationId,
       model: EmailTemplateModel,
       requireOptIn: Boolean = true,

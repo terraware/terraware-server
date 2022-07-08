@@ -338,9 +338,11 @@ class EmailNotificationService(
   }
 
   private fun getRecipients(facilityId: FacilityId): List<IndividualUser> {
-    val projectId =
-        parentStore.getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-    return projectStore.fetchEmailRecipients(projectId).mapNotNull { userStore.fetchByEmail(it) }
+    val organizationId =
+        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    return organizationStore.fetchEmailRecipients(organizationId).mapNotNull {
+      userStore.fetchByEmail(it)
+    }
   }
 
   data class EmailRequest(val user: IndividualUser, val emailTemplateModel: EmailTemplateModel)
