@@ -186,7 +186,7 @@ class AdminController(
     val organization = organizationStore.fetchOneById(project.organizationId)
     val facilities = facilityStore.fetchBySiteId(siteId).sortedBy { it.name }
 
-    model.addAttribute("canCreateFacility", currentUser().canCreateFacility(siteId))
+    model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)

@@ -71,7 +71,7 @@ interface TerrawareUser : Principal {
   fun canCreateAutomation(facilityId: FacilityId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
   fun canCreateDeviceManager(): Boolean
-  fun canCreateFacility(siteId: SiteId): Boolean
+  fun canCreateFacility(organizationId: OrganizationId): Boolean
   fun canCreateProject(organizationId: OrganizationId): Boolean
   fun canCreateSite(projectId: ProjectId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
@@ -87,7 +87,7 @@ interface TerrawareUser : Principal {
   fun canImportGlobalSpeciesData(): Boolean
   fun canListApiKeys(organizationId: OrganizationId): Boolean
   fun canListAutomations(facilityId: FacilityId): Boolean
-  fun canListFacilities(siteId: SiteId): Boolean
+  fun canListFacilities(organizationId: OrganizationId): Boolean
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
   fun canListProjects(organizationId: OrganizationId): Boolean
   fun canListSites(projectId: ProjectId): Boolean

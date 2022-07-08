@@ -148,14 +148,14 @@ data class IndividualUser(
     return canAccessAutomation(automationId)
   }
 
-  override fun canCreateFacility(siteId: SiteId): Boolean {
-    val role = siteRoles[siteId]
+  override fun canCreateFacility(organizationId: OrganizationId): Boolean {
+    val role = organizationRoles[organizationId]
     return role == Role.ADMIN || role == Role.OWNER
   }
 
-  override fun canListFacilities(siteId: SiteId): Boolean {
+  override fun canListFacilities(organizationId: OrganizationId): Boolean {
     // Any user who has access to a site can list its facilities.
-    return siteRoles[siteId] != null
+    return organizationId in organizationRoles
   }
 
   override fun canReadFacility(facilityId: FacilityId): Boolean {
