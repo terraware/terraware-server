@@ -50,7 +50,7 @@ class SearchController(
                                   // This value is parsed by the schema generator and rendered
                                   // as JSON or YAML, so its formatting is irrelevant.
                                   value =
-                                      """{ "prefix": "projects.sites.facilities.accessions",
+                                      """{ "prefix": "facilities.accessions",
                                            "fields": ["accessionNumber", "remainingQuantity", "remainingUnits"],
                                            "search": {
                                              "operation": "and", "children": [
@@ -131,7 +131,7 @@ data class SearchRequestPayload(
                 "response will be an instance of whatever entity the prefix points to. Always " +
                 "evaluated starting from the \"organizations\" level. If not present, the search " +
                 "will return a list of organizations.",
-        example = "projects.sites.facilities.accessions")
+        example = "facilities.accessions")
     val prefix: String? = null,
     @NotEmpty
     @Schema(

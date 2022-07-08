@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -20,8 +19,6 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
       listOf(
           organizationUsers.asMultiValueSublist(
               "organizationMemberships", USERS.ID.eq(ORGANIZATION_USERS.USER_ID)),
-          projectUsers.asMultiValueSublist(
-              "projectMemberships", USERS.ID.eq(PROJECT_USERS.USER_ID)),
       )
     }
   }
