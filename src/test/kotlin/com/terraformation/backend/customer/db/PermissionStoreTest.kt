@@ -25,10 +25,13 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchFacilityRoles only includes non-organization-wide projects the user is in`() {
+  fun `fetchFacilityRoles includes facilities in all projects in organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(FacilityId(1000) to Role.MANAGER, FacilityId(1001) to Role.MANAGER),
+        mapOf(
+            FacilityId(1000) to Role.MANAGER,
+            FacilityId(1001) to Role.MANAGER,
+            FacilityId(1100) to Role.MANAGER),
         permissionStore.fetchFacilityRoles(UserId(5)))
   }
 
@@ -73,9 +76,11 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchProjectRoles only includes organization-wide projects the user is in`() {
+  fun `fetchProjectRoles includes all projects in the organizations the user is in`() {
     insertTestData()
-    assertEquals(mapOf(ProjectId(10) to Role.MANAGER), permissionStore.fetchProjectRoles(UserId(5)))
+    assertEquals(
+        mapOf(ProjectId(10) to Role.MANAGER, ProjectId(11) to Role.MANAGER),
+        permissionStore.fetchProjectRoles(UserId(5)))
   }
 
   @Test
@@ -103,10 +108,11 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchSiteRoles only includes sites from non-organization-wide projects the user is in`() {
+  fun `fetchSiteRoles includes all sites from organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(SiteId(100) to Role.MANAGER, SiteId(101) to Role.MANAGER),
+        mapOf(
+            SiteId(100) to Role.MANAGER, SiteId(101) to Role.MANAGER, SiteId(110) to Role.MANAGER),
         permissionStore.fetchSiteRoles(UserId(5)))
   }
 
@@ -203,7 +209,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
         sites.forEach { (siteId, facilities) ->
           insertSite(siteId, projectId)
 
-          facilities.forEach { facilityId -> insertFacility(facilityId, siteId) }
+          facilities.forEach { facilityId -> insertFacility(facilityId, siteId, organizationId) }
         }
       }
     }

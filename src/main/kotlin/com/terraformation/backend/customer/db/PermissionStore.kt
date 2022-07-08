@@ -7,11 +7,9 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.USERS
 import javax.annotation.ManagedBean
@@ -26,13 +24,8 @@ import org.jooq.DSLContext
 @ManagedBean
 class PermissionStore(private val dslContext: DSLContext) {
   /**
-   * Returns a user's role in each facility under the projects they're in.
-   *
-   * If the user is an owner or admin in an organization, they are treated as being a member of all
-   * the organization's projects.
-   *
-   * Currently, we don't support per-project roles, so this is the user's role in the project's
-   * organization for each project that they're a member of.
+   * Returns a user's role in each facility under the organizations they're in. The roles are
+   * organization-level, so will be the same across all facilities of a given organization.
    */
   fun fetchFacilityRoles(userId: UserId): Map<FacilityId, Role> {
     // Users have read access to all facilities under projects they're a member of, regardless
@@ -42,21 +35,9 @@ class PermissionStore(private val dslContext: DSLContext) {
         .from(ORGANIZATION_USERS)
         .join(USERS)
         .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
-        .join(PROJECTS)
-        .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-        .join(SITES)
-        .on(PROJECTS.ID.eq(SITES.PROJECT_ID))
         .join(FACILITIES)
-        .on(SITES.ID.eq(FACILITIES.SITE_ID))
-        .leftJoin(PROJECT_USERS)
-        .on(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
-        .and(ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID))
+        .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(FACILITIES.ORGANIZATION_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .and(
-            ORGANIZATION_USERS.ROLE_ID.`in`(Role.OWNER.id, Role.ADMIN.id)
-                .or(PROJECT_USERS.USER_ID.isNotNull)
-                .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
-                .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
 
@@ -70,13 +51,8 @@ class PermissionStore(private val dslContext: DSLContext) {
   }
 
   /**
-   * Returns a user's role in each of their projects.
-   *
-   * If the user is an owner or admin in an organization, they are treated as being a member of all
-   * the organization's projects.
-   *
-   * Currently, we don't support per-project roles, so this is the user's role in the project's
-   * organization for each project that they're a member of.
+   * Returns a user's role in each project under the organizations they're in. The roles are
+   * organization-level, so will be the same across all projects of a given organization.
    */
   fun fetchProjectRoles(userId: UserId): Map<ProjectId, Role> {
     return dslContext
@@ -86,26 +62,13 @@ class PermissionStore(private val dslContext: DSLContext) {
         .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
         .join(PROJECTS)
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-        .leftJoin(PROJECT_USERS)
-        .on(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
-        .and(ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .and(
-            ORGANIZATION_USERS.ROLE_ID.`in`(Role.OWNER.id, Role.ADMIN.id)
-                .or(PROJECT_USERS.USER_ID.isNotNull)
-                .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
-                .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
 
   /**
-   * Returns a user's role in each site under the projects they're in.
-   *
-   * If the user is an owner or admin in an organization, they are treated as being a member of all
-   * the organization's projects.
-   *
-   * Currently, we don't support per-project or per-site roles, so this is the user's role in the
-   * organization that owns all the sites under each of the projects the user is in.
+   * Returns a user's role in each site under the organizations they're in. The roles are
+   * organization-level, so will be the same across all projects of a given organization.
    */
   fun fetchSiteRoles(userId: UserId): Map<SiteId, Role> {
     return dslContext
@@ -117,15 +80,7 @@ class PermissionStore(private val dslContext: DSLContext) {
         .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
         .join(SITES)
         .on(PROJECTS.ID.eq(SITES.PROJECT_ID))
-        .leftJoin(PROJECT_USERS)
-        .on(PROJECTS.ID.eq(PROJECT_USERS.PROJECT_ID))
-        .and(ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .and(
-            ORGANIZATION_USERS.ROLE_ID.`in`(Role.OWNER.id, Role.ADMIN.id)
-                .or(PROJECT_USERS.USER_ID.isNotNull)
-                .or(PROJECTS.ORGANIZATION_WIDE.isTrue)
-                .or(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }
 }
