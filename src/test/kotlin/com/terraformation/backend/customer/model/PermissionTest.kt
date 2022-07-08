@@ -145,7 +145,6 @@ internal class PermissionTest : DatabaseTest() {
   private inline fun <reified T> List<T>.filterStartsWith(prefix: String): Array<T> =
       filter { "$it".startsWith(prefix) }.toTypedArray()
   private inline fun <reified T> List<T>.forOrg1() = filterStartsWith("1")
-  private inline fun <reified T> List<T>.forProject10() = filterStartsWith("10")
 
   @BeforeEach
   fun setUp() {
@@ -175,7 +174,7 @@ internal class PermissionTest : DatabaseTest() {
     siteIds.forEach { insertSite(it, it.value / 10, createdBy = userId) }
 
     facilityIds.forEach { facilityId ->
-      insertFacility(facilityId, facilityId.value / 10, createdBy = userId)
+      insertFacility(facilityId, facilityId.value / 10, facilityId.value / 1000, createdBy = userId)
       insertDevice(facilityId.value, facilityId, createdBy = userId)
       insertAutomation(facilityId.value, facilityId, createdBy = userId)
       accessionsDao.insert(
@@ -443,7 +442,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `managers can add users to their project, access all data associated with their project`() {
+  fun `managers can add users to projects and access all data in their organizations`() {
     givenRole(org1Id, Role.MANAGER, project10Id)
 
     val permissions = PermissionsTracker()
@@ -458,7 +457,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        project10Id,
+        *projectIds.forOrg1(),
         readProject = true,
         addProjectUser = true,
         listSites = true,
@@ -467,13 +466,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *siteIds.forProject10(),
+        *siteIds.forOrg1(),
         listFacilities = true,
         readSite = true,
     )
 
     permissions.expect(
-        *facilityIds.forProject10(),
+        *facilityIds.forOrg1(),
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -482,13 +481,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *accessionIds.forProject10(),
+        *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        *automationIds.forProject10(),
+        *automationIds.forOrg1(),
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
@@ -496,13 +495,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deviceManagerIds.forProject10(),
+        *deviceManagerIds.forOrg1(),
         *nonConnectedDeviceManagerIds,
         readDeviceManager = true,
     )
 
     permissions.expect(
-        *deviceIds.forProject10(),
+        *deviceIds.forOrg1(),
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -518,7 +517,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *storageLocationIds.forProject10(),
+        *storageLocationIds.forOrg1(),
         readStorageLocation = true,
     )
 
@@ -526,7 +525,7 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `contributors have access to data associated with their project(s)`() {
+  fun `contributors have access to data associated with their organizations`() {
     givenRole(org1Id, Role.CONTRIBUTOR, project10Id)
 
     val permissions = PermissionsTracker()
@@ -539,20 +538,20 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        project10Id,
+        *projectIds.forOrg1(),
         readProject = true,
         listSites = true,
         removeProjectSelf = true,
     )
 
     permissions.expect(
-        *siteIds.forProject10(),
+        *siteIds.forOrg1(),
         listFacilities = true,
         readSite = true,
     )
 
     permissions.expect(
-        *facilityIds.forProject10(),
+        *facilityIds.forOrg1(),
         createAccession = true,
         createAutomation = true,
         createDevice = true,
@@ -561,13 +560,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *accessionIds.forProject10(),
+        *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
     )
 
     permissions.expect(
-        *automationIds.forProject10(),
+        *automationIds.forOrg1(),
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
@@ -575,13 +574,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deviceManagerIds.forProject10(),
+        *deviceManagerIds.forOrg1(),
         *nonConnectedDeviceManagerIds,
         readDeviceManager = true,
     )
 
     permissions.expect(
-        *deviceIds.forProject10(),
+        *deviceIds.forOrg1(),
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
@@ -595,7 +594,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *storageLocationIds.forProject10(),
+        *storageLocationIds.forOrg1(),
         readStorageLocation = true,
     )
 
