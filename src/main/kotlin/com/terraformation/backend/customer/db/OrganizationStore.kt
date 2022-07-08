@@ -75,6 +75,28 @@ class OrganizationStore(
 
     val facilitiesMultiset =
         if (depth.level >= FetchDepth.Facility.level) {
+          // If the user doesn't have access to any facilities, we still want to construct a
+          // properly-typed multiset, but it should be empty.
+          val facilityIds = user.facilityRoles.keys
+          val facilitiesCondition =
+              if (facilityIds.isNotEmpty()) {
+                FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID).and(FACILITIES.ID.`in`(facilityIds))
+              } else {
+                DSL.falseCondition()
+              }
+
+          DSL.multiset(
+                  DSL.select(FACILITIES.asterisk())
+                      .from(FACILITIES)
+                      .where(facilitiesCondition)
+                      .orderBy(FACILITIES.ID))
+              .convertFrom { result -> result.map { FacilityModel(it) } }
+        } else {
+          DSL.value(null as List<FacilityModel>?)
+        }
+
+    val siteFacilitiesMultiset =
+        if (depth.level >= FetchDepth.Facility.level) {
           DSL.multiset(
                   DSL.select(FACILITIES.asterisk())
                       .from(FACILITIES)
@@ -101,12 +123,12 @@ class OrganizationStore(
                           SITES.LOCATION.transformSrid(SRID.LONG_LAT)
                               .forMultiset()
                               .`as`(SITES.LOCATION),
-                          facilitiesMultiset)
+                          siteFacilitiesMultiset)
                       .from(SITES)
                       .where(SITES.PROJECT_ID.eq(PROJECTS.ID))
                       .orderBy(SITES.ID))
               .convertFrom { result ->
-                result.map { record -> SiteModel(record, facilitiesMultiset) }
+                result.map { record -> SiteModel(record, siteFacilitiesMultiset) }
               }
         } else {
           DSL.value(null as List<SiteModel>?)
@@ -151,11 +173,11 @@ class OrganizationStore(
                 .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
 
     return dslContext
-        .select(ORGANIZATIONS.asterisk(), projectsMultiset, totalUsersSubquery)
+        .select(ORGANIZATIONS.asterisk(), facilitiesMultiset, projectsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
         .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
         .orderBy(ORGANIZATIONS.ID)
-        .fetch { OrganizationModel(it, projectsMultiset, totalUsersSubquery) }
+        .fetch { OrganizationModel(it, facilitiesMultiset, projectsMultiset, totalUsersSubquery) }
   }
 
   /** Creates a new organization and makes the current user an owner. */

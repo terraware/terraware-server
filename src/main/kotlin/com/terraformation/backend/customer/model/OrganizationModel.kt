@@ -16,11 +16,13 @@ data class OrganizationModel(
     val countrySubdivisionCode: String? = null,
     val createdTime: Instant,
     val disabledTime: Instant? = null,
+    val facilities: List<FacilityModel>? = null,
     val projects: List<ProjectModel>? = null,
     val totalUsers: Int,
 ) {
   constructor(
       record: Record,
+      facilitiesMultiset: Field<List<FacilityModel>>?,
       projectsMultiset: Field<List<ProjectModel>?>,
       totalUsersSubquery: Field<Int>,
   ) : this(
@@ -30,6 +32,7 @@ data class OrganizationModel(
               ?: throw IllegalArgumentException("Created time is required"),
       description = record[ORGANIZATIONS.DESCRIPTION],
       disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
+      facilities = record[facilitiesMultiset],
       id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
       name = record[ORGANIZATIONS.NAME] ?: throw IllegalArgumentException("Name is required"),
       projects = record[projectsMultiset],
