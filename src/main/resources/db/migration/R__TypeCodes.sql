@@ -64,19 +64,6 @@ VALUES (1, 'Count'),
        (2, 'Weight')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO project_statuses (id, name)
-VALUES (1, 'Propagating'),
-       (2, 'Planting'),
-       (3, 'Completed/Monitoring')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO project_types (id, name)
-VALUES (1, 'Native Forest Restoration'),
-       (2, 'Agroforestry'),
-       (3, 'Silvopasture'),
-       (4, 'Sustainable Timber')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO germination_seed_types (id, name)
 VALUES (1, 'Fresh'),
        (2, 'Stored')
@@ -179,7 +166,6 @@ INSERT INTO notification_types (id, name, notification_criticality_id)
 VALUES (1, 'User Added to Organization', 1),
        (2, 'Facility Idle', 2),
        (3, 'Facility Alert Requested', 3),
-       (4, 'User Added to Project', 1),
        (5, 'Accession Scheduled for Drying', 1),
        (6, 'Accession Scheduled to End Drying', 1),
        (7, 'Accession Scheduled for Withdrawal', 1),

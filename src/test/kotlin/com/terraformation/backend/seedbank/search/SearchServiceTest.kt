@@ -14,7 +14,6 @@ import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProcessingMethod
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.SpeciesId
@@ -1588,8 +1587,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     private val usersPrefix = SearchFieldPrefix(tables.users)
 
     private val otherOrganizationId = OrganizationId(2)
-    private val sameOrgProjectId = ProjectId(11)
-    private val otherOrgProjectId = ProjectId(20)
     private val bothOrgsUserId = UserId(4)
     private val otherOrgUserId = UserId(5)
     private val apiClientUserId = UserId(6)
@@ -1606,9 +1603,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       insertOrganizationUser(bothOrgsUserId, role = Role.ADMIN)
       insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.ADMIN)
       insertOrganizationUser(otherOrgUserId, otherOrganizationId)
-
-      insertProject(sameOrgProjectId)
-      insertProject(otherOrgProjectId)
     }
 
     @Test
@@ -2696,8 +2690,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       // A facility in an org the user isn't in
       val otherFacilityId = FacilityId(2000)
       insertOrganization(2)
-      insertProject(20)
-      insertSite(200)
       insertFacility(otherFacilityId)
 
       accessionsDao.update(
