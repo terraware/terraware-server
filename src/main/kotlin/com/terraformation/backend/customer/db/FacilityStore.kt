@@ -63,7 +63,9 @@ class FacilityStore(
 
   /** Returns all the facilities the current user can access at a site. */
   fun fetchBySiteId(siteId: SiteId): List<FacilityModel> {
-    return if (currentUser().canListFacilities(siteId)) {
+    val organizationId =
+        parentStore.getOrganizationId(siteId) ?: throw SiteNotFoundException(siteId)
+    return if (currentUser().canListFacilities(organizationId)) {
       facilitiesDao.fetchBySiteId(siteId).map { it.toModel() }
     } else {
       emptyList()
@@ -84,10 +86,10 @@ class FacilityStore(
       maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
       createStorageLocations: Boolean = true,
   ): FacilityModel {
-    requirePermissions { createFacility(siteId) }
-
     val organizationId =
         parentStore.getOrganizationId(siteId) ?: throw SiteNotFoundException(siteId)
+
+    requirePermissions { createFacility(organizationId) }
 
     val row =
         FacilitiesRow(

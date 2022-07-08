@@ -172,13 +172,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createFacility() {
-    assertThrows<SiteNotFoundException> { requirements.createFacility(siteId) }
+    assertThrows<OrganizationNotFoundException> { requirements.createFacility(organizationId) }
 
-    grant { user.canReadSite(siteId) }
-    assertThrows<AccessDeniedException> { requirements.createFacility(siteId) }
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.createFacility(organizationId) }
 
-    grant { user.canCreateFacility(siteId) }
-    requirements.createFacility(siteId)
+    grant { user.canCreateFacility(organizationId) }
+    requirements.createFacility(organizationId)
   }
 
   @Test

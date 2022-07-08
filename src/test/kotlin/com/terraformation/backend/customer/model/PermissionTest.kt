@@ -228,6 +228,8 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeOrganizationSelf = true,
         createSpecies = true,
+        createFacility = true,
+        listFacilities = true,
     )
 
     permissions.expect(
@@ -243,8 +245,6 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *siteIds.forOrg1(),
-        createFacility = true,
-        listFacilities = true,
         readSite = true,
         updateSite = true,
         deleteSite = true,
@@ -326,6 +326,8 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeOrganizationSelf = true,
         createSpecies = true,
+        createFacility = true,
+        listFacilities = true,
     )
 
     permissions.expect(
@@ -361,6 +363,8 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser = true,
         removeOrganizationSelf = true,
         createSpecies = true,
+        createFacility = true,
+        listFacilities = true,
     )
 
     permissions.expect(
@@ -376,8 +380,6 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *siteIds.forOrg1(),
-        createFacility = true,
-        listFacilities = true,
         readSite = true,
         updateSite = true,
         deleteSite = true,
@@ -454,6 +456,7 @@ internal class PermissionTest : DatabaseTest() {
         listOrganizationUsers = true,
         removeOrganizationSelf = true,
         createSpecies = true,
+        listFacilities = true,
     )
 
     permissions.expect(
@@ -467,7 +470,6 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *siteIds.forOrg1(),
-        listFacilities = true,
         readSite = true,
     )
 
@@ -535,6 +537,7 @@ internal class PermissionTest : DatabaseTest() {
         listProjects = true,
         readOrganization = true,
         removeOrganizationSelf = true,
+        listFacilities = true,
     )
 
     permissions.expect(
@@ -546,7 +549,6 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *siteIds.forOrg1(),
-        listFacilities = true,
         readSite = true,
     )
 
@@ -613,6 +615,7 @@ internal class PermissionTest : DatabaseTest() {
         listProjects = true,
         readOrganization = true,
         removeOrganizationSelf = true,
+        listFacilities = true,
     )
 
     permissions.expect(
@@ -624,7 +627,6 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *siteIds.forOrg1(),
-        listFacilities = true,
         readSite = true,
     )
 
@@ -799,6 +801,8 @@ internal class PermissionTest : DatabaseTest() {
         removeOrganizationUser: Boolean = false,
         removeOrganizationSelf: Boolean = false,
         createSpecies: Boolean = false,
+        createFacility: Boolean = false,
+        listFacilities: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
         assertEquals(
@@ -841,6 +845,14 @@ internal class PermissionTest : DatabaseTest() {
             createSpecies,
             user.canCreateSpecies(organizationId),
             "Can create species in organization $organizationId")
+        assertEquals(
+            createFacility,
+            user.canCreateFacility(organizationId),
+            "Can create facility in organization $organizationId")
+        assertEquals(
+            listFacilities,
+            user.canListFacilities(organizationId),
+            "Can list facilities in organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
       }
@@ -881,17 +893,11 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg sites: SiteId,
-        createFacility: Boolean = false,
-        listFacilities: Boolean = false,
         readSite: Boolean = false,
         updateSite: Boolean = false,
         deleteSite: Boolean = false,
     ) {
       sites.forEach { siteId ->
-        assertEquals(
-            createFacility, user.canCreateFacility(siteId), "Can create site $siteId facility")
-        assertEquals(
-            listFacilities, user.canListFacilities(siteId), "Can list site $siteId facilities")
         assertEquals(readSite, user.canReadSite(siteId), "Can read site $siteId")
         assertEquals(updateSite, user.canUpdateSite(siteId), "Can update site $siteId")
         assertEquals(deleteSite, user.canDeleteSite(siteId), "Can delete site $siteId")

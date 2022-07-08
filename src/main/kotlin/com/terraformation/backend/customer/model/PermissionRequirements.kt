@@ -149,10 +149,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun createFacility(siteId: SiteId) {
-    if (!user.canCreateFacility(siteId)) {
-      readSite(siteId)
-      throw AccessDeniedException("No permission to create facilities in site $siteId")
+  fun createFacility(organizationId: OrganizationId) {
+    if (!user.canCreateFacility(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to create facilities in organization $organizationId")
     }
   }
 

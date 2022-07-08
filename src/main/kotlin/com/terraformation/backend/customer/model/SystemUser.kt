@@ -104,7 +104,7 @@ class SystemUser(
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
   override fun canCreateDeviceManager(): Boolean = true
-  override fun canCreateFacility(siteId: SiteId): Boolean = true
+  override fun canCreateFacility(organizationId: OrganizationId): Boolean = true
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
   override fun canCreateSite(projectId: ProjectId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
@@ -120,7 +120,7 @@ class SystemUser(
   override fun canImportGlobalSpeciesData(): Boolean = false
   override fun canListApiKeys(organizationId: OrganizationId): Boolean = true
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
-  override fun canListFacilities(siteId: SiteId): Boolean = true
+  override fun canListFacilities(organizationId: OrganizationId): Boolean = true
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
   override fun canListProjects(organizationId: OrganizationId): Boolean = true
   override fun canListSites(projectId: ProjectId): Boolean = true

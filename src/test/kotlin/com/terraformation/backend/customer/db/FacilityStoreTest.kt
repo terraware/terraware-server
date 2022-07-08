@@ -294,6 +294,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create throws exception if no permission to create facilities`() {
     every { user.canCreateFacility(any()) } returns false
+    every { user.canReadOrganization(any()) } returns true
 
     assertThrows<AccessDeniedException> { store.create(siteId, FacilityType.SeedBank, "Test") }
   }
