@@ -37,8 +37,10 @@ class FacilityStore(
     private val parentStore: ParentStore,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
-  /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
-  private val defaultMaxIdleMinutes = 30
+  companion object {
+    /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
+    const val DEFAULT_MAX_IDLE_MINUTES = 30
+  }
 
   private val log = perClassLogger()
 
@@ -79,7 +81,7 @@ class FacilityStore(
       type: FacilityType,
       name: String,
       description: String? = null,
-      maxIdleMinutes: Int = defaultMaxIdleMinutes,
+      maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
       createStorageLocations: Boolean = true,
   ): FacilityModel {
     requirePermissions { createFacility(siteId) }

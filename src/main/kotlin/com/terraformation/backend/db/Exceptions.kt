@@ -73,6 +73,9 @@ class OperationInProgressException(message: String) : RuntimeException(message) 
     get() = super.message!!
 }
 
+class OrganizationHasNoSitesException(val organizationId: OrganizationId) :
+    RuntimeException("Organization $organizationId has no sites")
+
 class OrganizationHasOtherUsersException(val organizationId: OrganizationId) :
     RuntimeException("Organization $organizationId has other users")
 
