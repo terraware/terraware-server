@@ -147,7 +147,6 @@ internal class EmailNotificationServiceTest {
   private val accessionId = AccessionId(13)
   private val accessionNumber = "202201010001"
 
-  private val projectRecipients = setOf("project1@terraware.io", "project2@terraware.io")
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 
   private val mimeMessageSlot = slot<MimeMessage>()
@@ -176,9 +175,6 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
     every { parentStore.getProjectId(facility.id) } returns project.id
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns
-        projectRecipients.toList()
-    every { projectStore.fetchEmailRecipients(project.id) } returns projectRecipients.toList()
     every { projectStore.fetchOneById(project.id) } returns project
     every { sender.createMimeMessage() } returns JavaMailSenderImpl().createMimeMessage()
     every { user.email } returns "user@test.com"
@@ -217,7 +213,7 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains(subject)
     assertBodyContains(body, "Alert body", hasTextHtml = false)
     assertBodyContains(facility.name, "Facility name", hasTextHtml = false)
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -225,7 +221,7 @@ internal class EmailNotificationServiceTest {
     service.on(FacilityIdleEvent(facility.id))
 
     assertBodyContains(webAppUrls.fullFacilityMonitoring(organization.id, facility.id), "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -235,7 +231,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(devicesRow.name!!, "Device name")
     assertBodyContains(
         webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow), "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -245,7 +241,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(automation.name, "Automation name")
     assertBodyContains(
         webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow), "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -255,8 +251,8 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(devicesRow.name!!, "Device name")
     assertBodyContains(
         webAppUrls.fullFacilityMonitoring(organization.id, facility.id, devicesRow), "Link URL")
-    assertEquals(projectRecipients, recipients, "Recipients")
-    assertRecipientsEqual(projectRecipients)
+    assertEquals(organizationRecipients, recipients, "Recipients")
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -288,7 +284,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(facility.name, "Facility name")
     assertBodyContains(accessionNumber, "Accession number")
     assertBodyContains(webAppUrls.fullAccession(accessionId, organization.id), "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -299,7 +295,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(facility.name, "Facility name")
     assertBodyContains(accessionNumber, "Accession number")
     assertBodyContains(webAppUrls.fullAccession(accessionId, organization.id), "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -315,7 +311,7 @@ internal class EmailNotificationServiceTest {
             accessionId, GerminationTestType.Nursery, organization.id),
         "Link URL")
     assertBodyContains("nursery", "Test type")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -326,7 +322,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(facility.name, "Facility name")
     assertBodyContains(accessionNumber, "Accession number")
     assertBodyContains(webAppUrls.fullAccession(accessionId, organization.id), "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -342,7 +338,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(
         webAppUrls.fullAccessions(organization.id, facility.id, AccessionState.AwaitingCheckIn),
         "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -357,7 +353,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(
         webAppUrls.fullAccessions(organization.id, facility.id, AccessionState.Processed),
         "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
@@ -370,14 +366,16 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(numAccessions, "Number of accessions")
     assertBodyContains(
         webAppUrls.fullAccessions(organization.id, facility.id, AccessionState.Drying), "Link URL")
-    assertRecipientsEqual(projectRecipients)
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
   fun `accession daily task emails accumulate until processing is finished`() {
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("1@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("1@test.com")
     service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("2@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("2@test.com")
     service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
 
     verify(exactly = 0) { sender.send(any()) }
@@ -389,11 +387,13 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `accession daily task emails are discarded if processing fails`() {
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("1@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("1@test.com")
     service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
     service.on(DateNotificationTask.FinishedEvent())
 
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("2@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("2@test.com")
     service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
     service.on(DateNotificationTask.SucceededEvent())
 
@@ -402,9 +402,11 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `accession state summary emails accumulate until processing is finished`() {
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("1@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("1@test.com")
     service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("2@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("2@test.com")
     service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
 
     verify(exactly = 0) { sender.send(any()) }
@@ -416,10 +418,12 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `accession state summary emails are discarded if processing fails`() {
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("1@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("1@test.com")
     service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
     service.on(StateSummaryNotificationTask.FinishedEvent())
-    every { projectStore.fetchEmailRecipients(project.id, any()) } returns listOf("2@test.com")
+    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
+        listOf("2@test.com")
     service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
     service.on(StateSummaryNotificationTask.SucceededEvent())
 

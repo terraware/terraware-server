@@ -203,7 +203,7 @@ class AdminController(
     val site = siteStore.fetchOneById(facility.siteId)
     val project = projectStore.fetchOneById(site.projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
-    val recipients = projectStore.fetchEmailRecipients(project.id)
+    val recipients = organizationStore.fetchEmailRecipients(project.organizationId)
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
     val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
     val devices = deviceStore.fetchByFacilityId(facilityId)
