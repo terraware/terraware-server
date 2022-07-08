@@ -321,6 +321,8 @@ data class OrganizationPayload(
     val countrySubdivisionCode: String?,
     val createdTime: Instant,
     val description: String?,
+    @Schema(description = "This organization's facilities. Only included if depth is \"Facility\".")
+    val facilities: List<FacilityPayload>?,
     val id: OrganizationId,
     val name: String,
     @Schema(description = "This organization's projects. Omitted if depth is \"Organization\".")
@@ -341,6 +343,7 @@ data class OrganizationPayload(
       model.countrySubdivisionCode,
       model.createdTime.truncatedTo(ChronoUnit.SECONDS),
       model.description,
+      model.facilities?.map { FacilityPayload(it) },
       model.id,
       model.name,
       model.projects?.map { ProjectPayload(it) },

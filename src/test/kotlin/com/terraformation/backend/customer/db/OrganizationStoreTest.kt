@@ -96,6 +96,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           createdTime = Instant.EPOCH,
           countryCode = "US",
           countrySubdivisionCode = "US-HI",
+          facilities = listOf(facilityModel),
           id = organizationId,
           name = "Organization $organizationId",
           projects = listOf(projectModel),
@@ -118,6 +119,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSite(any()) } returns true
     every { user.canReadFacility(any()) } returns true
 
+    every { user.facilityRoles } returns mapOf(facilityId to Role.OWNER)
     every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
 
@@ -148,18 +150,21 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(
             organizationModel.copy(
+                facilities = null,
                 projects =
                     listOf(projectModel.copy(sites = listOf(siteModel.copy(facilities = null)))))),
         store.fetchAll(OrganizationStore.FetchDepth.Site),
         "Fetch depth = Site")
 
     assertEquals(
-        listOf(organizationModel.copy(projects = listOf(projectModel.copy(sites = null)))),
+        listOf(
+            organizationModel.copy(
+                facilities = null, projects = listOf(projectModel.copy(sites = null)))),
         store.fetchAll(OrganizationStore.FetchDepth.Project),
         "Fetch depth = Project")
 
     assertEquals(
-        listOf(organizationModel.copy(projects = null)),
+        listOf(organizationModel.copy(facilities = null, projects = null)),
         store.fetchAll(OrganizationStore.FetchDepth.Organization),
         "Fetch depth = Organization")
   }
@@ -173,18 +178,20 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         organizationModel.copy(
+            facilities = null,
             projects =
                 listOf(projectModel.copy(sites = listOf(siteModel.copy(facilities = null))))),
         store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Site),
         "Fetch depth = Site")
 
     assertEquals(
-        organizationModel.copy(projects = listOf(projectModel.copy(sites = null))),
+        organizationModel.copy(
+            facilities = null, projects = listOf(projectModel.copy(sites = null))),
         store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Project),
         "Fetch depth = Project")
 
     assertEquals(
-        organizationModel.copy(projects = null),
+        organizationModel.copy(facilities = null, projects = null),
         store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization),
         "Fetch depth = Organization")
   }
@@ -218,21 +225,23 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchById excludes projects the user is not in`() {
+    every { user.facilityRoles } returns emptyMap()
     every { user.projectRoles } returns emptyMap()
 
-    val expected = organizationModel.copy(projects = emptyList())
+    val expected = organizationModel.copy(facilities = emptyList(), projects = emptyList())
 
-    val actual = store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Project)
+    val actual = store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Facility)
     assertEquals(expected, actual)
   }
 
   @Test
   fun `fetchAll excludes projects the user is not in`() {
+    every { user.facilityRoles } returns emptyMap()
     every { user.projectRoles } returns emptyMap()
 
-    val expected = listOf(organizationModel.copy(projects = emptyList()))
+    val expected = listOf(organizationModel.copy(facilities = emptyList(), projects = emptyList()))
 
-    val actual = store.fetchAll(OrganizationStore.FetchDepth.Project)
+    val actual = store.fetchAll(OrganizationStore.FetchDepth.Facility)
     assertEquals(expected, actual)
   }
 
