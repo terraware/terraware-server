@@ -10,7 +10,6 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
-import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
@@ -94,7 +93,6 @@ internal class EmailNotificationServiceTest {
           facilityStore,
           organizationStore,
           parentStore,
-          projectStore,
           userStore,
           webAppUrls)
 
@@ -262,17 +260,6 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(organization.name, "Organization name")
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(webAppUrls.fullOrganizationHome(organization.id), "Link URL")
-    assertRecipientsEqual(setOf(user.email))
-  }
-
-  @Test
-  fun userAddedToProject() {
-    service.on(UserAddedToProjectEvent(user.userId, project.id, adminUser.userId))
-
-    assertBodyContains(organization.name, "Organization name")
-    assertBodyContains(project.name, "Project name")
-    assertBodyContains(adminUser.fullName!!, "Admin name")
-    assertBodyContains(webAppUrls.fullOrganizationProject(project.id, organization.id), "Link URL")
     assertRecipientsEqual(setOf(user.email))
   }
 

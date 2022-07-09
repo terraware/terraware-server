@@ -5,11 +5,9 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
-import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.FacilityId
@@ -45,7 +43,6 @@ class AppNotificationService(
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
-    private val projectStore: ProjectStore,
     private val userStore: UserStore,
     private val messages: Messages,
     private val webAppUrls: WebAppUrls,
@@ -126,29 +123,6 @@ class AppNotificationService(
         null,
         message,
         organizationHomeUrl,
-        organization.id)
-  }
-
-  @EventListener
-  fun on(event: UserAddedToProjectEvent) {
-    userStore.fetchOneById(event.addedBy)
-    val user = userStore.fetchOneById(event.userId)
-    val project = projectStore.fetchOneById(event.projectId)
-    val organization = organizationStore.fetchOneById(project.organizationId)
-
-    val organizationProjectUrl = webAppUrls.organizationProject(event.projectId)
-    val message = messages.userAddedToProjectNotification(project.name)
-
-    log.info(
-        "Creating app notification for user ${event.userId} being added to a project " +
-            "${event.projectId}.")
-
-    insert(
-        NotificationType.UserAddedtoProject,
-        user.userId,
-        organization.id,
-        message,
-        organizationProjectUrl,
         organization.id)
   }
 

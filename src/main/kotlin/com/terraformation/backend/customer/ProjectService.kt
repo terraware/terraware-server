@@ -1,21 +1,17 @@
 package com.terraformation.backend.customer
 
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
-import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
-import org.springframework.context.ApplicationEventPublisher
 
 /** Project-related business logic that needs to interact with multiple services. */
 @ManagedBean
 class ProjectService(
     private val dslContext: DSLContext,
-    private val publisher: ApplicationEventPublisher,
     private val permissionStore: PermissionStore,
     private val projectStore: ProjectStore,
 ) {
@@ -30,10 +26,6 @@ class ProjectService(
           "Cannot add user that does not belong to project's organization")
     }
 
-    dslContext.transaction { _ ->
-      projectStore.addUser(projectId, userId)
-
-      publisher.publishEvent(UserAddedToProjectEvent(userId, projectId, currentUser().userId))
-    }
+    dslContext.transaction { _ -> projectStore.addUser(projectId, userId) }
   }
 }
