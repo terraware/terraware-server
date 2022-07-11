@@ -112,7 +112,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
 
     insertOrganizationUser(role = Role.MANAGER)
-    insertProjectUser()
 
     val now = Instant.now()
 
@@ -1610,11 +1609,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       insertProject(sameOrgProjectId)
       insertProject(otherOrgProjectId)
-
-      insertProjectUser(bothOrgsUserId, projectId)
-      insertProjectUser(bothOrgsUserId, sameOrgProjectId)
-      insertProjectUser(bothOrgsUserId, otherOrgProjectId)
-      insertProjectUser(otherOrgUserId, otherOrgProjectId)
     }
 
     @Test

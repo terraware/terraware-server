@@ -21,8 +21,6 @@ import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
@@ -186,17 +184,6 @@ class OrganizationStore(
   }
 
   private fun queryOrganizationUsers(condition: Condition): List<OrganizationUserModel> {
-    val projectIdsField =
-        DSL.array(
-            DSL.select(PROJECT_USERS.PROJECT_ID)
-                .from(PROJECT_USERS)
-                .join(PROJECTS)
-                .on(PROJECT_USERS.PROJECT_ID.eq(PROJECTS.ID))
-                .where(PROJECT_USERS.USER_ID.eq(USERS.ID))
-                .and(PROJECT_USERS.PROJECT_ID.eq(PROJECTS.ID))
-                .and(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID)),
-        )
-
     return dslContext
         .select(
             USERS.ID,
@@ -207,7 +194,6 @@ class OrganizationStore(
             USERS.CREATED_TIME,
             ORGANIZATION_USERS.ORGANIZATION_ID,
             ORGANIZATION_USERS.ROLE_ID,
-            projectIdsField,
         )
         .from(ORGANIZATION_USERS)
         .join(USERS)
@@ -224,7 +210,6 @@ class OrganizationStore(
 
           val firstName = record[USERS.FIRST_NAME]
           val lastName = record[USERS.LAST_NAME]
-          val projectIds = record[projectIdsField]?.toList()?.filterNotNull() ?: emptyList()
           val role = record[ORGANIZATION_USERS.ROLE_ID]?.let { Role.of(it) }
 
           if (userId != null &&
@@ -242,7 +227,6 @@ class OrganizationStore(
                 createdTime,
                 organizationId,
                 role,
-                projectIds,
             )
           } else {
             log.error("Missing required fields for $userId: $record")
@@ -302,8 +286,7 @@ class OrganizationStore(
   }
 
   /**
-   * Removes a user from an organization. Also removes the user from all the organization's
-   * projects.
+   * Removes a user from an organization.
    *
    * The user may still be referenced in the organization's data. For example, if they uploaded
    * photos, `photos.user_id` will still refer to them.
@@ -323,16 +306,6 @@ class OrganizationStore(
       if (!allowRemovingLastOwner) {
         ensureOtherOwners(organizationId, userId)
       }
-
-      dslContext
-          .deleteFrom(PROJECT_USERS)
-          .where(PROJECT_USERS.USER_ID.eq(userId))
-          .and(
-              PROJECT_USERS.PROJECT_ID.`in`(
-                  DSL.select(PROJECTS.ID)
-                      .from(PROJECTS)
-                      .where(PROJECTS.ORGANIZATION_ID.eq(organizationId))))
-          .execute()
 
       val rowsDeleted =
           dslContext

@@ -23,7 +23,6 @@ import com.terraformation.backend.db.tables.daos.NotificationsDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
-import com.terraformation.backend.db.tables.daos.ProjectUsersDao
 import com.terraformation.backend.db.tables.daos.ProjectsDao
 import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
@@ -43,7 +42,6 @@ import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
-import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
@@ -218,7 +216,6 @@ abstract class DatabaseTest {
   protected val photosDao: PhotosDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val projectTypeSelectionsDao: ProjectTypeSelectionsDao by lazyDao()
-  protected val projectUsersDao: ProjectUsersDao by lazyDao()
   protected val sitesDao: SitesDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
@@ -492,25 +489,6 @@ abstract class DatabaseTest {
           .set(MODIFIED_TIME, Instant.EPOCH)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(ROLE_ID, role.id)
-          .set(USER_ID, userId.toIdWrapper { UserId(it) })
-          .execute()
-    }
-  }
-
-  /** Adds a user to a project. */
-  fun insertProjectUser(
-      userId: Any = currentUser().userId,
-      projectId: Any = this.projectId,
-      createdBy: UserId = currentUser().userId,
-  ) {
-    with(PROJECT_USERS) {
-      dslContext
-          .insertInto(PROJECT_USERS)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
-          .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
           .set(USER_ID, userId.toIdWrapper { UserId(it) })
           .execute()
     }

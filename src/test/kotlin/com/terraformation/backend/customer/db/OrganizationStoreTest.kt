@@ -19,7 +19,6 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
-import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
@@ -298,8 +297,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 UserType.Individual,
                 clock.instant(),
                 organizationId,
-                Role.ADMIN,
-                emptyList()),
+                Role.ADMIN),
             OrganizationUserModel(
                 UserId(101),
                 "user2@x.com",
@@ -308,8 +306,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 UserType.SuperAdmin,
                 clock.instant(),
                 organizationId,
-                Role.CONTRIBUTOR,
-                listOf(projectId, otherProjectId)),
+                Role.CONTRIBUTOR),
         )
 
     insertProject(otherProjectId)
@@ -323,8 +320,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             UserType.APIClient,
             clock.instant(),
             organizationId,
-            Role.CONTRIBUTOR,
-            emptyList()))
+            Role.CONTRIBUTOR))
 
     val actual = store.fetchUsers(organizationId)
 
@@ -359,8 +355,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             UserType.Individual,
             clock.instant(),
             organizationId,
-            Role.CONTRIBUTOR,
-            emptyList())
+            Role.CONTRIBUTOR)
     configureUser(model)
 
     val expected = listOf(model)
@@ -382,8 +377,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 UserType.APIClient,
                 clock.instant(),
                 organizationId,
-                Role.CONTRIBUTOR,
-                emptyList()))
+                Role.CONTRIBUTOR))
 
     insertProject(otherProjectId)
     expected.forEach { configureUser(it) }
@@ -396,8 +390,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             UserType.Individual,
             clock.instant(),
             organizationId,
-            Role.ADMIN,
-            emptyList()),
+            Role.ADMIN),
     )
 
     val actual = store.fetchApiClients(organizationId)
@@ -438,27 +431,15 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `removeUser removes user from requested organization and projects`() {
-    val model = organizationUserModel(projectIds = listOf(projectId))
+  fun `removeUser removes user from requested organization`() {
+    val model = organizationUserModel()
     configureUser(model)
 
     val otherOrgId = OrganizationId(5)
-    val otherProjectId = ProjectId(50)
     insertOrganization(otherOrgId)
-    insertProject(otherProjectId, otherOrgId)
     insertOrganizationUser(model.userId, otherOrgId)
-    insertProjectUser(model.userId, otherProjectId)
 
     store.removeUser(organizationId, model.userId)
-
-    val projects =
-        dslContext
-            .select(PROJECT_USERS.PROJECT_ID)
-            .from(PROJECT_USERS)
-            .where(PROJECT_USERS.USER_ID.eq(model.userId))
-            .fetch(PROJECT_USERS.PROJECT_ID)
-    assertEquals(
-        listOf(otherProjectId), projects, "User should still belong to project in other org")
 
     assertThrows<UserNotFoundException> { store.fetchUser(organizationId, model.userId) }
     assertNotNull(store.fetchUser(otherOrgId, model.userId))
@@ -567,15 +548,13 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       createdTime: Instant = clock.instant(),
       organizationId: OrganizationId = this.organizationId,
       role: Role = Role.CONTRIBUTOR,
-      projectIds: List<ProjectId> = emptyList(),
   ): OrganizationUserModel {
     return OrganizationUserModel(
-        userId, email, firstName, lastName, userType, createdTime, organizationId, role, projectIds)
+        userId, email, firstName, lastName, userType, createdTime, organizationId, role)
   }
 
   private fun configureUser(model: OrganizationUserModel) {
     insertUser(model.userId, null, model.email, model.firstName, model.lastName, model.userType)
     insertOrganizationUser(model.userId, model.organizationId, model.role)
-    model.projectIds.forEach { insertProjectUser(model.userId, it) }
   }
 }
