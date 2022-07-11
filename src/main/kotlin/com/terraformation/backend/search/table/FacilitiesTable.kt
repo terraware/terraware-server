@@ -53,8 +53,7 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
 
   override fun conditionForScope(scope: SearchScope): Condition? {
     return when (scope) {
-      is OrganizationIdScope ->
-          FACILITIES.sites().projects().ORGANIZATION_ID.eq(scope.organizationId)
+      is OrganizationIdScope -> FACILITIES.ORGANIZATION_ID.eq(scope.organizationId)
       is FacilityIdScope -> FACILITIES.ID.eq(scope.facilityId)
     }
   }

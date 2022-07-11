@@ -72,8 +72,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { realmResource.users() } returns mockk()
 
     parentStore = ParentStore(dslContext)
-    facilityStore =
-        FacilityStore(clock, dslContext, facilitiesDao, parentStore, storageLocationsDao)
+    facilityStore = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
     siteStore = SiteStore(clock, dslContext, parentStore, sitesDao)

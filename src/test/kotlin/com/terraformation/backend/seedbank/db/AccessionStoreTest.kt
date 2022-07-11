@@ -22,10 +22,8 @@ import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProcessingMethod
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.StorageCondition
@@ -1582,13 +1580,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update does not write to database if facility id to update does not belong to same organization as previous facility`() {
     val anotherOrgId = OrganizationId(5)
-    val anotherProjectId = ProjectId(50)
-    val anotherSiteId = SiteId(500)
     val facilityIdInAnotherOrg = FacilityId(5000)
     insertOrganization(anotherOrgId, "dev-2")
-    insertProject(anotherProjectId, anotherOrgId)
-    insertSite(anotherSiteId, anotherProjectId)
-    insertFacility(facilityIdInAnotherOrg, anotherSiteId)
+    insertFacility(facilityIdInAnotherOrg, anotherOrgId)
 
     every { user.canUpdateAccession(any()) } returns true
     val initial = store.create(AccessionModel(facilityId = facilityId))

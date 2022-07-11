@@ -61,9 +61,6 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getFacilityId(storageLocationId: StorageLocationId): FacilityId? =
       fetchFieldById(storageLocationId, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID)
 
-  fun getProjectId(facilityId: FacilityId): ProjectId? =
-      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.sites().PROJECT_ID)
-
   fun getProjectId(siteId: SiteId): ProjectId? = fetchFieldById(siteId, SITES.ID, SITES.PROJECT_ID)
 
   fun getOrganizationId(projectId: ProjectId): OrganizationId? =
@@ -73,7 +70,7 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(siteId, SITES.ID, SITES.projects().ORGANIZATION_ID)
 
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
-      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.sites().projects().ORGANIZATION_ID)
+      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)
 
   fun getOrganizationId(speciesId: SpeciesId): OrganizationId? =
       fetchFieldById(speciesId, SPECIES.ID, SPECIES.ORGANIZATION_ID)
@@ -82,7 +79,7 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
 
   fun getOrganizationId(accessionId: AccessionId): OrganizationId {
-    return getOrganizationId(getProjectId(accessionId))
+    return getFacilityId(accessionId)?.let { getOrganizationId(it) }
         ?: throw AccessionNotFoundException(accessionId)
   }
 
@@ -102,11 +99,6 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
-
-  private fun getProjectId(accessionId: AccessionId): ProjectId {
-    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
-    return getProjectId(facilityId) ?: throw FacilityNotFoundException(facilityId)
-  }
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
