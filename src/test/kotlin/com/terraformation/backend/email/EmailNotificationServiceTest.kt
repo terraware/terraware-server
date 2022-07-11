@@ -25,7 +25,6 @@ import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
@@ -119,7 +118,6 @@ internal class EmailNotificationServiceTest {
           id = FacilityId(123),
           modifiedTime = Instant.EPOCH,
           organizationId = organization.id,
-          siteId = SiteId(1),
           name = "Test Facility",
           type = FacilityType.SeedBank,
           lastTimeseriesTime = Instant.EPOCH,
@@ -172,7 +170,6 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getFacilityName(accessionId) } returns facility.name
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
-    every { parentStore.getProjectId(facility.id) } returns project.id
     every { projectStore.fetchOneById(project.id) } returns project
     every { sender.createMimeMessage() } returns JavaMailSenderImpl().createMimeMessage()
     every { user.email } returns "user@test.com"

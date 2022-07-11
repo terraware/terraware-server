@@ -11,8 +11,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
@@ -35,7 +33,6 @@ class FacilityStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val facilitiesDao: FacilitiesDao,
-    private val parentStore: ParentStore,
     private val storageLocationsDao: StorageLocationsDao,
 ) {
   companion object {
@@ -80,16 +77,13 @@ class FacilityStore(
    * the site.
    */
   fun create(
-      siteId: SiteId,
+      organizationId: OrganizationId,
       type: FacilityType,
       name: String,
       description: String? = null,
       maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
       createStorageLocations: Boolean = true,
   ): FacilityModel {
-    val organizationId =
-        parentStore.getOrganizationId(siteId) ?: throw SiteNotFoundException(siteId)
-
     requirePermissions { createFacility(organizationId) }
 
     val row =
@@ -103,7 +97,6 @@ class FacilityStore(
             modifiedTime = clock.instant(),
             name = name,
             organizationId = organizationId,
-            siteId = siteId,
             typeId = type,
         )
 

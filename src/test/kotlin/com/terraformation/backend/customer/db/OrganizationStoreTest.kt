@@ -54,7 +54,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           modifiedTime = Instant.EPOCH,
           name = "Facility $facilityId",
           organizationId = organizationId,
-          siteId = siteId,
           type = FacilityType.SeedBank)
   private val organizationModel =
       OrganizationModel(

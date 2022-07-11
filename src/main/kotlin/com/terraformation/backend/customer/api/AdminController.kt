@@ -3,7 +3,6 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.FacilityService
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.UserStore
@@ -81,7 +80,6 @@ class AdminController(
     private val deviceStore: DeviceStore,
     private val deviceTemplatesDao: DeviceTemplatesDao,
     private val dslContext: DSLContext,
-    private val facilityService: FacilityService,
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
     private val organizationStore: OrganizationStore,
@@ -409,7 +407,7 @@ class AdminController(
       return organization(organizationId)
     }
 
-    facilityService.create(organizationId, type, name)
+    facilityStore.create(organizationId, type, name)
 
     redirectAttributes.successMessage = "Facility created."
 

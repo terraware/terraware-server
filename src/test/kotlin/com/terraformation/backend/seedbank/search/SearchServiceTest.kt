@@ -1177,8 +1177,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes values from accessions the user has permission to view`() {
-      insertProject(11)
-      insertSite(110)
       insertFacility(1100)
 
       accessionsDao.insert(
@@ -1205,8 +1203,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       every { user.facilityRoles } returns
           mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
 
-      insertProject(11)
-      insertSite(110)
       insertFacility(1100)
 
       accessionsDao.insert(
@@ -1294,8 +1290,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes storage locations the user has permission to view`() {
-      insertProject(11)
-      insertSite(110)
       insertFacility(1100)
 
       storageLocationsDao.insert(
@@ -1330,8 +1324,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes accession values the user has permission to view`() {
-      insertProject(11)
-      insertSite(110)
       insertFacility(1100)
 
       accessionsDao.insert(
@@ -1357,8 +1349,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `only includes child table values the user has permission to view`() {
       val hiddenAccessionId = AccessionId(1100)
 
-      insertProject(11)
-      insertSite(110)
       insertFacility(1100)
 
       accessionsDao.insert(
@@ -1410,20 +1400,16 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               FacilityId(1100) to Role.CONTRIBUTOR,
               FacilityId(2200) to Role.OWNER)
 
-      insertProject(11)
-      insertSite(110)
       insertFacility(1100)
 
       val otherOrganizationId = OrganizationId(5)
       insertOrganization(otherOrganizationId)
-      insertProject(22, otherOrganizationId)
-      insertSite(220, 22)
-      insertFacility(2200, 220)
+      insertFacility(2200, otherOrganizationId)
 
       accessionsDao.insert(
           AccessionsRow(
               id = AccessionId(1100),
-              number = "OtherProject",
+              number = "OtherFacility",
               stateId = AccessionState.Processed,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -1433,7 +1419,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           ),
           AccessionsRow(
               id = AccessionId(2200),
-              number = "OtherProject22",
+              number = "OtherOrg",
               stateId = AccessionState.Processed,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -1442,8 +1428,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               modifiedTime = Instant.now(),
           ))
 
-      val expectedScopedOrg = listOf("ABCDEFG", "OtherProject", "XYZ")
-      val expectedScopedOtherOrg = listOf("OtherProject22")
+      val expectedScopedOrg = listOf("ABCDEFG", "OtherFacility", "XYZ")
+      val expectedScopedOtherOrg = listOf("OtherOrg")
 
       assertEquals(
           expectedScopedOrg,
@@ -1464,15 +1450,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               FacilityId(1100) to Role.CONTRIBUTOR,
               FacilityId(2200) to Role.OWNER)
 
-      insertProject(11)
-      insertSite(110)
       insertFacility(1100)
 
       val otherOrganizationId = OrganizationId(5)
       insertOrganization(otherOrganizationId)
-      insertProject(22, otherOrganizationId)
-      insertSite(220, 22)
-      insertFacility(2200, 220)
+      insertFacility(2200)
 
       accessionsDao.insert(
           AccessionsRow(
@@ -1517,14 +1499,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   fun `search only includes accessions at facilities the user has permission to view`() {
     // A facility in an org the user isn't in
     insertOrganization(2)
-    insertProject(20)
-    insertSite(200)
     insertFacility(2000)
-
-    // A facility in a project the user isn't in (but in an org they're in)
-    insertProject(11)
-    insertSite(110)
-    insertFacility(1100)
 
     accessionsDao.insert(
         AccessionsRow(
@@ -1534,18 +1509,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             createdBy = user.userId,
             createdTime = Instant.EPOCH,
             facilityId = FacilityId(2000),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
-
-    accessionsDao.insert(
-        AccessionsRow(
-            id = AccessionId(1100),
-            number = "OtherProject",
-            stateId = AccessionState.Processed,
-            createdBy = user.userId,
-            createdTime = Instant.EPOCH,
-            facilityId = FacilityId(1100),
             modifiedBy = user.userId,
             modifiedTime = Instant.now(),
         ))
@@ -1589,8 +1552,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     every { user.facilityRoles } returns
         mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
 
-    insertProject(11)
-    insertSite(110)
     insertFacility(1100)
 
     accessionsDao.insert(
@@ -2768,8 +2729,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       // A facility in an org the user isn't in
       val otherFacilityId = FacilityId(2000)
       insertOrganization(2)
-      insertProject(20)
-      insertSite(200)
       insertFacility(otherFacilityId)
 
       accessionsDao.update(

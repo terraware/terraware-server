@@ -77,7 +77,7 @@ class FacilitiesController(
       @RequestBody payload: CreateFacilityRequestPayload
   ): CreateFacilityResponsePayload {
     val model =
-        facilityService.create(
+        facilityStore.create(
             payload.organizationId, payload.type, payload.name, payload.description)
 
     return CreateFacilityResponsePayload(model.id)

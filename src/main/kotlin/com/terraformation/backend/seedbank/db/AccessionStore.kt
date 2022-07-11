@@ -609,7 +609,7 @@ class AccessionStore(
 
   fun countActive(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
     requirePermissions { readOrganization(organizationId) }
-    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
     return countActive(condition, asOf)
   }
 
@@ -648,14 +648,14 @@ class AccessionStore(
   ): Int {
     requirePermissions { readOrganization(organizationId) }
 
-    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
     return countInState(condition, state, sinceAfter, sinceBefore)
   }
 
   fun countInState(organizationId: OrganizationId, state: AccessionState): Int {
     requirePermissions { readOrganization(organizationId) }
 
-    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
     return countInState(condition, state)
   }
 
@@ -669,7 +669,7 @@ class AccessionStore(
   fun countFamilies(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
     requirePermissions { readOrganization(organizationId) }
 
-    val condition = ACCESSIONS.facilities().sites().projects().ORGANIZATION_ID.eq(organizationId)
+    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
     return countFamilies(condition, asOf)
   }
 

@@ -5,7 +5,6 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.tables.references.FACILITIES
 import java.time.Instant
@@ -19,7 +18,6 @@ data class FacilityModel(
     val modifiedTime: Instant,
     val name: String,
     val organizationId: OrganizationId,
-    val siteId: SiteId,
     val type: FacilityType,
     val lastTimeseriesTime: Instant?,
     val maxIdleMinutes: Int,
@@ -37,7 +35,6 @@ data class FacilityModel(
       record[FACILITIES.NAME] ?: throw IllegalArgumentException("Name is required"),
       record[FACILITIES.ORGANIZATION_ID]
           ?: throw IllegalArgumentException("Organization is required"),
-      record[FACILITIES.SITE_ID] ?: throw IllegalArgumentException("Site is required"),
       record[FACILITIES.TYPE_ID] ?: throw IllegalArgumentException("Type is required"),
       record[FACILITIES.LAST_TIMESERIES_TIME],
       record[FACILITIES.MAX_IDLE_MINUTES]
@@ -66,7 +63,6 @@ fun FacilitiesRow.toModel(): FacilityModel {
       modifiedTime ?: throw IllegalArgumentException("Modified time is required"),
       name ?: throw IllegalArgumentException("Name is required"),
       organizationId ?: throw IllegalArgumentException("Organization is required"),
-      siteId ?: throw IllegalArgumentException("Site is required"),
       typeId ?: throw IllegalArgumentException("Type is required"),
       lastTimeseriesTime,
       maxIdleMinutes ?: throw IllegalArgumentException("Max idle minutes is required"))
