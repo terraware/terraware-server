@@ -1,23 +1,17 @@
 package com.terraformation.backend.customer
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
-import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationDeletedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
-import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
-import com.terraformation.backend.db.tables.pojos.SitesRow
-import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -27,12 +21,9 @@ import org.springframework.context.ApplicationEventPublisher
 @ManagedBean
 class OrganizationService(
     private val dslContext: DSLContext,
-    private val facilityStore: FacilityStore,
-    private val messages: Messages,
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
     private val publisher: ApplicationEventPublisher,
-    private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
@@ -65,21 +56,6 @@ class OrganizationService(
           UserAddedToOrganizationEvent(user.userId, organizationId, currentUser().userId))
 
       user.userId
-    }
-  }
-
-  fun createOrganization(row: OrganizationsRow, createSeedBank: Boolean): OrganizationModel {
-    return dslContext.transactionResult { _ ->
-      val orgModel = organizationStore.createWithAdmin(row)
-      val name = messages.seedBankDefaultName()
-
-      if (createSeedBank) {
-        val projectModel =
-            projectStore.create(orgModel.id, name, hidden = true, organizationWide = true)
-        siteStore.create(SitesRow(projectId = projectModel.id, name = name))
-      }
-
-      orgModel
     }
   }
 
