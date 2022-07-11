@@ -146,8 +146,7 @@ class OrganizationsController(
       throw BadRequestException("Field value has incorrect format: email")
     }
 
-    val userId =
-        organizationService.addUser(payload.email, organizationId, payload.role, emptyList())
+    val userId = organizationService.addUser(payload.email, organizationId, payload.role)
     return CreateOrganizationUserResponsePayload(userId)
   }
 

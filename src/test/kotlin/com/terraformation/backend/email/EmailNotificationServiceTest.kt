@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
@@ -14,7 +13,6 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
-import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
@@ -24,7 +22,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
@@ -66,7 +63,6 @@ internal class EmailNotificationServiceTest {
   private val facilityStore: FacilityStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
-  private val projectStore: ProjectStore = mockk()
   private val sender: EmailSender = mockk()
   private val user: IndividualUser = mockk()
   private val userStore: UserStore = mockk()
@@ -81,7 +77,7 @@ internal class EmailNotificationServiceTest {
       }
 
   private val emailService =
-      EmailService(config, freeMarkerConfig, organizationStore, parentStore, projectStore, sender)
+      EmailService(config, freeMarkerConfig, organizationStore, parentStore, sender)
 
   private val service =
       EmailNotificationService(
@@ -98,17 +94,6 @@ internal class EmailNotificationServiceTest {
   private val organization =
       OrganizationModel(
           OrganizationId(99), "Test Organization", createdTime = Instant.EPOCH, totalUsers = 1)
-  private val project =
-      ProjectModel(
-          createdTime = Instant.EPOCH,
-          description = null,
-          hidden = false,
-          id = ProjectId(57),
-          organizationId = organization.id,
-          organizationWide = false,
-          name = "Test Project",
-          startDate = null,
-          status = null)
   private val facility: FacilityModel =
       FacilityModel(
           connectionState = FacilityConnectionState.Configured,
@@ -169,7 +154,6 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getFacilityName(accessionId) } returns facility.name
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
-    every { projectStore.fetchOneById(project.id) } returns project
     every { sender.createMimeMessage() } returns JavaMailSenderImpl().createMimeMessage()
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true

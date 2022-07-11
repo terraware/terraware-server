@@ -3,7 +3,6 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -34,7 +33,6 @@ class EmailService(
     private val freeMarkerConfig: Configuration,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
-    private val projectStore: ProjectStore,
     private val sender: EmailSender,
 ) {
   private val emailValidator = EmailValidator.getInstance()

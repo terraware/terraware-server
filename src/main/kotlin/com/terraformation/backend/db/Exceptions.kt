@@ -85,9 +85,6 @@ class PhotoNotFoundException(val photoId: PhotoId) :
 class ProjectNotFoundException(val projectId: ProjectId) :
     EntityNotFoundException("Project $projectId not found")
 
-class ProjectOrganizationWideException(val projectId: ProjectId) :
-    Exception("Project $projectId is organization-wide")
-
 class ScientificNameNotFoundException(val name: String) :
     EntityNotFoundException("Scientific name $name not found")
 
@@ -121,9 +118,6 @@ class UploadNotFoundException(val uploadId: UploadId) :
 
 class UserAlreadyInOrganizationException(val userId: UserId, val organizationId: OrganizationId) :
     DuplicateEntityException("User is already in organization")
-
-class UserAlreadyInProjectException(val userId: UserId, val projectId: ProjectId) :
-    DuplicateEntityException("User is already in project")
 
 class UserNotFoundException(val userId: UserId) : EntityNotFoundException("User $userId not found")
 
