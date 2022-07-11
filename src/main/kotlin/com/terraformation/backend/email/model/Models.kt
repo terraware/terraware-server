@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
-import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 
@@ -95,17 +94,6 @@ class UserAddedToOrganization(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "user/addedToOrganization"
-}
-
-class UserAddedToProject(
-    config: TerrawareServerConfig,
-    val admin: IndividualUser,
-    val project: ProjectModel,
-    val organization: OrganizationModel,
-    val organizationProjectUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "user/addedToProject"
 }
 
 class AccessionMoveToDry(

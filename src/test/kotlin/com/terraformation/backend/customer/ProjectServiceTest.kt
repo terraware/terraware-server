@@ -1,10 +1,8 @@
 package com.terraformation.backend.customer
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
-import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -13,11 +11,8 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.mockUser
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import org.jooq.Record
@@ -27,7 +22,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class ProjectServiceTest : DatabaseTest(), RunsAsUser {
@@ -38,7 +32,6 @@ internal class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   private val otherUserId = UserId(100)
 
   private val clock: Clock = mockk()
-  private val publisher: ApplicationEventPublisher = mockk()
 
   private lateinit var projectStore: ProjectStore
   private lateinit var permissionStore: PermissionStore
@@ -48,15 +41,13 @@ internal class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
     permissionStore = PermissionStore(dslContext)
-    service = ProjectService(dslContext, publisher, permissionStore, projectStore)
+    service = ProjectService(dslContext, permissionStore, projectStore)
 
     every { clock.instant() } returns Instant.EPOCH
 
     every { user.canReadProject(projectId) } returns true
     every { user.canAddProjectUser(projectId) } returns true
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
-
-    every { publisher.publishEvent(any<UserAddedToProjectEvent>()) } just Runs
 
     insertSiteData()
   }
@@ -96,18 +87,5 @@ internal class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     assertTrue(
         projectId in permissionStore.fetchProjectRoles(otherUserId),
         "User should have a project role for project that user was added to")
-  }
-
-  @Test
-  fun `addUser publishes event on success`() {
-    val userId = currentUser().userId
-    val otherUserId = UserId(100)
-
-    insertUser(otherUserId)
-    insertOrganizationUser(otherUserId)
-
-    service.addUser(projectId, otherUserId)
-
-    verify { publisher.publishEvent(UserAddedToProjectEvent(otherUserId, projectId, userId)) }
   }
 }

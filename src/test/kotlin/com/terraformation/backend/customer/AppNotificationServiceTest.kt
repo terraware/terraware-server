@@ -11,11 +11,9 @@ import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
-import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
-import com.terraformation.backend.customer.event.UserAddedToProjectEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionState
@@ -29,7 +27,6 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
-import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -69,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired
 internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(ORGANIZATIONS, PROJECTS, NOTIFICATIONS)
+    get() = listOf(ORGANIZATIONS, NOTIFICATIONS)
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
@@ -86,7 +83,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
-  private lateinit var projectStore: ProjectStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
   private lateinit var webAppUrls: WebAppUrls
@@ -100,7 +96,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     parentStore = ParentStore(dslContext)
-    projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
     accessionStore =
         AccessionStore(
             dslContext,
@@ -141,7 +136,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             notificationStore,
             organizationStore,
             parentStore,
-            projectStore,
             userStore,
             messages,
             webAppUrls)
@@ -150,8 +144,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { clock.zone } returns ZoneOffset.UTC
     every { messages.userAddedToOrganizationNotification(any()) } returns
         NotificationMessage("organization title", "organization body")
-    every { messages.userAddedToProjectNotification(any()) } returns
-        NotificationMessage("project title", "project body")
     every { messages.accessionMoveToDryNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
     every { messages.accessionDryingEndNotification(any()) } returns
@@ -197,11 +189,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should have event listener for User Added To Project event`() {
-    assertIsEventListener<UserAddedToProjectEvent>(service)
-  }
-
-  @Test
   fun `should store a notification of type User Added To Organization`() {
     insertUser(otherUserId)
     insertOrganizationUser(otherUserId)
@@ -227,35 +214,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         expectedNotifications,
         actualNotifications,
         "Notifications should match that of a single user added to an organization")
-  }
-
-  @Test
-  fun `should store a notification of type User Added To Project`() {
-    insertUser(otherUserId)
-    insertOrganizationUser(otherUserId)
-    insertProjectUser(otherUserId)
-
-    service.on(UserAddedToProjectEvent(otherUserId, projectId, user.userId))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.UserAddedtoProject,
-                userId = otherUserId,
-                organizationId = organizationId,
-                title = "project title",
-                body = "project body",
-                localUrl = webAppUrls.organizationProject(projectId),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of a single user added to a project")
   }
 
   @Test
