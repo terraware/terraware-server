@@ -48,7 +48,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateStorageLocation(any()) } returns true
     every { user.canDeleteStorageLocation(any()) } returns true
     every { user.canReadFacility(any()) } returns true
-    every { user.canReadSite(any()) } returns true
     every { user.canReadStorageLocation(any()) } returns true
     every { user.canUpdateFacility(any()) } returns true
     every { user.canUpdateStorageLocation(any()) } returns true

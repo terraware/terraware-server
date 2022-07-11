@@ -4,13 +4,9 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.USERS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -46,40 +42,6 @@ class PermissionStore(private val dslContext: DSLContext) {
     return dslContext
         .select(ORGANIZATION_USERS.ORGANIZATION_ID, ORGANIZATION_USERS.ROLE_ID)
         .from(ORGANIZATION_USERS)
-        .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
-  }
-
-  /**
-   * Returns a user's role in each project under the organizations they're in. The roles are
-   * organization-level, so will be the same across all projects of a given organization.
-   */
-  fun fetchProjectRoles(userId: UserId): Map<ProjectId, Role> {
-    return dslContext
-        .select(PROJECTS.ID, ORGANIZATION_USERS.ROLE_ID)
-        .from(ORGANIZATION_USERS)
-        .join(USERS)
-        .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
-        .join(PROJECTS)
-        .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-        .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-        .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
-  }
-
-  /**
-   * Returns a user's role in each site under the organizations they're in. The roles are
-   * organization-level, so will be the same across all projects of a given organization.
-   */
-  fun fetchSiteRoles(userId: UserId): Map<SiteId, Role> {
-    return dslContext
-        .select(SITES.ID, ORGANIZATION_USERS.ROLE_ID)
-        .from(ORGANIZATION_USERS)
-        .join(USERS)
-        .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
-        .join(PROJECTS)
-        .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-        .join(SITES)
-        .on(PROJECTS.ID.eq(SITES.PROJECT_ID))
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
         .fetchMap({ row -> row.value1() }, { row -> row.value2()?.let { Role.of(it) } })
   }

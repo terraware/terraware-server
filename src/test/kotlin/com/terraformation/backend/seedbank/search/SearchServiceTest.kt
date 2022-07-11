@@ -107,7 +107,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     accessionSearchService = AccessionSearchService(tables, searchService)
 
     every { user.organizationRoles } returns mapOf(organizationId to Role.MANAGER)
-    every { user.projectRoles } returns mapOf(projectId to Role.MANAGER)
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
     insertSiteData()

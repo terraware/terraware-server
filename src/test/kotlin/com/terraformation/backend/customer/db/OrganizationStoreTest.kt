@@ -78,13 +78,10 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canListOrganizationUsers(any()) } returns true
     every { user.canRemoveOrganizationUser(any(), any()) } returns true
     every { user.canSetOrganizationUserRole(any(), any()) } returns true
-    every { user.canReadProject(any()) } returns true
-    every { user.canReadSite(any()) } returns true
     every { user.canReadFacility(any()) } returns true
 
     every { user.facilityRoles } returns mapOf(facilityId to Role.OWNER)
     every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
-    every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
 
     insertUser()
     insertOrganization(
@@ -153,7 +150,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchById excludes projects the user is not in`() {
     every { user.facilityRoles } returns emptyMap()
-    every { user.projectRoles } returns emptyMap()
 
     val expected = organizationModel.copy(facilities = emptyList())
 
@@ -164,7 +160,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchAll excludes projects the user is not in`() {
     every { user.facilityRoles } returns emptyMap()
-    every { user.projectRoles } returns emptyMap()
 
     val expected = listOf(organizationModel.copy(facilities = emptyList()))
 

@@ -80,8 +80,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateFacility(any()) } returns true
-    every { user.canCreateProject(any()) } returns true
-    every { user.canCreateSite(any()) } returns true
     every { user.canCreateStorageLocation(any()) } returns true
     every { user.canDeleteOrganization(any()) } returns true
     every { user.canListOrganizationUsers(any()) } returns true

@@ -14,8 +14,6 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
@@ -30,9 +28,6 @@ import com.terraformation.backend.db.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.PROJECT_USERS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.TIMESERIES
@@ -58,40 +53,20 @@ import org.springframework.beans.factory.annotation.Autowired
  * permutations of objects:
  *
  * ```
- * Organization 1 - Two of everything at all levels
- *   Project 10
- *     Site 100
- *       Facility 1000
- *       Facility 1001
- *     Site 101
- *       Facility 1010
- *       Facility 1011
- *   Project 11
- *     Site 110
- *       Facility 1100
- *       Facility 1101
- *     Site 111
- *       Facility 1110
- *       Facility 1111
+ * Organization 1 - Two of everything (currently "everything" is just "facilities")
+ *   Facility 1000
+ *   Facility 1001
  *
- * Organization 2 - Incomplete tree structure
- *   Project 20 - No sites
- *   Project 21 - No facilities
- *     Site 210
- *   Project 22
- *     Site 220
- *       Facility 2200
- *
- * Organization 3 - No projects
+ * Organization 2 - No facilities
  *
  * Upload 1 - created by the test's default user ID
  * ```
  *
  * The basic structure of each test is to:
  *
- * 1. Grant the user a role in an organization and possibly add them to some projects. In most
- * cases, you will add them to organization 1 and project 10 because there are some canned ID lists
- * you can use in assertions to make the tests clearer and more concise.
+ * 1. Grant the user a role in an organization. In most cases, you will add them to organization 1
+ * because there are some canned ID lists you can use in assertions to make the tests clearer and
+ * more concise.
  * 2. Create a [PermissionsTracker] instance which should be used throughout the whole test.
  * 3. Use the tracker to assert which specific permissions the user should have on each of the above
  * objects.
@@ -115,26 +90,20 @@ internal class PermissionTest : DatabaseTest() {
    * Test data set; see class docs for a prettier version. This takes advantage of the default
    * "parent ID is our ID divided by 10" logic of the insert functions in DatabaseTest.
    */
-  private val organizationIds = listOf(1, 2, 3).map { OrganizationId(it.toLong()) }
+  private val organizationIds = listOf(1, 2).map { OrganizationId(it.toLong()) }
   private val org1Id = OrganizationId(1)
 
   private val speciesIds = organizationIds.map { SpeciesId(it.value) }
 
-  private val projectIds = listOf(10, 11, 20, 21, 22).map { ProjectId(it.toLong()) }
-  private val project10Id = ProjectId(10)
-
-  private val siteIds = listOf(100, 101, 110, 111, 210, 220).map { SiteId(it.toLong()) }
-
-  private val facilityIds =
-      listOf(1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111, 2200).map { FacilityId(it.toLong()) }
+  private val facilityIds = listOf(1000, 1001).map { FacilityId(it.toLong()) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
 
-  private val deviceManagerIds = listOf(1000L, 1100L, 2200L, 3000L).map { DeviceManagerId(it) }
-  private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 3000 }
+  private val deviceManagerIds = listOf(1000L, 2000L).map { DeviceManagerId(it) }
+  private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
 
   private val otherUserId = UserId(8765)
 
@@ -170,8 +139,6 @@ internal class PermissionTest : DatabaseTest() {
     insertUser(userId)
     insertUser(otherUserId)
     organizationIds.forEach { insertOrganization(it, createdBy = userId) }
-    projectIds.forEach { insertProject(it, it.value / 10, createdBy = userId) }
-    siteIds.forEach { insertSite(it, it.value / 10, createdBy = userId) }
 
     facilityIds.forEach { facilityId ->
       insertFacility(facilityId, facilityId.value / 1000, createdBy = userId)
@@ -218,8 +185,6 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        createProject = true,
-        listProjects = true,
         readOrganization = true,
         updateOrganization = true,
         deleteOrganization = true,
@@ -230,24 +195,6 @@ internal class PermissionTest : DatabaseTest() {
         createSpecies = true,
         createFacility = true,
         listFacilities = true,
-    )
-
-    permissions.expect(
-        *projectIds.forOrg1(),
-        readProject = true,
-        updateProject = true,
-        addProjectUser = true,
-        createSite = true,
-        listSites = true,
-        removeProjectUser = true,
-        removeProjectSelf = true,
-    )
-
-    permissions.expect(
-        *siteIds.forOrg1(),
-        readSite = true,
-        updateSite = true,
-        deleteSite = true,
     )
 
     permissions.expect(
@@ -310,14 +257,12 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `owner role in empty organization grants organization-level permissions`() {
-    givenRole(OrganizationId(3), Role.OWNER)
+    givenRole(OrganizationId(2), Role.OWNER)
 
     val permissions = PermissionsTracker()
 
     permissions.expect(
-        OrganizationId(3),
-        createProject = true,
-        listProjects = true,
+        OrganizationId(2),
         readOrganization = true,
         updateOrganization = true,
         deleteOrganization = true,
@@ -337,7 +282,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        SpeciesId(3),
+        SpeciesId(2),
         readSpecies = true,
         updateSpecies = true,
         deleteSpecies = true,
@@ -354,8 +299,6 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        createProject = true,
-        listProjects = true,
         readOrganization = true,
         updateOrganization = true,
         listOrganizationUsers = true,
@@ -365,24 +308,6 @@ internal class PermissionTest : DatabaseTest() {
         createSpecies = true,
         createFacility = true,
         listFacilities = true,
-    )
-
-    permissions.expect(
-        *projectIds.forOrg1(),
-        readProject = true,
-        updateProject = true,
-        addProjectUser = true,
-        createSite = true,
-        listSites = true,
-        removeProjectUser = true,
-        removeProjectSelf = true,
-    )
-
-    permissions.expect(
-        *siteIds.forOrg1(),
-        readSite = true,
-        updateSite = true,
-        deleteSite = true,
     )
 
     permissions.expect(
@@ -445,32 +370,17 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `managers can add users to projects and access all data in their organizations`() {
-    givenRole(org1Id, Role.MANAGER, project10Id)
+    givenRole(org1Id, Role.MANAGER)
 
     val permissions = PermissionsTracker()
 
     permissions.expect(
         org1Id,
-        listProjects = true,
         readOrganization = true,
         listOrganizationUsers = true,
         removeOrganizationSelf = true,
         createSpecies = true,
         listFacilities = true,
-    )
-
-    permissions.expect(
-        *projectIds.forOrg1(),
-        readProject = true,
-        addProjectUser = true,
-        listSites = true,
-        removeProjectUser = true,
-        removeProjectSelf = true,
-    )
-
-    permissions.expect(
-        *siteIds.forOrg1(),
-        readSite = true,
     )
 
     permissions.expect(
@@ -528,28 +438,15 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `contributors have access to data associated with their organizations`() {
-    givenRole(org1Id, Role.CONTRIBUTOR, project10Id)
+    givenRole(org1Id, Role.CONTRIBUTOR)
 
     val permissions = PermissionsTracker()
 
     permissions.expect(
         org1Id,
-        listProjects = true,
         readOrganization = true,
         removeOrganizationSelf = true,
         listFacilities = true,
-    )
-
-    permissions.expect(
-        *projectIds.forOrg1(),
-        readProject = true,
-        listSites = true,
-        removeProjectSelf = true,
-    )
-
-    permissions.expect(
-        *siteIds.forOrg1(),
-        readSite = true,
     )
 
     permissions.expect(
@@ -612,22 +509,9 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
-        listProjects = true,
         readOrganization = true,
         removeOrganizationSelf = true,
         listFacilities = true,
-    )
-
-    permissions.expect(
-        *projectIds.forOrg1(),
-        readProject = true,
-        listSites = true,
-        removeProjectSelf = true,
-    )
-
-    permissions.expect(
-        *siteIds.forOrg1(),
-        readSite = true,
     )
 
     permissions.expect(
@@ -725,7 +609,7 @@ internal class PermissionTest : DatabaseTest() {
     assertFalse(user.canDeleteUpload(uploadId), "Can delete upload")
   }
 
-  private fun givenRole(organizationId: OrganizationId, role: Role, vararg projects: ProjectId) {
+  private fun givenRole(organizationId: OrganizationId, role: Role) {
     with(ORGANIZATION_USERS) {
       dslContext
           .insertInto(ORGANIZATION_USERS)
@@ -737,20 +621,6 @@ internal class PermissionTest : DatabaseTest() {
           .set(MODIFIED_BY, userId)
           .set(MODIFIED_TIME, Instant.EPOCH)
           .execute()
-    }
-
-    projects.forEach { projectId ->
-      with(PROJECT_USERS) {
-        dslContext
-            .insertInto(PROJECT_USERS)
-            .set(USER_ID, userId)
-            .set(PROJECT_ID, projectId)
-            .set(CREATED_BY, userId)
-            .set(CREATED_TIME, Instant.EPOCH)
-            .set(MODIFIED_BY, userId)
-            .set(MODIFIED_TIME, Instant.EPOCH)
-            .execute()
-      }
     }
   }
 
@@ -765,9 +635,6 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(DEVICES).execute()
     dslContext.deleteFrom(ACCESSIONS).execute()
     dslContext.deleteFrom(FACILITIES).execute()
-    dslContext.deleteFrom(SITES).execute()
-    dslContext.deleteFrom(PROJECT_USERS).execute()
-    dslContext.deleteFrom(PROJECTS).execute()
     dslContext.deleteFrom(SPECIES).execute()
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
     dslContext.deleteFrom(ORGANIZATIONS).execute()
@@ -777,8 +644,6 @@ internal class PermissionTest : DatabaseTest() {
 
   inner class PermissionsTracker {
     private val uncheckedOrgs = organizationIds.toMutableSet()
-    private val uncheckedProjects = projectIds.toMutableSet()
-    private val uncheckedSites = siteIds.toMutableSet()
     private val uncheckedFacilities = facilityIds.toMutableSet()
     private val uncheckedAccessions = accessionIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
@@ -791,8 +656,6 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg organizations: OrganizationId,
-        createProject: Boolean = false,
-        listProjects: Boolean = false,
         readOrganization: Boolean = false,
         updateOrganization: Boolean = false,
         deleteOrganization: Boolean = false,
@@ -805,14 +668,6 @@ internal class PermissionTest : DatabaseTest() {
         listFacilities: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
-        assertEquals(
-            createProject,
-            user.canCreateProject(organizationId),
-            "Can create project in organization $organizationId")
-        assertEquals(
-            listProjects,
-            user.canListProjects(organizationId),
-            "Can list projects of organization $organizationId")
         assertEquals(
             readOrganization,
             user.canReadOrganization(organizationId),
@@ -855,54 +710,6 @@ internal class PermissionTest : DatabaseTest() {
             "Can list facilities in organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
-      }
-    }
-
-    fun expect(
-        vararg projects: ProjectId,
-        readProject: Boolean = false,
-        updateProject: Boolean = false,
-        addProjectUser: Boolean = false,
-        createSite: Boolean = false,
-        listSites: Boolean = false,
-        removeProjectUser: Boolean = false,
-        removeProjectSelf: Boolean = false,
-    ) {
-      projects.forEach { projectId ->
-        assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
-        assertEquals(
-            updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
-        assertEquals(
-            addProjectUser, user.canAddProjectUser(projectId), "Can add project $projectId user")
-        assertEquals(
-            createSite, user.canCreateSite(projectId), "Can create site in project $projectId")
-        assertEquals(
-            listSites, user.canListSites(projectId), "Can list sites in project $projectId")
-        assertEquals(
-            removeProjectUser,
-            user.canRemoveProjectUser(projectId, otherUserId),
-            "Can remove project $projectId user")
-        assertEquals(
-            removeProjectSelf,
-            user.canRemoveProjectUser(projectId, userId),
-            "Can remove self from project $projectId")
-
-        uncheckedProjects.remove(projectId)
-      }
-    }
-
-    fun expect(
-        vararg sites: SiteId,
-        readSite: Boolean = false,
-        updateSite: Boolean = false,
-        deleteSite: Boolean = false,
-    ) {
-      sites.forEach { siteId ->
-        assertEquals(readSite, user.canReadSite(siteId), "Can read site $siteId")
-        assertEquals(updateSite, user.canUpdateSite(siteId), "Can update site $siteId")
-        assertEquals(deleteSite, user.canDeleteSite(siteId), "Can delete site $siteId")
-
-        uncheckedSites.remove(siteId)
       }
     }
 
@@ -1106,8 +913,6 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
-      expect(*uncheckedProjects.toTypedArray())
-      expect(*uncheckedSites.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())
 

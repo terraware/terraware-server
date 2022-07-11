@@ -82,13 +82,8 @@ class OrganizationNotFoundException(val organizationId: OrganizationId) :
 class PhotoNotFoundException(val photoId: PhotoId) :
     EntityNotFoundException("Photo $photoId not found")
 
-class ProjectNotFoundException(val projectId: ProjectId) :
-    EntityNotFoundException("Project $projectId not found")
-
 class ScientificNameNotFoundException(val name: String) :
     EntityNotFoundException("Scientific name $name not found")
-
-class SiteNotFoundException(val siteId: SiteId) : EntityNotFoundException("Site $siteId not found")
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     EntityNotFoundException("Species $speciesId not found")
