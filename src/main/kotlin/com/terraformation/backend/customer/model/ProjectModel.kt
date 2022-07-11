@@ -19,14 +19,12 @@ data class ProjectModel(
     val organizationId: OrganizationId,
     val organizationWide: Boolean,
     val name: String,
-    val sites: List<SiteModel>? = null,
     val startDate: LocalDate?,
     val status: ProjectStatus?,
     val types: Set<ProjectType> = emptySet()
 ) {
   constructor(
       record: Record,
-      sitesMultiset: Field<List<SiteModel>?>? = null,
       typesMultiset: Field<List<ProjectType>?>,
   ) : this(
       createdTime = record[PROJECTS.CREATED_TIME]
@@ -39,7 +37,6 @@ data class ProjectModel(
       organizationWide = record[PROJECTS.ORGANIZATION_WIDE]
               ?: throw IllegalArgumentException("Organization-wide is required"),
       name = record[PROJECTS.NAME] ?: throw IllegalArgumentException("Name is required"),
-      sites = sitesMultiset?.let { record[it] },
       startDate = record[PROJECTS.START_DATE],
       status = record[PROJECTS.STATUS_ID],
       types = record[typesMultiset]?.toSet() ?: emptySet(),

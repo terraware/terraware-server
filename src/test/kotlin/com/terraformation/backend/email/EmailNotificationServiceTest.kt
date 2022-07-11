@@ -107,7 +107,6 @@ internal class EmailNotificationServiceTest {
           organizationId = organization.id,
           organizationWide = false,
           name = "Test Project",
-          sites = null,
           startDate = null,
           status = null)
   private val facility: FacilityModel =
