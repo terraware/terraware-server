@@ -5,9 +5,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
-import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.DeviceManagerId
@@ -19,20 +17,16 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.time.DatabaseBackedClock
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.Duration
@@ -47,13 +41,10 @@ import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.tomcat.util.buf.HexUtils
-import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.dao.DuplicateKeyException
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
@@ -78,12 +69,10 @@ class AdminController(
     private val deviceService: DeviceService,
     private val deviceStore: DeviceStore,
     private val deviceTemplatesDao: DeviceTemplatesDao,
-    private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
     private val organizationStore: OrganizationStore,
     private val publisher: ApplicationEventPublisher,
-    private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
   private val prefix = "/admin"
@@ -110,16 +99,12 @@ class AdminController(
   fun getOrganization(@PathVariable organizationId: OrganizationId, model: Model): String {
     val organization = organizationStore.fetchOneById(organizationId)
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
-    val users = organizationStore.fetchUsers(organizationId).sortedBy { it.email }
 
-    model.addAttribute("canAddUser", currentUser().canAddOrganizationUser(organizationId))
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
-    model.addAttribute("roles", Role.values())
-    model.addAttribute("users", users.filter { it.userType != UserType.DeviceManager })
 
     return "/admin/organization"
   }
@@ -146,19 +131,6 @@ class AdminController(
     model.addAttribute("storageLocations", storageLocations)
 
     return "/admin/facility"
-  }
-
-  @GetMapping("/user/{userId}")
-  fun getUser(@PathVariable userId: UserId, model: Model): String {
-    val user = userStore.fetchOneById(userId)
-    val organizations = organizationStore.fetchAll() // TODO: Only ones where currentUser is admin?
-
-    model.addAttribute("organizations", organizations)
-    model.addAttribute("prefix", prefix)
-    model.addAttribute("roles", Role.values())
-    model.addAttribute("user", user)
-
-    return "/admin/user"
   }
 
   @GetMapping("/deviceTemplates")
@@ -214,160 +186,6 @@ class AdminController(
     model.addAttribute("prefix", prefix)
 
     return "/admin/testClock"
-  }
-
-  @PostMapping("/setUserMemberships")
-  fun setUserMemberships(
-      @RequestParam("userId") userId: UserId,
-      @RequestParam("organizationId", required = false) organizationIdList: List<OrganizationId>?,
-      @RequestParam("role", required = false) roleValues: List<String>?,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val organizationIds = organizationIdList?.toSet() ?: emptySet()
-
-    // Roles are of the form orgId:roleId
-    val roles =
-        roleValues
-            ?.map { it.split(':') }
-            ?.associate { OrganizationId(it[0].toLong()) to Role.of(it[1].toInt()) }
-            ?: emptyMap()
-
-    val user =
-        try {
-          userStore.fetchOneById(userId)
-        } catch (e: UserNotFoundException) {
-          redirectAttributes.failureMessage = "User not found."
-          return adminHome()
-        }
-
-    // We need to know which boxes were unchecked; the UI would have shown all the orgs and projects
-    // the current user can administer.
-    val adminOrganizationIds =
-        organizationStore
-            .fetchAll()
-            .map { it.id }
-            .filter { currentUser().canAddOrganizationUser(it) }
-            .toSet()
-
-    val organizationsToAdd = organizationIds - user.organizationRoles.keys
-    val organizationsToRemove = adminOrganizationIds - organizationIds
-    val organizationsToUpdate = organizationIds.filter { user.organizationRoles[it] != roles[it] }
-
-    dslContext.transaction { _ ->
-      organizationsToAdd.forEach { organizationId ->
-        organizationStore.addUser(organizationId, userId, roles[organizationId] ?: Role.CONTRIBUTOR)
-      }
-      organizationsToRemove.forEach { organizationId ->
-        organizationStore.removeUser(organizationId, userId)
-      }
-      organizationsToUpdate.forEach { organizationId ->
-        roles[organizationId]?.let { newRole ->
-          organizationStore.setUserRole(organizationId, userId, newRole)
-        }
-      }
-    }
-
-    redirectAttributes.successMessage = "User memberships updated."
-
-    return user(userId)
-  }
-
-  @PostMapping("/createOrganization")
-  fun createOrganization(
-      @NotBlank @RequestParam("name") name: String,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      val org = organizationStore.createWithAdmin(OrganizationsRow(name = name))
-      redirectAttributes.successMessage = "Created organization ${org.id}"
-    } catch (e: Exception) {
-      log.error("Failed to create organization $name", e)
-      redirectAttributes.failureMessage = "Failed to create organization"
-    }
-
-    return adminHome()
-  }
-
-  @PostMapping("/createUser")
-  fun createUser(
-      @RequestParam("organizationId") organizationId: OrganizationId,
-      @NotBlank @RequestParam("email") email: String,
-      @RequestParam("firstName") firstName: String?,
-      @RequestParam("lastName") lastName: String?,
-      @RequestParam("role") roleId: Int,
-      request: HttpServletRequest,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val role = Role.of(roleId)
-    if (role == null) {
-      redirectAttributes.failureMessage = "Invalid role selected."
-      return organization(organizationId)
-    }
-
-    try {
-      val redirectUrl =
-          config.keycloak.postCreateRedirectUrl ?: URI(request.requestURL.toString()).resolve("/")
-      val user =
-          userStore.createUser(
-              organizationId, role, email, firstName, lastName, redirectUrl = redirectUrl)
-
-      redirectAttributes.successMessage = "User added to organization."
-
-      return user(user.userId)
-    } catch (e: DuplicateKeyException) {
-      redirectAttributes.failureMessage = "User is already in the organization."
-    } catch (e: AccessDeniedException) {
-      redirectAttributes.failureMessage = "No permission to create users in this organization."
-    } catch (e: Exception) {
-      log.error("User creation failed", e)
-      redirectAttributes.failureMessage = "Unexpected failure while creating user."
-    }
-
-    return organization(organizationId)
-  }
-
-  @PostMapping("/removeOrganizationUser")
-  fun removeOrganizationUser(
-      @RequestParam("organizationId") organizationId: OrganizationId,
-      @RequestParam("userId") userId: UserId,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      organizationStore.removeUser(organizationId, userId)
-      redirectAttributes.successMessage = "User removed from organization."
-    } catch (e: AccessDeniedException) {
-      redirectAttributes.failureMessage = "No permission to remove users from this organization."
-    } catch (e: UserNotFoundException) {
-      redirectAttributes.failureMessage = "User was not a member of the organization."
-    }
-
-    return organization(organizationId)
-  }
-
-  @PostMapping("/setOrganizationUserRole")
-  fun setOrganizationUserRole(
-      @RequestParam("organizationId") organizationId: OrganizationId,
-      @RequestParam("userId") userId: UserId,
-      @RequestParam("role") roleId: Int,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val role = Role.of(roleId)
-
-    if (role == null) {
-      redirectAttributes.failureMessage = "Invalid role selected."
-      return organization(organizationId)
-    }
-
-    try {
-      organizationStore.setUserRole(organizationId, userId, role)
-      redirectAttributes.successMessage = "User role updated."
-    } catch (e: AccessDeniedException) {
-      redirectAttributes.failureMessage = "No permission to set user roles for this organization."
-    } catch (e: UserNotFoundException) {
-      redirectAttributes.failureMessage = "User was not a member of the organization."
-    }
-
-    return organization(organizationId)
   }
 
   @PostMapping("/createFacility")
@@ -744,5 +562,4 @@ class AdminController(
       redirect("/organization/$organizationId")
   private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")
   private fun testClock() = redirect("/testClock")
-  private fun user(userId: UserId) = redirect("/user/$userId")
 }

@@ -45,52 +45,5 @@
     <input type="submit" value=" Create Facility "/>
 </form>
 
-<h3>Users</h3>
-
-<ul>
-    <li th:each="user : ${users}">
-        <a th:href="|${prefix}/user/${user.userId}|"
-           th:text="|${user.firstName} ${user.lastName} (${user.email})|">user@domain</a>
-        <span th:text="|(${user.role.displayName})|" th:if="!${canAddUser}">(role)</span>
-        <span th:if="${canAddUser}">
-            <form method="POST" style="display: inline;"
-                  th:action="|${prefix}/setOrganizationUserRole|">
-                <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-                <input type="hidden" name="userId" th:value="${user.userId}"/>
-                <select name="role">
-                    <option th:each="role : ${roles}" th:selected="${user.role} == ${role}"
-                            th:value="${role.id}" th:text="${role.displayName}">Role</option>
-                </select>
-                <input type="submit" value=" Update Role "/>
-            </form>
-
-            <form method="POST" style="display: inline;"
-                  th:action="|${prefix}/removeOrganizationUser|">
-                <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-                <input type="hidden" name="userId" th:value="${user.userId}"/>
-                <input type="submit" value=" Remove User from Organization "/>
-            </form>
-        </span>
-    </li>
-</ul>
-
-<form method="POST" th:action="|${prefix}/createUser|" th:if="${canAddUser}">
-    <h4>Add User to Organization</h4>
-
-    <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-    <label for="email">Email Address</label>
-    <input type="email" name="email" id="email" required/>
-    <select name="role">
-        <option th:text="${role.displayName}" th:value="${role.id}" th:each="role : ${roles}">Role
-            name
-        </option>
-    </select>
-    <label for="firstName">First Name</label>
-    <input type="text" name="firstName" id="firstName"/>
-    <label for="lastName">Last Name</label>
-    <input type="text" name="lastName" id="lastName"/>
-    <input type="submit" value=" Add User to Organization "/>
-</form>
-
 </body>
 </html>
