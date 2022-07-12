@@ -501,8 +501,8 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `API clients are members of all projects, sites, and facilities`() {
-    usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.APIClient))
+  fun `device managers are members of all facilities`() {
+    usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.DeviceManager))
     givenRole(org1Id, Role.CONTRIBUTOR)
 
     val permissions = PermissionsTracker()

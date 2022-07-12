@@ -145,6 +145,13 @@ VALUES (1, 'Species CSV', TRUE)
 ON CONFLICT (id) DO UPDATE SET name         = excluded.name,
                                expire_files = excluded.expire_files;
 
+INSERT INTO user_types (id, name)
+VALUES (1, 'Individual'),
+       (2, 'Super Admin'),
+       (3, 'Device Manager'),
+       (4, 'System')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO withdrawal_purposes (id, name)
 VALUES (1, 'Propagation'),
        (2, 'Outreach or Education'),

@@ -208,7 +208,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class ApiClientTest {
+  inner class DeviceManagerTest {
     @BeforeEach
     fun setUpOrganization() {
       insertUser()
@@ -216,18 +216,18 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `createApiClient throws exception if user does not have permission to create clients`() {
+    fun `createDeviceManager throws exception if user does not have permission to create clients`() {
       every { user.canCreateApiKey(organizationId) } returns false
 
       assertThrows<AccessDeniedException> {
-        userStore.createApiClient(organizationId, "Description")
+        userStore.createDeviceManager(organizationId, "Description")
       }
     }
 
     @Test
-    fun `createApiClient registers user in Keycloak and adds it to organization`() {
+    fun `createDeviceManager registers user in Keycloak and adds it to organization`() {
       val description = "Description"
-      val newUser = userStore.createApiClient(organizationId, description)
+      val newUser = userStore.createDeviceManager(organizationId, description)
 
       val keycloakUser = usersResource.get(newUser.authId!!)!!.toRepresentation()
       assertEquals(
@@ -248,7 +248,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           mapOf(organizationId to Role.CONTRIBUTOR),
           newUser.organizationRoles,
-          "Should grant contributor role to API client user")
+          "Should grant contributor role to device manager user")
     }
   }
 
@@ -267,7 +267,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken requests a token from Keycloak`() {
-      val user = userStore.createApiClient(organizationId, null)
+      val user = userStore.createDeviceManager(organizationId, null)
       val expectedToken = "token"
 
       val response: HttpResponse<String> = mockk()
@@ -285,7 +285,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken throws exception if Keycloak returns a malformed token response`() {
-      val user = userStore.createApiClient(organizationId, null)
+      val user = userStore.createDeviceManager(organizationId, null)
 
       val response: HttpResponse<String> = mockk()
       val requestSlot = slot<HttpRequest>()
@@ -299,7 +299,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken throws exception if Keycloak does not generate a token`() {
-      val user = userStore.createApiClient(organizationId, null)
+      val user = userStore.createDeviceManager(organizationId, null)
 
       val response: HttpResponse<String> = mockk()
       val requestSlot = slot<HttpRequest>()
@@ -313,7 +313,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken generates a temporary password and removes it if token creation fails`() {
-      val user = userStore.createApiClient(organizationId, null)
+      val user = userStore.createDeviceManager(organizationId, null)
       val keycloakUser = usersResource.get(user.authId!!)!!
 
       val response: HttpResponse<String> = mockk()

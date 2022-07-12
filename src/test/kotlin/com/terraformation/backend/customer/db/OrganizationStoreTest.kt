@@ -312,7 +312,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             "balena-12345",
             "Api",
             "Client",
-            UserType.APIClient,
+            UserType.DeviceManager,
             clock.instant(),
             organizationId,
             Role.CONTRIBUTOR))

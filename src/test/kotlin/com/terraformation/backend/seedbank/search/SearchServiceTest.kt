@@ -1589,17 +1589,17 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     private val otherOrganizationId = OrganizationId(2)
     private val bothOrgsUserId = UserId(4)
     private val otherOrgUserId = UserId(5)
-    private val apiClientUserId = UserId(6)
+    private val deviceManagerUserId = UserId(6)
 
     @BeforeEach
     fun insertOtherUsers() {
-      insertUser(apiClientUserId, type = UserType.APIClient)
+      insertUser(deviceManagerUserId, type = UserType.DeviceManager)
       insertUser(bothOrgsUserId)
       insertUser(otherOrgUserId)
 
       insertOrganization(otherOrganizationId)
 
-      insertOrganizationUser(apiClientUserId)
+      insertOrganizationUser(deviceManagerUserId)
       insertOrganizationUser(bothOrgsUserId, role = Role.ADMIN)
       insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.ADMIN)
       insertOrganizationUser(otherOrgUserId, otherOrganizationId)

@@ -23,7 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails
 
 /**
  * Details about the user who is making the current request and the permissions they have. This
- * always represents a regular (presumably human) user or an API client.
+ * always represents a regular (presumably human) user or a device manager.
  *
  * To get the current user's details, call [currentUser]. See that function's docs for some caveats,
  * but this is usually what you'll want to do.
