@@ -84,7 +84,7 @@ class ProjectStore(
         .select(PROJECTS.asterisk(), projectTypesMultiset)
         .from(PROJECTS)
         .where(condition)
-        .fetch { row -> ProjectModel(row, null, projectTypesMultiset) }
+        .fetch { row -> ProjectModel(row, projectTypesMultiset) }
   }
 
   fun create(
