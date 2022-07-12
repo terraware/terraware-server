@@ -105,18 +105,6 @@ COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos 
 
 COMMENT ON TABLE processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
 
-COMMENT ON TABLE project_statuses IS '(Enum) Statuses of projects recognized by the application.';
-
-COMMENT ON TABLE project_types IS '(Enum) Types of projects recognized by the application.';
-
-COMMENT ON TABLE project_type_selections IS 'Which project types are selected for which projects.';
-
-COMMENT ON TABLE project_users IS 'Linking table between `projects` and `users` defining which users are allowed to access which projects.';
-
-COMMENT ON TABLE projects IS 'Information about a single restoration project. A project can span multiple sites.';
-COMMENT ON COLUMN projects.hidden IS 'If true, the project and its associated sites and facilities should not be displayed to end users.';
-COMMENT ON COLUMN projects.organization_wide IS 'If true, the project is accessible to the entire organization. If true, the project is only accessible to users who are added to it.';
-
 COMMENT ON TABLE rare_types IS '(Enum) Possible values of the "Rare" attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.';
 
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
@@ -124,10 +112,6 @@ COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organiza
 COMMENT ON TABLE seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
 
 COMMENT ON TABLE seed_storage_behaviors IS '(Enum) How seeds of a particular species behave in storage.';
-
-COMMENT ON TABLE sites IS 'Physical locations where facilities are located or plants are being tracked.';
-COMMENT ON COLUMN sites.locale IS 'Default locale at the site; an IETF BCP 47 language tag such as en-US.';
-COMMENT ON COLUMN sites.timezone IS 'Name of time zone at site; an IANA tz database zone name.';
 
 COMMENT ON TABLE source_plant_origins IS '(Enum) Types of origins of plants from which seeds were collected. For example, "Outplant" represents a plant that was cultivated, as opposed to one growing in the wild.';
 

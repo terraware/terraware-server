@@ -13,7 +13,6 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
@@ -88,8 +87,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         name = organizationModel.name,
         countryCode = organizationModel.countryCode,
         countrySubdivisionCode = organizationModel.countrySubdivisionCode)
-    insertProject()
-    insertSite()
     insertFacility()
   }
 
@@ -286,7 +283,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchUsers returns information about members`() {
-    val otherProjectId = ProjectId(11)
     val expected =
         listOf(
             OrganizationUserModel(
@@ -309,7 +305,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 Role.CONTRIBUTOR),
         )
 
-    insertProject(otherProjectId)
     expected.forEach { configureUser(it) }
     configureUser(
         OrganizationUserModel(
@@ -366,7 +361,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchApiClients returns information about API client users`() {
-    val otherProjectId = ProjectId(11)
     val expected =
         listOf(
             OrganizationUserModel(
@@ -379,7 +373,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 organizationId,
                 Role.CONTRIBUTOR))
 
-    insertProject(otherProjectId)
     expected.forEach { configureUser(it) }
     configureUser(
         OrganizationUserModel(
@@ -442,7 +435,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     store.removeUser(organizationId, model.userId)
 
     assertThrows<UserNotFoundException> { store.fetchUser(organizationId, model.userId) }
-    assertNotNull(store.fetchUser(otherOrgId, model.userId))
+    assertNotNull(
+        store.fetchUser(otherOrgId, model.userId), "User should still belong to other org")
   }
 
   @Test

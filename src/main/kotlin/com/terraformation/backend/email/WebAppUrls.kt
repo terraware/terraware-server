@@ -6,7 +6,6 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import java.net.URI
 import javax.annotation.ManagedBean
@@ -28,17 +27,6 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
   /** Generates a relative path of organization home within the web app */
   fun organizationHome(organizationId: OrganizationId): URI {
     return UriBuilder.fromPath("/home").queryParam("organizationId", organizationId).build()
-  }
-
-  fun fullOrganizationProject(projectId: ProjectId, organizationId: OrganizationId): URI {
-    return UriBuilder.fromUri(config.webAppUrl)
-        .path("/projects/${projectId.value}")
-        .queryParam("organizationId", organizationId)
-        .build()
-  }
-
-  fun organizationProject(projectId: ProjectId): URI {
-    return UriBuilder.fromPath("/projects/" + projectId.value).build()
   }
 
   fun fullAccession(accessionId: AccessionId, organizationId: OrganizationId): URI {

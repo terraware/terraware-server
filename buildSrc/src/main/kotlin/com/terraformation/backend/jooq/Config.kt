@@ -52,8 +52,6 @@ val ENUM_TABLES =
                         true,
                     ))),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
-        EnumTable("project_statuses", listOf("projects\\.status_id"), "ProjectStatus"),
-        EnumTable("project_types", ".*\\.project_type_id"),
         EnumTable("rare_types", ".*\\.rare_type_id"),
         EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
         EnumTable(
@@ -103,8 +101,6 @@ val ID_WRAPPERS =
         IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
         IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
         IdWrapper("PhotoId", listOf("photos\\.id", ".*\\.photo_id")),
-        IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
-        IdWrapper("SiteId", listOf("sites\\.id", ".*\\.site_id")),
         IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
         IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
         IdWrapper(
@@ -136,8 +132,4 @@ val EMBEDDABLES =
             .withName("organization_user_id")
             .withTables("organization_users")
             .withColumns("organization_id", "user_id"),
-        EmbeddableDefinitionType()
-            .withName("project_user_id")
-            .withTables("project_users")
-            .withColumns("project_id", "user_id"),
     )

@@ -153,7 +153,7 @@ class AccessionsTable(private val tables: SearchTables) : SearchTable() {
     return ACCESSIONS.FACILITY_ID.`in`(currentUser().facilityRoles.keys)
   }
 
-  override fun conditionForScope(scope: SearchScope): Condition? {
+  override fun conditionForScope(scope: SearchScope): Condition {
     return when (scope) {
       is OrganizationIdScope -> ACCESSIONS.facilities().ORGANIZATION_ID.eq(scope.organizationId)
       is FacilityIdScope -> ACCESSIONS.FACILITY_ID.eq(scope.facilityId)

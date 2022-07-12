@@ -15,11 +15,8 @@ import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.records.OrganizationUsersRecord
-import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -42,7 +39,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(ORGANIZATIONS, PROJECTS, SITES, FACILITIES)
+    get() = listOf(ORGANIZATIONS)
 
   @Autowired private lateinit var config: TerrawareServerConfig
 

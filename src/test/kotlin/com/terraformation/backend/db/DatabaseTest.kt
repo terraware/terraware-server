@@ -22,9 +22,6 @@ import com.terraformation.backend.db.tables.daos.GerminationsDao
 import com.terraformation.backend.db.tables.daos.NotificationsDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
-import com.terraformation.backend.db.tables.daos.ProjectTypeSelectionsDao
-import com.terraformation.backend.db.tables.daos.ProjectsDao
-import com.terraformation.backend.db.tables.daos.SitesDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
 import com.terraformation.backend.db.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.tables.daos.StorageLocationsDao
@@ -40,19 +37,14 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.UPLOADS
 import com.terraformation.backend.db.tables.references.USERS
 import java.net.URI
 import java.time.Instant
-import java.time.LocalDate
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
-import net.postgis.jdbc.geometry.Point
 import org.jooq.Configuration
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -129,8 +121,6 @@ abstract class DatabaseTest {
   // ID values inserted by insertSiteData(). These are used in most database-backed tests. They are
   // marked as final so they can be referenced in constructor-initialized properties in subclasses.
   protected final val organizationId: OrganizationId = OrganizationId(1)
-  protected final val projectId: ProjectId = ProjectId(2)
-  protected final val siteId: SiteId = SiteId(10)
   protected final val facilityId: FacilityId = FacilityId(100)
 
   @BeforeEach
@@ -214,9 +204,6 @@ abstract class DatabaseTest {
   protected val notificationsDao: NotificationsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val photosDao: PhotosDao by lazyDao()
-  protected val projectsDao: ProjectsDao by lazyDao()
-  protected val projectTypeSelectionsDao: ProjectTypeSelectionsDao by lazyDao()
-  protected val sitesDao: SitesDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val storageLocationsDao: StorageLocationsDao by lazyDao()
@@ -234,8 +221,6 @@ abstract class DatabaseTest {
   fun insertSiteData() {
     insertUser()
     insertOrganization()
-    insertProject()
-    insertSite()
     insertFacility()
   }
 
@@ -259,71 +244,6 @@ abstract class DatabaseTest {
           .set(MODIFIED_TIME, Instant.EPOCH)
           .returning(ID)
           .fetchOne(ID)!!
-    }
-  }
-
-  protected fun insertProject(
-      id: Any = this.projectId,
-      organizationId: Any = this.organizationId,
-      name: String = "Project $id",
-      createdBy: UserId = currentUser().userId,
-      description: String? = null,
-      organizationWide: Boolean = false,
-      startDate: LocalDate? = null,
-      status: ProjectStatus? = null,
-      types: Collection<ProjectType> = emptySet(),
-  ) {
-    val projectId = id.toIdWrapper { ProjectId(it) }
-
-    with(PROJECTS) {
-      dslContext
-          .insertInto(PROJECTS)
-          .set(DESCRIPTION, description)
-          .set(ID, projectId)
-          .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
-          .set(NAME, name)
-          .set(ORGANIZATION_WIDE, organizationWide)
-          .set(START_DATE, startDate)
-          .set(STATUS_ID, status)
-          .execute()
-    }
-
-    types.forEach { type ->
-      with(PROJECT_TYPE_SELECTIONS) {
-        dslContext
-            .insertInto(PROJECT_TYPE_SELECTIONS)
-            .set(PROJECT_ID, projectId)
-            .set(PROJECT_TYPE_ID, type)
-            .execute()
-      }
-    }
-  }
-
-  protected fun insertSite(
-      id: Any = this.siteId,
-      projectId: Any = this.projectId,
-      name: String = "Site $id",
-      location: Point = mercatorPoint(1.0, 2.0, 0.0),
-      createdBy: UserId = currentUser().userId,
-      description: String? = null,
-  ) {
-    with(SITES) {
-      dslContext
-          .insertInto(SITES)
-          .set(ID, id.toIdWrapper { SiteId(it) })
-          .set(PROJECT_ID, projectId.toIdWrapper { ProjectId(it) })
-          .set(NAME, name)
-          .set(DESCRIPTION, description)
-          .set(LOCATION, location)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
-          .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
-          .execute()
     }
   }
 
