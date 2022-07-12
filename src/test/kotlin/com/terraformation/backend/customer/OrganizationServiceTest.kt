@@ -3,29 +3,24 @@ package com.terraformation.backend.customer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
-import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationDeletedEvent
-import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.records.OrganizationUsersRecord
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
 import com.terraformation.backend.db.tables.references.SITES
-import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -53,29 +48,22 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Autowired private lateinit var config: TerrawareServerConfig
 
   private val clock: Clock = mockk()
-  private lateinit var facilityStore: FacilityStore
-  private val messages: Messages = mockk()
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private lateinit var projectStore: ProjectStore
   private val publisher: ApplicationEventPublisher = mockk()
   private val realmResource: RealmResource = mockk()
-  private lateinit var siteStore: SiteStore
   private lateinit var userStore: UserStore
 
   private lateinit var service: OrganizationService
-
-  private val seedBankDefaultName = "Seed Bank"
 
   @BeforeEach
   fun setUp() {
     every { realmResource.users() } returns mockk()
 
     parentStore = ParentStore(dslContext)
-    facilityStore = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
     projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
-    siteStore = SiteStore(clock, dslContext, parentStore, sitesDao)
     userStore =
         UserStore(
             clock,
@@ -91,19 +79,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             usersDao,
         )
 
-    service =
-        OrganizationService(
-            dslContext,
-            facilityStore,
-            messages,
-            organizationStore,
-            projectStore,
-            publisher,
-            siteStore,
-            userStore)
+    service = OrganizationService(dslContext, organizationStore, projectStore, publisher, userStore)
 
     every { clock.instant() } returns Instant.EPOCH
-    every { messages.seedBankDefaultName() } returns seedBankDefaultName
     every { user.canCreateFacility(any()) } returns true
     every { user.canCreateProject(any()) } returns true
     every { user.canCreateSite(any()) } returns true
@@ -114,40 +92,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadStorageLocation(any()) } returns true
     every { user.canRemoveOrganizationUser(any(), any()) } returns true
-  }
-
-  @Test
-  fun `createOrganization creates seed bank project and site`() {
-    insertUser()
-
-    val expected =
-        OrganizationModel(
-            id = OrganizationId(1),
-            name = "Test Organization",
-            createdTime = clock.instant(),
-            totalUsers = 1)
-    val actual =
-        service.createOrganization(
-            OrganizationsRow(name = "Test Organization"), createSeedBank = true)
-
-    assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `createOrganization does not create seed bank project and site if creation flag is false`() {
-    insertUser()
-
-    val expected =
-        OrganizationModel(
-            id = OrganizationId(1),
-            name = "Test Organization",
-            createdTime = clock.instant(),
-            totalUsers = 1)
-    val actual =
-        service.createOrganization(
-            OrganizationsRow(name = "Test Organization"), createSeedBank = false)
-
-    assertEquals(expected, actual)
   }
 
   @Test

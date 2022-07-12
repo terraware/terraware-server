@@ -86,7 +86,7 @@ class OrganizationsController(
   fun createOrganization(
       @RequestBody @Valid payload: CreateOrganizationRequestPayload
   ): GetOrganizationResponsePayload {
-    val model = organizationService.createOrganization(payload.toRow(), true)
+    val model = organizationStore.createWithAdmin(payload.toRow())
     return GetOrganizationResponsePayload(OrganizationPayload(model, Role.OWNER))
   }
 
