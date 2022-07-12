@@ -22,7 +22,6 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -78,14 +77,8 @@ class FacilitiesController(
       @RequestBody payload: CreateFacilityRequestPayload
   ): CreateFacilityResponsePayload {
     val model =
-        when {
-          payload.siteId != null ->
-              facilityStore.create(payload.siteId, payload.type, payload.name, payload.description)
-          payload.organizationId != null ->
-              facilityService.create(
-                  payload.organizationId, payload.type, payload.name, payload.description)
-          else -> throw BadRequestException("Either siteId or organizationId must be specified.")
-        }
+        facilityService.create(
+            payload.organizationId, payload.type, payload.name, payload.description)
 
     return CreateFacilityResponsePayload(model.id)
   }
@@ -322,7 +315,6 @@ data class FacilityPayload(
     val id: FacilityId,
     val name: String,
     val organizationId: OrganizationId,
-    val siteId: SiteId,
     val type: FacilityType,
 ) {
   constructor(
@@ -334,7 +326,6 @@ data class FacilityPayload(
       model.id,
       model.name,
       model.organizationId,
-      model.siteId,
       model.type)
 }
 
@@ -363,16 +354,10 @@ data class CreateAutomationResponsePayload(val id: AutomationId) : SuccessRespon
 
 data class CreateFacilityRequestPayload(
     val description: String?,
-    @Schema(
-        description =
-            "Which organization this facility belongs to. Either this or siteId must be specified.")
-    val organizationId: OrganizationId?,
+    @Schema(description = "Which organization this facility belongs to.")
+    val organizationId: OrganizationId,
     val name: String,
     val type: FacilityType,
-    @Schema(
-        description =
-            "Which site this facility belongs to. Either this or organizationId must be specified.")
-    val siteId: SiteId?,
 )
 
 data class CreateFacilityResponsePayload(val id: FacilityId) : SuccessResponsePayload

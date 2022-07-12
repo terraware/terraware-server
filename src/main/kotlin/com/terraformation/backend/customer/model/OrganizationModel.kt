@@ -17,37 +17,34 @@ data class OrganizationModel(
     val createdTime: Instant,
     val disabledTime: Instant? = null,
     val facilities: List<FacilityModel>? = null,
-    val projects: List<ProjectModel>? = null,
     val totalUsers: Int,
 ) {
   constructor(
       record: Record,
       facilitiesMultiset: Field<List<FacilityModel>>?,
-      projectsMultiset: Field<List<ProjectModel>?>,
       totalUsersSubquery: Field<Int>,
   ) : this(
+      id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
+      name = record[ORGANIZATIONS.NAME] ?: throw IllegalArgumentException("Name is required"),
+      description = record[ORGANIZATIONS.DESCRIPTION],
       countryCode = record[ORGANIZATIONS.COUNTRY_CODE],
       countrySubdivisionCode = record[ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE],
       createdTime = record[ORGANIZATIONS.CREATED_TIME]
               ?: throw IllegalArgumentException("Created time is required"),
-      description = record[ORGANIZATIONS.DESCRIPTION],
       disabledTime = record[ORGANIZATIONS.DISABLED_TIME],
       facilities = record[facilitiesMultiset],
-      id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
-      name = record[ORGANIZATIONS.NAME] ?: throw IllegalArgumentException("Name is required"),
-      projects = record[projectsMultiset],
       totalUsers = record[totalUsersSubquery],
   )
 }
 
 fun OrganizationsRow.toModel(totalUsers: Int): OrganizationModel =
     OrganizationModel(
+        id = id ?: throw IllegalArgumentException("ID is required"),
+        name = name ?: throw IllegalArgumentException("Name is required"),
+        description = description,
         countryCode = countryCode,
         countrySubdivisionCode = countrySubdivisionCode,
         createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
-        description = description,
         disabledTime = disabledTime,
-        id = id ?: throw IllegalArgumentException("ID is required"),
-        name = name ?: throw IllegalArgumentException("Name is required"),
         totalUsers = totalUsers,
     )

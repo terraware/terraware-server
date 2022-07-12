@@ -65,9 +65,9 @@ data class UserProfilePayload(
     val email: String,
     @Schema(
         description =
-            "If true, the user wants to receive all the notifications for their organization and " +
-                "projects via email. This does not apply to certain kinds of notifications such " +
-                "as \"You've been added to a new organization.\"")
+            "If true, the user wants to receive all the notifications for their organizations " +
+                "via email. This does not apply to certain kinds of notifications such as " +
+                "\"You've been added to a new organization.\"")
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
@@ -78,10 +78,10 @@ data class GetUserResponsePayload(val user: UserProfilePayload) : SuccessRespons
 data class UpdateUserRequestPayload(
     @Schema(
         description =
-            "If true, the user wants to receive all the notifications for their organization and " +
-                "projects via email. This does not apply to certain kinds of notifications such " +
-                "as \"You've been added to a new organization.\" If null, leave the existing " +
-                "value as-is.")
+            "If true, the user wants to receive all the notifications for their organizations " +
+                "via email. This does not apply to certain kinds of notifications such as " +
+                "\"You've been added to a new organization.\" If null, leave the existing value " +
+                "as-is.")
     val emailNotificationsEnabled: Boolean? = null,
     val firstName: String,
     val lastName: String,

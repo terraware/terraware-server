@@ -4,20 +4,16 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
-import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.customer.model.toModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.references.COUNTRIES
@@ -26,11 +22,8 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.PROJECT_TYPE_SELECTIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.USERS
-import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -95,77 +88,6 @@ class OrganizationStore(
           DSL.value(null as List<FacilityModel>?)
         }
 
-    val siteFacilitiesMultiset =
-        if (depth.level >= FetchDepth.Facility.level) {
-          DSL.multiset(
-                  DSL.select(FACILITIES.asterisk())
-                      .from(FACILITIES)
-                      .where(FACILITIES.SITE_ID.eq(SITES.ID))
-                      .orderBy(FACILITIES.ID))
-              .convertFrom { result -> result.map { FacilityModel(it) } }
-        } else {
-          DSL.value(null as List<FacilityModel>?)
-        }
-
-    val sitesMultiset =
-        if (depth.level >= FetchDepth.Site.level) {
-          DSL.multiset(
-                  DSL.select(
-                          SITES.CREATED_TIME,
-                          SITES.DESCRIPTION,
-                          SITES.ENABLED,
-                          SITES.ID,
-                          SITES.LOCALE,
-                          SITES.MODIFIED_TIME,
-                          SITES.NAME,
-                          SITES.PROJECT_ID,
-                          SITES.TIMEZONE,
-                          SITES.LOCATION.transformSrid(SRID.LONG_LAT)
-                              .forMultiset()
-                              .`as`(SITES.LOCATION),
-                          siteFacilitiesMultiset)
-                      .from(SITES)
-                      .where(SITES.PROJECT_ID.eq(PROJECTS.ID))
-                      .orderBy(SITES.ID))
-              .convertFrom { result ->
-                result.map { record -> SiteModel(record, siteFacilitiesMultiset) }
-              }
-        } else {
-          DSL.value(null as List<SiteModel>?)
-        }
-
-    val projectsMultiset =
-        if (depth.level >= FetchDepth.Project.level) {
-          val projectIds = user.projectRoles.keys
-
-          // If the user isn't in any projects, we still want to construct a properly-typed
-          // multiset, but it should be empty.
-          val projectsCondition =
-              if (projectIds.isNotEmpty()) {
-                PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID).and(PROJECTS.ID.`in`(projectIds))
-              } else {
-                DSL.falseCondition()
-              }
-
-          val projectTypesMultiset =
-              DSL.multiset(
-                      DSL.select(PROJECT_TYPE_SELECTIONS.PROJECT_TYPE_ID)
-                          .from(PROJECT_TYPE_SELECTIONS)
-                          .where(PROJECT_TYPE_SELECTIONS.PROJECT_ID.eq(PROJECTS.ID)))
-                  .convertFrom { result -> result.map { it.value1() } }
-
-          DSL.multiset(
-                  DSL.select(PROJECTS.asterisk(), sitesMultiset, projectTypesMultiset)
-                      .from(PROJECTS)
-                      .where(projectsCondition)
-                      .orderBy(PROJECTS.ID))
-              .convertFrom { result ->
-                result.map { ProjectModel(it, sitesMultiset, projectTypesMultiset) }
-              }
-        } else {
-          DSL.value(null as List<ProjectModel>?)
-        }
-
     val totalUsersSubquery =
         DSL.field(
             DSL.selectCount()
@@ -173,11 +95,11 @@ class OrganizationStore(
                 .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
 
     return dslContext
-        .select(ORGANIZATIONS.asterisk(), facilitiesMultiset, projectsMultiset, totalUsersSubquery)
+        .select(ORGANIZATIONS.asterisk(), facilitiesMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
         .where(listOfNotNull(ORGANIZATIONS.ID.`in`(organizationIds), condition))
         .orderBy(ORGANIZATIONS.ID)
-        .fetch { OrganizationModel(it, facilitiesMultiset, projectsMultiset, totalUsersSubquery) }
+        .fetch { OrganizationModel(it, facilitiesMultiset, totalUsersSubquery) }
   }
 
   /** Creates a new organization and makes the current user an owner. */
@@ -557,8 +479,6 @@ class OrganizationStore(
 
   enum class FetchDepth(val level: Int) {
     Organization(1),
-    Project(2),
-    Site(3),
-    Facility(4)
+    Facility(2)
   }
 }

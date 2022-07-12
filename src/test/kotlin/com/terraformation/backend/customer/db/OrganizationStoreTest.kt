@@ -5,9 +5,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
-import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.customer.model.SiteModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
@@ -16,13 +14,9 @@ import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectStatus
-import com.terraformation.backend.db.ProjectType
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.newPoint
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.PROJECT_USERS
@@ -31,7 +25,6 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
-import java.time.LocalDate
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,11 +43,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var permissionStore: PermissionStore
   private lateinit var store: OrganizationStore
 
-  // This gets converted to Mercator in the DB; using smaller values causes floating-point
-  // inaccuracies that make assertEquals() fail. The values here work on x86_64; keep an eye on
-  // whether they work consistently across platforms.
-  private val location = newPoint(150.0, 80.0, 30.0, SRID.LONG_LAT)
-
   private val facilityModel =
       FacilityModel(
           connectionState = FacilityConnectionState.NotConnected,
@@ -68,38 +56,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
           organizationId = organizationId,
           siteId = siteId,
           type = FacilityType.SeedBank)
-  private val siteModel =
-      SiteModel(
-          id = siteId,
-          projectId = projectId,
-          name = "Site $siteId",
-          description = "Description $siteId",
-          location = location,
-          createdTime = Instant.EPOCH,
-          modifiedTime = Instant.EPOCH,
-          facilities = listOf(facilityModel))
-  private val projectModel =
-      ProjectModel(
-          createdTime = Instant.EPOCH,
-          description = "Project description $projectId",
-          hidden = false,
-          id = projectId,
-          organizationId = organizationId,
-          organizationWide = false,
-          name = "Project $projectId",
-          sites = listOf(siteModel),
-          startDate = LocalDate.EPOCH.plusDays(projectId.value),
-          status = ProjectStatus.Planting,
-          types = setOf(ProjectType.Agroforestry, ProjectType.SustainableTimber))
   private val organizationModel =
       OrganizationModel(
-          createdTime = Instant.EPOCH,
-          countryCode = "US",
-          countrySubdivisionCode = "US-HI",
-          facilities = listOf(facilityModel),
           id = organizationId,
           name = "Organization $organizationId",
-          projects = listOf(projectModel),
+          countryCode = "US",
+          countrySubdivisionCode = "US-HI",
+          createdTime = Instant.EPOCH,
+          facilities = listOf(facilityModel),
           totalUsers = 0)
 
   @BeforeEach
@@ -124,19 +88,13 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
 
     insertUser()
-    assertEquals(
-        organizationId,
-        insertOrganization(
-            null,
-            name = organizationModel.name,
-            countryCode = organizationModel.countryCode,
-            countrySubdivisionCode = organizationModel.countrySubdivisionCode))
-    insertProject(
-        description = projectModel.description,
-        startDate = projectModel.startDate,
-        status = projectModel.status,
-        types = projectModel.types)
-    insertSite(description = siteModel.description, location = location)
+    insertOrganization(
+        id = null,
+        name = organizationModel.name,
+        countryCode = organizationModel.countryCode,
+        countrySubdivisionCode = organizationModel.countrySubdivisionCode)
+    insertProject()
+    insertSite()
     insertFacility()
   }
 
@@ -148,23 +106,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         "Fetch depth = Facility")
 
     assertEquals(
-        listOf(
-            organizationModel.copy(
-                facilities = null,
-                projects =
-                    listOf(projectModel.copy(sites = listOf(siteModel.copy(facilities = null)))))),
-        store.fetchAll(OrganizationStore.FetchDepth.Site),
-        "Fetch depth = Site")
-
-    assertEquals(
-        listOf(
-            organizationModel.copy(
-                facilities = null, projects = listOf(projectModel.copy(sites = null)))),
-        store.fetchAll(OrganizationStore.FetchDepth.Project),
-        "Fetch depth = Project")
-
-    assertEquals(
-        listOf(organizationModel.copy(facilities = null, projects = null)),
+        listOf(organizationModel.copy(facilities = null)),
         store.fetchAll(OrganizationStore.FetchDepth.Organization),
         "Fetch depth = Organization")
   }
@@ -177,21 +119,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         "Fetch depth = Facility")
 
     assertEquals(
-        organizationModel.copy(
-            facilities = null,
-            projects =
-                listOf(projectModel.copy(sites = listOf(siteModel.copy(facilities = null))))),
-        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Site),
-        "Fetch depth = Site")
-
-    assertEquals(
-        organizationModel.copy(
-            facilities = null, projects = listOf(projectModel.copy(sites = null))),
-        store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Project),
-        "Fetch depth = Project")
-
-    assertEquals(
-        organizationModel.copy(facilities = null, projects = null),
+        organizationModel.copy(facilities = null),
         store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Organization),
         "Fetch depth = Organization")
   }
@@ -228,7 +156,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.facilityRoles } returns emptyMap()
     every { user.projectRoles } returns emptyMap()
 
-    val expected = organizationModel.copy(facilities = emptyList(), projects = emptyList())
+    val expected = organizationModel.copy(facilities = emptyList())
 
     val actual = store.fetchOneById(organizationId, OrganizationStore.FetchDepth.Facility)
     assertEquals(expected, actual)
@@ -239,7 +167,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.facilityRoles } returns emptyMap()
     every { user.projectRoles } returns emptyMap()
 
-    val expected = listOf(organizationModel.copy(facilities = emptyList(), projects = emptyList()))
+    val expected = listOf(organizationModel.copy(facilities = emptyList()))
 
     val actual = store.fetchAll(OrganizationStore.FetchDepth.Facility)
     assertEquals(expected, actual)
