@@ -3,10 +3,9 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.FacilityService
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.db.ProjectStore
-import com.terraformation.backend.customer.db.SiteStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.model.Role
@@ -18,9 +17,6 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
@@ -31,14 +27,12 @@ import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
-import com.terraformation.backend.db.tables.pojos.SitesRow
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.time.DatabaseBackedClock
-import java.math.BigDecimal
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -49,13 +43,10 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipFile
 import javax.servlet.http.HttpServletRequest
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteIfExists
 import kotlin.random.Random
-import net.postgis.jdbc.geometry.Point
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.tomcat.util.buf.HexUtils
 import org.jooq.DSLContext
@@ -90,12 +81,11 @@ class AdminController(
     private val deviceStore: DeviceStore,
     private val deviceTemplatesDao: DeviceTemplatesDao,
     private val dslContext: DSLContext,
+    private val facilityService: FacilityService,
     private val facilityStore: FacilityStore,
     private val gbifImporter: GbifImporter,
     private val organizationStore: OrganizationStore,
-    private val projectStore: ProjectStore,
     private val publisher: ApplicationEventPublisher,
-    private val siteStore: SiteStore,
     private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
@@ -122,7 +112,7 @@ class AdminController(
   @GetMapping("/organization/{organizationId}")
   fun getOrganization(@PathVariable organizationId: OrganizationId, model: Model): String {
     val organization = organizationStore.fetchOneById(organizationId)
-    val projects = projectStore.fetchByOrganization(organizationId).sortedBy { it.name }
+    val facilities = facilityStore.fetchByOrganizationId(organizationId)
     val users = organizationStore.fetchUsers(organizationId).sortedBy { it.email }
 
     if (currentUser().canListApiKeys(organizationId)) {
@@ -146,64 +136,24 @@ class AdminController(
 
     model.addAttribute("canAddUser", currentUser().canAddOrganizationUser(organizationId))
     model.addAttribute("canCreateApiKey", currentUser().canCreateApiKey(organizationId))
-    model.addAttribute("canCreateProject", currentUser().canCreateProject(organizationId))
+    model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
     model.addAttribute("canDeleteApiKey", currentUser().canDeleteApiKey(organizationId))
     model.addAttribute("canListApiKeys", currentUser().canListApiKeys(organizationId))
+    model.addAttribute("facilities", facilities)
+    model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
-    model.addAttribute("projects", projects)
     model.addAttribute("roles", Role.values())
     model.addAttribute("users", users.filter { it.userType != UserType.APIClient })
 
     return "/admin/organization"
   }
 
-  @GetMapping("/project/{projectId}")
-  fun getProject(@PathVariable projectId: ProjectId, model: Model): String {
-    val project = projectStore.fetchOneById(projectId)
-    val organization = organizationStore.fetchOneById(project.organizationId)
-    val orgUsers = organizationStore.fetchUsers(project.organizationId).sortedBy { it.email }
-    val projectUsers = orgUsers.filter { projectId in it.projectIds }
-    val availableUsers = orgUsers.filter { projectId !in it.projectIds }
-    val sites = siteStore.fetchByProjectId(projectId).sortedBy { it.name }
-
-    model.addAttribute("availableUsers", availableUsers)
-    model.addAttribute("canCreateSite", currentUser().canCreateSite(projectId))
-    model.addAttribute("organization", organization)
-    model.addAttribute("prefix", prefix)
-    model.addAttribute("project", project)
-    model.addAttribute("sites", sites)
-    model.addAttribute("users", projectUsers)
-
-    return "/admin/project"
-  }
-
-  @GetMapping("/site/{siteId}")
-  fun getSite(@PathVariable siteId: SiteId, model: Model): String {
-    val site = siteStore.fetchOneById(siteId)
-    val projectId = site.projectId
-    val project = projectStore.fetchOneById(projectId)
-    val organization = organizationStore.fetchOneById(project.organizationId)
-    val facilities = facilityStore.fetchBySiteId(siteId).sortedBy { it.name }
-
-    model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
-    model.addAttribute("facilities", facilities)
-    model.addAttribute("facilityTypes", FacilityType.values())
-    model.addAttribute("organization", organization)
-    model.addAttribute("prefix", prefix)
-    model.addAttribute("project", project)
-    model.addAttribute("site", site)
-
-    return "/admin/site"
-  }
-
   @GetMapping("/facility/{facilityId}")
   fun getFacility(@PathVariable facilityId: FacilityId, model: Model): String {
     val facility = facilityStore.fetchOneById(facilityId)
-    val site = siteStore.fetchOneById(facility.siteId)
-    val project = projectStore.fetchOneById(site.projectId)
-    val organization = organizationStore.fetchOneById(project.organizationId)
-    val recipients = organizationStore.fetchEmailRecipients(project.organizationId)
+    val organization = organizationStore.fetchOneById(facility.organizationId)
+    val recipients = organizationStore.fetchEmailRecipients(facility.organizationId)
     val storageLocations = facilityStore.fetchStorageLocations(facilityId)
     val deviceManager = deviceManagerStore.fetchOneByFacilityId(facilityId)
     val devices = deviceStore.fetchByFacilityId(facilityId)
@@ -216,9 +166,7 @@ class AdminController(
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
-    model.addAttribute("project", project)
     model.addAttribute("recipients", recipients)
-    model.addAttribute("site", site)
     model.addAttribute("storageConditions", StorageCondition.values())
     model.addAttribute("storageLocations", storageLocations)
 
@@ -229,11 +177,9 @@ class AdminController(
   fun getUser(@PathVariable userId: UserId, model: Model): String {
     val user = userStore.fetchOneById(userId)
     val organizations = organizationStore.fetchAll() // TODO: Only ones where currentUser is admin?
-    val projects = projectStore.findAll().groupBy { it.organizationId }
 
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
-    model.addAttribute("projects", projects)
     model.addAttribute("roles", Role.values())
     model.addAttribute("user", user)
 
@@ -300,11 +246,9 @@ class AdminController(
       @RequestParam("userId") userId: UserId,
       @RequestParam("organizationId", required = false) organizationIdList: List<OrganizationId>?,
       @RequestParam("role", required = false) roleValues: List<String>?,
-      @RequestParam("projectId", required = false) projectIdList: List<ProjectId>?,
       redirectAttributes: RedirectAttributes,
   ): String {
     val organizationIds = organizationIdList?.toSet() ?: emptySet()
-    val projectIds = projectIdList?.toSet() ?: emptySet()
 
     // Roles are of the form orgId:roleId
     val roles =
@@ -329,14 +273,10 @@ class AdminController(
             .map { it.id }
             .filter { currentUser().canAddOrganizationUser(it) }
             .toSet()
-    val adminProjectIds =
-        projectStore.findAll().map { it.id }.filter { currentUser().canAddProjectUser(it) }.toSet()
 
     val organizationsToAdd = organizationIds - user.organizationRoles.keys
     val organizationsToRemove = adminOrganizationIds - organizationIds
     val organizationsToUpdate = organizationIds.filter { user.organizationRoles[it] != roles[it] }
-    val projectsToAdd = projectIds - user.projectRoles.keys
-    val projectsToRemove = adminProjectIds - projectIds
 
     dslContext.transaction { _ ->
       organizationsToAdd.forEach { organizationId ->
@@ -350,9 +290,6 @@ class AdminController(
           organizationStore.setUserRole(organizationId, userId, newRole)
         }
       }
-
-      projectsToAdd.forEach { projectId -> projectStore.addUser(projectId, userId) }
-      projectsToRemove.forEach { projectId -> projectStore.removeUser(projectId, userId) }
     }
 
     redirectAttributes.successMessage = "User memberships updated."
@@ -458,84 +395,9 @@ class AdminController(
     return organization(organizationId)
   }
 
-  @PostMapping("/createProject")
-  fun createProject(
-      @RequestParam("organizationId") organizationId: OrganizationId,
-      @NotBlank @RequestParam("name") name: String,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      projectStore.create(organizationId, name)
-      redirectAttributes.successMessage = "Project created."
-    } catch (e: AccessDeniedException) {
-      redirectAttributes.failureMessage = "No permission to create projects in this organization."
-    }
-
-    return organization(organizationId)
-  }
-
-  @PostMapping("/removeProjectUser")
-  fun removeProjectUser(
-      @RequestParam("projectId") projectId: ProjectId,
-      @RequestParam("userId") userId: UserId,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      projectStore.removeUser(projectId, userId)
-      redirectAttributes.successMessage = "User removed from project."
-    } catch (e: AccessDeniedException) {
-      redirectAttributes.failureMessage = "No permission to remove users from this project."
-    } catch (e: UserNotFoundException) {
-      redirectAttributes.failureMessage = "User was not a member of the project."
-    }
-
-    return project(projectId)
-  }
-
-  @PostMapping("/addProjectUser")
-  fun addProjectUser(
-      @RequestParam("projectId") projectId: ProjectId,
-      @RequestParam("userId") userId: UserId,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      projectStore.addUser(projectId, userId)
-      redirectAttributes.successMessage = "User added to project."
-    } catch (e: AccessDeniedException) {
-      redirectAttributes.failureMessage = "No permission to add users to this project."
-    } catch (e: DuplicateKeyException) {
-      redirectAttributes.failureMessage = "User is already in this project."
-    }
-
-    return project(projectId)
-  }
-
-  @PostMapping("/createSite")
-  fun createSite(
-      @RequestParam("projectId") projectId: ProjectId,
-      @NotBlank @RequestParam("name") name: String,
-      @Min(-180L) @Max(180L) @RequestParam("latitude") latitude: BigDecimal,
-      @Min(-180L) @Max(180L) @RequestParam("longitude") longitude: BigDecimal,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val location =
-        Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
-
-    try {
-      siteStore.create(SitesRow(projectId = projectId, name = name, location = location))
-
-      redirectAttributes.successMessage = "Site created."
-    } catch (e: Exception) {
-      log.error("Site creation failed", e)
-      redirectAttributes.failureMessage = "Unable to create site."
-    }
-
-    return project(projectId)
-  }
-
   @PostMapping("/createFacility")
   fun createFacility(
-      @RequestParam("siteId") siteId: SiteId,
+      @RequestParam("organizationId") organizationId: OrganizationId,
       @NotBlank @RequestParam("name") name: String,
       @RequestParam("type") typeId: Int,
       redirectAttributes: RedirectAttributes,
@@ -544,14 +406,14 @@ class AdminController(
 
     if (type == null) {
       redirectAttributes.failureMessage = "Unknown facility type."
-      return site(siteId)
+      return organization(organizationId)
     }
 
-    facilityStore.create(siteId, type, name)
+    facilityService.create(organizationId, type, name)
 
     redirectAttributes.successMessage = "Facility created."
 
-    return site(siteId)
+    return organization(organizationId)
   }
 
   @PostMapping("/updateFacility")
@@ -959,8 +821,6 @@ class AdminController(
   private fun listDeviceManagers() = redirect("/listDeviceManagers")
   private fun organization(organizationId: OrganizationId) =
       redirect("/organization/$organizationId")
-  private fun project(projectId: ProjectId) = redirect("/project/$projectId")
-  private fun site(siteId: SiteId) = redirect("/site/$siteId")
   private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")
   private fun testClock() = redirect("/testClock")
   private fun user(userId: UserId) = redirect("/user/$userId")

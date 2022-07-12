@@ -10,6 +10,7 @@ import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.StorageCondition
@@ -61,15 +62,15 @@ class FacilityStore(
     }
   }
 
-  /** Returns all the facilities the current user can access at a site. */
-  fun fetchBySiteId(siteId: SiteId): List<FacilityModel> {
-    val organizationId =
-        parentStore.getOrganizationId(siteId) ?: throw SiteNotFoundException(siteId)
-    return if (currentUser().canListFacilities(organizationId)) {
-      facilitiesDao.fetchBySiteId(siteId).map { it.toModel() }
-    } else {
-      emptyList()
-    }
+  fun fetchByOrganizationId(organizationId: OrganizationId): List<FacilityModel> {
+    requirePermissions { readOrganization(organizationId) }
+
+    val user = currentUser()
+
+    return facilitiesDao
+        .fetchByOrganizationId(organizationId)
+        .map { it.toModel() }
+        .filter { user.canReadFacility(it.id) }
   }
 
   /**
