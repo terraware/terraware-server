@@ -155,7 +155,7 @@ class UserStore(
           }
         }
 
-    return user?.let { rowToIndividual(it) }
+    return user?.let { rowToIndividualUser(it) }
   }
 
   /**
@@ -190,7 +190,7 @@ class UserStore(
 
     log.info("Created unregistered user ${row.id} for email $email")
 
-    return rowToIndividual(row)
+    return rowToIndividualUser(row)
   }
 
   /**
@@ -237,7 +237,7 @@ class UserStore(
             lastName,
             requiredActions = setOf(KeycloakRequiredActions.UpdatePassword))
     val usersRow = insertKeycloakUser(keycloakUser)
-    val user = rowToIndividual(usersRow)
+    val user = rowToIndividualUser(usersRow)
 
     organizationStore.addUser(organizationId, user.userId, role)
 
@@ -301,7 +301,10 @@ class UserStore(
    * - The last name includes the organization ID
    * - The first name is the admin-supplied description
    */
-  fun createDeviceManager(organizationId: OrganizationId, description: String?): DeviceManagerUser {
+  fun createDeviceManagerUser(
+      organizationId: OrganizationId,
+      description: String?
+  ): DeviceManagerUser {
     requirePermissions { createApiKey(organizationId) }
 
     // Use base32 instead of base64 so the username doesn't include "/" and "+".
@@ -315,7 +318,7 @@ class UserStore(
 
     organizationStore.addUser(organizationId, userId, Role.CONTRIBUTOR)
 
-    return rowToDeviceManager(usersRow)
+    return rowToDeviceManagerUser(usersRow)
   }
 
   /**
@@ -478,7 +481,7 @@ class UserStore(
     }
   }
 
-  private fun rowToIndividual(usersRow: UsersRow): IndividualUser {
+  private fun rowToIndividualUser(usersRow: UsersRow): IndividualUser {
     return IndividualUser(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId,
@@ -493,7 +496,7 @@ class UserStore(
     )
   }
 
-  private fun rowToDeviceManager(usersRow: UsersRow): DeviceManagerUser {
+  private fun rowToDeviceManagerUser(usersRow: UsersRow): DeviceManagerUser {
     return DeviceManagerUser(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId ?: throw IllegalArgumentException("Auth ID should never be null"),
@@ -503,9 +506,9 @@ class UserStore(
 
   private fun rowToModel(user: UsersRow): TerrawareUser {
     return if (user.userTypeId == UserType.DeviceManager) {
-      rowToDeviceManager(user)
+      rowToDeviceManagerUser(user)
     } else {
-      rowToIndividual(user)
+      rowToIndividualUser(user)
     }
   }
 

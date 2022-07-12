@@ -217,18 +217,18 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `createDeviceManager throws exception if user does not have permission`() {
+    fun `createDeviceManagerUser throws exception if user does not have permission`() {
       every { user.canCreateApiKey(organizationId) } returns false
 
       assertThrows<AccessDeniedException> {
-        userStore.createDeviceManager(organizationId, "Description")
+        userStore.createDeviceManagerUser(organizationId, "Description")
       }
     }
 
     @Test
-    fun `createDeviceManager registers user in Keycloak and adds it to organization`() {
+    fun `createDeviceManagerUser registers user in Keycloak and adds it to organization`() {
       val description = "Description"
-      val newUser = userStore.createDeviceManager(organizationId, description)
+      val newUser = userStore.createDeviceManagerUser(organizationId, description)
 
       val keycloakUser = usersResource.get(newUser.authId)!!.toRepresentation()
       assertEquals(
@@ -268,7 +268,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken requests a token from Keycloak`() {
-      val user = userStore.createDeviceManager(organizationId, null)
+      val user = userStore.createDeviceManagerUser(organizationId, null)
       val expectedToken = "token"
 
       val response: HttpResponse<String> = mockk()
@@ -286,7 +286,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken throws exception if Keycloak returns a malformed token response`() {
-      val user = userStore.createDeviceManager(organizationId, null)
+      val user = userStore.createDeviceManagerUser(organizationId, null)
 
       val response: HttpResponse<String> = mockk()
       val requestSlot = slot<HttpRequest>()
@@ -300,7 +300,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken throws exception if Keycloak does not generate a token`() {
-      val user = userStore.createDeviceManager(organizationId, null)
+      val user = userStore.createDeviceManagerUser(organizationId, null)
 
       val response: HttpResponse<String> = mockk()
       val requestSlot = slot<HttpRequest>()
@@ -314,7 +314,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken generates a temporary password and removes it if token creation fails`() {
-      val user = userStore.createDeviceManager(organizationId, null)
+      val user = userStore.createDeviceManagerUser(organizationId, null)
       val keycloakUser = usersResource.get(user.authId)!!
 
       val response: HttpResponse<String> = mockk()
