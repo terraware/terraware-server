@@ -23,7 +23,8 @@ import org.springframework.security.core.userdetails.UserDetails
 
 /**
  * Details about the user who is making the current request and the permissions they have. This
- * always represents a regular (presumably human) user or a device manager.
+ * always represents a regular (presumably human) user; device managers are represented by
+ * [DeviceManagerUser].
  *
  * To get the current user's details, call [currentUser]. See that function's docs for some caveats,
  * but this is usually what you'll want to do.
@@ -53,7 +54,7 @@ import org.springframework.security.core.userdetails.UserDetails
  */
 data class IndividualUser(
     override val userId: UserId,
-    val authId: String?,
+    override val authId: String?,
     val email: String,
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
@@ -102,7 +103,6 @@ data class IndividualUser(
 
   private fun canAccessAutomations(facilityId: FacilityId): Boolean {
     // All users that have access to the facility have full permissions on automations.
-    // TODO: Revisit automation permissions once we can set roles on API clients
     return facilityId in facilityRoles
   }
 
@@ -163,19 +163,16 @@ data class IndividualUser(
 
   override fun canCreateDevice(facilityId: FacilityId): Boolean {
     // Any user with access to the facility can create a new device.
-    // TODO: Revisit this once we can set roles on API clients
     return facilityId in facilityRoles
   }
 
   override fun canReadDevice(deviceId: DeviceId): Boolean {
     // Any user with access to the facility can read a device.
-    // TODO: Revisit this once we can set roles on API clients (settings may contain sensitive data)
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
   }
 
   override fun canUpdateDevice(deviceId: DeviceId): Boolean {
-    // TODO: Revisit this once we can set roles on API clients
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
   }

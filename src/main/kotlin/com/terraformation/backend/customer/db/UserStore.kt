@@ -8,8 +8,10 @@ import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.auth.KeycloakRequiredActions
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
@@ -93,7 +95,7 @@ class UserStore(
    * implies that the user didn't exist in the users table.
    * @throws KeycloakUserNotFoundException There is no user with that ID in the Keycloak database.
    */
-  fun fetchByAuthId(authId: String): IndividualUser {
+  fun fetchByAuthId(authId: String): TerrawareUser {
     val existingUser = usersDao.fetchOneByAuthId(authId)
     val user =
         if (existingUser != null) {
@@ -153,14 +155,14 @@ class UserStore(
           }
         }
 
-    return user?.let { rowToModel(it) }
+    return user?.let { rowToIndividualUser(it) }
   }
 
   /**
    * Returns the details for the user with a given user ID. This does not pull information from
    * Keycloak; it only works for users whose data was previously inserted into our users table.
    */
-  fun fetchOneById(userId: UserId): IndividualUser {
+  fun fetchOneById(userId: UserId): TerrawareUser {
     return usersDao.fetchOneById(userId)?.let { rowToModel(it) }
         ?: throw UserNotFoundException(userId)
   }
@@ -188,7 +190,7 @@ class UserStore(
 
     log.info("Created unregistered user ${row.id} for email $email")
 
-    return rowToModel(row)
+    return rowToIndividualUser(row)
   }
 
   /**
@@ -235,7 +237,7 @@ class UserStore(
             lastName,
             requiredActions = setOf(KeycloakRequiredActions.UpdatePassword))
     val usersRow = insertKeycloakUser(keycloakUser)
-    val user = rowToModel(usersRow)
+    val user = rowToIndividualUser(usersRow)
 
     organizationStore.addUser(organizationId, user.userId, role)
 
@@ -299,7 +301,10 @@ class UserStore(
    * - The last name includes the organization ID
    * - The first name is the admin-supplied description
    */
-  fun createDeviceManager(organizationId: OrganizationId, description: String?): IndividualUser {
+  fun createDeviceManagerUser(
+      organizationId: OrganizationId,
+      description: String?
+  ): DeviceManagerUser {
     requirePermissions { createApiKey(organizationId) }
 
     // Use base32 instead of base64 so the username doesn't include "/" and "+".
@@ -309,11 +314,11 @@ class UserStore(
 
     val keycloakUser = registerKeycloakUser(username, description, lastName, UserType.DeviceManager)
     val usersRow = insertKeycloakUser(keycloakUser, UserType.DeviceManager)
-    val user = rowToModel(usersRow)
+    val userId = usersRow.id ?: throw IllegalStateException("User ID must be non-null")
 
-    organizationStore.addUser(organizationId, user.userId, Role.CONTRIBUTOR)
+    organizationStore.addUser(organizationId, userId, Role.CONTRIBUTOR)
 
-    return user
+    return rowToDeviceManagerUser(usersRow)
   }
 
   /**
@@ -444,8 +449,7 @@ class UserStore(
                   e)
 
               // But return the token anyway; it should be usable and a long random password
-              // sticking
-              // around afterwards should be harmless.
+              // sticking around afterwards should be harmless.
             }
           }
     }
@@ -477,7 +481,7 @@ class UserStore(
     }
   }
 
-  private fun rowToModel(usersRow: UsersRow): IndividualUser {
+  private fun rowToIndividualUser(usersRow: UsersRow): IndividualUser {
     return IndividualUser(
         usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
         usersRow.authId,
@@ -490,6 +494,22 @@ class UserStore(
         parentStore,
         permissionStore,
     )
+  }
+
+  private fun rowToDeviceManagerUser(usersRow: UsersRow): DeviceManagerUser {
+    return DeviceManagerUser(
+        usersRow.id ?: throw IllegalArgumentException("User ID should never be null"),
+        usersRow.authId ?: throw IllegalArgumentException("Auth ID should never be null"),
+        parentStore,
+        permissionStore)
+  }
+
+  private fun rowToModel(user: UsersRow): TerrawareUser {
+    return if (user.userTypeId == UserType.DeviceManager) {
+      rowToDeviceManagerUser(user)
+    } else {
+      rowToIndividualUser(user)
+    }
   }
 
   private fun insertKeycloakUser(

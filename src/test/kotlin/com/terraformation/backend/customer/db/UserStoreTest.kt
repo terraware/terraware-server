@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -120,14 +121,14 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchByAuthId returns existing user without touching Keycloak`() {
     insertUser(authId = authId)
 
-    val actual = userStore.fetchByAuthId(authId)
+    val actual = userStore.fetchByAuthId(authId) as IndividualUser
 
     assertEquals(authId, actual.authId)
   }
 
   @Test
   fun `fetchByAuthId fetches user information from Keycloak if not found locally`() {
-    val user = userStore.fetchByAuthId(authId)
+    val user = userStore.fetchByAuthId(authId) as IndividualUser
 
     assertEquals(userRepresentation.email, user.email)
   }
@@ -216,20 +217,20 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `createDeviceManager throws exception if user does not have permission to create clients`() {
+    fun `createDeviceManagerUser throws exception if user does not have permission`() {
       every { user.canCreateApiKey(organizationId) } returns false
 
       assertThrows<AccessDeniedException> {
-        userStore.createDeviceManager(organizationId, "Description")
+        userStore.createDeviceManagerUser(organizationId, "Description")
       }
     }
 
     @Test
-    fun `createDeviceManager registers user in Keycloak and adds it to organization`() {
+    fun `createDeviceManagerUser registers user in Keycloak and adds it to organization`() {
       val description = "Description"
-      val newUser = userStore.createDeviceManager(organizationId, description)
+      val newUser = userStore.createDeviceManagerUser(organizationId, description)
 
-      val keycloakUser = usersResource.get(newUser.authId!!)!!.toRepresentation()
+      val keycloakUser = usersResource.get(newUser.authId)!!.toRepresentation()
       assertEquals(
           description, keycloakUser.firstName, "Should use description as first name in Keycloak")
       assertEquals(
@@ -247,7 +248,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           mapOf(organizationId to Role.CONTRIBUTOR),
-          newUser.organizationRoles,
+          permissionStore.fetchOrganizationRoles(newUser.userId),
           "Should grant contributor role to device manager user")
     }
   }
@@ -267,7 +268,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken requests a token from Keycloak`() {
-      val user = userStore.createDeviceManager(organizationId, null)
+      val user = userStore.createDeviceManagerUser(organizationId, null)
       val expectedToken = "token"
 
       val response: HttpResponse<String> = mockk()
@@ -285,7 +286,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken throws exception if Keycloak returns a malformed token response`() {
-      val user = userStore.createDeviceManager(organizationId, null)
+      val user = userStore.createDeviceManagerUser(organizationId, null)
 
       val response: HttpResponse<String> = mockk()
       val requestSlot = slot<HttpRequest>()
@@ -299,7 +300,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken throws exception if Keycloak does not generate a token`() {
-      val user = userStore.createDeviceManager(organizationId, null)
+      val user = userStore.createDeviceManagerUser(organizationId, null)
 
       val response: HttpResponse<String> = mockk()
       val requestSlot = slot<HttpRequest>()
@@ -313,8 +314,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `generateOfflineToken generates a temporary password and removes it if token creation fails`() {
-      val user = userStore.createDeviceManager(organizationId, null)
-      val keycloakUser = usersResource.get(user.authId!!)!!
+      val user = userStore.createDeviceManagerUser(organizationId, null)
+      val keycloakUser = usersResource.get(user.authId)!!
 
       val response: HttpResponse<String> = mockk()
       every { httpClient.send(any(), any<HttpResponse.BodyHandler<*>>()) } returns response
@@ -324,8 +325,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<KeycloakRequestFailedException> { userStore.generateOfflineToken(user.userId) }
 
       // Expected behavior is that we have asked Keycloak to reset the user's password, then asked
-      // it
-      // to remove the password.
+      // it to remove the password.
       verify { keycloakUser.resetPassword(any()) }
       verify { keycloakUser.removeCredential(any()) }
 
@@ -356,7 +356,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             emailNotificationsEnabled = true)
     userStore.updateUser(modelWithEdits)
 
-    val updatedModel = userStore.fetchOneById(model.userId)
+    val updatedModel = userStore.fetchOneById(model.userId) as IndividualUser
 
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
