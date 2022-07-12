@@ -16,11 +16,6 @@
     </li>
 </ul>
 
-<form method="POST" action="createOrganization">
-    <input type="text" name="name" required/>
-    <input type="submit" value=" Create Organization "/>
-</form>
-
 <div th:if="${canImportGlobalSpeciesData}">
     <h2>Import GBIF species data</h2>
 
