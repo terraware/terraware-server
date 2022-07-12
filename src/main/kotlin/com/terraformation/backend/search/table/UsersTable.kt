@@ -37,8 +37,8 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = USERS.ID
 
-  // Users are only visible to other people in the same organizations, and API client users are not
-  // visible via this table.
+  // Users are only visible to other people in the same organizations, and device manager users are
+  // not visible via this table.
   override fun conditionForVisibility(): Condition {
     return USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin)
         .and(

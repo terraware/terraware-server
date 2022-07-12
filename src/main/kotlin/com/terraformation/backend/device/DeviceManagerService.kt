@@ -47,7 +47,7 @@ class DeviceManagerService(
 
       deviceService.createDefaultDevices(facilityId)
 
-      val apiUser = userStore.createApiClient(organizationId, "Balena ${manager.balenaUuid}")
+      val apiUser = userStore.createDeviceManager(organizationId, "Balena ${manager.balenaUuid}")
       val userId = apiUser.userId
       val token = userStore.generateOfflineToken(userId)
 

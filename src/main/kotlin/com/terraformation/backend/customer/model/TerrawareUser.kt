@@ -19,7 +19,7 @@ import java.security.Principal
  * An entity on whose behalf the system can do work.
  *
  * The vast majority of the time, this will be a [IndividualUser], which represents an individual
- * user or an API client. However, it can also be the [SystemUser], which isn't associated with a
+ * user or a device manager. However, it can also be the [SystemUser], which isn't associated with a
  * particular person or a particular organization.
  */
 interface TerrawareUser : Principal {

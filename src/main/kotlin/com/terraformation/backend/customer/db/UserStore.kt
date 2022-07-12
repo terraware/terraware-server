@@ -79,11 +79,11 @@ class UserStore(
   private val usersResource = realmResource.users()
 
   /**
-   * Default Keycloak groups for each user type. Currently, we only auto-assign API client users to
-   * a Keycloak group.
+   * Default Keycloak groups for each user type. Currently, we only auto-assign device manager users
+   * to a Keycloak group.
    */
   private val defaultKeycloakGroups =
-      mapOf(UserType.APIClient to listOf(config.keycloak.apiClientGroupName))
+      mapOf(UserType.DeviceManager to listOf(config.keycloak.apiClientGroupName))
 
   /**
    * Returns the details for the user with a given Keycloak user ID. Pulls the user's information
@@ -290,15 +290,16 @@ class UserStore(
   }
 
   /**
-   * Creates a new API client user and registers it with Keycloak.
+   * Creates a new device manager user and registers it with Keycloak.
    *
-   * We do a few things to make API client users easier to deal with in the Keycloak admin console.
+   * We do a few things to make device manager users easier to deal with in the Keycloak admin
+   * console.
    *
    * - The username has a prefix of `api-`
    * - The last name includes the organization ID
    * - The first name is the admin-supplied description
    */
-  fun createApiClient(organizationId: OrganizationId, description: String?): IndividualUser {
+  fun createDeviceManager(organizationId: OrganizationId, description: String?): IndividualUser {
     requirePermissions { createApiKey(organizationId) }
 
     // Use base32 instead of base64 so the username doesn't include "/" and "+".
@@ -306,8 +307,8 @@ class UserStore(
     val username = "${config.keycloak.apiClientUsernamePrefix}$randomString"
     val lastName = "Organization $organizationId"
 
-    val keycloakUser = registerKeycloakUser(username, description, lastName, UserType.APIClient)
-    val usersRow = insertKeycloakUser(keycloakUser, UserType.APIClient)
+    val keycloakUser = registerKeycloakUser(username, description, lastName, UserType.DeviceManager)
+    val usersRow = insertKeycloakUser(keycloakUser, UserType.DeviceManager)
     val user = rowToModel(usersRow)
 
     organizationStore.addUser(organizationId, user.userId, Role.CONTRIBUTOR)
@@ -364,11 +365,11 @@ class UserStore(
   }
 
   /**
-   * Generates a new offline token for the API client user with a given user ID. This revokes any
-   * previously existing offline tokens.
+   * Generates a new offline token for the device manager user with a given user ID. This revokes
+   * any previously existing offline tokens.
    *
-   * Note that this also resets the user's password! API client users can't log in using passwords
-   * so there is no harm done to them, but you can't use this on an individual user.
+   * Note that this also resets the user's password! Device manager users can't log in using
+   * passwords so there is no harm done to them, but you can't use this on an individual user.
    *
    * This may fail if it is called concurrently for the same user ID; if none of the current calls
    * succeeds, the user's old offline token will continue to work.
@@ -378,8 +379,8 @@ class UserStore(
         usersDao.fetchOneById(userId) ?: throw IllegalArgumentException("User does not exist")
     val authId = usersRow.authId ?: throw IllegalStateException("User has no authentication ID")
 
-    if (usersRow.userTypeId != UserType.APIClient) {
-      throw IllegalArgumentException("Offline tokens may only be generated for API clients")
+    if (usersRow.userTypeId != UserType.DeviceManager) {
+      throw IllegalArgumentException("Offline tokens may only be generated for device managers")
     }
 
     val user = usersResource.get(authId)
@@ -438,7 +439,7 @@ class UserStore(
               user.removeCredential(credential.id)
             } catch (e: Exception) {
               log.error(
-                  "Failed to remove temporary password from API client user $userId " +
+                  "Failed to remove temporary password from device manager user $userId " +
                       "(${user.toRepresentation().id}) after generating token",
                   e)
 

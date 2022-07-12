@@ -119,7 +119,7 @@ class AdminController(
     model.addAttribute("organization", organization)
     model.addAttribute("prefix", prefix)
     model.addAttribute("roles", Role.values())
-    model.addAttribute("users", users.filter { it.userType != UserType.APIClient })
+    model.addAttribute("users", users.filter { it.userType != UserType.DeviceManager })
 
     return "/admin/organization"
   }
