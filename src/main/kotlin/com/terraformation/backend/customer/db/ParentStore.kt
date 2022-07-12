@@ -12,8 +12,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
@@ -24,8 +22,6 @@ import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
-import com.terraformation.backend.db.tables.references.PROJECTS
-import com.terraformation.backend.db.tables.references.SITES
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.UPLOADS
@@ -60,14 +56,6 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(storageLocationId: StorageLocationId): FacilityId? =
       fetchFieldById(storageLocationId, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID)
-
-  fun getProjectId(siteId: SiteId): ProjectId? = fetchFieldById(siteId, SITES.ID, SITES.PROJECT_ID)
-
-  fun getOrganizationId(projectId: ProjectId): OrganizationId? =
-      fetchFieldById(projectId, PROJECTS.ID, PROJECTS.ORGANIZATION_ID)
-
-  fun getOrganizationId(siteId: SiteId): OrganizationId? =
-      fetchFieldById(siteId, SITES.ID, SITES.projects().ORGANIZATION_ID)
 
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)

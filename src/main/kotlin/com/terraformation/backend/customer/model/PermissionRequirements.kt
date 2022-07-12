@@ -15,10 +15,6 @@ import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
@@ -50,7 +46,7 @@ import org.springframework.security.access.AccessDeniedException
  *
  * - Always throw the most specific exception class that describes the failure. For example, the
  * rules will say to throw [EntityNotFoundException] but you'd actually want to throw, e.g.,
- * [SiteNotFoundException] to give the caller more information about what failed.
+ * [AccessionNotFoundException] to give the caller more information about what failed.
  *
  * - Exception messages may be returned to the client and should never include any information that
  * you wouldn't want end users to see.
@@ -194,75 +190,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateDevice(deviceId)) {
       readDevice(deviceId)
       throw AccessDeniedException("No permission to update device $deviceId")
-    }
-  }
-
-  fun createSite(projectId: ProjectId) {
-    if (!user.canCreateSite(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to create sites in project $projectId")
-    }
-  }
-
-  fun readSite(siteId: SiteId) {
-    if (!user.canReadSite(siteId)) {
-      throw SiteNotFoundException(siteId)
-    }
-  }
-
-  fun updateSite(siteId: SiteId) {
-    if (!user.canUpdateSite(siteId)) {
-      readSite(siteId)
-      throw AccessDeniedException("No permission to update site $siteId")
-    }
-  }
-
-  fun deleteSite(siteId: SiteId) {
-    if (!user.canDeleteSite(siteId)) {
-      readSite(siteId)
-      throw AccessDeniedException("No permission to delete site $siteId")
-    }
-  }
-
-  fun createProject(organizationId: OrganizationId) {
-    if (!user.canCreateProject(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to create projects in organization $organizationId")
-    }
-  }
-
-  fun readProject(projectId: ProjectId) {
-    if (!user.canReadProject(projectId)) {
-      throw ProjectNotFoundException(projectId)
-    }
-  }
-
-  fun listProjects(organizationId: OrganizationId) {
-    if (!user.canListProjects(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to list projects in organization $organizationId")
-    }
-  }
-
-  fun updateProject(projectId: ProjectId) {
-    if (!user.canUpdateProject(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to update project $projectId")
-    }
-  }
-
-  fun addProjectUser(projectId: ProjectId) {
-    if (!user.canAddProjectUser(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to add users to project $projectId")
-    }
-  }
-
-  fun removeProjectUser(projectId: ProjectId, userId: UserId) {
-    if (!user.canRemoveProjectUser(projectId, userId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to remove user $userId from project $projectId")
     }
   }
 

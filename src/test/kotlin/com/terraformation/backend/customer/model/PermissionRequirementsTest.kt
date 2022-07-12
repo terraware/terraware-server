@@ -15,10 +15,6 @@ import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.SiteId
-import com.terraformation.backend.db.SiteNotFoundException
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.StorageLocationId
@@ -60,9 +56,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val notificationUserId = UserId(2)
   private val notificationId = NotificationId(1)
   private val organizationId = OrganizationId(1)
-  private val projectId = ProjectId(1)
   private val role = Role.CONTRIBUTOR
-  private val siteId = SiteId(1)
   private val speciesId = SpeciesId(1)
   private val storageLocationId = StorageLocationId(1)
   private val uploadId = UploadId(1)
@@ -239,110 +233,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canUpdateDevice(deviceId) }
     requirements.updateDevice(deviceId)
-  }
-
-  @Test
-  fun createSite() {
-    assertThrows<ProjectNotFoundException> { requirements.createSite(projectId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.createSite(projectId) }
-
-    grant { user.canCreateSite(projectId) }
-    requirements.createSite(projectId)
-  }
-
-  @Test
-  fun readSite() {
-    assertThrows<SiteNotFoundException> { requirements.readSite(siteId) }
-
-    grant { user.canReadSite(siteId) }
-    requirements.readSite(siteId)
-  }
-
-  @Test
-  fun updateSite() {
-    assertThrows<SiteNotFoundException> { requirements.updateSite(siteId) }
-
-    grant { user.canReadSite(siteId) }
-    assertThrows<AccessDeniedException> { requirements.updateSite(siteId) }
-
-    grant { user.canUpdateSite(siteId) }
-    requirements.updateSite(siteId)
-  }
-
-  @Test
-  fun deleteSite() {
-    assertThrows<SiteNotFoundException> { requirements.deleteSite(siteId) }
-
-    grant { user.canReadSite(siteId) }
-    assertThrows<AccessDeniedException> { requirements.deleteSite(siteId) }
-
-    grant { user.canDeleteSite(siteId) }
-    requirements.deleteSite(siteId)
-  }
-
-  @Test
-  fun createProject() {
-    assertThrows<OrganizationNotFoundException> { requirements.createProject(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.createProject(organizationId) }
-
-    grant { user.canCreateProject(organizationId) }
-    requirements.createProject(organizationId)
-  }
-
-  @Test
-  fun readProject() {
-    assertThrows<ProjectNotFoundException> { requirements.readProject(projectId) }
-
-    grant { user.canReadProject(projectId) }
-    requirements.readProject(projectId)
-  }
-
-  @Test
-  fun listProjects() {
-    assertThrows<OrganizationNotFoundException> { requirements.listProjects(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.listProjects(organizationId) }
-
-    grant { user.canListProjects(organizationId) }
-    requirements.listProjects(organizationId)
-  }
-
-  @Test
-  fun updateProject() {
-    assertThrows<ProjectNotFoundException> { requirements.updateProject(projectId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.updateProject(projectId) }
-
-    grant { user.canUpdateProject(projectId) }
-    requirements.updateProject(projectId)
-  }
-
-  @Test
-  fun addProjectUser() {
-    assertThrows<ProjectNotFoundException> { requirements.addProjectUser(projectId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.addProjectUser(projectId) }
-
-    grant { user.canAddProjectUser(projectId) }
-    requirements.addProjectUser(projectId)
-  }
-
-  @Test
-  fun removeProjectUser() {
-    assertThrows<ProjectNotFoundException> { requirements.removeProjectUser(projectId, userId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.removeProjectUser(projectId, userId) }
-
-    grant { user.canRemoveProjectUser(projectId, userId) }
-    requirements.removeProjectUser(projectId, userId)
   }
 
   @Test

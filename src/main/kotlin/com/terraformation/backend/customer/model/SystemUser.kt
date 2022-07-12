@@ -9,8 +9,6 @@ import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
@@ -76,10 +74,6 @@ class SystemUser(
     get() {
       throw NotImplementedError("System user does not support enumerating roles")
     }
-  override val projectRoles: Map<ProjectId, Role>
-    get() {
-      throw NotImplementedError("System user does not support enumerating roles")
-    }
   override val facilityRoles: Map<FacilityId, Role>
     get() {
       throw NotImplementedError("System user does not support enumerating roles")
@@ -98,22 +92,18 @@ class SystemUser(
    */
 
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
-  override fun canAddProjectUser(projectId: ProjectId): Boolean = true
   override fun canCreateAccession(facilityId: FacilityId): Boolean = true
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
   override fun canCreateDeviceManager(): Boolean = true
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = true
-  override fun canCreateProject(organizationId: OrganizationId): Boolean = true
-  override fun canCreateSite(projectId: ProjectId): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canDeleteApiKey(organizationId: OrganizationId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
-  override fun canDeleteSite(siteId: SiteId): Boolean = true
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true
@@ -122,23 +112,18 @@ class SystemUser(
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
   override fun canListFacilities(organizationId: OrganizationId): Boolean = true
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
-  override fun canListProjects(organizationId: OrganizationId): Boolean = true
-  override fun canListSites(projectId: ProjectId): Boolean = true
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
-  override fun canReadProject(projectId: ProjectId): Boolean = true
-  override fun canReadSite(siteId: SiteId): Boolean = true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
   override fun canReadUpload(uploadId: UploadId): Boolean = true
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
-  override fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean = true
   override fun canSendAlert(facilityId: FacilityId): Boolean = true
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       true
@@ -151,8 +136,6 @@ class SystemUser(
   override fun canUpdateDeviceTemplates(): Boolean = true
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
-  override fun canUpdateProject(projectId: ProjectId): Boolean = true
-  override fun canUpdateSite(siteId: SiteId): Boolean = true
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true

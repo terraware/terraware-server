@@ -8,8 +8,6 @@ import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
@@ -30,12 +28,6 @@ interface TerrawareUser : Principal {
 
   /** The user's role in each organization they belong to. */
   val organizationRoles: Map<OrganizationId, Role>
-
-  /**
-   * The user's role in each project they have access to. Currently, roles are assigned
-   * per-organization, so this is really the user's role in the organization that owns each project.
-   */
-  val projectRoles: Map<ProjectId, Role>
 
   /**
    * The user's role in each facility they have access to. Currently, roles are assigned
@@ -65,22 +57,18 @@ interface TerrawareUser : Principal {
    */
 
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean
-  fun canAddProjectUser(projectId: ProjectId): Boolean
   fun canCreateAccession(facilityId: FacilityId): Boolean
   fun canCreateApiKey(organizationId: OrganizationId): Boolean
   fun canCreateAutomation(facilityId: FacilityId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
   fun canCreateDeviceManager(): Boolean
   fun canCreateFacility(organizationId: OrganizationId): Boolean
-  fun canCreateProject(organizationId: OrganizationId): Boolean
-  fun canCreateSite(projectId: ProjectId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
   fun canDeleteApiKey(organizationId: OrganizationId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
-  fun canDeleteSite(siteId: SiteId): Boolean
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean
   fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canDeleteUpload(uploadId: UploadId): Boolean
@@ -89,22 +77,17 @@ interface TerrawareUser : Principal {
   fun canListAutomations(facilityId: FacilityId): Boolean
   fun canListFacilities(organizationId: OrganizationId): Boolean
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
-  fun canListProjects(organizationId: OrganizationId): Boolean
-  fun canListSites(projectId: ProjectId): Boolean
   fun canReadAccession(accessionId: AccessionId): Boolean
   fun canReadAutomation(automationId: AutomationId): Boolean
   fun canReadDevice(deviceId: DeviceId): Boolean
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
-  fun canReadProject(projectId: ProjectId): Boolean
-  fun canReadSite(siteId: SiteId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
   fun canReadUpload(uploadId: UploadId): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
-  fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean
   fun canSetTestClock(): Boolean
@@ -116,8 +99,6 @@ interface TerrawareUser : Principal {
   fun canUpdateDeviceTemplates(): Boolean
   fun canUpdateFacility(facilityId: FacilityId): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
-  fun canUpdateProject(projectId: ProjectId): Boolean
-  fun canUpdateSite(siteId: SiteId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean

@@ -83,7 +83,6 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCountNotifications() } returns true
 
     every { user.organizationRoles } returns mapOf(organizationId to Role.OWNER)
-    every { user.projectRoles } returns mapOf(projectId to Role.OWNER)
 
     insertSiteData()
   }

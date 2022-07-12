@@ -12,8 +12,6 @@ import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
@@ -35,13 +33,13 @@ import org.springframework.security.core.userdetails.UserDetails
  * function's docs for more details.
  *
  * This class attempts to abstract away the implementation details of the permission checking
- * business logic. It has a bunch of methods like [canCreateSite] to check for specific permissions.
- * In general, we want those methods to be as fine-grained as possible and to take fine-grained
- * context as parameters, even if the actual permissions are coarse-grained. The calling code
- * shouldn't have to make assumptions about how permissions are computed. For example, the ability
- * to create a site may be determined by the user's organization-level role, but [canCreateSite]
- * takes a project ID argument. This way, if we add fine-grained permissions later on, existing
- * calls to [canCreateSite] won't need to be modified.
+ * business logic. It has a bunch of methods like [canCreateAccession] to check for specific
+ * permissions. In general, we want those methods to be as fine-grained as possible and to take
+ * fine-grained context as parameters, even if the actual permissions are coarse-grained. The
+ * calling code shouldn't have to make assumptions about how permissions are computed. For example,
+ * the ability to create a facility may be determined by the user's organization-level role, but
+ * [canCreateAccession] takes a facility ID argument. This way, if we add fine-grained permissions
+ * later on, existing calls to [canCreateAccession] won't need to be modified.
  *
  * The permission-checking methods should never return true if the target object doesn't exist.
  * Callers can thus make use of the fact that a successful permission check means the target object
@@ -49,9 +47,9 @@ import org.springframework.security.core.userdetails.UserDetails
  *
  * In addition to holding some basic details about the user, this object also serves as a
  * short-lived cache for information such as the user's roles in various contexts. For example, if
- * you access [siteRoles] you will get a map of the user's role at each site they have access to.
- * The first time you access that property, it will be fetched from the database, but it will be
- * cached afterwards.
+ * you access [facilityRoles] you will get a map of the user's role at each facility they have
+ * access to. The first time you access that property, it will be fetched from the database, but it
+ * will be cached afterwards.
  */
 data class IndividualUser(
     override val userId: UserId,
@@ -67,17 +65,6 @@ data class IndividualUser(
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
     permissionStore.fetchOrganizationRoles(userId)
   }
-
-  override val projectRoles: Map<ProjectId, Role> by lazy {
-    permissionStore.fetchProjectRoles(userId)
-  }
-
-  /**
-   * The user's role at each site they have access to. Currently, roles are assigned
-   * per-organization, so this is really the user's role in the organization that owns the project
-   * that owns each site.
-   */
-  private val siteRoles: Map<SiteId, Role> by lazy { permissionStore.fetchSiteRoles(userId) }
 
   override val facilityRoles: Map<FacilityId, Role> by lazy {
     permissionStore.fetchFacilityRoles(userId)
@@ -191,63 +178,6 @@ data class IndividualUser(
     // TODO: Revisit this once we can set roles on API clients
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
     return facilityId in facilityRoles
-  }
-
-  override fun canCreateSite(projectId: ProjectId): Boolean {
-    val role = projectRoles[projectId]
-    return role == Role.ADMIN || role == Role.OWNER
-  }
-
-  override fun canListSites(projectId: ProjectId): Boolean {
-    // Any user who has access to a project can list its sites.
-    return projectRoles[projectId] != null
-  }
-
-  override fun canReadSite(siteId: SiteId): Boolean {
-    return siteId in siteRoles
-  }
-
-  override fun canUpdateSite(siteId: SiteId): Boolean {
-    return when (siteRoles[siteId]) {
-      Role.ADMIN,
-      Role.OWNER -> true
-      else -> false
-    }
-  }
-
-  override fun canDeleteSite(siteId: SiteId): Boolean {
-    return when (siteRoles[siteId]) {
-      Role.ADMIN,
-      Role.OWNER -> true
-      else -> false
-    }
-  }
-
-  override fun canCreateProject(organizationId: OrganizationId): Boolean {
-    val role = organizationRoles[organizationId]
-    return role == Role.ADMIN || role == Role.OWNER
-  }
-
-  override fun canListProjects(organizationId: OrganizationId): Boolean {
-    return organizationId in organizationRoles
-  }
-
-  override fun canReadProject(projectId: ProjectId): Boolean {
-    return projectId in projectRoles
-  }
-
-  override fun canUpdateProject(projectId: ProjectId): Boolean {
-    val role = projectRoles[projectId]
-    return role == Role.ADMIN || role == Role.OWNER
-  }
-
-  override fun canAddProjectUser(projectId: ProjectId): Boolean {
-    val role = projectRoles[projectId]
-    return role == Role.MANAGER || role == Role.ADMIN || role == Role.OWNER
-  }
-
-  override fun canRemoveProjectUser(projectId: ProjectId, userId: UserId): Boolean {
-    return projectId in projectRoles && (userId == this.userId || canAddProjectUser(projectId))
   }
 
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
