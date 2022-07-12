@@ -71,17 +71,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "organizations":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "photos":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "photos":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_users":"elipses":w -> "projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "projects":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "projects":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "projects":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "projects":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sites":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sites":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "sites":"elipses":w -> "projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -382,7 +371,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">5 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/organizations.html"
     target="_top"
@@ -410,28 +399,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="processing_methods"
   ];
-  "project_users" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>project_users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/project_users.html"
-    target="_top"
-    tooltip="project_users"
-  ];
-  "projects" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/projects.html"
-    target="_top"
-    tooltip="projects"
-  ];
   "rare_types" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -453,17 +420,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/seed_quantity_units.html"
     target="_top"
     tooltip="seed_quantity_units"
-  ];
-  "sites" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>sites</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/sites.html"
-    target="_top"
-    tooltip="sites"
   ];
   "source_plant_origins" [
    label=<
@@ -567,7 +523,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="email" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">email</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="user_type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">user_type_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">33 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 row</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">25 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"

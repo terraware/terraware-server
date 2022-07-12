@@ -2,8 +2,6 @@ countries
 facility_connection_states
 facility_types
 notification_criticalities
-project_statuses
-project_types
 roles
 upload_problem_types
 upload_statuses
@@ -12,14 +10,10 @@ user_types
 users
 country_subdivisions
 organizations
-projects
 notification_types
 uploads
 facilities
 device_managers
-project_type_selections
 upload_problems
 notifications
-sites
-project_users
 organization_users

@@ -2,14 +2,11 @@ test_clock
 task_processed_times
 withdrawals
 organization_users
-project_users
 automations
 species_problems
-sites
 notifications
 accession_state_history
 upload_problems
-project_type_selections
 device_managers
 accession_photos
 accession_germination_test_types
@@ -25,7 +22,6 @@ timeseries
 notification_types
 germination_tests
 photos
-projects
 accessions
 storage_locations
 species
@@ -47,8 +43,6 @@ source_plant_origins
 seed_storage_behaviors
 roles
 rare_types
-project_types
-project_statuses
 processing_methods
 notification_criticalities
 growth_forms

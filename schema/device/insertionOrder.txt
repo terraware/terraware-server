@@ -1,13 +1,11 @@
-organizations
 device_template_categories
 facility_connection_states
+organizations
 timeseries_types
 facilities
 devices
-projects
 timeseries
 device_managers
 device_templates
-sites
 timeseries_values
 automations

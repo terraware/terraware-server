@@ -3,12 +3,10 @@ accession_state_history
 accession_photos
 accession_germination_test_types
 thumbnails
-sites
 germinations
 geolocations
 bags
 accession_secondary_collectors
-projects
 germination_tests
 accessions
 storage_locations
@@ -25,7 +23,7 @@ germination_seed_types
 app_devices
 storage_conditions
 photos
-germination_test_types
 organizations
+germination_test_types
 accession_states
 seed_quantity_units

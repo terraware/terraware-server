@@ -1,7 +1,7 @@
 seed_quantity_units
 accession_states
-organizations
 germination_test_types
+organizations
 photos
 storage_conditions
 app_devices
@@ -18,12 +18,10 @@ species
 storage_locations
 accessions
 germination_tests
-projects
 accession_secondary_collectors
 bags
 geolocations
 germinations
-sites
 thumbnails
 accession_germination_test_types
 accession_photos

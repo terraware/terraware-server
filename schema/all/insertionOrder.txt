@@ -13,8 +13,6 @@ germination_treatments
 growth_forms
 notification_criticalities
 processing_methods
-project_statuses
-project_types
 rare_types
 roles
 seed_storage_behaviors
@@ -36,7 +34,6 @@ devices
 species
 storage_locations
 accessions
-projects
 photos
 germination_tests
 notification_types
@@ -52,14 +49,11 @@ timeseries_values
 accession_germination_test_types
 accession_photos
 device_managers
-project_type_selections
 upload_problems
 accession_state_history
 notifications
-sites
 species_problems
 automations
-project_users
 organization_users
 withdrawals
 task_processed_times

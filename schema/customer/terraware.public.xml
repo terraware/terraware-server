@@ -142,7 +142,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="notification_types" numRows="14" remarks="(Enum) Types of notifications in the application." schema="public" type="TABLE">
+      <table name="notification_types" numRows="13" remarks="(Enum) Types of notifications in the application." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="notification_type_id" foreignKey="notifications_notification_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
          </column>
@@ -209,7 +209,6 @@
             <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
             <child column="organization_id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
-            <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -235,104 +234,6 @@
          </index>
          <checkConstraint constraint="(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))" name="country_code_matches_subdivision"/>
       </table>
-      <table name="project_statuses" numRows="3" remarks="(Enum) Statuses of projects recognized by the application." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="status_id" foreignKey="projects_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="project_statuses_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="project_statuses_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="project_type_selections" numRows="0" remarks="Which project types are selected for which projects." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="project_type_selections_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="project_type_selections_project_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_types"/>
-         </column>
-         <primaryKey column="project_id" sequenceNumberInPK="1"/>
-         <primaryKey column="project_type_id" sequenceNumberInPK="2"/>
-         <index name="project_type_selections_pkey" unique="true">
-            <column ascending="true" name="project_id"/>
-            <column ascending="true" name="project_type_id"/>
-         </index>
-      </table>
-      <table name="project_types" numRows="4" remarks="(Enum) Types of projects recognized by the application." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="project_type_id" foreignKey="project_type_selections_project_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_type_selections"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="project_types_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="project_types_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="project_users" numRows="0" remarks="Linking table between `projects` and `users` defining which users are allowed to access which projects." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="project_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="project_users_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="project_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="project_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="user_id" sequenceNumberInPK="1"/>
-         <primaryKey column="project_id" sequenceNumberInPK="2"/>
-         <index name="project_users_pkey" unique="true">
-            <column ascending="true" name="user_id"/>
-            <column ascending="true" name="project_id"/>
-         </index>
-      </table>
-      <table name="projects" numRows="0" remarks="Information about a single restoration project. A project can span multiple sites." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="project_id" foreignKey="project_type_selections_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_type_selections"/>
-            <child column="project_id" foreignKey="project_users_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
-            <child column="project_id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="location" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="projects_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_statuses"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="disabled_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="pm_user_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="projects_pm_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="organization_wide" nullable="false" remarks="If true, the project is accessible to the entire organization. If true, the project is only accessible to users who are added to it." size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="false" digits="0" id="13" name="hidden" nullable="false" remarks="If true, the project and its associated sites and facilities should not be displayed to end users." size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="projects_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
       <table name="roles" numRows="4" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
@@ -344,30 +245,6 @@
          </index>
          <index name="roles_name_key" unique="true">
             <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="sites" numRows="0" remarks="Physical locations where facilities are located or plants are being tracked." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="locale" nullable="true" remarks="Default locale at the site; an IETF BCP 47 language tag such as en-US." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="timezone" nullable="true" remarks="Name of time zone at site; an IANA tz database zone name." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="true" digits="0" id="4" name="enabled" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="location" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="site_pkey" unique="true">
-            <column ascending="true" name="id"/>
          </index>
       </table>
       <table name="upload_problem_types" numRows="4" remarks="(Enum) Specific types of problems encountered while processing a user-uploaded file." schema="public" type="TABLE">
@@ -472,14 +349,6 @@
             <child column="user_id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
             <child column="created_by" foreignKey="organizations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
-            <child column="created_by" foreignKey="project_users_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
-            <child column="modified_by" foreignKey="project_users_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
-            <child column="user_id" foreignKey="project_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="project_users"/>
-            <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-            <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-            <child column="pm_user_id" foreignKey="projects_pm_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-            <child column="created_by" foreignKey="sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
-            <child column="modified_by" foreignKey="sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sites"/>
             <child column="created_by" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="true" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
