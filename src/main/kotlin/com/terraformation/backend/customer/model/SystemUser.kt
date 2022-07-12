@@ -60,6 +60,9 @@ class SystemUser(
   override val userType: UserType
     get() = UserType.System
 
+  override val authId: String?
+    get() = null
+
   /*
    * The system user has no roles per se; it always has access to everything. Reject any attempts to
    * walk the current user's list of roles.

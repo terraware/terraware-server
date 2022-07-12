@@ -26,6 +26,12 @@ interface TerrawareUser : Principal {
   val userId: UserId
   val userType: UserType
 
+  /**
+   * The user's Keycloak ID, if any. Null if this is an internal pseudo-user or if this user has
+   * been invited to the system but has not yet registered with Keycloak.
+   */
+  val authId: String?
+
   /** The user's role in each organization they belong to. */
   val organizationRoles: Map<OrganizationId, Role>
 

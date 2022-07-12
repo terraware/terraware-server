@@ -57,6 +57,10 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getFacilityId(storageLocationId: StorageLocationId): FacilityId? =
       fetchFieldById(storageLocationId, STORAGE_LOCATIONS.ID, STORAGE_LOCATIONS.FACILITY_ID)
 
+  fun getOrganizationId(deviceManagerId: DeviceManagerId): OrganizationId? =
+      fetchFieldById(
+          deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.facilities().ORGANIZATION_ID)
+
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)
 
@@ -84,6 +88,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getUserId(uploadId: UploadId): UserId? =
       fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.CREATED_BY)
+
+  fun getDeviceManagerId(userId: UserId): DeviceManagerId? =
+      fetchFieldById(userId, DEVICE_MANAGERS.USER_ID, DEVICE_MANAGERS.ID)
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null

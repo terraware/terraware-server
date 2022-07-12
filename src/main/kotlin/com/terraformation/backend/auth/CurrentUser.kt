@@ -1,5 +1,6 @@
 package com.terraformation.backend.auth
 
+import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -10,8 +11,9 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 /**
  * Returns the details for the user on whose behalf the current thread is doing work. For code
- * that's handling an API request, this is the [IndividualUser] for the individual user or API
- * client that made the request. For automated or background jobs, it may also be the [SystemUser].
+ * that's handling an API request, this is the [IndividualUser] for the individual user or
+ * [DeviceManagerUser] for the API client that made the request. For automated or background jobs,
+ * it may also be the [SystemUser].
  *
  * Under the covers, this uses a thread-local variable. For incoming requests, that's fine, since we
  * process each request on its own thread. The variable is populated by [TerrawareUserFilter], which

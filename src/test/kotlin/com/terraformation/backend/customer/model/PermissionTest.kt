@@ -84,7 +84,7 @@ internal class PermissionTest : DatabaseTest() {
   private val realmResource: RealmResource = mockk()
 
   private val userId = UserId(1234)
-  private val user: IndividualUser by lazy { userStore.fetchOneById(userId) }
+  private val user: TerrawareUser by lazy { userStore.fetchOneById(userId) }
 
   /*
    * Test data set; see class docs for a prettier version. This takes advantage of the default
@@ -102,7 +102,7 @@ internal class PermissionTest : DatabaseTest() {
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
 
-  private val deviceManagerIds = listOf(1000L, 2000L).map { DeviceManagerId(it) }
+  private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
 
   private val otherUserId = UserId(8765)
@@ -114,6 +114,7 @@ internal class PermissionTest : DatabaseTest() {
   private inline fun <reified T> List<T>.filterStartsWith(prefix: String): Array<T> =
       filter { "$it".startsWith(prefix) }.toTypedArray()
   private inline fun <reified T> List<T>.forOrg1() = filterStartsWith("1")
+  private inline fun <reified T> List<T>.forFacility1000() = filterStartsWith("1000")
 
   @BeforeEach
   fun setUp() {
@@ -174,7 +175,7 @@ internal class PermissionTest : DatabaseTest() {
               refreshedTime = Instant.EPOCH,
               sensorKitId = "$deviceManagerId",
               facilityId = if (facilityId in facilityIds) facilityId else null,
-              userId = if (facilityId in facilityIds) userId else null))
+              userId = if (facilityId in facilityIds) otherUserId else null))
     }
   }
 
@@ -501,8 +502,16 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
-  fun `device managers are members of all facilities`() {
+  fun `device managers only have access to device operations at their connected facility`() {
+    // Associate the current user with one of the device managers.
     usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.DeviceManager))
+    val deviceManagerId = deviceManagerIds.first()
+    val facilityId = facilityIds.first()
+    deviceManagersDao.update(
+        deviceManagersDao
+            .fetchOneById(deviceManagerId)!!
+            .copy(facilityId = facilityId, userId = userId))
+
     givenRole(org1Id, Role.CONTRIBUTOR)
 
     val permissions = PermissionsTracker()
@@ -510,13 +519,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         readOrganization = true,
-        removeOrganizationSelf = true,
         listFacilities = true,
     )
 
     permissions.expect(
-        *facilityIds.forOrg1(),
-        createAccession = true,
+        facilityId,
         createAutomation = true,
         createDevice = true,
         listAutomations = true,
@@ -524,13 +531,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *accessionIds.forOrg1(),
-        readAccession = true,
-        updateAccession = true,
-    )
-
-    permissions.expect(
-        *automationIds.forOrg1(),
+        *automationIds.forFacility1000(),
         readAutomation = true,
         updateAutomation = true,
         deleteAutomation = true,
@@ -538,28 +539,17 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *deviceManagerIds.forOrg1(),
-        *nonConnectedDeviceManagerIds,
+        deviceManagerId,
         readDeviceManager = true,
     )
 
     permissions.expect(
-        *deviceIds.forOrg1(),
+        *deviceIds.forFacility1000(),
         createTimeseries = true,
         readTimeseries = true,
         updateTimeseries = true,
         readDevice = true,
         updateDevice = true,
-    )
-
-    permissions.expect(
-        *speciesIds.forOrg1(),
-        readSpecies = true,
-    )
-
-    permissions.expect(
-        *storageLocationIds.forOrg1(),
-        readStorageLocation = true,
     )
 
     permissions.andNothingElse()

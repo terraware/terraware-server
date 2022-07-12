@@ -73,9 +73,7 @@ class EmailNotificationService(
     val requestedByUser = userStore.fetchOneById(event.requestedBy)
     requirePermissions(requestedByUser) { sendAlert(event.facilityId) }
 
-    log.info(
-        "Alert for facility ${event.facilityId} requested by user ${requestedByUser.userId} " +
-            "(${requestedByUser.email})")
+    log.info("Alert for facility ${event.facilityId} requested by user ${requestedByUser.userId}")
     log.info("Alert subject: ${event.subject}")
     log.info("Alert body: ${event.body}")
 
@@ -153,8 +151,12 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: UserAddedToOrganizationEvent) {
-    val admin = userStore.fetchOneById(event.addedBy)
-    val user = userStore.fetchOneById(event.userId)
+    val admin =
+        userStore.fetchOneById(event.addedBy) as? IndividualUser
+            ?: throw IllegalArgumentException("Admin user must be an individual user")
+    val user =
+        userStore.fetchOneById(event.userId) as? IndividualUser
+            ?: throw IllegalArgumentException("User must be an individual user")
     val organization = organizationStore.fetchOneById(event.organizationId)
 
     val organizationHomeUrl = webAppUrls.fullOrganizationHome(event.organizationId).toString()

@@ -1,6 +1,7 @@
 package com.terraformation.backend.auth
 
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.log.perClassLogger
 import javax.servlet.Filter
@@ -11,7 +12,10 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
-/** Populates [CurrentUserHolder] with the [IndividualUser] for incoming requests. */
+/**
+ * Populates [CurrentUserHolder] with the [IndividualUser] or [DeviceManagerUser] for incoming
+ * requests.
+ */
 class TerrawareUserFilter(private val userStore: UserStore) : Filter {
   private val log = perClassLogger()
 

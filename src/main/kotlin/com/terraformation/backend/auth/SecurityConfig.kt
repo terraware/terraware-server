@@ -2,6 +2,7 @@ package com.terraformation.backend.auth
 
 import com.terraformation.backend.VERSION
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint
@@ -41,7 +42,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
  * data about the current user. That object gets stored in the Spring [SecurityContextHolder].
  *
  * Among other things, that object includes the Keycloak user ID. [TerrawareUserFilter] uses that ID
- * to look up the current user's [IndividualUser] and make it available to application code.
+ * to look up the current user's [IndividualUser] or [DeviceManagerUser] and make it available to
+ * application code.
  *
  * When an interactive user logs in, their first request includes the [KeycloakAuthenticationToken]
  * in JSON form. But it is pretty large; we don't want browsers to have to send it to us on every
