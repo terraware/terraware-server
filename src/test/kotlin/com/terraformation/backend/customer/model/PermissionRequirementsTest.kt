@@ -331,19 +331,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun deleteApiKey() {
-    assertThrows<OrganizationNotFoundException> { requirements.deleteApiKey(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.deleteApiKey(organizationId) }
-
-    grant { user.canDeleteApiKey(organizationId) }
-    requirements.deleteApiKey(organizationId)
-  }
-
-  @Test
   fun createSpecies() {
-    assertThrows<OrganizationNotFoundException> { requirements.deleteApiKey(organizationId) }
+    assertThrows<OrganizationNotFoundException> { requirements.createSpecies(organizationId) }
 
     grant { user.canReadOrganization(organizationId) }
     assertThrows<AccessDeniedException> { requirements.createSpecies(organizationId) }

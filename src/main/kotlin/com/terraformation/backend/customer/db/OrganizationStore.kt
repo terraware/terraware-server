@@ -164,15 +164,6 @@ class OrganizationStore(
             .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin)))
   }
 
-  /** Returns a list of the organization's API client users. */
-  fun fetchApiClients(organizationId: OrganizationId): List<OrganizationUserModel> {
-    requirePermissions { listOrganizationUsers(organizationId) }
-
-    return queryOrganizationUsers(
-        ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId)
-            .and(USERS.USER_TYPE_ID.eq(UserType.APIClient)))
-  }
-
   fun fetchUser(organizationId: OrganizationId, userId: UserId): OrganizationUserModel {
     requirePermissions { listOrganizationUsers(organizationId) }
 

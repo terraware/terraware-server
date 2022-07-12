@@ -251,14 +251,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun deleteApiKey(organizationId: OrganizationId) {
-    if (!user.canDeleteApiKey(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to delete API keys from organization $organizationId")
-    }
-  }
-
   fun createSpecies(organizationId: OrganizationId) {
     if (!user.canCreateSpecies(organizationId)) {
       readOrganization(organizationId)

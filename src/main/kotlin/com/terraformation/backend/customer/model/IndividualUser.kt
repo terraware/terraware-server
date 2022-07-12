@@ -231,12 +231,6 @@ data class IndividualUser(
     }
   }
 
-  override fun canDeleteApiKey(organizationId: OrganizationId): Boolean =
-      canCreateApiKey(organizationId)
-
-  override fun canListApiKeys(organizationId: OrganizationId): Boolean =
-      canCreateApiKey(organizationId)
-
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean {
     return when (organizationRoles[organizationId]) {
       Role.OWNER,
