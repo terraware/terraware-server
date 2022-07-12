@@ -101,38 +101,30 @@ data class IndividualUser(
     return canReadAccession(accessionId)
   }
 
-  private fun canAccessAutomations(facilityId: FacilityId): Boolean {
-    // All users that have access to the facility have full permissions on automations.
-    return facilityId in facilityRoles
-  }
-
   override fun canCreateAutomation(facilityId: FacilityId): Boolean {
-    return canAccessAutomations(facilityId)
+    return canUpdateFacility(facilityId)
   }
 
   override fun canListAutomations(facilityId: FacilityId): Boolean {
-    return canAccessAutomations(facilityId)
-  }
-
-  private fun canAccessAutomation(automationId: AutomationId): Boolean {
-    val facilityId = parentStore.getFacilityId(automationId) ?: return false
-    return canAccessAutomations(facilityId)
+    return canReadFacility(facilityId)
   }
 
   override fun canReadAutomation(automationId: AutomationId): Boolean {
-    return canAccessAutomation(automationId)
+    val facilityId = parentStore.getFacilityId(automationId) ?: return false
+    return canReadFacility(facilityId)
   }
 
   override fun canUpdateAutomation(automationId: AutomationId): Boolean {
-    return canAccessAutomation(automationId)
+    val facilityId = parentStore.getFacilityId(automationId) ?: return false
+    return canUpdateFacility(facilityId)
   }
 
   override fun canDeleteAutomation(automationId: AutomationId): Boolean {
-    return canAccessAutomation(automationId)
+    return canUpdateAutomation(automationId)
   }
 
   override fun canTriggerAutomation(automationId: AutomationId): Boolean {
-    return canAccessAutomation(automationId)
+    return canUpdateAutomation(automationId)
   }
 
   override fun canCreateFacility(organizationId: OrganizationId): Boolean {
@@ -158,12 +150,11 @@ data class IndividualUser(
   }
 
   override fun canSendAlert(facilityId: FacilityId): Boolean {
-    return facilityId in facilityRoles
+    return canUpdateFacility(facilityId)
   }
 
   override fun canCreateDevice(facilityId: FacilityId): Boolean {
-    // Any user with access to the facility can create a new device.
-    return facilityId in facilityRoles
+    return canUpdateFacility(facilityId)
   }
 
   override fun canReadDevice(deviceId: DeviceId): Boolean {
@@ -174,7 +165,7 @@ data class IndividualUser(
 
   override fun canUpdateDevice(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
-    return facilityId in facilityRoles
+    return canUpdateFacility(facilityId)
   }
 
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean {
@@ -253,10 +244,10 @@ data class IndividualUser(
 
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean {
     val facilityId = parentStore.getFacilityId(deviceId) ?: return false
-    return facilityId in facilityRoles
+    return canUpdateFacility(facilityId)
   }
 
-  override fun canReadTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
+  override fun canReadTimeseries(deviceId: DeviceId): Boolean = canReadDevice(deviceId)
 
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = canCreateTimeseries(deviceId)
 

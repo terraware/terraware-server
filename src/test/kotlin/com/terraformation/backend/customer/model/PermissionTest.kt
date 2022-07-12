@@ -387,10 +387,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *facilityIds.forOrg1(),
         createAccession = true,
-        createAutomation = true,
-        createDevice = true,
         listAutomations = true,
-        sendAlert = true,
     )
 
     permissions.expect(
@@ -402,9 +399,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *automationIds.forOrg1(),
         readAutomation = true,
-        updateAutomation = true,
-        deleteAutomation = true,
-        triggerAutomation = true,
     )
 
     permissions.expect(
@@ -415,11 +409,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *deviceIds.forOrg1(),
-        createTimeseries = true,
         readTimeseries = true,
-        updateTimeseries = true,
         readDevice = true,
-        updateDevice = true,
     )
 
     permissions.expect(
@@ -453,10 +444,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *facilityIds.forOrg1(),
         createAccession = true,
-        createAutomation = true,
-        createDevice = true,
         listAutomations = true,
-        sendAlert = true,
     )
 
     permissions.expect(
@@ -468,9 +456,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *automationIds.forOrg1(),
         readAutomation = true,
-        updateAutomation = true,
-        deleteAutomation = true,
-        triggerAutomation = true,
     )
 
     permissions.expect(
@@ -481,11 +466,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *deviceIds.forOrg1(),
-        createTimeseries = true,
         readTimeseries = true,
-        updateTimeseries = true,
         readDevice = true,
-        updateDevice = true,
     )
 
     permissions.expect(
