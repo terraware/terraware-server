@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.PROJECT_USERS
 import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -21,12 +20,6 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
       listOf(
           organizations.asSingleValueSublist(
               "organization", ORGANIZATION_USERS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
-          projectUsers.asMultiValueSublist(
-              "projectMemberships",
-              ORGANIZATION_USERS.USER_ID.eq(PROJECT_USERS.USER_ID)
-                  .and(
-                      ORGANIZATION_USERS.ORGANIZATION_ID.eq(
-                          PROJECT_USERS.projects().ORGANIZATION_ID))),
           users.asSingleValueSublist("user", ORGANIZATION_USERS.USER_ID.eq(USERS.ID)),
       )
     }

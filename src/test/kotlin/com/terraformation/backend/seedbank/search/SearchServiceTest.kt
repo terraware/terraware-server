@@ -2,7 +2,6 @@ package com.terraformation.backend.seedbank.search
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -822,32 +821,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         accessionSearchService.search(
             facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
     assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `returns geometry values as string-wrapped GeoJSON`() {
-    val prefix = SearchFieldPrefix(tables.sites)
-    val field = prefix.resolve("location")
-
-    // We don't care about minor formatting differences in the GeoJSON; compare the contents
-    // rather than the string form to avoid bogus failures.
-    val expectedGeometry =
-        mapOf(
-            "type" to "Point",
-            "coordinates" to listOf(1, 2, 0),
-            "crs" to mapOf("type" to "name", "properties" to mapOf("name" to "EPSG:3857")))
-
-    val actualGeometry =
-        searchService
-            .search(prefix, listOf(field), NoConditionNode())
-            .results
-            .firstOrNull()
-            ?.get(field.searchField.fieldName)
-            ?.let { geometryString ->
-              jacksonObjectMapper().readValue<Map<String, Any>>("$geometryString")
-            }
-
-    assertEquals(expectedGeometry, actualGeometry)
   }
 
   @Test
@@ -1773,40 +1746,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `should not see inaccessible projects of other users in same organization`() {
-      val userIdField = usersPrefix.resolve("id")
-      val userProjectIdField = usersPrefix.resolve("projectMemberships.project.id")
-
-      val fields = listOf(userIdField, userProjectIdField)
-      val sortOrder = fields.map { SearchSortField(it) }
-
-      // bothOrgsUserId is in two projects in the current user's organization (projectId and
-      // sameOrgProjectId) but the current user is only in the projectId one, so we shouldn't see
-      // sameOrgProjectId in the search results.
-      val expected =
-          SearchResults(
-              listOf(
-                  mapOf(
-                      "id" to "${user.userId}",
-                      "projectMemberships" to
-                          listOf(
-                              mapOf("project" to mapOf("id" to "$projectId")),
-                          )),
-                  mapOf(
-                      "id" to "$bothOrgsUserId",
-                      "projectMemberships" to
-                          listOf(
-                              mapOf("project" to mapOf("id" to "$projectId")),
-                          )),
-              ),
-              null)
-
-      val actual = searchService.search(usersPrefix, fields, NoConditionNode(), sortOrder)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
     fun `should be able to filter organization members by organization`() {
       val membersPrefix = SearchFieldPrefix(tables.organizationUsers)
       val organizationIdField = membersPrefix.resolve("organization_id")
@@ -1899,8 +1838,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `can get to accession sublists starting from organization`() {
       val orgPrefix = SearchFieldPrefix(tables.organizations)
-      val fullyQualifiedField =
-          orgPrefix.resolve("projects.sites.facilities.accessions.bags.number")
+      val fullyQualifiedField = orgPrefix.resolve("facilities.accessions.bags.number")
 
       val result =
           searchService.search(
@@ -1916,33 +1854,21 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           SearchResults(
               listOf(
                   mapOf(
-                      "projects" to
+                      "facilities" to
                           listOf(
                               mapOf(
-                                  "sites" to
+                                  "accessions" to
                                       listOf(
                                           mapOf(
-                                              "facilities" to
+                                              "bags" to
                                                   listOf(
-                                                      mapOf(
-                                                          "accessions" to
-                                                              listOf(
-                                                                  mapOf(
-                                                                      "bags" to
-                                                                          listOf(
-                                                                              mapOf(
-                                                                                  "number" to "1"),
-                                                                              mapOf(
-                                                                                  "number" to
-                                                                                      "5"))),
-                                                                  mapOf(
-                                                                      "bags" to
-                                                                          listOf(
-                                                                              mapOf(
-                                                                                  "number" to "2"),
-                                                                              mapOf(
-                                                                                  "number" to
-                                                                                      "6")))))))))))),
+                                                      mapOf("number" to "1"),
+                                                      mapOf("number" to "5"))),
+                                          mapOf(
+                                              "bags" to
+                                                  listOf(
+                                                      mapOf("number" to "2"),
+                                                      mapOf("number" to "6")))))))),
               cursor = null)
 
       assertEquals(expected, result)
@@ -2007,8 +1933,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val germinationsPrefix = SearchFieldPrefix(tables.germinations)
       val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
       val orgNameField =
-          germinationsPrefix.resolve(
-              "germinationTest.accession.facility.site.project.organization.name")
+          germinationsPrefix.resolve("germinationTest.accession.facility.organization.name")
       val orgName = "Organization $organizationId"
 
       val result =
@@ -2019,14 +1944,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val sublistValues =
           mapOf(
-              "accession" to
-                  mapOf(
-                      "facility" to
-                          mapOf(
-                              "site" to
-                                  mapOf(
-                                      "project" to
-                                          mapOf("organization" to mapOf("name" to orgName))))))
+              "accession" to mapOf("facility" to mapOf("organization" to mapOf("name" to orgName))))
 
       val expected =
           SearchResults(
@@ -2042,7 +1960,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `can get to flattened organization from accession sublist`() {
       val germinationsPrefix = SearchFieldPrefix(tables.germinations)
       val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
-      val flattenedFieldName = "germinationTest_accession_facility_site_project_organization_name"
+      val flattenedFieldName = "germinationTest_accession_facility_organization_name"
       val orgNameField = germinationsPrefix.resolve(flattenedFieldName)
       val orgName = "Organization $organizationId"
 
@@ -2066,8 +1984,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `can filter across multiple single-value sublists`() {
       val germinationsPrefix = SearchFieldPrefix(tables.germinations)
       val orgNameField =
-          germinationsPrefix.resolve(
-              "germinationTest.accession.facility.site.project.organization.name")
+          germinationsPrefix.resolve("germinationTest.accession.facility.organization.name")
 
       val result =
           searchService.search(
@@ -2570,7 +2487,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can include a computed field and its underlying raw field in a nested sublist`() {
-      val prefix = SearchFieldPrefix(tables.sites)
+      val prefix = SearchFieldPrefix(tables.organizations)
       val activeField = prefix.resolve("facilities.accessions.active")
       val stateField = prefix.resolve("facilities.accessions.state")
 
@@ -2599,12 +2516,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val organizationFieldNames = tables.organizations.getAllFieldNames()
 
       // getAllFieldNames() doesn't visit single-value sublists since they are usually parent
-      // entities and we want to avoid infinite recursion. But the "user" sublists under
-      // the organization/project users tables is a special case: a single-value sublist that
-      // refers to a child, not a parent. Include them explicitly.
-      val usersFieldNames =
-          tables.users.getAllFieldNames("members.user.") +
-              tables.users.getAllFieldNames("projects.members.user.")
+      // entities and we want to avoid infinite recursion. But the "user" sublist under
+      // the organization users tables is a special case: a single-value sublist that
+      // refers to a child, not a parent. Include it explicitly.
+      val usersFieldNames = tables.users.getAllFieldNames("members.user.")
 
       val fields = (organizationFieldNames + usersFieldNames).sorted().map { prefix.resolve(it) }
 
@@ -2718,17 +2633,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "type" to "Seed Bank",
               ))
 
-      val expectedSites =
-          listOf(
-              mapOf(
-                  "createdTime" to "1970-01-01T00:00:00Z",
-                  "facilities" to expectedFacilities,
-                  "id" to "10",
-                  "name" to "Site 10",
-                  "location" to
-                      """{"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[1,2,0]}""",
-              ))
-
       val expectedUser =
           mapOf(
               "createdTime" to "1970-01-01T00:00:00Z",
@@ -2740,42 +2644,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   listOf(
                       mapOf(
                           "createdTime" to "1970-01-01T00:00:00Z",
-                          "projectMemberships" to
-                              listOf(
-                                  mapOf(
-                                      "createdTime" to "1970-01-01T00:00:00Z",
-                                  )),
                           "roleName" to "Manager",
-                      )),
-              "projectMemberships" to
-                  listOf(
-                      mapOf("createdTime" to "1970-01-01T00:00:00Z"),
-                  ))
-
-      val expectedProjectUsers =
-          listOf(mapOf("createdTime" to "1970-01-01T00:00:00Z", "user" to expectedUser))
-
-      val expectedProjects =
-          listOf(
-              mapOf(
-                  "createdTime" to "1970-01-01T00:00:00Z",
-                  "hidden" to "false",
-                  "id" to "2",
-                  "members" to expectedProjectUsers,
-                  "name" to "Project 2",
-                  "organizationWide" to "false",
-                  "sites" to expectedSites,
-              ))
+                      )))
 
       val expectedOrganizationUsers =
           listOf(
               mapOf(
                   "createdTime" to "1970-01-01T00:00:00Z",
-                  "projectMemberships" to
-                      listOf(
-                          mapOf(
-                              "createdTime" to "1970-01-01T00:00:00Z",
-                          )),
                   "roleName" to "Manager",
                   "user" to expectedUser,
               ))
@@ -2787,7 +2662,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   "facilities" to expectedFacilities,
                   "id" to "1",
                   "name" to "Organization 1",
-                  "projects" to expectedProjects,
                   "members" to expectedOrganizationUsers,
                   "species" to expectedSpecies,
               ))
