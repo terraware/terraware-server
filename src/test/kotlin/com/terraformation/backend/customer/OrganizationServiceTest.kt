@@ -6,7 +6,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
-import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationDeletedEvent
 import com.terraformation.backend.customer.model.Role
@@ -50,7 +49,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
-  private lateinit var projectStore: ProjectStore
   private val publisher: ApplicationEventPublisher = mockk()
   private val realmResource: RealmResource = mockk()
   private lateinit var userStore: UserStore
@@ -63,7 +61,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     parentStore = ParentStore(dslContext)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
-    projectStore = ProjectStore(clock, dslContext, projectsDao, projectTypeSelectionsDao)
     userStore =
         UserStore(
             clock,
@@ -79,7 +76,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             usersDao,
         )
 
-    service = OrganizationService(dslContext, organizationStore, projectStore, publisher, userStore)
+    service = OrganizationService(dslContext, organizationStore, publisher, userStore)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateFacility(any()) } returns true
