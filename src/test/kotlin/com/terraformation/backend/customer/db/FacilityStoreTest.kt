@@ -11,8 +11,6 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ProjectId
-import com.terraformation.backend.db.SiteId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
@@ -43,9 +41,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    store =
-        FacilityStore(
-            clock, dslContext, facilitiesDao, ParentStore(dslContext), storageLocationsDao)
+    store = FacilityStore(clock, dslContext, facilitiesDao, storageLocationsDao)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateFacility(any()) } returns true
@@ -252,7 +248,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create also creates default storage locations`() {
-    val model = store.create(siteId, FacilityType.SeedBank, "Test", createStorageLocations = true)
+    val model =
+        store.create(organizationId, FacilityType.SeedBank, "Test", createStorageLocations = true)
 
     val expected =
         mapOf(
@@ -268,7 +265,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create only creates default storage locations if requested by caller`() {
-    val model = store.create(siteId, FacilityType.SeedBank, "Test", createStorageLocations = false)
+    val model =
+        store.create(organizationId, FacilityType.SeedBank, "Test", createStorageLocations = false)
     val storageLocations = store.fetchStorageLocations(model.id)
 
     assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
@@ -277,15 +275,16 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create only creates default storage locations for seed banks`() {
     val model =
-        store.create(siteId, FacilityType.Desalination, "Test", createStorageLocations = true)
+        store.create(
+            organizationId, FacilityType.Desalination, "Test", createStorageLocations = true)
     val storageLocations = store.fetchStorageLocations(model.id)
 
     assertEquals(emptyList<StorageLocationsRow>(), storageLocations)
   }
 
   @Test
-  fun `create automatically populates organization ID`() {
-    val model = store.create(siteId, FacilityType.SeedBank, "Test")
+  fun `create populates organization ID`() {
+    val model = store.create(organizationId, FacilityType.SeedBank, "Test")
 
     val actual = facilitiesDao.fetchOneById(model.id)!!
     assertEquals(organizationId, actual.organizationId)
@@ -296,27 +295,24 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateFacility(any()) } returns false
     every { user.canReadOrganization(any()) } returns true
 
-    assertThrows<AccessDeniedException> { store.create(siteId, FacilityType.SeedBank, "Test") }
+    assertThrows<AccessDeniedException> {
+      store.create(organizationId, FacilityType.SeedBank, "Test")
+    }
   }
 
   @Test
-  fun `update does not allow changing site or organization ID`() {
+  fun `update does not allow changing organization ID`() {
     val otherOrganizationId = OrganizationId(10)
-    val otherProjectId = ProjectId(11)
-    val otherSiteId = SiteId(12)
 
     insertOrganization(otherOrganizationId)
     insertOrganizationUser(organizationId = otherOrganizationId, role = Role.ADMIN)
-    insertProject(otherProjectId, otherOrganizationId)
-    insertSite(otherSiteId, otherProjectId)
 
-    val model = store.create(siteId, FacilityType.SeedBank, "Test")
+    val model = store.create(organizationId, FacilityType.SeedBank, "Test")
 
-    store.update(model.copy(organizationId = otherOrganizationId, siteId = otherSiteId))
+    store.update(model.copy(organizationId = otherOrganizationId))
 
     val actual = facilitiesDao.fetchOneById(model.id)!!
     assertEquals(organizationId, actual.organizationId, "Organization ID")
-    assertEquals(siteId, actual.siteId, "Site ID")
   }
 
   @Test

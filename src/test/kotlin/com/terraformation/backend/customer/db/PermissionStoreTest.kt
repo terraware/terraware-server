@@ -209,7 +209,7 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
         sites.forEach { (siteId, facilities) ->
           insertSite(siteId, projectId)
 
-          facilities.forEach { facilityId -> insertFacility(facilityId, siteId, organizationId) }
+          facilities.forEach { facilityId -> insertFacility(facilityId, organizationId) }
         }
       }
     }

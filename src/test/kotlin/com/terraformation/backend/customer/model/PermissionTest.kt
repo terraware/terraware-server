@@ -174,7 +174,7 @@ internal class PermissionTest : DatabaseTest() {
     siteIds.forEach { insertSite(it, it.value / 10, createdBy = userId) }
 
     facilityIds.forEach { facilityId ->
-      insertFacility(facilityId, facilityId.value / 10, facilityId.value / 1000, createdBy = userId)
+      insertFacility(facilityId, facilityId.value / 1000, createdBy = userId)
       insertDevice(facilityId.value, facilityId, createdBy = userId)
       insertAutomation(facilityId.value, facilityId, createdBy = userId)
       accessionsDao.insert(
