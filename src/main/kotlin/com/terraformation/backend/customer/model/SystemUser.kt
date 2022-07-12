@@ -101,14 +101,12 @@ class SystemUser(
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
-  override fun canDeleteApiKey(organizationId: OrganizationId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true
   override fun canImportGlobalSpeciesData(): Boolean = false
-  override fun canListApiKeys(organizationId: OrganizationId): Boolean = true
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
   override fun canListFacilities(organizationId: OrganizationId): Boolean = true
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true

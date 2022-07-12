@@ -315,43 +315,6 @@ class UserStore(
     return user
   }
 
-  /** Deletes an API client user including its Keycloak registration. */
-  fun deleteApiClient(userId: UserId) {
-    val user = fetchOneById(userId)
-
-    if (user.userType != UserType.APIClient) {
-      throw IllegalArgumentException("User is not an API client")
-    }
-
-    user.organizationRoles.keys.forEach { organizationId ->
-      requirePermissions { deleteApiKey(organizationId) }
-    }
-
-    log.debug("Removing API client user $userId (${user.authId}) from Keycloak")
-
-    val response = usersResource.delete(user.authId)
-
-    if (response.statusInfo.family == Response.Status.Family.SUCCESSFUL) {
-      log.info("Removed API client user $userId (${user.authId}) from Keycloak")
-    } else if (response.status == Response.Status.NOT_FOUND.statusCode) {
-      log.warn("API client user $userId (${user.authId}) in users table but not in Keycloak")
-    } else {
-      log.error(
-          "Got unexpected HTTP status ${response.status} when deleting API client user $userId " +
-              "(${user.authId}) from Keycloak")
-      throw KeycloakRequestFailedException("Failed to delete user from Keycloak")
-    }
-
-    // For now, completely delete the user from our database. We will likely need to revisit this
-    // once we have more objects in the system that are owned by or otherwise associated with
-    // specific users.
-    user.organizationRoles.keys.forEach { organizationId ->
-      organizationStore.removeUser(organizationId, userId)
-    }
-
-    usersDao.deleteById(userId)
-  }
-
   /**
    * Registers a user in Keycloak and returns its representation.
    *

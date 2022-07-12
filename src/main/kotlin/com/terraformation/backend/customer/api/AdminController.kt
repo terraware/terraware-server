@@ -36,7 +36,6 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.Duration
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -113,30 +112,8 @@ class AdminController(
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
     val users = organizationStore.fetchUsers(organizationId).sortedBy { it.email }
 
-    if (currentUser().canListApiKeys(organizationId)) {
-      val apiClients =
-          organizationStore.fetchApiClients(organizationId).map {
-            it.copy(email = it.email.substringAfter(config.keycloak.apiClientUsernamePrefix))
-          }
-
-      // Thymeleaf templates only know how to render Instant in the server's time zone, so we
-      // need to format the timestamps here. In a real admin UI we'd let the client render these
-      // in the browser's time zone.
-      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm 'UTC'")
-      val createdTimes =
-          apiClients.associate {
-            it.email to ZonedDateTime.ofInstant(it.createdTime, ZoneOffset.UTC).format(formatter)
-          }
-
-      model.addAttribute("apiClients", apiClients)
-      model.addAttribute("apiClientCreatedTimes", createdTimes)
-    }
-
     model.addAttribute("canAddUser", currentUser().canAddOrganizationUser(organizationId))
-    model.addAttribute("canCreateApiKey", currentUser().canCreateApiKey(organizationId))
     model.addAttribute("canCreateFacility", currentUser().canCreateFacility(organization.id))
-    model.addAttribute("canDeleteApiKey", currentUser().canDeleteApiKey(organizationId))
-    model.addAttribute("canListApiKeys", currentUser().canListApiKeys(organizationId))
     model.addAttribute("facilities", facilities)
     model.addAttribute("facilityTypes", FacilityType.values())
     model.addAttribute("organization", organization)
@@ -525,59 +502,6 @@ class AdminController(
     return facility(facilityId)
   }
 
-  @PostMapping("/createApiKey")
-  fun createApiKey(
-      @RequestParam("organizationId") organizationId: OrganizationId,
-      @RequestParam("description") description: String?,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val newUser = userStore.createApiClient(organizationId, description)
-
-    val token = userStore.generateOfflineToken(newUser.userId)
-
-    redirectAttributes.addFlashAttribute("authId", newUser.authId)
-    redirectAttributes.addFlashAttribute(
-        "keyId", newUser.email.substringAfter(config.keycloak.apiClientUsernamePrefix))
-    redirectAttributes.addFlashAttribute("prefix", prefix)
-    redirectAttributes.addFlashAttribute("token", token)
-
-    return apiKeyAdded(organizationId)
-  }
-
-  @GetMapping("/apiKeyAdded/{organizationId}")
-  fun getApiKeyAdded(
-      @PathVariable("organizationId") organizationId: OrganizationId,
-      model: Model,
-      redirectAttributes: RedirectAttributes
-  ): String {
-    if (!model.containsAttribute("token")) {
-      redirectAttributes.failureMessage = "You may not view an API key after it has been created."
-      return organization(organizationId)
-    }
-
-    val organization = organizationStore.fetchOneById(organizationId)
-
-    model.addAttribute("organization", organization)
-
-    return "/admin/apiKeyAdded"
-  }
-
-  @PostMapping("/deleteApiKey")
-  fun deleteApiKey(
-      @RequestParam("organizationId") organizationId: OrganizationId,
-      @RequestParam("userId") userId: UserId,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      userStore.deleteApiClient(userId)
-      redirectAttributes.successMessage = "API key deleted."
-    } catch (e: Exception) {
-      redirectAttributes.failureMessage = "Unable to delete API key."
-    }
-
-    return organization(organizationId)
-  }
-
   @PostMapping("/uploadGbif", consumes = ["multipart/form-data"])
   fun uploadGbif(
       request: HttpServletRequest,
@@ -812,7 +736,6 @@ class AdminController(
   // Convenience methods to redirect to the GET endpoint for each kind of thing.
 
   private fun adminHome() = redirect("/")
-  private fun apiKeyAdded(organizationId: OrganizationId) = redirect("/apiKeyAdded/$organizationId")
   private fun deviceManager(deviceManagerId: DeviceManagerId) =
       redirect("/deviceManagers/$deviceManagerId")
   private fun deviceTemplates() = redirect("/deviceTemplates")

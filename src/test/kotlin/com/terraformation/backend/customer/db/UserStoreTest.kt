@@ -10,7 +10,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -25,7 +24,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -85,8 +83,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canCreateApiKey(organizationId) } returns true
-    every { user.canDeleteApiKey(organizationId) } returns true
-    every { user.canListApiKeys(organizationId) } returns true
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canRemoveOrganizationUser(organizationId, any()) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.CONTRIBUTOR) } returns true
@@ -253,49 +249,6 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           mapOf(organizationId to Role.CONTRIBUTOR),
           newUser.organizationRoles,
           "Should grant contributor role to API client user")
-    }
-
-    @Test
-    fun `deleteApiClient removes user from Keycloak`() {
-      val user = userStore.createApiClient(organizationId, null)
-      val authId = user.authId!!
-
-      assertNotNull(usersResource.get(authId), "User exists in Keycloak after creation")
-
-      userStore.deleteApiClient(user.userId)
-
-      assertNull(usersResource.get(authId), "User does not exist in Keycloak after deletion")
-    }
-
-    @Test
-    fun `deleteApiClient causes user to no longer be findable`() {
-      val user = userStore.createApiClient(organizationId, null)
-
-      userStore.deleteApiClient(user.userId)
-
-      assertThrows<UserNotFoundException>("Looking up by user ID should fail") {
-        userStore.fetchOneById(user.userId)
-      }
-      assertNull(userStore.fetchByEmail(user.email), "Looking up by username should fail")
-      assertThrows<IllegalArgumentException>("Should not be able to generate token for user") {
-        userStore.generateOfflineToken(user.userId)
-      }
-      assertThrows<KeycloakUserNotFoundException>("Looking up user by auth ID should fail") {
-        userStore.fetchByAuthId(user.authId!!)
-      }
-    }
-
-    @Test
-    fun `deleteApiClient deletes user locally even if already deleted from Keycloak`() {
-      val user = userStore.createApiClient(organizationId, null)
-
-      usersResource.delete(user.authId)
-
-      userStore.deleteApiClient(user.userId)
-
-      assertThrows<UserNotFoundException>("User should not exist after deletion") {
-        userStore.fetchOneById(user.userId)
-      }
     }
   }
 

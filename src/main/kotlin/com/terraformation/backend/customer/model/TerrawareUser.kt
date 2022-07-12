@@ -66,14 +66,12 @@ interface TerrawareUser : Principal {
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
-  fun canDeleteApiKey(organizationId: OrganizationId): Boolean
   fun canDeleteAutomation(automationId: AutomationId): Boolean
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean
   fun canDeleteSpecies(speciesId: SpeciesId): Boolean
   fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canDeleteUpload(uploadId: UploadId): Boolean
   fun canImportGlobalSpeciesData(): Boolean
-  fun canListApiKeys(organizationId: OrganizationId): Boolean
   fun canListAutomations(facilityId: FacilityId): Boolean
   fun canListFacilities(organizationId: OrganizationId): Boolean
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
