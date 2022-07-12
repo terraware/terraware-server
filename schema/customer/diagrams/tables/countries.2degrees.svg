@@ -87,7 +87,7 @@
 <text text-anchor="start" x="712" y="-452.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="709,-428 709,-446 737,-446 737,-428 709,-428"/>
 <polygon fill="none" stroke="black" points="709,-428 709,-446 737,-446 737,-428 709,-428"/>
-<text text-anchor="start" x="712" y="-434.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
+<text text-anchor="start" x="712" y="-434.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
 <polygon fill="#ffffff" stroke="none" points="737,-428 737,-446 781,-446 781,-428 737,-428"/>
 <polygon fill="none" stroke="black" points="737,-428 737,-446 781,-446 781,-428 737,-428"/>
 <text text-anchor="start" x="742" y="-434.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>

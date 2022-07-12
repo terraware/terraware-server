@@ -219,7 +219,7 @@
 <text text-anchor="start" x="178.5" y="-572.666" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="175.5,-548.466 175.5,-566.466 203.5,-566.466 203.5,-548.466 175.5,-548.466"/>
 <polygon fill="none" stroke="black" points="175.5,-548.466 175.5,-566.466 203.5,-566.466 203.5,-548.466 175.5,-548.466"/>
-<text text-anchor="start" x="178.5" y="-554.666" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
+<text text-anchor="start" x="178.5" y="-554.666" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
 <polygon fill="#ffffff" stroke="none" points="203.5,-548.466 203.5,-566.466 247.5,-566.466 247.5,-548.466 203.5,-548.466"/>
 <polygon fill="none" stroke="black" points="203.5,-548.466 203.5,-566.466 247.5,-566.466 247.5,-548.466 203.5,-548.466"/>
 <text text-anchor="start" x="208.5" y="-554.666" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>

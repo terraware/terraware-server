@@ -5,6 +5,7 @@ organization_users
 project_users
 automations
 species_problems
+sites
 notifications
 accession_state_history
 upload_problems
@@ -24,13 +25,12 @@ timeseries
 notification_types
 germination_tests
 photos
+projects
 accessions
 storage_locations
 species
 devices
 facilities
-sites
-projects
 organizations
 country_subdivisions
 users

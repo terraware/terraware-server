@@ -13,7 +13,6 @@ users
 country_subdivisions
 organizations
 projects
-sites
 notification_types
 uploads
 facilities
@@ -21,5 +20,6 @@ device_managers
 project_type_selections
 upload_problems
 notifications
+sites
 project_users
 organization_users
