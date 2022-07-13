@@ -2523,13 +2523,45 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                           mapOf(
                                               "recordingDate" to "1970-01-02",
                                               "seedsGerminated" to "10")),
+                                  "viabilityTestResults" to
+                                      listOf(
+                                          mapOf(
+                                              "recordingDate" to "1970-01-01",
+                                              "seedsGerminated" to "5"),
+                                          mapOf(
+                                              "recordingDate" to "1970-01-02",
+                                              "seedsGerminated" to "10")),
                                   "type" to "Lab",
                                   "seedsSown" to "15",
-                              )),
+                              ),
+                          ),
                       "id" to "1000",
                       "speciesName" to "Kousa Dogwood",
                       "state" to "Processed",
                       "treesCollectedFrom" to "1",
+                      "viabilityTests" to
+                          listOf(
+                              mapOf(
+                                  "germinations" to
+                                      listOf(
+                                          mapOf(
+                                              "recordingDate" to "1970-01-01",
+                                              "seedsGerminated" to "5"),
+                                          mapOf(
+                                              "recordingDate" to "1970-01-02",
+                                              "seedsGerminated" to "10")),
+                                  "viabilityTestResults" to
+                                      listOf(
+                                          mapOf(
+                                              "recordingDate" to "1970-01-01",
+                                              "seedsGerminated" to "5"),
+                                          mapOf(
+                                              "recordingDate" to "1970-01-02",
+                                              "seedsGerminated" to "10")),
+                                  "type" to "Lab",
+                                  "seedsSown" to "15",
+                              ),
+                          ),
                   ))
               .flatMap { base ->
                 base.getListValue("bags")?.flatMap { bag ->

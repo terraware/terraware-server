@@ -127,7 +127,7 @@ data class CreateAccessionRequestPayload(
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
-    val germinationTestTypes: Set<ViabilityTestType>? = null,
+    @Schema(deprecated = true) val germinationTestTypes: Set<ViabilityTestType>? = null,
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
     val primaryCollector: String? = null,
@@ -137,6 +137,7 @@ data class CreateAccessionRequestPayload(
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
+    val viabilityTestTypes: Set<ViabilityTestType>? = null,
 ) {
   fun toModel(): AccessionModel {
     return AccessionModel(
@@ -159,7 +160,7 @@ data class CreateAccessionRequestPayload(
         siteLocation = siteLocation,
         sourcePlantOrigin = sourcePlantOrigin,
         species = species,
-        viabilityTestTypes = germinationTestTypes.orEmpty())
+        viabilityTestTypes = (viabilityTestTypes ?: germinationTestTypes).orEmpty())
   }
 }
 
@@ -181,8 +182,8 @@ data class UpdateAccessionRequestPayload(
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
-    val germinationTestTypes: Set<ViabilityTestType>? = null,
-    @Valid val germinationTests: List<GerminationTestPayload>? = null,
+    @Schema(deprecated = true) val germinationTestTypes: Set<ViabilityTestType>? = null,
+    @Schema(deprecated = true) @Valid val germinationTests: List<ViabilityTestPayload>? = null,
     @Schema(
         description =
             "Initial size of accession. The units of this value must match the measurement type " +
@@ -213,6 +214,8 @@ data class UpdateAccessionRequestPayload(
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     private val subsetWeight: SeedQuantityPayload? = null,
     val targetStorageCondition: StorageCondition? = null,
+    @Valid val viabilityTests: List<ViabilityTestPayload>? = null,
+    val viabilityTestTypes: Set<ViabilityTestType>? = null,
     @Valid val withdrawals: List<WithdrawalPayload>? = null,
 ) {
   fun toModel(id: AccessionId) =
@@ -256,8 +259,8 @@ data class UpdateAccessionRequestPayload(
           subsetWeightQuantity = subsetWeight?.toModel(),
           targetStorageCondition = targetStorageCondition,
           total = initialQuantity?.toModel(),
-          viabilityTests = germinationTests.orEmpty().map { it.toModel() },
-          viabilityTestTypes = germinationTestTypes.orEmpty(),
+          viabilityTests = (viabilityTests ?: germinationTests).orEmpty().map { it.toModel() },
+          viabilityTestTypes = (viabilityTestTypes ?: germinationTestTypes).orEmpty(),
           withdrawals = withdrawals.orEmpty().map { it.toModel() })
 }
 
@@ -291,8 +294,8 @@ data class AccessionPayload(
     val fieldNotes: String?,
     val founderId: String?,
     val geolocations: Set<Geolocation>?,
-    val germinationTests: List<GerminationTestPayload>?,
-    val germinationTestTypes: Set<ViabilityTestType>?,
+    @Schema(deprecated = true) val germinationTests: List<ViabilityTestPayload>?,
+    @Schema(deprecated = true) val germinationTestTypes: Set<ViabilityTestType>?,
     @Schema(
         description =
             "Server-generated unique identifier for the accession. This is unique across all " +
@@ -304,8 +307,9 @@ data class AccessionPayload(
                 "in \"processingMethod\".")
     val initialQuantity: SeedQuantityPayload?,
     val landowner: String?,
-    val latestGerminationTestDate: LocalDate?,
+    @Schema(deprecated = true) val latestGerminationTestDate: LocalDate?,
     val latestViabilityPercent: Int?,
+    val latestViabilityTestDate: LocalDate?,
     val numberOfTrees: Int?,
     val nurseryStartDate: LocalDate?,
     val photoFilenames: List<String>?,
@@ -364,6 +368,8 @@ data class AccessionPayload(
         description =
             "Total quantity of all past and scheduled withdrawals, including viability tests.")
     val totalWithdrawalQuantity: SeedQuantityPayload?,
+    val viabilityTests: List<ViabilityTestPayload>?,
+    val viabilityTestTypes: Set<ViabilityTestType>?,
     val withdrawals: List<WithdrawalPayload>?,
 ) {
   constructor(
@@ -390,13 +396,14 @@ data class AccessionPayload(
       model.fieldNotes,
       model.founderId,
       model.geolocations.orNull(),
-      model.viabilityTests.map { GerminationTestPayload(it) }.orNull(),
+      model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
       model.viabilityTestTypes.orNull(),
       model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       model.total?.toPayload(),
       model.landowner,
       model.latestViabilityTestDate,
       model.latestViabilityPercent,
+      model.latestViabilityTestDate,
       model.numberOfTrees,
       model.nurseryStartDate,
       model.photoFilenames.orNull(),
@@ -430,6 +437,8 @@ data class AccessionPayload(
       model.calculateTotalScheduledWithdrawalQuantity(clock)?.toPayload(),
       model.totalViabilityPercent,
       model.calculateTotalWithdrawalQuantity(clock)?.toPayload(),
+      model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
+      model.viabilityTestTypes.orNull(),
       model.withdrawals.map { WithdrawalPayload(it) }.orNull(),
   )
 }
@@ -463,7 +472,7 @@ data class SeedQuantityPayload(
 private fun SeedQuantityModel.toPayload() = SeedQuantityPayload(this)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class GerminationTestPayload(
+data class ViabilityTestPayload(
     @Schema(
         description =
             "Server-assigned unique ID of this viability test. Null when creating a new test.",
@@ -486,9 +495,10 @@ data class GerminationTestPayload(
     val remainingQuantity: SeedQuantityPayload? = null,
     val staffResponsible: String? = null,
     val seedsSown: Int? = null,
+    @Valid val testResults: List<ViabilityTestResultPayload>? = null,
     val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
-    @Valid val germinations: List<GerminationPayload>? = null
+    @Schema(deprecated = true) @Valid val germinations: List<ViabilityTestResultPayload>? = null
 ) {
   constructor(
       model: ViabilityTestModel
@@ -504,13 +514,15 @@ data class GerminationTestPayload(
       model.remaining?.toPayload(),
       model.staffResponsible,
       model.seedsSown,
+      model.testResults?.map { ViabilityTestResultPayload(it) },
       model.totalPercentGerminated,
       model.totalSeedsGerminated,
-      model.testResults?.map { GerminationPayload(it) })
+      model.testResults?.map { ViabilityTestResultPayload(it) },
+  )
 
   fun toModel() =
       ViabilityTestModel(
-          testResults = germinations?.map { it.toModel() },
+          testResults = (testResults ?: germinations)?.map { it.toModel() },
           id = id,
           endDate = endDate,
           notes = notes,
@@ -525,7 +537,7 @@ data class GerminationTestPayload(
       )
 }
 
-data class GerminationPayload(
+data class ViabilityTestResultPayload(
     val recordingDate: LocalDate,
     @JsonProperty(
         required = true,
@@ -556,10 +568,16 @@ data class WithdrawalPayload(
     val remainingQuantity: SeedQuantityPayload? = null,
     val staffResponsible: String? = null,
     @Schema(
+        deprecated = true,
         description =
             "If this withdrawal is of purpose \"Germination Testing\", the ID of the test it is " +
                 "associated with. This is always set by the server and cannot be modified.")
     val germinationTestId: ViabilityTestId? = null,
+    @Schema(
+        description =
+            "If this withdrawal is of purpose \"Germination Testing\", the ID of the test it is " +
+                "associated with. This is always set by the server and cannot be modified.")
+    val viabilityTestId: ViabilityTestId? = null,
     @Schema(
         description =
             "For weight-based accessions, the difference between the weight remaining before " +
@@ -597,6 +615,7 @@ data class WithdrawalPayload(
       model.remaining?.toPayload(),
       model.staffResponsible,
       model.viabilityTestId,
+      model.viabilityTestId,
       model.weightDifference?.toPayload(),
       model.withdrawn?.toPayload(),
       model.calculateEstimatedQuantity()?.toPayload(),
@@ -606,7 +625,7 @@ data class WithdrawalPayload(
       WithdrawalModel(
           date = date,
           destination = destination,
-          viabilityTestId = germinationTestId,
+          viabilityTestId = viabilityTestId ?: germinationTestId,
           id = id,
           notes = notes,
           purpose = purpose,

@@ -17,7 +17,10 @@ class ViabilityTestResultsTable(private val tables: SearchTables) : SearchTable(
     with(tables) {
       listOf(
           viabilityTests.asSingleValueSublist(
-              "germinationTest", VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID)))
+              "germinationTest", VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID)),
+          viabilityTests.asSingleValueSublist(
+              "viabilityTest", VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID)),
+      )
     }
   }
 
