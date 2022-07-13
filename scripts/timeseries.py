@@ -27,6 +27,7 @@ timeseries_config = {
         "interval": 30,
         "timeseries": {
             "system_current": {"min": 60, "max": 120},
+            "system_power": {"min": 100, "max": 5000},
             "system_voltage": {"min": 53, "max": 56},
             "relative_state_of_charge": {"min": 80, "max": 100},
             "state_of_health": {"min": 90, "max": 100},
@@ -41,6 +42,14 @@ timeseries_config = {
             "dc_voltage": {"min": 530, "max": 540},
             "relative_state_of_charge": {"min": 80, "max": 100},
             "state_of_health": {"min": 90, "max": 100},
+            "system_power": {"min": 100, "max": 5000},
+        },
+    },
+    ("Victron", "Cerbo GX"): {
+        "interval": 30,
+        "timeseries": {
+            "relative_state_of_charge": {"min": 80, "max": 100},
+            "system_power": {"min": 100, "max": 5000},
         },
     },
 }

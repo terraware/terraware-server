@@ -19,8 +19,16 @@
                     make: "Blue Ion",
                     model: "LV",
                     name: "BMU-1",
-                    address: "192.168.2.40",
+                    address: "192.168.2.50",
                     protocol: "modbus"
+                },
+                cerboGx: {
+                    type: "BMU",
+                    make: "Victron",
+                    model: "Cerbo GX",
+                    name: "BMU-1",
+                    address: "192.168.2.40",
+                    protocol: "mqtt"
                 },
                 omniSense: {
                     type: "sensor",
@@ -140,6 +148,7 @@
     <div>
         Common configurations:
         <a href="#" id="blueIon">Blue Ion PV</a> -
+        <a href="#" id="cerboGx">Cerbo GX PV</a> -
         <a href="#" id="omniSense">Temperature/Humidity Sensor</a> -
         <a href="#" id="omniSenseHub">OmniSense Hub</a>
     </div>
