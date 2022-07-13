@@ -6,8 +6,8 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.db.tables.daos.AccessionGerminationTestTypesDao
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
+import com.terraformation.backend.db.tables.daos.AccessionViabilityTestTypesDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.daos.AutomationsDao
@@ -17,8 +17,6 @@ import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
-import com.terraformation.backend.db.tables.daos.GerminationTestsDao
-import com.terraformation.backend.db.tables.daos.GerminationsDao
 import com.terraformation.backend.db.tables.daos.NotificationsDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
@@ -30,6 +28,8 @@ import com.terraformation.backend.db.tables.daos.TimeseriesDao
 import com.terraformation.backend.db.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.tables.daos.UploadsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
+import com.terraformation.backend.db.tables.daos.ViabilityTestResultsDao
+import com.terraformation.backend.db.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
@@ -188,7 +188,7 @@ abstract class DatabaseTest {
     }
   }
 
-  protected val accessionGerminationTestTypesDao: AccessionGerminationTestTypesDao by lazyDao()
+  protected val accessionViabilityTestTypesDao: AccessionViabilityTestTypesDao by lazyDao()
   protected val accessionPhotosDao: AccessionPhotosDao by lazyDao()
   protected val accessionsDao: AccessionsDao by lazyDao()
   protected val appDevicesDao: AppDevicesDao by lazyDao()
@@ -199,8 +199,6 @@ abstract class DatabaseTest {
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
-  protected val germinationsDao: GerminationsDao by lazyDao()
-  protected val germinationTestsDao: GerminationTestsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val photosDao: PhotosDao by lazyDao()
@@ -212,6 +210,8 @@ abstract class DatabaseTest {
   protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
+  protected val viabilityTestResultsDao: ViabilityTestResultsDao by lazyDao()
+  protected val viabilityTestsDao: ViabilityTestsDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
 
   /**

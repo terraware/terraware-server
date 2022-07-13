@@ -4,7 +4,6 @@ import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -12,6 +11,7 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalPurpose
 import java.math.BigDecimal
 import java.time.Clock
@@ -65,11 +65,9 @@ data class AccessionModel(
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation> = emptySet(),
-    val germinationTestTypes: Set<GerminationTestType> = emptySet(),
-    val germinationTests: List<GerminationTestModel> = emptyList(),
     val landowner: String? = null,
-    val latestGerminationTestDate: LocalDate? = null,
     val latestViabilityPercent: Int? = null,
+    val latestViabilityTestDate: LocalDate? = null,
     val numberOfTrees: Int? = null,
     val nurseryStartDate: LocalDate? = null,
     val photoFilenames: List<String> = emptyList(),
@@ -99,6 +97,8 @@ data class AccessionModel(
     val targetStorageCondition: StorageCondition? = null,
     val total: SeedQuantityModel? = null,
     val totalViabilityPercent: Int? = null,
+    val viabilityTests: List<ViabilityTestModel> = emptyList(),
+    val viabilityTestTypes: Set<ViabilityTestType> = emptySet(),
     val withdrawals: List<WithdrawalModel> = emptyList(),
 ) {
   init {
@@ -161,9 +161,9 @@ data class AccessionModel(
     }
 
     if (total == null) {
-      if (germinationTests.isNotEmpty()) {
+      if (viabilityTests.isNotEmpty()) {
         throw IllegalArgumentException(
-            "Cannot create germination tests before setting total accession size")
+            "Cannot create viability tests before setting total accession size")
       }
       if (withdrawals.isNotEmpty()) {
         throw IllegalArgumentException(
@@ -186,7 +186,7 @@ data class AccessionModel(
     listOfNotNull(
             withdrawals.mapNotNull { it.withdrawn },
             withdrawals.mapNotNull { it.remaining },
-            germinationTests.mapNotNull { it.remaining },
+            viabilityTests.mapNotNull { it.remaining },
         )
         .flatten()
         .forEach { quantity ->
@@ -205,7 +205,7 @@ data class AccessionModel(
                 withdrawals
                     .filter { it.purpose != WithdrawalPurpose.GerminationTesting }
                     .mapNotNull { it.withdrawn?.quantity },
-                germinationTests.mapNotNull { it.seedsSown?.toBigDecimal() })
+                viabilityTests.mapNotNull { it.seedsSown?.toBigDecimal() })
             .flatten()
             .sumOf { it }
     if (total != null && totalWithdrawn > total.quantity) {
@@ -224,26 +224,26 @@ data class AccessionModel(
       }
     }
 
-    val germinationTestRemaining = germinationTests.map { it.remaining }
+    val viabilityTestRemaining = viabilityTests.map { it.remaining }
     val withdrawalRemaining = withdrawals.map { it.remaining }
-    (germinationTestRemaining + withdrawalRemaining).forEach { quantity ->
+    (viabilityTestRemaining + withdrawalRemaining).forEach { quantity ->
       if (quantity == null) {
         throw IllegalArgumentException(
-            "Germination tests and withdrawals must include remaining quantity if accession " +
+            "Viability tests and withdrawals must include remaining quantity if accession " +
                 "processing method is Weight")
       } else if (quantity.units == SeedQuantityUnits.Seeds) {
         throw IllegalArgumentException(
-            "Seeds remaining on germination tests and withdrawals must be weight-based if " +
+            "Seeds remaining on viability tests and withdrawals must be weight-based if " +
                 "accession processing method is Weight")
       } else if (quantity.quantity.signum() < 0) {
         throw IllegalArgumentException(
-            "Seeds remaining on germination tests and withdrawals cannot be negative")
+            "Seeds remaining on viability tests and withdrawals cannot be negative")
       }
     }
   }
 
-  private fun getLatestGerminationTestWithResults(): GerminationTestModel? {
-    return germinationTests
+  private fun getLatestViabilityTestWithResults(): ViabilityTestModel? {
+    return viabilityTests
         .filter { it.calculateLatestRecordingDate() != null && it.seedsSown != null }
         .maxByOrNull { it.calculateLatestRecordingDate()!! }
   }
@@ -255,8 +255,8 @@ data class AccessionModel(
         null
       }
 
-  private fun hasGerminationTestResults(): Boolean =
-      germinationTests.any { !it.germinations.isNullOrEmpty() }
+  private fun hasViabilityTestResults(): Boolean =
+      viabilityTests.any { !it.testResults.isNullOrEmpty() }
 
   private fun hasCutTestResults(): Boolean =
       cutTestSeedsCompromised != null && cutTestSeedsEmpty != null && cutTestSeedsFilled != null
@@ -265,14 +265,14 @@ data class AccessionModel(
       total?.units == SeedQuantityUnits.Seeds ||
           (total != null && subsetCount != null && subsetWeightQuantity != null)
 
-  private fun hasTestResults(): Boolean = hasCutTestResults() || hasGerminationTestResults()
+  private fun hasTestResults(): Boolean = hasCutTestResults() || hasViabilityTestResults()
 
-  fun calculateLatestGerminationRecordingDate(): LocalDate? {
-    return getLatestGerminationTestWithResults()?.calculateLatestRecordingDate()
+  fun calculateLatestViabilityRecordingDate(): LocalDate? {
+    return getLatestViabilityTestWithResults()?.calculateLatestRecordingDate()
   }
 
   fun calculateLatestViabilityPercent(): Int? {
-    return getLatestGerminationTestWithResults()?.calculateTotalPercentGerminated()
+    return getLatestViabilityTestWithResults()?.calculateTotalPercentGerminated()
   }
 
   fun calculateTotalViabilityPercent(): Int? {
@@ -280,14 +280,14 @@ data class AccessionModel(
       return null
     }
 
-    val tests = germinationTests
+    val tests = viabilityTests
 
-    val totalGerminationTested = tests.mapNotNull { it.seedsSown }.sum()
+    val totalViabilityTested = tests.mapNotNull { it.seedsSown }.sum()
     val totalGerminated =
-        tests.sumOf { test -> test.germinations?.sumOf { it.seedsGerminated } ?: 0 }
+        tests.sumOf { test -> test.testResults?.sumOf { it.seedsGerminated } ?: 0 }
 
     val cutTestFilled = if (hasCutTestResults()) cutTestSeedsFilled!! else 0
-    val totalTested = totalGerminationTested + (getCutTestTotal() ?: 0)
+    val totalTested = totalViabilityTested + (getCutTestTotal() ?: 0)
     val totalViable = totalGerminated + cutTestFilled
 
     return if (totalTested > 0) {
@@ -327,7 +327,7 @@ data class AccessionModel(
       clock: Clock,
       existingWithdrawals: Collection<WithdrawalModel> = withdrawals
   ): List<WithdrawalModel> {
-    if (withdrawals.isEmpty() && germinationTests.isEmpty()) {
+    if (withdrawals.isEmpty() && viabilityTests.isEmpty()) {
       return emptyList()
     }
 
@@ -349,17 +349,17 @@ data class AccessionModel(
         withdrawals.filter { it.purpose != WithdrawalPurpose.GerminationTesting }
     val existingTestWithdrawals =
         existingWithdrawals
-            .filter { it.germinationTestId != null }
-            .associateBy { it.germinationTestId!! }
+            .filter { it.viabilityTestId != null }
+            .associateBy { it.viabilityTestId!! }
     val testWithdrawals =
-        germinationTests.map { test ->
+        viabilityTests.map { test ->
           val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
           val withdrawn =
               test.seedsSown?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
           WithdrawalModel(
               date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
-              germinationTest = test,
-              germinationTestId = test.id,
+              viabilityTest = test,
+              viabilityTestId = test.id,
               id = existingWithdrawal?.id,
               purpose = WithdrawalPurpose.GerminationTesting,
               remaining = test.remaining,
@@ -378,7 +378,7 @@ data class AccessionModel(
               withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
               withdrawal.copy(
                   remaining = currentRemaining,
-                  germinationTest = withdrawal.germinationTest?.copy(remaining = currentRemaining))
+                  viabilityTest = withdrawal.viabilityTest?.copy(remaining = currentRemaining))
             }
       }
       ProcessingMethod.Weight -> {
@@ -466,20 +466,20 @@ data class AccessionModel(
         if (existing.source == AccessionSource.Web) receivedDate else existing.receivedDate
     val newRemaining = calculateRemaining(clock)
     val newWithdrawals = calculateWithdrawals(clock, existing.withdrawals)
-    val newGerminationTests = newWithdrawals.mapNotNull { it.germinationTest }
+    val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
     val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
 
     return copy(
         collectedDate = newCollectedDate,
         estimatedSeedCount = calculateEstimatedSeedCount(),
-        germinationTests = newGerminationTests,
-        latestGerminationTestDate = calculateLatestGerminationRecordingDate(),
         latestViabilityPercent = calculateLatestViabilityPercent(),
+        latestViabilityTestDate = calculateLatestViabilityRecordingDate(),
         processingStartDate = newProcessingStartDate,
         receivedDate = newReceivedDate,
         remaining = newRemaining,
         state = newState,
         totalViabilityPercent = calculateTotalViabilityPercent(),
+        viabilityTests = newViabilityTests,
         withdrawals = newWithdrawals)
   }
 }

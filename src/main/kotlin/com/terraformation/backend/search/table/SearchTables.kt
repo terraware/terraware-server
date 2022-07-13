@@ -21,21 +21,21 @@ import javax.annotation.ManagedBean
  */
 @ManagedBean
 class SearchTables {
-  val accessionGerminationTestTypes = AccessionGerminationTestTypesTable(this)
   val accessions = AccessionsTable(this)
   val accessionSecondaryCollectors = AccessionSecondaryCollectorsTable(this)
+  val accessionViabilityTestTypes = AccessionViabilityTestTypesTable(this)
   val bags = BagsTable(this)
   val countries = CountriesTable(this)
   val countrySubdivisions = CountrySubdivisionsTable(this)
   val facilities = FacilitiesTable(this)
   val geolocations = GeolocationsTable(this)
-  val germinations = GerminationsTable(this)
-  val germinationTests = GerminationTestsTable(this)
   val organizations = OrganizationsTable(this)
   val organizationUsers = OrganizationUsersTable(this)
   val species = SpeciesTable(this)
   val speciesProblems = SpeciesProblemsTable(this)
   val storageLocations = StorageLocationsTable(this)
   val users = UsersTable(this)
+  val viabilityTestResults = ViabilityTestResultsTable(this)
+  val viabilityTests = ViabilityTestsTable(this)
   val withdrawals = WithdrawalsTable(this)
 }

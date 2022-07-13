@@ -1,46 +1,46 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.GerminationTestId
-import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
-import com.terraformation.backend.db.tables.references.GERMINATIONS
-import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
-import com.terraformation.backend.seedbank.model.GerminationModel
-import com.terraformation.backend.seedbank.model.GerminationTestModel
+import com.terraformation.backend.db.tables.references.ACCESSION_VIABILITY_TEST_TYPES
+import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
+import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
+import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
 
 @ManagedBean
-class GerminationStore(private val dslContext: DSLContext) {
-  fun germinationTestTypesMultiset(
+class ViabilityTestStore(private val dslContext: DSLContext) {
+  fun viabilityTestTypesMultiset(
       idField: Field<AccessionId?> = ACCESSIONS.ID
-  ): Field<Set<GerminationTestType>> {
+  ): Field<Set<ViabilityTestType>> {
     return DSL.multiset(
-            DSL.select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-                .from(ACCESSION_GERMINATION_TEST_TYPES)
-                .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(idField)))
+            DSL.select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
+                .from(ACCESSION_VIABILITY_TEST_TYPES)
+                .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(idField)))
         .convertFrom { result -> result.map { it.value1() }.toSet() }
   }
 
-  fun germinationTestsMultiset(
+  fun viabilityTestsMultiset(
       idField: Field<AccessionId?> = ACCESSIONS.ID
-  ): Field<List<GerminationTestModel>> {
-    val germinationsMultiset = germinationsMultiset()
+  ): Field<List<ViabilityTestModel>> {
+    val viabilityTestResultsMultiset = viabilityTestResultsMultiset()
 
-    return with(GERMINATION_TESTS) {
+    return with(VIABILITY_TESTS) {
       DSL.multiset(
-              DSL.select(GERMINATION_TESTS.asterisk(), germinationsMultiset)
-                  .from(GERMINATION_TESTS)
+              DSL.select(VIABILITY_TESTS.asterisk(), viabilityTestResultsMultiset)
+                  .from(VIABILITY_TESTS)
                   .where(ACCESSION_ID.eq(idField))
                   .orderBy(ID))
           .convertFrom { result ->
             result.map { record ->
-              GerminationTestModel(
+              ViabilityTestModel(
                   record[ID]!!,
                   record[ACCESSION_ID]!!,
                   record[TEST_TYPE]!!,
@@ -54,7 +54,7 @@ class GerminationStore(private val dslContext: DSLContext) {
                   record[TOTAL_SEEDS_GERMINATED],
                   record[NOTES],
                   record[STAFF_RESPONSIBLE],
-                  record[germinationsMultiset]?.ifEmpty { null },
+                  record[viabilityTestResultsMultiset]?.ifEmpty { null },
                   SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
               )
             }
@@ -62,40 +62,41 @@ class GerminationStore(private val dslContext: DSLContext) {
     }
   }
 
-  private fun germinationsMultiset(): Field<List<GerminationModel>> {
+  private fun viabilityTestResultsMultiset(): Field<List<ViabilityTestResultModel>> {
     return DSL.multiset(
             DSL.select(
-                    GERMINATIONS.ID,
-                    GERMINATIONS.TEST_ID,
-                    GERMINATIONS.RECORDING_DATE,
-                    GERMINATIONS.SEEDS_GERMINATED,
+                    VIABILITY_TEST_RESULTS.ID,
+                    VIABILITY_TEST_RESULTS.TEST_ID,
+                    VIABILITY_TEST_RESULTS.RECORDING_DATE,
+                    VIABILITY_TEST_RESULTS.SEEDS_GERMINATED,
                 )
-                .from(GERMINATIONS)
-                .where(GERMINATIONS.TEST_ID.eq(GERMINATION_TESTS.ID))
-                .orderBy(GERMINATIONS.RECORDING_DATE.desc(), GERMINATIONS.ID.desc()),
+                .from(VIABILITY_TEST_RESULTS)
+                .where(VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID))
+                .orderBy(
+                    VIABILITY_TEST_RESULTS.RECORDING_DATE.desc(), VIABILITY_TEST_RESULTS.ID.desc()),
         )
         .convertFrom { result ->
           result.map { record ->
-            GerminationModel(
-                record[GERMINATIONS.ID]!!,
-                record[GERMINATIONS.TEST_ID]!!,
-                record[GERMINATIONS.RECORDING_DATE]!!,
-                record[GERMINATIONS.SEEDS_GERMINATED]!!,
+            ViabilityTestResultModel(
+                record[VIABILITY_TEST_RESULTS.ID]!!,
+                record[VIABILITY_TEST_RESULTS.TEST_ID]!!,
+                record[VIABILITY_TEST_RESULTS.RECORDING_DATE]!!,
+                record[VIABILITY_TEST_RESULTS.SEEDS_GERMINATED]!!,
             )
           }
         }
   }
 
-  fun insertGerminationTest(
+  fun insertViabilityTest(
       accessionId: AccessionId,
-      germinationTest: GerminationTestModel
-  ): GerminationTestModel {
-    val calculatedTest: GerminationTestModel = germinationTest.withCalculatedValues()
+      viabilityTest: ViabilityTestModel
+  ): ViabilityTestModel {
+    val calculatedTest: ViabilityTestModel = viabilityTest.withCalculatedValues()
 
     val testId =
-        with(GERMINATION_TESTS) {
+        with(VIABILITY_TESTS) {
           dslContext
-              .insertInto(GERMINATION_TESTS)
+              .insertInto(VIABILITY_TESTS)
               .set(ACCESSION_ID, accessionId)
               .set(END_DATE, calculatedTest.endDate)
               .set(NOTES, calculatedTest.notes)
@@ -116,24 +117,24 @@ class GerminationStore(private val dslContext: DSLContext) {
               ?.get(ID)!!
         }
 
-    calculatedTest.germinations?.forEach { insertGermination(testId, it) }
+    calculatedTest.testResults?.forEach { insertTestResult(testId, it) }
 
     return calculatedTest.copy(id = testId)
   }
 
-  private fun insertGermination(testId: GerminationTestId, germination: GerminationModel) {
+  private fun insertTestResult(testId: ViabilityTestId, testResult: ViabilityTestResultModel) {
     dslContext
-        .insertInto(GERMINATIONS)
-        .set(GERMINATIONS.RECORDING_DATE, germination.recordingDate)
-        .set(GERMINATIONS.SEEDS_GERMINATED, germination.seedsGerminated)
-        .set(GERMINATIONS.TEST_ID, testId)
+        .insertInto(VIABILITY_TEST_RESULTS)
+        .set(VIABILITY_TEST_RESULTS.RECORDING_DATE, testResult.recordingDate)
+        .set(VIABILITY_TEST_RESULTS.SEEDS_GERMINATED, testResult.seedsGerminated)
+        .set(VIABILITY_TEST_RESULTS.TEST_ID, testId)
         .execute()
   }
 
-  fun updateGerminationTestTypes(
+  fun updateViabilityTestTypes(
       accessionId: AccessionId,
-      existingTypes: Set<GerminationTestType>?,
-      desiredTypes: Set<GerminationTestType>?
+      existingTypes: Set<ViabilityTestType>?,
+      desiredTypes: Set<ViabilityTestType>?
   ) {
     val existing = existingTypes ?: emptySet()
     val desired = desiredTypes ?: emptySet()
@@ -142,25 +143,25 @@ class GerminationStore(private val dslContext: DSLContext) {
 
     if (deleted.isNotEmpty()) {
       dslContext
-          .deleteFrom(ACCESSION_GERMINATION_TEST_TYPES)
-          .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(accessionId))
-          .and(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID.`in`(deleted))
+          .deleteFrom(ACCESSION_VIABILITY_TEST_TYPES)
+          .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(accessionId))
+          .and(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID.`in`(deleted))
           .execute()
     }
 
     added.forEach { type ->
       dslContext
-          .insertInto(ACCESSION_GERMINATION_TEST_TYPES)
-          .set(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID, accessionId)
-          .set(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID, type)
+          .insertInto(ACCESSION_VIABILITY_TEST_TYPES)
+          .set(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID, accessionId)
+          .set(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID, type)
           .execute()
     }
   }
 
-  fun updateGerminationTests(
+  fun updateViabilityTests(
       accessionId: AccessionId,
-      existingTests: List<GerminationTestModel>?,
-      desiredTests: List<GerminationTestModel>?
+      existingTests: List<ViabilityTestModel>?,
+      desiredTests: List<ViabilityTestModel>?
   ) {
     val existing = existingTests ?: emptyList()
     val existingById = existing.associateBy { it.id }
@@ -169,10 +170,13 @@ class GerminationStore(private val dslContext: DSLContext) {
     val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id }.toSet())
 
     if (deletedTestIds.isNotEmpty()) {
-      dslContext.deleteFrom(GERMINATIONS).where(GERMINATIONS.TEST_ID.`in`(deletedTestIds)).execute()
       dslContext
-          .deleteFrom(GERMINATION_TESTS)
-          .where(GERMINATION_TESTS.ID.`in`(deletedTestIds))
+          .deleteFrom(VIABILITY_TEST_RESULTS)
+          .where(VIABILITY_TEST_RESULTS.TEST_ID.`in`(deletedTestIds))
+          .execute()
+      dslContext
+          .deleteFrom(VIABILITY_TESTS)
+          .where(VIABILITY_TESTS.ID.`in`(deletedTestIds))
           .execute()
     }
 
@@ -182,16 +186,16 @@ class GerminationStore(private val dslContext: DSLContext) {
           val testId = desiredTest.id
 
           if (testId == null) {
-            insertGerminationTest(accessionId, desiredTest)
+            insertViabilityTest(accessionId, desiredTest)
           } else {
             val existingTest =
                 existingById[testId]
                     ?: throw IllegalArgumentException(
-                        "Germination test IDs must refer to existing tests; leave ID off to insert a new test.")
+                        "Viability test IDs must refer to existing tests; leave ID off to insert a new test.")
             if (!desiredTest.fieldsEqual(existingTest)) {
-              with(GERMINATION_TESTS) {
+              with(VIABILITY_TESTS) {
                 dslContext
-                    .update(GERMINATION_TESTS)
+                    .update(VIABILITY_TESTS)
                     .set(END_DATE, desiredTest.endDate)
                     .set(NOTES, desiredTest.notes)
                     .set(REMAINING_GRAMS, desiredTest.remaining?.grams)
@@ -210,9 +214,12 @@ class GerminationStore(private val dslContext: DSLContext) {
               }
             }
 
-            // TODO: Smarter diff of germinations
-            dslContext.deleteFrom(GERMINATIONS).where(GERMINATIONS.TEST_ID.eq(testId)).execute()
-            desiredTest.germinations?.forEach { insertGermination(testId, it) }
+            // TODO: Smarter diff of test results
+            dslContext
+                .deleteFrom(VIABILITY_TEST_RESULTS)
+                .where(VIABILITY_TEST_RESULTS.TEST_ID.eq(testId))
+                .execute()
+            desiredTest.testResults?.forEach { insertTestResult(testId, it) }
           }
         }
   }

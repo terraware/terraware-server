@@ -23,8 +23,8 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
 import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
@@ -154,13 +154,12 @@ class AppNotificationService(
   }
 
   @EventListener
-  fun on(event: AccessionGerminationTestEvent) {
-    val accessionUrl = webAppUrls.accessionGerminationTest(event.accessionId, event.testType)
-    val message =
-        messages.accessionGerminationTestNotification(event.accessionNumber, event.testType)
+  fun on(event: AccessionViabilityTestEvent) {
+    val accessionUrl = webAppUrls.accessionViabilityTest(event.accessionId, event.testType)
+    val message = messages.accessionViabilityTestNotification(event.accessionNumber, event.testType)
 
     log.info(
-        "Creating app notifications for accession ${event.accessionNumber} germination test ${event.testType}.")
+        "Creating app notifications for accession ${event.accessionNumber} viability test ${event.testType}.")
 
     insertFacilityNotifications(
         event.accessionId,

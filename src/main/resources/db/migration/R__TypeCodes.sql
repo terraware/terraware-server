@@ -26,31 +26,6 @@ VALUES (1, 'Not Connected'),
        (3, 'Configured')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO germination_seed_types (id, name)
-VALUES (1, 'Fresh'),
-       (2, 'Stored')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO germination_substrates (id, name)
-VALUES (1, 'Nursery Media'),
-       (2, 'Agar Petri Dish'),
-       (3, 'Paper Petri Dish'),
-       (4, 'Other')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO germination_test_types (id, name)
-VALUES (1, 'Lab'),
-       (2, 'Nursery')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO germination_treatments (id, name)
-VALUES (1, 'Soak'),
-       (2, 'Scarify'),
-       (3, 'GA3'),
-       (4, 'Stratification'),
-       (5, 'Other')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO growth_forms (id, name)
 VALUES (1, 'Tree'),
        (2, 'Shrub'),
@@ -62,11 +37,6 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO processing_methods (id, name)
 VALUES (1, 'Count'),
        (2, 'Weight')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO germination_seed_types (id, name)
-VALUES (1, 'Fresh'),
-       (2, 'Stored')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO roles (id, name)
@@ -150,6 +120,31 @@ VALUES (1, 'Individual'),
        (2, 'Super Admin'),
        (3, 'Device Manager'),
        (4, 'System')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO viability_test_seed_types (id, name)
+VALUES (1, 'Fresh'),
+       (2, 'Stored')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO viability_test_substrates (id, name)
+VALUES (1, 'Nursery Media'),
+       (2, 'Agar Petri Dish'),
+       (3, 'Paper Petri Dish'),
+       (4, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO viability_test_treatments (id, name)
+VALUES (1, 'Soak'),
+       (2, 'Scarify'),
+       (3, 'GA3'),
+       (4, 'Stratification'),
+       (5, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO viability_test_types (id, name)
+VALUES (1, 'Lab'),
+       (2, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO withdrawal_purposes (id, name)

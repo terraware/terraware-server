@@ -10,11 +10,6 @@ import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.GerminationSeedType
-import com.terraformation.backend.db.GerminationSubstrate
-import com.terraformation.backend.db.GerminationTestId
-import com.terraformation.backend.db.GerminationTestType
-import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
@@ -22,6 +17,11 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestSeedType
+import com.terraformation.backend.db.ViabilityTestSubstrate
+import com.terraformation.backend.db.ViabilityTestTreatment
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -29,9 +29,9 @@ import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.Geolocation
-import com.terraformation.backend.seedbank.model.GerminationModel
-import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
+import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
@@ -127,7 +127,7 @@ data class CreateAccessionRequestPayload(
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
-    val germinationTestTypes: Set<GerminationTestType>? = null,
+    val germinationTestTypes: Set<ViabilityTestType>? = null,
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
     val primaryCollector: String? = null,
@@ -150,7 +150,6 @@ data class CreateAccessionRequestPayload(
         fieldNotes = fieldNotes,
         founderId = founderId,
         geolocations = geolocations.orEmpty(),
-        germinationTestTypes = germinationTestTypes.orEmpty(),
         landowner = landowner,
         numberOfTrees = numberOfTrees,
         primaryCollector = primaryCollector,
@@ -159,7 +158,8 @@ data class CreateAccessionRequestPayload(
         secondaryCollectors = secondaryCollectors.orEmpty(),
         siteLocation = siteLocation,
         sourcePlantOrigin = sourcePlantOrigin,
-        species = species)
+        species = species,
+        viabilityTestTypes = germinationTestTypes.orEmpty())
   }
 }
 
@@ -181,7 +181,7 @@ data class UpdateAccessionRequestPayload(
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
-    val germinationTestTypes: Set<GerminationTestType>? = null,
+    val germinationTestTypes: Set<ViabilityTestType>? = null,
     @Valid val germinationTests: List<GerminationTestPayload>? = null,
     @Schema(
         description =
@@ -232,8 +232,6 @@ data class UpdateAccessionRequestPayload(
           fieldNotes = fieldNotes,
           founderId = founderId,
           geolocations = geolocations.orEmpty(),
-          germinationTestTypes = germinationTestTypes.orEmpty(),
-          germinationTests = germinationTests.orEmpty().map { it.toModel() },
           id = id,
           landowner = landowner,
           numberOfTrees = numberOfTrees,
@@ -258,6 +256,8 @@ data class UpdateAccessionRequestPayload(
           subsetWeightQuantity = subsetWeight?.toModel(),
           targetStorageCondition = targetStorageCondition,
           total = initialQuantity?.toModel(),
+          viabilityTests = germinationTests.orEmpty().map { it.toModel() },
+          viabilityTestTypes = germinationTestTypes.orEmpty(),
           withdrawals = withdrawals.orEmpty().map { it.toModel() })
 }
 
@@ -292,7 +292,7 @@ data class AccessionPayload(
     val founderId: String?,
     val geolocations: Set<Geolocation>?,
     val germinationTests: List<GerminationTestPayload>?,
-    val germinationTestTypes: Set<GerminationTestType>?,
+    val germinationTestTypes: Set<ViabilityTestType>?,
     @Schema(
         description =
             "Server-generated unique identifier for the accession. This is unique across all " +
@@ -351,19 +351,18 @@ data class AccessionPayload(
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     val subsetWeight: SeedQuantityPayload?,
     val targetStorageCondition: StorageCondition?,
-    @Schema(description = "Total quantity of all past withdrawals, including germination tests.")
+    @Schema(description = "Total quantity of all past withdrawals, including viability tests.")
     val totalPastWithdrawalQuantity: SeedQuantityPayload?,
-    @Schema(
-        description = "Total quantity of scheduled withdrawals, not counting germination tests.")
+    @Schema(description = "Total quantity of scheduled withdrawals, not counting viability tests.")
     val totalScheduledNonTestQuantity: SeedQuantityPayload?,
-    @Schema(description = "Total quantity of scheduled withdrawals for germination tests.")
+    @Schema(description = "Total quantity of scheduled withdrawals for viability tests.")
     val totalScheduledTestQuantity: SeedQuantityPayload?,
-    @Schema(description = "Total quantity of scheduled withdrawals, including germination tests.")
+    @Schema(description = "Total quantity of scheduled withdrawals, including viability tests.")
     val totalScheduledWithdrawalQuantity: SeedQuantityPayload?,
     val totalViabilityPercent: Int?,
     @Schema(
         description =
-            "Total quantity of all past and scheduled withdrawals, including germination tests.")
+            "Total quantity of all past and scheduled withdrawals, including viability tests.")
     val totalWithdrawalQuantity: SeedQuantityPayload?,
     val withdrawals: List<WithdrawalPayload>?,
 ) {
@@ -391,12 +390,12 @@ data class AccessionPayload(
       model.fieldNotes,
       model.founderId,
       model.geolocations.orNull(),
-      model.germinationTests.map { GerminationTestPayload(it) }.orNull(),
-      model.germinationTestTypes.orNull(),
+      model.viabilityTests.map { GerminationTestPayload(it) }.orNull(),
+      model.viabilityTestTypes.orNull(),
       model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       model.total?.toPayload(),
       model.landowner,
-      model.latestGerminationTestDate,
+      model.latestViabilityTestDate,
       model.latestViabilityPercent,
       model.numberOfTrees,
       model.nurseryStartDate,
@@ -467,17 +466,17 @@ private fun SeedQuantityModel.toPayload() = SeedQuantityPayload(this)
 data class GerminationTestPayload(
     @Schema(
         description =
-            "Server-assigned unique ID of this germination test. Null when creating a new test.",
+            "Server-assigned unique ID of this viability test. Null when creating a new test.",
         type = "string")
-    val id: GerminationTestId? = null,
+    val id: ViabilityTestId? = null,
     @Schema(
         description = "Which type of test is described. At most one of each test type is allowed.")
-    val testType: GerminationTestType,
+    val testType: ViabilityTestType,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
-    val seedType: GerminationSeedType? = null,
-    val substrate: GerminationSubstrate? = null,
-    val treatment: GerminationTreatment? = null,
+    val seedType: ViabilityTestSeedType? = null,
+    val substrate: ViabilityTestSubstrate? = null,
+    val treatment: ViabilityTestTreatment? = null,
     val notes: String? = null,
     @Schema(
         description =
@@ -492,7 +491,7 @@ data class GerminationTestPayload(
     @Valid val germinations: List<GerminationPayload>? = null
 ) {
   constructor(
-      model: GerminationTestModel
+      model: ViabilityTestModel
   ) : this(
       model.id,
       model.testType,
@@ -507,11 +506,11 @@ data class GerminationTestPayload(
       model.seedsSown,
       model.totalPercentGerminated,
       model.totalSeedsGerminated,
-      model.germinations?.map { GerminationPayload(it) })
+      model.testResults?.map { GerminationPayload(it) })
 
   fun toModel() =
-      GerminationTestModel(
-          germinations = germinations?.map { it.toModel() },
+      ViabilityTestModel(
+          testResults = germinations?.map { it.toModel() },
           id = id,
           endDate = endDate,
           notes = notes,
@@ -533,9 +532,9 @@ data class GerminationPayload(
     )
     val seedsGerminated: Int
 ) {
-  constructor(model: GerminationModel) : this(model.recordingDate, model.seedsGerminated)
+  constructor(model: ViabilityTestResultModel) : this(model.recordingDate, model.seedsGerminated)
 
-  fun toModel() = GerminationModel(null, null, recordingDate, seedsGerminated)
+  fun toModel() = ViabilityTestResultModel(null, null, recordingDate, seedsGerminated)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -558,9 +557,9 @@ data class WithdrawalPayload(
     val staffResponsible: String? = null,
     @Schema(
         description =
-            "If this withdrawal is of type \"Germination Testing\", the ID of the test it is " +
+            "If this withdrawal is of purpose \"Germination Testing\", the ID of the test it is " +
                 "associated with. This is always set by the server and cannot be modified.")
-    val germinationTestId: GerminationTestId? = null,
+    val germinationTestId: ViabilityTestId? = null,
     @Schema(
         description =
             "For weight-based accessions, the difference between the weight remaining before " +
@@ -570,7 +569,7 @@ data class WithdrawalPayload(
     val weightDifference: SeedQuantityPayload? = null,
     @Schema(
         description =
-            "Quantity of seeds withdrawn. For germination testing withdrawals, this is always " +
+            "Quantity of seeds withdrawn. For viability testing withdrawals, this is always " +
                 "the same as the test's \"seedsSown\" value, if that value is present. " +
                 "Otherwise, it is a user-supplied value. For count-based accessions, the units " +
                 "must always be \"Seeds\". For weight-based accessions, the units may either be " +
@@ -597,7 +596,7 @@ data class WithdrawalPayload(
       model.notes,
       model.remaining?.toPayload(),
       model.staffResponsible,
-      model.germinationTestId,
+      model.viabilityTestId,
       model.weightDifference?.toPayload(),
       model.withdrawn?.toPayload(),
       model.calculateEstimatedQuantity()?.toPayload(),
@@ -607,7 +606,7 @@ data class WithdrawalPayload(
       WithdrawalModel(
           date = date,
           destination = destination,
-          germinationTestId = germinationTestId,
+          viabilityTestId = germinationTestId,
           id = id,
           notes = notes,
           purpose = purpose,

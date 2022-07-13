@@ -14,11 +14,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.GeolocationId
-import com.terraformation.backend.db.GerminationSeedType
-import com.terraformation.backend.db.GerminationSubstrate
-import com.terraformation.backend.db.GerminationTestId
-import com.terraformation.backend.db.GerminationTestType
-import com.terraformation.backend.db.GerminationTreatment
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProcessingMethod
@@ -28,6 +23,11 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestSeedType
+import com.terraformation.backend.db.ViabilityTestSubstrate
+import com.terraformation.backend.db.ViabilityTestTreatment
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
@@ -35,19 +35,19 @@ import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
-import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.db.tables.references.ACCESSION_VIABILITY_TEST_TYPES
 import com.terraformation.backend.db.tables.references.APP_DEVICES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
-import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
@@ -62,9 +62,9 @@ import com.terraformation.backend.seedbank.kilograms
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.Geolocation
-import com.terraformation.backend.seedbank.model.GerminationModel
-import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
+import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.species.SpeciesService
@@ -108,7 +108,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   override val tablesToResetSequences: List<Table<out Record>>
     get() =
-        listOf(ACCESSIONS, APP_DEVICES, BAGS, GEOLOCATIONS, GERMINATION_TESTS, SPECIES, WITHDRAWALS)
+        listOf(ACCESSIONS, APP_DEVICES, BAGS, GEOLOCATIONS, VIABILITY_TESTS, SPECIES, WITHDRAWALS)
 
   private val accessionNumbers =
       listOf(
@@ -155,7 +155,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             AppDeviceStore(dslContext, clock),
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
-            GerminationStore(dslContext),
+            ViabilityTestStore(dslContext),
             parentStore,
             SpeciesService(dslContext, speciesChecker, speciesStore),
             WithdrawalStore(dslContext, clock),
@@ -224,10 +224,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val payload =
         AccessionModel(
             facilityId = facilityId,
-            species = "test species",
             family = "test family",
             primaryCollector = "primary collector",
-            secondaryCollectors = setOf("secondary 1", "secondary 2"))
+            secondaryCollectors = setOf("secondary 1", "secondary 2"),
+            species = "test species")
 
     // First time inserts the reference table rows
     val initialAccession = store.create(payload)
@@ -361,22 +361,21 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `germination test types are inserted at creation time`() {
+  fun `viability test types are inserted at creation time`() {
     store.create(
-        AccessionModel(
-            germinationTestTypes = setOf(GerminationTestType.Lab), facilityId = facilityId))
+        AccessionModel(facilityId = facilityId, viabilityTestTypes = setOf(ViabilityTestType.Lab)))
     val types =
         dslContext
-            .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-            .from(ACCESSION_GERMINATION_TEST_TYPES)
-            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
-            .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
+            .select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
+            .from(ACCESSION_VIABILITY_TEST_TYPES)
+            .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
+            .fetch(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
 
-    assertEquals(listOf(GerminationTestType.Lab), types)
+    assertEquals(listOf(ViabilityTestType.Lab), types)
   }
 
   @Test
-  fun `germination tests are inserted by update`() {
+  fun `viability tests are inserted by update`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     val startDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val withTest =
@@ -386,21 +385,21 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 germinationTests =
                     listOf(
                         GerminationTestPayload(
-                            testType = GerminationTestType.Lab, startDate = startDate)),
+                            testType = ViabilityTestType.Lab, startDate = startDate)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
     store.update(withTest.toModel(id = initial.id!!))
 
-    val updatedTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
+    val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(
         listOf(
-            GerminationTestsRow(
+            ViabilityTestsRow(
                 accessionId = AccessionId(1),
-                id = GerminationTestId(1),
+                id = ViabilityTestId(1),
                 remainingQuantity = BigDecimal(100),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
                 startDate = startDate,
-                testType = GerminationTestType.Lab,
+                testType = ViabilityTestType.Lab,
             )),
         updatedTests)
 
@@ -411,81 +410,80 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val updatedAccession = store.fetchOneById(AccessionId(1))
     assertNull(
-        updatedAccession.germinationTests.first().germinations,
-        "Empty list of germinations should be null in model")
+        updatedAccession.viabilityTests.first().testResults,
+        "Empty list of viability test results should be null in model")
   }
 
   @Test
-  fun `germination test types are inserted by update`() {
+  fun `viability test types are inserted by update`() {
     val initial =
         store.create(
             AccessionModel(
-                germinationTestTypes = setOf(GerminationTestType.Lab), facilityId = facilityId))
+                facilityId = facilityId, viabilityTestTypes = setOf(ViabilityTestType.Lab)))
     val desired =
-        initial.copy(
-            germinationTestTypes = setOf(GerminationTestType.Lab, GerminationTestType.Nursery))
+        initial.copy(viabilityTestTypes = setOf(ViabilityTestType.Lab, ViabilityTestType.Nursery))
     store.update(desired)
 
     val types =
         dslContext
-            .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-            .from(ACCESSION_GERMINATION_TEST_TYPES)
-            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
-            .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-    assertEquals(setOf(GerminationTestType.Lab, GerminationTestType.Nursery), types.toSet())
+            .select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
+            .from(ACCESSION_VIABILITY_TEST_TYPES)
+            .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
+            .fetch(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
+    assertEquals(setOf(ViabilityTestType.Lab, ViabilityTestType.Nursery), types.toSet())
   }
 
   @Test
-  fun `germination test types are deleted by update`() {
+  fun `viability test types are deleted by update`() {
     val initial =
         store.create(
             AccessionModel(
-                germinationTestTypes = setOf(GerminationTestType.Lab), facilityId = facilityId))
-    val desired = initial.copy(germinationTestTypes = setOf(GerminationTestType.Nursery))
+                facilityId = facilityId, viabilityTestTypes = setOf(ViabilityTestType.Lab)))
+    val desired = initial.copy(viabilityTestTypes = setOf(ViabilityTestType.Nursery))
     store.update(desired)
 
     val types =
         dslContext
-            .select(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-            .from(ACCESSION_GERMINATION_TEST_TYPES)
-            .where(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
-            .fetch(ACCESSION_GERMINATION_TEST_TYPES.GERMINATION_TEST_TYPE_ID)
-    assertEquals(listOf(GerminationTestType.Nursery), types)
+            .select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
+            .from(ACCESSION_VIABILITY_TEST_TYPES)
+            .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
+            .fetch(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
+    assertEquals(listOf(ViabilityTestType.Nursery), types)
   }
 
   @Test
-  fun `existing germination tests are updated`() {
+  fun `existing viability tests are updated`() {
     val initial = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)),
+          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
 
     val desired =
         initial.copy(
-            germinationTests =
+            viabilityTests =
                 listOf(
-                    GerminationTestModel(
-                        id = initial.germinationTests[0].id,
-                        testType = GerminationTestType.Lab,
-                        seedType = GerminationSeedType.Fresh,
-                        treatment = GerminationTreatment.Scarify,
-                        substrate = GerminationSubstrate.PaperPetriDish,
+                    ViabilityTestModel(
+                        id = initial.viabilityTests[0].id,
+                        testType = ViabilityTestType.Lab,
+                        seedType = ViabilityTestSeedType.Fresh,
+                        treatment = ViabilityTestTreatment.Scarify,
+                        substrate = ViabilityTestSubstrate.PaperPetriDish,
                         notes = "notes",
                         seedsSown = 5)))
     store.update(desired)
 
-    val updatedTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
+    val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
     assertEquals(
         listOf(
-            GerminationTestsRow(
-                id = GerminationTestId(1),
+            ViabilityTestsRow(
+                id = ViabilityTestId(1),
                 accessionId = AccessionId(1),
-                testType = GerminationTestType.Lab,
-                seedTypeId = GerminationSeedType.Fresh,
-                treatmentId = GerminationTreatment.Scarify,
-                substrateId = GerminationSubstrate.PaperPetriDish,
+                testType = ViabilityTestType.Lab,
+                seedTypeId = ViabilityTestSeedType.Fresh,
+                treatmentId = ViabilityTestTreatment.Scarify,
+                substrateId = ViabilityTestSubstrate.PaperPetriDish,
                 notes = "notes",
                 seedsSown = 5,
                 remainingQuantity = BigDecimal(95),
@@ -494,13 +492,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `change to germination test weight remaining is propagated to withdrawal and accession`() {
+  fun `change to viability test weight remaining is propagated to withdrawal and accession`() {
     val initial = createAndUpdate {
       it.copy(
           germinationTests =
               listOf(
                   GerminationTestPayload(
-                      testType = GerminationTestType.Lab, remainingQuantity = grams(75))),
+                      testType = ViabilityTestType.Lab, remainingQuantity = grams(75))),
           initialQuantity = grams(100),
           processingMethod = ProcessingMethod.Weight,
       )
@@ -516,14 +514,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         "Withdrawal quantities remaining before update")
     assertEquals(
         grams<SeedQuantityModel>(75),
-        initial.germinationTests[0].remaining,
+        initial.viabilityTests[0].remaining,
         "Test remaining quantity before update")
 
     val desired =
         initial.copy(
-            germinationTests =
+            viabilityTests =
                 listOf(
-                    initial.germinationTests[0].copy(remaining = grams(60)),
+                    initial.viabilityTests[0].copy(remaining = grams(60)),
                 ),
         )
     val updated = store.updateAndFetch(desired)
@@ -538,34 +536,34 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         "Withdrawal quantities remaining after update")
     assertEquals(
         grams<SeedQuantityModel>(60),
-        updated.germinationTests[0].remaining,
+        updated.viabilityTests[0].remaining,
         "Test remaining quantity after update")
   }
 
   @Test
-  fun `cannot update germination test from a different accession`() {
+  fun `cannot update viability test from a different accession`() {
     val other = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Nursery)),
+          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Nursery)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
     val initial = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)),
+          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
     val desired =
         initial.copy(
-            germinationTests =
+            viabilityTests =
                 listOf(
-                    GerminationTestModel(
-                        id = other.germinationTests[0].id,
-                        testType = GerminationTestType.Lab,
-                        seedType = GerminationSeedType.Fresh,
-                        treatment = GerminationTreatment.Scarify,
-                        substrate = GerminationSubstrate.PaperPetriDish,
+                    ViabilityTestModel(
+                        id = other.viabilityTests[0].id,
+                        testType = ViabilityTestType.Lab,
+                        seedType = ViabilityTestSeedType.Fresh,
+                        treatment = ViabilityTestTreatment.Scarify,
+                        substrate = ViabilityTestSubstrate.PaperPetriDish,
                         notes = "notes",
                         seedsSown = 5)))
 
@@ -573,38 +571,38 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `germinations are inserted by update`() {
+  fun `viability test results are inserted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val initial = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)),
+          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(200))
     }
     val desired =
         initial.copy(
-            germinationTests =
+            viabilityTests =
                 listOf(
-                    GerminationTestModel(
-                        id = initial.germinationTests[0].id,
-                        testType = GerminationTestType.Lab,
+                    ViabilityTestModel(
+                        id = initial.viabilityTests[0].id,
+                        testType = ViabilityTestType.Lab,
                         seedsSown = 200,
-                        germinations =
+                        testResults =
                             listOf(
-                                GerminationModel(
+                                ViabilityTestResultModel(
                                     recordingDate = localDate, seedsGerminated = 75)))))
     store.update(desired)
 
-    val germinationTests = germinationTestsDao.fetchByAccessionId(AccessionId(1))
-    assertEquals(1, germinationTests.size, "Number of germination tests after update")
-    assertEquals(37, germinationTests[0].totalPercentGerminated, "totalPercentGerminated")
-    assertEquals(75, germinationTests[0].totalSeedsGerminated, "totalSeedsGerminated")
+    val viabilityTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
+    assertEquals(1, viabilityTests.size, "Number of viability tests after update")
+    assertEquals(37, viabilityTests[0].totalPercentGerminated, "totalPercentGerminated")
+    assertEquals(75, viabilityTests[0].totalSeedsGerminated, "totalSeedsGerminated")
 
-    val germinations = germinationsDao.fetchByTestId(GerminationTestId(1))
-    assertEquals(1, germinations.size, "Number of germinations after update")
+    val testResults = viabilityTestResultsDao.fetchByTestId(ViabilityTestId(1))
+    assertEquals(1, testResults.size, "Number of test results after update")
     assertTrue(
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
-        "First germination preserved")
+        testResults.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
+        "First test result preserved")
 
     val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
     assertEquals(37, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
@@ -616,7 +614,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `germinations are deleted by update`() {
+  fun `viability test results are deleted by update`() {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val initial = createAndUpdate {
       it.copy(
@@ -625,7 +623,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           germinationTests =
               listOf(
                   GerminationTestPayload(
-                      testType = GerminationTestType.Lab,
+                      testType = ViabilityTestType.Lab,
                       seedsSown = 1000,
                       germinations =
                           listOf(
@@ -636,24 +634,24 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     val desired =
         initial.copy(
-            germinationTests =
+            viabilityTests =
                 listOf(
-                    initial.germinationTests[0].copy(
-                        germinations =
+                    initial.viabilityTests[0].copy(
+                        testResults =
                             listOf(
-                                GerminationModel(
+                                ViabilityTestResultModel(
                                     recordingDate = localDate, seedsGerminated = 75)))))
     store.update(desired)
-    val germinations = germinationsDao.fetchByTestId(GerminationTestId(1))
+    val testResults = viabilityTestResultsDao.fetchByTestId(ViabilityTestId(1))
 
-    assertEquals(1, germinations.size, "Number of germinations after update")
+    assertEquals(1, testResults.size, "Number of test results after update")
     assertTrue(
-        germinations.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
-        "First germination preserved")
+        testResults.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
+        "First test result preserved")
 
-    val updatedGerminationTest = germinationTestsDao.fetchOneById(GerminationTestId(1))!!
-    assertEquals(7, updatedGerminationTest.totalPercentGerminated, "totalPercentGerminated")
-    assertEquals(75, updatedGerminationTest.totalSeedsGerminated, "totalSeedsGerminated")
+    val updatedViabilityTest = viabilityTestsDao.fetchOneById(ViabilityTestId(1))!!
+    assertEquals(7, updatedViabilityTest.totalPercentGerminated, "totalPercentGerminated")
+    assertEquals(75, updatedViabilityTest.totalSeedsGerminated, "totalSeedsGerminated")
 
     val updatedAccession = accessionsDao.fetchOneById(AccessionId(1))
     assertEquals(7, updatedAccession?.totalViabilityPercent, "totalViabilityPercent")
@@ -785,9 +783,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId,
-                deviceInfo = AppDeviceModel(appName = "collector"),
                 collectedDate = initialCollectedDate,
+                deviceInfo = AppDeviceModel(appName = "collector"),
+                facilityId = facilityId,
                 receivedDate = initialReceivedDate))
     val requested = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
 
@@ -806,8 +804,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId,
                 collectedDate = initialCollectedDate,
+                facilityId = facilityId,
                 receivedDate = initialReceivedDate))
     val desired = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
 
@@ -819,9 +817,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update generates withdrawals for new germination tests`() {
-    val accession = createAccessionWithGerminationTest()
-    val test = accession.germinationTests[0]
+  fun `update generates withdrawals for new viability tests`() {
+    val accession = createAccessionWithViabilityTest()
+    val test = accession.viabilityTests[0]
 
     assertEquals(
         listOf(
@@ -831,14 +829,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 date = test.startDate!!,
                 purpose = WithdrawalPurpose.GerminationTesting,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
-                germinationTestId = test.id,
+                viabilityTestId = test.id,
                 remaining = seeds(5))),
         accession.withdrawals)
   }
 
   @Test
-  fun `update correctly deducts from seed count for germination tests`() {
-    val accession = createAccessionWithGerminationTest()
+  fun `update correctly deducts from seed count for viability tests`() {
+    val accession = createAccessionWithViabilityTest()
 
     assertEquals(
         seeds<SeedQuantityModel>(5), accession.remaining, "Seeds remaining after test creation")
@@ -849,9 +847,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update modifies withdrawals when their germination tests are modified`() {
-    val initial = createAccessionWithGerminationTest()
-    val initialTest = initial.germinationTests[0]
+  fun `update modifies withdrawals when their viability tests are modified`() {
+    val initial = createAccessionWithViabilityTest()
+    val initialTest = initial.viabilityTests[0]
     val initialWithdrawal = initial.withdrawals[0]
 
     val modifiedStartDate = initialTest.startDate!!.plusDays(10)
@@ -863,30 +861,30 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             remaining = seeds(4))
 
     val afterTestModified =
-        store.updateAndFetch(initial.copy(germinationTests = listOf(modifiedTest)))
+        store.updateAndFetch(initial.copy(viabilityTests = listOf(modifiedTest)))
 
     assertEquals(listOf(modifiedWithdrawal), afterTestModified.withdrawals)
   }
 
   @Test
-  fun `update does not modify withdrawals when their germination tests are not modified`() {
-    val initial = createAccessionWithGerminationTest()
+  fun `update does not modify withdrawals when their viability tests are not modified`() {
+    val initial = createAccessionWithViabilityTest()
     val updated = store.updateAndFetch(initial.copy(receivedDate = LocalDate.now()))
 
     assertEquals(initial.withdrawals, updated.withdrawals)
   }
 
   @Test
-  fun `update removes withdrawals when germination tests are removed`() {
-    val initial = createAccessionWithGerminationTest()
-    val updated = store.updateAndFetch(initial.copy(germinationTests = emptyList()))
+  fun `update removes withdrawals when viability tests are removed`() {
+    val initial = createAccessionWithViabilityTest()
+    val updated = store.updateAndFetch(initial.copy(viabilityTests = emptyList()))
 
-    assertEquals(emptyList<GerminationTestModel>(), updated.withdrawals)
+    assertEquals(emptyList<ViabilityTestModel>(), updated.withdrawals)
   }
 
   @Test
-  fun `update ignores germination test withdrawals in accession object`() {
-    val initial = createAccessionWithGerminationTest()
+  fun `update ignores viability test withdrawals in accession object`() {
+    val initial = createAccessionWithViabilityTest()
     val initialWithdrawal = initial.withdrawals[0]
 
     val modifiedInitialWithdrawal =
@@ -896,7 +894,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.GerminationTesting,
             withdrawn = seeds(1),
-            germinationTestId = initialWithdrawal.germinationTestId)
+            viabilityTestId = initialWithdrawal.viabilityTestId)
 
     val updated =
         store.updateAndFetch(
@@ -1008,7 +1006,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `dryRun does not persist changes`() {
-    val initial = store.create(AccessionModel(species = "Initial Species", facilityId = facilityId))
+    val initial = store.create(AccessionModel(facilityId = facilityId, species = "Initial Species"))
     store.dryRun(initial.copy(species = "Modified Species"))
     val fetched = store.fetchOneById(initial.id!!)
 
@@ -1310,7 +1308,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update rejects germination tests without remaining quantity for weight-based accessions`() {
+  fun `update rejects viability tests without remaining quantity for weight-based accessions`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
     assertThrows<IllegalArgumentException> {
@@ -1318,23 +1316,23 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           initial.copy(
               processingMethod = ProcessingMethod.Weight,
               total = grams(100),
-              germinationTests = listOf(GerminationTestModel(testType = GerminationTestType.Lab))))
+              viabilityTests = listOf(ViabilityTestModel(testType = ViabilityTestType.Lab))))
     }
   }
 
   @Test
-  fun `update computes remaining quantity on germination tests for count-based accessions`() {
+  fun `update computes remaining quantity on viability tests for count-based accessions`() {
     val initial = createAndUpdate {
       it.copy(
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100),
           germinationTests =
-              listOf(GerminationTestPayload(testType = GerminationTestType.Lab, seedsSown = 10)))
+              listOf(GerminationTestPayload(testType = ViabilityTestType.Lab, seedsSown = 10)))
     }
 
     assertEquals(
         seeds<SeedQuantityModel>(90),
-        initial.germinationTests[0].remaining,
+        initial.viabilityTests[0].remaining,
         "Quantity remaining on test")
     assertEquals(seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
   }
@@ -1355,12 +1353,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update does not allow processing method to change if germination test exists`() {
+  fun `update does not allow processing method to change if viability test exists`() {
     val initial = createAndUpdate {
       it.copy(
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(10),
-          germinationTests = listOf(GerminationTestPayload(testType = GerminationTestType.Lab)))
+          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)))
     }
 
     assertThrows<IllegalArgumentException> {
@@ -1416,7 +1414,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
                         accuracy = BigDecimal(3))),
-            germinationTestTypes = setOf(GerminationTestType.Lab),
+            germinationTestTypes = setOf(ViabilityTestType.Lab),
             landowner = "landowner",
             numberOfTrees = 10,
             primaryCollector = "primaryCollector",
@@ -1471,12 +1469,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
                         accuracy = BigDecimal(3))),
-            germinationTestTypes = setOf(GerminationTestType.Lab),
+            germinationTestTypes = setOf(ViabilityTestType.Lab),
             germinationTests =
                 listOf(
                     GerminationTestPayload(
                         remainingQuantity = grams(10),
-                        testType = GerminationTestType.Lab,
+                        testType = ViabilityTestType.Lab,
                         startDate = today)),
             initialQuantity = kilograms(432),
             landowner = "landowner",
@@ -1835,7 +1833,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     return store.updateAndFetch(edited.toModel(initial.id!!))
   }
 
-  private fun createAccessionWithGerminationTest(): AccessionModel {
+  private fun createAccessionWithViabilityTest(): AccessionModel {
     return createAndUpdate {
       it.copy(
           processingMethod = ProcessingMethod.Count,
@@ -1843,7 +1841,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           germinationTests =
               listOf(
                   GerminationTestPayload(
-                      testType = GerminationTestType.Lab,
+                      testType = ViabilityTestType.Lab,
                       startDate = LocalDate.of(2021, 4, 1),
                       seedsSown = 5)))
     }
@@ -1866,8 +1864,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         fieldNotes = fieldNotes,
         founderId = founderId,
         geolocations = geolocations,
-        germinationTests = germinationTests.map { GerminationTestPayload(it) },
-        germinationTestTypes = germinationTestTypes,
+        germinationTests = viabilityTests.map { GerminationTestPayload(it) },
+        germinationTestTypes = viabilityTestTypes,
         initialQuantity = total?.let { SeedQuantityPayload(it) },
         landowner = landowner,
         numberOfTrees = numberOfTrees,

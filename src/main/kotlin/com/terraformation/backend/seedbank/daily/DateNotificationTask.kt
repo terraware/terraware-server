@@ -6,8 +6,8 @@ import com.terraformation.backend.daily.TimePeriodTask
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
@@ -42,7 +42,7 @@ class DateNotificationTask(
     dslContext.transaction { _ ->
       moveToDryingCabinet(since, until)
       endDrying(since, until)
-      germinationTest(since, until)
+      viabilityTest(since, until)
       withdraw(since, until)
     }
 
@@ -61,10 +61,10 @@ class DateNotificationTask(
     }
   }
 
-  private fun germinationTest(after: TemporalAccessor, until: TemporalAccessor) {
-    accessionStore.fetchGerminationTestDue(after, until).forEach { (number, test) ->
+  private fun viabilityTest(after: TemporalAccessor, until: TemporalAccessor) {
+    accessionStore.fetchViabilityTestDue(after, until).forEach { (number, test) ->
       eventPublisher.publishEvent(
-          AccessionGerminationTestEvent(number, test.accessionId!!, test.testType!!))
+          AccessionViabilityTestEvent(number, test.accessionId!!, test.testType!!))
     }
   }
 

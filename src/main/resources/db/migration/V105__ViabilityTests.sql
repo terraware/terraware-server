@@ -1,0 +1,13 @@
+ALTER TABLE accession_germination_test_types RENAME TO accession_viability_test_types;
+ALTER TABLE germinations RENAME TO viability_test_results;
+ALTER TABLE germination_seed_types RENAME TO viability_test_seed_types;
+ALTER TABLE germination_substrates RENAME TO viability_test_substrates;
+ALTER TABLE germination_tests RENAME TO viability_tests;
+ALTER TABLE germination_test_types RENAME TO viability_test_types;
+ALTER TABLE germination_treatments RENAME TO viability_test_treatments;
+
+ALTER TABLE accession_viability_test_types RENAME COLUMN germination_test_type_id TO viability_test_type_id;
+ALTER TABLE withdrawals RENAME COLUMN germination_test_id TO viability_test_id;
+
+ALTER INDEX IF EXISTS germination__test_id_ix RENAME TO viability_test_results__test_id_ix;
+ALTER INDEX IF EXISTS germination_test__accession_id_ix RENAME TO viability_tests__accession_id_ix;

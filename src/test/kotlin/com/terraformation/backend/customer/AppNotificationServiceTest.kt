@@ -20,10 +20,10 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
@@ -38,11 +38,11 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
-import com.terraformation.backend.seedbank.db.GerminationStore
+import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
 import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
@@ -102,7 +102,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             AppDeviceStore(dslContext, clock),
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
-            GerminationStore(dslContext),
+            ViabilityTestStore(dslContext),
             parentStore,
             mockk(),
             WithdrawalStore(dslContext, clock),
@@ -147,9 +147,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("accession title", "accession body")
     every { messages.accessionDryingEndNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
-    every { messages.accessionGerminationTestNotification(any(), GerminationTestType.Lab) } returns
+    every { messages.accessionViabilityTestNotification(any(), ViabilityTestType.Lab) } returns
         NotificationMessage(
-            "accession lab germination test title", "accession lab germination test body")
+            "accession lab viability test title", "accession lab viability test body")
     every { messages.accessionsAwaitingProcessing(any()) } returns
         NotificationMessage(
             "accessions awaiting processing title", "accessions awaiting processing body")
@@ -158,11 +158,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             "accessions ready for testing title", "accessions ready for testing body")
     every { messages.accessionsFinishedDrying(any()) } returns
         NotificationMessage("accessions finished drying title", "accessions finished drying body")
-    every {
-      messages.accessionGerminationTestNotification(any(), GerminationTestType.Nursery)
-    } returns
+    every { messages.accessionViabilityTestNotification(any(), ViabilityTestType.Nursery) } returns
         NotificationMessage(
-            "accession nursery germination test title", "accession nursery germination test body")
+            "accession nursery viability test title", "accession nursery viability test body")
     every { messages.accessionWithdrawalNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
     every { messages.facilityIdle() } returns
@@ -290,7 +288,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store accession germination test in a lab, notification`() {
+  fun `should store accession viability test in a lab, notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
     insertOrganizationUser()
@@ -299,8 +297,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     assertNotNull(accessionModel)
 
     service.on(
-        AccessionGerminationTestEvent(
-            accessionModel.accessionNumber!!, accessionModel.id!!, GerminationTestType.Lab))
+        AccessionViabilityTestEvent(
+            accessionModel.accessionNumber!!, accessionModel.id!!, ViabilityTestType.Lab))
 
     val expectedNotifications =
         listOf(
@@ -309,11 +307,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 notificationTypeId = NotificationType.AccessionScheduledforGerminationTest,
                 userId = user.userId,
                 organizationId = organizationId,
-                title = "accession lab germination test title",
-                body = "accession lab germination test body",
+                title = "accession lab viability test title",
+                body = "accession lab viability test body",
                 localUrl =
-                    webAppUrls.accessionGerminationTest(
-                        accessionModel.id!!, GerminationTestType.Lab),
+                    webAppUrls.accessionViabilityTest(accessionModel.id!!, ViabilityTestType.Lab),
                 createdTime = Instant.EPOCH,
                 isRead = false))
 
@@ -322,11 +319,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         expectedNotifications,
         actualNotifications,
-        "Notification should match that of an accession scheduled for germination test in a lab")
+        "Notification should match that of an accession scheduled for viability test in a lab")
   }
 
   @Test
-  fun `should store accession germination test in a nursery, notification`() {
+  fun `should store accession viability test in a nursery, notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
     insertOrganizationUser()
@@ -335,8 +332,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     assertNotNull(accessionModel)
 
     service.on(
-        AccessionGerminationTestEvent(
-            accessionModel.accessionNumber!!, accessionModel.id!!, GerminationTestType.Nursery))
+        AccessionViabilityTestEvent(
+            accessionModel.accessionNumber!!, accessionModel.id!!, ViabilityTestType.Nursery))
 
     val expectedNotifications =
         listOf(
@@ -345,11 +342,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 notificationTypeId = NotificationType.AccessionScheduledforGerminationTest,
                 userId = user.userId,
                 organizationId = organizationId,
-                title = "accession nursery germination test title",
-                body = "accession nursery germination test body",
+                title = "accession nursery viability test title",
+                body = "accession nursery viability test body",
                 localUrl =
-                    webAppUrls.accessionGerminationTest(
-                        accessionModel.id!!, GerminationTestType.Nursery),
+                    webAppUrls.accessionViabilityTest(
+                        accessionModel.id!!, ViabilityTestType.Nursery),
                 createdTime = Instant.EPOCH,
                 isRead = false))
 
@@ -358,7 +355,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         expectedNotifications,
         actualNotifications,
-        "Notification should match that of an accession scheduled for germination test in a nursery")
+        "Notification should match that of an accession scheduled for viability test in a nursery")
   }
 
   @Test

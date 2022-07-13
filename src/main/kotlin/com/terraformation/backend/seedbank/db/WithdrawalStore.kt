@@ -59,20 +59,20 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
             "Cannot change withdrawal purpose to or from Germination Testing")
       }
 
-      if (existing.germinationTestId != desired.germinationTestId) {
-        throw IllegalArgumentException("Cannot change test ID of germination testing withdrawal")
+      if (existing.viabilityTestId != desired.viabilityTestId) {
+        throw IllegalArgumentException("Cannot change test ID of viability testing withdrawal")
       }
     }
 
     newWithdrawals.forEach { withdrawal ->
       if (withdrawal.purpose == WithdrawalPurpose.GerminationTesting &&
-          withdrawal.germinationTestId == null) {
-        throw IllegalArgumentException("Germination testing withdrawals must have test IDs")
+          withdrawal.viabilityTestId == null) {
+        throw IllegalArgumentException("Viability testing withdrawals must have test IDs")
       }
 
       if (withdrawal.purpose != WithdrawalPurpose.GerminationTesting &&
-          withdrawal.germinationTestId != null) {
-        throw IllegalArgumentException("Only germination testing withdrawals may have test IDs")
+          withdrawal.viabilityTestId != null) {
+        throw IllegalArgumentException("Only viability testing withdrawals may have test IDs")
       }
     }
 
@@ -85,7 +85,7 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
                 .set(CREATED_TIME, clock.instant())
                 .set(DATE, withdrawal.date)
                 .set(DESTINATION, withdrawal.destination)
-                .set(GERMINATION_TEST_ID, withdrawal.germinationTestId)
+                .set(VIABILITY_TEST_ID, withdrawal.viabilityTestId)
                 .set(NOTES, withdrawal.notes)
                 .set(PURPOSE_ID, withdrawal.purpose)
                 .set(REMAINING_GRAMS, withdrawal.remaining?.grams)

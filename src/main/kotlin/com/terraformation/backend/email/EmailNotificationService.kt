@@ -16,14 +16,14 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
-import com.terraformation.backend.email.model.AccessionGerminationTest
 import com.terraformation.backend.email.model.AccessionMoveToDry
+import com.terraformation.backend.email.model.AccessionViabilityTest
 import com.terraformation.backend.email.model.AccessionWithdrawal
 import com.terraformation.backend.email.model.AccessionsAwaitingProcessing
 import com.terraformation.backend.email.model.AccessionsFinishedDrying
@@ -39,8 +39,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.daily.DateNotificationTask
 import com.terraformation.backend.seedbank.daily.StateSummaryNotificationTask
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
 import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
@@ -192,23 +192,23 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(event: AccessionGerminationTestEvent) {
+  fun on(event: AccessionViabilityTestEvent) {
     val organizationId = parentStore.getOrganizationId(event.accessionId)
     val facilityName = parentStore.getFacilityName(event.accessionId)
     val accessionUrl =
         webAppUrls
-            .fullAccessionGerminationTest(event.accessionId, event.testType, organizationId)
+            .fullAccessionViabilityTest(event.accessionId, event.testType, organizationId)
             .toString()
     val testType =
         when (event.testType) {
-          GerminationTestType.Lab -> "lab"
-          GerminationTestType.Nursery -> "nursery"
+          ViabilityTestType.Lab -> "lab"
+          ViabilityTestType.Nursery -> "nursery"
         }
     getRecipients(event.accessionId).forEach { user ->
       accessionDatePendingEmails.add(
           EmailRequest(
               user,
-              AccessionGerminationTest(
+              AccessionViabilityTest(
                   config, event.accessionNumber, testType, facilityName, accessionUrl)))
     }
   }

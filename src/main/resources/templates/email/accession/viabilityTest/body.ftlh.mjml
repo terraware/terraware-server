@@ -1,4 +1,4 @@
-<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionGerminationTest" --> -->
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AccessionViabilityTest" --> -->
 <mjml>
     <mj-include path="../../head.ftlh.mjml"/>
 

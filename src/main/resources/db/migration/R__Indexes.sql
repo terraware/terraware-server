@@ -5,8 +5,8 @@
 -- Foreign key columns. Not all foreign keys are indexed, just ones where the index was observed
 -- to make a difference in actual query execution.
 CREATE INDEX IF NOT EXISTS geolocation__accession_id_ix ON geolocations (accession_id);
-CREATE INDEX IF NOT EXISTS germination__test_id_ix ON germinations (test_id);
-CREATE INDEX IF NOT EXISTS germination_test__accession_id_ix ON germination_tests (accession_id);
+CREATE INDEX IF NOT EXISTS viability_test_results__test_id_ix ON viability_test_results (test_id);
+CREATE INDEX IF NOT EXISTS viability_test__accession_id_ix ON viability_tests (accession_id);
 CREATE INDEX IF NOT EXISTS withdrawal__accession_id_ix ON withdrawals (accession_id);
 
 -- Indexes for some columns that we expect to commonly be used to sort the search results and

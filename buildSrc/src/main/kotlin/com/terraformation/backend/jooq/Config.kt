@@ -27,14 +27,6 @@ val ENUM_TABLES =
             "DeviceTemplateCategory"),
         EnumTable("facility_connection_states", "facilities\\.connection_state_id"),
         EnumTable("facility_types", "facilities\\.type_id"),
-        EnumTable("germination_seed_types", "germination_tests\\.seed_type_id"),
-        EnumTable("germination_substrates", "germination_tests\\.substrate_id"),
-        EnumTable(
-            "germination_test_types",
-            listOf(
-                "germination_tests\\.test_type",
-                "accession_germination_test_types\\.germination_test_type_id")),
-        EnumTable("germination_treatments", "germination_tests\\.treatment_id"),
         EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
         EnumTable(
             "notification_criticalities",
@@ -76,7 +68,16 @@ val ENUM_TABLES =
             "uploads\\.type_id",
             additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean", false))),
         EnumTable("user_types", ".*\\.user_type_id"),
-        EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"))
+        EnumTable("viability_test_seed_types", "viability_tests\\.seed_type_id"),
+        EnumTable("viability_test_substrates", "viability_tests\\.substrate_id"),
+        EnumTable("viability_test_treatments", "viability_tests\\.treatment_id"),
+        EnumTable(
+            "viability_test_types",
+            listOf(
+                "viability_tests\\.test_type",
+                "accession_viability_test_types\\.viability_test_type_id")),
+        EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"),
+    )
 
 val ID_WRAPPERS =
     listOf(
@@ -94,10 +95,6 @@ val ID_WRAPPERS =
         IdWrapper(
             "GbifTaxonId", listOf("gbif_taxa\\.id", "gbif_.*\\.taxon_id", "gbif_.*\\..*_usage_id")),
         IdWrapper("GeolocationId", listOf("geolocations\\.id", ".*\\.geolocation_id")),
-        IdWrapper("GerminationId", listOf("germinations\\.id", ".*\\.germination_id")),
-        IdWrapper(
-            "GerminationTestId",
-            listOf("germination_tests\\.id", ".*\\.germination_test_id", "germinations\\.test_id")),
         IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
         IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
         IdWrapper("PhotoId", listOf("photos\\.id", ".*\\.photo_id")),
@@ -117,6 +114,13 @@ val ID_WRAPPERS =
                 ".*\\.created_by",
                 ".*\\.deleted_by",
                 ".*\\.modified_by")),
+        IdWrapper(
+            "ViabilityTestId",
+            listOf(
+                "viability_tests\\.id",
+                ".*\\.viability_test_id",
+                "viability_test_results\\.test_id")),
+        IdWrapper("ViabilityTestResultId", listOf("viability_test_results\\.id")),
         IdWrapper("WithdrawalId", listOf("withdrawals\\.id", ".*\\.withdrawal_id")),
     )
 
