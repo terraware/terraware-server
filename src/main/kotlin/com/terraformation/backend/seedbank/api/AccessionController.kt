@@ -1,8 +1,10 @@
 package com.terraformation.backend.seedbank.api
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -557,7 +559,7 @@ data class WithdrawalPayload(
                 "withdrawal.")
     val id: WithdrawalId? = null,
     val date: LocalDate,
-    val purpose: WithdrawalPurpose,
+    val purpose: ExternalWithdrawalPurpose,
     val destination: String? = null,
     val notes: String? = null,
     @Schema(
@@ -609,7 +611,7 @@ data class WithdrawalPayload(
   ) : this(
       model.id,
       model.date,
-      model.purpose,
+      ExternalWithdrawalPurpose.forPurpose(model.purpose),
       model.destination,
       model.notes,
       model.remaining?.toPayload(),
@@ -628,11 +630,45 @@ data class WithdrawalPayload(
           viabilityTestId = viabilityTestId ?: germinationTestId,
           id = id,
           notes = notes,
-          purpose = purpose,
+          purpose = purpose.purpose,
           remaining = remainingQuantity?.toModel(),
           staffResponsible = staffResponsible,
           withdrawn = withdrawnQuantity?.toModel(),
       )
+}
+
+/**
+ * Temporary copy of [WithdrawalPurpose] so we can accept either "Germination Testing" or "Viability
+ * Testing" as a valid purpose. After the client is updated to use "Viability Testing", we'll rename
+ * [WithdrawalPurpose.GerminationTesting] and get rid of this.
+ */
+enum class ExternalWithdrawalPurpose(
+    val purpose: WithdrawalPurpose,
+    @get:JsonValue val displayName: String = purpose.displayName,
+    val sendToClient: Boolean = true
+) {
+  Propagation(WithdrawalPurpose.Propagation),
+  OutreachorEducation(WithdrawalPurpose.OutreachorEducation),
+  Research(WithdrawalPurpose.Research),
+  Broadcast(WithdrawalPurpose.Broadcast),
+  SharewithAnotherSite(WithdrawalPurpose.SharewithAnotherSite),
+  Other(WithdrawalPurpose.Other),
+  GerminationTesting(WithdrawalPurpose.GerminationTesting),
+  ViabilityTesting(WithdrawalPurpose.GerminationTesting, "Viability Testing", false);
+
+  companion object {
+    private val byDisplayName = values().associateBy { it.displayName }
+    private val byPurpose = values().filter { it.sendToClient }.associateBy { it.purpose }
+
+    @JsonCreator
+    @JvmStatic
+    fun forDisplayName(name: String) =
+        byDisplayName[name] ?: throw IllegalArgumentException("Unrecognized value: $name")
+
+    @JvmStatic
+    fun forPurpose(purpose: WithdrawalPurpose) =
+        byPurpose[purpose] ?: throw IllegalArgumentException("Unrecognized value: $purpose")
+  }
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

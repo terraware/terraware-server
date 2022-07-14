@@ -52,6 +52,7 @@ import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
+import com.terraformation.backend.seedbank.api.ExternalWithdrawalPurpose
 import com.terraformation.backend.seedbank.api.SeedQuantityPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.ViabilityTestPayload
@@ -1267,7 +1268,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               listOf(
                   WithdrawalPayload(
                       date = LocalDate.EPOCH,
-                      purpose = WithdrawalPurpose.Other,
+                      purpose = ExternalWithdrawalPurpose.Other,
                       withdrawnQuantity = seeds(10))))
     }
 
@@ -1377,7 +1378,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               listOf(
                   WithdrawalPayload(
                       date = LocalDate.EPOCH,
-                      purpose = WithdrawalPurpose.Other,
+                      purpose = ExternalWithdrawalPurpose.Other,
                       remainingQuantity = grams(5))))
     }
 
@@ -1512,7 +1513,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     WithdrawalPayload(
                         date = today,
-                        purpose = WithdrawalPurpose.Other,
+                        purpose = ExternalWithdrawalPurpose.Other,
                         destination = "destination",
                         notes = "notes",
                         remainingQuantity = grams(42),
