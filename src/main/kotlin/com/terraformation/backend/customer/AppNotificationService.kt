@@ -163,7 +163,7 @@ class AppNotificationService(
 
     insertFacilityNotifications(
         event.accessionId,
-        NotificationType.AccessionScheduledforGerminationTest,
+        NotificationType.AccessionScheduledforViabilityTest,
         message,
         accessionUrl,
     )

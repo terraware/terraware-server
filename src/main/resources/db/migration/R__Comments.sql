@@ -162,7 +162,7 @@ COMMENT ON COLUMN upload_statuses.finished IS 'If true, this status means that t
 COMMENT ON TABLE upload_types IS '(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table.';
 COMMENT ON COLUMN upload_types.expire_files IS 'Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type.';
 
-COMMENT ON TABLE viability_test_results IS 'Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days.';
+COMMENT ON TABLE viability_test_results IS 'Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 
 COMMENT ON TABLE viability_test_seed_types IS '(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';
 
@@ -170,9 +170,9 @@ COMMENT ON TABLE viability_test_substrates IS '(Enum) Types of substrate that ca
 
 COMMENT ON TABLE viability_test_treatments IS '(Enum) Techniques that can be used to treat seeds before testing them for viability.';
 
-COMMENT ON TABLE viability_test_types IS '(Enum) Types of tests that can be performed on seeds to check for germination ability.';
+COMMENT ON TABLE viability_test_types IS '(Enum) Types of tests that can be performed on seeds to check for viability.';
 
-COMMENT ON TABLE viability_tests IS 'Information about a single batch of seeds being tested for germination ability. This is the information about the test itself; the results are represented in the `germinations` table.';
+COMMENT ON TABLE viability_tests IS 'Information about a single batch of seeds being tested for viability. This is the information about the test itself; the results are represented in the `viability_test_results` table.';
 
 COMMENT ON TABLE withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
 

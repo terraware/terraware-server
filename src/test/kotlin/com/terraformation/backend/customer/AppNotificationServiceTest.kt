@@ -304,7 +304,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         listOf(
             NotificationsRow(
                 id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionScheduledforGerminationTest,
+                notificationTypeId = NotificationType.AccessionScheduledforViabilityTest,
                 userId = user.userId,
                 organizationId = organizationId,
                 title = "accession lab viability test title",
@@ -339,7 +339,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         listOf(
             NotificationsRow(
                 id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionScheduledforGerminationTest,
+                notificationTypeId = NotificationType.AccessionScheduledforViabilityTest,
                 userId = user.userId,
                 organizationId = organizationId,
                 title = "accession nursery viability test title",
