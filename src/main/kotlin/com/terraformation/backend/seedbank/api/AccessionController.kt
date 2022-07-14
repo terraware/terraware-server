@@ -54,7 +54,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping("/api/v1/seedbank/accession")
+@RequestMapping("/api/v1/seedbank/accession", "/api/v1/seedbank/accessions")
 @RestController
 @SeedBankAppEndpoint
 class AccessionController(private val accessionStore: AccessionStore, private val clock: Clock) {
