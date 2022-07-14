@@ -119,11 +119,11 @@ class SchemaDocsGenerator : DatabaseTest() {
    */
   private val tableSlices =
       mapOf(
-          "accession_germination_test_types" to setOf(ALL, SEEDBANK),
           "accession_photos" to setOf(ALL, SEEDBANK),
           "accession_secondary_collectors" to setOf(ALL, SEEDBANK),
           "accession_state_history" to setOf(ALL, SEEDBANK),
           "accession_states" to setOf(ALL, SEEDBANK),
+          "accession_viability_test_types" to setOf(ALL, SEEDBANK),
           "accessions" to setOf(ALL, SEEDBANK),
           "app_devices" to setOf(ALL, SEEDBANK),
           "automations" to setOf(ALL, DEVICE),
@@ -144,12 +144,6 @@ class SchemaDocsGenerator : DatabaseTest() {
           "gbif_taxa" to setOf(SPECIES),
           "gbif_vernacular_names" to setOf(SPECIES),
           "geolocations" to setOf(ALL, SEEDBANK),
-          "germination_seed_types" to setOf(ALL, SEEDBANK),
-          "germination_substrates" to setOf(ALL, SEEDBANK),
-          "germination_test_types" to setOf(ALL, SEEDBANK),
-          "germination_tests" to setOf(ALL, SEEDBANK),
-          "germination_treatments" to setOf(ALL, SEEDBANK),
-          "germinations" to setOf(ALL, SEEDBANK),
           "growth_forms" to setOf(ALL, SEEDBANK),
           "notification_criticalities" to setOf(ALL, CUSTOMER),
           "notification_types" to setOf(ALL, CUSTOMER),
@@ -186,6 +180,12 @@ class SchemaDocsGenerator : DatabaseTest() {
           "upload_types" to setOf(ALL, CUSTOMER),
           "user_types" to setOf(ALL, CUSTOMER),
           "users" to setOf(ALL, CUSTOMER),
+          "viability_test_results" to setOf(ALL, SEEDBANK),
+          "viability_test_seed_types" to setOf(ALL, SEEDBANK),
+          "viability_test_substrates" to setOf(ALL, SEEDBANK),
+          "viability_test_treatments" to setOf(ALL, SEEDBANK),
+          "viability_test_types" to setOf(ALL, SEEDBANK),
+          "viability_tests" to setOf(ALL, SEEDBANK),
           "withdrawal_purposes" to setOf(ALL, SEEDBANK),
           "withdrawals" to setOf(ALL, SEEDBANK),
       )

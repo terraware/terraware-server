@@ -20,9 +20,9 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
@@ -31,8 +31,8 @@ import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.seedbank.daily.DateNotificationTask
 import com.terraformation.backend.seedbank.daily.StateSummaryNotificationTask
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionGerminationTestEvent
 import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
+import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
 import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
 import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
 import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
@@ -267,15 +267,14 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun accessionGerminationTest() {
-    service.on(
-        AccessionGerminationTestEvent(accessionNumber, accessionId, GerminationTestType.Nursery))
+    service.on(AccessionViabilityTestEvent(accessionNumber, accessionId, ViabilityTestType.Nursery))
     service.on(DateNotificationTask.SucceededEvent())
 
     assertBodyContains(facility.name, "Facility name")
     assertBodyContains(accessionNumber, "Accession number")
     assertBodyContains(
-        webAppUrls.fullAccessionGerminationTest(
-            accessionId, GerminationTestType.Nursery, organization.id),
+        webAppUrls.fullAccessionViabilityTest(
+            accessionId, ViabilityTestType.Nursery, organization.id),
         "Link URL")
     assertBodyContains("nursery", "Test type")
     assertRecipientsEqual(organizationRecipients)

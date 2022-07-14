@@ -5,12 +5,12 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.GerminationTestId
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
-import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
+import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
@@ -40,7 +40,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
 
   private val accessionId = AccessionId(9999)
-  private val germinationTestId = GerminationTestId(9998)
+  private val viabilityTestId = ViabilityTestId(9998)
 
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(WITHDRAWALS)
@@ -175,7 +175,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `rejects new germination testing withdrawals without test IDs`() {
+  fun `rejects new viability testing withdrawals without test IDs`() {
     val desired =
         WithdrawalModel(
             date = LocalDate.now(),
@@ -189,11 +189,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `rejects test IDs on non-germination-testing withdrawals`() {
+  fun `rejects test IDs on non-viability-testing withdrawals`() {
     val desired =
         WithdrawalModel(
             date = LocalDate.now(),
-            germinationTestId = germinationTestId,
+            viabilityTestId = viabilityTestId,
             purpose = WithdrawalPurpose.Other,
             remaining = grams(4),
             withdrawn = grams(1))
@@ -204,19 +204,19 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `accepts new germination testing withdrawals with test IDs`() {
-    germinationTestsDao.insert(
-        GerminationTestsRow(
-            id = germinationTestId,
+  fun `accepts new viability testing withdrawals with test IDs`() {
+    viabilityTestsDao.insert(
+        ViabilityTestsRow(
+            id = viabilityTestId,
             accessionId = accessionId,
-            testType = GerminationTestType.Lab,
+            testType = ViabilityTestType.Lab,
             remainingQuantity = BigDecimal(10),
             remainingUnitsId = SeedQuantityUnits.Grams))
 
     val desired =
         WithdrawalModel(
             date = LocalDate.now(),
-            germinationTestId = germinationTestId,
+            viabilityTestId = viabilityTestId,
             purpose = WithdrawalPurpose.GerminationTesting,
             remaining = grams(4),
             withdrawn = seeds(1))
@@ -228,7 +228,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = accessionId,
                 date = desired.date,
                 destination = desired.destination,
-                germinationTestId = germinationTestId,
+                viabilityTestId = viabilityTestId,
                 notes = desired.notes,
                 purpose = desired.purpose,
                 remaining = grams(4),
@@ -245,19 +245,19 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `does not allow modifying test IDs on existing germination testing withdrawals`() {
-    germinationTestsDao.insert(
-        GerminationTestsRow(
-            id = germinationTestId,
+  fun `does not allow modifying test IDs on existing viability testing withdrawals`() {
+    viabilityTestsDao.insert(
+        ViabilityTestsRow(
+            id = viabilityTestId,
             accessionId = accessionId,
-            testType = GerminationTestType.Lab,
+            testType = ViabilityTestType.Lab,
             remainingQuantity = BigDecimal(10),
             remainingUnitsId = SeedQuantityUnits.Grams))
 
     val initial =
         WithdrawalModel(
             date = LocalDate.now(),
-            germinationTestId = germinationTestId,
+            viabilityTestId = viabilityTestId,
             purpose = WithdrawalPurpose.GerminationTesting,
             remaining = grams(4),
             withdrawn = seeds(1))
@@ -268,7 +268,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
       store.updateWithdrawals(
           accessionId,
           listOf(inserted),
-          listOf(inserted.copy(germinationTestId = GerminationTestId(germinationTestId.value + 1))))
+          listOf(inserted.copy(viabilityTestId = ViabilityTestId(viabilityTestId.value + 1))))
     }
   }
 
@@ -317,7 +317,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `rejects attempts to change existing withdrawal purpose to germination testing`() {
+  fun `rejects attempts to change existing withdrawal purpose to viability testing`() {
     val initial =
         WithdrawalModel(
             date = LocalDate.now(),
@@ -331,7 +331,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
     val afterInsert = store.fetchWithdrawals(accessionId)
 
-    assertThrows<IllegalArgumentException>("Cannot switch purpose to germination testing") {
+    assertThrows<IllegalArgumentException>("Cannot switch purpose to viability testing") {
       store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
     }
   }

@@ -1,10 +1,10 @@
 package com.terraformation.backend.seedbank.event
 
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.GerminationTestType
+import com.terraformation.backend.db.ViabilityTestType
 
-data class AccessionGerminationTestEvent(
+data class AccessionViabilityTestEvent(
     val accessionNumber: String,
     val accessionId: AccessionId,
-    val testType: GerminationTestType
+    val testType: ViabilityTestType
 )

@@ -1,0 +1,23 @@
+ALTER TABLE accession_germination_test_types RENAME TO accession_viability_test_types;
+ALTER TABLE germinations RENAME TO viability_test_results;
+ALTER TABLE germination_seed_types RENAME TO viability_test_seed_types;
+ALTER TABLE germination_substrates RENAME TO viability_test_substrates;
+ALTER TABLE germination_tests RENAME TO viability_tests;
+ALTER TABLE germination_test_types RENAME TO viability_test_types;
+ALTER TABLE germination_treatments RENAME TO viability_test_treatments;
+
+ALTER TABLE accession_viability_test_types RENAME COLUMN germination_test_type_id TO viability_test_type_id;
+ALTER TABLE withdrawals RENAME COLUMN germination_test_id TO viability_test_id;
+
+ALTER TABLE accession_viability_test_types RENAME CONSTRAINT accession_germination_test_type_accession_id_fkey TO accession_viability_test_types_accession_id_fkey;
+ALTER TABLE viability_test_results RENAME CONSTRAINT germination_test_id_fkey TO viability_test_results_test_id_fkey;
+ALTER TABLE viability_tests RENAME CONSTRAINT germination_test_accession_id_fkey TO viability_tests_accession_id_fkey;
+ALTER TABLE withdrawals RENAME CONSTRAINT germination_testing_withdrawal_has_test_id TO withdrawals_viability_testing_has_test_id;
+ALTER TABLE withdrawals RENAME CONSTRAINT withdrawal_germination_test_id_fkey TO withdrawals_viability_test_id_fkey;
+ALTER TABLE withdrawals RENAME CONSTRAINT withdrawal_germination_test_id_unique TO withdrawals_viability_test_id_unique;
+
+ALTER INDEX IF EXISTS accession_germination_test_type_pkey RENAME TO accession_viability_test_types_pkey;
+ALTER INDEX IF EXISTS germination__test_id_ix RENAME TO viability_test_results__test_id_ix;
+ALTER INDEX IF EXISTS germination_pkey RENAME TO viability_test_results_pkey;
+ALTER INDEX IF EXISTS germination_test_pkey RENAME TO viability_tests_pkey;
+ALTER INDEX IF EXISTS germination_test__accession_id_ix RENAME TO viability_tests__accession_id_ix;

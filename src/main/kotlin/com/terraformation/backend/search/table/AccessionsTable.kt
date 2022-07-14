@@ -4,14 +4,14 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.ACCESSION_GERMINATION_TEST_TYPES
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
+import com.terraformation.backend.db.tables.references.ACCESSION_VIABILITY_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
-import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.FieldNode
@@ -36,23 +36,22 @@ class AccessionsTable(private val tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          accessionGerminationTestTypes.asMultiValueSublist(
-              "viabilityTestTypes",
-              ACCESSIONS.ID.eq(ACCESSION_GERMINATION_TEST_TYPES.ACCESSION_ID)),
           accessionSecondaryCollectors.asMultiValueSublist(
               "secondaryCollectors", ACCESSIONS.ID.eq(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID)),
           bags.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
           geolocations.asMultiValueSublist(
               "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
-          germinationTests.asMultiValueSublist(
-              "germinationTests", ACCESSIONS.ID.eq(GERMINATION_TESTS.ACCESSION_ID)),
+          viabilityTests.asMultiValueSublist(
+              "germinationTests", ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID)),
           species.asSingleValueSublist(
               "species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
           storageLocations.asSingleValueSublist(
               "storageLocation",
               ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID),
               isRequired = false),
+          accessionViabilityTestTypes.asMultiValueSublist(
+              "viabilityTestTypes", ACCESSIONS.ID.eq(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID)),
           withdrawals.asMultiValueSublist(
               "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
       )

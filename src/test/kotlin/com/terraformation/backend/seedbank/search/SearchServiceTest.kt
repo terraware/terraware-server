@@ -9,8 +9,6 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.GerminationTestId
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.ProcessingMethod
@@ -21,13 +19,15 @@ import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.tables.pojos.AccessionGerminationTestTypesRow
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestType
+import com.terraformation.backend.db.tables.pojos.AccessionViabilityTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
-import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
-import com.terraformation.backend.db.tables.pojos.GerminationsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.db.tables.pojos.ViabilityTestResultsRow
+import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
@@ -85,8 +85,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val bagNumberField = rootPrefix.resolve("bagNumber")
   private val bagNumberFlattenedField = rootPrefix.resolve("bags_number")
   private val checkedInTimeField = rootPrefix.resolve("checkedInTime")
-  private val germinationSeedsGerminatedField = rootPrefix.resolve("germinationSeedsGerminated")
-  private val germinationSeedsSownField = rootPrefix.resolve("germinationSeedsSown")
   private val germinationTestTypeField = rootPrefix.resolve("germinationTestType")
   private val receivedDateField = rootPrefix.resolve("receivedDate")
   private val speciesNameField = rootPrefix.resolve("speciesName")
@@ -98,6 +96,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val treesCollectedFromField = rootPrefix.resolve("treesCollectedFrom")
   private val treesCollectedFromAlias =
       SearchFieldPath(rootPrefix, AliasField("treesCollectedFromAlias", treesCollectedFromField))
+  private val viabilityTestResultsSeedsGerminatedField =
+      rootPrefix.resolve("germinationSeedsGerminated")
+  private val viabilityTestSeedsSownField = rootPrefix.resolve("germinationSeedsSown")
   private val viabilityTestTypeField = rootPrefix.resolve("viabilityTestType")
 
   @BeforeEach
@@ -796,10 +797,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search on enum in child table`() {
-    accessionGerminationTestTypesDao.insert(
-        AccessionGerminationTestTypesRow(AccessionId(1000), GerminationTestType.Lab),
-        AccessionGerminationTestTypesRow(AccessionId(1000), GerminationTestType.Nursery),
-        AccessionGerminationTestTypesRow(AccessionId(1001), GerminationTestType.Lab))
+    accessionViabilityTestTypesDao.insert(
+        AccessionViabilityTestTypesRow(AccessionId(1000), ViabilityTestType.Lab),
+        AccessionViabilityTestTypesRow(AccessionId(1000), ViabilityTestType.Nursery),
+        AccessionViabilityTestTypesRow(AccessionId(1001), ViabilityTestType.Lab))
 
     val fields = listOf(viabilityTestTypeField)
     val sortOrder =
@@ -1232,7 +1233,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns values for enum-mapped field`() {
-      val expected = listOf(null) + GerminationTestType.values().map { it.displayName }
+      val expected = listOf(null) + ViabilityTestType.values().map { it.displayName }
       val values = searchService.fetchAllValues(germinationTestTypeField, searchScopes)
       assertEquals(expected, values)
     }
@@ -1362,31 +1363,32 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       listOf(1000, 1100).forEach { id ->
         val accessionId = AccessionId(id.toLong())
-        val testId = GerminationTestId(id.toLong())
+        val testId = ViabilityTestId(id.toLong())
 
-        accessionGerminationTestTypesDao.insert(
-            AccessionGerminationTestTypesRow(accessionId, GerminationTestType.Lab))
-        germinationTestsDao.insert(
-            GerminationTestsRow(
+        accessionViabilityTestTypesDao.insert(
+            AccessionViabilityTestTypesRow(accessionId, ViabilityTestType.Lab))
+        viabilityTestsDao.insert(
+            ViabilityTestsRow(
                 id = testId,
                 accessionId = accessionId,
-                testType = GerminationTestType.Lab,
+                testType = ViabilityTestType.Lab,
                 remainingQuantity = BigDecimal.ONE,
                 remainingUnitsId = SeedQuantityUnits.Grams,
                 seedsSown = id))
-        germinationsDao.insert(
-            GerminationsRow(testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = id))
+        viabilityTestResultsDao.insert(
+            ViabilityTestResultsRow(
+                testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = id))
       }
 
       assertEquals(
           listOf(null, "1000"),
-          searchService.fetchAllValues(germinationSeedsGerminatedField, searchScopes),
-          "Value from germinations table (grandchild of accessions)")
+          searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, searchScopes),
+          "Value from viability_test_results table (grandchild of accessions)")
 
       assertEquals(
           listOf(null, "1000"),
-          searchService.fetchAllValues(germinationSeedsSownField, searchScopes),
-          "Value from germination_tests table (child of accessions)")
+          searchService.fetchAllValues(viabilityTestSeedsSownField, searchScopes),
+          "Value from viability_tests table (child of accessions)")
     }
 
     @Test
@@ -1738,9 +1740,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     private val testTypeField = rootPrefix.resolve("germinationTests.type")
 
     private val bagsTable = tables.bags
-    private val germinationsTable = tables.germinations
+    private val viabilityTestResultsTable = tables.viabilityTestResults
 
-    private lateinit var testId: GerminationTestId
+    private lateinit var testId: ViabilityTestId
 
     @BeforeEach
     fun insertNestedData() {
@@ -1749,22 +1751,23 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       bagsDao.insert(BagsRow(accessionId = AccessionId(1001), bagNumber = "2"))
       bagsDao.insert(BagsRow(accessionId = AccessionId(1001), bagNumber = "6"))
 
-      val germinationTestsRow =
-          GerminationTestsRow(
+      val viabilityTestResultsRow =
+          ViabilityTestsRow(
               accessionId = AccessionId(1000),
-              testType = GerminationTestType.Lab,
+              testType = ViabilityTestType.Lab,
               seedsSown = 15,
               remainingQuantity = BigDecimal.TEN,
               remainingUnitsId = SeedQuantityUnits.Grams)
 
-      germinationTestsDao.insert(germinationTestsRow)
+      viabilityTestsDao.insert(viabilityTestResultsRow)
 
-      testId = germinationTestsRow.id!!
+      testId = viabilityTestResultsRow.id!!
 
-      germinationsDao.insert(
-          GerminationsRow(testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = 5))
-      germinationsDao.insert(
-          GerminationsRow(
+      viabilityTestResultsDao.insert(
+          ViabilityTestResultsRow(
+              testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = 5))
+      viabilityTestResultsDao.insert(
+          ViabilityTestResultsRow(
               testId = testId, recordingDate = LocalDate.EPOCH.plusDays(1), seedsGerminated = 10))
     }
 
@@ -1878,15 +1881,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can get to organization from accession sublist`() {
-      val germinationsPrefix = SearchFieldPrefix(tables.germinations)
-      val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
+      val viabilityTestResultsPrefix = SearchFieldPrefix(tables.viabilityTestResults)
+      val rootSeedsGerminatedField = viabilityTestResultsPrefix.resolve("seedsGerminated")
       val orgNameField =
-          germinationsPrefix.resolve("germinationTest.accession.facility.organization.name")
+          viabilityTestResultsPrefix.resolve("germinationTest.accession.facility.organization.name")
       val orgName = "Organization $organizationId"
 
       val result =
           searchService.search(
-              germinationsPrefix,
+              viabilityTestResultsPrefix,
               listOf(orgNameField, rootSeedsGerminatedField),
               FieldNode(orgNameField, listOf(orgName)))
 
@@ -1906,15 +1909,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can get to flattened organization from accession sublist`() {
-      val germinationsPrefix = SearchFieldPrefix(tables.germinations)
-      val rootSeedsGerminatedField = germinationsPrefix.resolve("seedsGerminated")
+      val viabilityTestResultsPrefix = SearchFieldPrefix(tables.viabilityTestResults)
+      val rootSeedsGerminatedField = viabilityTestResultsPrefix.resolve("seedsGerminated")
       val flattenedFieldName = "germinationTest_accession_facility_organization_name"
-      val orgNameField = germinationsPrefix.resolve(flattenedFieldName)
+      val orgNameField = viabilityTestResultsPrefix.resolve(flattenedFieldName)
       val orgName = "Organization $organizationId"
 
       val result =
           searchService.search(
-              germinationsPrefix,
+              viabilityTestResultsPrefix,
               listOf(orgNameField, rootSeedsGerminatedField),
               FieldNode(orgNameField, listOf(orgName)))
 
@@ -1930,13 +1933,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can filter across multiple single-value sublists`() {
-      val germinationsPrefix = SearchFieldPrefix(tables.germinations)
+      val viabilityTestResultsPrefix = SearchFieldPrefix(tables.viabilityTestResults)
       val orgNameField =
-          germinationsPrefix.resolve("germinationTest.accession.facility.organization.name")
+          viabilityTestResultsPrefix.resolve("germinationTest.accession.facility.organization.name")
 
       val result =
           searchService.search(
-              germinationsPrefix,
+              viabilityTestResultsPrefix,
               listOf(orgNameField),
               FieldNode(orgNameField, listOf("Non-matching organization name")))
 
@@ -2116,10 +2119,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `can sort on nested enum field`() {
       val fields = listOf(seedsSownField, testTypeField)
 
-      germinationTestsDao.insert(
-          GerminationTestsRow(
+      viabilityTestsDao.insert(
+          ViabilityTestsRow(
               accessionId = AccessionId(1000),
-              testType = GerminationTestType.Nursery,
+              testType = ViabilityTestType.Nursery,
               seedsSown = 1,
               remainingQuantity = BigDecimal.TEN,
               remainingUnitsId = SeedQuantityUnits.Grams))
@@ -2304,7 +2307,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns nested result for each row when querying non-nested child field`() {
-      val fields = listOf(germinationSeedsGerminatedField, seedsGerminatedField)
+      val fields = listOf(viabilityTestResultsSeedsGerminatedField, seedsGerminatedField)
       val sortOrder = fields.map { SearchSortField(it) }
       val criteria = FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range)
 
@@ -2533,15 +2536,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   val perBagNumber = base.toMutableMap()
                   perBagNumber.putIfNotNull("bagNumber", bag["number"])
 
-                  base.getListValue("germinationTests")?.flatMap { germinationTest ->
+                  base.getListValue("germinationTests")?.flatMap { viabilityTest ->
                     val perTest = perBagNumber.toMutableMap()
-                    perTest.putIfNotNull("germinationSeedsSown", germinationTest["seedsSown"])
-                    perTest.putIfNotNull("germinationTestType", germinationTest["type"])
+                    perTest.putIfNotNull("germinationSeedsSown", viabilityTest["seedsSown"])
+                    perTest.putIfNotNull("germinationTestType", viabilityTest["type"])
 
-                    germinationTest.getListValue("germinations")?.map { germination ->
+                    viabilityTest.getListValue("germinations")?.map { testResult ->
                       val perGermination = perTest.toMutableMap()
                       perGermination.putIfNotNull(
-                          "germinationSeedsGerminated", germination["seedsGerminated"])
+                          "germinationSeedsGerminated", testResult["seedsGerminated"])
                       perGermination
                     }
                         ?: listOf(perTest)
@@ -2705,7 +2708,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `permission check can join multiple parent tables`() {
-      val prefix = SearchFieldPrefix(root = germinationsTable)
+      val prefix = SearchFieldPrefix(root = viabilityTestResultsTable)
       val seedsGerminatedField = prefix.resolve("seedsGerminated")
       val fields = listOf(seedsGerminatedField)
       val criteria = NoConditionNode()
@@ -2719,18 +2722,18 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       accessionsDao.update(
           accessionsDao.fetchOneById(AccessionId(1000))!!.copy(facilityId = otherFacilityId))
 
-      val germinationTestsRow =
-          GerminationTestsRow(
+      val viabilityTestResultsRow =
+          ViabilityTestsRow(
               accessionId = AccessionId(1001),
-              testType = GerminationTestType.Lab,
+              testType = ViabilityTestType.Lab,
               seedsSown = 50,
               remainingQuantity = BigDecimal(30),
               remainingUnitsId = SeedQuantityUnits.Pounds)
 
-      germinationTestsDao.insert(germinationTestsRow)
-      germinationsDao.insert(
-          GerminationsRow(
-              testId = germinationTestsRow.id!!,
+      viabilityTestsDao.insert(viabilityTestResultsRow)
+      viabilityTestResultsDao.insert(
+          ViabilityTestResultsRow(
+              testId = viabilityTestResultsRow.id!!,
               recordingDate = LocalDate.EPOCH,
               seedsGerminated = 8))
 

@@ -116,7 +116,7 @@ class AccessionDryingEnd(
     get() = "accession/dryingEnd"
 }
 
-class AccessionGerminationTest(
+class AccessionViabilityTest(
     config: TerrawareServerConfig,
     val accessionNumber: String,
     val testType: String,
@@ -124,7 +124,7 @@ class AccessionGerminationTest(
     val accessionUrl: String,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
-    get() = "accession/germinationTest"
+    get() = "accession/viabilityTest"
 }
 
 class AccessionWithdrawal(

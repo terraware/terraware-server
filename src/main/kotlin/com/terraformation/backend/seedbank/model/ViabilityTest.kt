@@ -1,39 +1,39 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.GerminationId
-import com.terraformation.backend.db.GerminationSeedType
-import com.terraformation.backend.db.GerminationSubstrate
-import com.terraformation.backend.db.GerminationTestId
-import com.terraformation.backend.db.GerminationTestType
-import com.terraformation.backend.db.GerminationTreatment
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestResultId
+import com.terraformation.backend.db.ViabilityTestSeedType
+import com.terraformation.backend.db.ViabilityTestSubstrate
+import com.terraformation.backend.db.ViabilityTestTreatment
+import com.terraformation.backend.db.ViabilityTestType
 import java.time.LocalDate
 
-data class GerminationModel(
-    val id: GerminationId? = null,
-    val testId: GerminationTestId? = null,
+data class ViabilityTestResultModel(
+    val id: ViabilityTestResultId? = null,
+    val testId: ViabilityTestId? = null,
     val recordingDate: LocalDate,
     val seedsGerminated: Int
 )
 
-data class GerminationTestModel(
-    val id: GerminationTestId? = null,
+data class ViabilityTestModel(
+    val id: ViabilityTestId? = null,
     val accessionId: AccessionId? = null,
-    val testType: GerminationTestType,
+    val testType: ViabilityTestType,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
-    val seedType: GerminationSeedType? = null,
-    val substrate: GerminationSubstrate? = null,
-    val treatment: GerminationTreatment? = null,
+    val seedType: ViabilityTestSeedType? = null,
+    val substrate: ViabilityTestSubstrate? = null,
+    val treatment: ViabilityTestTreatment? = null,
     val seedsSown: Int? = null,
     val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
     val notes: String? = null,
     val staffResponsible: String? = null,
-    val germinations: Collection<GerminationModel>? = null,
+    val testResults: Collection<ViabilityTestResultModel>? = null,
     val remaining: SeedQuantityModel? = null,
 ) {
-  fun fieldsEqual(other: GerminationTestModel): Boolean {
+  fun fieldsEqual(other: ViabilityTestModel): Boolean {
     return endDate == other.endDate &&
         notes == other.notes &&
         remaining.equalsIgnoreScale(other.remaining) &&
@@ -49,11 +49,11 @@ data class GerminationTestModel(
   }
 
   fun calculateLatestRecordingDate(): LocalDate? {
-    return germinations?.maxOfOrNull { it.recordingDate }
+    return testResults?.maxOfOrNull { it.recordingDate }
   }
 
   private fun calculateTotalSeedsGerminated(): Int? {
-    return germinations?.sumOf { it.seedsGerminated }
+    return testResults?.sumOf { it.seedsGerminated }
   }
 
   fun calculateTotalPercentGerminated(): Int? {
@@ -67,7 +67,7 @@ data class GerminationTestModel(
     }
   }
 
-  fun withCalculatedValues(): GerminationTestModel {
+  fun withCalculatedValues(): ViabilityTestModel {
     return copy(
         totalPercentGerminated = calculateTotalPercentGerminated(),
         totalSeedsGerminated = calculateTotalSeedsGerminated(),

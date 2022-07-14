@@ -4,8 +4,8 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import java.net.URI
 import javax.annotation.ManagedBean
@@ -40,19 +40,19 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
     return UriBuilder.fromPath("/accessions/${accessionId.value}").build()
   }
 
-  fun fullAccessionGerminationTest(
+  fun fullAccessionViabilityTest(
       accessionId: AccessionId,
-      testType: GerminationTestType,
+      testType: ViabilityTestType,
       organizationId: OrganizationId
   ): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path(accessionGerminationTestPath(accessionId, testType))
+        .path(accessionViabilityTestPath(accessionId, testType))
         .queryParam("organizationId", organizationId)
         .build()
   }
 
-  fun accessionGerminationTest(accessionId: AccessionId, testType: GerminationTestType): URI {
-    return UriBuilder.fromPath(accessionGerminationTestPath(accessionId, testType)).build()
+  fun accessionViabilityTest(accessionId: AccessionId, testType: ViabilityTestType): URI {
+    return UriBuilder.fromPath(accessionViabilityTestPath(accessionId, testType)).build()
   }
 
   fun fullAccessions(
@@ -101,14 +101,14 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
     }
   }
 
-  private fun accessionGerminationTestPath(
+  private fun accessionViabilityTestPath(
       accessionId: AccessionId,
-      testType: GerminationTestType
+      testType: ViabilityTestType
   ): String {
     return "/accessions/${accessionId.value}/" +
         when (testType) {
-          GerminationTestType.Lab -> "lab"
-          GerminationTestType.Nursery -> "nursery"
+          ViabilityTestType.Lab -> "lab"
+          ViabilityTestType.Nursery -> "nursery"
         }
   }
 }

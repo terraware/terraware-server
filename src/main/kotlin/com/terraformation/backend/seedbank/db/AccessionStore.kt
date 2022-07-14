@@ -13,22 +13,22 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
-import com.terraformation.backend.db.tables.pojos.GerminationTestsRow
+import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.db.tables.references.GERMINATION_TESTS
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
-import com.terraformation.backend.seedbank.model.GerminationTestModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.toActiveEnum
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
@@ -52,7 +52,7 @@ class AccessionStore(
     private val appDeviceStore: AppDeviceStore,
     private val bagStore: BagStore,
     private val geolocationStore: GeolocationStore,
-    private val germinationStore: GerminationStore,
+    private val viabilityTestStore: ViabilityTestStore,
     private val parentStore: ParentStore,
     private val speciesService: SpeciesService,
     private val withdrawalStore: WithdrawalStore,
@@ -80,10 +80,10 @@ class AccessionStore(
     val appDeviceField = appDeviceStore.appDeviceMultiset()
     val bagNumbersField = bagStore.bagNumbersMultiset()
     val geolocationsField = geolocationStore.geolocationsMultiset()
-    val germinationTestsField = germinationStore.germinationTestsMultiset()
-    val germinationTestTypesField = germinationStore.germinationTestTypesMultiset()
     val photoFilenamesField = photoFilenamesMultiset()
     val secondaryCollectorsField = secondaryCollectorsMultiset()
+    val viabilityTestsField = viabilityTestStore.viabilityTestsMultiset()
+    val viabilityTestTypesField = viabilityTestStore.viabilityTestTypesMultiset()
     val withdrawalsField = withdrawalStore.withdrawalsMultiset()
 
     val record =
@@ -100,10 +100,10 @@ class AccessionStore(
                 appDeviceField,
                 bagNumbersField,
                 geolocationsField,
-                germinationTestsField,
-                germinationTestTypesField,
                 photoFilenamesField,
                 secondaryCollectorsField,
+                viabilityTestsField,
+                viabilityTestTypesField,
                 withdrawalsField,
             )
             .from(ACCESSIONS)
@@ -136,12 +136,10 @@ class AccessionStore(
           fieldNotes = record[FIELD_NOTES],
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
-          germinationTestTypes = record[germinationTestTypesField],
-          germinationTests = record[germinationTestsField],
           id = accessionId,
           landowner = record[COLLECTION_SITE_LANDOWNER],
-          latestGerminationTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
           latestViabilityPercent = record[LATEST_VIABILITY_PERCENT],
+          latestViabilityTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
           numberOfTrees = record[TREES_COLLECTED_FROM],
           nurseryStartDate = record[NURSERY_START_DATE],
           photoFilenames = record[photoFilenamesField],
@@ -175,6 +173,8 @@ class AccessionStore(
           targetStorageCondition = record[TARGET_STORAGE_CONDITION],
           total = SeedQuantityModel.of(record[TOTAL_QUANTITY], record[TOTAL_UNITS_ID]),
           totalViabilityPercent = record[TOTAL_VIABILITY_PERCENT],
+          viabilityTests = record[viabilityTestsField],
+          viabilityTestTypes = record[viabilityTestTypesField],
           withdrawals = record[withdrawalsField],
       )
     }
@@ -222,7 +222,7 @@ class AccessionStore(
                         .set(FOUNDER_ID, accession.founderId)
                         .set(
                             LATEST_GERMINATION_RECORDING_DATE,
-                            accession.calculateLatestGerminationRecordingDate())
+                            accession.calculateLatestViabilityRecordingDate())
                         .set(LATEST_VIABILITY_PERCENT, accession.calculateLatestViabilityPercent())
                         .set(MODIFIED_BY, currentUser().userId)
                         .set(MODIFIED_TIME, clock.instant())
@@ -262,10 +262,10 @@ class AccessionStore(
               insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
               bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
               geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
-              germinationStore.updateGerminationTestTypes(
-                  accessionId, emptySet(), accession.germinationTestTypes)
-              germinationStore.updateGerminationTests(
-                  accessionId, emptyList(), accession.germinationTests)
+              viabilityTestStore.updateViabilityTestTypes(
+                  accessionId, emptySet(), accession.viabilityTestTypes)
+              viabilityTestStore.updateViabilityTests(
+                  accessionId, emptyList(), accession.viabilityTests)
               withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
 
               accessionId
@@ -325,16 +325,15 @@ class AccessionStore(
         insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
       }
 
-      val existingTests: MutableList<GerminationTestModel> =
-          existing.germinationTests.toMutableList()
+      val existingTests: MutableList<ViabilityTestModel> = existing.viabilityTests.toMutableList()
       val withdrawals =
           accession.withdrawals.map { withdrawal ->
-            withdrawal.germinationTest?.let { germinationTest ->
-              if (germinationTest.id == null) {
+            withdrawal.viabilityTest?.let { viabilityTest ->
+              if (viabilityTest.id == null) {
                 val insertedTest =
-                    germinationStore.insertGerminationTest(accessionId, germinationTest)
+                    viabilityTestStore.insertViabilityTest(accessionId, viabilityTest)
                 existingTests.add(insertedTest)
-                withdrawal.copy(germinationTest = insertedTest, germinationTestId = insertedTest.id)
+                withdrawal.copy(viabilityTest = insertedTest, viabilityTestId = insertedTest.id)
               } else {
                 withdrawal
               }
@@ -342,14 +341,14 @@ class AccessionStore(
                 ?: withdrawal
           }
 
-      val germinationTests = withdrawals.mapNotNull { it.germinationTest }
+      val viabilityTests = withdrawals.mapNotNull { it.viabilityTest }
 
       bagStore.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
       geolocationStore.updateGeolocations(
           accessionId, existing.geolocations, accession.geolocations)
-      germinationStore.updateGerminationTestTypes(
-          accessionId, existing.germinationTestTypes, accession.germinationTestTypes)
-      germinationStore.updateGerminationTests(accessionId, existingTests, germinationTests)
+      viabilityTestStore.updateViabilityTestTypes(
+          accessionId, existing.viabilityTestTypes, accession.viabilityTestTypes)
+      viabilityTestStore.updateViabilityTests(accessionId, existingTests, viabilityTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
       insertStateHistory(existing, accession)
@@ -376,7 +375,7 @@ class AccessionStore(
                 .set(FAMILY_NAME, accession.family)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
-                .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestGerminationTestDate)
+                .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestViabilityTestDate)
                 .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
@@ -705,19 +704,19 @@ class AccessionStore(
     }
   }
 
-  fun fetchGerminationTestDue(
+  fun fetchViabilityTestDue(
       after: TemporalAccessor,
       until: TemporalAccessor
-  ): Map<String, GerminationTestsRow> {
+  ): Map<String, ViabilityTestsRow> {
     return dslContext
-        .select(ACCESSIONS.NUMBER, GERMINATION_TESTS.asterisk())
+        .select(ACCESSIONS.NUMBER, VIABILITY_TESTS.asterisk())
         .from(ACCESSIONS)
-        .join(GERMINATION_TESTS)
-        .on(GERMINATION_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID))
+        .join(VIABILITY_TESTS)
+        .on(VIABILITY_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID))
         .where(ACCESSIONS.STATE_ID.`in`(AccessionState.Processing, AccessionState.Processed))
-        .and(GERMINATION_TESTS.START_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
-        .and(GERMINATION_TESTS.START_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-        .fetch { it[ACCESSIONS.NUMBER]!! to it.into(GerminationTestsRow::class.java)!! }
+        .and(VIABILITY_TESTS.START_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
+        .and(VIABILITY_TESTS.START_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
+        .fetch { it[ACCESSIONS.NUMBER]!! to it.into(ViabilityTestsRow::class.java)!! }
         .toMap()
   }
 

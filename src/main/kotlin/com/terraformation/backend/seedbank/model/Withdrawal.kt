@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.GerminationTestId
+import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.records.WithdrawalsRecord
@@ -16,11 +16,11 @@ data class WithdrawalModel(
     val destination: String? = null,
     val notes: String? = null,
     val staffResponsible: String? = null,
-    val germinationTestId: GerminationTestId? = null,
+    val viabilityTestId: ViabilityTestId? = null,
     val remaining: SeedQuantityModel? = null,
     /** The user-entered withdrawal quantity. */
     val withdrawn: SeedQuantityModel? = null,
-    val germinationTest: GerminationTestModel? = null,
+    val viabilityTest: ViabilityTestModel? = null,
     /**
      * The server-calculated withdrawal weight based on the difference between [remaining] on this
      * withdrawal and the previous one. Only valid for weight-based accessions.
@@ -37,7 +37,7 @@ data class WithdrawalModel(
       record.destination,
       record.notes,
       record.staffResponsible,
-      record.germinationTestId,
+      record.viabilityTestId,
       SeedQuantityModel.of(record.remainingQuantity, record.remainingUnitsId),
       SeedQuantityModel.of(record.withdrawnQuantity, record.withdrawnUnitsId),
   )
@@ -59,7 +59,7 @@ data class WithdrawalModel(
         date == other.date &&
         purpose == other.purpose &&
         destination == other.destination &&
-        germinationTestId == other.germinationTestId &&
+        viabilityTestId == other.viabilityTestId &&
         notes == other.notes &&
         staffResponsible == other.staffResponsible &&
         remaining.equalsIgnoreScale(other.remaining) &&

@@ -1,8 +1,8 @@
 package com.terraformation.backend.i18n
 
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.SeedStorageBehavior
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import java.time.Instant
 import java.time.ZoneOffset
@@ -89,17 +89,17 @@ class Messages {
           title = "An accession has dried",
           body = "$accessionNumber has reached its scheduled drying date.")
 
-  fun accessionGerminationTestNotification(
+  fun accessionViabilityTestNotification(
       accessionNumber: String,
-      testType: GerminationTestType
+      testType: ViabilityTestType
   ): NotificationMessage =
       NotificationMessage(
           title = "Time to test your accessions!",
           body =
               when (testType) {
-                GerminationTestType.Lab ->
+                ViabilityTestType.Lab ->
                     "$accessionNumber is scheduled for a lab germination test today!"
-                GerminationTestType.Nursery ->
+                ViabilityTestType.Nursery ->
                     "$accessionNumber is scheduled for a nursery germination test today!"
               })
 

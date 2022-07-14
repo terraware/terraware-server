@@ -2,11 +2,11 @@ package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.GerminationId
-import com.terraformation.backend.db.GerminationTestId
-import com.terraformation.backend.db.GerminationTestType
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestResultId
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.seedbank.grams
@@ -31,13 +31,13 @@ internal class AccessionModelTest {
   private val tomorrow = today.plusDays(1)
   private val yesterday = today.minusDays(1)
 
-  private var germinationId = GerminationId(1)
-  private var germinationTestId = GerminationTestId(1)
+  private var viabilityTestResultId = ViabilityTestResultId(1)
+  private var viabilityTestId = ViabilityTestId(1)
   private var withdrawalId = WithdrawalId(1)
   private var defaultState = AccessionState.Processing
 
   private fun accession(
-      germinationTests: List<GerminationTestModel> = emptyList(),
+      viabilityTests: List<ViabilityTestModel> = emptyList(),
       cutTestSeedsCompromised: Int? = null,
       cutTestSeedsEmpty: Int? = null,
       cutTestSeedsFilled: Int? = null,
@@ -56,14 +56,13 @@ internal class AccessionModelTest {
           total?.let { if (it.grams != null) ProcessingMethod.Weight else ProcessingMethod.Count },
   ): AccessionModel {
     return AccessionModel(
+        id = AccessionId(1L),
         accessionNumber = "dummy",
+        cutTestSeedsCompromised = cutTestSeedsCompromised,
         cutTestSeedsEmpty = cutTestSeedsEmpty,
         cutTestSeedsFilled = cutTestSeedsFilled,
-        cutTestSeedsCompromised = cutTestSeedsCompromised,
         dryingEndDate = dryingEndDate,
         dryingStartDate = dryingStartDate,
-        germinationTests = germinationTests,
-        id = AccessionId(1L),
         processingMethod = processingMethod,
         processingStartDate = processingStartDate,
         source = AccessionSource.Web,
@@ -74,47 +73,48 @@ internal class AccessionModelTest {
         subsetCount = subsetCount,
         subsetWeightQuantity = subsetWeight,
         total = total,
+        viabilityTests = viabilityTests,
         withdrawals = withdrawals,
     )
   }
 
-  private fun nextGerminationTestId(): GerminationTestId {
-    val current = germinationTestId
-    germinationTestId = GerminationTestId(current.value + 1)
+  private fun nextViabilityTestId(): ViabilityTestId {
+    val current = viabilityTestId
+    viabilityTestId = ViabilityTestId(current.value + 1)
     return current
   }
 
-  private fun germinationTest(
-      testType: GerminationTestType = GerminationTestType.Lab,
+  private fun viabilityTest(
+      testType: ViabilityTestType = ViabilityTestType.Lab,
       startDate: LocalDate? = january(1),
       seedsSown: Int? = null,
-      germinations: List<GerminationModel>? = null,
+      testResults: List<ViabilityTestResultModel>? = null,
       remaining: SeedQuantityModel? = null,
-  ): GerminationTestModel {
-    return GerminationTestModel(
+  ): ViabilityTestModel {
+    return ViabilityTestModel(
         accessionId = AccessionId(1),
-        germinations = germinations,
-        id = nextGerminationTestId(),
+        id = nextViabilityTestId(),
         remaining = remaining,
         seedsSown = seedsSown,
         startDate = startDate,
+        testResults = testResults,
         testType = testType,
     )
   }
 
-  private fun nextGerminationId(): GerminationId {
-    val current = germinationId
-    germinationId = GerminationId(current.value + 1)
+  private fun nextViabilityTestResultId(): ViabilityTestResultId {
+    val current = viabilityTestResultId
+    viabilityTestResultId = ViabilityTestResultId(current.value + 1)
     return current
   }
 
-  private fun germination(
+  private fun viabilityTestResult(
       recordingDate: LocalDate = january(2),
       seedsGerminated: Int = 1
-  ): GerminationModel {
-    return GerminationModel(
-        id = nextGerminationId(),
-        testId = germinationTestId,
+  ): ViabilityTestResultModel {
+    return ViabilityTestResultModel(
+        id = nextViabilityTestResultId(),
+        testId = viabilityTestId,
         recordingDate = recordingDate,
         seedsGerminated = seedsGerminated)
   }
@@ -128,9 +128,9 @@ internal class AccessionModelTest {
   private fun withdrawal(
       withdrawn: SeedQuantityModel = seeds(1),
       date: LocalDate = january(3),
-      germinationTestId: GerminationTestId? = null,
+      viabilityTestId: ViabilityTestId? = null,
       purpose: WithdrawalPurpose =
-          if (germinationTestId != null) WithdrawalPurpose.GerminationTesting
+          if (viabilityTestId != null) WithdrawalPurpose.GerminationTesting
           else WithdrawalPurpose.Other,
       remaining: SeedQuantityModel =
           if (withdrawn.units == SeedQuantityUnits.Seeds) seeds(10) else grams(10),
@@ -138,7 +138,7 @@ internal class AccessionModelTest {
     return WithdrawalModel(
         accessionId = AccessionId(1),
         date = date,
-        germinationTestId = germinationTestId,
+        viabilityTestId = viabilityTestId,
         id = nextWithdrawalId(),
         purpose = purpose,
         remaining = remaining,
@@ -151,24 +151,25 @@ internal class AccessionModelTest {
   }
 
   @Nested
-  inner class GerminationTestCalculations {
+  inner class ViabilityTestCalculations {
     @Test
     fun `test without seeds sown is ignored`() {
       val model =
           accession(
               total = seeds(10),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(
-                          germinations =
+                      viabilityTest(
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(2), seedsGerminated = 1),
+                                  viabilityTestResult(
+                                      recordingDate = january(2), seedsGerminated = 1),
                               ),
                       ),
                   ),
           )
 
-      assertNull(model.calculateLatestGerminationRecordingDate(), "Latest germination test date")
+      assertNull(model.calculateLatestViabilityRecordingDate(), "Latest viability test date")
       assertNull(model.calculateLatestViabilityPercent(), "Latest viability percent")
       assertNull(model.calculateTotalViabilityPercent(), "Total viability percent")
     }
@@ -178,67 +179,72 @@ internal class AccessionModelTest {
       val model =
           accession(
               total = seeds(100),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(
-                          testType = GerminationTestType.Lab,
+                      viabilityTest(
+                          testType = ViabilityTestType.Lab,
                           startDate = january(1),
                           seedsSown = 5,
-                          germinations =
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(13), seedsGerminated = 1),
+                                  viabilityTestResult(
+                                      recordingDate = january(13), seedsGerminated = 1),
                               ),
                       ),
-                      germinationTest(
-                          testType = GerminationTestType.Lab,
+                      viabilityTest(
+                          testType = ViabilityTestType.Lab,
                           startDate = january(3),
                           seedsSown = 4,
-                          germinations =
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(14), seedsGerminated = 1),
-                                  germination(recordingDate = january(11), seedsGerminated = 1),
+                                  viabilityTestResult(
+                                      recordingDate = january(14), seedsGerminated = 1),
+                                  viabilityTestResult(
+                                      recordingDate = january(11), seedsGerminated = 1),
                               ),
                       ),
-                      germinationTest(
-                          testType = GerminationTestType.Lab,
+                      viabilityTest(
+                          testType = ViabilityTestType.Lab,
                           startDate = january(8), // most recent start date
                           seedsSown = 3,
-                          germinations =
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(12), seedsGerminated = 3),
+                                  viabilityTestResult(
+                                      recordingDate = january(12), seedsGerminated = 3),
                               ),
                       ),
                   ),
           )
 
       assertEquals(
-          january(14),
-          model.calculateLatestGerminationRecordingDate(),
-          "Latest germination test date")
+          january(14), model.calculateLatestViabilityRecordingDate(), "Latest viability test date")
       assertEquals(50, model.calculateLatestViabilityPercent(), "Latest viability percent")
     }
 
     @Test
-    fun `total viability percentage includes all germination tests and cut test`() {
+    fun `total viability percentage includes all viability tests and cut test`() {
       val model =
           accession(
               total = seeds(30),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(
+                      viabilityTest(
                           seedsSown = 10,
-                          germinations =
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(2), seedsGerminated = 4),
-                                  germination(recordingDate = january(3), seedsGerminated = 3),
+                                  viabilityTestResult(
+                                      recordingDate = january(2), seedsGerminated = 4),
+                                  viabilityTestResult(
+                                      recordingDate = january(3), seedsGerminated = 3),
                               ),
                       ),
-                      germinationTest(
+                      viabilityTest(
                           startDate = january(8),
                           seedsSown = 5,
-                          germinations =
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(9), seedsGerminated = 1),
+                                  viabilityTestResult(
+                                      recordingDate = january(9), seedsGerminated = 1),
                               ),
                       ),
                   ),
@@ -258,7 +264,7 @@ internal class AccessionModelTest {
       val model =
           accession(
               total = seeds(20),
-              germinationTests = listOf(germinationTest(seedsSown = 10)),
+              viabilityTests = listOf(viabilityTest(seedsSown = 10)),
           )
 
       assertNull(model.calculateTotalViabilityPercent())
@@ -269,13 +275,14 @@ internal class AccessionModelTest {
       val missingEmpty =
           accession(
               total = seeds(50),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(
+                      viabilityTest(
                           seedsSown = 10,
-                          germinations =
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(2), seedsGerminated = 4),
+                                  viabilityTestResult(
+                                      recordingDate = january(2), seedsGerminated = 4),
                               ),
                       ),
                   ),
@@ -307,21 +314,24 @@ internal class AccessionModelTest {
       val model =
           accession(
               total = seeds(10),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(
+                      viabilityTest(
                           seedsSown = 1,
-                          germinations =
+                          testResults =
                               listOf(
-                                  germination(recordingDate = january(3), seedsGerminated = 1),
-                                  germination(recordingDate = january(4), seedsGerminated = 2),
-                                  germination(recordingDate = january(2), seedsGerminated = 3),
+                                  viabilityTestResult(
+                                      recordingDate = january(3), seedsGerminated = 1),
+                                  viabilityTestResult(
+                                      recordingDate = january(4), seedsGerminated = 2),
+                                  viabilityTestResult(
+                                      recordingDate = january(2), seedsGerminated = 3),
                               ),
                       ),
                   ),
           )
 
-      assertEquals(january(4), model.calculateLatestGerminationRecordingDate())
+      assertEquals(january(4), model.calculateLatestViabilityRecordingDate())
     }
   }
 
@@ -354,18 +364,18 @@ internal class AccessionModelTest {
         accession(
             processingMethod = ProcessingMethod.Count,
             total = seeds(1),
-            germinationTests = listOf(germinationTest(seedsSown = 1)),
+            viabilityTests = listOf(viabilityTest(seedsSown = 1)),
             withdrawals = listOf(withdrawal(withdrawn = seeds(1), date = tomorrow)))
       }
     }
 
     @Test
     fun `cannot specify negative seeds remaining for weight-based accessions`() {
-      assertThrows<IllegalArgumentException>("germination tests") {
+      assertThrows<IllegalArgumentException>("Viability tests") {
         accession(
             processingMethod = ProcessingMethod.Weight,
             total = grams(1),
-            germinationTests = listOf(germinationTest(seedsSown = 1, remaining = grams(-1))))
+            viabilityTests = listOf(viabilityTest(seedsSown = 1, remaining = grams(-1))))
       }
 
       assertThrows<IllegalArgumentException>("withdrawals") {
@@ -433,11 +443,11 @@ internal class AccessionModelTest {
       val accession =
           accession(
               total = grams(100),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(remaining = grams(99)),
-                      germinationTest(remaining = grams(90)),
-                      germinationTest(remaining = grams(96)),
+                      viabilityTest(remaining = grams(99)),
+                      viabilityTest(remaining = grams(90)),
+                      viabilityTest(remaining = grams(96)),
                   ),
               withdrawals =
                   listOf(
@@ -450,15 +460,15 @@ internal class AccessionModelTest {
     }
 
     @Test
-    fun `calculateRemaining uses value from germination test if it is the lowest one`() {
+    fun `calculateRemaining uses value from viability test if it is the lowest one`() {
       val accession =
           accession(
               total = grams(100),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(remaining = grams(99)),
-                      germinationTest(remaining = grams(90)),
-                      germinationTest(remaining = grams(96)),
+                      viabilityTest(remaining = grams(99)),
+                      viabilityTest(remaining = grams(90)),
+                      viabilityTest(remaining = grams(96)),
                   ),
               withdrawals =
                   listOf(
@@ -481,13 +491,13 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals updates remaining amounts based on tests`() {
-      val germinationTest = germinationTest(remaining = grams(50))
+      val viabilityTest = viabilityTest(remaining = grams(50))
       val accession =
           accession(
               total = grams(100),
-              germinationTests = listOf(germinationTest),
+              viabilityTests = listOf(viabilityTest),
               withdrawals =
-                  listOf(withdrawal(germinationTestId = germinationTest.id, remaining = grams(70))))
+                  listOf(withdrawal(viabilityTestId = viabilityTest.id, remaining = grams(70))))
 
       val withdrawals = accession.calculateWithdrawals(clock)
 
@@ -505,18 +515,18 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals looks in caller-supplied withdrawal list for test withdrawals`() {
-      val germinationTest = germinationTest(remaining = grams(95))
-      val existingWithdrawalForTest = withdrawal(grams(5), germinationTestId = germinationTest.id)
+      val viabilityTest = viabilityTest(remaining = grams(95))
+      val existingWithdrawalForTest = withdrawal(grams(5), viabilityTestId = viabilityTest.id)
       val otherExistingWithdrawal = withdrawal(grams(1))
 
       val accession =
           accession(
               total = grams(100),
-              germinationTests = listOf(germinationTest),
+              viabilityTests = listOf(viabilityTest),
               withdrawals =
                   listOf(
                       otherExistingWithdrawal.copy(
-                          germinationTestId = germinationTest.id,
+                          viabilityTestId = viabilityTest.id,
                           purpose = WithdrawalPurpose.GerminationTesting)))
 
       val withdrawals =
@@ -565,12 +575,12 @@ internal class AccessionModelTest {
     @Nested
     inner class TimeBasedWeightCalculations {
       private val futureTest =
-          germinationTest(seedsSown = 8, startDate = tomorrow, remaining = grams(85))
+          viabilityTest(seedsSown = 8, startDate = tomorrow, remaining = grams(85))
       private val futureTestWithdrawal =
           withdrawal(
               grams(8),
               date = tomorrow,
-              germinationTestId = futureTest.id,
+              viabilityTestId = futureTest.id,
               purpose = WithdrawalPurpose.GerminationTesting,
               remaining = grams(85),
           )
@@ -587,7 +597,7 @@ internal class AccessionModelTest {
         val accession =
             accession(
                 total = grams(100),
-                germinationTests = listOf(futureTest),
+                viabilityTests = listOf(futureTest),
                 withdrawals =
                     listOf(
                         withdrawal(grams(1), date = yesterday, remaining = grams(99)),
@@ -600,13 +610,12 @@ internal class AccessionModelTest {
       }
 
       @Test
-      fun `calculateTotalPastWithdrawalQuantity includes withdrawals and germination tests`() {
+      fun `calculateTotalPastWithdrawalQuantity includes withdrawals and viability tests`() {
         val accession =
             accession(
                 total = grams(100),
-                germinationTests =
-                    listOf(
-                        germinationTest(seedsSown = 1, startDate = today, remaining = grams(96))),
+                viabilityTests =
+                    listOf(viabilityTest(seedsSown = 1, startDate = today, remaining = grams(96))),
                 withdrawals =
                     listOf(
                         withdrawal(grams(1), date = yesterday, remaining = grams(99)),
@@ -621,7 +630,7 @@ internal class AccessionModelTest {
         val accession =
             accession(
                 total = grams(100),
-                germinationTests = listOf(futureTest),
+                viabilityTests = listOf(futureTest),
                 withdrawals =
                     listOf(
                         withdrawal(grams(1), date = yesterday, remaining = grams(99)),
@@ -654,7 +663,7 @@ internal class AccessionModelTest {
         val accession =
             accession(
                 total = grams(100),
-                germinationTests = listOf(futureTest),
+                viabilityTests = listOf(futureTest),
                 withdrawals =
                     listOf(
                         withdrawal(grams(1), date = yesterday, remaining = grams(99)),
@@ -671,7 +680,7 @@ internal class AccessionModelTest {
         val accession =
             accession(
                 total = grams(100),
-                germinationTests = listOf(futureTest),
+                viabilityTests = listOf(futureTest),
                 withdrawals =
                     listOf(
                         withdrawal(grams(1), date = yesterday, remaining = grams(99)),
@@ -724,13 +733,13 @@ internal class AccessionModelTest {
     }
 
     @Test
-    fun `germination test seeds sown are subtracted from seeds remaining`() {
+    fun `viability test seeds sown are subtracted from seeds remaining`() {
       val accession =
           accession(
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(seedsSown = 10),
-                      germinationTest(seedsSown = 5),
+                      viabilityTest(seedsSown = 10),
+                      viabilityTest(seedsSown = 5),
                   ),
               total = seeds(40),
           )
@@ -753,7 +762,7 @@ internal class AccessionModelTest {
     }
 
     @Test
-    fun `withdrawals for germination testing without corresponding tests are not subtracted from seeds remaining`() {
+    fun `withdrawals for viability testing without corresponding tests are not subtracted from seeds remaining`() {
       val accession =
           accession(
               total = seeds(100),
@@ -771,13 +780,13 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals updates seeds remaining on tests`() {
-      val testWithExistingWithdrawal = germinationTest(seedsSown = 4, startDate = january(2))
+      val testWithExistingWithdrawal = viabilityTest(seedsSown = 4, startDate = january(2))
       val accession =
           accession(
               total = seeds(100),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(seedsSown = 8, startDate = january(4)),
+                      viabilityTest(seedsSown = 8, startDate = january(4)),
                       testWithExistingWithdrawal,
                   ),
               withdrawals =
@@ -785,7 +794,7 @@ internal class AccessionModelTest {
                       WithdrawalModel(
                           accessionId = AccessionId(1),
                           date = january(15), // different from test date
-                          germinationTestId = testWithExistingWithdrawal.id,
+                          viabilityTestId = testWithExistingWithdrawal.id,
                           id = nextWithdrawalId(),
                           purpose = WithdrawalPurpose.GerminationTesting,
                           remaining = seeds(0),
@@ -798,7 +807,7 @@ internal class AccessionModelTest {
       val withdrawals = accession.calculateWithdrawals(clock)
       assertEquals(
           listOf<SeedQuantityModel>(seeds(96), seeds(86)),
-          withdrawals.mapNotNull { it.germinationTest?.remaining })
+          withdrawals.mapNotNull { it.viabilityTest?.remaining })
     }
 
     @Test
@@ -806,10 +815,10 @@ internal class AccessionModelTest {
       val accession =
           accession(
               total = seeds(100),
-              germinationTests =
+              viabilityTests =
                   listOf(
-                      germinationTest(seedsSown = 4, startDate = january(2)),
-                      germinationTest(seedsSown = 8, startDate = january(4)),
+                      viabilityTest(seedsSown = 4, startDate = january(2)),
+                      viabilityTest(seedsSown = 8, startDate = january(4)),
                   ),
               withdrawals =
                   listOf(
@@ -826,13 +835,13 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals retains withdrawal date if test is undated`() {
-      val test = germinationTest(seedsSown = 1, startDate = null)
+      val test = viabilityTest(seedsSown = 1, startDate = null)
       val accession =
           accession(
               total = seeds(100),
-              germinationTests = listOf(test),
+              viabilityTests = listOf(test),
               withdrawals =
-                  listOf(withdrawal(seeds(1), date = january(15), germinationTestId = test.id)),
+                  listOf(withdrawal(seeds(1), date = january(15), viabilityTestId = test.id)),
           )
 
       val withdrawals = accession.calculateWithdrawals(clock)
@@ -841,13 +850,13 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals updates withdrawal date based on updated test date`() {
-      val test = germinationTest(seedsSown = 1, startDate = january(5))
+      val test = viabilityTest(seedsSown = 1, startDate = january(5))
       val accession =
           accession(
               total = seeds(100),
-              germinationTests = listOf(test),
+              viabilityTests = listOf(test),
               withdrawals =
-                  listOf(withdrawal(seeds(1), date = january(15), germinationTestId = test.id)),
+                  listOf(withdrawal(seeds(1), date = january(15), viabilityTestId = test.id)),
           )
 
       val withdrawals = accession.calculateWithdrawals(clock)
@@ -860,33 +869,31 @@ internal class AccessionModelTest {
     @Test
     fun `calculateWithdrawals generates withdrawals for tests without seedsSown values`() {
       val accession =
-          accession(
-              total = seeds(100), germinationTests = listOf(germinationTest(seedsSown = null)))
+          accession(total = seeds(100), viabilityTests = listOf(viabilityTest(seedsSown = null)))
 
       val withdrawals = accession.calculateWithdrawals(clock)
       assertEquals(1, withdrawals.size, "Number of generated withdrawals")
       assertEquals(
-          accession.germinationTests[0].id,
-          withdrawals[0].germinationTestId,
-          "Withdrawal should refer to germination test")
+          accession.viabilityTests[0].id,
+          withdrawals[0].viabilityTestId,
+          "Withdrawal should refer to viability test")
       assertNull(withdrawals[0].withdrawn, "Withdrawal amount")
     }
 
     @Nested
     inner class TimeBasedCalculations {
-      private val germinationTest = germinationTest(seedsSown = 8, startDate = tomorrow)
+      private val viabilityTest = viabilityTest(seedsSown = 8, startDate = tomorrow)
 
       private val accession =
           accession(
               total = seeds(100),
-              germinationTests = listOf(germinationTest),
+              viabilityTests = listOf(viabilityTest),
               withdrawals =
                   listOf(
                       withdrawal(seeds(1), date = yesterday),
                       withdrawal(seeds(2), date = today),
                       withdrawal(seeds(4), date = tomorrow),
-                      withdrawal(
-                          seeds(8), date = tomorrow, germinationTestId = germinationTest.id)))
+                      withdrawal(seeds(8), date = tomorrow, viabilityTestId = viabilityTest.id)))
 
       @Test
       fun `calculateTotalPastWithdrawalQuantity does not count scheduled withdrawals`() {

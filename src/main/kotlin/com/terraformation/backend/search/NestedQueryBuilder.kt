@@ -52,11 +52,11 @@ import org.jooq.impl.DSL
  * INSERT INTO bags (accession_id, number) VALUES (3, 'First bag for accession 3');
  * INSERT INTO bags (accession_id, number) VALUES (3, 'Second bag for accession 3');
  *
- * INSERT INTO germination_tests (id, accession_id, start_date) VALUES (5, 3, '2021-10-01');
- * INSERT INTO germination_tests (id, accession_id, start_date) VALUES (6, 3, '2021-10-15');
+ * INSERT INTO viability_tests (id, accession_id, start_date) VALUES (5, 3, '2021-10-01');
+ * INSERT INTO viability_tests (id, accession_id, start_date) VALUES (6, 3, '2021-10-15');
  *
- * INSERT INTO germinations (test_id, seeds_germinated) VALUES (5, 10);
- * INSERT INTO germinations (test_id, seeds_germinated) VALUES (5, 20);
+ * INSERT INTO viability_test_results (test_id, seeds_germinated) VALUES (5, 10);
+ * INSERT INTO viability_test_results (test_id, seeds_germinated) VALUES (5, 20);
  * ```
  *
  * This represents the following hierarchy.
@@ -66,10 +66,10 @@ import org.jooq.impl.DSL
  *   - Accession ID 3, species 1 "First Species"
  *      - Bag number "First bag for accession 3"
  *      - Bag number "Second bag for accession 3"
- *      - Germination Test 5, start date 2021-10-01
- *        - Germination, 10 seeds germinated
- *        - Germination, 20 seeds germinated
- *      - Germination Test 6, start date 2021-10-15
+ *      - Viability Test 5, start date 2021-10-01
+ *        - Test Result, 10 seeds germinated
+ *        - Test Result, 20 seeds germinated
+ *      - Viability Test 6, start date 2021-10-15
  *   - Accession ID 4, species 2 "Second Species", no bags or tests
  * ```
  *
