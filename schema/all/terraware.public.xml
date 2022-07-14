@@ -4,20 +4,6 @@
       <sequence increment="1" name="accession_number_seq" startValue="1"/>
    </sequences>
    <tables>
-      <table name="accession_germination_test_types" numRows="0" remarks="(Enum) Types of tests that can be performed on seeds to determine whether or not they successfully germinate" schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="accession_germination_test_type_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="germination_test_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="accession_germination_test_type_germination_test_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_test_types"/>
-         </column>
-         <primaryKey column="accession_id" sequenceNumberInPK="1"/>
-         <primaryKey column="germination_test_type_id" sequenceNumberInPK="2"/>
-         <index name="accession_germination_test_type_pkey" unique="true">
-            <column ascending="true" name="accession_id"/>
-            <column ascending="true" name="germination_test_type_id"/>
-         </index>
-      </table>
       <table name="accession_photos" numRows="0" remarks="Linking table between `accessions` and `photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
@@ -77,15 +63,29 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="accession_viability_test_types" numRows="0" remarks="(Enum) Types of tests that can be performed on seeds to determine whether or not they successfully germinate" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accession_viability_test_types_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="viability_test_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="accession_germination_test_type_germination_test_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_test_types"/>
+         </column>
+         <primaryKey column="accession_id" sequenceNumberInPK="1"/>
+         <primaryKey column="viability_test_type_id" sequenceNumberInPK="2"/>
+         <index name="accession_viability_test_types_pkey" unique="true">
+            <column ascending="true" name="accession_id"/>
+            <column ascending="true" name="viability_test_type_id"/>
+         </index>
+      </table>
       <table name="accessions" numRows="0" remarks="Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="accession_id" foreignKey="accession_germination_test_type_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_germination_test_types"/>
             <child column="accession_id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_photos"/>
             <child column="accession_id" foreignKey="accession_secondary_collector_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_secondary_collectors"/>
             <child column="accession_id" foreignKey="accession_state_history_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_state_history"/>
+            <child column="accession_id" foreignKey="accession_viability_test_types_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_viability_test_types"/>
             <child column="accession_id" foreignKey="bag_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="bags"/>
             <child column="accession_id" foreignKey="collection_event_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="geolocations"/>
-            <child column="accession_id" foreignKey="germination_test_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
+            <child column="accession_id" foreignKey="viability_tests_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
             <child column="accession_id" foreignKey="withdrawal_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -486,105 +486,6 @@
             <column ascending="true" name="accession_id"/>
          </index>
       </table>
-      <table name="germination_seed_types" numRows="2" remarks="(Enum) Types of seeds that can be tested for germination ability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="seed_type_id" foreignKey="germination_test_seed_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_seed_type_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="germination_substrates" numRows="4" remarks="(Enum) Types of substrate that can be used to test seeds for germination ability." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="substrate_id" foreignKey="germination_test_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_substrate_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="germination_test_types" numRows="2" remarks="(Enum) Types of tests that can be performed on seeds to check for germination ability." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="germination_test_type_id" foreignKey="accession_germination_test_type_germination_test_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_germination_test_types"/>
-            <child column="test_type" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_test_type_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="germination_test_type_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="germination_tests" numRows="0" remarks="Information about a single batch of seeds being tested for germination ability. This is the information about the test itself; the results are represented in the `germinations` table." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="test_id" foreignKey="germination_test_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germinations"/>
-            <child column="germination_test_id" foreignKey="withdrawal_germination_test_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="withdrawals"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="germination_test_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="test_type" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_test_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="seed_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="germination_test_seed_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_seed_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="substrate_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="germination_test_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_substrates"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="treatment_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_treatments"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="seeds_sown" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="total_seeds_germinated" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="total_percent_germinated" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="remaining_quantity" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="remaining_units_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="germination_test_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_test_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="germination_test__accession_id_ix" unique="false">
-            <column ascending="true" name="accession_id"/>
-         </index>
-      </table>
-      <table name="germination_treatments" numRows="5" remarks="(Enum) Techniques that can be used to treat seeds before testing them for germination ability." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="treatment_id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_treatment_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-      </table>
-      <table name="germinations" numRows="0" remarks="Result from a germination test of a batch of seeds. Germination tests can have multiple germinations, e.g., if different seeds germinate on different days." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="test_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="germination_test_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="recording_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="seeds_germinated" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="germination_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="germination__test_id_ix" unique="false">
-            <column ascending="true" name="test_id"/>
-         </index>
-      </table>
       <table name="growth_forms" numRows="5" remarks="(Enum) What physical form a particular species takes. For example, &quot;Tree&quot; or &quot;Shrub.&quot;" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="growth_form_id" foreignKey="species_growth_form_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -772,7 +673,7 @@
             <child column="remaining_units_id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="subset_weight_units_id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="total_units_id" foreignKey="accession_total_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-            <child column="remaining_units_id" foreignKey="germination_test_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="germination_tests"/>
+            <child column="remaining_units_id" foreignKey="germination_test_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
             <child column="remaining_units_id" foreignKey="withdrawal_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
             <child column="withdrawn_units_id" foreignKey="withdrawal_withdrawn_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
          </column>
@@ -1177,6 +1078,105 @@
             <column ascending="true" name="email"/>
          </index>
       </table>
+      <table name="viability_test_results" numRows="0" remarks="Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="test_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="viability_test_results_test_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="recording_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="seeds_germinated" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="viability_test_results_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="viability_test_results__test_id_ix" unique="false">
+            <column ascending="true" name="test_id"/>
+         </index>
+      </table>
+      <table name="viability_test_seed_types" numRows="2" remarks="(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="seed_type_id" foreignKey="germination_test_seed_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="germination_seed_type_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="viability_test_substrates" numRows="4" remarks="(Enum) Types of substrate that can be used to test seeds for viability." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="substrate_id" foreignKey="germination_test_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="germination_substrate_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="viability_test_treatments" numRows="5" remarks="(Enum) Techniques that can be used to treat seeds before testing them for viability." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="treatment_id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="germination_treatment_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="viability_test_types" numRows="2" remarks="(Enum) Types of tests that can be performed on seeds to check for viability." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="viability_test_type_id" foreignKey="accession_germination_test_type_germination_test_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_viability_test_types"/>
+            <child column="test_type" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="germination_test_type_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="germination_test_type_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="viability_tests" numRows="0" remarks="Information about a single batch of seeds being tested for viability. This is the information about the test itself; the results are represented in the `viability_test_results` table." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="test_id" foreignKey="viability_test_results_test_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_test_results"/>
+            <child column="viability_test_id" foreignKey="withdrawals_viability_test_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="withdrawals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="viability_tests_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="test_type" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_test_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="start_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="seed_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="germination_test_seed_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_test_seed_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="substrate_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="germination_test_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_test_substrates"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="treatment_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_test_treatments"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="seeds_sown" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="staff_responsible" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="total_seeds_germinated" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="total_percent_germinated" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="end_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="remaining_quantity" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="remaining_units_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="germination_test_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="viability_tests_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="viability_test__accession_id_ix" unique="false">
+            <column ascending="true" name="accession_id"/>
+         </index>
+      </table>
       <table name="withdrawal_purposes" numRows="7" remarks="(Enum) Reasons that someone can withdraw seeds from a seed bank." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="purpose_id" foreignKey="withdrawal_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
@@ -1201,8 +1201,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="updated_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="germination_test_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="withdrawal_germination_test_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="germination_tests"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="viability_test_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_viability_test_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="remaining_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="remaining_quantity" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
@@ -1224,10 +1224,10 @@
          <index name="withdrawal__date_ix" unique="false">
             <column ascending="true" name="date"/>
          </index>
-         <index name="withdrawal_germination_test_id_unique" unique="true">
-            <column ascending="true" name="germination_test_id"/>
+         <index name="withdrawals_viability_test_id_unique" unique="true">
+            <column ascending="true" name="viability_test_id"/>
          </index>
-         <checkConstraint constraint="((((purpose_id &lt;&gt; 7) AND (germination_test_id IS NULL)) OR ((purpose_id = 7) AND (germination_test_id IS NOT NULL))))" name="germination_testing_withdrawal_has_test_id"/>
+         <checkConstraint constraint="((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))" name="withdrawals_viability_testing_has_test_id"/>
       </table>
    </tables>
    <routines>
