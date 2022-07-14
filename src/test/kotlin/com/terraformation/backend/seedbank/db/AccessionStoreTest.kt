@@ -52,10 +52,11 @@ import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
-import com.terraformation.backend.seedbank.api.GerminationPayload
-import com.terraformation.backend.seedbank.api.GerminationTestPayload
+import com.terraformation.backend.seedbank.api.ExternalWithdrawalPurpose
 import com.terraformation.backend.seedbank.api.SeedQuantityPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
+import com.terraformation.backend.seedbank.api.ViabilityTestPayload
+import com.terraformation.backend.seedbank.api.ViabilityTestResultPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.kilograms
@@ -382,9 +383,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         initial
             .toUpdatePayload()
             .copy(
-                germinationTests =
+                viabilityTests =
                     listOf(
-                        GerminationTestPayload(
+                        ViabilityTestPayload(
                             testType = ViabilityTestType.Lab, startDate = startDate)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
@@ -455,7 +456,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `existing viability tests are updated`() {
     val initial = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
@@ -495,9 +496,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `change to viability test weight remaining is propagated to withdrawal and accession`() {
     val initial = createAndUpdate {
       it.copy(
-          germinationTests =
+          viabilityTests =
               listOf(
-                  GerminationTestPayload(
+                  ViabilityTestPayload(
                       testType = ViabilityTestType.Lab, remainingQuantity = grams(75))),
           initialQuantity = grams(100),
           processingMethod = ProcessingMethod.Weight,
@@ -544,13 +545,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `cannot update viability test from a different accession`() {
     val other = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Nursery)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Nursery)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
     val initial = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
@@ -575,7 +576,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val initial = createAndUpdate {
       it.copy(
-          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(200))
     }
@@ -620,15 +621,16 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       it.copy(
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(2000),
-          germinationTests =
+          viabilityTests =
               listOf(
-                  GerminationTestPayload(
+                  ViabilityTestPayload(
                       testType = ViabilityTestType.Lab,
                       seedsSown = 1000,
-                      germinations =
+                      testResults =
                           listOf(
-                              GerminationPayload(recordingDate = localDate, seedsGerminated = 75),
-                              GerminationPayload(
+                              ViabilityTestResultPayload(
+                                  recordingDate = localDate, seedsGerminated = 75),
+                              ViabilityTestResultPayload(
                                   recordingDate = localDate.plusDays(1), seedsGerminated = 456)))))
     }
 
@@ -1266,7 +1268,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               listOf(
                   WithdrawalPayload(
                       date = LocalDate.EPOCH,
-                      purpose = WithdrawalPurpose.Other,
+                      purpose = ExternalWithdrawalPurpose.Other,
                       withdrawnQuantity = seeds(10))))
     }
 
@@ -1326,8 +1328,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       it.copy(
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100),
-          germinationTests =
-              listOf(GerminationTestPayload(testType = ViabilityTestType.Lab, seedsSown = 10)))
+          viabilityTests =
+              listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab, seedsSown = 10)))
     }
 
     assertEquals(
@@ -1358,7 +1360,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       it.copy(
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(10),
-          germinationTests = listOf(GerminationTestPayload(testType = ViabilityTestType.Lab)))
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)))
     }
 
     assertThrows<IllegalArgumentException> {
@@ -1376,7 +1378,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               listOf(
                   WithdrawalPayload(
                       date = LocalDate.EPOCH,
-                      purpose = WithdrawalPurpose.Other,
+                      purpose = ExternalWithdrawalPurpose.Other,
                       remainingQuantity = grams(5))))
     }
 
@@ -1424,6 +1426,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             siteLocation = "siteLocation",
             sourcePlantOrigin = SourcePlantOrigin.Wild,
             species = "species",
+            viabilityTestTypes = setOf(ViabilityTestType.Lab),
         )
 
     val createPayloadProperties = CreateAccessionRequestPayload::class.declaredMemberProperties
@@ -1472,7 +1475,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             germinationTestTypes = setOf(ViabilityTestType.Lab),
             germinationTests =
                 listOf(
-                    GerminationTestPayload(
+                    ViabilityTestPayload(
                         remainingQuantity = grams(10),
                         testType = ViabilityTestType.Lab,
                         startDate = today)),
@@ -1499,11 +1502,18 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             subsetCount = 32,
             subsetWeight = grams(33),
             targetStorageCondition = StorageCondition.Freezer,
+            viabilityTests =
+                listOf(
+                    ViabilityTestPayload(
+                        remainingQuantity = grams(10),
+                        testType = ViabilityTestType.Lab,
+                        startDate = today)),
+            viabilityTestTypes = setOf(ViabilityTestType.Lab),
             withdrawals =
                 listOf(
                     WithdrawalPayload(
                         date = today,
-                        purpose = WithdrawalPurpose.Other,
+                        purpose = ExternalWithdrawalPurpose.Other,
                         destination = "destination",
                         notes = "notes",
                         remainingQuantity = grams(42),
@@ -1838,9 +1848,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       it.copy(
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(10),
-          germinationTests =
+          viabilityTests =
               listOf(
-                  GerminationTestPayload(
+                  ViabilityTestPayload(
                       testType = ViabilityTestType.Lab,
                       startDate = LocalDate.of(2021, 4, 1),
                       seedsSown = 5)))
@@ -1864,8 +1874,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         fieldNotes = fieldNotes,
         founderId = founderId,
         geolocations = geolocations,
-        germinationTests = viabilityTests.map { GerminationTestPayload(it) },
-        germinationTestTypes = viabilityTestTypes,
         initialQuantity = total?.let { SeedQuantityPayload(it) },
         landowner = landowner,
         numberOfTrees = numberOfTrees,
@@ -1889,6 +1897,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         subsetCount = subsetCount,
         subsetWeight = subsetWeightQuantity?.let { SeedQuantityPayload(it) },
         targetStorageCondition = targetStorageCondition,
+        viabilityTests = viabilityTests.map { ViabilityTestPayload(it) },
+        viabilityTestTypes = viabilityTestTypes,
         withdrawals = withdrawals.map { WithdrawalPayload(it) },
     )
   }

@@ -85,17 +85,17 @@ import org.jooq.impl.DSL
  *         rootPrefix.resolve("speciesName"),
  *         rootPrefix.resolve("bags.number"),
  *         rootPrefix.resolve("facility.name"),
- *         rootPrefix.resolve("germinationTests.startDate"),
- *         rootPrefix.resolve("germinationTests.germinations.seedsGerminated")))
+ *         rootPrefix.resolve("viabilityTests.startDate"),
+ *         rootPrefix.resolve("viabilityTests.viabilityTestResults.seedsGerminated")))
  *
  * // You can sort on fields you didn't select, and vice versa, though we won't do that here just
  * // to keep the example easier to follow.
  * queryBuilder.addSortFields(
  *     listOf(
  *         SearchSortField(rootPrefix.resolve("speciesName")),
- *         SearchSortField(rootPrefix.resolve("germinationTests.startDate")),
+ *         SearchSortField(rootPrefix.resolve("viabilityTests.startDate")),
  *         SearchSortField(rootPrefix.resolve("bags.number")),
- *         SearchSortField(rootPrefix.resolve("germinationTests.germinations.seedsGerminated"))))
+ *         SearchSortField(rootPrefix.resolve("viabilityTests.viabilityTestResults.seedsGerminated"))))
  *
  * val results = queryBuilder.toSelectQuery().fetch()
  * ```
@@ -119,12 +119,12 @@ import org.jooq.impl.DSL
  *       # This is a single value, not a list, since an accession only ever has one facility.
  *       "name": "My Seed Bank"
  *     },
- *     "germinationTests": [
- *       # The first sort field under "germinationTests" is the start date, so this list is sorted
+ *     "viabilityTests": [
+ *       # The first sort field under "viabilityTests" is the start date, so this list is sorted
  *       # in ascending start date order.
  *       {
- *         "germinations": [
- *           # The first sort field under "germinationTests.germinations" is "seedsGerminated",
+ *         "viabilityTestResults": [
+ *           # The first sort field under "viabilityTests.viabilityTestResults" is "seedsGerminated",
  *           # so this list is sorted by that.
  *           { "seedsGerminated": "10" },
  *           { "seedsGerminated": "20" }
@@ -165,7 +165,7 @@ import org.jooq.impl.DSL
  * Scalar fields are single values, and are always represented as strings in the search results.
  * Scalar field values are either directly stored on main tables (e.g., `accessions.total_quantity`)
  * or are represented as foreign key columns on main tables and looked up from reference tables
- * (e.g., `germination_tests.seed_type_id`.)
+ * (e.g., `viability_tests.seed_type_id`.)
  *
  * Sublist fields, as the name suggests, are containers with their own lists of fields. They come in
  * two flavors: "multi-value" and "single-value." A multi-value sublist turns into a list of JSON
@@ -178,14 +178,14 @@ import org.jooq.impl.DSL
  * Sublist fields aren't directly searchable; they are just containers for scalar fields.
  *
  * A nested sublist field is identified by the presence of a `.` in its name. For example, the field
- * `germinationTests.germinations.recordingDate` represents a sublist field called
- * `germinationTests` each element of which contains a sublist field called `germinations` each
- * element of which contains a scalar field called `recordingDate`.
+ * `viabilityTests.viabilityTestResults.recordingDate` represents a sublist field called
+ * `viabilityTests` each element of which contains a sublist field called `viabilityTestResults`
+ * each element of which contains a scalar field called `recordingDate`.
  *
  * A field name is represented as a [SearchFieldPath] which consists of a prefix and a scalar field.
  * The prefix is represented as a [SearchFieldPrefix] and includes a list of sublist fields which
- * form a path to the location of the scalar field (`germinationTests` and `germinations` in the
- * above example). The prefix also includes a "root table" (in the form of a [SearchTable]) that
+ * form a path to the location of the scalar field (`viabilityTests` and `viabilityTestResults` in
+ * the above example). The prefix also includes a "root table" (in the form of a [SearchTable]) that
  * identifies where in the application's data model the prefix begins. In the example, the root
  * table would indicate that the fields are all under the "accessions" part of the data model.
  *
@@ -195,7 +195,7 @@ import org.jooq.impl.DSL
  * # This is the root table; everything else is relative to it.
  * cd /organizations/projects/sites/facilities/accessions
  * # This is two sublist fields followed by a scalar field.
- * cat germinationTests/germinations/recordingDate
+ * cat viabilityTests/viabilityTestResults/recordingDate
  * ```
  *
  * ## Query hierarchy
@@ -204,8 +204,8 @@ import org.jooq.impl.DSL
  * as a whole, and each child node represents the query for a sublist field. Each node has a
  * [SearchFieldPrefix].
  *
- * For example, a search field of `germinationTests.germinations.recordingDate` with a root table of
- * `accessions` would be turned into a structure something like this YAML document:
+ * For example, a search field of `viabilityTests.viabilityTestResults.recordingDate` with a root
+ * table of `accessions` would be turned into a structure something like this YAML document:
  *
  * ```yaml
  * prefix:
@@ -213,29 +213,29 @@ import org.jooq.impl.DSL
  *   sublists: []
  * scalarFields: []
  * sublistQueryBuilders:
- *   germinationTests:
+ *   viabilityTests:
  *     prefix:
- *       # This prefix refers to the germinationTests sublist under accessions; the root
+ *       # This prefix refers to the viabilityTests sublist under accessions; the root
  *       # is the same as the parent's root.
  *       root: accessions
- *       sublists: [germinationTests]
+ *       sublists: [viabilityTests]
  *     scalarFields: []
  *     sublistQueryBuilders:
- *       germinations:
+ *       viabilityTestResults:
  *         prefix:
- *           # This prefix refers to the germinations sublist under the germinationTests
+ *           # This prefix refers to the viabilityTestResults sublist under the viabilityTests
  *           # sublist under accessions. As before, the root is the same as the parent's.
  *           root: accessions
- *           sublists: [germinationTests, germinations]
+ *           sublists: [viabilityTests, viabilityTestResults]
  *         scalarFields: [recordingDate]
  *         sublistQueryBuilders: []
  * ```
  *
  * Field names are always evaluated relative to the current node (that is, the prefix is stripped
  * off to get a relative name). So for example, the middle node in the above hierarchy strips off
- * its prefix and treats the search field as having a name of `germinations.recordingDate`. Because
- * that name contains a `.` character, the middle node needs to peel off the part before the `.` and
- * treat the field as a sublist called `germinations`.
+ * its prefix and treats the search field as having a name of `viabilityTestResults.recordingDate`.
+ * Because that name contains a `.` character, the middle node needs to peel off the part before the
+ * `.` and treat the field as a sublist called `viabilityTestResults`.
  *
  * The examples in this document treat field names as string values. Although the client-facing API
  * accepts field names as period-separated strings, internally they are represented as
@@ -254,8 +254,8 @@ import org.jooq.impl.DSL
  * Conceptually, this works kind of like the examples in the docs: it constructs a query on the
  * database table for the root [SearchTable] where the list of fields includes [DSL.multiset] values
  * that hold child records. Those child records can, in turn, have their own multiset fields if they
- * themselves have children, e.g., an accession has germination tests each of which has
- * germinations.
+ * themselves have children, e.g., an accession has viability tests each of which has
+ * viabilityTestResults.
  *
  * Under the covers, on PostgreSQL, jOOQ turns a multiset into an aggregation operation over a
  * subquery. The aggregation function returns a JSON array where each element of the array
@@ -498,8 +498,8 @@ class NestedQueryBuilder(
     private val dslContext: DSLContext,
     /**
      * Field path covered by this node. For example, the node that contains the field
-     * `germinationTests.germinations.seedsSown` would have a prefix of
-     * `germinationTests.germinations`. Must be an absolute path.
+     * `viabilityTests.viabilityTestResults.seedsSown` would have a prefix of
+     * `viabilityTests.viabilityTestResults`. Must be an absolute path.
      */
     private val prefix: SearchFieldPrefix,
 ) {
@@ -525,8 +525,8 @@ class NestedQueryBuilder(
   /**
    * Sublists the caller wants to flatten in the search results or in sort criteria. If the caller
    * asks for a field whose path has multiple flattened sublists, they are all included here. For
-   * example, if the caller asks for `germinationTests_germinations_recordingDate`, this set will
-   * include both `germinationTests` and `germinations`.
+   * example, if the caller asks for `viabilityTests_viabilityTestResults_recordingDate`, this set
+   * will include both `viabilityTests` and `viabilityTestResults`.
    */
   private val flattenedSublists = mutableSetOf<SublistField>()
 

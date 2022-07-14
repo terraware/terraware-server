@@ -8,8 +8,8 @@ import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
 import com.terraformation.backend.search.api.SearchResponsePayload
 import com.terraformation.backend.seedbank.api.AccessionPayload
-import com.terraformation.backend.seedbank.api.GerminationTestPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
+import com.terraformation.backend.seedbank.api.ViabilityTestPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
@@ -144,7 +144,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
     val payloadClasses =
         listOf(
             AccessionPayload::class,
-            GerminationTestPayload::class,
+            ViabilityTestPayload::class,
             UpdateAccessionRequestPayload::class,
             WithdrawalPayload::class,
         )

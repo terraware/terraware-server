@@ -50,6 +50,8 @@ class AccessionsTable(private val tables: SearchTables) : SearchTable() {
               "storageLocation",
               ACCESSIONS.STORAGE_LOCATION_ID.eq(STORAGE_LOCATIONS.ID),
               isRequired = false),
+          viabilityTests.asMultiValueSublist(
+              "viabilityTests", ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID)),
           accessionViabilityTestTypes.asMultiValueSublist(
               "viabilityTestTypes", ACCESSIONS.ID.eq(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID)),
           withdrawals.asMultiValueSublist(
@@ -96,12 +98,16 @@ class AccessionsTable(private val tables: SearchTables) : SearchTable() {
         textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
         dateField(
             "latestGerminationTestDate",
-            "Most recent germination test date",
+            "Most recent viability test result date",
             ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         integerField(
             "latestViabilityPercent",
             "Most recent % viability",
             ACCESSIONS.LATEST_VIABILITY_PERCENT),
+        dateField(
+            "latestViabilityTestDate",
+            "Most recent viability test result date",
+            ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
         textField(
             "primaryCollectorName", "Primary collector name", ACCESSIONS.PRIMARY_COLLECTOR_NAME),
