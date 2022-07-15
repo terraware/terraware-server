@@ -1,14 +1,8 @@
-FROM openjdk:17-slim-buster
+FROM eclipse-temurin:17-jre
 
-# Run the server with a unique user ID so we can enforce disk quotas.
 ARG USER_ID=1001
 
-RUN useradd -u $USER_ID -c "Seed bank server" -d /home/app -m sbserver \
-    && mkdir /file-storage-volume \
-    && chown $USER_ID /file-storage-volume
-
-COPY entrypoint.sh /usr/local/bin/
-RUN cd /usr/local/bin && chmod 755 entrypoint.sh
+RUN useradd -u $USER_ID -c "Terraware server" -d /home/app -m terraware
 
 WORKDIR /home/app
 
@@ -26,5 +20,4 @@ COPY --chown=$USER_ID BOOT-INF/classes .
 EXPOSE 8080
 
 USER $USER_ID
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["java", "-cp", ".:lib/*", "com.terraformation.backend.ApplicationKt"]
