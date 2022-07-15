@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre
+FROM openjdk:17-slim-buster
 
 ARG USER_ID=1001
 
