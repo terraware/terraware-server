@@ -2,8 +2,7 @@ IMAGE_NAME=terraware-server
 
 BUILD_DIR=../build/docker
 FILES=\
-	$(BUILD_DIR)/Dockerfile \
-	$(BUILD_DIR)/entrypoint.sh
+	$(BUILD_DIR)/Dockerfile
 
 DEFAULT: image
 

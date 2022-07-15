@@ -1,14 +1,16 @@
 # Simple service definitions for running the server in a local dev environment. This should
 # not be used in production!
-
-version: "2"
-
-volumes:
-  photo-data:
+#
+# To use this, you will need a Keycloak server. You can run one locally if you need to; see
+# KEYCLOAK.md in the repo's root directory. Pass KEYCLOAK_AUTH_SERVER_URL and
+# KEYCLOAK_CREDENTIALS_SECRET environment variables to "docker-compose" when you launch this.
+# (You might prefer to put them in a file called ".env" instead.)
+#
+version: "3.8"
 
 services:
   postgres:
-    image: "postgres:12"
+    image: "postgis/postgis:13-3.1"
     environment:
       POSTGRES_DB: "terraware"
       POSTGRES_PASSWORD: "terraware"
@@ -18,11 +20,15 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: "jdbc:postgresql://postgres:5432/terraware"
-      DATABASE_PASSWORD: "terraware"
-      TERRAWARE_PHOTO_DIR: "/data/photos"
-      TERRAWARE_USE_INTERNAL_STORAGE: "true"
-    volumes:
-      - "photo-data:/data/photos"
+      - "DATABASE_URL=jdbc:postgresql://postgres:5432/terraware"
+      - "DATABASE_PASSWORD=terraware"
+      - "KEYCLOAK_AUTH_SERVER_URL"
+      - "KEYCLOAK_CREDENTIALS_SECRET"
+      - "KEYCLOAK_REALM=terraware"
+      - "KEYCLOAK_RESOURCE=dev-terraware-server"
+      - "TERRAWARE_PHOTO_DIR=/tmp"
+      - "TERRAWARE_ALLOW_ADMIN_UI_FOR_NON_ADMINS=true"
+      - "SPRING_THYMELEAF_PREFIX=classpath:templates"
+    restart: "on-failure"
     depends_on:
       - "postgres"
