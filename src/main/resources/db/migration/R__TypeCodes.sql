@@ -168,13 +168,7 @@ INSERT INTO notification_types (id, name, notification_criticality_id)
 VALUES (1, 'User Added to Organization', 1),
        (2, 'Facility Idle', 2),
        (3, 'Facility Alert Requested', 3),
-       (5, 'Accession Scheduled for Drying', 1),
        (6, 'Accession Scheduled to End Drying', 1),
-       (7, 'Accession Scheduled for Withdrawal', 1),
-       (8, 'Accession Scheduled for Viability Test', 1),
-       (9, 'Accessions Awaiting Processing', 1),
-       (10, 'Accessions Ready for Testing', 1),
-       (11, 'Accessions Finished Drying', 1),
        (12, 'Sensor Out Of Bounds', 3),
        (13, 'Unknown Automation Triggered', 3),
        (14, 'Device Unresponsive', 3)

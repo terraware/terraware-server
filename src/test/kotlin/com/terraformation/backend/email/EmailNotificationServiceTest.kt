@@ -14,7 +14,6 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
@@ -22,21 +21,13 @@ import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.seedbank.daily.DateNotificationTask
-import com.terraformation.backend.seedbank.daily.StateSummaryNotificationTask
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
-import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
-import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
-import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
-import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
-import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import freemarker.template.Configuration
 import io.mockk.every
 import io.mockk.mockk
@@ -244,17 +235,6 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun accessionMoveToDry() {
-    service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
-    service.on(DateNotificationTask.SucceededEvent())
-
-    assertBodyContains(facility.name, "Facility name")
-    assertBodyContains(accessionNumber, "Accession number")
-    assertBodyContains(webAppUrls.fullAccession(accessionId, organization.id), "Link URL")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
   fun accessionDryingEnd() {
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(DateNotificationTask.SucceededEvent())
@@ -266,83 +246,13 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun accessionGerminationTest() {
-    service.on(AccessionViabilityTestEvent(accessionNumber, accessionId, ViabilityTestType.Nursery))
-    service.on(DateNotificationTask.SucceededEvent())
-
-    assertBodyContains(facility.name, "Facility name")
-    assertBodyContains(accessionNumber, "Accession number")
-    assertBodyContains(
-        webAppUrls.fullAccessionViabilityTest(
-            accessionId, ViabilityTestType.Nursery, organization.id),
-        "Link URL")
-    assertBodyContains("nursery", "Test type")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun accessionWithdrawal() {
-    service.on(AccessionWithdrawalEvent(accessionNumber, accessionId))
-    service.on(DateNotificationTask.SucceededEvent())
-
-    assertBodyContains(facility.name, "Facility name")
-    assertBodyContains(accessionNumber, "Accession number")
-    assertBodyContains(webAppUrls.fullAccession(accessionId, organization.id), "Link URL")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun accessionsAwaitingProcessing() {
-    val numAccessions = 109
-    service.on(
-        AccessionsAwaitingProcessingEvent(
-            facility.id, numAccessions, AccessionState.AwaitingCheckIn))
-    service.on(StateSummaryNotificationTask.SucceededEvent())
-
-    assertBodyContains(organization.name, "Organization name")
-    assertBodyContains(numAccessions, "Number of accessions")
-    assertBodyContains(
-        webAppUrls.fullAccessions(organization.id, facility.id, AccessionState.AwaitingCheckIn),
-        "Link URL")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun accessionsReadyForTesting() {
-    val numAccessions = 109
-    service.on(
-        AccessionsReadyForTestingEvent(facility.id, numAccessions, 3, AccessionState.Processed))
-    service.on(StateSummaryNotificationTask.SucceededEvent())
-
-    assertBodyContains(organization.name, "Organization name")
-    assertBodyContains(numAccessions, "Number of accessions")
-    assertBodyContains(
-        webAppUrls.fullAccessions(organization.id, facility.id, AccessionState.Processed),
-        "Link URL")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
-  fun accessionsFinishedDrying() {
-    val numAccessions = 109
-    service.on(AccessionsFinishedDryingEvent(facility.id, numAccessions, AccessionState.Drying))
-    service.on(StateSummaryNotificationTask.SucceededEvent())
-
-    assertBodyContains(organization.name, "Organization name")
-    assertBodyContains(numAccessions, "Number of accessions")
-    assertBodyContains(
-        webAppUrls.fullAccessions(organization.id, facility.id, AccessionState.Drying), "Link URL")
-    assertRecipientsEqual(organizationRecipients)
-  }
-
-  @Test
   fun `accession daily task emails accumulate until processing is finished`() {
     every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
         listOf("1@test.com")
-    service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
+    service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
         listOf("2@test.com")
-    service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
+    service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
 
     verify(exactly = 0) { sender.send(any()) }
 
@@ -355,43 +265,13 @@ internal class EmailNotificationServiceTest {
   fun `accession daily task emails are discarded if processing fails`() {
     every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
         listOf("1@test.com")
-    service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
+    service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(DateNotificationTask.FinishedEvent())
 
     every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
         listOf("2@test.com")
-    service.on(AccessionMoveToDryEvent(accessionNumber, accessionId))
+    service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
     service.on(DateNotificationTask.SucceededEvent())
-
-    assertEquals(setOf("2@test.com"), recipients, "Recipients")
-  }
-
-  @Test
-  fun `accession state summary emails accumulate until processing is finished`() {
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("1@test.com")
-    service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("2@test.com")
-    service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
-
-    verify(exactly = 0) { sender.send(any()) }
-
-    service.on(StateSummaryNotificationTask.SucceededEvent())
-
-    assertEquals(setOf("1@test.com", "2@test.com"), recipients, "Recipients")
-  }
-
-  @Test
-  fun `accession state summary emails are discarded if processing fails`() {
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("1@test.com")
-    service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
-    service.on(StateSummaryNotificationTask.FinishedEvent())
-    every { organizationStore.fetchEmailRecipients(organization.id, any()) } returns
-        listOf("2@test.com")
-    service.on(AccessionsFinishedDryingEvent(facility.id, 1, AccessionState.Drying))
-    service.on(StateSummaryNotificationTask.SucceededEvent())
 
     assertEquals(setOf("2@test.com"), recipients, "Recipients")
   }

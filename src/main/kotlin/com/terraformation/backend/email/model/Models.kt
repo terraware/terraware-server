@@ -96,16 +96,6 @@ class UserAddedToOrganization(
     get() = "user/addedToOrganization"
 }
 
-class AccessionMoveToDry(
-    config: TerrawareServerConfig,
-    val accessionNumber: String,
-    val facilityName: String,
-    val accessionUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "accession/moveToDry"
-}
-
 class AccessionDryingEnd(
     config: TerrawareServerConfig,
     val accessionNumber: String,
@@ -114,56 +104,4 @@ class AccessionDryingEnd(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "accession/dryingEnd"
-}
-
-class AccessionViabilityTest(
-    config: TerrawareServerConfig,
-    val accessionNumber: String,
-    val testType: String,
-    val facilityName: String,
-    val accessionUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "accession/viabilityTest"
-}
-
-class AccessionWithdrawal(
-    config: TerrawareServerConfig,
-    val accessionNumber: String,
-    val facilityName: String,
-    val accessionUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "accession/withdrawal"
-}
-
-class AccessionsAwaitingProcessing(
-    config: TerrawareServerConfig,
-    val numAccessions: Number,
-    val organizationName: String,
-    val accessionsUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "accessions/awaitingProcessing"
-}
-
-class AccessionsReadyForTesting(
-    config: TerrawareServerConfig,
-    val numAccessions: Number,
-    val weeks: Int,
-    val organizationName: String,
-    val accessionsUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "accessions/readyForTesting"
-}
-
-class AccessionsFinishedDrying(
-    config: TerrawareServerConfig,
-    val numAccessions: Number,
-    val organizationName: String,
-    val accessionsUrl: String,
-) : EmailTemplateModel(config) {
-  override val templateDir: String
-    get() = "accessions/finishedDrying"
 }
