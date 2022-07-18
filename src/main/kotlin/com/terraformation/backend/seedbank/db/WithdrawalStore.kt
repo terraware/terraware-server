@@ -53,8 +53,8 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
       val existing = existingById[id]!!
       val desired = desiredById[id]!!
 
-      if ((existing.purpose == WithdrawalPurpose.GerminationTesting) xor
-          (desired.purpose == WithdrawalPurpose.GerminationTesting)) {
+      if ((existing.purpose == WithdrawalPurpose.ViabilityTesting) xor
+          (desired.purpose == WithdrawalPurpose.ViabilityTesting)) {
         throw IllegalArgumentException(
             "Cannot change withdrawal purpose to or from Germination Testing")
       }
@@ -65,12 +65,12 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
     }
 
     newWithdrawals.forEach { withdrawal ->
-      if (withdrawal.purpose == WithdrawalPurpose.GerminationTesting &&
+      if (withdrawal.purpose == WithdrawalPurpose.ViabilityTesting &&
           withdrawal.viabilityTestId == null) {
         throw IllegalArgumentException("Viability testing withdrawals must have test IDs")
       }
 
-      if (withdrawal.purpose != WithdrawalPurpose.GerminationTesting &&
+      if (withdrawal.purpose != WithdrawalPurpose.ViabilityTesting &&
           withdrawal.viabilityTestId != null) {
         throw IllegalArgumentException("Only viability testing withdrawals may have test IDs")
       }

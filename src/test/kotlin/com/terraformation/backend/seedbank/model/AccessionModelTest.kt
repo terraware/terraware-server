@@ -130,7 +130,7 @@ internal class AccessionModelTest {
       date: LocalDate = january(3),
       viabilityTestId: ViabilityTestId? = null,
       purpose: WithdrawalPurpose =
-          if (viabilityTestId != null) WithdrawalPurpose.GerminationTesting
+          if (viabilityTestId != null) WithdrawalPurpose.ViabilityTesting
           else WithdrawalPurpose.Other,
       remaining: SeedQuantityModel =
           if (withdrawn.units == SeedQuantityUnits.Seeds) seeds(10) else grams(10),
@@ -527,7 +527,7 @@ internal class AccessionModelTest {
                   listOf(
                       otherExistingWithdrawal.copy(
                           viabilityTestId = viabilityTest.id,
-                          purpose = WithdrawalPurpose.GerminationTesting)))
+                          purpose = WithdrawalPurpose.ViabilityTesting)))
 
       val withdrawals =
           accession.calculateWithdrawals(
@@ -581,7 +581,7 @@ internal class AccessionModelTest {
               grams(8),
               date = tomorrow,
               viabilityTestId = futureTest.id,
-              purpose = WithdrawalPurpose.GerminationTesting,
+              purpose = WithdrawalPurpose.ViabilityTesting,
               remaining = grams(85),
           )
 
@@ -771,7 +771,7 @@ internal class AccessionModelTest {
                       withdrawal(
                           seeds(1),
                           remaining = seeds(0),
-                          purpose = WithdrawalPurpose.GerminationTesting),
+                          purpose = WithdrawalPurpose.ViabilityTesting),
                       withdrawal(seeds(5), remaining = seeds(0)),
                   ))
 
@@ -796,7 +796,7 @@ internal class AccessionModelTest {
                           date = january(15), // different from test date
                           viabilityTestId = testWithExistingWithdrawal.id,
                           id = nextWithdrawalId(),
-                          purpose = WithdrawalPurpose.GerminationTesting,
+                          purpose = WithdrawalPurpose.ViabilityTesting,
                           remaining = seeds(0),
                           withdrawn = seeds(testWithExistingWithdrawal.seedsSown!!),
                       ),

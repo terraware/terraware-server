@@ -179,7 +179,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val desired =
         WithdrawalModel(
             date = LocalDate.now(),
-            purpose = WithdrawalPurpose.GerminationTesting,
+            purpose = WithdrawalPurpose.ViabilityTesting,
             remaining = grams(4),
             withdrawn = grams(1))
 
@@ -217,7 +217,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             viabilityTestId = viabilityTestId,
-            purpose = WithdrawalPurpose.GerminationTesting,
+            purpose = WithdrawalPurpose.ViabilityTesting,
             remaining = grams(4),
             withdrawn = seeds(1))
 
@@ -258,7 +258,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             viabilityTestId = viabilityTestId,
-            purpose = WithdrawalPurpose.GerminationTesting,
+            purpose = WithdrawalPurpose.ViabilityTesting,
             remaining = grams(4),
             withdrawn = seeds(1))
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
@@ -326,7 +326,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             remaining = grams(4),
             withdrawn = grams(1),
         )
-    val desired = initial.copy(id = WithdrawalId(1), purpose = WithdrawalPurpose.GerminationTesting)
+    val desired = initial.copy(id = WithdrawalId(1), purpose = WithdrawalPurpose.ViabilityTesting)
 
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
     val afterInsert = store.fetchWithdrawals(accessionId)

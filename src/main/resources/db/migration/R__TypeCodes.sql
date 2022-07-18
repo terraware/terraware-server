@@ -154,7 +154,7 @@ VALUES (1, 'Propagation'),
        (4, 'Broadcast'),
        (5, 'Share with Another Site'),
        (6, 'Other'),
-       (7, 'Germination Testing')
+       (7, 'Viability Testing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO notification_criticalities (id, name)

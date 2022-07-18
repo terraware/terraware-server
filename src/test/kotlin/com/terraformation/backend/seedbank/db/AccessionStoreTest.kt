@@ -52,7 +52,6 @@ import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
-import com.terraformation.backend.seedbank.api.ExternalWithdrawalPurpose
 import com.terraformation.backend.seedbank.api.SeedQuantityPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.ViabilityTestPayload
@@ -829,7 +828,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 id = WithdrawalId(1),
                 accessionId = accession.id,
                 date = test.startDate!!,
-                purpose = WithdrawalPurpose.GerminationTesting,
+                purpose = WithdrawalPurpose.ViabilityTesting,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
                 viabilityTestId = test.id,
                 remaining = seeds(5))),
@@ -894,7 +893,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val newWithdrawal =
         WithdrawalModel(
             date = LocalDate.now(),
-            purpose = WithdrawalPurpose.GerminationTesting,
+            purpose = WithdrawalPurpose.ViabilityTesting,
             withdrawn = seeds(1),
             viabilityTestId = initialWithdrawal.viabilityTestId)
 
@@ -1268,7 +1267,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               listOf(
                   WithdrawalPayload(
                       date = LocalDate.EPOCH,
-                      purpose = ExternalWithdrawalPurpose.Other,
+                      purpose = WithdrawalPurpose.Other,
                       withdrawnQuantity = seeds(10))))
     }
 
@@ -1378,7 +1377,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               listOf(
                   WithdrawalPayload(
                       date = LocalDate.EPOCH,
-                      purpose = ExternalWithdrawalPurpose.Other,
+                      purpose = WithdrawalPurpose.Other,
                       remainingQuantity = grams(5))))
     }
 
@@ -1513,7 +1512,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     WithdrawalPayload(
                         date = today,
-                        purpose = ExternalWithdrawalPurpose.Other,
+                        purpose = WithdrawalPurpose.Other,
                         destination = "destination",
                         notes = "notes",
                         remainingQuantity = grams(42),
