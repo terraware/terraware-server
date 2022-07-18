@@ -60,6 +60,8 @@ Connect to http://localhost:3000/ to log in.
 
 ## Editing the code
 
+First, familiarize yourself with the project's [coding conventions](CONVENTIONS.md).
+
 By far the best Kotlin development environment is [IntelliJ IDEA](https://www.jetbrains.com/idea/). You can use other editors or IDEs (the build, as you've seen from the quickstart, doesn't depend on an IDE) but IntelliJ is what you want.
 
 1. Run IntelliJ.
@@ -189,7 +191,3 @@ This must be done by a super-admin; see above for more information on that.
 5. Watch the server logs to monitor the progress of the import. It will take several minutes to finish.
 
 Once it's done, the species lookup endpoints under `/api/v1/species/lookup` should start returning real results.
-
-## How to contribute
-
-We welcome your contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for information about contributing to the project's development, including a discussion of coding conventions.
