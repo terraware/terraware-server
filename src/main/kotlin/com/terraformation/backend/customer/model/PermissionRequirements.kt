@@ -104,6 +104,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteAccession(accessionId: AccessionId) {
+    if (!user.canDeleteAccession(accessionId)) {
+      readAccession(accessionId)
+      throw AccessDeniedException("No permission to delete accession $accessionId")
+    }
+  }
+
   fun createAutomation(facilityId: FacilityId) {
     if (!user.canCreateAutomation(facilityId)) {
       readFacility(facilityId)

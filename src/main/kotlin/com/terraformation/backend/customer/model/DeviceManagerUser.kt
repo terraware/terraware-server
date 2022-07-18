@@ -114,6 +114,7 @@ data class DeviceManagerUser(
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = false
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = false
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = false
+  override fun canDeleteAccession(accessionId: AccessionId): Boolean = false
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = false
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = false
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = false

@@ -101,6 +101,10 @@ data class IndividualUser(
     return canReadAccession(accessionId)
   }
 
+  override fun canDeleteAccession(accessionId: AccessionId): Boolean {
+    return canUpdateAccession(accessionId)
+  }
+
   override fun canCreateAutomation(facilityId: FacilityId): Boolean {
     return canUpdateFacility(facilityId)
   }

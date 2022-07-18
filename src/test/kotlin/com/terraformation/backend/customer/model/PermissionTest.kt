@@ -213,6 +213,7 @@ internal class PermissionTest : DatabaseTest() {
         *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
+        deleteAccession = true,
     )
 
     permissions.expect(
@@ -326,6 +327,7 @@ internal class PermissionTest : DatabaseTest() {
         *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
+        deleteAccession = true,
     )
 
     permissions.expect(
@@ -394,6 +396,7 @@ internal class PermissionTest : DatabaseTest() {
         *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
+        deleteAccession = true,
     )
 
     permissions.expect(
@@ -451,6 +454,7 @@ internal class PermissionTest : DatabaseTest() {
         *accessionIds.forOrg1(),
         readAccession = true,
         updateAccession = true,
+        deleteAccession = true,
     )
 
     permissions.expect(
@@ -729,6 +733,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg accessions: AccessionId,
         readAccession: Boolean = false,
         updateAccession: Boolean = false,
+        deleteAccession: Boolean = false,
     ) {
       accessions.forEach { accessionId ->
         assertEquals(
@@ -737,6 +742,10 @@ internal class PermissionTest : DatabaseTest() {
             updateAccession,
             user.canUpdateAccession(accessionId),
             "Can update accession $accessionId")
+        assertEquals(
+            deleteAccession,
+            user.canDeleteAccession(accessionId),
+            "Can delete accession $accessionId")
 
         uncheckedAccessions.remove(accessionId)
       }

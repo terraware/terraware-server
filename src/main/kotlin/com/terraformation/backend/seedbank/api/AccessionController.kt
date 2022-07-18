@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SeedBankAppEndpoint
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
@@ -24,6 +26,7 @@ import com.terraformation.backend.db.ViabilityTestTreatment
 import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
+import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -43,6 +46,7 @@ import java.time.Instant
 import java.time.LocalDate
 import javax.validation.Valid
 import javax.validation.constraints.PositiveOrZero
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -55,7 +59,11 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/seedbank/accession", "/api/v1/seedbank/accessions")
 @RestController
 @SeedBankAppEndpoint
-class AccessionController(private val accessionStore: AccessionStore, private val clock: Clock) {
+class AccessionController(
+    private val accessionService: AccessionService,
+    private val accessionStore: AccessionStore,
+    private val clock: Clock
+) {
   @ApiResponse(
       responseCode = "200",
       description =
@@ -102,6 +110,14 @@ class AccessionController(private val accessionStore: AccessionStore, private va
   fun read(@PathVariable("id") accessionId: AccessionId): GetAccessionResponsePayload {
     val accession = accessionStore.fetchOneById(accessionId)
     return GetAccessionResponsePayload(AccessionPayload(accession, clock))
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @DeleteMapping("/{id}")
+  fun delete(@PathVariable("id") accessionId: AccessionId): SimpleSuccessResponsePayload {
+    accessionService.deleteAccession(accessionId)
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponse(responseCode = "200")

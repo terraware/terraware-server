@@ -10,7 +10,9 @@ import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
 import io.mockk.CapturingSlot
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
@@ -18,6 +20,7 @@ import io.mockk.verify
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.FileAlreadyExistsException
@@ -69,6 +72,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
             fileName = "test.jpg",
             storageUrl = photoStorageUrl))
 
+    every { fileStore.delete(any()) } throws NoSuchFileException("Not found")
     every { fileStore.getUrl(any()) } answers { URI("file://${firstArg<Path>()}") }
     every { fileStore.read(any()) } throws NoSuchFileException("Not found")
     every { fileStore.read(photoStorageUrl) } answers
@@ -94,6 +98,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
             storageUrl = storageUrl)
     thumbnailsDao.insert(thumbnailsRow)
 
+    every { fileStore.delete(storageUrl) } just Runs
     every { fileStore.read(storageUrl) } returns
         SizedInputStream(ByteArrayInputStream(imageData), imageData.size.toLong())
 
@@ -287,6 +292,45 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
                 size = actual.size.toInt(),
                 storageUrl = existingRow.storageUrl!!)),
         thumbnailsDao.findAll().map { it.copy(id = null) })
+  }
+
+  @Test
+  fun `deleteThumbnails deletes multiple thumbnails`() {
+    val rows = listOf(insertThumbnail(10, 10), insertThumbnail(20, 20))
+
+    store.deleteThumbnails(photoId)
+
+    verify { fileStore.delete(rows[0].storageUrl!!) }
+    verify { fileStore.delete(rows[1].storageUrl!!) }
+
+    assertEquals(emptyList<ThumbnailsRow>(), thumbnailsDao.findAll())
+  }
+
+  @Test
+  fun `deleteThumbnails leaves database row in place if deletion from file store fails`() {
+    val rows = listOf(insertThumbnail(10, 10), insertThumbnail(20, 20))
+
+    every { fileStore.delete(rows[1].storageUrl!!) } throws IOException("Nope")
+
+    assertThrows<IOException> { store.deleteThumbnails(photoId) }
+
+    verify { fileStore.delete(rows[0].storageUrl!!) }
+    verify { fileStore.delete(rows[1].storageUrl!!) }
+
+    assertEquals(listOf(rows[1]), thumbnailsDao.findAll())
+  }
+
+  @Test
+  fun `deleteThumbnails does not treat nonexistent thumbnail file as an error`() {
+    val row = insertThumbnail(10, 10)
+
+    every { fileStore.delete(row.storageUrl!!) } throws NoSuchFileException("Missing")
+
+    store.deleteThumbnails(photoId)
+
+    verify { fileStore.delete(row.storageUrl!!) }
+
+    assertEquals(emptyList<ThumbnailsRow>(), thumbnailsDao.findAll())
   }
 
   companion object {

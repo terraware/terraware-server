@@ -148,6 +148,35 @@ class PhotoRepository(
         }
   }
 
+  /** Deletes all the photos from an accession. */
+  fun deleteAllPhotos(accessionId: AccessionId) {
+    requirePermissions { updateAccession(accessionId) }
+
+    dslContext
+        .select(ACCESSION_PHOTOS.PHOTO_ID, PHOTOS.STORAGE_URL)
+        .from(ACCESSION_PHOTOS)
+        .join(PHOTOS)
+        .on(ACCESSION_PHOTOS.PHOTO_ID.eq(PHOTOS.ID))
+        .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
+        .fetch()
+        .forEach { (photoId, storageUrl) ->
+          if (photoId != null && storageUrl != null) {
+            thumbnailStore.deleteThumbnails(photoId)
+
+            try {
+              fileStore.delete(storageUrl)
+            } catch (e: NoSuchFileException) {
+              log.warn("Photo file $storageUrl was already deleted from file store")
+            }
+
+            dslContext.transaction { _ ->
+              accessionPhotosDao.deleteById(photoId)
+              photosDao.deleteById(photoId)
+            }
+          }
+        }
+  }
+
   /**
    * Returns the storage URL of an existing photo.
    *

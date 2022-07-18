@@ -102,6 +102,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun deleteAccession() {
+    assertThrows<AccessionNotFoundException> { requirements.deleteAccession(accessionId) }
+
+    grant { user.canReadAccession(accessionId) }
+    assertThrows<AccessDeniedException> { requirements.deleteAccession(accessionId) }
+
+    grant { user.canDeleteAccession(accessionId) }
+    requirements.deleteAccession(accessionId)
+  }
+
+  @Test
   fun createAutomation() {
     assertThrows<FacilityNotFoundException> { requirements.createAutomation(facilityId) }
 
