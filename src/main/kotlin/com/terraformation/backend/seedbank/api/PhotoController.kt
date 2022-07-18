@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
-@RequestMapping("/api/v1/seedbank/accession/{id}/photo")
+@RequestMapping("/api/v1/seedbank/accession/{id}/photo", "/api/v1/seedbank/accessions/{id}/photos")
 @RestController
 @SeedBankAppEndpoint
 class PhotoController(private val photoRepository: PhotoRepository) {
