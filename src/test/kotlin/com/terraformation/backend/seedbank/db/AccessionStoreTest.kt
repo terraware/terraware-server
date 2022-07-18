@@ -1415,7 +1415,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
                         accuracy = BigDecimal(3))),
-            germinationTestTypes = setOf(ViabilityTestType.Lab),
             landowner = "landowner",
             numberOfTrees = 10,
             primaryCollector = "primaryCollector",
@@ -1471,13 +1470,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         latitude = BigDecimal.ONE,
                         longitude = BigDecimal.TEN,
                         accuracy = BigDecimal(3))),
-            germinationTestTypes = setOf(ViabilityTestType.Lab),
-            germinationTests =
-                listOf(
-                    ViabilityTestPayload(
-                        remainingQuantity = grams(10),
-                        testType = ViabilityTestType.Lab,
-                        startDate = today)),
             initialQuantity = kilograms(432),
             landowner = "landowner",
             numberOfTrees = 10,
