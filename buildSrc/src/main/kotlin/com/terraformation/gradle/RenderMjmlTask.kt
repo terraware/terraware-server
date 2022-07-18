@@ -13,6 +13,7 @@ import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileType
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
@@ -25,6 +26,7 @@ import org.gradle.work.InputChanges
 
 /** Renders MJML email bodies to FreeMarker templates that can be evaluated at runtime. */
 abstract class RenderMjmlTask : DefaultTask() {
+  @get:IgnoreEmptyDirectories
   @get:InputFiles
   @get:SkipWhenEmpty
   val mjmlFiles =
