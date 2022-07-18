@@ -6,7 +6,7 @@ import com.github.gradle.node.util.PlatformHelper
 import com.github.gradle.node.util.ProjectApiHelper
 import com.github.gradle.node.variant.VariantComputer
 import com.github.gradle.node.yarn.exec.YarnExecRunner
-import com.github.gradle.node.yarn.task.YarnSetupTask
+import com.github.gradle.node.yarn.task.YarnInstallTask
 import java.io.File
 import java.nio.file.Files
 import javax.inject.Inject
@@ -42,7 +42,7 @@ abstract class RenderMjmlTask : DefaultTask() {
   init {
     group = "build"
     description = "Renders MJML templates."
-    dependsOn(YarnSetupTask.NAME)
+    dependsOn(YarnInstallTask.NAME)
   }
 
   @TaskAction
