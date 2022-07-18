@@ -38,8 +38,9 @@ jobs:
         path: |
           ~/.gradle
           ~/.m2
+          node_modules
         # Use the same cache key as in main.yml to pick up cached dependencies
-        key: 2-15-${{ hashFiles('*.gradle.kts', 'gradle.properties') }}
+        key: 4-${{ hashFiles('*.gradle.kts', 'gradle.properties', 'yarn.lock') }}
 
     - name: Download Docker images
       run: |
