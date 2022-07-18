@@ -203,7 +203,7 @@ data class AccessionModel(
     val totalWithdrawn =
         listOfNotNull(
                 withdrawals
-                    .filter { it.purpose != WithdrawalPurpose.GerminationTesting }
+                    .filter { it.purpose != WithdrawalPurpose.ViabilityTesting }
                     .mapNotNull { it.withdrawn?.quantity },
                 viabilityTests.mapNotNull { it.seedsSown?.toBigDecimal() })
             .flatten()
@@ -345,8 +345,7 @@ data class AccessionModel(
           }
         }
 
-    val nonTestWithdrawals =
-        withdrawals.filter { it.purpose != WithdrawalPurpose.GerminationTesting }
+    val nonTestWithdrawals = withdrawals.filter { it.purpose != WithdrawalPurpose.ViabilityTesting }
     val existingTestWithdrawals =
         existingWithdrawals
             .filter { it.viabilityTestId != null }
@@ -361,7 +360,7 @@ data class AccessionModel(
               viabilityTest = test,
               viabilityTestId = test.id,
               id = existingWithdrawal?.id,
-              purpose = WithdrawalPurpose.GerminationTesting,
+              purpose = WithdrawalPurpose.ViabilityTesting,
               remaining = test.remaining,
               staffResponsible = test.staffResponsible,
               withdrawn = withdrawn,
@@ -432,14 +431,14 @@ data class AccessionModel(
   fun calculateTotalScheduledNonTestQuantity(clock: Clock): SeedQuantityModel? {
     val today = LocalDate.now(clock)
     return foldWithdrawalQuantities(clock) {
-      it.purpose != WithdrawalPurpose.GerminationTesting && it.date > today
+      it.purpose != WithdrawalPurpose.ViabilityTesting && it.date > today
     }
   }
 
   fun calculateTotalScheduledTestQuantity(clock: Clock): SeedQuantityModel? {
     val today = LocalDate.now(clock)
     return foldWithdrawalQuantities(clock) {
-      it.purpose == WithdrawalPurpose.GerminationTesting && it.date > today
+      it.purpose == WithdrawalPurpose.ViabilityTesting && it.date > today
     }
   }
 
