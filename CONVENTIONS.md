@@ -1,16 +1,12 @@
-# Contributing to the project
-
-TODO: General text about how to contribute
-
-## Coding conventions
+# Coding conventions
 
 The code should be written in idiomatic Kotlin and should generally follow the guidelines in the official Kotlin [Coding Conventions](https://kotlinlang.org/docs/reference/coding-conventions.html) document.
 
 It runs on the JVM, and thus makes extensive use of Java libraries. There are no plans to support multiplatform builds. If you find a Java library that does just what you need, use it rather than reinventing the wheel!
 
-Currently, the build targets the Java 15 JVM. It will likely track new JVM releases since there are often garbage collection improvements that can be significant in memory-constrained environments.
+Currently, the build targets the Java 17 JVM.
 
-### Formatting
+## Formatting
 
 All Kotlin code must be formatted with [ktfmt](https://github.com/facebookincubator/ktfmt). You can run ktfmt in a couple different ways:
 
@@ -19,19 +15,19 @@ All Kotlin code must be formatted with [ktfmt](https://github.com/facebookincuba
 
 There isn't currently a way to make IntelliJ's real-time formatting adhere strictly to ktfmt's formatting rules, but the supplied `.editorconfig` file is an approximation. IntelliJ should detect it and use it automatically.
 
-### Database access
+## Database access
 
 The code uses a schema-first, code-generation approach to its data model, as opposed to a code-first approach where the database gets created based on class structure. It uses the [jOOQ](https://jooq.org) library to generate code that provides a fluent, type-safe query building API as well as some basic ORM features.
 
 To make changes to the data model, add migration scripts. See [src/main/resources/db/migration/README.md](src/main/resources/db/migration/README.md) for more details.
 
-### Dependency injection
+## Dependency injection
 
 If you need to call methods in other classes and the other classes can be instantiated once and then reused, use dependency injection rather than explicitly instantiating them. This makes it easier to replace the dependencies with stubs when testing, and also makes the interaction between service classes more explicit in the code.
 
 In general, strongly prefer constructor injection, that is, declaring your dependencies as constructor arguments. You should almost never need to use the `@Autowired` or `@Inject` annotations on a field.
 
-### Testability and tests
+## Testability and tests
 
 Automated tests are important tools to allow the code to evolve safely, and they serve as documentation of the code's intended behavior. The project does not have a specific coverage target (since that often leads to low-quality, thoughtless tests) but in general, any nontrivial business logic should be well covered by tests, including failure cases.
 
@@ -45,7 +41,7 @@ Never perform database queries inline in the application code; add separate data
 
 Keep data-access classes focused on data access. Don't be afraid to use SQL to do what it's good at, rather than treating the database as a dumb key/value store. For example, use a join rather than fetching a list of IDs and then separately fetching the records those IDs refer to. But avoid embedding actual business logic in SQL queries unless there's a clear benefit in performance or safety or clarity, because then you'll be forced to write database-backed tests for the logic and those tests are slower and more brittle. If you do write nontrivial SQL queries, cover them with tests.
 
-### Payload classes
+## Payload classes
 
 Use data classes to represent API request and response payloads whenever possible, rather than using generic `Map` objects. This will allow the build process to generate more useful API documentation.
 
