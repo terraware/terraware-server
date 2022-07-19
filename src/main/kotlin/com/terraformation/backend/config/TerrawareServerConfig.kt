@@ -225,7 +225,7 @@ class TerrawareServerConfig(
   class BalenaConfig(
       val apiKey: String? = null,
       @DefaultValue("false") val enabled: Boolean = false,
-      val fleetId: Long? = null,
+      val fleetIds: List<Long>? = null,
       /**
        * How frequently to poll for device updates. Value must be in
        * [ISO 8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations).
@@ -235,7 +235,7 @@ class TerrawareServerConfig(
   ) {
     init {
       if (enabled) {
-        if (apiKey == null || fleetId == null) {
+        if (apiKey == null || fleetIds.isNullOrEmpty()) {
           throw IllegalArgumentException("API key and fleet ID are required if Balena is enabled")
         }
         if (pollInterval <= Duration.ZERO) {

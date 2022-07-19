@@ -35,8 +35,8 @@ class LiveBalenaClient(
 
   private val apiKey: String
     get() = config.balena.apiKey ?: throw BalenaNotEnabledException()
-  private val fleetId: Long
-    get() = config.balena.fleetId ?: throw BalenaNotEnabledException()
+  private val fleetIds: List<Long>
+    get() = config.balena.fleetIds ?: throw BalenaNotEnabledException()
 
   override fun configureDeviceManager(
       balenaId: BalenaDeviceId,
@@ -59,7 +59,7 @@ class LiveBalenaClient(
             expand = listOf("device"),
             filter =
                 listOf(
-                    filterTerm("device/belongs_to__application", fleetId),
+                    filterTerm("device/belongs_to__application", fleetIds),
                     filterTerm("device/id", balenaId),
                     filterTerm("tag_key", SENSOR_KIT_ID_TAG_KEY)),
             select = listOf("value"))
@@ -80,7 +80,7 @@ class LiveBalenaClient(
     val response =
         sendRequest<ListDevicesResponse>(
             DEVICE_PATH,
-            filter = listOf(combinedFilter, filterTerm("belongs_to__application", fleetId)),
+            filter = listOf(combinedFilter, filterTerm("belongs_to__application", fleetIds)),
             select = BalenaDevice.selectFields)
 
     return response.body().get().d
@@ -162,7 +162,11 @@ class LiveBalenaClient(
    * Caution: Balena is picky about which characters are URL-encoded and which aren't. Make sure you
    * test this against the actual Balena service if you change the rendering logic.
    */
-  private fun filterTerm(field: String, value: Any?, operator: String = "eq"): String {
+  private fun filterTerm(field: String, value: Any?, operation: String = "eq"): String {
+    if (value is Collection<*>) {
+      return "(" + value.joinToString("+or+") { filterTerm(field, it, operation) } + ")"
+    }
+
     val encodedValue =
         when (value) {
           is Number -> value.toString()
@@ -170,7 +174,7 @@ class LiveBalenaClient(
           else -> "'" + URLEncoder.encode("$value", StandardCharsets.UTF_8) + "'"
         }
 
-    return "$field+$operator+$encodedValue"
+    return "$field+$operation+$encodedValue"
   }
 
   /**
