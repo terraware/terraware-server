@@ -85,7 +85,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val bagNumberField = rootPrefix.resolve("bagNumber")
   private val bagNumberFlattenedField = rootPrefix.resolve("bags_number")
   private val checkedInTimeField = rootPrefix.resolve("checkedInTime")
-  private val germinationTestTypeField = rootPrefix.resolve("germinationTestType")
   private val receivedDateField = rootPrefix.resolve("receivedDate")
   private val speciesNameField = rootPrefix.resolve("speciesName")
   private val stateField = rootPrefix.resolve("state")
@@ -97,8 +96,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val treesCollectedFromAlias =
       SearchFieldPath(rootPrefix, AliasField("treesCollectedFromAlias", treesCollectedFromField))
   private val viabilityTestResultsSeedsGerminatedField =
-      rootPrefix.resolve("germinationSeedsGerminated")
-  private val viabilityTestSeedsSownField = rootPrefix.resolve("germinationSeedsSown")
+      rootPrefix.resolve("viabilityTests_viabilityTestResults_seedsGerminated")
+  private val viabilityTestSeedsSownField = rootPrefix.resolve("viabilityTests_seedsSown")
+  private val viabilityTestsTypeField = rootPrefix.resolve("viabilityTests_type")
   private val viabilityTestTypeField = rootPrefix.resolve("viabilityTestType")
 
   @BeforeEach
@@ -1234,7 +1234,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns values for enum-mapped field`() {
       val expected = listOf(null) + ViabilityTestType.values().map { it.displayName }
-      val values = searchService.fetchAllValues(germinationTestTypeField, searchScopes)
+      val values = searchService.fetchAllValues(viabilityTestsTypeField, searchScopes)
       assertEquals(expected, values)
     }
 
@@ -1734,10 +1734,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   inner class NestedFieldsTest {
     private val bagsNumberField = rootPrefix.resolve("bags.number")
     private val facilityNameField = rootPrefix.resolve("facility.name")
-    private val seedsSownField = rootPrefix.resolve("germinationTests.seedsSown")
+    private val seedsSownField = rootPrefix.resolve("viabilityTests.seedsSown")
     private val seedsGerminatedField =
-        rootPrefix.resolve("germinationTests.germinations.seedsGerminated")
-    private val testTypeField = rootPrefix.resolve("germinationTests.type")
+        rootPrefix.resolve("viabilityTests.viabilityTestResults.seedsGerminated")
+    private val testTypeField = rootPrefix.resolve("viabilityTests.type")
 
     private val bagsTable = tables.bags
     private val viabilityTestResultsTable = tables.viabilityTestResults
@@ -1780,8 +1780,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           SearchResults(
-              listOf(mapOf("germinationTests" to listOf(mapOf("seedsSown" to "15")))),
-              cursor = null)
+              listOf(mapOf("viabilityTests" to listOf(mapOf("seedsSown" to "15")))), cursor = null)
 
       assertEquals(expected, result)
     }
@@ -1884,7 +1883,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val viabilityTestResultsPrefix = SearchFieldPrefix(tables.viabilityTestResults)
       val rootSeedsGerminatedField = viabilityTestResultsPrefix.resolve("seedsGerminated")
       val orgNameField =
-          viabilityTestResultsPrefix.resolve("germinationTest.accession.facility.organization.name")
+          viabilityTestResultsPrefix.resolve("viabilityTest.accession.facility.organization.name")
       val orgName = "Organization $organizationId"
 
       val result =
@@ -1900,8 +1899,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val expected =
           SearchResults(
               listOf(
-                  mapOf("germinationTest" to sublistValues, "seedsGerminated" to "5"),
-                  mapOf("germinationTest" to sublistValues, "seedsGerminated" to "10")),
+                  mapOf("viabilityTest" to sublistValues, "seedsGerminated" to "5"),
+                  mapOf("viabilityTest" to sublistValues, "seedsGerminated" to "10")),
               cursor = null)
 
       assertEquals(expected, result)
@@ -1911,7 +1910,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `can get to flattened organization from accession sublist`() {
       val viabilityTestResultsPrefix = SearchFieldPrefix(tables.viabilityTestResults)
       val rootSeedsGerminatedField = viabilityTestResultsPrefix.resolve("seedsGerminated")
-      val flattenedFieldName = "germinationTest_accession_facility_organization_name"
+      val flattenedFieldName = "viabilityTest_accession_facility_organization_name"
       val orgNameField = viabilityTestResultsPrefix.resolve(flattenedFieldName)
       val orgName = "Organization $organizationId"
 
@@ -1935,7 +1934,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `can filter across multiple single-value sublists`() {
       val viabilityTestResultsPrefix = SearchFieldPrefix(tables.viabilityTestResults)
       val orgNameField =
-          viabilityTestResultsPrefix.resolve("germinationTest.accession.facility.organization.name")
+          viabilityTestResultsPrefix.resolve("viabilityTest.accession.facility.organization.name")
 
       val result =
           searchService.search(
@@ -2021,10 +2020,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
                                           mapOf("seedsGerminated" to "10"),
                                           mapOf("seedsGerminated" to "5")))))),
@@ -2073,10 +2072,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
                                           mapOf("seedsGerminated" to "10"),
                                           mapOf("seedsGerminated" to "5")))))),
@@ -2140,7 +2139,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf("seedsSown" to "15", "type" to "Lab"),
                               mapOf("seedsSown" to "1", "type" to "Nursery"),
@@ -2173,11 +2172,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
                       "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
                                   "seedsSown" to "15",
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
                                           mapOf("seedsGerminated" to "5"),
                                           mapOf("seedsGerminated" to "10"),
@@ -2206,10 +2205,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
                                           mapOf("seedsGerminated" to "5"),
                                           mapOf("seedsGerminated" to "10")))),
@@ -2226,7 +2225,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can specify a flattened sublist as a child of a nested sublist`() {
-      val field = rootPrefix.resolve("germinationTests.germinations_seedsGerminated")
+      val field = rootPrefix.resolve("viabilityTests.viabilityTestResults_seedsGerminated")
       val fields = listOf(field)
       val sortOrder = fields.map { SearchSortField(it) }
 
@@ -2240,10 +2239,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
-                              mapOf("germinations_seedsGerminated" to "5"),
-                              mapOf("germinations_seedsGerminated" to "10"),
+                              mapOf("viabilityTestResults_seedsGerminated" to "5"),
+                              mapOf("viabilityTestResults_seedsGerminated" to "10"),
                           ),
                   ),
                   mapOf(
@@ -2259,7 +2258,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `cannot specify a flattened sublist with nested children`() {
       assertThrows<IllegalArgumentException> {
-        rootPrefix.resolve("germinationTests_germinations.seedsGerminated")
+        rootPrefix.resolve("viabilityTests_viabilityTestResults.seedsGerminated")
       }
     }
 
@@ -2319,26 +2318,26 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
                                           mapOf("seedsGerminated" to "5"),
                                           mapOf("seedsGerminated" to "10")))),
-                      "germinationSeedsGerminated" to "5",
+                      "viabilityTests_viabilityTestResults_seedsGerminated" to "5",
                   ),
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
                                           mapOf("seedsGerminated" to "5"),
                                           mapOf("seedsGerminated" to "10")))),
-                      "germinationSeedsGerminated" to "10",
+                      "viabilityTests_viabilityTestResults_seedsGerminated" to "10",
                   ),
               ),
               cursor = null)
@@ -2368,10 +2367,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can navigate up and down table hierarchy`() {
-      val seedsSownViaGerminations =
-          rootPrefix.resolve("germinationTests.germinations.germinationTest.seedsSown")
-      val fields = listOf(seedsSownViaGerminations)
-      val sortOrder = listOf(SearchSortField(seedsSownViaGerminations))
+      val seedsSownViaResults =
+          rootPrefix.resolve("viabilityTests.viabilityTestResults.viabilityTest.seedsSown")
+      val fields = listOf(seedsSownViaResults)
+      val sortOrder = listOf(SearchSortField(seedsSownViaResults))
       val criteria = FieldNode(accessionNumberField, listOf("XYZ"))
 
       val result = accessionSearchService.search(facilityId, fields, criteria, sortOrder)
@@ -2382,16 +2381,16 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
-                                          // There are two germinations. We want to make sure we
+                                          // There are two test results. We want to make sure we
                                           // can navigate back up from them even if we don't select
                                           // any fields from them.
-                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
-                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
                                       ))),
                   ),
               ),
@@ -2402,14 +2401,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can reference same field using two different paths`() {
-      val seedsSownViaGerminations =
-          rootPrefix.resolve("germinationTests.germinations.germinationTest.seedsSown")
-      val fields = listOf(seedsSownField, seedsSownViaGerminations)
-      val sortOrder = listOf(SearchSortField(seedsSownViaGerminations))
+      val seedsSownViaResults =
+          rootPrefix.resolve("viabilityTests.viabilityTestResults.viabilityTest.seedsSown")
+      val fields = listOf(seedsSownField, seedsSownViaResults)
+      val sortOrder = listOf(SearchSortField(seedsSownViaResults))
       val criteria =
           AndNode(
               listOf(
-                  FieldNode(seedsSownViaGerminations, listOf("15")),
+                  FieldNode(seedsSownViaResults, listOf("15")),
                   FieldNode(seedsSownField, listOf("15"))))
 
       val result = accessionSearchService.search(facilityId, fields, criteria, sortOrder)
@@ -2420,14 +2419,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "1000",
                       "accessionNumber" to "XYZ",
-                      "germinationTests" to
+                      "viabilityTests" to
                           listOf(
                               mapOf(
                                   "seedsSown" to "15",
-                                  "germinations" to
+                                  "viabilityTestResults" to
                                       listOf(
-                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
-                                          mapOf("germinationTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
                                       ))),
                   ),
               ),
@@ -2512,29 +2511,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "active" to "Active",
                       "checkedInTime" to "$checkedInTime",
                       "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
-                      "germinationTests" to
-                          listOf(
-                              mapOf(
-                                  "germinations" to
-                                      listOf(
-                                          mapOf(
-                                              "recordingDate" to "1970-01-01",
-                                              "seedsGerminated" to "5"),
-                                          mapOf(
-                                              "recordingDate" to "1970-01-02",
-                                              "seedsGerminated" to "10")),
-                                  "viabilityTestResults" to
-                                      listOf(
-                                          mapOf(
-                                              "recordingDate" to "1970-01-01",
-                                              "seedsGerminated" to "5"),
-                                          mapOf(
-                                              "recordingDate" to "1970-01-02",
-                                              "seedsGerminated" to "10")),
-                                  "type" to "Lab",
-                                  "seedsSown" to "15",
-                              ),
-                          ),
                       "id" to "1000",
                       "speciesName" to "Kousa Dogwood",
                       "state" to "Processed",
@@ -2542,14 +2518,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "germinations" to
-                                      listOf(
-                                          mapOf(
-                                              "recordingDate" to "1970-01-01",
-                                              "seedsGerminated" to "5"),
-                                          mapOf(
-                                              "recordingDate" to "1970-01-02",
-                                              "seedsGerminated" to "10")),
                                   "viabilityTestResults" to
                                       listOf(
                                           mapOf(
@@ -2564,24 +2532,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                           ),
                   ))
               .flatMap { base ->
-                base.getListValue("bags")?.flatMap { bag ->
+                base.getListValue("bags")?.map { bag ->
                   val perBagNumber = base.toMutableMap()
                   perBagNumber.putIfNotNull("bagNumber", bag["number"])
-
-                  base.getListValue("germinationTests")?.flatMap { viabilityTest ->
-                    val perTest = perBagNumber.toMutableMap()
-                    perTest.putIfNotNull("germinationSeedsSown", viabilityTest["seedsSown"])
-                    perTest.putIfNotNull("germinationTestType", viabilityTest["type"])
-
-                    viabilityTest.getListValue("germinations")?.map { testResult ->
-                      val perGermination = perTest.toMutableMap()
-                      perGermination.putIfNotNull(
-                          "germinationSeedsGerminated", testResult["seedsGerminated"])
-                      perGermination
-                    }
-                        ?: listOf(perTest)
-                  }
-                      ?: listOf(perBagNumber)
+                  perBagNumber
                 }
                     ?: listOf(base)
               }

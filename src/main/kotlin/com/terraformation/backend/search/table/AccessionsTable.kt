@@ -42,8 +42,6 @@ class AccessionsTable(private val tables: SearchTables) : SearchTable() {
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
           geolocations.asMultiValueSublist(
               "geolocations", ACCESSIONS.ID.eq(GEOLOCATIONS.ACCESSION_ID)),
-          viabilityTests.asMultiValueSublist(
-              "germinationTests", ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID)),
           species.asSingleValueSublist(
               "species", ACCESSIONS.SPECIES_ID.eq(SPECIES.ID), isRequired = false),
           storageLocations.asSingleValueSublist(
@@ -84,22 +82,8 @@ class AccessionsTable(private val tables: SearchTables) : SearchTable() {
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
         textField("familyName", "Family name", ACCESSIONS.FAMILY_NAME),
         aliasField("geolocation", "geolocations_coordinates"),
-        aliasField("germinationEndDate", "germinationTests_endDate"),
-        aliasField("germinationPercentGerminated", "germinationTests_percentGerminated"),
-        aliasField("germinationSeedType", "germinationTests_seedType"),
-        aliasField("germinationSeedsGerminated", "germinationTests_germinations_seedsGerminated"),
-        aliasField("germinationSeedsSown", "germinationTests_seedsSown"),
-        aliasField("germinationStartDate", "germinationTests_startDate"),
-        aliasField("germinationSubstrate", "germinationTests_substrate"),
-        aliasField("germinationTestNotes", "germinationTests_notes"),
-        aliasField("germinationTestType", "germinationTests_type"),
-        aliasField("germinationTreatment", "germinationTests_treatment"),
         idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
         textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
-        dateField(
-            "latestGerminationTestDate",
-            "Most recent viability test result date",
-            ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         integerField(
             "latestViabilityPercent",
             "Most recent % viability",
