@@ -152,12 +152,6 @@ class TerrawareServerConfig(
        * The prefix will cause API client users to be grouped together in the Keycloak admin UI.
        */
       @DefaultValue("api-") @NotNull val apiClientUsernamePrefix: String,
-
-      /**
-       * URL to redirect user to after they set their password on initial account creation via the
-       * admin UI. Default is to use the request URL of the admin UI but with a path of `/`.
-       */
-      val postCreateRedirectUrl: URI? = null,
   )
 
   @ConstructorBinding
@@ -251,9 +245,6 @@ class TerrawareServerConfig(
 
   @ConstructorBinding
   class NotificationsConfig(
-      /** If true, delete older notifications. If false, avoid deleting older notifications. */
-      @DefaultValue("true") val cleanupEnabled: Boolean = true,
-
       /**
        * The number of days to keep notifications around before deleting them, if deletion is
        * enabled.

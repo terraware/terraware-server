@@ -14,7 +14,6 @@ import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -88,34 +87,5 @@ internal class AppDeviceStoreTest : DatabaseTest() {
     val rows = dslContext.selectFrom(APP_DEVICES).fetch()
     println(rows)
     assertEquals(AppDeviceId(1), id)
-  }
-
-  @Test
-  fun `fetchById returns null for null ID`() {
-    assertNull(store.fetchById(null))
-  }
-
-  @Test
-  fun `fetchById returns null for nonexistent ID`() {
-    assertNull(store.fetchById(AppDeviceId(1)))
-  }
-
-  @Test
-  fun `fetchById fetches existing device`() {
-    appDevicesDao.insert(appDevice())
-
-    val expected =
-        AppDeviceModel(
-            AppDeviceId(1),
-            "appBuild",
-            "appName",
-            "brand",
-            "model",
-            "name",
-            "osType",
-            "osVersion",
-            "uniqueId")
-    val actual = store.fetchById(AppDeviceId(1))
-    assertEquals(expected, actual)
   }
 }

@@ -57,20 +57,6 @@ class AppDeviceStore(private val dslContext: DSLContext, private val clock: Cloc
     }
   }
 
-  /**
-   * Returns the device information for a given ID. If the ID is null or doesn't exist, returns
-   * null.
-   */
-  fun fetchById(id: AppDeviceId?): AppDeviceModel? {
-    return if (id != null) {
-      dslContext.selectFrom(APP_DEVICES).where(APP_DEVICES.ID.eq(id)).fetchOne {
-        AppDeviceModel(it)
-      }
-    } else {
-      null
-    }
-  }
-
   fun appDeviceMultiset(
       idField: Field<AppDeviceId?> = ACCESSIONS.APP_DEVICE_ID
   ): Field<AppDeviceModel?> {

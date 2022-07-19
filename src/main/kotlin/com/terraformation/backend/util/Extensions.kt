@@ -7,16 +7,12 @@ import java.math.BigDecimal
 import java.net.URI
 import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodyHandler
-import java.util.EnumSet
 import java.util.function.Supplier
 import org.jooq.Field
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
 // context of a specific bit of application code should live alongside that code, but functions that
 // are generally useful and that can't be logically grouped together can go here.
-
-/** Returns an empty EnumSet without having to pass in a `Class` explicitly. */
-inline fun <reified T : Enum<T>> emptyEnumSet(): EnumSet<T> = EnumSet.noneOf(T::class.java)
 
 /** Transforms a Collection to null if it is empty. */
 fun <T : Collection<*>> T.orNull(): T? = ifEmpty { null }
