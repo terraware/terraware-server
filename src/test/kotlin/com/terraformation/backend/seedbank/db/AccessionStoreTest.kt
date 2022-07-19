@@ -33,11 +33,15 @@ import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
+import com.terraformation.backend.db.tables.pojos.AccessionViabilityTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
+import com.terraformation.backend.db.tables.pojos.GeolocationsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
+import com.terraformation.backend.db.tables.pojos.ViabilityTestResultsRow
 import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
+import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
@@ -142,6 +146,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canCreateAccession(any()) } returns true
     every { user.canCreateSpecies(organizationId) } returns true
+    every { user.canDeleteAccession(any()) } returns true
     every { user.canDeleteSpecies(any()) } returns true
     every { user.canReadAccession(any()) } returns true
     every { user.canReadFacility(any()) } returns true
@@ -1609,6 +1614,81 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
     assertEquals(
         afterUpdate.facilityId, anotherFacilityId, "Update should have updated facility id")
+  }
+
+  @Test
+  fun `delete removes data from child tables`() {
+    val storageLocationName = "Test Location"
+    val today = LocalDate.now(clock)
+    val update =
+        UpdateAccessionRequestPayload(
+            bagNumbers = setOf("abc"),
+            collectedDate = today,
+            facilityId = facilityId,
+            family = "family",
+            geolocations =
+                setOf(
+                    Geolocation(
+                        latitude = BigDecimal.ONE,
+                        longitude = BigDecimal.TEN,
+                        accuracy = BigDecimal(3))),
+            initialQuantity = kilograms(432),
+            processingMethod = ProcessingMethod.Weight,
+            receivedDate = today,
+            secondaryCollectors = setOf("second1", "second2"),
+            species = "species",
+            storageLocation = storageLocationName,
+            viabilityTests =
+                listOf(
+                    ViabilityTestPayload(
+                        remainingQuantity = grams(10),
+                        testType = ViabilityTestType.Lab,
+                        startDate = today)),
+            viabilityTestTypes = setOf(ViabilityTestType.Lab),
+            withdrawals =
+                listOf(
+                    WithdrawalPayload(
+                        date = today,
+                        purpose = WithdrawalPurpose.Other,
+                        destination = "destination",
+                        notes = "notes",
+                        remainingQuantity = grams(42),
+                        staffResponsible = "staff",
+                        withdrawnQuantity = seeds(41))),
+        )
+
+    insertStorageLocation(1, name = storageLocationName)
+
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+    store.updateAndFetch(update.toModel(initial.id!!))
+
+    store.delete(initial.id!!)
+
+    assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll(), "Accessions")
+    assertEquals(
+        emptyList<AccessionStateHistoryRecord>(),
+        dslContext.selectFrom(ACCESSION_STATE_HISTORY).fetch(),
+        "Accession State History")
+    assertEquals(
+        emptyList<AccessionViabilityTestTypesRow>(),
+        accessionViabilityTestTypesDao.findAll(),
+        "Accession Viability Test Types")
+    assertEquals(emptyList<BagsRow>(), bagsDao.findAll(), "Bags")
+    assertEquals(emptyList<GeolocationsRow>(), geolocationsDao.findAll(), "Geolocations")
+    assertEquals(emptyList<ViabilityTestsRow>(), viabilityTestsDao.findAll(), "Viability Tests")
+    assertEquals(
+        emptyList<ViabilityTestResultsRow>(),
+        viabilityTestResultsDao.findAll(),
+        "Viability test results")
+    assertEquals(emptyList<WithdrawalsRow>(), withdrawalsDao.findAll(), "Withdrawals")
+  }
+
+  @Test
+  fun `delete throws exception if user does not have permission`() {
+    every { user.canDeleteAccession(any()) } returns false
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+
+    assertThrows<AccessDeniedException> { store.delete(initial.id!!) }
   }
 
   @Nested

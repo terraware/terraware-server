@@ -96,6 +96,24 @@ class ThumbnailStore(
     return generateThumbnail(photoId, maxWidth, maxHeight)
   }
 
+  /** Deletes all the thumbnails for a photo. */
+  fun deleteThumbnails(photoId: PhotoId) {
+    val thumbnails = thumbnailsDao.fetchByPhotoId(photoId)
+    thumbnails.forEach { thumbnailsRow ->
+      val storageUrl =
+          thumbnailsRow.storageUrl
+              ?: throw IllegalStateException("Thumbnail ${thumbnailsRow.id} had no storage URL")
+
+      try {
+        fileStore.delete(storageUrl)
+      } catch (e: NoSuchFileException) {
+        log.warn("Thumbnail $storageUrl was already deleted from file store")
+      }
+
+      thumbnailsDao.delete(thumbnailsRow)
+    }
+  }
+
   /**
    * Generates a new thumbnail for a photo. Stores it in the file store and inserts a row in the
    * thumbnails table with its information.

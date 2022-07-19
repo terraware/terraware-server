@@ -104,6 +104,7 @@ class SystemUser(
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
+  override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true

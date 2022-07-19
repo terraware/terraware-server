@@ -24,6 +24,7 @@ import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
@@ -419,6 +420,35 @@ class AccessionStore(
         log.error("Accession $accessionId exists in database but update failed")
         throw DataAccessException("Unable to update accession $accessionId")
       }
+    }
+  }
+
+  /**
+   * Deletes all the non-photo data for an accession. Photos must already be deleted or this will
+   * throw an exception. You probably want to call [AccessionService.deleteAccession] instead of
+   * this.
+   */
+  fun delete(accessionId: AccessionId) {
+    requirePermissions { deleteAccession(accessionId) }
+
+    val model = fetchOneById(accessionId)
+
+    dslContext.transaction { _ ->
+      bagStore.updateBags(accessionId, model.bagNumbers, emptySet())
+      geolocationStore.updateGeolocations(accessionId, model.geolocations, emptySet())
+      viabilityTestStore.updateViabilityTestTypes(accessionId, model.viabilityTestTypes, emptySet())
+      viabilityTestStore.updateViabilityTests(accessionId, model.viabilityTests, emptyList())
+      withdrawalStore.updateWithdrawals(accessionId, model.withdrawals, emptyList())
+
+      dslContext
+          .deleteFrom(ACCESSION_SECONDARY_COLLECTORS)
+          .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
+          .execute()
+      dslContext
+          .deleteFrom(ACCESSION_STATE_HISTORY)
+          .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
+          .execute()
+      dslContext.deleteFrom(ACCESSIONS).where(ACCESSIONS.ID.eq(accessionId)).execute()
     }
   }
 

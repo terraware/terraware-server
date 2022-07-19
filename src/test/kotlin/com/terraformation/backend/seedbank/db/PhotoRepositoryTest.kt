@@ -19,7 +19,9 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.model.PhotoMetadata
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
@@ -321,5 +323,40 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     assertThrows(AccessionNotFoundException::class.java) {
       repository.getPhotoFileSize(accessionId, filename)
     }
+  }
+
+  @Test
+  fun `deleteAllPhotos deletes thumbnails and full-sized photos`() {
+    val photoData = Random.nextBytes(10)
+
+    every { thumbnailStore.deleteThumbnails(any()) } just Runs
+
+    every { random.nextLong() } returns 1L
+    repository.storePhoto(
+        accessionId,
+        photoData.inputStream(),
+        photoData.size.toLong(),
+        metadata.copy(filename = "1.jpg"))
+
+    every { random.nextLong() } returns 2L
+    repository.storePhoto(
+        accessionId,
+        photoData.inputStream(),
+        photoData.size.toLong(),
+        metadata.copy(filename = "2.jpg"))
+
+    val photoRows = photosDao.findAll()
+    val photoIds = photoRows.mapNotNull { it.id }
+    val photoUrls = photoRows.mapNotNull { it.storageUrl }
+
+    repository.deleteAllPhotos(accessionId)
+
+    photoIds.forEach { verify { thumbnailStore.deleteThumbnails(it) } }
+    photoUrls.forEach { url ->
+      assertThrows<NoSuchFileException>("$url should be deleted") { fileStore.size(url) }
+    }
+
+    assertEquals(emptyList<AccessionPhotosRow>(), accessionPhotosDao.findAll(), "Accession photos")
+    assertEquals(emptyList<PhotosRow>(), photosDao.findAll(), "Photos")
   }
 }
