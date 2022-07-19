@@ -1,49 +1,31 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import requests
 import sys
 import time
 
+from client import add_terraware_args, client_from_args
 
-def export_csv(criteria, server, filename):
-    r = requests.post(f"{server}/api/v1/seedbank/search/export", json=criteria)
-    r.raise_for_status()
+
+def export_csv(criteria, client, filename):
+    r = client.export_accession_search(criteria)
     with open(filename, "wb") as f:
         f.write(r.content)
 
 
-def run_search(criteria, server):
-    r = requests.post(f"{server}/api/v1/seedbank/search", json=criteria)
-    r.raise_for_status()
-    return r.json()["results"]
-
-
-def run_values(criteria, server):
-    r = requests.post(f"{server}/api/v1/seedbank/values", json=criteria)
-    r.raise_for_status()
-    return r.json()["results"]
-
-
-def run_all_values(criteria, server):
-    r = requests.post(f"{server}/api/v1/seedbank/values/all", json=criteria)
-    r.raise_for_status()
-    return r.json()["results"]
-
-
-def time_search(criteria, server):
+def time_search(criteria, client):
     start_time = time.time()
-    r = requests.post(f"{server}/api/v1/seedbank/search", json=criteria)
+    client.search_accessions(criteria)
     end_time = time.time()
     return end_time - start_time
 
 
-def run_timing_test(criteria, server):
+def run_timing_test(criteria, client):
     total_time = 0
     runs = 100
 
     for i in range(0, runs):
-        total_time += time_search(criteria, server)
+        total_time += time_search(criteria, client)
 
     print(f"Did {runs} runs in {total_time} seconds, time per run {total_time / runs}")
 
@@ -55,10 +37,10 @@ example_criteria = {
         "collectedDate",
         "endangered",
         "geolocation",
-        "latestGerminationTestDate",
         "latestViabilityPercent",
+        "latestViabilityTestDate",
         "siteLocation",
-        "species",
+        "species_scientificName",
         "state",
         "totalViabilityPercent",
         "treesCollectedFrom",
@@ -72,7 +54,7 @@ example_criteria = {
         "children": [
             {
                 "operation": "field",
-                "field": "species",
+                "field": "species_scientificName",
                 "values": ["Ficus"],
                 "type": "Fuzzy",
             },
@@ -114,15 +96,16 @@ def main():
         help="Show count of search results rather than raw results",
     )
     parser.add_argument(
+        "--facility",
+        "-f",
+        type=int,
+        help="Generate accessions at this facility. Default is to pick the first seed bank "
+        + "facility accessible by the user.",
+    )
+    parser.add_argument(
         "--print-example",
         action="store_true",
         help="Output an example search payload and exit",
-    )
-    parser.add_argument(
-        "--server",
-        "-s",
-        default="http://localhost:8080",
-        help="URL of server to connect to",
     )
     parser.add_argument(
         "--timing",
@@ -140,6 +123,7 @@ def main():
         nargs="?",
         help="Read request payload from file; use '-' for standard input",
     )
+    add_terraware_args(parser)
 
     args = parser.parse_args()
 
@@ -156,15 +140,26 @@ def main():
     else:
         criteria = example_criteria
 
+    client = client_from_args(args)
+
+    if args.facility:
+        criteria["facilityId"] = args.facility
+    else:
+        criteria["facilityId"] = [
+            entry["id"]
+            for entry in client.list_facilities()
+            if entry["type"] == "Seed Bank"
+        ][0]
+
     if args.timing:
-        run_timing_test(criteria, args.server)
+        run_timing_test(criteria, client)
     else:
         if args.values:
-            results = run_values(criteria, args.server)
+            results = client.search_accession_values(criteria)
         elif args.all_values:
-            results = run_all_values(criteria, args.server)
+            results = client.search_all_accession_values(criteria)
         else:
-            results = run_search(criteria, args.server)
+            results = client.search_accessions(criteria)
 
         if args.count:
             print(f"Got {len(results)} results")
