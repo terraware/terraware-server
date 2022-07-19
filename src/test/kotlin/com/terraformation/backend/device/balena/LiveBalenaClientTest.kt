@@ -75,7 +75,7 @@ internal class LiveBalenaClientTest {
     // Need to bootstrap the client without a fleet ID to create the fleet to define the config
     // that includes the fleet ID.
     every { config.balena } returns
-        TerrawareServerConfig.BalenaConfig(apiKey = apiKey, enabled = true, fleetId = 0)
+        TerrawareServerConfig.BalenaConfig(apiKey = apiKey, enabled = true, fleetIds = listOf(0))
 
     client =
         LiveBalenaClient(
@@ -97,7 +97,8 @@ internal class LiveBalenaClientTest {
     createdDevice = true
 
     every { config.balena } returns
-        TerrawareServerConfig.BalenaConfig(apiKey = apiKey, enabled = true, fleetId = fleetId)
+        TerrawareServerConfig.BalenaConfig(
+            apiKey = apiKey, enabled = true, fleetIds = listOf(fleetId))
   }
 
   @AfterAll
