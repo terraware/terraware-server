@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 import argparse
 from datetime import datetime, timezone
-import itertools
 import json
-import os
 import random
-import requests
 import sys
 import time
-from typing import Optional
+from client import add_terraware_args, client_from_args
 
 # Default to 30 days of data for new timeseries.
 DEFAULT_SECONDS = 30 * 24 * 60 * 60
-DEFAULT_URL = "http://localhost:8080"
 
 
 timeseries_config = {
@@ -53,55 +49,6 @@ timeseries_config = {
         },
     },
 }
-
-
-class TerrawareClient:
-    def __init__(
-        self,
-        bearer: Optional[str] = None,
-        session: Optional[str] = None,
-        base_url: Optional[str] = None,
-    ):
-        if bearer:
-            self.auth_header = {"Authorization": f"Bearer {bearer}"}
-        else:
-            self.auth_header = {"Cookie": f"SESSION={session}"}
-        self.base_url = (base_url or DEFAULT_URL).rstrip("/")
-
-    def _add_auth_header(self, kwargs):
-        """Add an authentication header to the keyword arguments of a requests API call."""
-        existing_headers = kwargs.get("headers", {})
-        return {**kwargs, "headers": {**self.auth_header, **existing_headers}}
-
-    def get(self, url, **kwargs):
-        kwargs_with_auth = self._add_auth_header(kwargs)
-        r = requests.get(self.base_url + url, **kwargs_with_auth)
-        r.raise_for_status()
-        return r.json()
-
-    def post(self, url, **kwargs):
-        kwargs_with_auth = self._add_auth_header(kwargs)
-        r = requests.post(self.base_url + url, **kwargs_with_auth)
-        r.raise_for_status()
-        return r.json()
-
-    def list_facilities(self):
-        return self.get("/api/v1/facilities")
-
-    def list_devices(self, facility_id):
-        return self.get(f"/api/v1/facilities/{facility_id}/devices")
-
-    def get_device(self, device_id):
-        return self.get(f"/api/v1/devices/{device_id}")
-
-    def create_timeseries(self, payload):
-        return self.post("/api/v1/timeseries/create", json=payload)
-
-    def record_values(self, payload):
-        return self.post("/api/v1/timeseries/values", json=payload)
-
-    def list_timeseries(self, device_id):
-        return self.get(f"/api/v1/timeseries?deviceId={device_id}")
 
 
 def parse_iso_datetime(iso_datetime: str) -> int:
@@ -188,7 +135,7 @@ def create_missing_timeseries(client, device_id, config, dry_run, verbose):
     """Create any timeseries that don't currently exist on the server."""
     existing_timeseries = {
         timeseries["timeseriesName"]: timeseries
-        for timeseries in client.list_timeseries(device_id)["timeseries"]
+        for timeseries in client.list_timeseries(device_id)
     }
 
     timeseries_to_create = [
@@ -215,17 +162,13 @@ def create_missing_timeseries(client, device_id, config, dry_run, verbose):
 def get_latest_value_times(client, device):
     return {
         ts["timeseriesName"]: parse_iso_datetime(ts["latestValue"]["timestamp"])
-        for ts in client.list_timeseries(device["id"])["timeseries"]
+        for ts in client.list_timeseries(device["id"])
         if "latestValue" in ts
     }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Generate dummy timeseries data.")
-    parser.add_argument(
-        "--bearer",
-        help="Bearer token to use (session cookie is ignored if this is set)",
-    )
     parser.add_argument(
         "--device",
         "-d",
@@ -265,18 +208,9 @@ def main():
         + "Default is 30 days.",
     )
     parser.add_argument(
-        "--session",
-        help="Session cookie to use instead of canned one from test database",
-    )
-    parser.add_argument(
-        "--url",
-        "-u",
-        default=DEFAULT_URL,
-        help="Base URL of terraware-server. Default is http://localhost:8080.",
-    )
-    parser.add_argument(
         "--verbose", "-v", action="store_true", help="Print payload contents."
     )
+    add_terraware_args(parser)
 
     args = parser.parse_args()
 
@@ -287,22 +221,20 @@ def main():
         )
         sys.exit(1)
 
-    client = TerrawareClient(args.bearer, args.session, args.url)
+    client = client_from_args(args)
 
     if args.device:
-        devices = [client.get_device(id)["device"] for id in args.device]
+        devices = [client.get_device(id) for id in args.device]
     else:
         if args.facility:
             facilities = args.facility
         else:
-            facilities = [
-                facility["id"] for facility in client.list_facilities()["facilities"]
-            ]
+            facilities = [facility["id"] for facility in client.list_facilities()]
 
         devices = [
             device
             for facility_id in facilities
-            for device in client.list_devices(facility_id)["devices"]
+            for device in client.list_devices(facility_id)
         ]
 
     end_time = int(time.time())

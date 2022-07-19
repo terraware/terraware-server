@@ -3,6 +3,7 @@ import argparse
 import json
 import requests
 import sys
+from client import add_terraware_args, client_from_args
 
 
 def main():
@@ -10,12 +11,6 @@ def main():
         "Update an existing accession. The input can contain just the edits; "
         + "its values will overwrite the existing ones but any fields that aren't "
         + "present in the input won't be removed from the accession."
-    )
-    parser.add_argument(
-        "--server",
-        "-s",
-        default="http://localhost:8080",
-        help="Base URL of terraware-server.",
     )
     parser.add_argument(
         "--simulate",
@@ -29,12 +24,13 @@ def main():
         action="store_true",
         help="Show updated accession data after editing.",
     )
-    parser.add_argument("accessionNumber")
+    parser.add_argument("accessionId")
     parser.add_argument(
         "file",
         nargs="?",
         help="JSON file with edits. If not specified, JSON is read from standard input.",
     )
+    add_terraware_args(parser)
 
     args = parser.parse_args()
 
@@ -44,25 +40,17 @@ def main():
     else:
         edits = json.load(sys.stdin)
 
-    uri = f"{args.server}/api/v1/seedbank/accession/{args.accessionNumber}"
+    client = client_from_args(args)
 
-    r = requests.get(uri)
-    r.raise_for_status()
-    accession = requests.get(uri).json()["accession"]
+    accession = client.get_accession(args.accessionId)
 
     accession.update(edits)
 
-    if args.simulate:
-        uri += "?simulate=true"
-
-    r = requests.put(uri, json=accession)
-    if r.status_code != 200:
-        print("Request failed!")
-        print(r.json())
-    elif args.verbose:
-        print(json.dumps(r.json()["accession"]))
+    updated = client.update_accession(args.accessionId, accession, args.simulate)
+    if args.verbose:
+        print(json.dumps(updated))
     else:
-        print(r.json()["status"])
+        print("OK")
 
 
 if __name__ == "__main__":
