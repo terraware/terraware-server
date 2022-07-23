@@ -67,6 +67,6 @@ jobs:
       run: ./gradlew generateLicenseReport
 
     - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4.3.4
+      uses: JamesIves/github-pages-deploy-action@v4.4.0
       with:
         folder: docs
