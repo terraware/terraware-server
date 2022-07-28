@@ -1,6 +1,7 @@
 package com.terraformation.backend.time
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tables.references.TEST_CLOCK
 import com.terraformation.backend.log.perClassLogger
@@ -54,6 +55,7 @@ class DatabaseBackedClock
 private constructor(
     private val dslContext: DSLContext,
     private val publisher: ApplicationEventPublisher,
+    private val systemUser: SystemUser,
     private val timeZone: ZoneId,
     private val useTestClock: Boolean = false,
     private val systemClock: Clock = system(timeZone),
@@ -71,10 +73,12 @@ private constructor(
       config: TerrawareServerConfig,
       dslContext: DSLContext,
       publisher: ApplicationEventPublisher,
+      systemUser: SystemUser,
       refreshInterval: Duration? = Duration.ofSeconds(5),
   ) : this(
       dslContext,
       publisher,
+      systemUser,
       config.timeZone,
       config.useTestClock,
       refreshInterval = refreshInterval)
@@ -121,7 +125,7 @@ private constructor(
         }
       } else {
         log.warn("Test clock is not initialized; setting it to the current time")
-        advance(Duration.ZERO)
+        systemUser.run { advance(Duration.ZERO) }
       }
     }
   }
@@ -135,6 +139,7 @@ private constructor(
       DatabaseBackedClock(
           dslContext,
           publisher,
+          systemUser,
           zone,
           useTestClock,
           systemClock.withZone(zone),
