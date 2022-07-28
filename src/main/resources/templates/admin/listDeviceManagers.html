@@ -55,5 +55,26 @@
 
 </div>
 
+<div th:if="${canRegenerateAllDeviceManagerTokens}">
+
+    <h3>Regenerate All Device Manager Offline Refresh Tokens</h3>
+
+    <p>
+        This will invalidate all existing device manager offline refresh tokens and generate new
+        ones. It should be used when there is a configuration change that causes existing tokens
+        to no longer work. It applies to all device managers across all organizations.
+    </p>
+
+    <p>
+        If there are a lot of device managers or Balena's API is slow, this may time out! Check the
+        server logs to monitor its progress in that case.
+    </p>
+
+    <form th:action="|${prefix}/deviceManagers/regenerateAllTokens|" method="POST">
+        <input type="submit" value="Regenerate All Tokens"/>
+    </form>
+
+</div>
+
 </body>
 </html>

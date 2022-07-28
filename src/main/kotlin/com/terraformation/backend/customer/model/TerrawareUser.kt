@@ -92,6 +92,7 @@ interface TerrawareUser : Principal {
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
   fun canReadUpload(uploadId: UploadId): Boolean
+  fun canRegenerateAllDeviceManagerTokens(): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean

@@ -127,6 +127,7 @@ data class DeviceManagerUser(
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false
   override fun canReadUpload(uploadId: UploadId): Boolean = false
+  override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =

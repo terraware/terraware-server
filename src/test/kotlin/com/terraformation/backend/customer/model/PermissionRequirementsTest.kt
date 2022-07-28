@@ -591,4 +591,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canSetTestClock() }
     requirements.setTestClock()
   }
+
+  @Test
+  fun regenerateAllDeviceManagerTokens() {
+    assertThrows<AccessDeniedException> { requirements.regenerateAllDeviceManagerTokens() }
+
+    grant { user.canRegenerateAllDeviceManagerTokens() }
+    requirements.regenerateAllDeviceManagerTokens()
+  }
 }
