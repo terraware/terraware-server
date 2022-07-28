@@ -124,6 +124,7 @@ class SystemUser(
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
   override fun canReadUpload(uploadId: UploadId): Boolean = true
+  override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true
   override fun canSendAlert(facilityId: FacilityId): Boolean = true

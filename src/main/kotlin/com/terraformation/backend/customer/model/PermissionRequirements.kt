@@ -433,4 +433,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
       throw AccessDeniedException("No permission to set test clock")
     }
   }
+
+  fun regenerateAllDeviceManagerTokens() {
+    if (!user.canRegenerateAllDeviceManagerTokens()) {
+      throw AccessDeniedException("No permission to regenerate all device manager tokens")
+    }
+  }
 }

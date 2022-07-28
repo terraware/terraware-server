@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.device.db.DeviceStore
@@ -65,6 +66,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminController(
     private val clock: DatabaseBackedClock,
     private val config: TerrawareServerConfig,
+    private val deviceManagerService: DeviceManagerService,
     private val deviceManagerStore: DeviceManagerStore,
     private val deviceService: DeviceService,
     private val deviceStore: DeviceStore,
@@ -150,6 +152,8 @@ class AdminController(
     val managers = deviceManagerStore.findAll()
 
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
+    model.addAttribute(
+        "canRegenerateAllDeviceManagerTokens", currentUser().canRegenerateAllDeviceManagerTokens())
     model.addAttribute("managers", managers)
     model.addAttribute("prefix", prefix)
 
@@ -446,6 +450,47 @@ class AdminController(
     return deviceManager(deviceManagerId)
   }
 
+  @PostMapping("/deviceManagers/{deviceManagerId}/generateToken")
+  fun generateToken(
+      redirectAttributes: RedirectAttributes,
+      @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
+  ): String {
+    try {
+      val row = deviceManagerStore.fetchOneById(deviceManagerId)
+      val balenaId = row.balenaId ?: throw IllegalStateException("Device manager has no balena ID")
+      val facilityId =
+          row.facilityId
+              ?: throw IllegalStateException("Device manager is not connected to a facility")
+      val userId =
+          row.userId ?: throw IllegalStateException("Device manager does not have a user ID")
+
+      deviceManagerService.generateOfflineToken(userId, balenaId, facilityId)
+
+      redirectAttributes.successMessage = "Token generated."
+    } catch (e: Exception) {
+      log.error("Failed to generate refresh token", e)
+      redirectAttributes.failureMessage = "Generation failed: ${e.message}"
+    }
+
+    return deviceManager(deviceManagerId)
+  }
+
+  @PostMapping("/deviceManagers/regenerateAllTokens")
+  fun regenerateAllTokens(
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      deviceManagerService.regenerateAllOfflineTokens()
+
+      redirectAttributes.successMessage = "Tokens regenerated."
+    } catch (e: Exception) {
+      log.error("Failed to regenerate refresh tokens", e)
+      redirectAttributes.failureMessage = "Generation failed: ${e.message}"
+    }
+
+    return listDeviceManagers()
+  }
+
   @PostMapping("/deviceTemplates")
   fun updateTemplate(
       redirectAttributes: RedirectAttributes,
@@ -557,7 +602,7 @@ class AdminController(
   private fun deviceManager(deviceManagerId: DeviceManagerId) =
       redirect("/deviceManagers/$deviceManagerId")
   private fun deviceTemplates() = redirect("/deviceTemplates")
-  private fun listDeviceManagers() = redirect("/listDeviceManagers")
+  private fun listDeviceManagers() = redirect("/deviceManagers")
   private fun organization(organizationId: OrganizationId) =
       redirect("/organization/$organizationId")
   private fun facility(facilityId: FacilityId) = redirect("/facility/$facilityId")

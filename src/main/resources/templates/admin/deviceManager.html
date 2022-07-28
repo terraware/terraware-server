@@ -96,5 +96,13 @@
 
 </form>
 
+<form th:if="${manager.userId} != null"
+      th:action="|${prefix}/deviceManagers/${manager.id}/generateToken|"
+      method="POST">
+
+    <input type="submit" value="Generate New Offline Refresh Token"/>
+
+</form>
+
 </body>
 </html>
