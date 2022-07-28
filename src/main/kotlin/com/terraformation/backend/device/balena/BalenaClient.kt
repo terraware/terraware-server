@@ -7,7 +7,12 @@ import java.time.Instant
 /** High-level interface for the Balena API. */
 interface BalenaClient {
   /** Sets the facility ID and offline refresh token environment variables on a Balena device. */
-  fun configureDeviceManager(balenaId: BalenaDeviceId, facilityId: FacilityId, token: String)
+  fun configureDeviceManager(
+      balenaId: BalenaDeviceId,
+      facilityId: FacilityId,
+      token: String,
+      overwrite: Boolean = false,
+  )
 
   /**
    * Returns the value of the sensor kit ID tag for a particular Balena device. If the tag is not

@@ -17,11 +17,13 @@ class StubBalenaClient : BalenaClient {
   override fun configureDeviceManager(
       balenaId: BalenaDeviceId,
       facilityId: FacilityId,
-      token: String
+      token: String,
+      overwrite: Boolean,
   ) {
     val tokenExcerpt = token.substring(0, 8) + "..."
     log.info(
-        "Would configure Balena device $balenaId with facility $facilityId, token $tokenExcerpt")
+        "Would configure Balena device $balenaId with facility $facilityId, token $tokenExcerpt, " +
+            "overwrite $overwrite")
   }
 
   override fun getSensorKitIdForBalenaId(balenaId: BalenaDeviceId): String? {

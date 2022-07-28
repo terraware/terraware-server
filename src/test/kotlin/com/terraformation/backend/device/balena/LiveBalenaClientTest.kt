@@ -15,6 +15,7 @@ import kotlin.random.Random
 import org.junit.AssumptionViolatedException
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -127,12 +128,12 @@ internal class LiveBalenaClientTest {
 
     client.setDeviceEnvironmentVar(deviceId, name, value)
 
-    Assertions.assertEquals(value, client.getDeviceEnvironmentVar(deviceId, name))
+    assertEquals(value, client.getDeviceEnvironmentVar(deviceId, name))
   }
 
   @Test
   fun `getSensorKitIdForBalenaId returns short code`() {
-    Assertions.assertEquals(sensorKitId, client.getSensorKitIdForBalenaId(deviceId))
+    assertEquals(sensorKitId, client.getSensorKitIdForBalenaId(deviceId))
   }
 
   @Test
@@ -152,7 +153,7 @@ internal class LiveBalenaClientTest {
     client.setDeviceEnvironmentVar(deviceId, name, "old", false)
     client.setDeviceEnvironmentVar(deviceId, name, "new", true)
 
-    Assertions.assertEquals("new", client.getDeviceEnvironmentVar(deviceId, name))
+    assertEquals("new", client.getDeviceEnvironmentVar(deviceId, name))
   }
 
   @Test
@@ -166,7 +167,7 @@ internal class LiveBalenaClientTest {
   fun `listModifiedDevices does not include devices that were not modified recently`() {
     val devices = client.listModifiedDevices(Instant.now())
 
-    Assertions.assertEquals(emptyList<BalenaDevice>(), devices)
+    assertEquals(emptyList<BalenaDevice>(), devices)
   }
 
   @Test
@@ -176,11 +177,11 @@ internal class LiveBalenaClientTest {
 
     client.configureDeviceManager(deviceId, FacilityId(1), "access_token")
 
-    Assertions.assertEquals(
+    assertEquals(
         "1",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
         "Facility ID after initial configuration")
-    Assertions.assertEquals(
+    assertEquals(
         "access_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
         "Refresh token after initial configuration")
@@ -189,12 +190,40 @@ internal class LiveBalenaClientTest {
       client.configureDeviceManager(deviceId, FacilityId(2), "new_token")
     }
 
-    Assertions.assertEquals(
+    assertEquals(
         "1",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
         "Facility ID after duplicate configuration attempt")
-    Assertions.assertEquals(
+    assertEquals(
         "access_token",
+        client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
+        "Refresh token after duplicate configuration attempt")
+  }
+
+  @Test
+  fun `configureDeviceManager honors overwrite flag`() {
+    deleteDeviceEnvironmentVar(LiveBalenaClient.FACILITIES_ENV_VAR_NAME)
+    deleteDeviceEnvironmentVar(LiveBalenaClient.TOKEN_ENV_VAR_NAME)
+
+    client.configureDeviceManager(deviceId, FacilityId(1), "access_token")
+
+    assertEquals(
+        "1",
+        client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
+        "Facility ID after initial configuration")
+    assertEquals(
+        "access_token",
+        client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
+        "Refresh token after initial configuration")
+
+    client.configureDeviceManager(deviceId, FacilityId(2), "new_token", true)
+
+    assertEquals(
+        "2",
+        client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
+        "Facility ID after duplicate configuration attempt")
+    assertEquals(
+        "new_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
         "Refresh token after duplicate configuration attempt")
   }
@@ -206,11 +235,11 @@ internal class LiveBalenaClientTest {
 
     client.configureDeviceManager(deviceId, FacilityId(1), "access_token")
 
-    Assertions.assertEquals(
+    assertEquals(
         "1",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.FACILITIES_ENV_VAR_NAME),
         "Facility ID after retry")
-    Assertions.assertEquals(
+    assertEquals(
         "access_token",
         client.getDeviceEnvironmentVar(deviceId, LiveBalenaClient.TOKEN_ENV_VAR_NAME),
         "Refresh token after retry")

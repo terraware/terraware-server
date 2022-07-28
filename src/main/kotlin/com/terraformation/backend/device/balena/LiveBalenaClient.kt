@@ -41,15 +41,16 @@ class LiveBalenaClient(
   override fun configureDeviceManager(
       balenaId: BalenaDeviceId,
       facilityId: FacilityId,
-      token: String
+      token: String,
+      overwrite: Boolean,
   ) {
     val tokenExcerpt = token.substring(0, 8) + "..."
     log.info("Configure Balena device $balenaId with facility $facilityId, token $tokenExcerpt")
 
     // If the first of these calls succeeds and the second fails, the user can try again because
     // setting a variable to its existing value is permitted even with overwrite=false.
-    setDeviceEnvironmentVar(balenaId, FACILITIES_ENV_VAR_NAME, "$facilityId", overwrite = false)
-    setDeviceEnvironmentVar(balenaId, TOKEN_ENV_VAR_NAME, token, overwrite = false)
+    setDeviceEnvironmentVar(balenaId, FACILITIES_ENV_VAR_NAME, "$facilityId", overwrite)
+    setDeviceEnvironmentVar(balenaId, TOKEN_ENV_VAR_NAME, token, overwrite)
   }
 
   override fun getSensorKitIdForBalenaId(balenaId: BalenaDeviceId): String? {

@@ -464,7 +464,7 @@ class AdminController(
       val userId =
           row.userId ?: throw IllegalStateException("Device manager does not have a user ID")
 
-      deviceManagerService.generateOfflineToken(userId, balenaId, facilityId)
+      deviceManagerService.generateOfflineToken(userId, balenaId, facilityId, overwrite = true)
 
       redirectAttributes.successMessage = "Token generated."
     } catch (e: Exception) {

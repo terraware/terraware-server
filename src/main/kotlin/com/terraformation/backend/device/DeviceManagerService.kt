@@ -72,10 +72,11 @@ class DeviceManagerService(
       userId: UserId,
       balenaId: BalenaDeviceId,
       facilityId: FacilityId,
+      overwrite: Boolean = false,
   ) {
     val token = userStore.generateOfflineToken(userId)
 
-    balenaClient.configureDeviceManager(balenaId, facilityId, token)
+    balenaClient.configureDeviceManager(balenaId, facilityId, token, overwrite)
   }
 
   fun regenerateAllOfflineTokens() {
@@ -94,7 +95,7 @@ class DeviceManagerService(
             if (userId != null && balenaId != null && facilityId != null) {
               log.debug(
                   "Generating new token for device manager at facility $facilityId (user $userId)")
-              generateOfflineToken(userId, balenaId, facilityId)
+              generateOfflineToken(userId, balenaId, facilityId, overwrite = true)
             }
           }
     }
