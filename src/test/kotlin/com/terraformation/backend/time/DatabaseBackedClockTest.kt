@@ -3,6 +3,7 @@ package com.terraformation.backend.time
 import com.terraformation.backend.Application
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tables.references.TEST_CLOCK
@@ -33,6 +34,7 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
 
   private val config: TerrawareServerConfig = mockk()
   private val publisher: ApplicationEventPublisher = mockk()
+  private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
 
   /** Lazily-instantiated test subject; this will pick up per-test config values. */
   private val clock: DatabaseBackedClock by lazy { newDatabaseBackedClock() }
@@ -203,7 +205,6 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun newDatabaseBackedClock(): DatabaseBackedClock {
-    val clock = DatabaseBackedClock(config, dslContext, publisher, refreshInterval = null)
-    return clock
+    return DatabaseBackedClock(config, dslContext, publisher, systemUser, refreshInterval = null)
   }
 }
