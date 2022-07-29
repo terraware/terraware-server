@@ -28,12 +28,11 @@ fi
         echo "DOCKER_TAGS=${docker_image}:$commit_sha,${docker_image}:${TIER}"
 
         # Define secret names based on the tier
+        echo "AWS_REGION_SECRET_NAME=${TIER}_AWS_REGION"
+        echo "AWS_ROLE_SECRET_NAME=${TIER}_AWS_ROLE"
         echo "SSH_HOST_SECRET_NAME=${TIER}_SSH_HOST"
         echo "SSH_KEY_SECRET_NAME=${TIER}_SSH_KEY"
         echo "SSH_USER_SECRET_NAME=${TIER}_SSH_USER"
-        echo "AWS_ACCESS_KEY_ID_SECRET_NAME=${TIER}_AWS_ACCESS_KEY_ID"
-        echo "AWS_SECRET_ACCESS_KEY_SECRET_NAME=${TIER}_AWS_SECRET_ACCESS_KEY"
-        echo "AWS_REGION_SECRET_NAME=${TIER}_AWS_REGION"
     fi
 
     # Build Docker images for the species branch (TODO: Remove this before merging to main)

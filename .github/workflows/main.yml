@@ -15,6 +15,10 @@ on:
       - v2[0-9]+.[0-9]+
   pull_request:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -109,8 +113,7 @@ jobs:
       if: env.IS_CD == 'true'
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets[env.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
-        aws-secret-access-key: ${{ secrets[env.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
+        role-to-assume: ${{ secrets[env.AWS_ROLE_SECRET_NAME] }}
         aws-region: ${{ secrets[env.AWS_REGION_SECRET_NAME] }}
 
     - name: Deploy
