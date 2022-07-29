@@ -125,7 +125,7 @@ dependencies {
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
