@@ -10,7 +10,10 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
+import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -24,6 +27,7 @@ import java.net.http.HttpResponse
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -46,6 +50,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val clock: Clock = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val httpClient: HttpClient = mockk()
+  private val objectMapper = jacksonObjectMapper()
   private val realmResource: RealmResource = mockk()
   private val usersResource = InMemoryKeycloakUsersResource()
   override val user: TerrawareUser = mockUser()
@@ -108,7 +113,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             dslContext,
             httpClient,
             KeycloakInfo(keycloakProperties),
-            jacksonObjectMapper(),
+            objectMapper,
             organizationStore,
             parentStore,
             permissionStore,
@@ -378,5 +383,125 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     val model = userStore.fetchByEmail(userRepresentation.email)!!
 
     assertThrows<AccessDeniedException> { userStore.updateUser(model) }
+  }
+
+  @Nested
+  inner class Preferences {
+    @BeforeEach
+    fun setUp() {
+      insertUser()
+      insertOrganization()
+      insertOrganizationUser()
+    }
+
+    @Test
+    fun `fetchPreferences returns per-user preferences`() {
+      insertPreferences()
+      insertPreferences(organizationId = organizationId)
+
+      assertEquals(mapOf("org" to "null"), userStore.fetchPreferences(null))
+    }
+
+    @Test
+    fun `fetchPreferences returns per-organization preferences`() {
+      insertPreferences()
+      insertPreferences(organizationId = organizationId)
+
+      assertEquals(mapOf("org" to "$organizationId"), userStore.fetchPreferences(organizationId))
+    }
+
+    @Test
+    fun `fetchPreferences returns null if no preferences for user`() {
+      val otherUserId = UserId(50)
+      insertUser(otherUserId)
+
+      insertPreferences(otherUserId)
+      insertPreferences(user.userId, organizationId)
+
+      assertNull(userStore.fetchPreferences(null))
+    }
+
+    @Test
+    fun `fetchPreferences returns null if no preferences for organization`() {
+      val otherOrganizationId = OrganizationId(50)
+
+      insertOrganization(otherOrganizationId)
+      insertOrganizationUser(organizationId = otherOrganizationId)
+
+      insertPreferences()
+      insertPreferences(organizationId = otherOrganizationId)
+
+      assertNull(userStore.fetchPreferences(organizationId))
+    }
+
+    @Test
+    fun `fetchPreferences throws exception if no permission to read organization`() {
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> { userStore.fetchPreferences(organizationId) }
+    }
+
+    @Test
+    fun `updatePreferences inserts preferences if none exist`() {
+      val newPreferences = mapOf("new" to "prefs")
+      userStore.updatePreferences(null, newPreferences)
+
+      assertEquals(newPreferences, userStore.fetchPreferences(null))
+    }
+
+    @Test
+    fun `updatePreferences updates per-user preferences`() {
+      insertPreferences()
+      insertPreferences(organizationId = organizationId)
+
+      val newPreferences = mapOf("new" to "prefs")
+      userStore.updatePreferences(null, newPreferences)
+
+      assertEquals(newPreferences, userStore.fetchPreferences(null))
+    }
+
+    @Test
+    fun `updatePreferences updates per-organization preferences`() {
+      insertPreferences()
+      insertPreferences(organizationId = organizationId)
+
+      val newPreferences = mapOf("new" to "prefs")
+      userStore.updatePreferences(organizationId, newPreferences)
+
+      assertEquals(newPreferences, userStore.fetchPreferences(organizationId))
+    }
+
+    @Test
+    fun `updatePreferences throws exception if no permission to read organization`() {
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        userStore.updatePreferences(organizationId, emptyMap())
+      }
+    }
+
+    @Test
+    fun `user preferences can contain null values`() {
+      val preferences = mapOf<String, Any?>("key1" to null, "key2" to "value2")
+      userStore.updatePreferences(null, preferences)
+
+      assertEquals(preferences, userStore.fetchPreferences(null))
+    }
+
+    private fun insertPreferences(
+        userId: UserId = user.userId,
+        organizationId: OrganizationId? = null,
+        preferences: Map<String, Any> = mapOf("org" to "$organizationId")
+    ) {
+      dslContext
+          .insertInto(
+              USER_PREFERENCES,
+              USER_PREFERENCES.USER_ID,
+              USER_PREFERENCES.ORGANIZATION_ID,
+              USER_PREFERENCES.PREFERENCES)
+          .values(
+              userId, organizationId, JSONB.valueOf(objectMapper.writeValueAsString(preferences)))
+          .execute()
+    }
   }
 }

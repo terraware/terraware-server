@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.USERS
+import com.terraformation.backend.db.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -308,6 +309,12 @@ class OrganizationStore(
       if (rowsDeleted < 1) {
         throw UserNotFoundException(userId)
       }
+
+      dslContext
+          .deleteFrom(USER_PREFERENCES)
+          .where(USER_PREFERENCES.USER_ID.eq(userId))
+          .and(USER_PREFERENCES.ORGANIZATION_ID.eq(organizationId))
+          .execute()
     }
   }
 

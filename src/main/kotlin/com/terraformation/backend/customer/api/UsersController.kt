@@ -1,11 +1,13 @@
 package com.terraformation.backend.customer.api
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @CustomerEndpoint
@@ -54,6 +57,29 @@ class UsersController(private val userStore: UserStore) {
       throw ForbiddenException("Can only update information about ordinary users")
     }
   }
+
+  @GetMapping("/me/preferences")
+  @Operation(summary = "Gets the current user's preferences.")
+  fun getUserPreferences(
+      @RequestParam("organizationId")
+      @Schema(
+          description =
+              "If present, get the user's per-organization preferences for this organization. " +
+                  "If not present, get the user's global preferences.")
+      organizationId: OrganizationId?
+  ): GetUserPreferencesResponsePayload {
+    val preferences = userStore.fetchPreferences(organizationId)
+    return GetUserPreferencesResponsePayload(preferences)
+  }
+
+  @PutMapping("/me/preferences")
+  @Operation(summary = "Updates the current user's preferences.")
+  fun updateUserPreferences(
+      @RequestBody payload: UpdateUserPreferencesRequestPayload
+  ): SimpleSuccessResponsePayload {
+    userStore.updatePreferences(payload.organizationId, payload.preferences)
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class UserProfilePayload(
@@ -85,4 +111,19 @@ data class UpdateUserRequestPayload(
     val emailNotificationsEnabled: Boolean? = null,
     val firstName: String,
     val lastName: String,
+)
+
+@JsonInclude(JsonInclude.Include.ALWAYS)
+data class GetUserPreferencesResponsePayload(
+    @Schema(description = "The user's preferences, or null if no preferences have been stored yet.")
+    val preferences: Map<String, Any?>?
+) : SuccessResponsePayload
+
+data class UpdateUserPreferencesRequestPayload(
+    @Schema(
+        description =
+            "If present, update the user's per-organization preferences for this organization. " +
+                "If not present, update the user's global preferences.")
+    val organizationId: OrganizationId?,
+    val preferences: Map<String, Any?>
 )

@@ -17,12 +17,15 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.tables.pojos.UserPreferencesRow
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -400,11 +403,25 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganization(otherOrgId)
     insertOrganizationUser(model.userId, otherOrgId)
 
+    dslContext
+        .insertInto(
+            USER_PREFERENCES,
+            USER_PREFERENCES.USER_ID,
+            USER_PREFERENCES.ORGANIZATION_ID,
+            USER_PREFERENCES.PREFERENCES)
+        .values(model.userId, null, JSONB.valueOf("{\"org\":\"null\"}"))
+        .values(model.userId, organizationId, JSONB.valueOf("{\"org\":\"1\"}"))
+        .execute()
+
     store.removeUser(organizationId, model.userId)
 
     assertThrows<UserNotFoundException> { store.fetchUser(organizationId, model.userId) }
     assertNotNull(
         store.fetchUser(otherOrgId, model.userId), "User should still belong to other org")
+    assertEquals(
+        listOf(UserPreferencesRow(model.userId, null, JSONB.valueOf("{\"org\":\"null\"}"))),
+        dslContext.selectFrom(USER_PREFERENCES).fetchInto(UserPreferencesRow::class.java),
+        "User preferences for organization should be removed")
   }
 
   @Test

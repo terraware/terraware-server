@@ -141,15 +141,6 @@ COMMENT ON TABLE timeseries_types IS '(Enum) Data formats of the values of a tim
 
 COMMENT ON TABLE timeseries_values IS 'Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here.';
 
-COMMENT ON TABLE user_types IS '(Enum) Types of users. Most users are of type 1, "Individual."';
-
-COMMENT ON TABLE users IS 'User identities. A user can be associated with organizations via `organization_users`.';
-COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID.';
-COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants to receive notifications via email.';
-COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
-
-COMMENT ON TABLE uploads IS 'Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.';
-
 COMMENT ON TABLE upload_problems IS 'Details about problems (validation failures, etc.) in user-uploaded files.';
 COMMENT ON COLUMN upload_problems.position IS 'Where in the uploaded file the problem appears, or null if it is a problem with the file as a whole. This may be a byte offset, a line number, or a record number depending on the type of file.';
 COMMENT ON COLUMN upload_problems.field IS 'If the problem pertains to a specific field, its name. Null if the problem affects an entire record or the entire file.';
@@ -161,6 +152,18 @@ COMMENT ON COLUMN upload_statuses.finished IS 'If true, this status means that t
 
 COMMENT ON TABLE upload_types IS '(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table.';
 COMMENT ON COLUMN upload_types.expire_files IS 'Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type.';
+
+COMMENT ON TABLE uploads IS 'Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.';
+
+COMMENT ON TABLE user_preferences IS 'Client-defined preferences that should persist across browser sessions.';
+COMMENT ON COLUMN user_preferences.organization_id IS 'If null, preferences are global to the user. Otherwise, they are specific to the user and the organization.';
+
+COMMENT ON TABLE user_types IS '(Enum) Types of users. Most users are of type 1, "Individual."';
+
+COMMENT ON TABLE users IS 'User identities. A user can be associated with organizations via `organization_users`.';
+COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID.';
+COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants to receive notifications via email.';
+COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
 
 COMMENT ON TABLE viability_test_results IS 'Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 

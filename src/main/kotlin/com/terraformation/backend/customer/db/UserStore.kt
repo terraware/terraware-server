@@ -21,6 +21,7 @@ import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.pojos.UsersRow
 import com.terraformation.backend.db.tables.references.USERS
+import com.terraformation.backend.db.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -36,6 +37,7 @@ import javax.ws.rs.core.Response
 import kotlin.random.Random
 import org.apache.commons.codec.binary.Base32
 import org.jooq.DSLContext
+import org.jooq.JSONB
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
@@ -221,6 +223,53 @@ class UserStore(
       } catch (e: Exception) {
         throw KeycloakRequestFailedException("Failed to update user data in Keycloak", e)
       }
+    }
+  }
+
+  fun fetchPreferences(organizationId: OrganizationId?): Map<String, Any?>? {
+    requirePermissions { organizationId?.let { readOrganization(it) } }
+
+    val organizationIdCondition =
+        if (organizationId != null) {
+          USER_PREFERENCES.ORGANIZATION_ID.eq(organizationId)
+        } else {
+          USER_PREFERENCES.ORGANIZATION_ID.isNull
+        }
+
+    return dslContext
+        .select(USER_PREFERENCES.PREFERENCES)
+        .from(USER_PREFERENCES)
+        .where(USER_PREFERENCES.USER_ID.eq(currentUser().userId))
+        .and(organizationIdCondition)
+        .fetchOne(USER_PREFERENCES.PREFERENCES)
+        ?.let { objectMapper.readValue(it.data()) }
+  }
+
+  fun updatePreferences(organizationId: OrganizationId?, preferences: Map<String, Any?>) {
+    requirePermissions { organizationId?.let { readOrganization(it) } }
+
+    val organizationIdCondition =
+        if (organizationId != null) {
+          USER_PREFERENCES.ORGANIZATION_ID.eq(organizationId)
+        } else {
+          USER_PREFERENCES.ORGANIZATION_ID.isNull
+        }
+
+    dslContext.transaction { _ ->
+      dslContext
+          .deleteFrom(USER_PREFERENCES)
+          .where(USER_PREFERENCES.USER_ID.eq(currentUser().userId))
+          .and(organizationIdCondition)
+          .execute()
+
+      dslContext
+          .insertInto(USER_PREFERENCES)
+          .set(USER_PREFERENCES.USER_ID, currentUser().userId)
+          .set(USER_PREFERENCES.ORGANIZATION_ID, organizationId)
+          .set(
+              USER_PREFERENCES.PREFERENCES,
+              JSONB.valueOf(objectMapper.writeValueAsString(preferences)))
+          .execute()
     }
   }
 

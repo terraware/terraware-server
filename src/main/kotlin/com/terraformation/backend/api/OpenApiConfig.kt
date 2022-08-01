@@ -2,7 +2,9 @@ package com.terraformation.backend.api
 
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.customer.api.AutomationPayload
+import com.terraformation.backend.customer.api.GetUserPreferencesResponsePayload
 import com.terraformation.backend.customer.api.ModifyAutomationRequestPayload
+import com.terraformation.backend.customer.api.UpdateUserPreferencesRequestPayload
 import com.terraformation.backend.device.api.CreateDeviceRequestPayload
 import com.terraformation.backend.device.api.DeviceConfig
 import com.terraformation.backend.device.api.UpdateDeviceRequestPayload
@@ -97,8 +99,10 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomiser 
             AutomationPayload::class.swaggerSchemaName to "configuration",
             CreateDeviceRequestPayload::class.swaggerSchemaName to "settings",
             DeviceConfig::class.swaggerSchemaName to "settings",
+            GetUserPreferencesResponsePayload::class.swaggerSchemaName to "preferences",
             ModifyAutomationRequestPayload::class.swaggerSchemaName to "configuration",
             UpdateDeviceRequestPayload::class.swaggerSchemaName to "settings",
+            UpdateUserPreferencesRequestPayload::class.swaggerSchemaName to "preferences",
         )
     val listsToModify =
         listOf(
