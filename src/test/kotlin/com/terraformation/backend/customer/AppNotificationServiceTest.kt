@@ -16,14 +16,12 @@ import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationType
 import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
@@ -41,12 +39,6 @@ import com.terraformation.backend.seedbank.db.GeolocationStore
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
-import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
-import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
-import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
-import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
-import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
 import io.mockk.every
 import io.mockk.mockk
@@ -143,25 +135,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { clock.zone } returns ZoneOffset.UTC
     every { messages.userAddedToOrganizationNotification(any()) } returns
         NotificationMessage("organization title", "organization body")
-    every { messages.accessionMoveToDryNotification(any()) } returns
-        NotificationMessage("accession title", "accession body")
     every { messages.accessionDryingEndNotification(any()) } returns
-        NotificationMessage("accession title", "accession body")
-    every { messages.accessionViabilityTestNotification(any(), ViabilityTestType.Lab) } returns
-        NotificationMessage(
-            "accession lab viability test title", "accession lab viability test body")
-    every { messages.accessionsAwaitingProcessing(any()) } returns
-        NotificationMessage(
-            "accessions awaiting processing title", "accessions awaiting processing body")
-    every { messages.accessionsReadyForTesting(any(), any()) } returns
-        NotificationMessage(
-            "accessions ready for testing title", "accessions ready for testing body")
-    every { messages.accessionsFinishedDrying(any()) } returns
-        NotificationMessage("accessions finished drying title", "accessions finished drying body")
-    every { messages.accessionViabilityTestNotification(any(), ViabilityTestType.Nursery) } returns
-        NotificationMessage(
-            "accession nursery viability test title", "accession nursery viability test body")
-    every { messages.accessionWithdrawalNotification(any()) } returns
         NotificationMessage("accession title", "accession body")
     every { messages.facilityIdle() } returns
         NotificationMessage("facility idle title", "facility idle body")
@@ -212,50 +186,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store accession move to drying racks notification`() {
-    // add a second user to check for multiple notifications
-    insertUser(otherUserId)
-    insertOrganizationUser()
-    insertOrganizationUser(otherUserId)
-
-    val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
-    assertNotNull(accessionModel)
-
-    service.on(AccessionMoveToDryEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionScheduledforDrying,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accession title",
-                body = "accession body",
-                localUrl = webAppUrls.accession(accessionModel.id!!),
-                createdTime = Instant.EPOCH,
-                isRead = false),
-            NotificationsRow(
-                id = NotificationId(2),
-                notificationTypeId = NotificationType.AccessionScheduledforDrying,
-                userId = otherUserId,
-                organizationId = organizationId,
-                title = "accession title",
-                body = "accession body",
-                localUrl = webAppUrls.accession(accessionModel.id!!),
-                createdTime = Instant.EPOCH,
-                isRead = false),
-        )
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of an accession move from racks to drying cabinets")
-  }
-
-  @Test
   fun `should store accession drying end date notification`() {
     // add a second user to check for multiple notifications
     insertUser(otherUserId)
@@ -285,192 +215,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         expectedNotifications,
         actualNotifications,
         "Notification should match that of an accession scheduled to end drying")
-  }
-
-  @Test
-  fun `should store accession viability test in a lab, notification`() {
-    // add a second user to check for multiple notifications
-    insertUser(otherUserId)
-    insertOrganizationUser()
-
-    val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
-    assertNotNull(accessionModel)
-
-    service.on(
-        AccessionViabilityTestEvent(
-            accessionModel.accessionNumber!!, accessionModel.id!!, ViabilityTestType.Lab))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionScheduledforViabilityTest,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accession lab viability test title",
-                body = "accession lab viability test body",
-                localUrl =
-                    webAppUrls.accessionViabilityTest(accessionModel.id!!, ViabilityTestType.Lab),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of an accession scheduled for viability test in a lab")
-  }
-
-  @Test
-  fun `should store accession viability test in a nursery, notification`() {
-    // add a second user to check for multiple notifications
-    insertUser(otherUserId)
-    insertOrganizationUser()
-
-    val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
-    assertNotNull(accessionModel)
-
-    service.on(
-        AccessionViabilityTestEvent(
-            accessionModel.accessionNumber!!, accessionModel.id!!, ViabilityTestType.Nursery))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionScheduledforViabilityTest,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accession nursery viability test title",
-                body = "accession nursery viability test body",
-                localUrl =
-                    webAppUrls.accessionViabilityTest(
-                        accessionModel.id!!, ViabilityTestType.Nursery),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of an accession scheduled for viability test in a nursery")
-  }
-
-  @Test
-  fun `should store accession scheduled for withdrawal notification`() {
-    // add a second user to check for multiple notifications
-    insertUser(otherUserId)
-    insertOrganizationUser()
-
-    val accessionModel = accessionStore.create(AccessionModel(facilityId = facilityId))
-    assertNotNull(accessionModel)
-
-    service.on(AccessionWithdrawalEvent(accessionModel.accessionNumber!!, accessionModel.id!!))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionScheduledforWithdrawal,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accession title",
-                body = "accession body",
-                localUrl = webAppUrls.accession(accessionModel.id!!),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of an accession scheduled for withdrawal")
-  }
-
-  @Test
-  fun `should store accessions awaiting processing notification`() {
-    // add a second user to check for multiple notifications
-    insertUser(otherUserId)
-    insertOrganizationUser()
-
-    service.on(AccessionsAwaitingProcessingEvent(facilityId, 5, AccessionState.Pending))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionsAwaitingProcessing,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accessions awaiting processing title",
-                body = "accessions awaiting processing body",
-                localUrl = webAppUrls.accessions(facilityId, AccessionState.Pending),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of accessions awaiting processing")
-  }
-
-  @Test
-  fun `should store accessions ready for testing notification`() {
-    insertOrganizationUser()
-
-    service.on(AccessionsReadyForTestingEvent(facilityId, 5, 2, AccessionState.Processed))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionsReadyforTesting,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accessions ready for testing title",
-                body = "accessions ready for testing body",
-                localUrl = webAppUrls.accessions(facilityId, AccessionState.Processed),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of accessions ready for testing")
-  }
-
-  @Test
-  fun `should store accessions finished drying notification`() {
-    insertOrganizationUser()
-
-    service.on(AccessionsFinishedDryingEvent(facilityId, 5, AccessionState.Dried))
-
-    val expectedNotifications =
-        listOf(
-            NotificationsRow(
-                id = NotificationId(1),
-                notificationTypeId = NotificationType.AccessionsFinishedDrying,
-                userId = user.userId,
-                organizationId = organizationId,
-                title = "accessions finished drying title",
-                body = "accessions finished drying body",
-                localUrl = webAppUrls.accessions(facilityId, AccessionState.Dried),
-                createdTime = Instant.EPOCH,
-                isRead = false))
-
-    val actualNotifications = notificationsDao.findAll()
-
-    assertEquals(
-        expectedNotifications,
-        actualNotifications,
-        "Notification should match that of accessions finished drying")
   }
 
   @Test

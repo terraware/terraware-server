@@ -23,12 +23,6 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
-import com.terraformation.backend.seedbank.event.AccessionMoveToDryEvent
-import com.terraformation.backend.seedbank.event.AccessionViabilityTestEvent
-import com.terraformation.backend.seedbank.event.AccessionWithdrawalEvent
-import com.terraformation.backend.seedbank.event.AccessionsAwaitingProcessingEvent
-import com.terraformation.backend.seedbank.event.AccessionsFinishedDryingEvent
-import com.terraformation.backend.seedbank.event.AccessionsReadyForTestingEvent
 import java.net.URI
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -127,18 +121,6 @@ class AppNotificationService(
   }
 
   @EventListener
-  fun on(event: AccessionMoveToDryEvent) {
-    val accessionUrl = webAppUrls.accession(event.accessionId)
-    val message = messages.accessionMoveToDryNotification(event.accessionNumber)
-
-    log.info(
-        "Creating app notifications for accession ${event.accessionNumber} scheduled for drying.")
-
-    insertFacilityNotifications(
-        event.accessionId, NotificationType.AccessionScheduledforDrying, message, accessionUrl)
-  }
-
-  @EventListener
   fun on(event: AccessionDryingEndEvent) {
     val accessionUrl = webAppUrls.accession(event.accessionId)
     val message = messages.accessionDryingEndNotification(event.accessionNumber)
@@ -151,72 +133,6 @@ class AppNotificationService(
         message,
         accessionUrl,
     )
-  }
-
-  @EventListener
-  fun on(event: AccessionViabilityTestEvent) {
-    val accessionUrl = webAppUrls.accessionViabilityTest(event.accessionId, event.testType)
-    val message = messages.accessionViabilityTestNotification(event.accessionNumber, event.testType)
-
-    log.info(
-        "Creating app notifications for accession ${event.accessionNumber} viability test ${event.testType}.")
-
-    insertFacilityNotifications(
-        event.accessionId,
-        NotificationType.AccessionScheduledforViabilityTest,
-        message,
-        accessionUrl,
-    )
-  }
-
-  @EventListener
-  fun on(event: AccessionWithdrawalEvent) {
-    val accessionUrl = webAppUrls.accession(event.accessionId)
-    val message = messages.accessionWithdrawalNotification(event.accessionNumber)
-
-    log.info("Creating app notifications for accession ${event.accessionNumber} withdrawal.")
-
-    insertFacilityNotifications(
-        event.accessionId,
-        NotificationType.AccessionScheduledforWithdrawal,
-        message,
-        accessionUrl,
-    )
-  }
-
-  @EventListener
-  fun on(event: AccessionsAwaitingProcessingEvent) {
-    val accessionsUrl = webAppUrls.accessions(event.facilityId, event.state)
-    val message = messages.accessionsAwaitingProcessing(event.numAccessions)
-
-    log.info(
-        "Creating app notifications for ${event.numAccessions} accessions awaiting processing.")
-
-    insertFacilityNotifications(
-        event.facilityId, NotificationType.AccessionsAwaitingProcessing, message, accessionsUrl)
-  }
-
-  @EventListener
-  fun on(event: AccessionsReadyForTestingEvent) {
-    val accessionsUrl = webAppUrls.accessions(event.facilityId, event.state)
-    val message = messages.accessionsReadyForTesting(event.numAccessions, event.weeks)
-
-    log.info(
-        "Creating app notifications for ${event.numAccessions} accessions ready for testing since ${event.weeks} weeks.")
-
-    insertFacilityNotifications(
-        event.facilityId, NotificationType.AccessionsReadyforTesting, message, accessionsUrl)
-  }
-
-  @EventListener
-  fun on(event: AccessionsFinishedDryingEvent) {
-    val accessionsUrl = webAppUrls.accessions(event.facilityId, event.state)
-    val message = messages.accessionsFinishedDrying(event.numAccessions)
-
-    log.info("Creating app notifications for ${event.numAccessions} accessions finished drying.")
-
-    insertFacilityNotifications(
-        event.facilityId, NotificationType.AccessionsFinishedDrying, message, accessionsUrl)
   }
 
   private fun insertFacilityNotifications(

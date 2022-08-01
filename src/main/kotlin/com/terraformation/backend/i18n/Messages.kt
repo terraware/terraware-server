@@ -2,7 +2,6 @@ package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.SeedStorageBehavior
-import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import javax.annotation.ManagedBean
 
@@ -16,16 +15,6 @@ data class NotificationMessage(val title: String, val body: String)
  */
 @ManagedBean
 class Messages {
-  fun driedNotification(count: Int) =
-      if (count == 1) "1 accession has passed its drying end date and is ready to be stored."
-      else "$count accessions have passed their drying end date and are ready to be stored."
-
-  fun dryingMoveDateNotification(accessionNumber: String) =
-      "$accessionNumber is scheduled to be moved from racks to dry cabinets today!"
-
-  fun withdrawalDateNotification(accessionNumber: String) =
-      "$accessionNumber is scheduled for a withdrawal today!"
-
   fun speciesCsvBadHeader() = "Incorrect column headings"
 
   fun speciesCsvWrongFieldCount(expected: Int, actual: Int) =
@@ -63,56 +52,10 @@ class Messages {
           title = "You've been added to a new organization!",
           body = "You are now a member of $orgName. Welcome!")
 
-  fun accessionMoveToDryNotification(accessionNumber: String): NotificationMessage =
-      NotificationMessage(
-          title = "An accession needs attention!",
-          body = dryingMoveDateNotification(accessionNumber))
-
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
           title = "An accession has dried",
           body = "$accessionNumber has reached its scheduled drying date.")
-
-  fun accessionViabilityTestNotification(
-      accessionNumber: String,
-      testType: ViabilityTestType
-  ): NotificationMessage =
-      NotificationMessage(
-          title = "Time to test your accessions!",
-          body =
-              when (testType) {
-                ViabilityTestType.Lab ->
-                    "$accessionNumber is scheduled for a lab germination test today!"
-                ViabilityTestType.Nursery ->
-                    "$accessionNumber is scheduled for a nursery germination test today!"
-              })
-
-  fun accessionWithdrawalNotification(accessionNumber: String): NotificationMessage =
-      NotificationMessage(
-          title = "Seeds are being withdrawn!", body = withdrawalDateNotification(accessionNumber))
-
-  fun accessionsAwaitingProcessing(count: Int): NotificationMessage =
-      NotificationMessage(
-          title = "Accessions need your review!",
-          body =
-              if (count == 1)
-                  "1 accession has been waiting since drop off for at least 1 week and is ready to be processed."
-              else
-                  "$count accessions have been waiting since drop off for at least 1 week and are ready to be processed.")
-
-  fun accessionsReadyForTesting(count: Int, weeks: Int): NotificationMessage =
-      NotificationMessage(
-          title = "You have accessions ready for testing.",
-          body =
-              if (count == 1)
-                  "1 accession has finished processing for at least $weeks weeks and is ready to be " +
-                      "tested for %RH."
-              else
-                  "$count accessions have finished processing for at least $weeks weeks and are ready to " +
-                      "be tested for %RH.")
-
-  fun accessionsFinishedDrying(count: Int): NotificationMessage =
-      NotificationMessage(title = "Accessions need attention!", body = driedNotification(count))
 
   fun facilityIdle(): NotificationMessage =
       NotificationMessage(
