@@ -498,14 +498,14 @@
 <text text-anchor="start" x="426" y="-761.119" font-family="Helvetica,sans-Serif" font-size="11.00">notification_criticality_id</text>
 <polygon fill="none" stroke="black" points="406,-734.919 406,-752.919 575,-752.919 575,-734.919 406,-734.919"/>
 <text text-anchor="start" x="409" y="-741.119" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="406,-716.919 406,-734.919 466,-734.919 466,-716.919 406,-716.919"/>
-<polygon fill="none" stroke="black" points="406,-716.919 406,-734.919 466,-734.919 466,-716.919 406,-716.919"/>
+<polygon fill="#ffffff" stroke="none" points="406,-716.919 406,-734.919 469,-734.919 469,-716.919 406,-716.919"/>
+<polygon fill="none" stroke="black" points="406,-716.919 406,-734.919 469,-734.919 469,-716.919 406,-716.919"/>
 <text text-anchor="start" x="409" y="-723.119" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="466,-716.919 466,-734.919 533,-734.919 533,-716.919 466,-716.919"/>
-<polygon fill="none" stroke="black" points="466,-716.919 466,-734.919 533,-734.919 533,-716.919 466,-716.919"/>
-<text text-anchor="start" x="487" y="-723.119" font-family="Helvetica,sans-Serif" font-size="11.00">13 rows</text>
-<polygon fill="#ffffff" stroke="none" points="533,-716.919 533,-734.919 575,-734.919 575,-716.919 533,-716.919"/>
-<polygon fill="none" stroke="black" points="533,-716.919 533,-734.919 575,-734.919 575,-716.919 533,-716.919"/>
+<polygon fill="#ffffff" stroke="none" points="469,-716.919 469,-734.919 531,-734.919 531,-716.919 469,-716.919"/>
+<polygon fill="none" stroke="black" points="469,-716.919 469,-734.919 531,-734.919 531,-716.919 469,-716.919"/>
+<text text-anchor="start" x="492" y="-723.119" font-family="Helvetica,sans-Serif" font-size="11.00">7 rows</text>
+<polygon fill="#ffffff" stroke="none" points="531,-716.919 531,-734.919 575,-734.919 575,-716.919 531,-716.919"/>
+<polygon fill="none" stroke="black" points="531,-716.919 531,-734.919 575,-734.919 575,-716.919 531,-716.919"/>
 <text text-anchor="start" x="555" y="-723.119" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

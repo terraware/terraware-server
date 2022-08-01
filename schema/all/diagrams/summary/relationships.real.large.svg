@@ -1567,14 +1567,14 @@
 <polygon fill="none" stroke="black" points="417,-2358.21 417,-2380.21 586,-2380.21 586,-2358.21 417,-2358.21"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="422" y="-2375.21"/>
 <text text-anchor="start" x="437" y="-2366.41" font-family="Helvetica,sans-Serif" font-size="11.00">notification_criticality_id</text>
-<polygon fill="#ffffff" stroke="none" points="417,-2340.21 417,-2358.21 477,-2358.21 477,-2340.21 417,-2340.21"/>
-<polygon fill="none" stroke="black" points="417,-2340.21 417,-2358.21 477,-2358.21 477,-2340.21 417,-2340.21"/>
+<polygon fill="#ffffff" stroke="none" points="417,-2340.21 417,-2358.21 480,-2358.21 480,-2340.21 417,-2340.21"/>
+<polygon fill="none" stroke="black" points="417,-2340.21 417,-2358.21 480,-2358.21 480,-2340.21 417,-2340.21"/>
 <text text-anchor="start" x="420" y="-2346.41" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="477,-2340.21 477,-2358.21 544,-2358.21 544,-2340.21 477,-2340.21"/>
-<polygon fill="none" stroke="black" points="477,-2340.21 477,-2358.21 544,-2358.21 544,-2340.21 477,-2340.21"/>
-<text text-anchor="start" x="498" y="-2346.41" font-family="Helvetica,sans-Serif" font-size="11.00">13 rows</text>
-<polygon fill="#ffffff" stroke="none" points="544,-2340.21 544,-2358.21 586,-2358.21 586,-2340.21 544,-2340.21"/>
-<polygon fill="none" stroke="black" points="544,-2340.21 544,-2358.21 586,-2358.21 586,-2340.21 544,-2340.21"/>
+<polygon fill="#ffffff" stroke="none" points="480,-2340.21 480,-2358.21 542,-2358.21 542,-2340.21 480,-2340.21"/>
+<polygon fill="none" stroke="black" points="480,-2340.21 480,-2358.21 542,-2358.21 542,-2340.21 480,-2340.21"/>
+<text text-anchor="start" x="503" y="-2346.41" font-family="Helvetica,sans-Serif" font-size="11.00">7 rows</text>
+<polygon fill="#ffffff" stroke="none" points="542,-2340.21 542,-2358.21 586,-2358.21 586,-2340.21 542,-2340.21"/>
+<polygon fill="none" stroke="black" points="542,-2340.21 542,-2358.21 586,-2358.21 586,-2340.21 542,-2340.21"/>
 <text text-anchor="start" x="566" y="-2346.41" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

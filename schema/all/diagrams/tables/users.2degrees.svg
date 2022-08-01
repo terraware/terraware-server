@@ -1340,14 +1340,14 @@
 <text text-anchor="start" x="644" y="-1204.77" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="532,-1178.57 532,-1196.57 683,-1196.57 683,-1178.57 532,-1178.57"/>
 <text text-anchor="start" x="535" y="-1184.77" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="532,-1160.57 532,-1178.57 583,-1178.57 583,-1160.57 532,-1160.57"/>
-<polygon fill="none" stroke="black" points="532,-1160.57 532,-1178.57 583,-1178.57 583,-1160.57 532,-1160.57"/>
+<polygon fill="#ffffff" stroke="none" points="532,-1160.57 532,-1178.57 586,-1178.57 586,-1160.57 532,-1160.57"/>
+<polygon fill="none" stroke="black" points="532,-1160.57 532,-1178.57 586,-1178.57 586,-1160.57 532,-1160.57"/>
 <text text-anchor="start" x="535" y="-1166.77" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="583,-1160.57 583,-1178.57 646,-1178.57 646,-1160.57 583,-1160.57"/>
-<polygon fill="none" stroke="black" points="583,-1160.57 583,-1178.57 646,-1178.57 646,-1160.57 583,-1160.57"/>
-<text text-anchor="start" x="600" y="-1166.77" font-family="Helvetica,sans-Serif" font-size="11.00">13 rows</text>
-<polygon fill="#ffffff" stroke="none" points="646,-1160.57 646,-1178.57 683,-1178.57 683,-1160.57 646,-1160.57"/>
-<polygon fill="none" stroke="black" points="646,-1160.57 646,-1178.57 683,-1178.57 683,-1160.57 646,-1160.57"/>
+<polygon fill="#ffffff" stroke="none" points="586,-1160.57 586,-1178.57 644,-1178.57 644,-1160.57 586,-1160.57"/>
+<polygon fill="none" stroke="black" points="586,-1160.57 586,-1178.57 644,-1178.57 644,-1160.57 586,-1160.57"/>
+<text text-anchor="start" x="605" y="-1166.77" font-family="Helvetica,sans-Serif" font-size="11.00">7 rows</text>
+<polygon fill="#ffffff" stroke="none" points="644,-1160.57 644,-1178.57 683,-1178.57 683,-1160.57 644,-1160.57"/>
+<polygon fill="none" stroke="black" points="644,-1160.57 644,-1178.57 683,-1178.57 683,-1160.57 644,-1160.57"/>
 <text text-anchor="start" x="663" y="-1166.77" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
