@@ -50,6 +50,7 @@ accession_photos
 accession_viability_test_types
 device_managers
 upload_problems
+user_preferences
 accession_state_history
 notifications
 species_problems

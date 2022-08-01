@@ -6,6 +6,7 @@ automations
 species_problems
 notifications
 accession_state_history
+user_preferences
 upload_problems
 device_managers
 accession_viability_test_types

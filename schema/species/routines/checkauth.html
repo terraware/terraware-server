@@ -85,7 +85,7 @@
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p><p>args: a_table_name, a_key_column_name - Creates a trigger on a table to prevent/allow updates and deletes of rows based on authorization token.</p></p>
+                            <p><p>args: a_schema_name, a_table_name, a_key_column_name - Creates a trigger on a table to prevent/allow updates and deletes of rows based on authorization token.</p></p>
                         </div>
                         <!-- /.box-body -->
                     </div>
@@ -150,7 +150,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">&#10;DECLARE&#10;&#9;schema text;&#10;BEGIN&#10;&#9;IF NOT LongTransactionsEnabled() THEN&#10;&#9;&#9;RAISE EXCEPTION &#39;Long transaction support disabled, use EnableLongTransaction() to enable.&#39;;&#10;&#9;END IF;&#10;&#10;&#9;if ( $1 != &#39;&#39; ) THEN&#10;&#9;&#9;schema = $1;&#10;&#9;ELSE&#10;&#9;&#9;SELECT current_schema() into schema;&#10;&#9;END IF;&#10;&#10;&#9;-- TODO: check for an already existing trigger ?&#10;&#10;&#9;EXECUTE &#39;CREATE TRIGGER check_auth BEFORE UPDATE OR DELETE ON &#39;&#10;&#9;&#9;|| quote_ident(schema) || &#39;.&#39; || quote_ident($2)&#10;&#9;&#9;||&#39; FOR EACH ROW EXECUTE PROCEDURE CheckAuthTrigger(&#39;&#10;&#9;&#9;|| quote_literal($3) || &#39;)&#39;;&#10;&#10;&#9;RETURN 0;&#10;END;&#10;</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;"> SELECT CheckAuth(&#39;&#39;, $1, $2) </textarea>
                         </div>
                     </div>
                 </section>

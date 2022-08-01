@@ -1,5 +1,6 @@
 organization_users
 notifications
+user_preferences
 upload_problems
 device_managers
 facilities
