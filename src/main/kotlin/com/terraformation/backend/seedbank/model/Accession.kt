@@ -84,6 +84,7 @@ data class AccessionModel(
     val source: AccessionSource? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
+    val speciesCommonName: String? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionState? = null,
     val storageCondition: StorageCondition? = null,
