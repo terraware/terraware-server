@@ -178,6 +178,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "upload_problem_types" to setOf(ALL, CUSTOMER),
           "upload_statuses" to setOf(ALL, CUSTOMER),
           "upload_types" to setOf(ALL, CUSTOMER),
+          "user_preferences" to setOf(ALL, CUSTOMER),
           "user_types" to setOf(ALL, CUSTOMER),
           "users" to setOf(ALL, CUSTOMER),
           "viability_test_results" to setOf(ALL, SEEDBANK),
