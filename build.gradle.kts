@@ -66,6 +66,7 @@ dependencies {
   val awsSdkVersion: String by project
   val jacksonVersion: String by project
   val jooqVersion: String by project
+  val jUnitVersion: String by project
   val keycloakVersion: String by project
   val postgresJdbcVersion: String by project
   val springDocVersion: String by project
@@ -118,14 +119,14 @@ dependencies {
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.2")
 
   testImplementation("io.mockk:mockk:1.12.4")
-  testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation(platform("org.testcontainers:testcontainers-bom:1.17.3"))
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:postgresql")
 
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
