@@ -91,6 +91,7 @@ class AccessionStore(
         dslContext
             .select(
                 ACCESSIONS.asterisk(),
+                ACCESSIONS.species().COMMON_NAME,
                 ACCESSIONS.species().SCIENTIFIC_NAME,
                 ACCESSIONS.STATE_ID,
                 ACCESSIONS.storageLocations().NAME,
@@ -157,6 +158,7 @@ class AccessionStore(
           source = source,
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
           species = record[species().SCIENTIFIC_NAME],
+          speciesCommonName = record[species().COMMON_NAME],
           speciesId = record[SPECIES_ID],
           state = record[STATE_ID]!!,
           storageCondition = record[storageLocations().CONDITION_ID],

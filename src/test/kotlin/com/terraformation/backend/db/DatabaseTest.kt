@@ -345,6 +345,7 @@ abstract class DatabaseTest {
       deletedTime: Instant? = null,
       checkedTime: Instant? = null,
       initialScientificName: String = scientificName,
+      commonName: String? = null,
   ) {
     val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -353,6 +354,7 @@ abstract class DatabaseTest {
       dslContext
           .insertInto(SPECIES)
           .set(CHECKED_TIME, checkedTime)
+          .set(COMMON_NAME, commonName)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
           .set(DELETED_BY, if (deletedTime != null) createdBy else null)

@@ -345,7 +345,14 @@ data class AccessionPayload(
                 "the presence of the deviceInfo field.")
     val source: AccessionSource?,
     val sourcePlantOrigin: SourcePlantOrigin?,
+    @Schema(
+        description = "Scientific name of the species.",
+    )
     val species: String?,
+    @Schema(
+        description = "Common name of the species, if defined.",
+    )
+    val speciesCommonName: String?,
     @Schema(
         description = "Server-generated unique ID of the species.",
     )
@@ -429,6 +436,7 @@ data class AccessionPayload(
       model.source,
       model.sourcePlantOrigin,
       model.species,
+      model.speciesCommonName,
       model.speciesId,
       model.state ?: AccessionState.Pending,
       model.storageCondition,

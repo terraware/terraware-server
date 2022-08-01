@@ -21,6 +21,7 @@ import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
+import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.ViabilityTestId
@@ -885,7 +886,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial = createAccessionWithViabilityTest()
     val updated = store.updateAndFetch(initial.copy(viabilityTests = emptyList()))
 
-    assertEquals(emptyList<ViabilityTestModel>(), updated.withdrawals)
+    assertEquals(emptyList<WithdrawalModel>(), updated.withdrawals)
   }
 
   @Test
@@ -1567,6 +1568,24 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(any()) } returns false
 
     assertThrows<AccessionNotFoundException> { store.fetchOneById(initial.id!!) }
+  }
+
+  @Test
+  fun `fetchOneById uses species names from species table`() {
+    val speciesId = SpeciesId(1)
+    val oldScientificName = "Test Scientific Name"
+    val newScientificName = "New Scientific Name"
+    val commonName = "Test Common Name"
+    insertSpecies(speciesId, scientificName = oldScientificName, commonName = commonName)
+
+    val initial = store.create(AccessionModel(facilityId = facilityId, species = oldScientificName))
+
+    speciesDao.update(speciesDao.fetchOneById(speciesId)!!.copy(scientificName = newScientificName))
+
+    val fetched = store.fetchOneById(initial.id!!)
+
+    assertEquals(newScientificName, fetched.species, "Scientific name")
+    assertEquals(commonName, fetched.speciesCommonName, "Common name")
   }
 
   @Test
