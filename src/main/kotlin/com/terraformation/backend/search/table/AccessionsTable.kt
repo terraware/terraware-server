@@ -19,9 +19,11 @@ import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
+import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
+import java.time.Clock
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
@@ -29,7 +31,7 @@ import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class AccessionsTable(private val tables: SearchTables) : SearchTable() {
+class AccessionsTable(private val tables: SearchTables, private val clock: Clock) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = ACCESSIONS.ID
 
@@ -63,6 +65,14 @@ class AccessionsTable(private val tables: SearchTables) : SearchTable() {
     listOf(
         upperCaseTextField("accessionNumber", "Accession", ACCESSIONS.NUMBER, nullable = false),
         ActiveField("active", "Active"),
+        ageField(
+            "ageMonths",
+            "Age (months)",
+            ACCESSIONS.COLLECTED_DATE,
+            AgeField.MonthGranularity,
+            clock),
+        ageField(
+            "ageYears", "Age (years)", ACCESSIONS.COLLECTED_DATE, AgeField.YearGranularity, clock),
         aliasField("bagNumber", "bags_number"),
         timestampField("checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
         dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),

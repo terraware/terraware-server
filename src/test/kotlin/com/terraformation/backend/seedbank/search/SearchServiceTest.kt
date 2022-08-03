@@ -49,9 +49,12 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -77,7 +80,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val checkedInTime = Instant.parse(checkedInTimeString)
   private val searchScopes = listOf(OrganizationIdScope(organizationId))
 
-  private val tables = SearchTables()
+  private val clock: Clock = mockk()
+
+  private val tables = SearchTables(clock)
   private val accessionsTable = tables.accessions
   private val rootPrefix = SearchFieldPrefix(root = accessionsTable)
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")
@@ -106,6 +111,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     searchService = SearchService(dslContext)
     accessionSearchService = AccessionSearchService(tables, searchService)
 
+    every { clock.instant() } returns Instant.parse("2020-06-15T00:00:00.00Z")
+    every { clock.zone } returns ZoneOffset.UTC
     every { user.organizationRoles } returns mapOf(organizationId to Role.MANAGER)
     every { user.facilityRoles } returns mapOf(facilityId to Role.MANAGER)
 
@@ -160,6 +167,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             number = "XYZ",
             stateId = AccessionState.Processed,
             checkedInTime = checkedInTime,
+            collectedDate = LocalDate.of(2019, 3, 2),
             createdBy = user.userId,
             createdTime = now,
             facilityId = facilityId,
@@ -972,6 +980,211 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           accessionSearchService.search(facilityId, listOf(accessionNumberField), searchNode)
 
       assertEquals(expected, actual)
+    }
+  }
+
+  @Nested
+  inner class AgeFieldTest {
+    private val ageMonthsField = rootPrefix.resolve("ageMonths")
+    private val ageYearsField = rootPrefix.resolve("ageYears")
+    private val collectedDateField = rootPrefix.resolve("collectedDate")
+    private val idField = rootPrefix.resolve("id")
+
+    @Test
+    fun `can search for exact ages`() {
+      listOf(1100L, 1101L, 1102L).forEach { id ->
+        accessionsDao.insert(
+            AccessionsRow(
+                id = AccessionId(id),
+                number = "$id",
+                stateId = AccessionState.Processed,
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                facilityId = facilityId,
+                modifiedBy = user.userId,
+                modifiedTime = Instant.EPOCH))
+      }
+
+      setCollectedDates(
+          1000 to "2018-01-01", // 29 months old
+          1001 to "2019-01-01", // 17 months old
+          1100 to "2020-01-01", // 5 months old
+          1101 to "2020-06-01", // 0 months old
+          1102 to null,
+      )
+
+      val searchNode = FieldNode(ageMonthsField, listOf("0", "17", null))
+      val sortField = SearchSortField(ageMonthsField)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "1101",
+                      "ageMonths" to "0",
+                      "ageYears" to "0",
+                      "collectedDate" to "2020-06-01",
+                  ),
+                  mapOf(
+                      "id" to "1001",
+                      "ageMonths" to "17",
+                      "ageYears" to "1",
+                      "collectedDate" to "2019-01-01",
+                  ),
+                  mapOf("id" to "1102"),
+              ),
+              null)
+      val actual =
+          searchService.search(
+              rootPrefix,
+              listOf(idField, ageMonthsField, ageYearsField, collectedDateField),
+              searchNode,
+              listOf(sortField))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `sorting by age in months uses underlying date values`() {
+      setCollectedDates(1000 to "2020-06-01", 1001 to "2020-06-02")
+
+      val searchNode = FieldNode(ageMonthsField, listOf("0"))
+      val sortField = SearchSortField(ageMonthsField, SearchDirection.Descending)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  // Oldest first, meaning ascending date order
+                  mapOf("id" to "1000", "ageMonths" to "0", "collectedDate" to "2020-06-01"),
+                  mapOf("id" to "1001", "ageMonths" to "0", "collectedDate" to "2020-06-02"),
+              ),
+              null)
+
+      val actual =
+          searchService.search(
+              rootPrefix,
+              listOf(idField, ageMonthsField, collectedDateField),
+              searchNode,
+              listOf(sortField))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `sorting by age in years uses underlying date values`() {
+      setCollectedDates(1000 to "2020-06-01", 1001 to "2020-06-02")
+
+      val searchNode = FieldNode(ageYearsField, listOf("0"))
+      val sortField = SearchSortField(ageYearsField)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  // Youngest first, meaning reverse date order
+                  mapOf("id" to "1001", "ageYears" to "0", "collectedDate" to "2020-06-02"),
+                  mapOf("id" to "1000", "ageYears" to "0", "collectedDate" to "2020-06-01"),
+              ),
+              null)
+
+      val actual =
+          searchService.search(
+              rootPrefix,
+              listOf(idField, ageYearsField, collectedDateField),
+              searchNode,
+              listOf(sortField))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `searching for null age returns accessions without collected dates`() {
+      setCollectedDates(1000 to null, 1001 to "2020-05-31")
+
+      val searchNode = FieldNode(ageMonthsField, listOf(null))
+
+      val expected = SearchResults(listOf(mapOf("id" to "1000")), null)
+      val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `searching for 0 months returns accessions from current month`() {
+      setCollectedDates(1000 to "2020-06-01", 1001 to "2020-05-31")
+
+      val searchNode = FieldNode(ageMonthsField, listOf("0"))
+
+      val expected = SearchResults(listOf(mapOf("id" to "1000")), null)
+      val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `range search by age in years returns results from entire year`() {
+      accessionsDao.insert(
+          AccessionsRow(
+              id = AccessionId(1100),
+              number = "1100",
+              stateId = AccessionState.Processed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              facilityId = facilityId,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH))
+
+      setCollectedDates(1000 to "2018-01-01", 1001 to "2019-12-31", 1100 to "2020-01-01")
+
+      val searchNode = FieldNode(ageYearsField, listOf("1", "2"), SearchFilterType.Range)
+      val sortField = SearchSortField(ageYearsField)
+
+      val expected = SearchResults(listOf(mapOf("id" to "1001"), mapOf("id" to "1000")), null)
+      val actual = searchService.search(rootPrefix, listOf(idField), searchNode, listOf(sortField))
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `range search with unbounded minimum age returns new matches`() {
+      setCollectedDates(1000 to "2020-01-01", 1001 to "2020-05-01")
+
+      // "Up to 2 months old"
+      val searchNode = FieldNode(ageMonthsField, listOf(null, "2"), SearchFilterType.Range)
+
+      val expected = SearchResults(listOf(mapOf("id" to "1001")), null)
+      val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `range search with unbounded maximum age returns old matches`() {
+      setCollectedDates(1000 to "2020-01-01", 1001 to "2020-05-01")
+
+      // "At least 3 months old"
+      val searchNode = FieldNode(ageMonthsField, listOf("3", null), SearchFilterType.Range)
+
+      val expected = SearchResults(listOf(mapOf("id" to "1000")), null)
+      val actual = searchService.search(rootPrefix, listOf(idField), searchNode)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `negative ages are not supported`() {
+      val searchNode = FieldNode(ageMonthsField, listOf("-1"))
+
+      assertThrows<IllegalArgumentException> {
+        searchService.search(rootPrefix, listOf(idField), searchNode)
+      }
+    }
+
+    private fun setCollectedDates(vararg dates: Pair<Int, String?>) {
+      dates.forEach { (id, dateStr) ->
+        val accession = accessionsDao.fetchOneById(AccessionId(id.toLong()))!!
+        val collectedDate = dateStr?.let { LocalDate.parse(it) }
+        accessionsDao.update(accession.copy(collectedDate = collectedDate))
+      }
     }
   }
 
@@ -2509,7 +2722,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "accessionNumber" to "XYZ",
                       "active" to "Active",
+                      "ageMonths" to "15",
+                      "ageYears" to "1",
                       "checkedInTime" to "$checkedInTime",
+                      "collectedDate" to "2019-03-02",
                       "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
                       "id" to "1000",
                       "speciesName" to "Kousa Dogwood",
