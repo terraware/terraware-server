@@ -834,4 +834,92 @@ class AccessionStore(
     // list with counts of 0.
     return AccessionState.activeValues.associateWith { totals[it] ?: 0 }
   }
+
+  fun countSeedsRemaining(facilityId: FacilityId): Long {
+    requirePermissions { readFacility(facilityId) }
+
+    return countSeedsRemaining(ACCESSIONS.FACILITY_ID.eq(facilityId))
+  }
+
+  fun countSeedsRemaining(organizationId: OrganizationId): Long {
+    requirePermissions { readOrganization(organizationId) }
+
+    return countSeedsRemaining(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+  }
+
+  fun estimateSeedsRemainingByWeight(facilityId: FacilityId): Long {
+    requirePermissions { readFacility(facilityId) }
+
+    return estimateSeedsRemainingByWeight(ACCESSIONS.FACILITY_ID.eq(facilityId))
+  }
+
+  fun estimateSeedsRemainingByWeight(organizationId: OrganizationId): Long {
+    requirePermissions { readOrganization(organizationId) }
+
+    return estimateSeedsRemainingByWeight(
+        ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+  }
+
+  fun countQuantityUnknown(facilityId: FacilityId): Int {
+    requirePermissions { readFacility(facilityId) }
+
+    return countQuantityUnknown(ACCESSIONS.FACILITY_ID.eq(facilityId))
+  }
+
+  fun countQuantityUnknown(organizationId: OrganizationId): Int {
+    requirePermissions { readOrganization(organizationId) }
+
+    return countQuantityUnknown(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+  }
+
+  private fun countSeedsRemaining(condition: Condition): Long {
+    return dslContext
+        .select(DSL.sum(ACCESSIONS.REMAINING_QUANTITY))
+        .from(ACCESSIONS)
+        .where(condition)
+        .and(ACCESSIONS.REMAINING_UNITS_ID.eq(SeedQuantityUnits.Seeds))
+        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+        .fetchOne()
+        ?.value1()
+        ?.toLong()
+        ?: 0
+  }
+
+  private fun estimateSeedsRemainingByWeight(condition: Condition): Long {
+    return dslContext
+        .select(
+            DSL.sum(
+                ACCESSIONS.REMAINING_GRAMS.div(ACCESSIONS.SUBSET_WEIGHT_GRAMS)
+                    .mul(ACCESSIONS.SUBSET_COUNT),
+            ),
+        )
+        .from(ACCESSIONS)
+        .where(condition)
+        .and(ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds))
+        .and(ACCESSIONS.SUBSET_COUNT.isNotNull)
+        .and(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNotNull)
+        .and(ACCESSIONS.REMAINING_GRAMS.isNotNull)
+        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+        .fetchOne()
+        ?.value1()
+        ?.toLong()
+        ?: 0
+  }
+
+  private fun countQuantityUnknown(condition: Condition): Int {
+    return dslContext
+        .selectCount()
+        .from(ACCESSIONS)
+        .where(condition)
+        .and(ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds))
+        .and(
+            ACCESSIONS.SUBSET_COUNT.isNull
+                .or(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNull)
+                .or(ACCESSIONS.REMAINING_GRAMS.isNull),
+        )
+        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+        .fetchOne()
+        ?.value1()
+        ?: 0
+  }
 }
