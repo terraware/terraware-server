@@ -1,6 +1,7 @@
 package com.terraformation.backend.search
 
 import com.terraformation.backend.db.EnumFromReferenceTable
+import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.BigDecimalField
 import com.terraformation.backend.search.field.BooleanField
@@ -17,6 +18,7 @@ import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
 import com.terraformation.backend.search.field.UpperCaseTextField
 import java.math.BigDecimal
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import net.postgis.jdbc.geometry.Geometry
@@ -190,6 +192,15 @@ abstract class SearchTable {
     return resolveTableOrNull(relativePath)
         ?: throw IllegalArgumentException("Sublist $relativePath not found")
   }
+
+  fun ageField(
+      fieldName: String,
+      displayName: String,
+      databaseField: TableField<*, LocalDate?>,
+      granularity: AgeField.AgeGranularity,
+      clock: Clock,
+      nullable: Boolean = true,
+  ) = AgeField(fieldName, displayName, databaseField, this, nullable, granularity, clock)
 
   fun bigDecimalField(
       fieldName: String,

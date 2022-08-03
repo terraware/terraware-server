@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.search.SearchTable
+import java.time.Clock
 import javax.annotation.ManagedBean
 
 /**
@@ -20,8 +21,8 @@ import javax.annotation.ManagedBean
  * successfully initialized.
  */
 @ManagedBean
-class SearchTables {
-  val accessions = AccessionsTable(this)
+class SearchTables(clock: Clock) {
+  val accessions = AccessionsTable(this, clock)
   val accessionSecondaryCollectors = AccessionSecondaryCollectorsTable(this)
   val accessionViabilityTestTypes = AccessionViabilityTestTypesTable(this)
   val bags = BagsTable(this)
