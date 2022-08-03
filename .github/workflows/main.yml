@@ -6,7 +6,6 @@ on:
       - main
       - qa
       - renovate/*
-      - species
       - wip-*
     tags:
       # Semver (these are glob-like patterns, not regexes; the "." has no special meaning)
@@ -119,7 +118,6 @@ jobs:
     - name: Deploy
       if: env.IS_CD == 'true'
       env:
-        SSH_HOST: ${{ secrets[env.SSH_HOST_SECRET_NAME] }}
+        SSH_CONFIG: ${{ secrets[env.SSH_CONFIG_SECRET_NAME] }}
         SSH_KEY: ${{ secrets[env.SSH_KEY_SECRET_NAME] }}
-        SSH_USER: ${{ secrets[env.SSH_USER_SECRET_NAME] }}
       run: ./.github/scripts/deploy.sh
