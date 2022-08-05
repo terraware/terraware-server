@@ -62,7 +62,9 @@ class SummaryController(
         overdueDriedAccessions = accessionStore.countInState(facilityId, AccessionState.Dried),
         recentlyWithdrawnAccessions =
             accessionStore.countInState(
-                facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek))
+                facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
+        accessionsByState = accessionStore.countByState(facilityId),
+    )
   }
   @GetMapping
   @Operation(
@@ -109,7 +111,9 @@ class SummaryController(
         overdueDriedAccessions = accessionStore.countInState(organizationId, AccessionState.Dried),
         recentlyWithdrawnAccessions =
             accessionStore.countInState(
-                organizationId, AccessionState.Withdrawn, sinceAfter = startOfWeek))
+                organizationId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
+        accessionsByState = accessionStore.countByState(organizationId),
+    )
   }
 }
 
@@ -117,12 +121,14 @@ class SummaryController(
 data class SummaryResponse(
     val activeAccessions: Int,
     val species: Int,
-    @Schema(description = "Number of accessions in Pending state overdue for processing")
+    @Schema(description = "Number of accessions in Pending state overdue for processing.")
     val overduePendingAccessions: Int,
-    @Schema(description = "Number of accessions in Processed state overdue for drying")
+    @Schema(description = "Number of accessions in Processed state overdue for drying.")
     val overdueProcessedAccessions: Int,
-    @Schema(description = "Number of accessions in Dried state overdue for storage")
+    @Schema(description = "Number of accessions in Dried state overdue for storage.")
     val overdueDriedAccessions: Int,
-    @Schema(description = "Number of accessions withdrawn so far this week")
+    @Schema(description = "Number of accessions withdrawn so far this week.")
     val recentlyWithdrawnAccessions: Int,
+    @Schema(description = "Number of accessions in each state.")
+    val accessionsByState: Map<AccessionState, Int>,
 ) : SuccessResponsePayload

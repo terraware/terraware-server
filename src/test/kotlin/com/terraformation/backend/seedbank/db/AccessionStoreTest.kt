@@ -1720,6 +1720,97 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               AccessionState.AwaitingCheckIn,
               sinceBefore = ZonedDateTime.now(clock).plusDays(1)))
     }
+
+    @Test
+    fun countByState() {
+      val otherOrganizationId = OrganizationId(2)
+      val otherOrgFacilityId = FacilityId(4)
+      val sameOrgFacilityId = FacilityId(5)
+      insertOrganization(otherOrganizationId)
+      insertFacility(otherOrgFacilityId, otherOrganizationId)
+      insertFacility(sameOrgFacilityId)
+
+      val toCreate =
+          mapOf(
+              facilityId to
+                  mapOf(
+                      AccessionState.Dried to 1,
+                      AccessionState.Drying to 2,
+                      AccessionState.InStorage to 3,
+                      AccessionState.Nursery to 1,
+                      AccessionState.Pending to 4,
+                      AccessionState.Processed to 1,
+                      AccessionState.Processing to 2,
+                      AccessionState.Withdrawn to 1,
+                  ),
+              otherOrgFacilityId to
+                  mapOf(
+                      AccessionState.InStorage to 1,
+                      AccessionState.Withdrawn to 1,
+                  ),
+              sameOrgFacilityId to
+                  mapOf(
+                      AccessionState.Dried to 1,
+                      AccessionState.Processed to 2,
+                      AccessionState.Withdrawn to 1,
+                  ),
+          )
+
+      toCreate.forEach { (targetFacilityId, stateCounts) ->
+        stateCounts.forEach { (state, count) ->
+          repeat(count) {
+            accessionsDao.insert(
+                AccessionsRow(
+                    createdBy = user.userId,
+                    createdTime = Instant.EPOCH,
+                    facilityId = targetFacilityId,
+                    modifiedBy = user.userId,
+                    modifiedTime = Instant.EPOCH,
+                    stateId = state))
+          }
+        }
+      }
+
+      assertEquals(
+          mapOf(
+              AccessionState.AwaitingCheckIn to 0,
+              AccessionState.Dried to 1,
+              AccessionState.Drying to 2,
+              AccessionState.InStorage to 3,
+              AccessionState.Pending to 4,
+              AccessionState.Processed to 1,
+              AccessionState.Processing to 2,
+          ),
+          store.countByState(facilityId),
+          "Counts for single facility")
+
+      assertEquals(
+          mapOf(
+              AccessionState.AwaitingCheckIn to 0,
+              AccessionState.Dried to 2,
+              AccessionState.Drying to 2,
+              AccessionState.InStorage to 3,
+              AccessionState.Pending to 4,
+              AccessionState.Processed to 3,
+              AccessionState.Processing to 2,
+          ),
+          store.countByState(organizationId),
+          "Counts for organization")
+    }
+
+    @Test
+    fun `countByState throws exception when no permission to read facility`() {
+      every { user.canReadFacility(facilityId) } returns false
+
+      assertThrows<FacilityNotFoundException> { store.countByState(facilityId) }
+    }
+
+    @Test
+    fun `countByState throws exception when no permission to read organization`() {
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> { store.countByState(organizationId) }
+    }
   }
 
   @Nested

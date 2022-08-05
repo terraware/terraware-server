@@ -22,12 +22,11 @@ import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
-import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
-import com.terraformation.backend.seedbank.model.toActiveEnum
+import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
 import java.time.Clock
@@ -672,6 +671,18 @@ class AccessionStore(
     return countInState(condition, state)
   }
 
+  fun countByState(facilityId: FacilityId): Map<AccessionState, Int> {
+    requirePermissions { readFacility(facilityId) }
+
+    return countByState(ACCESSIONS.FACILITY_ID.eq(facilityId))
+  }
+
+  fun countByState(organizationId: OrganizationId): Map<AccessionState, Int> {
+    requirePermissions { readOrganization(organizationId) }
+
+    return countByState(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+  }
+
   fun fetchDryingEndDue(
       after: TemporalAccessor,
       until: TemporalAccessor
@@ -734,15 +745,12 @@ class AccessionStore(
   }
 
   private fun countActive(condition: Condition): Int {
-    val activeStates =
-        AccessionState.values().filter { it.toActiveEnum() == AccessionActive.Active }
-
     val query =
         dslContext
             .select(DSL.count())
             .from(ACCESSIONS)
             .where(condition)
-            .and(ACCESSIONS.STATE_ID.`in`(activeStates))
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
 
     log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
 
@@ -797,5 +805,26 @@ class AccessionStore(
     return log.debugWithTiming("Accession state count query: $sql") {
       query.fetchOne()?.value1() ?: 0
     }
+  }
+
+  private fun countByState(condition: Condition): Map<AccessionState, Int> {
+    val query =
+        dslContext
+            .select(ACCESSIONS.STATE_ID, DSL.count())
+            .from(ACCESSIONS)
+            .where(condition)
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
+            .groupBy(ACCESSIONS.STATE_ID)
+
+    val sql = query.getSQL(ParamType.INLINED)
+
+    val totals =
+        log.debugWithTiming("Accession state summary query: $sql") {
+          query.fetchMap(ACCESSIONS.STATE_ID, DSL.count())
+        }
+
+    // The query results won't include states with no accessions, but we want to return the full
+    // list with counts of 0.
+    return AccessionState.activeValues.associateWith { totals[it] ?: 0 }
   }
 }
