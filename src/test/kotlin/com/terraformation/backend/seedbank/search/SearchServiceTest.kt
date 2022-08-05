@@ -21,7 +21,6 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestType
-import com.terraformation.backend.db.tables.pojos.AccessionViabilityTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
@@ -104,7 +103,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       rootPrefix.resolve("viabilityTests_viabilityTestResults_seedsGerminated")
   private val viabilityTestSeedsSownField = rootPrefix.resolve("viabilityTests_seedsSown")
   private val viabilityTestsTypeField = rootPrefix.resolve("viabilityTests_type")
-  private val viabilityTestTypeField = rootPrefix.resolve("viabilityTestType")
 
   @BeforeEach
   fun init() {
@@ -805,21 +803,39 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search on enum in child table`() {
-    accessionViabilityTestTypesDao.insert(
-        AccessionViabilityTestTypesRow(AccessionId(1000), ViabilityTestType.Lab),
-        AccessionViabilityTestTypesRow(AccessionId(1000), ViabilityTestType.Nursery),
-        AccessionViabilityTestTypesRow(AccessionId(1001), ViabilityTestType.Lab))
+    viabilityTestsDao.insert(
+        ViabilityTestsRow(
+            accessionId = AccessionId(1000),
+            remainingQuantity = BigDecimal.ONE,
+            remainingUnitsId = SeedQuantityUnits.Seeds,
+            testType = ViabilityTestType.Lab,
+        ),
+        ViabilityTestsRow(
+            accessionId = AccessionId(1000),
+            remainingQuantity = BigDecimal.ONE,
+            remainingUnitsId = SeedQuantityUnits.Seeds,
+            testType = ViabilityTestType.Nursery,
+        ),
+        ViabilityTestsRow(
+            accessionId = AccessionId(1001),
+            remainingQuantity = BigDecimal.ONE,
+            remainingUnitsId = SeedQuantityUnits.Seeds,
+            testType = ViabilityTestType.Lab,
+        ),
+    )
 
-    val fields = listOf(viabilityTestTypeField)
+    val fields = listOf(viabilityTestsTypeField)
     val sortOrder =
-        listOf(SearchSortField(accessionNumberField), SearchSortField(viabilityTestTypeField))
+        listOf(SearchSortField(accessionNumberField), SearchSortField(viabilityTestsTypeField))
 
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "viabilityTestType" to "Lab"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ", "viabilityTestType" to "Lab"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ", "viabilityTestType" to "Nursery"),
+                mapOf(
+                    "id" to "1001", "accessionNumber" to "ABCDEFG", "viabilityTests_type" to "Lab"),
+                mapOf("id" to "1000", "accessionNumber" to "XYZ", "viabilityTests_type" to "Lab"),
+                mapOf(
+                    "id" to "1000", "accessionNumber" to "XYZ", "viabilityTests_type" to "Nursery"),
             ),
             cursor = null)
 
@@ -1578,8 +1594,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         val accessionId = AccessionId(id.toLong())
         val testId = ViabilityTestId(id.toLong())
 
-        accessionViabilityTestTypesDao.insert(
-            AccessionViabilityTestTypesRow(accessionId, ViabilityTestType.Lab))
         viabilityTestsDao.insert(
             ViabilityTestsRow(
                 id = testId,

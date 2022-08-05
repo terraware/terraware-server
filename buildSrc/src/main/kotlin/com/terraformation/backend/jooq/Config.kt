@@ -71,11 +71,7 @@ val ENUM_TABLES =
         EnumTable("viability_test_seed_types", "viability_tests\\.seed_type_id"),
         EnumTable("viability_test_substrates", "viability_tests\\.substrate_id"),
         EnumTable("viability_test_treatments", "viability_tests\\.treatment_id"),
-        EnumTable(
-            "viability_test_types",
-            listOf(
-                "viability_tests\\.test_type",
-                "accession_viability_test_types\\.viability_test_type_id")),
+        EnumTable("viability_test_types", listOf("viability_tests\\.test_type")),
         EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"),
     )
 

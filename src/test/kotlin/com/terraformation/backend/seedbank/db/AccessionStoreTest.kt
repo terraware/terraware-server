@@ -34,7 +34,6 @@ import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
-import com.terraformation.backend.db.tables.pojos.AccessionViabilityTestTypesRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
 import com.terraformation.backend.db.tables.pojos.GeolocationsRow
@@ -47,7 +46,6 @@ import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.db.tables.references.ACCESSION_VIABILITY_TEST_TYPES
 import com.terraformation.backend.db.tables.references.APP_DEVICES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
@@ -367,20 +365,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `viability test types are inserted at creation time`() {
-    store.create(
-        AccessionModel(facilityId = facilityId, viabilityTestTypes = setOf(ViabilityTestType.Lab)))
-    val types =
-        dslContext
-            .select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
-            .from(ACCESSION_VIABILITY_TEST_TYPES)
-            .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
-            .fetch(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
-
-    assertEquals(listOf(ViabilityTestType.Lab), types)
-  }
-
-  @Test
   fun `viability tests are inserted by update`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     val startDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
@@ -418,43 +402,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertNull(
         updatedAccession.viabilityTests.first().testResults,
         "Empty list of viability test results should be null in model")
-  }
-
-  @Test
-  fun `viability test types are inserted by update`() {
-    val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, viabilityTestTypes = setOf(ViabilityTestType.Lab)))
-    val desired =
-        initial.copy(viabilityTestTypes = setOf(ViabilityTestType.Lab, ViabilityTestType.Nursery))
-    store.update(desired)
-
-    val types =
-        dslContext
-            .select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
-            .from(ACCESSION_VIABILITY_TEST_TYPES)
-            .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
-            .fetch(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
-    assertEquals(setOf(ViabilityTestType.Lab, ViabilityTestType.Nursery), types.toSet())
-  }
-
-  @Test
-  fun `viability test types are deleted by update`() {
-    val initial =
-        store.create(
-            AccessionModel(
-                facilityId = facilityId, viabilityTestTypes = setOf(ViabilityTestType.Lab)))
-    val desired = initial.copy(viabilityTestTypes = setOf(ViabilityTestType.Nursery))
-    store.update(desired)
-
-    val types =
-        dslContext
-            .select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
-            .from(ACCESSION_VIABILITY_TEST_TYPES)
-            .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(AccessionId(1)))
-            .fetch(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
-    assertEquals(listOf(ViabilityTestType.Nursery), types)
   }
 
   @Test
@@ -1381,7 +1328,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             siteLocation = "siteLocation",
             sourcePlantOrigin = SourcePlantOrigin.Wild,
             species = "species",
-            viabilityTestTypes = setOf(ViabilityTestType.Lab),
         )
 
     val createPayloadProperties = CreateAccessionRequestPayload::class.declaredMemberProperties
@@ -1456,7 +1402,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         remainingQuantity = grams(10),
                         testType = ViabilityTestType.Lab,
                         startDate = today)),
-            viabilityTestTypes = setOf(ViabilityTestType.Lab),
             withdrawals =
                 listOf(
                     WithdrawalPayload(
@@ -1614,7 +1559,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         remainingQuantity = grams(10),
                         testType = ViabilityTestType.Lab,
                         startDate = today)),
-            viabilityTestTypes = setOf(ViabilityTestType.Lab),
             withdrawals =
                 listOf(
                     WithdrawalPayload(
@@ -1639,10 +1583,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         emptyList<AccessionStateHistoryRecord>(),
         dslContext.selectFrom(ACCESSION_STATE_HISTORY).fetch(),
         "Accession State History")
-    assertEquals(
-        emptyList<AccessionViabilityTestTypesRow>(),
-        accessionViabilityTestTypesDao.findAll(),
-        "Accession Viability Test Types")
     assertEquals(emptyList<BagsRow>(), bagsDao.findAll(), "Bags")
     assertEquals(emptyList<GeolocationsRow>(), geolocationsDao.findAll(), "Geolocations")
     assertEquals(emptyList<ViabilityTestsRow>(), viabilityTestsDao.findAll(), "Viability Tests")
@@ -1905,7 +1845,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         subsetWeight = subsetWeightQuantity?.let { SeedQuantityPayload(it) },
         targetStorageCondition = targetStorageCondition,
         viabilityTests = viabilityTests.map { ViabilityTestPayload(it) },
-        viabilityTestTypes = viabilityTestTypes,
         withdrawals = withdrawals.map { WithdrawalPayload(it) },
     )
   }

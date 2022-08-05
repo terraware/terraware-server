@@ -81,7 +81,6 @@ class AccessionStore(
     val photoFilenamesField = photoFilenamesMultiset()
     val secondaryCollectorsField = secondaryCollectorsMultiset()
     val viabilityTestsField = viabilityTestStore.viabilityTestsMultiset()
-    val viabilityTestTypesField = viabilityTestStore.viabilityTestTypesMultiset()
     val withdrawalsField = withdrawalStore.withdrawalsMultiset()
 
     val record =
@@ -102,7 +101,6 @@ class AccessionStore(
                 photoFilenamesField,
                 secondaryCollectorsField,
                 viabilityTestsField,
-                viabilityTestTypesField,
                 withdrawalsField,
             )
             .from(ACCESSIONS)
@@ -174,7 +172,6 @@ class AccessionStore(
           total = SeedQuantityModel.of(record[TOTAL_QUANTITY], record[TOTAL_UNITS_ID]),
           totalViabilityPercent = record[TOTAL_VIABILITY_PERCENT],
           viabilityTests = record[viabilityTestsField],
-          viabilityTestTypes = record[viabilityTestTypesField],
           withdrawals = record[withdrawalsField],
       )
     }
@@ -262,8 +259,6 @@ class AccessionStore(
               insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
               bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
               geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
-              viabilityTestStore.updateViabilityTestTypes(
-                  accessionId, emptySet(), accession.viabilityTestTypes)
               viabilityTestStore.updateViabilityTests(
                   accessionId, emptyList(), accession.viabilityTests)
               withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
@@ -346,8 +341,6 @@ class AccessionStore(
       bagStore.updateBags(accessionId, existing.bagNumbers, accession.bagNumbers)
       geolocationStore.updateGeolocations(
           accessionId, existing.geolocations, accession.geolocations)
-      viabilityTestStore.updateViabilityTestTypes(
-          accessionId, existing.viabilityTestTypes, accession.viabilityTestTypes)
       viabilityTestStore.updateViabilityTests(accessionId, existingTests, viabilityTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
@@ -435,7 +428,6 @@ class AccessionStore(
     dslContext.transaction { _ ->
       bagStore.updateBags(accessionId, model.bagNumbers, emptySet())
       geolocationStore.updateGeolocations(accessionId, model.geolocations, emptySet())
-      viabilityTestStore.updateViabilityTestTypes(accessionId, model.viabilityTestTypes, emptySet())
       viabilityTestStore.updateViabilityTests(accessionId, model.viabilityTests, emptyList())
       withdrawalStore.updateWithdrawals(accessionId, model.withdrawals, emptyList())
 

@@ -5,7 +5,6 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
-import com.terraformation.backend.db.tables.references.ACCESSION_VIABILITY_TEST_TYPES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
@@ -52,8 +51,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
               isRequired = false),
           viabilityTests.asMultiValueSublist(
               "viabilityTests", ACCESSIONS.ID.eq(VIABILITY_TESTS.ACCESSION_ID)),
-          accessionViabilityTestTypes.asMultiValueSublist(
-              "viabilityTestTypes", ACCESSIONS.ID.eq(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID)),
           withdrawals.asMultiValueSublist(
               "withdrawals", ACCESSIONS.ID.eq(WITHDRAWALS.ACCESSION_ID)),
       )
@@ -134,7 +131,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             "treesCollectedFrom",
             "Number of trees collected from",
             ACCESSIONS.TREES_COLLECTED_FROM),
-        aliasField("viabilityTestType", "viabilityTestTypes_type"),
         aliasField("withdrawalDate", "withdrawals_date"),
         aliasField("withdrawalDestination", "withdrawals_destination"),
         aliasField("withdrawalGrams", "withdrawals_grams"),
