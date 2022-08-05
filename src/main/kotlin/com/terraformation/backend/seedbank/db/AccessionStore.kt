@@ -13,15 +13,12 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
-import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
-import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
-import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
@@ -623,25 +620,18 @@ class AccessionStore(
     }
   }
 
-  /**
-   * Returns the number of accessions that were active as of a particular time.
-   *
-   * Assumptions that will cause this to break if they become false later on:
-   *
-   * - Accessions can't become active again once they enter an inactive state.
-   * - [asOf] will be a fairly recent time. (The correct result will be returned even if not, but
-   * the query will be inefficient.)
-   */
-  fun countActive(facilityId: FacilityId, asOf: TemporalAccessor): Int {
+  /** Returns the number of accessions that are currently in an active state. */
+  fun countActive(facilityId: FacilityId): Int {
     requirePermissions { readFacility(facilityId) }
     val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
-    return countActive(condition, asOf)
+    return countActive(condition)
   }
 
-  fun countActive(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
+  /** Returns the number of accessions that are currently in an active state. */
+  fun countActive(organizationId: OrganizationId): Int {
     requirePermissions { readOrganization(organizationId) }
     val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
-    return countActive(condition, asOf)
+    return countActive(condition)
   }
 
   /**
@@ -690,36 +680,6 @@ class AccessionStore(
     return countInState(condition, state)
   }
 
-  fun countFamilies(facilityId: FacilityId, asOf: TemporalAccessor): Int {
-    requirePermissions { readFacility(facilityId) }
-
-    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
-    return countFamilies(condition, asOf)
-  }
-
-  fun countFamilies(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
-    requirePermissions { readOrganization(organizationId) }
-
-    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
-    return countFamilies(condition, asOf)
-  }
-
-  fun fetchDryingMoveDue(
-      after: TemporalAccessor,
-      until: TemporalAccessor
-  ): Map<String, AccessionId> {
-    return with(ACCESSIONS) {
-      dslContext
-          .select(ID, NUMBER)
-          .from(ACCESSIONS)
-          .where(STATE_ID.eq(AccessionState.Drying))
-          .and(DRYING_MOVE_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
-          .and(DRYING_MOVE_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-          .fetch { it[NUMBER]!! to it[ID]!! }
-          .toMap()
-    }
-  }
-
   fun fetchDryingEndDue(
       after: TemporalAccessor,
       until: TemporalAccessor
@@ -734,37 +694,6 @@ class AccessionStore(
           .fetch { it[NUMBER]!! to it[ID]!! }
           .toMap()
     }
-  }
-
-  fun fetchViabilityTestDue(
-      after: TemporalAccessor,
-      until: TemporalAccessor
-  ): Map<String, ViabilityTestsRow> {
-    return dslContext
-        .select(ACCESSIONS.NUMBER, VIABILITY_TESTS.asterisk())
-        .from(ACCESSIONS)
-        .join(VIABILITY_TESTS)
-        .on(VIABILITY_TESTS.ACCESSION_ID.eq(ACCESSIONS.ID))
-        .where(ACCESSIONS.STATE_ID.`in`(AccessionState.Processing, AccessionState.Processed))
-        .and(VIABILITY_TESTS.START_DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
-        .and(VIABILITY_TESTS.START_DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-        .fetch { it[ACCESSIONS.NUMBER]!! to it.into(ViabilityTestsRow::class.java)!! }
-        .toMap()
-  }
-
-  fun fetchWithdrawalDue(
-      after: TemporalAccessor,
-      until: TemporalAccessor
-  ): Map<String, AccessionId> {
-    return dslContext
-        .selectDistinct(ACCESSIONS.ID, ACCESSIONS.NUMBER)
-        .from(ACCESSIONS)
-        .join(WITHDRAWALS)
-        .on(WITHDRAWALS.ACCESSION_ID.eq(ACCESSIONS.ID))
-        .where(WITHDRAWALS.DATE.le(LocalDate.ofInstant(until.toInstant(), clock.zone)))
-        .and(WITHDRAWALS.DATE.gt(LocalDate.ofInstant(after.toInstant(), clock.zone)))
-        .fetch { it[ACCESSIONS.NUMBER]!! to it[ACCESSIONS.ID]!! }
-        .toMap()
   }
 
   /**
@@ -812,26 +741,16 @@ class AccessionStore(
     return "%08d%03d".format(todayAsLong, suffix)
   }
 
-  private fun countActive(condition: Condition, asOf: TemporalAccessor): Int {
-    val statesByActive = AccessionState.values().groupBy { it.toActiveEnum() }
+  private fun countActive(condition: Condition): Int {
+    val activeStates =
+        AccessionState.values().filter { it.toActiveEnum() == AccessionActive.Active }
 
     val query =
         dslContext
             .select(DSL.count())
             .from(ACCESSIONS)
             .where(condition)
-            .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
-            .and(
-                ACCESSIONS.STATE_ID.`in`(statesByActive[AccessionActive.Active])
-                    .orNotExists(
-                        dslContext
-                            .selectOne()
-                            .from(ACCESSION_STATE_HISTORY)
-                            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
-                            .and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(asOf.toInstant()))
-                            .and(
-                                ACCESSION_STATE_HISTORY.NEW_STATE_ID.`in`(
-                                    statesByActive[AccessionActive.Inactive]))))
+            .and(ACCESSIONS.STATE_ID.`in`(activeStates))
 
     log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
 
@@ -886,16 +805,5 @@ class AccessionStore(
     return log.debugWithTiming("Accession state count query: $sql") {
       query.fetchOne()?.value1() ?: 0
     }
-  }
-
-  private fun countFamilies(condition: Condition, asOf: TemporalAccessor): Int {
-    return dslContext
-        .select(DSL.countDistinct(ACCESSIONS.FAMILY_NAME))
-        .from(ACCESSIONS)
-        .where(condition)
-        .and(ACCESSIONS.CREATED_TIME.le(asOf.toInstant()))
-        .fetchOne()
-        ?.value1()
-        ?: 0
   }
 }
