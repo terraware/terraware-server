@@ -506,6 +506,12 @@ data class ViabilityTestPayload(
     val remainingQuantity: SeedQuantityPayload? = null,
     val staffResponsible: String? = null,
     val seedsSown: Int? = null,
+    @Schema(
+        description =
+            "If true, this viability test's results are used as the viability percentage for the " +
+                "accession as a whole. At most one test can be marked as selected.",
+        defaultValue = "false")
+    val selected: Boolean = false,
     @Valid val testResults: List<ViabilityTestResultPayload>? = null,
     val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
@@ -524,6 +530,7 @@ data class ViabilityTestPayload(
       model.remaining?.toPayload(),
       model.staffResponsible,
       model.seedsSown,
+      model.selected,
       model.testResults?.map { ViabilityTestResultPayload(it) },
       model.totalPercentGerminated,
       model.totalSeedsGerminated,
@@ -537,6 +544,7 @@ data class ViabilityTestPayload(
           notes = notes,
           seedsSown = seedsSown,
           seedType = seedType,
+          selected = selected,
           staffResponsible = staffResponsible,
           startDate = startDate,
           substrate = substrate,

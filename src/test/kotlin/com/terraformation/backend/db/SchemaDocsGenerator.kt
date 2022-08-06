@@ -182,6 +182,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "users" to setOf(ALL, CUSTOMER),
           "viability_test_results" to setOf(ALL, SEEDBANK),
           "viability_test_seed_types" to setOf(ALL, SEEDBANK),
+          "viability_test_selections" to setOf(ALL, SEEDBANK),
           "viability_test_substrates" to setOf(ALL, SEEDBANK),
           "viability_test_treatments" to setOf(ALL, SEEDBANK),
           "viability_test_types" to setOf(ALL, SEEDBANK),

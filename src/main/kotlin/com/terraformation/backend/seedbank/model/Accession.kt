@@ -182,6 +182,10 @@ data class AccessionModel(
             "Cannot withdraw from accession before setting total accession size")
       }
     }
+
+    if (viabilityTests.count { it.selected } > 1) {
+      throw IllegalArgumentException("Cannot select multiple viability tests")
+    }
   }
 
   private fun validateCountBased() {
