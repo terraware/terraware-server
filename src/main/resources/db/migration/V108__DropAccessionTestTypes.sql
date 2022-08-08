@@ -1,0 +1,1 @@
+DROP TABLE accession_viability_test_types;

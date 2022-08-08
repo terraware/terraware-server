@@ -152,7 +152,6 @@ data class CreateAccessionRequestPayload(
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
-    val viabilityTestTypes: Set<ViabilityTestType>? = null,
 ) {
   fun toModel(): AccessionModel {
     return AccessionModel(
@@ -175,7 +174,6 @@ data class CreateAccessionRequestPayload(
         siteLocation = siteLocation,
         sourcePlantOrigin = sourcePlantOrigin,
         species = species,
-        viabilityTestTypes = viabilityTestTypes.orEmpty(),
     )
   }
 }
@@ -229,7 +227,6 @@ data class UpdateAccessionRequestPayload(
     private val subsetWeight: SeedQuantityPayload? = null,
     val targetStorageCondition: StorageCondition? = null,
     @Valid val viabilityTests: List<ViabilityTestPayload>? = null,
-    val viabilityTestTypes: Set<ViabilityTestType>? = null,
     @Valid val withdrawals: List<WithdrawalPayload>? = null,
 ) {
   fun toModel(id: AccessionId) =
@@ -274,7 +271,6 @@ data class UpdateAccessionRequestPayload(
           targetStorageCondition = targetStorageCondition,
           total = initialQuantity?.toModel(),
           viabilityTests = viabilityTests.orEmpty().map { it.toModel() },
-          viabilityTestTypes = viabilityTestTypes.orEmpty(),
           withdrawals = withdrawals.orEmpty().map { it.toModel() },
       )
 }
@@ -388,7 +384,6 @@ data class AccessionPayload(
             "Total quantity of all past and scheduled withdrawals, including viability tests.")
     val totalWithdrawalQuantity: SeedQuantityPayload?,
     val viabilityTests: List<ViabilityTestPayload>?,
-    val viabilityTestTypes: Set<ViabilityTestType>?,
     val withdrawals: List<WithdrawalPayload>?,
 ) {
   constructor(
@@ -455,7 +450,6 @@ data class AccessionPayload(
       model.totalViabilityPercent,
       model.calculateTotalWithdrawalQuantity(clock)?.toPayload(),
       model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
-      model.viabilityTestTypes.orNull(),
       model.withdrawals.map { WithdrawalPayload(it) }.orNull(),
   )
 }

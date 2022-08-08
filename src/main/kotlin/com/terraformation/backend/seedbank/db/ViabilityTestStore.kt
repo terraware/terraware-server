@@ -2,9 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.ViabilityTestId
-import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.ACCESSION_VIABILITY_TEST_TYPES
 import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
@@ -17,16 +15,6 @@ import org.jooq.impl.DSL
 
 @ManagedBean
 class ViabilityTestStore(private val dslContext: DSLContext) {
-  fun viabilityTestTypesMultiset(
-      idField: Field<AccessionId?> = ACCESSIONS.ID
-  ): Field<Set<ViabilityTestType>> {
-    return DSL.multiset(
-            DSL.select(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID)
-                .from(ACCESSION_VIABILITY_TEST_TYPES)
-                .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(idField)))
-        .convertFrom { result -> result.map { it.value1() }.toSet() }
-  }
-
   fun viabilityTestsMultiset(
       idField: Field<AccessionId?> = ACCESSIONS.ID
   ): Field<List<ViabilityTestModel>> {
@@ -129,33 +117,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
         .set(VIABILITY_TEST_RESULTS.SEEDS_GERMINATED, testResult.seedsGerminated)
         .set(VIABILITY_TEST_RESULTS.TEST_ID, testId)
         .execute()
-  }
-
-  fun updateViabilityTestTypes(
-      accessionId: AccessionId,
-      existingTypes: Set<ViabilityTestType>?,
-      desiredTypes: Set<ViabilityTestType>?
-  ) {
-    val existing = existingTypes ?: emptySet()
-    val desired = desiredTypes ?: emptySet()
-    val added = desired.minus(existing)
-    val deleted = existing.minus(desired)
-
-    if (deleted.isNotEmpty()) {
-      dslContext
-          .deleteFrom(ACCESSION_VIABILITY_TEST_TYPES)
-          .where(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID.eq(accessionId))
-          .and(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID.`in`(deleted))
-          .execute()
-    }
-
-    added.forEach { type ->
-      dslContext
-          .insertInto(ACCESSION_VIABILITY_TEST_TYPES)
-          .set(ACCESSION_VIABILITY_TEST_TYPES.ACCESSION_ID, accessionId)
-          .set(ACCESSION_VIABILITY_TEST_TYPES.VIABILITY_TEST_TYPE_ID, type)
-          .execute()
-    }
   }
 
   fun updateViabilityTests(

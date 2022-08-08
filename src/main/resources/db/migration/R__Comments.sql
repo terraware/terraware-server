@@ -8,8 +8,6 @@
 --
 -- Put "(Enum)" at the beginnings of comments on tables that define a fixed set of values.
 
-COMMENT ON TABLE accession_viability_test_types IS '(Enum) Types of tests that can be performed on seeds to determine whether or not they successfully germinate';
-
 COMMENT ON TABLE accession_photos IS 'Linking table between `accessions` and `photos`.';
 
 COMMENT ON TABLE accession_secondary_collectors IS 'Associates additional collectors with accessions. The primary collector is not included here, but is instead stored in `accessions.primary_collector_name`.';

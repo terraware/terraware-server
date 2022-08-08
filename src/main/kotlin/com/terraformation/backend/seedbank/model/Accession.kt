@@ -11,7 +11,6 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
-import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalPurpose
 import java.math.BigDecimal
 import java.time.Clock
@@ -99,7 +98,6 @@ data class AccessionModel(
     val total: SeedQuantityModel? = null,
     val totalViabilityPercent: Int? = null,
     val viabilityTests: List<ViabilityTestModel> = emptyList(),
-    val viabilityTestTypes: Set<ViabilityTestType> = emptySet(),
     val withdrawals: List<WithdrawalModel> = emptyList(),
 ) {
   init {

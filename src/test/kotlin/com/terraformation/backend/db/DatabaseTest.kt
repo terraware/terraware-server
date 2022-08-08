@@ -7,7 +7,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
-import com.terraformation.backend.db.tables.daos.AccessionViabilityTestTypesDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.daos.AutomationsDao
@@ -188,7 +187,6 @@ abstract class DatabaseTest {
     }
   }
 
-  protected val accessionViabilityTestTypesDao: AccessionViabilityTestTypesDao by lazyDao()
   protected val accessionPhotosDao: AccessionPhotosDao by lazyDao()
   protected val accessionsDao: AccessionsDao by lazyDao()
   protected val appDevicesDao: AppDevicesDao by lazyDao()
