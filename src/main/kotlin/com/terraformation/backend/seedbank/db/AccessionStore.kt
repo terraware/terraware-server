@@ -14,6 +14,7 @@ import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
@@ -256,6 +257,10 @@ class AccessionStore(
               }
 
               insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
+              updateCollectors(
+                  accessionId,
+                  emptyList(),
+                  listOfNotNull(accession.primaryCollector) + accession.secondaryCollectors)
               bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
               geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
               viabilityTestStore.updateViabilityTests(
@@ -317,6 +322,14 @@ class AccessionStore(
             .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
             .execute()
         insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
+      }
+
+      if (existing.primaryCollector != accession.primaryCollector ||
+          existing.secondaryCollectors != accession.secondaryCollectors) {
+        updateCollectors(
+            accessionId,
+            listOfNotNull(existing.primaryCollector) + existing.secondaryCollectors,
+            listOfNotNull(accession.primaryCollector) + accession.secondaryCollectors)
       }
 
       val existingTests: MutableList<ViabilityTestModel> = existing.viabilityTests.toMutableList()
@@ -430,10 +443,6 @@ class AccessionStore(
       viabilityTestStore.updateViabilityTests(accessionId, model.viabilityTests, emptyList())
       withdrawalStore.updateWithdrawals(accessionId, model.withdrawals, emptyList())
 
-      dslContext
-          .deleteFrom(ACCESSION_SECONDARY_COLLECTORS)
-          .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
-          .execute()
       dslContext
           .deleteFrom(ACCESSION_STATE_HISTORY)
           .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
@@ -594,6 +603,38 @@ class AccessionStore(
           .set(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID, accessionId)
           .set(ACCESSION_SECONDARY_COLLECTORS.NAME, name)
           .execute()
+    }
+  }
+
+  private fun updateCollectors(
+      accessionId: AccessionId,
+      existing: List<String>,
+      desired: List<String>
+  ) {
+    if (existing.size > desired.size) {
+      dslContext
+          .deleteFrom(ACCESSION_COLLECTORS)
+          .where(ACCESSION_COLLECTORS.ACCESSION_ID.eq(accessionId))
+          .and(ACCESSION_COLLECTORS.POSITION.ge(desired.size))
+          .execute()
+    }
+
+    desired.forEachIndexed { position, name ->
+      if (position >= existing.size) {
+        dslContext
+            .insertInto(ACCESSION_COLLECTORS)
+            .set(ACCESSION_COLLECTORS.ACCESSION_ID, accessionId)
+            .set(ACCESSION_COLLECTORS.POSITION, position)
+            .set(ACCESSION_COLLECTORS.NAME, name)
+            .execute()
+      } else if (name != existing[position]) {
+        dslContext
+            .update(ACCESSION_COLLECTORS)
+            .set(ACCESSION_COLLECTORS.NAME, name)
+            .where(ACCESSION_COLLECTORS.ACCESSION_ID.eq(accessionId))
+            .and(ACCESSION_COLLECTORS.POSITION.eq(position))
+            .execute()
+      }
     }
   }
 
