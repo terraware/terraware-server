@@ -38,6 +38,19 @@ fun AccessionState.toActiveEnum() =
       AccessionState.InStorage -> AccessionActive.Active
     }
 
+/**
+ * All the accession states that are considered active. This is effectively the backing field for
+ * [AccessionState.Companion.activeValues], because extension properties don't have backing fields.
+ * We derive this from [AccessionState.toActiveEnum] rather than the other way around so we get the
+ * comprehensiveness check in the `when` expression in that function.
+ */
+private val activeStates =
+    AccessionState.values().filter { it.toActiveEnum() == AccessionActive.Active }.toSet()
+
+/** All the accession states that are considered active. */
+val AccessionState.Companion.activeValues: Set<AccessionState>
+  get() = activeStates
+
 enum class AccessionSource {
   Web,
   SeedCollectorApp
