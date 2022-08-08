@@ -3,7 +3,6 @@ accession_states
 organizations
 photos
 storage_conditions
-viability_test_types
 app_devices
 growth_forms
 processing_methods
@@ -12,6 +11,7 @@ source_plant_origins
 viability_test_seed_types
 viability_test_substrates
 viability_test_treatments
+viability_test_types
 withdrawal_purposes
 facilities
 species
@@ -24,6 +24,5 @@ geolocations
 thumbnails
 viability_test_results
 accession_photos
-accession_viability_test_types
 accession_state_history
 withdrawals

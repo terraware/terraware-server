@@ -1,6 +1,5 @@
 withdrawals
 accession_state_history
-accession_viability_test_types
 accession_photos
 viability_test_results
 thumbnails
@@ -13,6 +12,7 @@ storage_locations
 species
 facilities
 withdrawal_purposes
+viability_test_types
 viability_test_treatments
 viability_test_substrates
 viability_test_seed_types
@@ -21,7 +21,6 @@ seed_storage_behaviors
 processing_methods
 growth_forms
 app_devices
-viability_test_types
 storage_conditions
 photos
 organizations

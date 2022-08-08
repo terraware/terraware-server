@@ -37,8 +37,8 @@
 </g>
 </g>
 <!-- accessions -->
-<g id="node6" class="node"><title>accessions</title>
-<g id="a_node6"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
+<g id="node5" class="node"><title>accessions</title>
+<g id="a_node5"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
 <polygon fill="#ffffff" stroke="none" points="684,-662.703 684,-1050.7 912,-1050.7 912,-662.703 684,-662.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="684,-1028.7 684,-1050.7 912,-1050.7 912,-1028.7 684,-1028.7"/>
 <polygon fill="none" stroke="black" points="684,-1028.7 684,-1050.7 912,-1050.7 912,-1028.7 684,-1028.7"/>
@@ -99,7 +99,7 @@
 <text text-anchor="start" x="816" y="-668.903" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
 <polygon fill="#ffffff" stroke="none" points="855,-662.703 855,-680.703 912,-680.703 912,-662.703 855,-662.703"/>
 <polygon fill="none" stroke="black" points="855,-662.703 855,-680.703 912,-680.703 912,-662.703 855,-662.703"/>
-<text text-anchor="start" x="892" y="-668.903" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<text text-anchor="start" x="892" y="-668.903" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
 </a>
 </g>
 </g>
@@ -110,8 +110,8 @@
 <ellipse fill="none" stroke="black" cx="988.901" cy="-412.205" rx="3.2" ry="3.2"/>
 </g>
 <!-- photos -->
-<g id="node13" class="node"><title>photos</title>
-<g id="a_node13"><a xlink:href="../../tables/photos.html" xlink:title="photos" target="_top">
+<g id="node12" class="node"><title>photos</title>
+<g id="a_node12"><a xlink:href="../../tables/photos.html" xlink:title="photos" target="_top">
 <polygon fill="#ffffff" stroke="none" points="731,-104.703 731,-206.703 865,-206.703 865,-104.703 731,-104.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="731,-184.703 731,-206.703 865,-206.703 865,-184.703 731,-184.703"/>
 <polygon fill="none" stroke="black" points="731,-184.703 731,-206.703 865,-206.703 865,-184.703 731,-184.703"/>
@@ -258,79 +258,15 @@
 <polygon fill="black" stroke="black" points="975.476,-1326.99 981.777,-1333.09 979.238,-1328.34 983,-1329.7 983,-1329.7 983,-1329.7 979.238,-1328.34 984.223,-1326.32 975.476,-1326.99 975.476,-1326.99"/>
 <ellipse fill="none" stroke="black" cx="972.466" cy="-1325.9" rx="3.20001" ry="3.20001"/>
 </g>
-<!-- accession_viability_test_types -->
-<g id="node5" class="node"><title>accession_viability_test_types</title>
-<g id="a_node5"><a xlink:href="../../tables/accession_viability_test_types.html" xlink:title="accession_viability_test_types" target="_top">
-<polygon fill="#ffffff" stroke="none" points="965,-702.703 965,-786.703 1183,-786.703 1183,-702.703 965,-702.703"/>
-<polygon fill="#f5f5f5" stroke="none" points="965,-764.703 965,-786.703 1183,-786.703 1183,-764.703 965,-764.703"/>
-<polygon fill="none" stroke="black" points="965,-764.703 965,-786.703 1183,-786.703 1183,-764.703 965,-764.703"/>
-<text text-anchor="start" x="970" y="-773.903" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accession_viability_test_types</text>
-<text text-anchor="start" x="1144" y="-772.903" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="965,-742.703 965,-764.703 1183,-764.703 1183,-742.703 965,-742.703"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="970" y="-759.703"/>
-<text text-anchor="start" x="996" y="-750.903" font-family="Helvetica,sans-Serif" font-size="11.00">accession_id</text>
-<polygon fill="none" stroke="black" points="965,-720.703 965,-742.703 1183,-742.703 1183,-720.703 965,-720.703"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="970" y="-737.703"/>
-<text text-anchor="start" x="996" y="-728.903" font-family="Helvetica,sans-Serif" font-size="11.00">viability_test_type_id</text>
-<polygon fill="#ffffff" stroke="none" points="965,-702.703 965,-720.703 1058,-720.703 1058,-702.703 965,-702.703"/>
-<polygon fill="none" stroke="black" points="965,-702.703 965,-720.703 1058,-720.703 1058,-702.703 965,-702.703"/>
-<text text-anchor="start" x="968" y="-708.903" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="1058,-702.703 1058,-720.703 1135,-720.703 1135,-702.703 1058,-702.703"/>
-<polygon fill="none" stroke="black" points="1058,-702.703 1058,-720.703 1135,-720.703 1135,-702.703 1058,-702.703"/>
-<text text-anchor="start" x="1096" y="-708.903" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="1135,-702.703 1135,-720.703 1183,-720.703 1183,-702.703 1135,-702.703"/>
-<polygon fill="none" stroke="black" points="1135,-702.703 1135,-720.703 1183,-720.703 1183,-702.703 1135,-702.703"/>
-<text text-anchor="start" x="1173" y="-708.903" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- accession_viability_test_types&#45;&gt;accessions -->
-<g id="edge7" class="edge"><title>accession_viability_test_types:accession_id:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M950.815,-759.713C915.522,-799.01 967.383,-1017.7 913,-1017.7"/>
-<polygon fill="black" stroke="black" points="956.721,-757.021 965.493,-756.979 960.36,-755.362 964,-753.703 964,-753.703 964,-753.703 960.36,-755.362 962.507,-750.427 956.721,-757.021 956.721,-757.021"/>
-<ellipse fill="none" stroke="black" cx="953.809" cy="-758.349" rx="3.20001" ry="3.20001"/>
-</g>
-<!-- viability_test_types -->
-<g id="node26" class="node"><title>viability_test_types</title>
-<g id="a_node26"><a xlink:href="../../tables/viability_test_types.html" xlink:title="viability_test_types" target="_top">
-<polygon fill="#ffffff" stroke="none" points="718,-557.703 718,-641.703 878,-641.703 878,-557.703 718,-557.703"/>
-<polygon fill="#f5f5f5" stroke="none" points="718,-619.703 718,-641.703 878,-641.703 878,-619.703 718,-619.703"/>
-<polygon fill="none" stroke="black" points="718,-619.703 718,-641.703 878,-641.703 878,-619.703 718,-619.703"/>
-<text text-anchor="start" x="723" y="-628.903" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">viability_test_types</text>
-<text text-anchor="start" x="839" y="-627.903" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="718,-597.703 718,-619.703 878,-619.703 878,-597.703 718,-597.703"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="723" y="-614.703"/>
-<text text-anchor="start" x="751" y="-605.903" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="none" points="718,-575.703 718,-597.703 878,-597.703 878,-575.703 718,-575.703"/>
-<polygon fill="none" stroke="black" points="718,-575.703 718,-597.703 878,-597.703 878,-575.703 718,-575.703"/>
-<text text-anchor="start" x="751" y="-583.903" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="none" points="718,-557.703 718,-575.703 772,-575.703 772,-557.703 718,-557.703"/>
-<polygon fill="none" stroke="black" points="718,-557.703 718,-575.703 772,-575.703 772,-557.703 718,-557.703"/>
-<text text-anchor="start" x="721" y="-563.903" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="772,-557.703 772,-575.703 834,-575.703 834,-557.703 772,-557.703"/>
-<polygon fill="none" stroke="black" points="772,-557.703 772,-575.703 834,-575.703 834,-557.703 772,-557.703"/>
-<text text-anchor="start" x="795" y="-563.903" font-family="Helvetica,sans-Serif" font-size="11.00">2 rows</text>
-<polygon fill="#ffffff" stroke="none" points="834,-557.703 834,-575.703 878,-575.703 878,-557.703 834,-557.703"/>
-<polygon fill="none" stroke="black" points="834,-557.703 834,-575.703 878,-575.703 878,-557.703 834,-557.703"/>
-<text text-anchor="start" x="858" y="-563.903" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
-</a>
-</g>
-</g>
-<!-- accession_viability_test_types&#45;&gt;viability_test_types -->
-<g id="edge8" class="edge"><title>accession_viability_test_types:viability_test_type_id:w&#45;&gt;viability_test_types:id:e</title>
-<path fill="none" stroke="black" d="M949.625,-728.781C928.543,-717.992 940.42,-679.58 920,-651.703 904.396,-630.401 905.406,-608.703 879,-608.703"/>
-<polygon fill="black" stroke="black" points="956.16,-730.109 963.283,-735.231 960.08,-730.906 964,-731.703 964,-731.703 964,-731.703 960.08,-730.906 964.717,-728.175 956.16,-730.109 956.16,-730.109"/>
-<ellipse fill="none" stroke="black" cx="953.024" cy="-729.472" rx="3.2" ry="3.2"/>
-</g>
 <!-- accessions&#45;&gt;accession_states -->
-<g id="edge15" class="edge"><title>accessions:state_id:w&#45;&gt;accession_states:id:e</title>
+<g id="edge13" class="edge"><title>accessions:state_id:w&#45;&gt;accession_states:id:e</title>
 <path fill="none" stroke="black" d="M669.034,-912.004C609.743,-954.082 701.347,-1290.7 620.5,-1290.7"/>
 <polygon fill="black" stroke="black" points="675.354,-910.058 684.06,-911.144 679.177,-908.881 683,-907.703 683,-907.703 683,-907.703 679.177,-908.881 681.94,-904.263 675.354,-910.058 675.354,-910.058"/>
 <ellipse fill="none" stroke="black" cx="672.296" cy="-911" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- app_devices -->
-<g id="node7" class="node"><title>app_devices</title>
-<g id="a_node7"><a xlink:href="../../tables/app_devices.html" xlink:title="app_devices" target="_top">
+<g id="node6" class="node"><title>app_devices</title>
+<g id="a_node6"><a xlink:href="../../tables/app_devices.html" xlink:title="app_devices" target="_top">
 <polygon fill="#ffffff" stroke="none" points="489.5,-939.703 489.5,-1195.7 607.5,-1195.7 607.5,-939.703 489.5,-939.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="489.5,-1173.7 489.5,-1195.7 607.5,-1195.7 607.5,-1173.7 489.5,-1173.7"/>
 <polygon fill="none" stroke="black" points="489.5,-1173.7 489.5,-1195.7 607.5,-1195.7 607.5,-1173.7 489.5,-1173.7"/>
@@ -378,14 +314,14 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;app_devices -->
-<g id="edge9" class="edge"><title>accessions:app_device_id:w&#45;&gt;app_devices:id:e</title>
+<g id="edge7" class="edge"><title>accessions:app_device_id:w&#45;&gt;app_devices:id:e</title>
 <path fill="none" stroke="black" d="M668.672,-975.698C604.835,-995.897 693.324,-1162.7 608.5,-1162.7"/>
 <polygon fill="black" stroke="black" points="675.076,-974.806 683.496,-977.269 679.038,-974.255 683,-973.703 683,-973.703 683,-973.703 679.038,-974.255 682.504,-970.138 675.076,-974.806 675.076,-974.806"/>
 <ellipse fill="none" stroke="black" cx="671.907" cy="-975.248" rx="3.2" ry="3.2"/>
 </g>
 <!-- facilities -->
-<g id="node9" class="node"><title>facilities</title>
-<g id="a_node9"><a xlink:href="../../tables/facilities.html" xlink:title="facilities" target="_top">
+<g id="node8" class="node"><title>facilities</title>
+<g id="a_node8"><a xlink:href="../../tables/facilities.html" xlink:title="facilities" target="_top">
 <polygon fill="#ffffff" stroke="none" points="250.5,-772.703 250.5,-896.703 393.5,-896.703 393.5,-772.703 250.5,-772.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="251,-874.703 251,-896.703 394,-896.703 394,-874.703 251,-874.703"/>
 <polygon fill="none" stroke="black" points="251,-874.703 251,-896.703 394,-896.703 394,-874.703 251,-874.703"/>
@@ -416,14 +352,14 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;facilities -->
-<g id="edge10" class="edge"><title>accessions:facility_id:w&#45;&gt;facilities:id:e</title>
+<g id="edge8" class="edge"><title>accessions:facility_id:w&#45;&gt;facilities:id:e</title>
 <path fill="none" stroke="black" d="M668.447,-997.201C601.969,-1012.99 712.202,-1149.39 643,-1206.7 610.654,-1233.49 486.117,-1233.77 454,-1206.7 335.714,-1107.03 549.683,-863.703 395,-863.703"/>
 <polygon fill="black" stroke="black" points="675.042,-996.522 683.369,-999.284 679.021,-996.113 683,-995.703 683,-995.703 683,-995.703 679.021,-996.113 682.631,-992.122 675.042,-996.522 675.042,-996.522"/>
 <ellipse fill="none" stroke="black" cx="671.859" cy="-996.85" rx="3.2" ry="3.2"/>
 </g>
 <!-- processing_methods -->
-<g id="node14" class="node"><title>processing_methods</title>
-<g id="a_node14"><a xlink:href="../../tables/processing_methods.html" xlink:title="processing_methods" target="_top">
+<g id="node13" class="node"><title>processing_methods</title>
+<g id="a_node13"><a xlink:href="../../tables/processing_methods.html" xlink:title="processing_methods" target="_top">
 <polygon fill="#ffffff" stroke="none" points="467,-689.703 467,-773.703 630,-773.703 630,-689.703 467,-689.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="467.5,-751.703 467.5,-773.703 630.5,-773.703 630.5,-751.703 467.5,-751.703"/>
 <polygon fill="none" stroke="black" points="467.5,-751.703 467.5,-773.703 630.5,-773.703 630.5,-751.703 467.5,-751.703"/>
@@ -448,14 +384,14 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;processing_methods -->
-<g id="edge11" class="edge"><title>accessions:processing_method_id:w&#45;&gt;processing_methods:id:e</title>
+<g id="edge9" class="edge"><title>accessions:processing_method_id:w&#45;&gt;processing_methods:id:e</title>
 <path fill="none" stroke="black" d="M669.071,-837.867C642.793,-819.418 675.983,-740.703 631.5,-740.703"/>
 <polygon fill="black" stroke="black" points="675.287,-839.579 682.044,-845.174 679.144,-840.641 683,-841.703 683,-841.703 683,-841.703 679.144,-840.641 683.956,-838.232 675.287,-839.579 675.287,-839.579"/>
 <ellipse fill="none" stroke="black" cx="672.202" cy="-838.729" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- seed_quantity_units -->
-<g id="node15" class="node"><title>seed_quantity_units</title>
-<g id="a_node15"><a xlink:href="../../tables/seed_quantity_units.html" xlink:title="seed_quantity_units" target="_top">
+<g id="node14" class="node"><title>seed_quantity_units</title>
+<g id="a_node14"><a xlink:href="../../tables/seed_quantity_units.html" xlink:title="seed_quantity_units" target="_top">
 <polygon fill="#ffffff" stroke="none" points="467,-214.703 467,-294.703 630,-294.703 630,-214.703 467,-214.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="467.5,-272.703 467.5,-294.703 630.5,-294.703 630.5,-272.703 467.5,-272.703"/>
 <polygon fill="none" stroke="black" points="467.5,-272.703 467.5,-294.703 630.5,-294.703 630.5,-272.703 467.5,-272.703"/>
@@ -479,26 +415,26 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;seed_quantity_units -->
-<g id="edge12" class="edge"><title>accessions:remaining_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<g id="edge10" class="edge"><title>accessions:remaining_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
 <path fill="none" stroke="black" d="M671.642,-766.782C634.756,-698.528 684.413,-261.703 631.5,-261.703"/>
 <polygon fill="black" stroke="black" points="676.709,-770.761 680.776,-778.534 679.854,-773.232 683,-775.703 683,-775.703 683,-775.703 679.854,-773.232 685.224,-772.872 676.709,-770.761 676.709,-770.761"/>
 <ellipse fill="none" stroke="black" cx="674.192" cy="-768.785" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- accessions&#45;&gt;seed_quantity_units -->
-<g id="edge17" class="edge"><title>accessions:subset_weight_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<g id="edge15" class="edge"><title>accessions:subset_weight_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
 <path fill="none" stroke="black" d="M668.823,-750.299C588.847,-706.829 736.063,-261.703 631.5,-261.703"/>
 <polygon fill="black" stroke="black" points="675.221,-751.835 682.159,-757.204 679.111,-752.769 683,-753.703 683,-753.703 683,-753.703 679.111,-752.769 683.841,-750.203 675.221,-751.835 675.221,-751.835"/>
 <ellipse fill="none" stroke="black" cx="672.11" cy="-751.088" rx="3.2" ry="3.2"/>
 </g>
 <!-- accessions&#45;&gt;seed_quantity_units -->
-<g id="edge19" class="edge"><title>accessions:total_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<g id="edge17" class="edge"><title>accessions:total_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
 <path fill="none" stroke="black" d="M668.964,-728.19C593.362,-685.181 731.234,-261.703 631.5,-261.703"/>
 <polygon fill="black" stroke="black" points="675.239,-729.761 682.126,-735.195 679.12,-730.732 683,-731.703 683,-731.703 683,-731.703 679.12,-730.732 683.874,-728.211 675.239,-729.761 675.239,-729.761"/>
 <ellipse fill="none" stroke="black" cx="672.135" cy="-728.984" rx="3.2" ry="3.2"/>
 </g>
 <!-- source_plant_origins -->
-<g id="node17" class="node"><title>source_plant_origins</title>
-<g id="a_node17"><a xlink:href="../../tables/source_plant_origins.html" xlink:title="source_plant_origins" target="_top">
+<g id="node16" class="node"><title>source_plant_origins</title>
+<g id="a_node16"><a xlink:href="../../tables/source_plant_origins.html" xlink:title="source_plant_origins" target="_top">
 <polygon fill="#ffffff" stroke="none" points="466.5,-557.703 466.5,-641.703 630.5,-641.703 630.5,-557.703 466.5,-557.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="466.5,-619.703 466.5,-641.703 630.5,-641.703 630.5,-619.703 466.5,-619.703"/>
 <polygon fill="none" stroke="black" points="466.5,-619.703 466.5,-641.703 630.5,-641.703 630.5,-619.703 466.5,-619.703"/>
@@ -523,14 +459,14 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;source_plant_origins -->
-<g id="edge13" class="edge"><title>accessions:source_plant_origin_id:w&#45;&gt;source_plant_origins:id:e</title>
+<g id="edge11" class="edge"><title>accessions:source_plant_origin_id:w&#45;&gt;source_plant_origins:id:e</title>
 <path fill="none" stroke="black" d="M668.667,-795.449C610.873,-774.125 712.951,-608.703 631.5,-608.703"/>
 <polygon fill="black" stroke="black" points="675.097,-796.46 682.441,-801.26 679.049,-797.082 683,-797.703 683,-797.703 683,-797.703 679.049,-797.082 683.559,-794.147 675.097,-796.46 675.097,-796.46"/>
 <ellipse fill="none" stroke="black" cx="671.936" cy="-795.963" rx="3.2" ry="3.2"/>
 </g>
 <!-- species -->
-<g id="node18" class="node"><title>species</title>
-<g id="a_node18"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
+<g id="node17" class="node"><title>species</title>
+<g id="a_node17"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
 <polygon fill="#ffffff" stroke="none" points="462,-346.703 462,-536.703 635,-536.703 635,-346.703 462,-346.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="462.5,-514.703 462.5,-536.703 635.5,-536.703 635.5,-514.703 462.5,-514.703"/>
 <polygon fill="none" stroke="black" points="462.5,-514.703 462.5,-536.703 635.5,-536.703 635.5,-514.703 462.5,-514.703"/>
@@ -570,14 +506,14 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;species -->
-<g id="edge14" class="edge"><title>accessions:species_id:w&#45;&gt;species:id:e</title>
+<g id="edge12" class="edge"><title>accessions:species_id:w&#45;&gt;species:id:e</title>
 <path fill="none" stroke="black" d="M668.432,-707.529C605.38,-685.513 724.676,-503.703 636.5,-503.703"/>
 <polygon fill="black" stroke="black" points="675.088,-708.522 682.469,-713.264 679.044,-709.113 683,-709.703 683,-709.703 683,-709.703 679.044,-709.113 683.531,-706.143 675.088,-708.522 675.088,-708.522"/>
 <ellipse fill="none" stroke="black" cx="671.923" cy="-708.05" rx="3.2" ry="3.2"/>
 </g>
 <!-- storage_conditions -->
-<g id="node19" class="node"><title>storage_conditions</title>
-<g id="a_node19"><a xlink:href="../../tables/storage_conditions.html" xlink:title="storage_conditions" target="_top">
+<g id="node18" class="node"><title>storage_conditions</title>
+<g id="a_node18"><a xlink:href="../../tables/storage_conditions.html" xlink:title="storage_conditions" target="_top">
 <polygon fill="#ffffff" stroke="none" points="244.5,-640.703 244.5,-724.703 399.5,-724.703 399.5,-640.703 244.5,-640.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="245,-702.703 245,-724.703 400,-724.703 400,-702.703 245,-702.703"/>
 <polygon fill="none" stroke="black" points="245,-702.703 245,-724.703 400,-724.703 400,-702.703 245,-702.703"/>
@@ -602,14 +538,14 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;storage_conditions -->
-<g id="edge18" class="edge"><title>accessions:target_storage_condition:w&#45;&gt;storage_conditions:id:e</title>
+<g id="edge16" class="edge"><title>accessions:target_storage_condition:w&#45;&gt;storage_conditions:id:e</title>
 <path fill="none" stroke="black" d="M668.691,-817.359C630.674,-801.929 690.298,-714.45 643,-678.703 575.986,-628.056 537.393,-668.625 454,-678.703 429.921,-681.613 425.254,-691.703 401,-691.703"/>
 <polygon fill="black" stroke="black" points="675.105,-818.41 682.418,-823.256 679.053,-819.057 683,-819.703 683,-819.703 683,-819.703 679.053,-819.057 683.582,-816.151 675.105,-818.41 675.105,-818.41"/>
 <ellipse fill="none" stroke="black" cx="671.947" cy="-817.892" rx="3.2" ry="3.2"/>
 </g>
 <!-- storage_locations -->
-<g id="node20" class="node"><title>storage_locations</title>
-<g id="a_node20"><a xlink:href="../../tables/storage_locations.html" xlink:title="storage_locations" target="_top">
+<g id="node19" class="node"><title>storage_locations</title>
+<g id="a_node19"><a xlink:href="../../tables/storage_locations.html" xlink:title="storage_locations" target="_top">
 <polygon fill="#ffffff" stroke="none" points="475,-794.703 475,-918.703 622,-918.703 622,-794.703 475,-794.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="475.5,-896.703 475.5,-918.703 622.5,-918.703 622.5,-896.703 475.5,-896.703"/>
 <polygon fill="none" stroke="black" points="475.5,-896.703 475.5,-918.703 622.5,-918.703 622.5,-896.703 475.5,-896.703"/>
@@ -639,14 +575,14 @@
 </g>
 </g>
 <!-- accessions&#45;&gt;storage_locations -->
-<g id="edge16" class="edge"><title>accessions:storage_location_id:w&#45;&gt;storage_locations:id:e</title>
+<g id="edge14" class="edge"><title>accessions:storage_location_id:w&#45;&gt;storage_locations:id:e</title>
 <path fill="none" stroke="black" d="M668.541,-885.703C652.884,-885.703 644.366,-885.703 623.5,-885.703"/>
 <polygon fill="black" stroke="black" points="675,-885.703 683,-889.303 679,-885.703 683,-885.703 683,-885.703 683,-885.703 679,-885.703 683,-882.103 675,-885.703 675,-885.703"/>
 <ellipse fill="none" stroke="black" cx="671.8" cy="-885.703" rx="3.2" ry="3.2"/>
 </g>
 <!-- bags -->
-<g id="node8" class="node"><title>bags</title>
-<g id="a_node8"><a xlink:href="../../tables/bags.html" xlink:title="bags" target="_top">
+<g id="node7" class="node"><title>bags</title>
+<g id="a_node7"><a xlink:href="../../tables/bags.html" xlink:title="bags" target="_top">
 <polygon fill="#ffffff" stroke="none" points="1026.5,-970.703 1026.5,-1072.7 1121.5,-1072.7 1121.5,-970.703 1026.5,-970.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="1027,-1050.7 1027,-1072.7 1122,-1072.7 1122,-1050.7 1027,-1050.7"/>
 <polygon fill="none" stroke="black" points="1027,-1050.7 1027,-1072.7 1122,-1072.7 1122,-1050.7 1027,-1050.7"/>
@@ -673,14 +609,14 @@
 </g>
 </g>
 <!-- bags&#45;&gt;accessions -->
-<g id="edge20" class="edge"><title>bags:accession_id:w&#45;&gt;accessions:id:e</title>
+<g id="edge18" class="edge"><title>bags:accession_id:w&#45;&gt;accessions:id:e</title>
 <path fill="none" stroke="black" d="M1011.53,-1017.7C972.775,-1017.7 958.023,-1017.7 913,-1017.7"/>
 <polygon fill="black" stroke="black" points="1018,-1017.7 1026,-1021.3 1022,-1017.7 1026,-1017.7 1026,-1017.7 1026,-1017.7 1022,-1017.7 1026,-1014.1 1018,-1017.7 1018,-1017.7"/>
 <ellipse fill="none" stroke="black" cx="1014.8" cy="-1017.7" rx="3.2" ry="3.2"/>
 </g>
 <!-- organizations -->
-<g id="node12" class="node"><title>organizations</title>
-<g id="a_node12"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
+<g id="node11" class="node"><title>organizations</title>
+<g id="a_node11"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
 <polygon fill="#ffffff" stroke="none" points="8,-656.703 8,-736.703 182,-736.703 182,-656.703 8,-656.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="8,-714.703 8,-736.703 182,-736.703 182,-714.703 8,-714.703"/>
 <polygon fill="none" stroke="black" points="8,-714.703 8,-736.703 182,-736.703 182,-714.703 8,-714.703"/>
@@ -704,14 +640,14 @@
 </g>
 </g>
 <!-- facilities&#45;&gt;organizations -->
-<g id="edge21" class="edge"><title>facilities:organization_id:w&#45;&gt;organizations:id:e</title>
+<g id="edge19" class="edge"><title>facilities:organization_id:w&#45;&gt;organizations:id:e</title>
 <path fill="none" stroke="black" d="M235.543,-816.6C199.569,-798.153 236.723,-703.703 183,-703.703"/>
 <polygon fill="black" stroke="black" points="242.178,-818.024 249.245,-823.223 246.089,-818.864 250,-819.703 250,-819.703 250,-819.703 246.089,-818.864 250.755,-816.183 242.178,-818.024 242.178,-818.024"/>
 <ellipse fill="none" stroke="black" cx="239.049" cy="-817.353" rx="3.2" ry="3.2"/>
 </g>
 <!-- geolocations -->
-<g id="node10" class="node"><title>geolocations</title>
-<g id="a_node10"><a xlink:href="../../tables/geolocations.html" xlink:title="geolocations" target="_top">
+<g id="node9" class="node"><title>geolocations</title>
+<g id="a_node9"><a xlink:href="../../tables/geolocations.html" xlink:title="geolocations" target="_top">
 <polygon fill="#ffffff" stroke="none" points="1014,-847.703 1014,-949.703 1134,-949.703 1134,-847.703 1014,-847.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="1014,-927.703 1014,-949.703 1134,-949.703 1134,-927.703 1014,-927.703"/>
 <polygon fill="none" stroke="black" points="1014,-927.703 1014,-949.703 1134,-949.703 1134,-927.703 1014,-927.703"/>
@@ -739,14 +675,14 @@
 </g>
 </g>
 <!-- geolocations&#45;&gt;accessions -->
-<g id="edge22" class="edge"><title>geolocations:accession_id:w&#45;&gt;accessions:id:e</title>
+<g id="edge20" class="edge"><title>geolocations:accession_id:w&#45;&gt;accessions:id:e</title>
 <path fill="none" stroke="black" d="M998.443,-896.738C974.21,-904.542 974.006,-933.437 953,-959.703 933.442,-984.158 944.314,-1017.7 913,-1017.7"/>
 <polygon fill="black" stroke="black" points="1005.08,-895.811 1013.5,-898.269 1009.04,-895.257 1013,-894.703 1013,-894.703 1013,-894.703 1009.04,-895.257 1012.5,-891.138 1005.08,-895.811 1005.08,-895.811"/>
 <ellipse fill="none" stroke="black" cx="1001.91" cy="-896.254" rx="3.2" ry="3.2"/>
 </g>
 <!-- growth_forms -->
-<g id="node11" class="node"><title>growth_forms</title>
-<g id="a_node11"><a xlink:href="../../tables/growth_forms.html" xlink:title="growth_forms" target="_top">
+<g id="node10" class="node"><title>growth_forms</title>
+<g id="a_node10"><a xlink:href="../../tables/growth_forms.html" xlink:title="growth_forms" target="_top">
 <polygon fill="#ffffff" stroke="none" points="258.5,-430.703 258.5,-510.703 385.5,-510.703 385.5,-430.703 258.5,-430.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="259,-488.703 259,-510.703 386,-510.703 386,-488.703 259,-488.703"/>
 <polygon fill="none" stroke="black" points="259,-488.703 259,-510.703 386,-510.703 386,-488.703 259,-488.703"/>
@@ -770,8 +706,8 @@
 </g>
 </g>
 <!-- seed_storage_behaviors -->
-<g id="node16" class="node"><title>seed_storage_behaviors</title>
-<g id="a_node16"><a xlink:href="../../tables/seed_storage_behaviors.html" xlink:title="seed_storage_behaviors" target="_top">
+<g id="node15" class="node"><title>seed_storage_behaviors</title>
+<g id="a_node15"><a xlink:href="../../tables/seed_storage_behaviors.html" xlink:title="seed_storage_behaviors" target="_top">
 <polygon fill="#ffffff" stroke="none" points="231,-329.703 231,-409.703 413,-409.703 413,-329.703 231,-329.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="231,-387.703 231,-409.703 413,-409.703 413,-387.703 231,-387.703"/>
 <polygon fill="none" stroke="black" points="231,-387.703 231,-409.703 413,-409.703 413,-387.703 231,-387.703"/>
@@ -795,38 +731,38 @@
 </g>
 </g>
 <!-- species&#45;&gt;growth_forms -->
-<g id="edge23" class="edge"><title>species:growth_form_id:w&#45;&gt;growth_forms:id:e</title>
+<g id="edge21" class="edge"><title>species:growth_form_id:w&#45;&gt;growth_forms:id:e</title>
 <path fill="none" stroke="black" d="M447.042,-440.086C423.272,-448.697 419.003,-477.703 387,-477.703"/>
 <polygon fill="black" stroke="black" points="453.606,-439.004 462.085,-441.255 457.553,-438.354 461.5,-437.703 461.5,-437.703 461.5,-437.703 457.553,-438.354 460.915,-434.151 453.606,-439.004 453.606,-439.004"/>
 <ellipse fill="none" stroke="black" cx="450.449" cy="-439.524" rx="3.2" ry="3.2"/>
 </g>
 <!-- species&#45;&gt;organizations -->
-<g id="edge24" class="edge"><title>species:organization_id:w&#45;&gt;organizations:id:e</title>
+<g id="edge22" class="edge"><title>species:organization_id:w&#45;&gt;organizations:id:e</title>
 <path fill="none" stroke="black" d="M447.459,-485.713C437.27,-493.208 436.09,-509.588 421,-520.703 340.121,-580.28 293.758,-558.4 223,-629.703 196.666,-656.241 220.386,-703.703 183,-703.703"/>
 <polygon fill="black" stroke="black" points="453.808,-483.9 462.489,-485.165 457.654,-482.802 461.5,-481.703 461.5,-481.703 461.5,-481.703 457.654,-482.802 460.511,-478.242 453.808,-483.9 453.808,-483.9"/>
 <ellipse fill="none" stroke="black" cx="450.731" cy="-484.779" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- species&#45;&gt;seed_storage_behaviors -->
-<g id="edge25" class="edge"><title>species:seed_storage_behavior_id:w&#45;&gt;seed_storage_behaviors:id:e</title>
+<g id="edge23" class="edge"><title>species:seed_storage_behavior_id:w&#45;&gt;seed_storage_behaviors:id:e</title>
 <path fill="none" stroke="black" d="M447.798,-410.921C435.656,-400.507 435.34,-376.703 414,-376.703"/>
 <polygon fill="black" stroke="black" points="453.947,-413.067 460.314,-419.102 457.723,-414.385 461.5,-415.703 461.5,-415.703 461.5,-415.703 457.723,-414.385 462.686,-412.304 453.947,-413.067 453.947,-413.067"/>
 <ellipse fill="none" stroke="black" cx="450.926" cy="-412.013" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- storage_locations&#45;&gt;facilities -->
-<g id="edge27" class="edge"><title>storage_locations:facility_id:w&#45;&gt;facilities:id:e</title>
+<g id="edge25" class="edge"><title>storage_locations:facility_id:w&#45;&gt;facilities:id:e</title>
 <path fill="none" stroke="black" d="M460.009,-863.703C435.86,-863.703 424.951,-863.703 395,-863.703"/>
 <polygon fill="black" stroke="black" points="466.5,-863.703 474.5,-867.303 470.5,-863.703 474.5,-863.703 474.5,-863.703 474.5,-863.703 470.5,-863.703 474.5,-860.103 466.5,-863.703 466.5,-863.703"/>
 <ellipse fill="none" stroke="black" cx="463.3" cy="-863.703" rx="3.2" ry="3.2"/>
 </g>
 <!-- storage_locations&#45;&gt;storage_conditions -->
-<g id="edge26" class="edge"><title>storage_locations:condition_id:w&#45;&gt;storage_conditions:id:e</title>
+<g id="edge24" class="edge"><title>storage_locations:condition_id:w&#45;&gt;storage_conditions:id:e</title>
 <path fill="none" stroke="black" d="M460.001,-839.225C410.817,-819.722 469.585,-691.703 401,-691.703"/>
 <polygon fill="black" stroke="black" points="466.614,-840.355 473.893,-845.252 470.557,-841.029 474.5,-841.703 474.5,-841.703 474.5,-841.703 470.557,-841.029 475.107,-838.155 466.614,-840.355 466.614,-840.355"/>
 <ellipse fill="none" stroke="black" cx="463.46" cy="-839.816" rx="3.2" ry="3.2"/>
 </g>
 <!-- thumbnails -->
-<g id="node21" class="node"><title>thumbnails</title>
-<g id="a_node21"><a xlink:href="../../tables/thumbnails.html" xlink:title="thumbnails" target="_top">
+<g id="node20" class="node"><title>thumbnails</title>
+<g id="a_node20"><a xlink:href="../../tables/thumbnails.html" xlink:title="thumbnails" target="_top">
 <polygon fill="#ffffff" stroke="none" points="1016.5,-69.7032 1016.5,-237.703 1131.5,-237.703 1131.5,-69.7032 1016.5,-69.7032"/>
 <polygon fill="#f5f5f5" stroke="none" points="1017,-215.703 1017,-237.703 1132,-237.703 1132,-215.703 1017,-215.703"/>
 <polygon fill="none" stroke="black" points="1017,-215.703 1017,-237.703 1132,-237.703 1132,-215.703 1017,-215.703"/>
@@ -863,14 +799,14 @@
 </g>
 </g>
 <!-- thumbnails&#45;&gt;photos -->
-<g id="edge28" class="edge"><title>thumbnails:photo_id:w&#45;&gt;photos:id:e</title>
+<g id="edge26" class="edge"><title>thumbnails:photo_id:w&#45;&gt;photos:id:e</title>
 <path fill="none" stroke="black" d="M1001.57,-182.555C946.419,-181.384 927.699,-173.703 866,-173.703"/>
 <polygon fill="black" stroke="black" points="1008,-182.621 1015.96,-186.303 1012,-182.662 1016,-182.703 1016,-182.703 1016,-182.703 1012,-182.662 1016.04,-179.103 1008,-182.621 1008,-182.621"/>
 <ellipse fill="none" stroke="black" cx="1004.8" cy="-182.588" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_test_results -->
-<g id="node22" class="node"><title>viability_test_results</title>
-<g id="a_node22"><a xlink:href="../../tables/viability_test_results.html" xlink:title="viability_test_results" target="_top">
+<g id="node21" class="node"><title>viability_test_results</title>
+<g id="a_node21"><a xlink:href="../../tables/viability_test_results.html" xlink:title="viability_test_results" target="_top">
 <polygon fill="#ffffff" stroke="none" points="1236,-596.703 1236,-698.703 1403,-698.703 1403,-596.703 1236,-596.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="1236.5,-676.703 1236.5,-698.703 1403.5,-698.703 1403.5,-676.703 1236.5,-676.703"/>
 <polygon fill="none" stroke="black" points="1236.5,-676.703 1236.5,-698.703 1403.5,-698.703 1403.5,-676.703 1236.5,-676.703"/>
@@ -898,8 +834,8 @@
 </g>
 </g>
 <!-- viability_tests -->
-<g id="node27" class="node"><title>viability_tests</title>
-<g id="a_node27"><a xlink:href="../../tables/viability_tests.html" xlink:title="viability_tests" target="_top">
+<g id="node26" class="node"><title>viability_tests</title>
+<g id="a_node26"><a xlink:href="../../tables/viability_tests.html" xlink:title="viability_tests" target="_top">
 <polygon fill="#ffffff" stroke="none" points="986.5,-464.703 986.5,-676.703 1161.5,-676.703 1161.5,-464.703 986.5,-464.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="987,-654.703 987,-676.703 1162,-676.703 1162,-654.703 987,-654.703"/>
 <polygon fill="none" stroke="black" points="987,-654.703 987,-676.703 1162,-676.703 1162,-654.703 987,-654.703"/>
@@ -942,14 +878,14 @@
 </g>
 </g>
 <!-- viability_test_results&#45;&gt;viability_tests -->
-<g id="edge29" class="edge"><title>viability_test_results:test_id:w&#45;&gt;viability_tests:id:e</title>
+<g id="edge27" class="edge"><title>viability_test_results:test_id:w&#45;&gt;viability_tests:id:e</title>
 <path fill="none" stroke="black" d="M1221.08,-643.703C1199.89,-643.703 1189.81,-643.703 1163,-643.703"/>
 <polygon fill="black" stroke="black" points="1227.5,-643.703 1235.5,-647.303 1231.5,-643.703 1235.5,-643.703 1235.5,-643.703 1235.5,-643.703 1231.5,-643.703 1235.5,-640.103 1227.5,-643.703 1227.5,-643.703"/>
 <ellipse fill="none" stroke="black" cx="1224.3" cy="-643.703" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_test_seed_types -->
-<g id="node23" class="node"><title>viability_test_seed_types</title>
-<g id="a_node23"><a xlink:href="../../tables/viability_test_seed_types.html" xlink:title="viability_test_seed_types" target="_top">
+<g id="node22" class="node"><title>viability_test_seed_types</title>
+<g id="a_node22"><a xlink:href="../../tables/viability_test_seed_types.html" xlink:title="viability_test_seed_types" target="_top">
 <polygon fill="#ffffff" stroke="none" points="703,-456.703 703,-536.703 893,-536.703 893,-456.703 703,-456.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="703,-514.703 703,-536.703 893,-536.703 893,-514.703 703,-514.703"/>
 <polygon fill="none" stroke="black" points="703,-514.703 703,-536.703 893,-536.703 893,-514.703 703,-514.703"/>
@@ -973,8 +909,8 @@
 </g>
 </g>
 <!-- viability_test_substrates -->
-<g id="node24" class="node"><title>viability_test_substrates</title>
-<g id="a_node24"><a xlink:href="../../tables/viability_test_substrates.html" xlink:title="viability_test_substrates" target="_top">
+<g id="node23" class="node"><title>viability_test_substrates</title>
+<g id="a_node23"><a xlink:href="../../tables/viability_test_substrates.html" xlink:title="viability_test_substrates" target="_top">
 <polygon fill="#ffffff" stroke="none" points="704,-355.703 704,-435.703 892,-435.703 892,-355.703 704,-355.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="704,-413.703 704,-435.703 892,-435.703 892,-413.703 704,-413.703"/>
 <polygon fill="none" stroke="black" points="704,-413.703 704,-435.703 892,-435.703 892,-413.703 704,-413.703"/>
@@ -998,8 +934,8 @@
 </g>
 </g>
 <!-- viability_test_treatments -->
-<g id="node25" class="node"><title>viability_test_treatments</title>
-<g id="a_node25"><a xlink:href="../../tables/viability_test_treatments.html" xlink:title="viability_test_treatments" target="_top">
+<g id="node24" class="node"><title>viability_test_treatments</title>
+<g id="a_node24"><a xlink:href="../../tables/viability_test_treatments.html" xlink:title="viability_test_treatments" target="_top">
 <polygon fill="#ffffff" stroke="none" points="701.5,-254.703 701.5,-334.703 894.5,-334.703 894.5,-254.703 701.5,-254.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="702,-312.703 702,-334.703 895,-334.703 895,-312.703 702,-312.703"/>
 <polygon fill="none" stroke="black" points="702,-312.703 702,-334.703 895,-334.703 895,-312.703 702,-312.703"/>
@@ -1022,45 +958,71 @@
 </a>
 </g>
 </g>
+<!-- viability_test_types -->
+<g id="node25" class="node"><title>viability_test_types</title>
+<g id="a_node25"><a xlink:href="../../tables/viability_test_types.html" xlink:title="viability_test_types" target="_top">
+<polygon fill="#ffffff" stroke="none" points="718,-557.703 718,-641.703 878,-641.703 878,-557.703 718,-557.703"/>
+<polygon fill="#f5f5f5" stroke="none" points="718,-619.703 718,-641.703 878,-641.703 878,-619.703 718,-619.703"/>
+<polygon fill="none" stroke="black" points="718,-619.703 718,-641.703 878,-641.703 878,-619.703 718,-619.703"/>
+<text text-anchor="start" x="723" y="-628.903" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">viability_test_types</text>
+<text text-anchor="start" x="839" y="-627.903" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="718,-597.703 718,-619.703 878,-619.703 878,-597.703 718,-597.703"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="723" y="-614.703"/>
+<text text-anchor="start" x="751" y="-605.903" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="none" points="718,-575.703 718,-597.703 878,-597.703 878,-575.703 718,-575.703"/>
+<polygon fill="none" stroke="black" points="718,-575.703 718,-597.703 878,-597.703 878,-575.703 718,-575.703"/>
+<text text-anchor="start" x="751" y="-583.903" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="none" points="718,-557.703 718,-575.703 772,-575.703 772,-557.703 718,-557.703"/>
+<polygon fill="none" stroke="black" points="718,-557.703 718,-575.703 772,-575.703 772,-557.703 718,-557.703"/>
+<text text-anchor="start" x="721" y="-563.903" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="772,-557.703 772,-575.703 834,-575.703 834,-557.703 772,-557.703"/>
+<polygon fill="none" stroke="black" points="772,-557.703 772,-575.703 834,-575.703 834,-557.703 772,-557.703"/>
+<text text-anchor="start" x="795" y="-563.903" font-family="Helvetica,sans-Serif" font-size="11.00">2 rows</text>
+<polygon fill="#ffffff" stroke="none" points="834,-557.703 834,-575.703 878,-575.703 878,-557.703 834,-557.703"/>
+<polygon fill="none" stroke="black" points="834,-557.703 834,-575.703 878,-575.703 878,-557.703 834,-557.703"/>
+<text text-anchor="start" x="858" y="-563.903" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
 <!-- viability_tests&#45;&gt;accessions -->
-<g id="edge30" class="edge"><title>viability_tests:accession_id:w&#45;&gt;accessions:id:e</title>
+<g id="edge28" class="edge"><title>viability_tests:accession_id:w&#45;&gt;accessions:id:e</title>
 <path fill="none" stroke="black" d="M971.809,-625.883C908.633,-668.205 997.065,-1017.7 913,-1017.7"/>
 <polygon fill="black" stroke="black" points="978.326,-623.963 987.017,-625.157 982.163,-622.833 986,-621.703 986,-621.703 986,-621.703 982.163,-622.833 984.983,-618.25 978.326,-623.963 978.326,-623.963"/>
 <ellipse fill="none" stroke="black" cx="975.256" cy="-624.867" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- viability_tests&#45;&gt;seed_quantity_units -->
-<g id="edge31" class="edge"><title>viability_tests:remaining_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<g id="edge29" class="edge"><title>viability_tests:remaining_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
 <path fill="none" stroke="black" d="M971.958,-508.257C958.293,-499.596 960.805,-476.011 953,-453.703 937.399,-409.114 955.902,-274.404 920,-243.703 878.79,-208.464 729.224,-233.346 676,-243.703 655.058,-247.778 652.834,-261.703 631.5,-261.703"/>
 <polygon fill="black" stroke="black" points="978.231,-509.797 985.142,-515.199 982.115,-510.75 986,-511.703 986,-511.703 986,-511.703 982.115,-510.75 986.858,-508.207 978.231,-509.797 978.231,-509.797"/>
 <ellipse fill="none" stroke="black" cx="975.123" cy="-509.034" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_seed_types -->
-<g id="edge32" class="edge"><title>viability_tests:seed_type_id:w&#45;&gt;viability_test_seed_types:id:e</title>
+<g id="edge30" class="edge"><title>viability_tests:seed_type_id:w&#45;&gt;viability_test_seed_types:id:e</title>
 <path fill="none" stroke="black" d="M971.426,-575.407C935.529,-562.917 940.94,-503.703 894,-503.703"/>
 <polygon fill="black" stroke="black" points="978.097,-576.458 985.44,-581.259 982.049,-577.081 986,-577.703 986,-577.703 986,-577.703 982.049,-577.081 986.56,-574.147 978.097,-576.458 978.097,-576.458"/>
 <ellipse fill="none" stroke="black" cx="974.936" cy="-575.96" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_substrates -->
-<g id="edge33" class="edge"><title>viability_tests:substrate_id:w&#45;&gt;viability_test_substrates:id:e</title>
+<g id="edge31" class="edge"><title>viability_tests:substrate_id:w&#45;&gt;viability_test_substrates:id:e</title>
 <path fill="none" stroke="black" d="M971.63,-553.656C914.787,-535.5 967.137,-402.703 893,-402.703"/>
 <polygon fill="black" stroke="black" points="978.08,-554.575 985.492,-559.267 982.04,-555.139 986,-555.703 986,-555.703 986,-555.703 982.04,-555.139 986.508,-552.139 978.08,-554.575 978.08,-554.575"/>
 <ellipse fill="none" stroke="black" cx="974.912" cy="-554.123" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_treatments -->
-<g id="edge35" class="edge"><title>viability_tests:treatment_id:w&#45;&gt;viability_test_treatments:id:e</title>
+<g id="edge33" class="edge"><title>viability_tests:treatment_id:w&#45;&gt;viability_test_treatments:id:e</title>
 <path fill="none" stroke="black" d="M971.472,-532.098C887.638,-511.6 1001.2,-301.703 896,-301.703"/>
 <polygon fill="black" stroke="black" points="978.048,-532.824 985.605,-537.281 982.024,-533.264 986,-533.703 986,-533.703 986,-533.703 982.024,-533.264 986.395,-530.125 978.048,-532.824 978.048,-532.824"/>
 <ellipse fill="none" stroke="black" cx="974.868" cy="-532.473" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_tests&#45;&gt;viability_test_types -->
-<g id="edge34" class="edge"><title>viability_tests:test_type:w&#45;&gt;viability_test_types:id:e</title>
+<g id="edge32" class="edge"><title>viability_tests:test_type:w&#45;&gt;viability_test_types:id:e</title>
 <path fill="none" stroke="black" d="M971.544,-600.003C935.317,-601.564 921.504,-608.703 879,-608.703"/>
 <polygon fill="black" stroke="black" points="978.002,-599.869 986.075,-603.302 982.001,-599.786 986,-599.703 986,-599.703 986,-599.703 982.001,-599.786 985.925,-596.104 978.002,-599.869 978.002,-599.869"/>
 <ellipse fill="none" stroke="black" cx="974.802" cy="-599.935" rx="3.2" ry="3.2"/>
 </g>
 <!-- withdrawal_purposes -->
-<g id="node28" class="node"><title>withdrawal_purposes</title>
-<g id="a_node28"><a xlink:href="../../tables/withdrawal_purposes.html" xlink:title="withdrawal_purposes" target="_top">
+<g id="node27" class="node"><title>withdrawal_purposes</title>
+<g id="a_node27"><a xlink:href="../../tables/withdrawal_purposes.html" xlink:title="withdrawal_purposes" target="_top">
 <polygon fill="#ffffff" stroke="none" points="988.5,-258.703 988.5,-338.703 1159.5,-338.703 1159.5,-258.703 988.5,-258.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="989,-316.703 989,-338.703 1160,-338.703 1160,-316.703 989,-316.703"/>
 <polygon fill="none" stroke="black" points="989,-316.703 989,-338.703 1160,-338.703 1160,-316.703 989,-316.703"/>
@@ -1084,8 +1046,8 @@
 </g>
 </g>
 <!-- withdrawals -->
-<g id="node29" class="node"><title>withdrawals</title>
-<g id="a_node29"><a xlink:href="../../tables/withdrawals.html" xlink:title="withdrawals" target="_top">
+<g id="node28" class="node"><title>withdrawals</title>
+<g id="a_node28"><a xlink:href="../../tables/withdrawals.html" xlink:title="withdrawals" target="_top">
 <polygon fill="#ffffff" stroke="none" points="1248.5,-192.703 1248.5,-404.703 1390.5,-404.703 1390.5,-192.703 1248.5,-192.703"/>
 <polygon fill="#f5f5f5" stroke="none" points="1248.5,-382.703 1248.5,-404.703 1390.5,-404.703 1390.5,-382.703 1248.5,-382.703"/>
 <polygon fill="none" stroke="black" points="1248.5,-382.703 1248.5,-404.703 1390.5,-404.703 1390.5,-382.703 1248.5,-382.703"/>
@@ -1129,32 +1091,32 @@
 </g>
 </g>
 <!-- withdrawals&#45;&gt;accessions -->
-<g id="edge36" class="edge"><title>withdrawals:accession_id:w&#45;&gt;accessions:id:e</title>
-<path fill="none" stroke="black" d="M1232.97,-352.954C1159.68,-389.775 1260.27,-728.3 1195,-796.703 1119.74,-875.574 1032.13,-761.715 953,-836.703 893.202,-893.374 995.385,-1017.7 913,-1017.7"/>
-<polygon fill="black" stroke="black" points="1239.69,-351.45 1248.29,-353.216 1243.6,-350.576 1247.5,-349.703 1247.5,-349.703 1247.5,-349.703 1243.6,-350.576 1246.71,-346.19 1239.69,-351.45 1239.69,-351.45"/>
-<ellipse fill="none" stroke="black" cx="1236.57" cy="-352.148" rx="3.2" ry="3.2"/>
+<g id="edge34" class="edge"><title>withdrawals:accession_id:w&#45;&gt;accessions:id:e</title>
+<path fill="none" stroke="black" d="M1233.52,-353.596C1180.34,-387.168 1233.92,-627.966 1195,-686.703 1125.1,-792.186 1026.19,-733.473 953,-836.703 905.352,-903.912 995.385,-1017.7 913,-1017.7"/>
+<polygon fill="black" stroke="black" points="1239.79,-351.849 1248.47,-353.171 1243.65,-350.776 1247.5,-349.703 1247.5,-349.703 1247.5,-349.703 1243.65,-350.776 1246.53,-346.235 1239.79,-351.849 1239.79,-351.849"/>
+<ellipse fill="none" stroke="black" cx="1236.71" cy="-352.707" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- withdrawals&#45;&gt;seed_quantity_units -->
-<g id="edge38" class="edge"><title>withdrawals:remaining_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<g id="edge36" class="edge"><title>withdrawals:remaining_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
 <path fill="none" stroke="black" d="M1232.77,-260.15C1167.47,-244.356 1264.22,-112.302 1195,-58.7032 1149.3,-23.3186 719.499,-55.6456 676,-93.7032 617.867,-144.564 708.742,-261.703 631.5,-261.703"/>
 <polygon fill="black" stroke="black" points="1239.54,-260.865 1247.12,-265.283 1243.52,-261.284 1247.5,-261.703 1247.5,-261.703 1247.5,-261.703 1243.52,-261.284 1247.88,-258.123 1239.54,-260.865 1239.54,-260.865"/>
 <ellipse fill="none" stroke="black" cx="1236.36" cy="-260.529" rx="3.2" ry="3.2"/>
 </g>
 <!-- withdrawals&#45;&gt;seed_quantity_units -->
-<g id="edge40" class="edge"><title>withdrawals:withdrawn_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
+<g id="edge38" class="edge"><title>withdrawals:withdrawn_units_id:w&#45;&gt;seed_quantity_units:id:e</title>
 <path fill="none" stroke="black" d="M1233.03,-238.18C1168.85,-222.686 1263.07,-93.1469 1195,-40.7032 1173.18,-23.8943 684.621,-40.5076 676,-47.7032 601.419,-109.953 728.646,-261.703 631.5,-261.703"/>
 <polygon fill="black" stroke="black" points="1239.54,-238.865 1247.12,-243.283 1243.52,-239.284 1247.5,-239.703 1247.5,-239.703 1247.5,-239.703 1243.52,-239.284 1247.88,-236.123 1239.54,-238.865 1239.54,-238.865"/>
 <ellipse fill="none" stroke="black" cx="1236.36" cy="-238.53" rx="3.2" ry="3.2"/>
 </g>
 <!-- withdrawals&#45;&gt;viability_tests -->
-<g id="edge39" class="edge"><title>withdrawals:viability_test_id:w&#45;&gt;viability_tests:id:e</title>
+<g id="edge37" class="edge"><title>withdrawals:viability_test_id:w&#45;&gt;viability_tests:id:e</title>
 <path fill="none" stroke="black" d="M1236.98,-286.002C1172.46,-316.662 1241.32,-643.703 1163,-643.703"/>
 <polygon fill="black" stroke="black" points="1245.86,-279.966 1247.57,-287.782 1246.01,-288.123 1244.3,-280.308 1245.86,-279.966"/>
 <polyline fill="none" stroke="black" points="1247.5,-283.703 1243.59,-284.557 "/>
 <ellipse fill="none" stroke="black" cx="1240.47" cy="-285.24" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- withdrawals&#45;&gt;withdrawal_purposes -->
-<g id="edge37" class="edge"><title>withdrawals:purpose_id:w&#45;&gt;withdrawal_purposes:id:e</title>
+<g id="edge35" class="edge"><title>withdrawals:purpose_id:w&#45;&gt;withdrawal_purposes:id:e</title>
 <path fill="none" stroke="black" d="M1232.83,-305.703C1205.78,-305.703 1194.04,-305.703 1161,-305.703"/>
 <polygon fill="black" stroke="black" points="1239.5,-305.703 1247.5,-309.303 1243.5,-305.703 1247.5,-305.703 1247.5,-305.703 1247.5,-305.703 1243.5,-305.703 1247.5,-302.103 1239.5,-305.703 1239.5,-305.703"/>
 <ellipse fill="none" stroke="black" cx="1236.3" cy="-305.703" rx="3.2" ry="3.2"/>

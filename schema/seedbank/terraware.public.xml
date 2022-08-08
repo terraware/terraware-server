@@ -63,26 +63,11 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="accession_viability_test_types" numRows="0" remarks="(Enum) Types of tests that can be performed on seeds to determine whether or not they successfully germinate" schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="accession_viability_test_types_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="viability_test_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="accession_germination_test_type_germination_test_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_test_types"/>
-         </column>
-         <primaryKey column="accession_id" sequenceNumberInPK="1"/>
-         <primaryKey column="viability_test_type_id" sequenceNumberInPK="2"/>
-         <index name="accession_viability_test_types_pkey" unique="true">
-            <column ascending="true" name="accession_id"/>
-            <column ascending="true" name="viability_test_type_id"/>
-         </index>
-      </table>
       <table name="accessions" numRows="0" remarks="Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="accession_id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_photos"/>
             <child column="accession_id" foreignKey="accession_secondary_collector_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_secondary_collectors"/>
             <child column="accession_id" foreignKey="accession_state_history_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_state_history"/>
-            <child column="accession_id" foreignKey="accession_viability_test_types_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_viability_test_types"/>
             <child column="accession_id" foreignKey="bag_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="bags"/>
             <child column="accession_id" foreignKey="collection_event_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="geolocations"/>
             <child column="accession_id" foreignKey="viability_tests_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
@@ -534,7 +519,6 @@
       </table>
       <table name="viability_test_types" numRows="2" remarks="(Enum) Types of tests that can be performed on seeds to check for viability." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="viability_test_type_id" foreignKey="accession_germination_test_type_germination_test_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_viability_test_types"/>
             <child column="test_type" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
