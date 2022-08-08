@@ -353,9 +353,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(organizationId) } returns false
     every { user.canReadSpecies(speciesId) } returns false
 
-    assertThrows<OrganizationNotFoundException> {
-      store.countSpecies(organizationId, Instant.EPOCH)
-    }
+    assertThrows<OrganizationNotFoundException> { store.countSpecies(organizationId) }
 
     assertThrows<OrganizationNotFoundException> {
       store.fetchSpeciesIdByName(organizationId, scientificName)

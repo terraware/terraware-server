@@ -18,9 +18,7 @@ import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
-import com.terraformation.backend.time.toInstant
 import java.time.Clock
-import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -59,15 +57,14 @@ class SpeciesStore(
         ?: throw SpeciesNotFoundException(speciesId)
   }
 
-  fun countSpecies(organizationId: OrganizationId, asOf: TemporalAccessor): Int {
+  fun countSpecies(organizationId: OrganizationId): Int {
     requirePermissions { readOrganization(organizationId) }
 
     return dslContext
         .select(DSL.count())
         .from(SPECIES)
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
-        .and(SPECIES.CREATED_TIME.le(asOf.toInstant()))
-        .and(SPECIES.DELETED_TIME.isNull.or(SPECIES.DELETED_TIME.gt(asOf.toInstant())))
+        .and(SPECIES.DELETED_TIME.isNull)
         .fetchOne()
         ?.value1()
         ?: 0

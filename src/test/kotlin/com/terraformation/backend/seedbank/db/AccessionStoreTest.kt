@@ -1180,55 +1180,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         5, store.countInState(facilityId, AccessionState.Processing), "Search without time bounds")
   }
 
-  /**
-   * Test data:
-   *
-   * ```
-   *     1  2  3  4  5
-   * 1   [--]
-   * 2   [-----]
-   * 3   [--------]
-   * 4   [-----------]
-   * 5   [------------
-   * 6         [------
-   * ```
-   */
-  @Test
-  fun `countActive correctly examines history`() {
-    listOf(1 to 2, 1 to 3, 1 to 4, 1 to 5, 1 to null, 3 to null).forEach {
-        (createdTime, withdrawnTime) ->
-      every { clock.instant() } returns Instant.ofEpochMilli(createdTime.toLong())
-      val accession = store.create(AccessionModel(facilityId = facilityId))
-
-      if (withdrawnTime != null) {
-        dslContext
-            .insertInto(ACCESSION_STATE_HISTORY)
-            .set(
-                AccessionStateHistoryRecord(
-                    accessionId = accession.id,
-                    updatedTime = Instant.ofEpochMilli(withdrawnTime.toLong()),
-                    oldStateId = AccessionState.InStorage,
-                    newStateId = AccessionState.Withdrawn,
-                    reason = "test"))
-            .execute()
-
-        dslContext
-            .update(ACCESSIONS)
-            .set(ACCESSIONS.STATE_ID, AccessionState.Withdrawn)
-            .where(ACCESSIONS.ID.eq(accession.id))
-            .execute()
-      }
-    }
-
-    val expectedCounts = listOf(0, 5, 4, 4, 3, 2, 2)
-    expectedCounts.forEachIndexed { asOf, expectedCount ->
-      assertEquals(
-          expectedCount,
-          store.countActive(facilityId, Instant.ofEpochMilli(asOf.toLong())),
-          "Count as of time $asOf")
-    }
-  }
-
   @Test
   fun `update rejects weight-based withdrawals for count-based accessions`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
@@ -1716,30 +1667,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     fun `rejects count active accessions by facility when user cannot read facility`() {
       every { user.canReadFacility(any()) } returns false
 
-      assertThrows<FacilityNotFoundException> {
-        store.countActive(facilityId, ZonedDateTime.now(clock))
-      }
+      assertThrows<FacilityNotFoundException> { store.countActive(facilityId) }
     }
 
     @Test
     fun `counts active accessions by facility`() {
       store.create(AccessionModel(facilityId = facilityId))
-      assertEquals(1, store.countActive(facilityId, ZonedDateTime.now(clock)))
-    }
-
-    @Test
-    fun `rejects count accession families by facility when user cannot read facility`() {
-      every { user.canReadFacility(any()) } returns false
-
-      assertThrows<FacilityNotFoundException> {
-        store.countFamilies(facilityId, ZonedDateTime.now(clock))
-      }
-    }
-
-    @Test
-    fun `counts accession families by facility`() {
-      store.create(AccessionModel(facilityId = facilityId, family = "test"))
-      assertEquals(1, store.countFamilies(facilityId, ZonedDateTime.now(clock)))
+      assertEquals(1, store.countActive(facilityId))
     }
 
     @Test
@@ -1793,30 +1727,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     fun `rejects count active accessions by organization when user cannot read organization`() {
       every { user.canReadOrganization(any()) } returns false
 
-      assertThrows<OrganizationNotFoundException> {
-        store.countActive(organizationId, ZonedDateTime.now(clock))
-      }
+      assertThrows<OrganizationNotFoundException> { store.countActive(organizationId) }
     }
 
     @Test
     fun `counts active accessions by organization`() {
       store.create(AccessionModel(facilityId = facilityId))
-      assertEquals(1, store.countActive(organizationId, ZonedDateTime.now(clock)))
-    }
-
-    @Test
-    fun `rejects count accession families by organization when user cannot read organization`() {
-      every { user.canReadOrganization(any()) } returns false
-
-      assertThrows<OrganizationNotFoundException> {
-        store.countFamilies(organizationId, ZonedDateTime.now(clock))
-      }
-    }
-
-    @Test
-    fun `counts accession families by organization`() {
-      store.create(AccessionModel(facilityId = facilityId, family = "test"))
-      assertEquals(1, store.countFamilies(organizationId, ZonedDateTime.now(clock)))
+      assertEquals(1, store.countActive(organizationId))
     }
 
     @Test
@@ -1892,8 +1809,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `countActive only counts accessions from the requested facility`() {
       store.create(AccessionModel(facilityId = facilityId))
-      assertEquals(1, store.countActive(facilityId, clock.instant()))
-      assertEquals(0, store.countActive(otherFacilityId, clock.instant()))
+      assertEquals(1, store.countActive(facilityId))
+      assertEquals(0, store.countActive(otherFacilityId))
     }
 
     @Test

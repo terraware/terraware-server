@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.AccessionState
@@ -50,18 +51,8 @@ class SummaryController(
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
     return SummaryResponse(
-        activeAccessions =
-            SummaryStatistic(
-                accessionStore.countActive(facilityId, now),
-                accessionStore.countActive(facilityId, startOfWeek)),
-        species =
-            SummaryStatistic(
-                speciesStore.countSpecies(organizationId, now),
-                speciesStore.countSpecies(organizationId, startOfWeek)),
-        families =
-            SummaryStatistic(
-                accessionStore.countFamilies(facilityId, now),
-                accessionStore.countFamilies(facilityId, startOfWeek)),
+        activeAccessions = accessionStore.countActive(facilityId),
+        species = speciesStore.countSpecies(organizationId),
         overduePendingAccessions =
             accessionStore.countInState(
                 facilityId, AccessionState.Pending, sinceBefore = oneWeekAgo),
@@ -107,18 +98,8 @@ class SummaryController(
     val twoWeeksAgo = startOfDay.minusDays(13)
 
     return SummaryResponse(
-        activeAccessions =
-            SummaryStatistic(
-                accessionStore.countActive(organizationId, now),
-                accessionStore.countActive(organizationId, startOfWeek)),
-        species =
-            SummaryStatistic(
-                speciesStore.countSpecies(organizationId, now),
-                speciesStore.countSpecies(organizationId, startOfWeek)),
-        families =
-            SummaryStatistic(
-                accessionStore.countFamilies(organizationId, now),
-                accessionStore.countFamilies(organizationId, startOfWeek)),
+        activeAccessions = accessionStore.countActive(organizationId),
+        species = speciesStore.countSpecies(organizationId),
         overduePendingAccessions =
             accessionStore.countInState(
                 organizationId, AccessionState.Pending, sinceBefore = oneWeekAgo),
@@ -132,14 +113,10 @@ class SummaryController(
   }
 }
 
-@Schema(description = "The current value and value as of last week for a summary statistic")
-data class SummaryStatistic(val current: Int, val lastWeek: Int)
-
 @Schema(description = "Summary of important statistics about the seed bank for the Summary page.")
 data class SummaryResponse(
-    val activeAccessions: SummaryStatistic,
-    val species: SummaryStatistic,
-    val families: SummaryStatistic,
+    val activeAccessions: Int,
+    val species: Int,
     @Schema(description = "Number of accessions in Pending state overdue for processing")
     val overduePendingAccessions: Int,
     @Schema(description = "Number of accessions in Processed state overdue for drying")
@@ -148,4 +125,4 @@ data class SummaryResponse(
     val overdueDriedAccessions: Int,
     @Schema(description = "Number of accessions withdrawn so far this week")
     val recentlyWithdrawnAccessions: Int,
-)
+) : SuccessResponsePayload
