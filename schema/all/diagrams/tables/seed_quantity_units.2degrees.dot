@@ -50,6 +50,9 @@ digraph "twoDegreesRelationshipsDiagram" {
   "storage_locations":"elipses":w -> "facilities":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "storage_locations":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "viability_test_results":"elipses":w -> "viability_tests":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "viability_test_selections":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "viability_test_selections":"elipses":w -> "viability_tests":"accession_id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "viability_test_selections":"elipses":w -> "viability_tests":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "viability_tests":"accession_id":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "viability_tests":"remaining_units_id":w -> "seed_quantity_units":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "viability_tests":"seed_type_id":w -> "viability_test_seed_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -129,7 +132,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 15</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">7 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 15</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/accessions.html"
     target="_top"
@@ -301,6 +304,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="viability_test_seed_types"
   ];
+  "viability_test_selections" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>viability_test_selections</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/viability_test_selections.html"
+    target="_top"
+    tooltip="viability_test_selections"
+  ];
   "viability_test_substrates" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -346,7 +360,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="treatment_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="154" HEIGHT="16">treatment_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="remaining_units_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="154" HEIGHT="16">remaining_units_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/viability_tests.html"
     target="_top"

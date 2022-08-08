@@ -3,6 +3,7 @@ task_processed_times
 withdrawals
 organization_users
 automations
+viability_test_selections
 species_problems
 notifications
 accession_state_history
@@ -20,8 +21,8 @@ accession_secondary_collectors
 uploads
 timeseries
 notification_types
-viability_tests
 photos
+viability_tests
 accessions
 storage_locations
 species

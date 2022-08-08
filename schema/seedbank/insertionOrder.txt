@@ -25,4 +25,5 @@ thumbnails
 viability_test_results
 accession_photos
 accession_state_history
+viability_test_selections
 withdrawals
