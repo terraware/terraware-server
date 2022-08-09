@@ -12,8 +12,6 @@ COMMENT ON TABLE accession_collectors IS 'Names of people who collected each acc
 
 COMMENT ON TABLE accession_photos IS 'Linking table between `accessions` and `photos`.';
 
-COMMENT ON TABLE accession_secondary_collectors IS 'Associates additional collectors with accessions. The primary collector is not included here, but is instead stored in `accessions.primary_collector_name`.';
-
 COMMENT ON TABLE accession_state_history IS 'Historical record of when accessions moved to different states. A row is inserted here for every state transition.';
 COMMENT ON COLUMN accession_state_history.old_state_id IS 'Null if this is the initial state for a new accession.';
 
