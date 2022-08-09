@@ -91,7 +91,7 @@ data class AccessionModel(
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
-    val secondaryCollectors: Set<String> = emptySet(),
+    val secondaryCollectors: List<String> = emptyList(),
     val siteLocation: String? = null,
     val source: AccessionSource? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,

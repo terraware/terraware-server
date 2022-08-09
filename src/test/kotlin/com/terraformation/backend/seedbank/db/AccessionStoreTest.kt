@@ -231,7 +231,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             facilityId = facilityId,
             family = "test family",
             primaryCollector = "primary collector",
-            secondaryCollectors = setOf("secondary 1", "secondary 2"),
+            secondaryCollectors = listOf("secondary 1", "secondary 2"),
             species = "test species")
 
     // First time inserts the reference table rows
@@ -1453,7 +1453,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             primaryCollector = "primaryCollector",
             rare = RareType.Yes,
             receivedDate = today,
-            secondaryCollectors = setOf("second1", "second2"),
+            secondaryCollectors = listOf("second1", "second2"),
             siteLocation = "siteLocation",
             sourcePlantOrigin = SourcePlantOrigin.Wild,
             species = "species",
@@ -1521,7 +1521,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             processingStartDate = today,
             rare = RareType.Yes,
             receivedDate = today,
-            secondaryCollectors = setOf("second1", "second2"),
+            secondaryCollectors = listOf("second1", "second2"),
             siteLocation = "siteLocation",
             sourcePlantOrigin = SourcePlantOrigin.Wild,
             species = "species",
@@ -1600,9 +1600,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             AccessionModel(
                 facilityId = facilityId,
                 primaryCollector = "primary",
-                secondaryCollectors = setOf("second1", "second2")))
+                secondaryCollectors = listOf("second1", "second2")))
 
-    store.update(initial.copy(primaryCollector = null, secondaryCollectors = setOf("second1")))
+    store.update(initial.copy(primaryCollector = null, secondaryCollectors = listOf("second1")))
 
     assertEquals(
         listOf(AccessionCollectorsRow(initial.id, 0, "second1")),
@@ -1712,7 +1712,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             initialQuantity = kilograms(432),
             processingMethod = ProcessingMethod.Weight,
             receivedDate = today,
-            secondaryCollectors = setOf("second1", "second2"),
+            secondaryCollectors = listOf("second1", "second2"),
             species = "species",
             storageLocation = storageLocationName,
             viabilityTests =
