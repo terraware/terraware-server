@@ -45,7 +45,6 @@ import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.APP_DEVICES
 import com.terraformation.backend.db.tables.references.BAGS
@@ -228,11 +227,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `existing rows are used for free-text fields that live in reference tables`() {
     val payload =
-        AccessionModel(
-            facilityId = facilityId,
-            family = "test family",
-            collectors = listOf("primary collector", "secondary 1", "secondary 2"),
-            species = "test species")
+        AccessionModel(facilityId = facilityId, family = "test family", species = "test species")
 
     // First time inserts the reference table rows
     val initialAccession = store.create(payload)
@@ -248,15 +243,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
     assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
     assertEquals(initialRow.familyName, secondRow.familyName, "Family")
-    assertEquals(
-        initialRow.primaryCollectorName, secondRow.primaryCollectorName, "Primary collector")
-
-    assertEquals(2, getSecondaryCollectors(AccessionId(1)).size, "Number of secondary collectors")
-
-    assertEquals(
-        getSecondaryCollectors(AccessionId(1)),
-        getSecondaryCollectors(AccessionId(2)),
-        "Secondary collectors")
   }
 
   @Test
@@ -2022,18 +2008,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           1, store.countInState(facilityId, initial.state!!, Instant.EPOCH, clock.instant()))
       assertEquals(
           0, store.countInState(otherFacilityId, initial.state!!, Instant.EPOCH, clock.instant()))
-    }
-  }
-
-  private fun getSecondaryCollectors(accessionId: AccessionId?): Set<String> {
-    with(ACCESSION_SECONDARY_COLLECTORS) {
-      return dslContext
-          .select(NAME)
-          .from(ACCESSION_SECONDARY_COLLECTORS)
-          .where(ACCESSION_ID.eq(accessionId))
-          .fetch(NAME)
-          .filterNotNull()
-          .toSet()
     }
   }
 
