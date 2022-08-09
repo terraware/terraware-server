@@ -1426,6 +1426,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         CreateAccessionRequestPayload(
             bagNumbers = setOf("abc"),
             collectedDate = today,
+            collectors = listOf("primaryCollector", "second1", "second2"),
             deviceInfo =
                 DeviceInfoPayload(
                     appBuild = "build",
@@ -1492,6 +1493,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         UpdateAccessionRequestPayload(
             bagNumbers = setOf("abc"),
             collectedDate = today,
+            collectors = listOf("primaryCollector", "second1", "second2"),
             cutTestSeedsCompromised = 20,
             cutTestSeedsEmpty = 21,
             cutTestSeedsFilled = 22,

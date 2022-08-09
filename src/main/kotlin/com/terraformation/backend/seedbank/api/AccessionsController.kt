@@ -130,11 +130,30 @@ class AccessionsController(
   }
 }
 
+/**
+ * Returns the list of collectors from an incoming request payload that might be coming from a
+ * client that doesn't know about the new unified `collectors` field. The client will remove the old
+ * fields when it starts using the new one, so if the old fields are present, use them and ignore
+ * the new one.
+ */
+private fun backwardCompatibleCollectors(
+    primaryCollector: String?,
+    secondaryCollectors: List<String>?,
+    collectors: List<String>?
+): List<String> {
+  return if (primaryCollector != null || secondaryCollectors != null) {
+    listOfNotNull(primaryCollector) + secondaryCollectors.orEmpty()
+  } else {
+    collectors.orEmpty()
+  }
+}
+
 // Mark all fields as write-only in the schema
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
     val collectedDate: LocalDate? = null,
+    val collectors: List<String>? = null,
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
     val environmentalNotes: String? = null,
@@ -145,9 +164,15 @@ data class CreateAccessionRequestPayload(
     val geolocations: Set<Geolocation>? = null,
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
+    @Schema(
+        deprecated = true,
+    )
     val primaryCollector: String? = null,
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
+    @Schema(
+        deprecated = true,
+    )
     val secondaryCollectors: List<String>? = null,
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
@@ -157,7 +182,8 @@ data class CreateAccessionRequestPayload(
     return AccessionModel(
         bagNumbers = bagNumbers.orEmpty(),
         collectedDate = collectedDate,
-        collectors = listOfNotNull(primaryCollector) + secondaryCollectors.orEmpty(),
+        collectors =
+            backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
         deviceInfo = deviceInfo?.toModel(),
         endangered = endangered,
         environmentalNotes = environmentalNotes,
@@ -182,6 +208,7 @@ data class CreateAccessionRequestPayload(
 data class UpdateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
     val collectedDate: LocalDate? = null,
+    val collectors: List<String>? = null,
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,
     val cutTestSeedsFilled: Int? = null,
@@ -203,6 +230,9 @@ data class UpdateAccessionRequestPayload(
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
     val nurseryStartDate: LocalDate? = null,
+    @Schema(
+        deprecated = true,
+    )
     val primaryCollector: String? = null,
     val processingMethod: ProcessingMethod? = null,
     val processingNotes: String? = null,
@@ -210,6 +240,9 @@ data class UpdateAccessionRequestPayload(
     val processingStartDate: LocalDate? = null,
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
+    @Schema(
+        deprecated = true,
+    )
     val secondaryCollectors: List<String>? = null,
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
@@ -232,7 +265,8 @@ data class UpdateAccessionRequestPayload(
       AccessionModel(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
-          collectors = listOfNotNull(primaryCollector) + secondaryCollectors.orEmpty(),
+          collectors =
+              backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
           cutTestSeedsCompromised = cutTestSeedsCompromised,
           cutTestSeedsEmpty = cutTestSeedsEmpty,
           cutTestSeedsFilled = cutTestSeedsFilled,
@@ -288,6 +322,8 @@ data class AccessionPayload(
     val bagNumbers: Set<String>?,
     val checkedInTime: Instant?,
     val collectedDate: LocalDate?,
+    @Schema(description = "Names of the people who collected the seeds.")
+    val collectors: List<String>?,
     val deviceInfo: DeviceInfoPayload?,
     val cutTestSeedsCompromised: Int?,
     val cutTestSeedsEmpty: Int?,
@@ -319,6 +355,9 @@ data class AccessionPayload(
     val numberOfTrees: Int?,
     val nurseryStartDate: LocalDate?,
     val photoFilenames: List<String>?,
+    @Schema(
+        deprecated = true,
+    )
     val primaryCollector: String?,
     val processingMethod: ProcessingMethod?,
     val processingNotes: String?,
@@ -331,6 +370,9 @@ data class AccessionPayload(
             "Number or weight of seeds remaining for withdrawal and testing. Calculated by the " +
                 "server when the accession's total size is known.")
     val remainingQuantity: SeedQuantityPayload?,
+    @Schema(
+        deprecated = true,
+    )
     val secondaryCollectors: List<String>?,
     val siteLocation: String?,
     @Schema(
@@ -393,6 +435,7 @@ data class AccessionPayload(
       model.bagNumbers.orNull(),
       model.checkedInTime,
       model.collectedDate,
+      model.collectors.orNull(),
       model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.cutTestSeedsCompromised,
       model.cutTestSeedsEmpty,
