@@ -21,6 +21,7 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestType
+import com.terraformation.backend.db.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
@@ -186,6 +187,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             modifiedTime = now,
             speciesId = SpeciesId(10001),
             treesCollectedFrom = 2))
+
+    accessionCollectorsDao.insert(
+        AccessionCollectorsRow(AccessionId(1000), 0, "primary"),
+        AccessionCollectorsRow(AccessionId(1000), 1, "secondary 1"),
+        AccessionCollectorsRow(AccessionId(1000), 2, "secondary 2"),
+    )
   }
 
   @Test
@@ -2861,8 +2868,24 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "ageYears" to "1",
                       "checkedInTime" to "$checkedInTime",
                       "collectedDate" to "2019-03-02",
+                      "collectors" to
+                          listOf(
+                              mapOf("name" to "primary", "position" to "0"),
+                              mapOf("name" to "secondary 1", "position" to "1"),
+                              mapOf("name" to "secondary 2", "position" to "2"),
+                          ),
                       "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
                       "id" to "1000",
+                      "primaryCollectorName" to "primary",
+                      "primaryCollectors" to
+                          listOf(
+                              mapOf("name" to "primary", "position" to "0"),
+                          ),
+                      "secondaryCollectors" to
+                          listOf(
+                              mapOf("name" to "secondary 1", "position" to "1"),
+                              mapOf("name" to "secondary 2", "position" to "2"),
+                          ),
                       "speciesName" to "Kousa Dogwood",
                       "state" to "Processed",
                       "treesCollectedFrom" to "1",

@@ -129,6 +129,10 @@ val ID_WRAPPERS =
 val EMBEDDABLES =
     listOf(
         EmbeddableDefinitionType()
+            .withName("accession_collector_id")
+            .withTables("accession_collectors")
+            .withColumns("accession_id", "position"),
+        EmbeddableDefinitionType()
             .withName("organization_user_id")
             .withTables("organization_users")
             .withColumns("organization_id", "user_id"),
