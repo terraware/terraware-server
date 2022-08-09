@@ -16,7 +16,6 @@ import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
-import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
@@ -224,7 +223,6 @@ class AccessionStore(
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
                         .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                        .set(PRIMARY_COLLECTOR_NAME, accession.collectors.getOrNull(0))
                         .set(RARE_TYPE_ID, accession.rare)
                         .set(RECEIVED_DATE, accession.receivedDate)
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
@@ -255,7 +253,6 @@ class AccessionStore(
                     .execute()
               }
 
-              insertSecondaryCollectors(accessionId, accession.collectors.drop(1))
               updateCollectors(accessionId, emptyList(), accession.collectors)
               bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
               geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
@@ -312,12 +309,6 @@ class AccessionStore(
 
     dslContext.transaction { _ ->
       if (existing.collectors != accession.collectors) {
-        dslContext
-            .deleteFrom(ACCESSION_SECONDARY_COLLECTORS)
-            .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
-            .execute()
-        insertSecondaryCollectors(accessionId, accession.collectors.drop(1))
-
         updateCollectors(accessionId, existing.collectors, accession.collectors)
       }
 
@@ -374,7 +365,6 @@ class AccessionStore(
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                .set(PRIMARY_COLLECTOR_NAME, accession.collectors.getOrNull(0))
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
@@ -580,19 +570,6 @@ class AccessionStore(
                 .where(ACCESSION_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
                 .orderBy(ACCESSION_COLLECTORS.POSITION))
         .convertFrom { result -> result.map { it.value1() } }
-  }
-
-  private fun insertSecondaryCollectors(
-      accessionId: AccessionId,
-      secondaryCollectors: Collection<String>?
-  ) {
-    secondaryCollectors?.forEach { name ->
-      dslContext
-          .insertInto(ACCESSION_SECONDARY_COLLECTORS)
-          .set(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID, accessionId)
-          .set(ACCESSION_SECONDARY_COLLECTORS.NAME, name)
-          .execute()
-    }
   }
 
   private fun updateCollectors(
