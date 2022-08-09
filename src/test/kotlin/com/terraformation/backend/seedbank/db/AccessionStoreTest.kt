@@ -74,6 +74,7 @@ import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.util.orNull
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -230,8 +231,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         AccessionModel(
             facilityId = facilityId,
             family = "test family",
-            primaryCollector = "primary collector",
-            secondaryCollectors = listOf("secondary 1", "secondary 2"),
+            collectors = listOf("primary collector", "secondary 1", "secondary 2"),
             species = "test species")
 
     // First time inserts the reference table rows
@@ -1053,7 +1053,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `checkedInTime in model is ignored by update`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
 
-    store.update(initial.copy(checkedInTime = Instant.EPOCH, primaryCollector = "test"))
+    store.update(initial.copy(checkedInTime = Instant.EPOCH, collectors = listOf("test")))
     val updated = store.fetchOneById(initial.id!!)
 
     assertEquals(AccessionState.AwaitingCheckIn, updated.state, "State")
@@ -1598,11 +1598,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId,
-                primaryCollector = "primary",
-                secondaryCollectors = listOf("second1", "second2")))
+                facilityId = facilityId, collectors = listOf("primary", "second1", "second2")))
 
-    store.update(initial.copy(primaryCollector = null, secondaryCollectors = listOf("second1")))
+    store.update(initial.copy(collectors = listOf("second1")))
 
     assertEquals(
         listOf(AccessionCollectorsRow(initial.id, 0, "second1")),
@@ -2080,14 +2078,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         landowner = landowner,
         numberOfTrees = numberOfTrees,
         nurseryStartDate = nurseryStartDate,
-        primaryCollector = primaryCollector,
+        primaryCollector = collectors.getOrNull(0),
         processingMethod = processingMethod,
         processingNotes = processingNotes,
         processingStaffResponsible = processingStaffResponsible,
         processingStartDate = processingStartDate,
         rare = rare,
         receivedDate = receivedDate,
-        secondaryCollectors = secondaryCollectors,
+        secondaryCollectors = collectors.drop(1).orNull(),
         siteLocation = siteLocation,
         sourcePlantOrigin = sourcePlantOrigin,
         species = species,
