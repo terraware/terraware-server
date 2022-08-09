@@ -118,6 +118,7 @@ class AccessionStore(
           bagNumbers = record[bagNumbersField],
           checkedInTime = record[CHECKED_IN_TIME],
           collectedDate = record[COLLECTED_DATE],
+          collectors = record[collectorsField],
           cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
           cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
           cutTestSeedsFilled = record[CUT_TEST_SEEDS_FILLED],
@@ -140,7 +141,6 @@ class AccessionStore(
           numberOfTrees = record[TREES_COLLECTED_FROM],
           nurseryStartDate = record[NURSERY_START_DATE],
           photoFilenames = record[photoFilenamesField],
-          primaryCollector = record[collectorsField].getOrNull(0),
           processingMethod = record[PROCESSING_METHOD_ID],
           processingNotes = record[PROCESSING_NOTES],
           processingStaffResponsible = record[PROCESSING_STAFF_RESPONSIBLE],
@@ -148,7 +148,6 @@ class AccessionStore(
           rare = record[RARE_TYPE_ID],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-          secondaryCollectors = record[collectorsField].drop(1),
           siteLocation = record[COLLECTION_SITE_NAME],
           source = source,
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
@@ -225,7 +224,7 @@ class AccessionStore(
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
                         .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                        .set(PRIMARY_COLLECTOR_NAME, accession.primaryCollector)
+                        .set(PRIMARY_COLLECTOR_NAME, accession.collectors.getOrNull(0))
                         .set(RARE_TYPE_ID, accession.rare)
                         .set(RECEIVED_DATE, accession.receivedDate)
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
@@ -256,11 +255,8 @@ class AccessionStore(
                     .execute()
               }
 
-              insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
-              updateCollectors(
-                  accessionId,
-                  emptyList(),
-                  listOfNotNull(accession.primaryCollector) + accession.secondaryCollectors)
+              insertSecondaryCollectors(accessionId, accession.collectors.drop(1))
+              updateCollectors(accessionId, emptyList(), accession.collectors)
               bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
               geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
               viabilityTestStore.updateViabilityTests(
@@ -315,21 +311,14 @@ class AccessionStore(
     }
 
     dslContext.transaction { _ ->
-      if (existing.secondaryCollectors != accession.secondaryCollectors) {
-        // TODO: More selective update
+      if (existing.collectors != accession.collectors) {
         dslContext
             .deleteFrom(ACCESSION_SECONDARY_COLLECTORS)
             .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(accessionId))
             .execute()
-        insertSecondaryCollectors(accessionId, accession.secondaryCollectors)
-      }
+        insertSecondaryCollectors(accessionId, accession.collectors.drop(1))
 
-      if (existing.primaryCollector != accession.primaryCollector ||
-          existing.secondaryCollectors != accession.secondaryCollectors) {
-        updateCollectors(
-            accessionId,
-            listOfNotNull(existing.primaryCollector) + existing.secondaryCollectors,
-            listOfNotNull(accession.primaryCollector) + accession.secondaryCollectors)
+        updateCollectors(accessionId, existing.collectors, accession.collectors)
       }
 
       val existingTests: MutableList<ViabilityTestModel> = existing.viabilityTests.toMutableList()
@@ -385,7 +374,7 @@ class AccessionStore(
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
                 .set(NURSERY_START_DATE, accession.nurseryStartDate)
-                .set(PRIMARY_COLLECTOR_NAME, accession.primaryCollector)
+                .set(PRIMARY_COLLECTOR_NAME, accession.collectors.getOrNull(0))
                 .set(PROCESSING_METHOD_ID, accession.processingMethod)
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
