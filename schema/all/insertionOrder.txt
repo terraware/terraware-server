@@ -40,7 +40,6 @@ notification_types
 timeseries
 uploads
 accession_collectors
-accession_secondary_collectors
 bags
 device_templates
 geolocations

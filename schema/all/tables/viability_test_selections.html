@@ -129,12 +129,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="viability_test_selections.accession_id references accessions.id via viability_test_selections_accession_id_fkey"><a href='accessions.html'>accessions</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">viability_test_selections_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="viability_test_selections.[viability_test_id, accession_id] references viability_tests.[id, accession_id] via viability_test_selections_viability_test_id_accession_id_fkey"><a href='viability_tests.html'>viability_tests</a><span class='relatedKey'>.accession_id</span></td>
                                                 <td class="constraint detail">viability_test_selections_viability_test_id_accession_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="viability_test_selections.accession_id references accessions.id via viability_test_selections_accession_id_fkey"><a href='accessions.html'>accessions</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">viability_test_selections_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -228,33 +228,32 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1205,499,1443,587">
-<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="793,180,1119,825">
-<area shape="rect" id="node6" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="501,5,711,93">
-<area shape="rect" id="node7" href="../../tables/app_devices.html" target="_top" title="app_devices" alt="" coords="517,147,695,235">
-<area shape="rect" id="node8" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,777,147,865">
-<area shape="rect" id="node9" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="229,255,381,343">
-<area shape="rect" id="node10" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="487,357,725,445">
-<area shape="rect" id="node11" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="523,604,689,692">
-<area shape="rect" id="node12" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="487,887,725,975">
-<area shape="rect" id="node13" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="486,709,726,797">
-<area shape="rect" id="node14" href="../../tables/species_endangered_types.html" target="_top" title="species_endangered_types" alt="" coords="463,499,749,587">
-<area shape="rect" id="node15" href="../../tables/species.html" target="_top" title="species" alt="" coords="234,887,375,975">
-<area shape="rect" id="node16" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="497,252,715,340">
-<area shape="rect" id="node17" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="191,424,419,512">
-<area shape="rect" id="node3" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1216,604,1432,692">
-<area shape="rect" id="node4" href="../../tables/accession_secondary_collectors.html" target="_top" title="accession_secondary_collectors" alt="" coords="1163,147,1485,235">
-<area shape="rect" id="node5" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1193,5,1455,93">
-<area shape="rect" id="node18" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1261,252,1387,340">
-<area shape="rect" id="node19" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1233,393,1415,481">
-<area shape="rect" id="node20" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1561,788,1805,876">
-<area shape="rect" id="node21" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1197,896,1451,1189">
-<area shape="rect" id="node23" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="819,948,1093,1036">
-<area shape="rect" id="node24" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="820,1053,1092,1141">
-<area shape="rect" id="node25" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="839,843,1073,931">
-<area shape="rect" id="node26" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="817,1159,1095,1247">
-<area shape="rect" id="node22" href="../../tables/viability_test_selections.html" target="_top" title="viability_test_selections" alt="" coords="1529,893,1836,1021">
-<area shape="rect" id="node27" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1592,1121,1773,1209">
+<area shape="rect" id="node1" href="../../tables/accession_collectors.html" target="_top" title="accession_collectors" alt="" coords="1175,507,1413,595">
+<area shape="rect" id="node2" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="793,159,1119,804">
+<area shape="rect" id="node5" href="../../tables/accession_states.html" target="_top" title="accession_states" alt="" coords="501,5,711,93">
+<area shape="rect" id="node6" href="../../tables/app_devices.html" target="_top" title="app_devices" alt="" coords="517,147,695,235">
+<area shape="rect" id="node7" href="../../tables/users.html" target="_top" title="users" alt="" coords="5,777,147,865">
+<area shape="rect" id="node8" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="229,255,381,343">
+<area shape="rect" id="node9" href="../../tables/processing_methods.html" target="_top" title="processing_methods" alt="" coords="487,357,725,445">
+<area shape="rect" id="node10" href="../../tables/rare_types.html" target="_top" title="rare_types" alt="" coords="523,604,689,692">
+<area shape="rect" id="node11" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="487,851,725,939">
+<area shape="rect" id="node12" href="../../tables/source_plant_origins.html" target="_top" title="source_plant_origins" alt="" coords="486,709,726,797">
+<area shape="rect" id="node13" href="../../tables/species_endangered_types.html" target="_top" title="species_endangered_types" alt="" coords="463,499,749,587">
+<area shape="rect" id="node14" href="../../tables/species.html" target="_top" title="species" alt="" coords="234,955,375,1043">
+<area shape="rect" id="node15" href="../../tables/storage_locations.html" target="_top" title="storage_locations" alt="" coords="497,252,715,340">
+<area shape="rect" id="node16" href="../../tables/storage_conditions.html" target="_top" title="storage_conditions" alt="" coords="191,424,419,512">
+<area shape="rect" id="node3" href="../../tables/accession_photos.html" target="_top" title="accession_photos" alt="" coords="1186,155,1402,243">
+<area shape="rect" id="node4" href="../../tables/accession_state_history.html" target="_top" title="accession_state_history" alt="" coords="1163,5,1425,93">
+<area shape="rect" id="node17" href="../../tables/bags.html" target="_top" title="bags" alt="" coords="1231,260,1357,348">
+<area shape="rect" id="node18" href="../../tables/geolocations.html" target="_top" title="geolocations" alt="" coords="1203,401,1385,489">
+<area shape="rect" id="node19" href="../../tables/viability_test_results.html" target="_top" title="viability_test_results" alt="" coords="1501,767,1745,855">
+<area shape="rect" id="node20" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="1167,875,1421,1168">
+<area shape="rect" id="node22" href="../../tables/viability_test_seed_types.html" target="_top" title="viability_test_seed_types" alt="" coords="819,927,1093,1015">
+<area shape="rect" id="node23" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="820,1032,1092,1120">
+<area shape="rect" id="node24" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="839,821,1073,909">
+<area shape="rect" id="node25" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="817,1137,1095,1225">
+<area shape="rect" id="node21" href="../../tables/viability_test_selections.html" target="_top" title="viability_test_selections" alt="" coords="1469,872,1776,1000">
+<area shape="rect" id="node26" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1532,1100,1713,1188">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/viability_test_selections.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
