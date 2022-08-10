@@ -43,6 +43,7 @@
 <polygon fill="none" stroke="black" points="682,-653 682,-675 910,-675 910,-653 682,-653"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="687" y="-670"/>
 <text text-anchor="start" x="702" y="-661.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="none" points="682,-631 682,-653 910,-653 910,-631 682,-631"/>
 <polygon fill="none" stroke="black" points="682,-631 682,-653 910,-653 910,-631 682,-631"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="687" y="-648"/>
 <text text-anchor="start" x="702" y="-639.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
