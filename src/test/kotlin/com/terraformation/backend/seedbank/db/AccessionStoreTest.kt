@@ -32,6 +32,7 @@ import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
+import com.terraformation.backend.db.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
@@ -1473,6 +1474,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         .forEach { prop ->
           assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
+
+    assertEquals(
+        listOf(
+            AccessionCollectorsRow(stored.id, 0, "primaryCollector"),
+            AccessionCollectorsRow(stored.id, 1, "second1"),
+            AccessionCollectorsRow(stored.id, 2, "second2")),
+        accessionCollectorsDao.findAll().sortedBy { it.position },
+        "Collectors are stored")
   }
 
   @Test
@@ -1574,6 +1583,31 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         .forEach { prop ->
           assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
+
+    assertEquals(
+        listOf(
+            AccessionCollectorsRow(stored.id, 0, "primaryCollector"),
+            AccessionCollectorsRow(stored.id, 1, "second1"),
+            AccessionCollectorsRow(stored.id, 2, "second2")),
+        accessionCollectorsDao.findAll().sortedBy { it.position },
+        "Collectors are stored")
+  }
+
+  @Test
+  fun `update removes existing collectors if needed`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId,
+                primaryCollector = "primary",
+                secondaryCollectors = setOf("second1", "second2")))
+
+    store.update(initial.copy(primaryCollector = null, secondaryCollectors = setOf("second1")))
+
+    assertEquals(
+        listOf(AccessionCollectorsRow(initial.id, 0, "second1")),
+        accessionCollectorsDao.findAll(),
+        "Collectors are stored")
   }
 
   @Test
@@ -1706,6 +1740,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     store.delete(initial.id!!)
 
+    assertEquals(
+        emptyList<AccessionCollectorsRow>(), accessionCollectorsDao.findAll(), "Collectors")
     assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll(), "Accessions")
     assertEquals(
         emptyList<AccessionStateHistoryRecord>(),

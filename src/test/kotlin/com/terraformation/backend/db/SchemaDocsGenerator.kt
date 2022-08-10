@@ -119,6 +119,7 @@ class SchemaDocsGenerator : DatabaseTest() {
    */
   private val tableSlices =
       mapOf(
+          "accession_collectors" to setOf(ALL, SEEDBANK),
           "accession_photos" to setOf(ALL, SEEDBANK),
           "accession_secondary_collectors" to setOf(ALL, SEEDBANK),
           "accession_state_history" to setOf(ALL, SEEDBANK),
