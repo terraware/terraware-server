@@ -22,8 +22,8 @@ import javax.annotation.ManagedBean
  */
 @ManagedBean
 class SearchTables(clock: Clock) {
+  val accessionCollectors = AccessionCollectorsTable(this)
   val accessions = AccessionsTable(this, clock)
-  val accessionSecondaryCollectors = AccessionSecondaryCollectorsTable(this)
   val bags = BagsTable(this)
   val countries = CountriesTable(this)
   val countrySubdivisions = CountrySubdivisionsTable(this)

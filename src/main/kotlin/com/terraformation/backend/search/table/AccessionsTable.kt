@@ -4,7 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.ACCESSION_SECONDARY_COLLECTORS
+import com.terraformation.backend.db.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
@@ -37,8 +37,18 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          accessionSecondaryCollectors.asMultiValueSublist(
-              "secondaryCollectors", ACCESSIONS.ID.eq(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID)),
+          accessionCollectors.asMultiValueSublist(
+              "collectors", ACCESSIONS.ID.eq(ACCESSION_COLLECTORS.ACCESSION_ID)),
+          // TODO: Remove this once client is updated to search the unified collectors list
+          accessionCollectors.asMultiValueSublist(
+              "primaryCollectors",
+              ACCESSIONS.ID.eq(ACCESSION_COLLECTORS.ACCESSION_ID)
+                  .and(ACCESSION_COLLECTORS.POSITION.eq(0))),
+          // TODO: Remove this once client is updated to search the unified collectors list
+          accessionCollectors.asMultiValueSublist(
+              "secondaryCollectors",
+              ACCESSIONS.ID.eq(ACCESSION_COLLECTORS.ACCESSION_ID)
+                  .and(ACCESSION_COLLECTORS.POSITION.gt(0))),
           bags.asMultiValueSublist("bags", ACCESSIONS.ID.eq(BAGS.ACCESSION_ID)),
           facilities.asSingleValueSublist("facility", ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID)),
           geolocations.asMultiValueSublist(
@@ -100,8 +110,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             "Most recent viability test result date",
             ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
-        textField(
-            "primaryCollectorName", "Primary collector name", ACCESSIONS.PRIMARY_COLLECTOR_NAME),
+        aliasField("primaryCollectorName", "primaryCollectors_name"),
         enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
         textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
         dateField("processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
