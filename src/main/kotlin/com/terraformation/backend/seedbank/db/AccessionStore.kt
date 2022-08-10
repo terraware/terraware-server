@@ -79,7 +79,7 @@ class AccessionStore(
     val bagNumbersField = bagStore.bagNumbersMultiset()
     val geolocationsField = geolocationStore.geolocationsMultiset()
     val photoFilenamesField = photoFilenamesMultiset()
-    val secondaryCollectorsField = secondaryCollectorsMultiset()
+    val collectorsField = collectorsMultiset()
     val viabilityTestsField = viabilityTestStore.viabilityTestsMultiset()
     val withdrawalsField = withdrawalStore.withdrawalsMultiset()
 
@@ -99,7 +99,7 @@ class AccessionStore(
                 bagNumbersField,
                 geolocationsField,
                 photoFilenamesField,
-                secondaryCollectorsField,
+                collectorsField,
                 viabilityTestsField,
                 withdrawalsField,
             )
@@ -140,7 +140,7 @@ class AccessionStore(
           numberOfTrees = record[TREES_COLLECTED_FROM],
           nurseryStartDate = record[NURSERY_START_DATE],
           photoFilenames = record[photoFilenamesField],
-          primaryCollector = record[PRIMARY_COLLECTOR_NAME],
+          primaryCollector = record[collectorsField].getOrNull(0),
           processingMethod = record[PROCESSING_METHOD_ID],
           processingNotes = record[PROCESSING_NOTES],
           processingStaffResponsible = record[PROCESSING_STAFF_RESPONSIBLE],
@@ -148,7 +148,7 @@ class AccessionStore(
           rare = record[RARE_TYPE_ID],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-          secondaryCollectors = record[secondaryCollectorsField],
+          secondaryCollectors = record[collectorsField].drop(1),
           siteLocation = record[COLLECTION_SITE_NAME],
           source = source,
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
@@ -584,13 +584,13 @@ class AccessionStore(
         .convertFrom { result -> result.map { it.value1() } }
   }
 
-  private fun secondaryCollectorsMultiset(): Field<Set<String>> {
+  private fun collectorsMultiset(): Field<List<String>> {
     return DSL.multiset(
-            DSL.select(ACCESSION_SECONDARY_COLLECTORS.NAME)
-                .from(ACCESSION_SECONDARY_COLLECTORS)
-                .where(ACCESSION_SECONDARY_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
-                .orderBy(ACCESSION_SECONDARY_COLLECTORS.NAME))
-        .convertFrom { result -> result.map { it.value1() }.toSet() }
+            DSL.select(ACCESSION_COLLECTORS.NAME)
+                .from(ACCESSION_COLLECTORS)
+                .where(ACCESSION_COLLECTORS.ACCESSION_ID.eq(ACCESSIONS.ID))
+                .orderBy(ACCESSION_COLLECTORS.POSITION))
+        .convertFrom { result -> result.map { it.value1() } }
   }
 
   private fun insertSecondaryCollectors(

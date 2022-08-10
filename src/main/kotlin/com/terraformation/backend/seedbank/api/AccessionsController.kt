@@ -148,7 +148,7 @@ data class CreateAccessionRequestPayload(
     val primaryCollector: String? = null,
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
-    val secondaryCollectors: Set<String>? = null,
+    val secondaryCollectors: List<String>? = null,
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
@@ -211,7 +211,7 @@ data class UpdateAccessionRequestPayload(
     val processingStartDate: LocalDate? = null,
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
-    val secondaryCollectors: Set<String>? = null,
+    val secondaryCollectors: List<String>? = null,
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
@@ -333,7 +333,7 @@ data class AccessionPayload(
             "Number or weight of seeds remaining for withdrawal and testing. Calculated by the " +
                 "server when the accession's total size is known.")
     val remainingQuantity: SeedQuantityPayload?,
-    val secondaryCollectors: Set<String>?,
+    val secondaryCollectors: List<String>?,
     val siteLocation: String?,
     @Schema(
         description =
