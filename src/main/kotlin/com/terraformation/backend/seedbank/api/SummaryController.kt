@@ -17,7 +17,6 @@ import java.time.Clock
 import java.time.DayOfWeek
 import java.time.ZonedDateTime
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -32,9 +31,28 @@ class SummaryController(
     private val parentStore: ParentStore,
     private val speciesStore: SpeciesStore,
 ) {
-  @GetMapping("/{facilityId}")
-  @Operation(summary = "Get summary statistics about a seed bank")
-  fun getSummary(@PathVariable facilityId: FacilityId): SummaryResponse {
+  @GetMapping
+  @Operation(
+      summary =
+          "Get summary statistics about a specific seed bank or all seed banks within an " +
+              "organization.")
+  fun getSeedBankSummary(
+      @RequestParam("organizationId", required = false)
+      @Schema(description = "If set, return summary on all seedbanks for that organization.")
+      organizationId: OrganizationId?,
+      @RequestParam("facilityId", required = false)
+      @Schema(description = "If set, return summary on that specific seedbank.")
+      facilityId: FacilityId?
+  ): SummaryResponse {
+    return when {
+      facilityId != null && organizationId == null -> getSummary(facilityId)
+      facilityId == null && organizationId != null -> getSummary(organizationId)
+      else ->
+          throw IllegalArgumentException("Must specify organization or facility ID but not both")
+    }
+  }
+
+  private fun getSummary(facilityId: FacilityId): SummaryResponse {
     val now = ZonedDateTime.now(clock)
     val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
     val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
@@ -65,25 +83,6 @@ class SummaryController(
                 facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
         accessionsByState = accessionStore.countByState(facilityId),
     )
-  }
-  @GetMapping
-  @Operation(
-      summary =
-          "Get summary statistics about a specific seedbank or all seed banks within an organization")
-  fun getSeedBankSummary(
-      @RequestParam("organizationId", required = false)
-      @Schema(description = "If set, return summary on all seedbanks for that organization.")
-      organizationId: OrganizationId?,
-      @RequestParam("facilityId", required = false)
-      @Schema(description = "If set, return summary on that specific seedbank.")
-      facilityId: FacilityId?
-  ): SummaryResponse {
-    return when {
-      facilityId != null && organizationId == null -> getSummary(facilityId)
-      facilityId == null && organizationId != null -> getSummary(organizationId)
-      else ->
-          throw IllegalArgumentException("Must specify organization or facility ID but not both")
-    }
   }
 
   private fun getSummary(organizationId: OrganizationId): SummaryResponse {
