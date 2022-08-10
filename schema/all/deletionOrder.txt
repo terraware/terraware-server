@@ -18,6 +18,7 @@ geolocations
 device_templates
 bags
 accession_secondary_collectors
+accession_collectors
 uploads
 timeseries
 notification_types

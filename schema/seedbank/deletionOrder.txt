@@ -7,6 +7,7 @@ thumbnails
 geolocations
 bags
 accession_secondary_collectors
+accession_collectors
 viability_tests
 accessions
 storage_locations

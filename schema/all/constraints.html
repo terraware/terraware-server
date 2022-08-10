@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">97 Foreign Key Constraints</h3>
+                            <h3 class="box-title">98 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -872,6 +872,24 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>accession_collectors_accession_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/accession_collectors.html'>accession_collectors</a><span>.accession_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/accessions.html'>accessions</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>user_preferences_user_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -1166,7 +1184,7 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>accession_secondary_collector_accession_id_fkey</td>
+                                        <td>accession_secondary_collectors_accession_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
@@ -1181,7 +1199,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>notifications_organization_id_fkey</td>
@@ -1926,6 +1944,11 @@
                                         <td><a href='tables/country_subdivisions.html'>country_subdivisions</a></td>
                                         <td>country_subdivisions_code_matches_country</td>
                                         <td>((substr(code, 1, 2) = country_code))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/accession_collectors.html'>accession_collectors</a></td>
+                                        <td>accession_collectors_position_check</td>
+                                        <td>((&quot;position&quot; &gt;= 0))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/device_managers.html'>device_managers</a></td>
