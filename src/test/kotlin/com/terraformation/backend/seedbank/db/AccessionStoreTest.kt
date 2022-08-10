@@ -1961,6 +1961,332 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<OrganizationNotFoundException> { store.countByState(organizationId) }
     }
+
+    @Test
+    fun countSeedsRemaining() {
+      val otherOrganizationId = OrganizationId(2)
+      val otherOrgFacilityId = FacilityId(4)
+      val sameOrgFacilityId = FacilityId(5)
+      insertOrganization(otherOrganizationId)
+      insertFacility(otherOrgFacilityId, otherOrganizationId)
+      insertFacility(sameOrgFacilityId)
+
+      listOf(
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Count,
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+              // Second accession at same facility
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Count,
+                  remainingQuantity = BigDecimal(2),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+              // Wrong facility
+              AccessionsRow(
+                  facilityId = sameOrgFacilityId,
+                  processingMethodId = ProcessingMethod.Count,
+                  remainingQuantity = BigDecimal(4),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+              // Wrong organization
+              AccessionsRow(
+                  facilityId = otherOrgFacilityId,
+                  processingMethodId = ProcessingMethod.Count,
+                  remainingQuantity = BigDecimal(8),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+              // Accession not active
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Count,
+                  remainingQuantity = BigDecimal(16),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Withdrawn,
+              ),
+              // Weight-based accession
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(32),
+                  remainingQuantity = BigDecimal(32),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+                  subsetWeightGrams = BigDecimal(10),
+              ),
+          )
+          .forEach {
+            accessionsDao.insert(
+                it.copy(
+                    createdBy = user.userId,
+                    createdTime = clock.instant(),
+                    modifiedBy = user.userId,
+                    modifiedTime = clock.instant()))
+          }
+
+      assertEquals(3, store.countSeedsRemaining(facilityId), "Seeds remaining for single facility")
+      assertEquals(7, store.countSeedsRemaining(organizationId), "Seeds remaining for organization")
+    }
+
+    @Test
+    fun `countSeedsRemaining throws exception when no permission to read facility`() {
+      every { user.canReadFacility(facilityId) } returns false
+
+      assertThrows<FacilityNotFoundException> { store.countSeedsRemaining(facilityId) }
+    }
+
+    @Test
+    fun `countSeedsRemaining throws exception when no permission to read organization`() {
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> { store.countSeedsRemaining(organizationId) }
+    }
+
+    @Test
+    fun estimateSeedsRemainingByWeight() {
+      val otherOrganizationId = OrganizationId(2)
+      val otherOrgFacilityId = FacilityId(4)
+      val sameOrgFacilityId = FacilityId(5)
+      insertOrganization(otherOrganizationId)
+      insertFacility(otherOrgFacilityId, otherOrganizationId)
+      insertFacility(sameOrgFacilityId)
+
+      listOf(
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(1),
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+                  subsetWeightGrams = BigDecimal(10),
+              ),
+              // Second accession at same facility
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(2000),
+                  remainingQuantity = BigDecimal(2),
+                  remainingUnitsId = SeedQuantityUnits.Kilograms,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 1,
+                  subsetWeightGrams = BigDecimal(1000),
+              ),
+              // Wrong facility
+              AccessionsRow(
+                  facilityId = sameOrgFacilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(4),
+                  remainingQuantity = BigDecimal(4),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+                  subsetWeightGrams = BigDecimal(10),
+              ),
+              // Wrong organization
+              AccessionsRow(
+                  facilityId = otherOrgFacilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(8),
+                  remainingQuantity = BigDecimal(8),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+                  subsetWeightGrams = BigDecimal(10),
+              ),
+              // Accession not active
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(16),
+                  remainingQuantity = BigDecimal(16),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Withdrawn,
+                  subsetCount = 10,
+                  subsetWeightGrams = BigDecimal(10),
+              ),
+              // No subset count
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(32),
+                  remainingQuantity = BigDecimal(32),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetWeightGrams = BigDecimal(10),
+              ),
+              // No subset weight
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(64),
+                  remainingQuantity = BigDecimal(64),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+              ),
+              // Seed count, not weight
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Count,
+                  remainingQuantity = BigDecimal(64),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+          )
+          .forEach {
+            accessionsDao.insert(
+                it.copy(
+                    createdBy = user.userId,
+                    createdTime = clock.instant(),
+                    modifiedBy = user.userId,
+                    modifiedTime = clock.instant()))
+          }
+
+      assertEquals(
+          3,
+          store.estimateSeedsRemainingByWeight(facilityId),
+          "Seeds remaining for single facility")
+      assertEquals(
+          7,
+          store.estimateSeedsRemainingByWeight(organizationId),
+          "Seeds remaining for organization")
+    }
+
+    @Test
+    fun `estimateSeedsRemainingByWeight throws exception when no permission to read facility`() {
+      every { user.canReadFacility(facilityId) } returns false
+
+      assertThrows<FacilityNotFoundException> { store.estimateSeedsRemainingByWeight(facilityId) }
+    }
+
+    @Test
+    fun `estimateSeedsRemainingByWeight throws exception when no permission to read organization`() {
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> {
+        store.estimateSeedsRemainingByWeight(organizationId)
+      }
+    }
+
+    @Test
+    fun countQuantityUnknown() {
+      val otherOrganizationId = OrganizationId(2)
+      val otherOrgFacilityId = FacilityId(4)
+      val sameOrgFacilityId = FacilityId(5)
+      insertOrganization(otherOrganizationId)
+      insertFacility(otherOrgFacilityId, otherOrganizationId)
+      insertFacility(sameOrgFacilityId)
+
+      listOf(
+              // No subset weight, no subset count
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(1),
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+              ),
+              // Weight but no count
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(1),
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetWeightGrams = BigDecimal.ONE,
+              ),
+              // Count but no weight
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(1),
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+              ),
+              // Subset weight/count present
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(1),
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+                  subsetWeightGrams = BigDecimal(10),
+              ),
+              // Wrong facility
+              AccessionsRow(
+                  facilityId = sameOrgFacilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(1),
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+              ),
+              // Wrong organization
+              AccessionsRow(
+                  facilityId = otherOrgFacilityId,
+                  processingMethodId = ProcessingMethod.Weight,
+                  remainingGrams = BigDecimal(1),
+                  remainingQuantity = BigDecimal(1),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+              ),
+              // Count-based accession
+              AccessionsRow(
+                  facilityId = facilityId,
+                  processingMethodId = ProcessingMethod.Count,
+                  remainingQuantity = BigDecimal(32),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+          )
+          .forEach {
+            accessionsDao.insert(
+                it.copy(
+                    createdBy = user.userId,
+                    createdTime = clock.instant(),
+                    modifiedBy = user.userId,
+                    modifiedTime = clock.instant()))
+          }
+
+      assertEquals(
+          3,
+          store.countQuantityUnknown(facilityId),
+          "Accessions of unknown seed quantity for single facility")
+      assertEquals(
+          4,
+          store.countQuantityUnknown(organizationId),
+          "Accessions of unknown seed quantity for organization")
+    }
+
+    @Test
+    fun `countQuantityUnknown throws exception when no permission to read facility`() {
+      every { user.canReadFacility(facilityId) } returns false
+
+      assertThrows<FacilityNotFoundException> { store.countQuantityUnknown(facilityId) }
+    }
+
+    @Test
+    fun `countQuantityUnknown throws exception when no permission to read organization`() {
+      every { user.canReadOrganization(organizationId) } returns false
+
+      assertThrows<OrganizationNotFoundException> { store.countQuantityUnknown(organizationId) }
+    }
   }
 
   @Nested

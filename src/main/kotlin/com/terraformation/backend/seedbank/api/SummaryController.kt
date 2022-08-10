@@ -82,6 +82,11 @@ class SummaryController(
             accessionStore.countInState(
                 facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
         accessionsByState = accessionStore.countByState(facilityId),
+        seedsRemaining =
+            SeedCountSummaryPayload(
+                accessionStore.countSeedsRemaining(facilityId),
+                accessionStore.estimateSeedsRemainingByWeight(facilityId),
+                accessionStore.countQuantityUnknown(facilityId)),
     )
   }
 
@@ -112,6 +117,11 @@ class SummaryController(
             accessionStore.countInState(
                 organizationId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
         accessionsByState = accessionStore.countByState(organizationId),
+        seedsRemaining =
+            SeedCountSummaryPayload(
+                accessionStore.countSeedsRemaining(organizationId),
+                accessionStore.estimateSeedsRemainingByWeight(organizationId),
+                accessionStore.countQuantityUnknown(organizationId)),
     )
   }
 }
@@ -130,4 +140,41 @@ data class SummaryResponse(
     val recentlyWithdrawnAccessions: Int,
     @Schema(description = "Number of accessions in each state.")
     val accessionsByState: Map<AccessionState, Int>,
+    @Schema(description = "Summary of the number of seeds remaining across all active accessions.")
+    val seedsRemaining: SeedCountSummaryPayload,
 ) : SuccessResponsePayload
+
+data class SeedCountSummaryPayload(
+    @Schema(
+        description =
+            "Total number of seeds remaining. The sum of subtotalBySeedCount and " +
+                "subtotalByWeightEstimate.")
+    val total: Long,
+    @Schema(
+        description =
+            "Total number of seeds remaining in accessions whose quantities are measured in seeds.")
+    val subtotalBySeedCount: Long,
+    @Schema(
+        description =
+            "Estimated total number of seeds remaining in accessions whose quantities are " +
+                "measured by weight. This estimate is based on the subset weight and count. " +
+                "Accessions measured by weight that don't have subset weights and counts are not " +
+                "included in this estimate.")
+    val subtotalByWeightEstimate: Long,
+    @Schema(
+        description =
+            "Number of accessions that are measured by weight and don't have subset weight and " +
+                "count data. The system cannot estimate how many seeds they have.")
+    val unknownQuantityAccessions: Int,
+) {
+  constructor(
+      subtotalBySeedCount: Long,
+      subtotalByWeightEstimate: Long,
+      unknownQuantityAccessions: Int
+  ) : this(
+      subtotalBySeedCount + subtotalByWeightEstimate,
+      subtotalBySeedCount,
+      subtotalByWeightEstimate,
+      unknownQuantityAccessions,
+  )
+}
