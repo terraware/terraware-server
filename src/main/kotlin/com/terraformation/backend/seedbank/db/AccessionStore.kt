@@ -249,6 +249,7 @@ class AccessionStore(
                     .set(ACCESSION_ID, accessionId)
                     .set(REASON, "Accession created")
                     .set(NEW_STATE_ID, state)
+                    .set(UPDATED_BY, currentUser().userId)
                     .set(UPDATED_TIME, clock.instant())
                     .execute()
               }
@@ -451,6 +452,7 @@ class AccessionStore(
               .set(NEW_STATE_ID, stateTransition.newState)
               .set(OLD_STATE_ID, before.state)
               .set(REASON, stateTransition.reason)
+              .set(UPDATED_BY, currentUser().userId)
               .set(UPDATED_TIME, clock.instant())
               .execute()
         }

@@ -987,6 +987,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = AccessionId(1),
                 newStateId = AccessionState.AwaitingCheckIn,
                 reason = "Accession created",
+                updatedBy = user.userId,
                 updatedTime = clock.instant())),
         historyRecords)
   }
@@ -1018,6 +1019,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 newStateId = AccessionState.Pending,
                 oldStateId = AccessionState.AwaitingCheckIn,
                 reason = "Accession has been checked in",
+                updatedBy = user.userId,
                 updatedTime = clock.instant())),
         historyRecords)
 
@@ -1069,6 +1071,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 newStateId = AccessionState.Processing,
                 oldStateId = AccessionState.AwaitingCheckIn,
                 reason = "Seed count/weight has been entered",
+                updatedBy = user.userId,
                 updatedTime = clock.instant())),
         historyRecords)
   }
