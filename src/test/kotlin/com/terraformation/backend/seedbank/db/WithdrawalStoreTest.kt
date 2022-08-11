@@ -92,7 +92,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = accessionId,
                 date = LocalDate.of(2021, 1, 2),
                 notes = "notes 2",
-                purposeId = WithdrawalPurpose.Other,
+                purposeId = null,
                 remainingGrams = BigDecimal(15),
                 remainingQuantity = BigDecimal(15000),
                 remainingUnitsId = SeedQuantityUnits.Milligrams,
@@ -113,7 +113,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = accessionId,
                 date = pojos[0].date!!,
                 notes = pojos[0].notes,
-                purpose = pojos[0].purposeId!!,
+                purpose = pojos[0].purposeId,
                 remaining = milligrams(100),
                 destination = pojos[0].destination,
                 staffResponsible = pojos[0].staffResponsible,
@@ -124,7 +124,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = accessionId,
                 date = pojos[1].date!!,
                 notes = pojos[1].notes,
-                purpose = pojos[1].purposeId!!,
+                purpose = pojos[1].purposeId,
                 remaining = milligrams(15000),
                 destination = pojos[1].destination,
                 staffResponsible = pojos[1].staffResponsible,
@@ -289,6 +289,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             id = WithdrawalId(1),
             destination = "updated dest",
             notes = "updated notes",
+            purpose = null,
             withdrawn = grams(2))
 
     val expected =

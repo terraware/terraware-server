@@ -615,7 +615,7 @@ data class WithdrawalPayload(
                 "withdrawal.")
     val id: WithdrawalId? = null,
     val date: LocalDate,
-    val purpose: WithdrawalPurpose,
+    val purpose: WithdrawalPurpose? = null,
     val destination: String? = null,
     val notes: String? = null,
     @Schema(

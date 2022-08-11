@@ -1,0 +1,1 @@
+ALTER TABLE withdrawals ALTER COLUMN purpose_id DROP NOT NULL;
