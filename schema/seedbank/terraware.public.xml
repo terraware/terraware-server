@@ -611,7 +611,7 @@
             <parent column="id" foreignKey="withdrawal_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="purpose_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="purpose_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="withdrawal_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawal_purposes"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="destination" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
