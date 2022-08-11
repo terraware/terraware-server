@@ -415,18 +415,10 @@ class AccessionStore(
   fun delete(accessionId: AccessionId) {
     requirePermissions { deleteAccession(accessionId) }
 
-    val model = fetchOneById(accessionId)
-
     dslContext.transaction { _ ->
-      bagStore.updateBags(accessionId, model.bagNumbers, emptySet())
-      geolocationStore.updateGeolocations(accessionId, model.geolocations, emptySet())
-      viabilityTestStore.updateViabilityTests(accessionId, model.viabilityTests, emptyList())
-      withdrawalStore.updateWithdrawals(accessionId, model.withdrawals, emptyList())
-
-      dslContext
-          .deleteFrom(ACCESSION_STATE_HISTORY)
-          .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
-          .execute()
+      // Child tables will be cleaned up by integrity constraints, except for accession_photos;
+      // that one needs to be cleared out beforehand since the actual photo files need to be
+      // removed from the file store.
       dslContext.deleteFrom(ACCESSIONS).where(ACCESSIONS.ID.eq(accessionId)).execute()
     }
   }
