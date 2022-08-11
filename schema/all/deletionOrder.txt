@@ -3,10 +3,10 @@ task_processed_times
 withdrawals
 organization_users
 automations
+accession_state_history
 viability_test_selections
 species_problems
 notifications
-accession_state_history
 user_preferences
 upload_problems
 device_managers
