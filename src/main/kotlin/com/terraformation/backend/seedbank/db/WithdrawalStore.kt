@@ -4,7 +4,11 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.seedbank.model.AccessionHistoryModel
+import com.terraformation.backend.seedbank.model.AccessionHistoryType
+import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -13,7 +17,11 @@ import org.jooq.Field
 import org.jooq.impl.DSL
 
 @ManagedBean
-class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clock) {
+class WithdrawalStore(
+    private val dslContext: DSLContext,
+    private val clock: Clock,
+    private val messages: Messages,
+) {
   val log = perClassLogger()
 
   fun fetchWithdrawals(accessionId: AccessionId): List<WithdrawalModel> {
@@ -23,6 +31,42 @@ class WithdrawalStore(private val dslContext: DSLContext, private val clock: Clo
         .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc())
         .fetch()
         .map { WithdrawalModel(it) }
+  }
+
+  fun fetchHistory(accessionId: AccessionId): List<AccessionHistoryModel> {
+    return with(WITHDRAWALS) {
+      dslContext
+          .select(
+              CREATED_TIME,
+              DATE,
+              PURPOSE_ID,
+              STAFF_RESPONSIBLE,
+              WITHDRAWN_QUANTITY,
+              WITHDRAWN_UNITS_ID)
+          .from(WITHDRAWALS)
+          .where(ACCESSION_ID.eq(accessionId))
+          .fetch { record ->
+            val quantity =
+                SeedQuantityModel.of(record[WITHDRAWN_QUANTITY], record[WITHDRAWN_UNITS_ID])
+            val purpose = record[PURPOSE_ID]
+            val description = messages.historyAccessionWithdrawal(quantity, purpose)
+            val type =
+                if (purpose == WithdrawalPurpose.ViabilityTesting) {
+                  AccessionHistoryType.ViabilityTesting
+                } else {
+                  AccessionHistoryType.Withdrawal
+                }
+
+            AccessionHistoryModel(
+                createdTime = record[CREATED_TIME]!!,
+                date = record[DATE]!!,
+                description = description,
+                fullName = record[STAFF_RESPONSIBLE],
+                type = type,
+                userId = null,
+            )
+          }
+    }
   }
 
   fun withdrawalsMultiset(

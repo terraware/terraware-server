@@ -475,7 +475,9 @@ class AccessionStore(
               }
             }
 
-    return stateChanges.sorted()
+    val withdrawals = withdrawalStore.fetchHistory(accessionId)
+
+    return (stateChanges + withdrawals).sorted()
   }
 
   /**
