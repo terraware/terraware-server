@@ -99,6 +99,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             mockk(),
             WithdrawalStore(dslContext, clock),
             clock,
+            mockk(),
         )
     automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
     deviceStore = DeviceStore(devicesDao)

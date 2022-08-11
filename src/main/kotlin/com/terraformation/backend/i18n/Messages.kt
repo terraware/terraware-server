@@ -1,8 +1,11 @@
 package com.terraformation.backend.i18n
 
+import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.tables.pojos.DevicesRow
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.annotation.ManagedBean
 
 /** Helper class to encapsulate notification message semantics */
@@ -102,7 +105,28 @@ class Messages {
           title = "$deviceName cannot be detected.",
           body = "$deviceName cannot be detected. Please check on it.")
 
+  fun historyAccessionCreated() = "created accession"
+
+  fun historyAccessionStateChanged(newState: AccessionState) =
+      "updated the status to ${newState.displayName}"
+
+  /**
+   * Returns the full name of a user based on their first and last names. It's possible for users to
+   * not have first or last names, e.g., if they were created by being added to an organization and
+   * haven't gone through the registration flow yet; returns null in that case. If the user has only
+   * a first name or only a last name, returns whichever name exists.
+   */
+  fun userFullName(firstName: String?, lastName: String?): String? =
+      if (firstName != null && lastName != null) {
+        "$firstName $lastName"
+      } else {
+        lastName ?: firstName
+      }
+
   private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
   private val validSeedStorageBehaviors =
       SeedStorageBehavior.values().joinToString { it.displayName }
+
+  /** Renders a date in the appropriate format. For now, this is always ISO YYYY-MM-DD format. */
+  private fun LocalDate.render() = DateTimeFormatter.ISO_LOCAL_DATE.format(this)
 }

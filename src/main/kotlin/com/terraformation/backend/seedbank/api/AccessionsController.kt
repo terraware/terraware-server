@@ -29,6 +29,8 @@ import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionActive
+import com.terraformation.backend.seedbank.model.AccessionHistoryModel
+import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.Geolocation
@@ -38,6 +40,7 @@ import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.math.BigDecimal
@@ -127,6 +130,17 @@ class AccessionsController(
   fun checkIn(@PathVariable("id") accessionId: AccessionId): UpdateAccessionResponsePayload {
     val accession = accessionStore.checkIn(accessionId)
     return UpdateAccessionResponsePayload(AccessionPayload(accession, clock))
+  }
+
+  @ApiResponse(responseCode = "200")
+  @ApiResponse404
+  @Operation(summary = "Gets the history of changes to an accession.")
+  @GetMapping("/{id}/history")
+  fun getAccessionHistory(
+      @PathVariable("id") accessionId: AccessionId
+  ): GetAccessionHistoryResponsePayload {
+    val entries = accessionStore.fetchHistory(accessionId).map { AccessionHistoryEntryPayload(it) }
+    return GetAccessionHistoryResponsePayload(entries)
   }
 }
 
@@ -745,8 +759,32 @@ data class DeviceInfoPayload(
           uniqueId = uniqueId)
 }
 
+data class AccessionHistoryEntryPayload(
+    val date: LocalDate,
+    @Schema(
+        description = "Human-readable description of the event. Does not include date or userName.",
+        example = "updated the status to Drying")
+    val description: String,
+    val type: AccessionHistoryType,
+    @Schema(
+        description = "Name of the user who performed the action, if known.",
+    )
+    val userName: String?,
+) {
+  constructor(
+      model: AccessionHistoryModel
+  ) : this(model.date, model.description, model.type, model.userName)
+}
+
 data class CreateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
 
 data class UpdateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
 
 data class GetAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload
+
+data class GetAccessionHistoryResponsePayload(
+    @ArraySchema(
+        arraySchema =
+            Schema(description = "History of changes in descending time order (newest first.)"))
+    val history: List<AccessionHistoryEntryPayload>
+) : SuccessResponsePayload

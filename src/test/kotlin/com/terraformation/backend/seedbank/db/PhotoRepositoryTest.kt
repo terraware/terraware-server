@@ -95,6 +95,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             mockk(),
             mockk(),
             clock,
+            mockk(),
         )
 
     tempDir = Files.createTempDirectory(javaClass.simpleName)

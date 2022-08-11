@@ -24,6 +24,7 @@ import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestSeedType
 import com.terraformation.backend.db.ViabilityTestSubstrate
@@ -52,6 +53,7 @@ import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.DeviceInfoPayload
@@ -62,6 +64,8 @@ import com.terraformation.backend.seedbank.api.ViabilityTestResultPayload
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.kilograms
+import com.terraformation.backend.seedbank.model.AccessionHistoryModel
+import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.Geolocation
@@ -85,6 +89,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.jooq.Record
@@ -165,6 +170,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             SpeciesService(dslContext, speciesChecker, speciesStore),
             WithdrawalStore(dslContext, clock),
             clock,
+            Messages(),
         )
 
     insertSiteData()
@@ -2339,6 +2345,80 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           1, store.countInState(facilityId, initial.state!!, Instant.EPOCH, clock.instant()))
       assertEquals(
           0, store.countInState(otherFacilityId, initial.state!!, Instant.EPOCH, clock.instant()))
+    }
+  }
+
+  @Nested
+  inner class FetchHistory {
+    @Test
+    fun `returns state change events in correct order`() {
+      val createTime = Instant.EPOCH
+      val checkInTime = createTime.plusSeconds(60)
+      val processTime = checkInTime.plus(1, ChronoUnit.DAYS)
+
+      val createUserId = UserId(20)
+      val checkInUserId = UserId(30)
+      val processUserId = UserId(40)
+
+      insertUser(createUserId, firstName = "First", lastName = "Last")
+      insertUser(checkInUserId, firstName = null, lastName = null)
+      insertUser(processUserId, firstName = "Bono", lastName = null)
+
+      every { clock.instant() } returns createTime
+      every { user.userId } returns createUserId
+
+      val initial = store.create(AccessionModel(facilityId = facilityId))
+
+      every { clock.instant() } returns checkInTime
+      every { user.userId } returns checkInUserId
+
+      store.checkIn(initial.id!!)
+
+      every { clock.instant() } returns processTime
+      every { user.userId } returns processUserId
+
+      store.update(
+          initial.copy(
+              processingMethod = ProcessingMethod.Count,
+              total = SeedQuantityModel.of(BigDecimal.ONE, SeedQuantityUnits.Seeds)))
+
+      val expected =
+          listOf(
+              AccessionHistoryModel(
+                  date = LocalDate.ofInstant(processTime, ZoneOffset.UTC),
+                  description = "updated the status to Processing",
+                  type = AccessionHistoryType.StateChanged,
+                  userId = processUserId,
+                  userName = "Bono",
+              ),
+              AccessionHistoryModel(
+                  date = LocalDate.ofInstant(checkInTime, ZoneOffset.UTC),
+                  description = "updated the status to Pending",
+                  type = AccessionHistoryType.StateChanged,
+                  userId = checkInUserId,
+                  userName = null,
+              ),
+              AccessionHistoryModel(
+                  date = LocalDate.ofInstant(createTime, ZoneOffset.UTC),
+                  description = "created accession",
+                  type = AccessionHistoryType.Created,
+                  userId = createUserId,
+                  userName = "First Last",
+              ),
+          )
+
+      val actual = store.fetchHistory(initial.id!!)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if user does not have permission`() {
+      val initial = store.create(AccessionModel(facilityId = facilityId))
+
+      every { user.canReadAccession(any()) } returns false
+
+      assertThrows<AccessionNotFoundException> { store.fetchHistory(initial.id!!) }
     }
   }
 
