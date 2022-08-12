@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GrowthForm
@@ -174,6 +175,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             collectionSiteLandowner = "landowner",
             collectionSiteName = "siteName",
             collectionSiteNotes = "siteNotes",
+            collectionSourceId = CollectionSource.Reintroduced,
             createdBy = user.userId,
             createdTime = now,
             facilityId = facilityId,
@@ -2882,6 +2884,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "collectionSiteLandowner" to "landowner",
                       "collectionSiteName" to "siteName",
                       "collectionSiteNotes" to "siteNotes",
+                      "collectionSource" to "Reintroduced",
                       "collectors" to
                           listOf(
                               mapOf("name" to "primary", "position" to "0"),

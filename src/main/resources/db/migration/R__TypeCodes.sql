@@ -9,6 +9,13 @@ VALUES (10, 'Pending', TRUE),
        (80, 'Nursery', FALSE)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO collection_sources (id, name)
+VALUES (1, 'Wild'),
+       (2, 'Reintroduced'),
+       (3, 'Cultivated'),
+       (4, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO device_template_categories (id, name)
 VALUES (1, 'PV'),
        (2, 'Seed Bank Default')
