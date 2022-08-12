@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Thu Aug 11 23:14 GMT 2022</p>
+                                <p>Generated on Fri Aug 12 18:06 GMT 2022</p>
                             </div>
                         </div>
                     </div>
@@ -218,15 +218,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/rare_types.html">rare_types</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values of the &ldquo;Rare&rdquo; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/notification_types.html">notification_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">1</td>
@@ -234,6 +225,15 @@
                                         <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notifications in the application.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/rare_types.html">rare_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values of the &ldquo;Rare&rdquo; attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/upload_statuses.html">upload_statuses</a></td>
@@ -506,15 +506,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Historical record of when accessions moved to different states. A row is inserted here for every state transition.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/processing_methods.html">processing_methods</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Methods of counting seeds when processing accessions.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/notification_criticalities.html">notification_criticalities</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -522,6 +513,15 @@
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Criticality information of notifications in the application.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/processing_methods.html">processing_methods</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Methods of counting seeds when processing accessions.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/species_problem_types.html">species_problem_types</a></td>
@@ -551,15 +551,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible values for the &ldquo;Endangered&rdquo; attribute of an accession. This is not used for plants whose locations are being tracked; see <code>conservation_statuses</code> instead.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/viability_test_treatments.html">viability_test_treatments</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Techniques that can be used to treat seeds before testing them for viability.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/viability_test_types.html">viability_test_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -567,6 +558,15 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of tests that can be performed on seeds to check for viability.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/viability_test_treatments.html">viability_test_treatments</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Techniques that can be used to treat seeds before testing them for viability.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accession_photos.html">accession_photos</a></td>
