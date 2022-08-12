@@ -257,7 +257,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>viability_test_results_test_id_fkey</td>
@@ -275,7 +275,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>accession_photo_accession_id_fkey</td>
@@ -353,10 +353,10 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>collection_event_accession_id_fkey</td>
+                                        <td>geolocations_accession_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
@@ -371,7 +371,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>thumbnail_photo_id_fkey</td>
@@ -623,7 +623,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>germination_test_substrate_id_fkey</td>
@@ -716,7 +716,7 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>bag_accession_id_fkey</td>
+                                        <td>bags_accession_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
@@ -731,7 +731,7 @@
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>withdrawal_purpose_id_fkey</td>
@@ -770,6 +770,24 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>withdrawals_accession_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.accession_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/accessions.html'>accessions</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>withdrawal_withdrawn_units_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -782,24 +800,6 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/seed_quantity_units.html'>seed_quantity_units</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>withdrawal_accession_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.accession_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/accessions.html'>accessions</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>

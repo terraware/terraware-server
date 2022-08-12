@@ -134,27 +134,27 @@
                                             </tr>
                                             <tr>
                                                 <td title="accession_state_history.accession_id references accessions.id via accession_state_history_accession_id_fkey"><a href='accession_state_history.html'>accession_state_history</a><span class='relatedKey'>.accession_id</span></td>
-                                                <td class="constraint detail">accession_state_history_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">accession_state_history_accession_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="bags.accession_id references accessions.id via bag_accession_id_fkey"><a href='bags.html'>bags</a><span class='relatedKey'>.accession_id</span></td>
-                                                <td class="constraint detail">bag_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="bags.accession_id references accessions.id via bags_accession_id_fkey"><a href='bags.html'>bags</a><span class='relatedKey'>.accession_id</span></td>
+                                                <td class="constraint detail">bags_accession_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="geolocations.accession_id references accessions.id via collection_event_accession_id_fkey"><a href='geolocations.html'>geolocations</a><span class='relatedKey'>.accession_id</span></td>
-                                                <td class="constraint detail">collection_event_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="geolocations.accession_id references accessions.id via geolocations_accession_id_fkey"><a href='geolocations.html'>geolocations</a><span class='relatedKey'>.accession_id</span></td>
+                                                <td class="constraint detail">geolocations_accession_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="viability_test_selections.accession_id references accessions.id via viability_test_selections_accession_id_fkey"><a href='viability_test_selections.html'>viability_test_selections</a><span class='relatedKey'>.accession_id</span></td>
-                                                <td class="constraint detail">viability_test_selections_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">viability_test_selections_accession_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="viability_tests.accession_id references accessions.id via viability_tests_accession_id_fkey"><a href='viability_tests.html'>viability_tests</a><span class='relatedKey'>.accession_id</span></td>
-                                                <td class="constraint detail">viability_tests_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">viability_tests_accession_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="withdrawals.accession_id references accessions.id via withdrawal_accession_id_fkey"><a href='withdrawals.html'>withdrawals</a><span class='relatedKey'>.accession_id</span></td>
-                                                <td class="constraint detail">withdrawal_accession_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="withdrawals.accession_id references accessions.id via withdrawals_accession_id_fkey"><a href='withdrawals.html'>withdrawals</a><span class='relatedKey'>.accession_id</span></td>
+                                                <td class="constraint detail">withdrawals_accession_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -1229,16 +1229,16 @@
                                     <td>((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>subset_weight_quantity_must_have_units</td>
-                                    <td>((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>subset_weight_units_must_not_be_seeds</td>
                                     <td>(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))</td>
                                 </tr>
                                 <tr>
                                     <td>total_quantity_must_have_units</td>
                                     <td>((((total_quantity IS NOT NULL) AND (total_units_id IS NOT NULL)) OR ((total_quantity IS NULL) AND (total_units_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>subset_weight_quantity_must_have_units</td>
+                                    <td>((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
