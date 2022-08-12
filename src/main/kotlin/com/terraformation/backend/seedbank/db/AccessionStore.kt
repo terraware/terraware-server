@@ -19,9 +19,13 @@ import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.tables.references.USERS
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.AccessionService
+import com.terraformation.backend.seedbank.model.AccessionHistoryModel
+import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
@@ -31,6 +35,7 @@ import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
 import java.time.Clock
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAccessor
@@ -54,6 +59,7 @@ class AccessionStore(
     private val speciesService: SpeciesService,
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
+    private val messages: Messages,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -421,6 +427,55 @@ class AccessionStore(
       // removed from the file store.
       dslContext.deleteFrom(ACCESSIONS).where(ACCESSIONS.ID.eq(accessionId)).execute()
     }
+  }
+
+  fun fetchHistory(accessionId: AccessionId): List<AccessionHistoryModel> {
+    requirePermissions { readAccession(accessionId) }
+
+    val stateChanges =
+        dslContext
+            .select(
+                ACCESSION_STATE_HISTORY.NEW_STATE_ID,
+                ACCESSION_STATE_HISTORY.OLD_STATE_ID,
+                ACCESSION_STATE_HISTORY.UPDATED_BY,
+                ACCESSION_STATE_HISTORY.UPDATED_TIME,
+                USERS.FIRST_NAME,
+                USERS.LAST_NAME)
+            .from(ACCESSION_STATE_HISTORY)
+            .join(USERS)
+            .on(ACCESSION_STATE_HISTORY.UPDATED_BY.eq(USERS.ID))
+            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
+            .fetch { record ->
+              val updatedTime = record[ACCESSION_STATE_HISTORY.UPDATED_TIME]!!
+              val date = LocalDate.ofInstant(updatedTime, ZoneOffset.UTC)
+              val newState = record[ACCESSION_STATE_HISTORY.NEW_STATE_ID]!!
+              val oldState = record[ACCESSION_STATE_HISTORY.OLD_STATE_ID]
+              val userId = record[ACCESSION_STATE_HISTORY.UPDATED_BY]!!
+              val fullName =
+                  messages.userFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+
+              if (oldState == null) {
+                AccessionHistoryModel(
+                    createdTime = updatedTime,
+                    date = date,
+                    description = messages.historyAccessionCreated(),
+                    fullName = fullName,
+                    type = AccessionHistoryType.Created,
+                    userId = userId,
+                )
+              } else {
+                AccessionHistoryModel(
+                    createdTime = updatedTime,
+                    date = date,
+                    description = messages.historyAccessionStateChanged(newState),
+                    fullName = fullName,
+                    type = AccessionHistoryType.StateChanged,
+                    userId = userId,
+                )
+              }
+            }
+
+    return stateChanges.sorted()
   }
 
   /**
