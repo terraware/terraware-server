@@ -1194,6 +1194,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           .set(
               AccessionStateHistoryRecord(
                   accessionId = accessionId,
+                  updatedBy = user.userId,
                   updatedTime = Instant.ofEpochMilli(processingStartTime.toLong()),
                   oldStateId = AccessionState.Pending,
                   newStateId = AccessionState.Processing,
@@ -1206,6 +1207,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             .set(
                 AccessionStateHistoryRecord(
                     accessionId = accessionId,
+                    updatedBy = user.userId,
                     updatedTime = Instant.ofEpochMilli(processedStartTime.toLong()),
                     oldStateId = AccessionState.Processing,
                     newStateId = AccessionState.Processed,
