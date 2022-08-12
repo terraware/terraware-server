@@ -147,10 +147,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
 
     if (deletedTestIds.isNotEmpty()) {
       dslContext
-          .deleteFrom(VIABILITY_TEST_RESULTS)
-          .where(VIABILITY_TEST_RESULTS.TEST_ID.`in`(deletedTestIds))
-          .execute()
-      dslContext
           .deleteFrom(VIABILITY_TESTS)
           .where(VIABILITY_TESTS.ID.`in`(deletedTestIds))
           .execute()
