@@ -167,15 +167,24 @@ private fun backwardCompatibleCollectors(
 data class CreateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
     val collectedDate: LocalDate? = null,
+    val collectionSiteCity: String? = null,
+    val collectionSiteCountryCode: String? = null,
+    val collectionSiteCountrySubdivision: String? = null,
+    val collectionSiteLandowner: String? = null,
+    val collectionSiteName: String? = null,
+    val collectionSiteNotes: String? = null,
     val collectors: List<String>? = null,
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
+    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
     val environmentalNotes: String? = null,
     val facilityId: FacilityId,
     val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
+    @Schema(
+        deprecated = true, description = "Backward-compatibility alias for collectionSiteLandowner")
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
     @Schema(
@@ -188,6 +197,7 @@ data class CreateAccessionRequestPayload(
         deprecated = true,
     )
     val secondaryCollectors: List<String>? = null,
+    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
@@ -196,21 +206,24 @@ data class CreateAccessionRequestPayload(
     return AccessionModel(
         bagNumbers = bagNumbers.orEmpty(),
         collectedDate = collectedDate,
+        collectionSiteCity = collectionSiteCity,
+        collectionSiteCountryCode = collectionSiteCountryCode,
+        collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
+        collectionSiteLandowner = landowner ?: collectionSiteLandowner,
+        collectionSiteName = siteLocation ?: collectionSiteName,
+        collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
         collectors =
             backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
         deviceInfo = deviceInfo?.toModel(),
         endangered = endangered,
-        environmentalNotes = environmentalNotes,
         facilityId = facilityId,
         family = family,
         fieldNotes = fieldNotes,
         founderId = founderId,
         geolocations = geolocations.orEmpty(),
-        landowner = landowner,
         numberOfTrees = numberOfTrees,
         rare = rare,
         receivedDate = receivedDate,
-        siteLocation = siteLocation,
         sourcePlantOrigin = sourcePlantOrigin,
         species = species,
     )
@@ -222,6 +235,12 @@ data class CreateAccessionRequestPayload(
 data class UpdateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
     val collectedDate: LocalDate? = null,
+    val collectionSiteCity: String? = null,
+    val collectionSiteCountryCode: String? = null,
+    val collectionSiteCountrySubdivision: String? = null,
+    val collectionSiteLandowner: String? = null,
+    val collectionSiteName: String? = null,
+    val collectionSiteNotes: String? = null,
     val collectors: List<String>? = null,
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,
@@ -230,6 +249,7 @@ data class UpdateAccessionRequestPayload(
     val dryingMoveDate: LocalDate? = null,
     val dryingStartDate: LocalDate? = null,
     val endangered: SpeciesEndangeredType? = null,
+    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
     val environmentalNotes: String? = null,
     val facilityId: FacilityId? = null,
     val family: String? = null,
@@ -241,6 +261,8 @@ data class UpdateAccessionRequestPayload(
             "Initial size of accession. The units of this value must match the measurement type " +
                 "in \"processingMethod\".")
     val initialQuantity: SeedQuantityPayload? = null,
+    @Schema(
+        deprecated = true, description = "Backward-compatibility alias for collectionSiteLandowner")
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
     val nurseryStartDate: LocalDate? = null,
@@ -258,6 +280,7 @@ data class UpdateAccessionRequestPayload(
         deprecated = true,
     )
     val secondaryCollectors: List<String>? = null,
+    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
@@ -279,6 +302,12 @@ data class UpdateAccessionRequestPayload(
       AccessionModel(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
+          collectionSiteCity = collectionSiteCity,
+          collectionSiteCountryCode = collectionSiteCountryCode,
+          collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
+          collectionSiteLandowner = landowner ?: collectionSiteLandowner,
+          collectionSiteName = siteLocation ?: collectionSiteName,
+          collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
           collectors =
               backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
           cutTestSeedsCompromised = cutTestSeedsCompromised,
@@ -288,14 +317,12 @@ data class UpdateAccessionRequestPayload(
           dryingMoveDate = dryingMoveDate,
           dryingStartDate = dryingStartDate,
           endangered = endangered,
-          environmentalNotes = environmentalNotes,
           facilityId = facilityId,
           family = family,
           fieldNotes = fieldNotes,
           founderId = founderId,
           geolocations = geolocations.orEmpty(),
           id = id,
-          landowner = landowner,
           numberOfTrees = numberOfTrees,
           nurseryStartDate = nurseryStartDate,
           processingMethod = processingMethod,
@@ -304,7 +331,6 @@ data class UpdateAccessionRequestPayload(
           processingStartDate = processingStartDate,
           rare = rare,
           receivedDate = receivedDate,
-          siteLocation = siteLocation,
           sourcePlantOrigin = sourcePlantOrigin,
           species = species,
           storageLocation = storageLocation,
@@ -336,6 +362,12 @@ data class AccessionPayload(
     val bagNumbers: Set<String>?,
     val checkedInTime: Instant?,
     val collectedDate: LocalDate?,
+    val collectionSiteCity: String? = null,
+    val collectionSiteCountryCode: String? = null,
+    val collectionSiteCountrySubdivision: String? = null,
+    val collectionSiteLandowner: String? = null,
+    val collectionSiteName: String? = null,
+    val collectionSiteNotes: String? = null,
     @Schema(description = "Names of the people who collected the seeds.")
     val collectors: List<String>?,
     val deviceInfo: DeviceInfoPayload?,
@@ -346,6 +378,7 @@ data class AccessionPayload(
     val dryingMoveDate: LocalDate?,
     val dryingStartDate: LocalDate?,
     val endangered: SpeciesEndangeredType?,
+    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
     val environmentalNotes: String?,
     val estimatedSeedCount: Int?,
     val facilityId: FacilityId,
@@ -363,6 +396,8 @@ data class AccessionPayload(
             "Initial size of accession. The units of this value must match the measurement type " +
                 "in \"processingMethod\".")
     val initialQuantity: SeedQuantityPayload?,
+    @Schema(
+        deprecated = true, description = "Backward-compatibility alias for collectionSiteLandowner")
     val landowner: String?,
     val latestViabilityPercent: Int?,
     val latestViabilityTestDate: LocalDate?,
@@ -388,6 +423,7 @@ data class AccessionPayload(
         deprecated = true,
     )
     val secondaryCollectors: List<String>?,
+    @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String?,
     @Schema(
         description =
@@ -449,6 +485,12 @@ data class AccessionPayload(
       model.bagNumbers.orNull(),
       model.checkedInTime,
       model.collectedDate,
+      model.collectionSiteCity,
+      model.collectionSiteCountryCode,
+      model.collectionSiteCountrySubdivision,
+      model.collectionSiteLandowner,
+      model.collectionSiteName,
+      model.collectionSiteNotes,
       model.collectors.orNull(),
       model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.cutTestSeedsCompromised,
@@ -458,7 +500,7 @@ data class AccessionPayload(
       model.dryingMoveDate,
       model.dryingStartDate,
       model.endangered,
-      model.environmentalNotes,
+      model.collectionSiteNotes,
       model.estimatedSeedCount,
       model.facilityId ?: throw IllegalArgumentException("Accession did not have a facility ID"),
       model.family,
@@ -467,7 +509,7 @@ data class AccessionPayload(
       model.geolocations.orNull(),
       model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       model.total?.toPayload(),
-      model.landowner,
+      model.collectionSiteLandowner,
       model.latestViabilityPercent,
       model.latestViabilityTestDate,
       model.numberOfTrees,
@@ -482,7 +524,7 @@ data class AccessionPayload(
       model.receivedDate,
       model.remaining?.toPayload(),
       model.collectors.drop(1).orNull(),
-      model.siteLocation,
+      model.collectionSiteName,
       model.source,
       model.sourcePlantOrigin,
       model.species,
