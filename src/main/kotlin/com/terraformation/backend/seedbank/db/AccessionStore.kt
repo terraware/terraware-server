@@ -445,34 +445,37 @@ class AccessionStore(
             .join(USERS)
             .on(ACCESSION_STATE_HISTORY.UPDATED_BY.eq(USERS.ID))
             .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
-            .orderBy(ACCESSION_STATE_HISTORY.UPDATED_TIME.desc())
             .fetch { record ->
-              val date =
-                  LocalDate.ofInstant(
-                      record[ACCESSION_STATE_HISTORY.UPDATED_TIME]!!, ZoneOffset.UTC)
+              val updatedTime = record[ACCESSION_STATE_HISTORY.UPDATED_TIME]!!
+              val date = LocalDate.ofInstant(updatedTime, ZoneOffset.UTC)
+              val newState = record[ACCESSION_STATE_HISTORY.NEW_STATE_ID]!!
+              val oldState = record[ACCESSION_STATE_HISTORY.OLD_STATE_ID]
               val userId = record[ACCESSION_STATE_HISTORY.UPDATED_BY]!!
-              val userName =
+              val fullName =
                   messages.userFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
 
-              if (record[ACCESSION_STATE_HISTORY.OLD_STATE_ID] == null) {
+              if (oldState == null) {
                 AccessionHistoryModel(
-                    date,
-                    messages.historyAccessionCreated(),
-                    AccessionHistoryType.Created,
-                    userId,
-                    userName)
+                    createdTime = updatedTime,
+                    date = date,
+                    description = messages.historyAccessionCreated(),
+                    fullName = fullName,
+                    type = AccessionHistoryType.Created,
+                    userId = userId,
+                )
               } else {
                 AccessionHistoryModel(
-                    date,
-                    messages.historyAccessionStateChanged(
-                        record[ACCESSION_STATE_HISTORY.NEW_STATE_ID]!!),
-                    AccessionHistoryType.StateChanged,
-                    userId,
-                    userName)
+                    createdTime = updatedTime,
+                    date = date,
+                    description = messages.historyAccessionStateChanged(newState),
+                    fullName = fullName,
+                    type = AccessionHistoryType.StateChanged,
+                    userId = userId,
+                )
               }
             }
 
-    return stateChanges
+    return stateChanges.sorted()
   }
 
   /**

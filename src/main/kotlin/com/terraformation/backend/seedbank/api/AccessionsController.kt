@@ -765,15 +765,13 @@ data class AccessionHistoryEntryPayload(
         description = "Human-readable description of the event. Does not include date or userName.",
         example = "updated the status to Drying")
     val description: String,
+    @Schema(description = "Full name of the person responsible for the event, if known.")
+    val fullName: String?,
     val type: AccessionHistoryType,
-    @Schema(
-        description = "Name of the user who performed the action, if known.",
-    )
-    val userName: String?,
 ) {
   constructor(
       model: AccessionHistoryModel
-  ) : this(model.date, model.description, model.type, model.userName)
+  ) : this(model.date, model.description, model.fullName, model.type)
 }
 
 data class CreateAccessionResponsePayload(val accession: AccessionPayload) : SuccessResponsePayload

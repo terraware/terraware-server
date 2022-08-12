@@ -2385,25 +2385,28 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       val expected =
           listOf(
               AccessionHistoryModel(
+                  createdTime = processTime,
                   date = LocalDate.ofInstant(processTime, ZoneOffset.UTC),
                   description = "updated the status to Processing",
+                  fullName = "Bono",
                   type = AccessionHistoryType.StateChanged,
                   userId = processUserId,
-                  userName = "Bono",
               ),
               AccessionHistoryModel(
+                  createdTime = checkInTime,
                   date = LocalDate.ofInstant(checkInTime, ZoneOffset.UTC),
                   description = "updated the status to Pending",
+                  fullName = null,
                   type = AccessionHistoryType.StateChanged,
                   userId = checkInUserId,
-                  userName = null,
               ),
               AccessionHistoryModel(
+                  createdTime = createTime,
                   date = LocalDate.ofInstant(createTime, ZoneOffset.UTC),
                   description = "created accession",
+                  fullName = "First Last",
                   type = AccessionHistoryType.Created,
                   userId = createUserId,
-                  userName = "First Last",
               ),
           )
 
