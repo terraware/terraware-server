@@ -176,7 +176,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             collectionSiteNotes = "siteNotes",
             createdBy = user.userId,
             createdTime = now,
-            environmentalNotes = "envNotes",
             facilityId = facilityId,
             modifiedBy = user.userId,
             modifiedTime = now,
