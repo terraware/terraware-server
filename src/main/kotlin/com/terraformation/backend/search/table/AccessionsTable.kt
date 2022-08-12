@@ -88,7 +88,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         aliasField("bagNumber", "bags_number"),
         timestampField("checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
         dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
-        textField("collectionNotes", "Notes (collection)", ACCESSIONS.ENVIRONMENTAL_NOTES),
+        textField("collectionNotes", "Notes (collection)", ACCESSIONS.COLLECTION_SITE_NOTES),
         textField("collectionSiteCity", "Collection site city", ACCESSIONS.COLLECTION_SITE_CITY),
         textField(
             "collectionSiteCountryCode",
@@ -103,7 +103,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             "Collection site landowner",
             ACCESSIONS.COLLECTION_SITE_LANDOWNER),
         textField("collectionSiteName", "Collection site name", ACCESSIONS.COLLECTION_SITE_NAME),
-        textField("collectionSiteNotes", "Collection site notes", ACCESSIONS.ENVIRONMENTAL_NOTES),
+        textField("collectionSiteNotes", "Collection site notes", ACCESSIONS.COLLECTION_SITE_NOTES),
         integerField(
             "cutTestSeedsCompromised",
             "Number of seeds compromised",

@@ -128,7 +128,7 @@ class AccessionStore(
           collectionSiteCountrySubdivision = record[COLLECTION_SITE_COUNTRY_SUBDIVISION],
           collectionSiteLandowner = record[COLLECTION_SITE_LANDOWNER],
           collectionSiteName = record[COLLECTION_SITE_NAME],
-          collectionSiteNotes = record[ENVIRONMENTAL_NOTES],
+          collectionSiteNotes = record[COLLECTION_SITE_NOTES],
           collectors = record[collectorsField],
           cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
           cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
@@ -225,7 +225,6 @@ class AccessionStore(
                         .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                         .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                         .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
-                        .set(ENVIRONMENTAL_NOTES, accession.collectionSiteNotes)
                         .set(FACILITY_ID, facilityId)
                         .set(FAMILY_NAME, accession.family)
                         .set(FIELD_NOTES, accession.fieldNotes)
@@ -375,7 +374,6 @@ class AccessionStore(
                 .set(DRYING_END_DATE, accession.dryingEndDate)
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
-                .set(ENVIRONMENTAL_NOTES, accession.collectionSiteNotes)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
                 .set(FACILITY_ID, facilityId)
                 .set(FAMILY_NAME, accession.family)
