@@ -3,9 +3,15 @@ package com.terraformation.backend.seedbank.api
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.search.SearchFieldPrefix
+import com.terraformation.backend.search.SearchService
+import com.terraformation.backend.search.api.HasSearchNode
+import com.terraformation.backend.search.api.SearchNodePayload
+import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.time.atMostRecent
@@ -14,7 +20,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.ZonedDateTime
+import org.jooq.Record1
+import org.jooq.Select
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -26,7 +36,12 @@ class SummaryController(
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
+    private val searchService: SearchService,
+    tables: SearchTables,
 ) {
+  private val accessionsPrefix = SearchFieldPrefix(tables.accessions)
+  private val accessionIdField = accessionsPrefix.resolve("id")
+
   @GetMapping
   @Operation(
       summary =
@@ -46,6 +61,27 @@ class SummaryController(
       else ->
           throw IllegalArgumentException("Must specify organization or facility ID but not both")
     }
+  }
+
+  @Operation(
+      summary =
+          "Get summary statistics about the accessions that match a specified set of " +
+              "search criteria.")
+  @PostMapping
+  fun summarizeAccessionSearch(
+      @RequestBody payload: SummarizeAccessionSearchRequestPayload
+  ): SummarizeAccessionSearchResponsePayload {
+    @Suppress("UNCHECKED_CAST")
+    val query =
+        searchService
+            .buildQuery(
+                accessionsPrefix, listOf(accessionIdField), payload.toSearchNode(accessionsPrefix))
+            .toSelectQuery() as Select<Record1<AccessionId?>>
+
+    val summary = accessionStore.getSummaryStatistics(query)
+
+    return SummarizeAccessionSearchResponsePayload(
+        summary.accessions, summary.species, SeedCountSummaryPayload(summary))
   }
 
   private fun getSummary(facilityId: FacilityId): SummaryResponse {
@@ -164,3 +200,13 @@ data class SeedCountSummaryPayload(
       summary.subtotalByWeightEstimate,
       summary.unknownQuantityAccessions)
 }
+
+data class SummarizeAccessionSearchRequestPayload(
+    override val search: SearchNodePayload? = null,
+) : HasSearchNode
+
+data class SummarizeAccessionSearchResponsePayload(
+    val accessions: Int,
+    val species: Int,
+    val seedsRemaining: SeedCountSummaryPayload,
+) : SuccessResponsePayload
