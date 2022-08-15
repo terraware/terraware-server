@@ -123,6 +123,12 @@ class AccessionStore(
           bagNumbers = record[bagNumbersField],
           checkedInTime = record[CHECKED_IN_TIME],
           collectedDate = record[COLLECTED_DATE],
+          collectionSiteCity = record[COLLECTION_SITE_CITY],
+          collectionSiteCountryCode = record[COLLECTION_SITE_COUNTRY_CODE],
+          collectionSiteCountrySubdivision = record[COLLECTION_SITE_COUNTRY_SUBDIVISION],
+          collectionSiteLandowner = record[COLLECTION_SITE_LANDOWNER],
+          collectionSiteName = record[COLLECTION_SITE_NAME],
+          collectionSiteNotes = record[ENVIRONMENTAL_NOTES],
           collectors = record[collectorsField],
           cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
           cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
@@ -132,7 +138,6 @@ class AccessionStore(
           dryingMoveDate = record[DRYING_MOVE_DATE],
           dryingStartDate = record[DRYING_START_DATE],
           endangered = record[SPECIES_ENDANGERED_TYPE_ID],
-          environmentalNotes = record[ENVIRONMENTAL_NOTES],
           estimatedSeedCount = record[EST_SEED_COUNT],
           facilityId = record[FACILITY_ID],
           family = record[FAMILY_NAME],
@@ -140,7 +145,6 @@ class AccessionStore(
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
           id = accessionId,
-          landowner = record[COLLECTION_SITE_LANDOWNER],
           latestViabilityPercent = record[LATEST_VIABILITY_PERCENT],
           latestViabilityTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
           numberOfTrees = record[TREES_COLLECTED_FROM],
@@ -153,7 +157,6 @@ class AccessionStore(
           rare = record[RARE_TYPE_ID],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-          siteLocation = record[COLLECTION_SITE_NAME],
           source = source,
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
           species = record[species().SCIENTIFIC_NAME],
@@ -209,14 +212,20 @@ class AccessionStore(
                         .insertInto(ACCESSIONS)
                         .set(APP_DEVICE_ID, appDeviceId)
                         .set(COLLECTED_DATE, accession.collectedDate)
-                        .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
-                        .set(COLLECTION_SITE_NAME, accession.siteLocation)
+                        .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
+                        .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
+                        .set(
+                            COLLECTION_SITE_COUNTRY_SUBDIVISION,
+                            accession.collectionSiteCountrySubdivision)
+                        .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
+                        .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
+                        .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
                         .set(CREATED_BY, currentUser().userId)
                         .set(CREATED_TIME, clock.instant())
                         .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                         .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                         .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
-                        .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
+                        .set(ENVIRONMENTAL_NOTES, accession.collectionSiteNotes)
                         .set(FACILITY_ID, facilityId)
                         .set(FAMILY_NAME, accession.family)
                         .set(FIELD_NOTES, accession.fieldNotes)
@@ -353,15 +362,20 @@ class AccessionStore(
             dslContext
                 .update(ACCESSIONS)
                 .set(COLLECTED_DATE, accession.collectedDate)
-                .set(COLLECTION_SITE_LANDOWNER, accession.landowner)
-                .set(COLLECTION_SITE_NAME, accession.siteLocation)
+                .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
+                .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
+                .set(
+                    COLLECTION_SITE_COUNTRY_SUBDIVISION, accession.collectionSiteCountrySubdivision)
+                .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
+                .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
+                .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
                 .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                 .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                 .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                 .set(DRYING_END_DATE, accession.dryingEndDate)
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
-                .set(ENVIRONMENTAL_NOTES, accession.environmentalNotes)
+                .set(ENVIRONMENTAL_NOTES, accession.collectionSiteNotes)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
                 .set(FACILITY_ID, facilityId)
                 .set(FAMILY_NAME, accession.family)

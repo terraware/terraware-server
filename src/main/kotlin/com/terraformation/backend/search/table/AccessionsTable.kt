@@ -6,6 +6,7 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.tables.references.BAGS
+import com.terraformation.backend.db.tables.references.COUNTRIES
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.SPECIES
@@ -37,6 +38,10 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          countries.asSingleValueSublist(
+              "collectionSiteCountry",
+              ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE.eq(COUNTRIES.CODE),
+              isRequired = false),
           accessionCollectors.asMultiValueSublist(
               "collectors", ACCESSIONS.ID.eq(ACCESSION_COLLECTORS.ACCESSION_ID)),
           // TODO: Remove this once client is updated to search the unified collectors list
@@ -84,6 +89,21 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         timestampField("checkedInTime", "Checked-In Time", ACCESSIONS.CHECKED_IN_TIME),
         dateField("collectedDate", "Collected on", ACCESSIONS.COLLECTED_DATE),
         textField("collectionNotes", "Notes (collection)", ACCESSIONS.ENVIRONMENTAL_NOTES),
+        textField("collectionSiteCity", "Collection site city", ACCESSIONS.COLLECTION_SITE_CITY),
+        textField(
+            "collectionSiteCountryCode",
+            "Collection site country code",
+            ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE),
+        textField(
+            "collectionSiteCountrySubdivision",
+            "Collection site country subdivision",
+            ACCESSIONS.COLLECTION_SITE_COUNTRY_SUBDIVISION),
+        textField(
+            "collectionSiteLandowner",
+            "Collection site landowner",
+            ACCESSIONS.COLLECTION_SITE_LANDOWNER),
+        textField("collectionSiteName", "Collection site name", ACCESSIONS.COLLECTION_SITE_NAME),
+        textField("collectionSiteNotes", "Collection site notes", ACCESSIONS.ENVIRONMENTAL_NOTES),
         integerField(
             "cutTestSeedsCompromised",
             "Number of seeds compromised",

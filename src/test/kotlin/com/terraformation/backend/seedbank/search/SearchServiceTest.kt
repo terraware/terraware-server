@@ -168,13 +168,21 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             stateId = AccessionState.Processed,
             checkedInTime = checkedInTime,
             collectedDate = LocalDate.of(2019, 3, 2),
+            collectionSiteCity = "city",
+            collectionSiteCountryCode = "UG",
+            collectionSiteCountrySubdivision = "subdivision",
+            collectionSiteLandowner = "landowner",
+            collectionSiteName = "siteName",
+            collectionSiteNotes = "siteNotes",
             createdBy = user.userId,
             createdTime = now,
+            environmentalNotes = "envNotes",
             facilityId = facilityId,
             modifiedBy = user.userId,
             modifiedTime = now,
             speciesId = SpeciesId(10000),
-            treesCollectedFrom = 1))
+            treesCollectedFrom = 1,
+        ))
     accessionsDao.insert(
         AccessionsRow(
             id = AccessionId(1001),
@@ -2868,6 +2876,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "ageYears" to "1",
                       "checkedInTime" to "$checkedInTime",
                       "collectedDate" to "2019-03-02",
+                      "collectionNotes" to "envNotes",
+                      "collectionSiteCity" to "city",
+                      "collectionSiteCountryCode" to "UG",
+                      "collectionSiteCountrySubdivision" to "subdivision",
+                      "collectionSiteLandowner" to "landowner",
+                      "collectionSiteName" to "siteName",
+                      "collectionSiteNotes" to "envNotes",
                       "collectors" to
                           listOf(
                               mapOf("name" to "primary", "position" to "0"),
@@ -2876,6 +2891,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                           ),
                       "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
                       "id" to "1000",
+                      "landowner" to "landowner",
                       "primaryCollectorName" to "primary",
                       "primaryCollectors" to
                           listOf(
@@ -2886,6 +2902,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                               mapOf("name" to "secondary 1", "position" to "1"),
                               mapOf("name" to "secondary 2", "position" to "2"),
                           ),
+                      "siteLocation" to "siteName",
                       "speciesName" to "Kousa Dogwood",
                       "state" to "Processed",
                       "treesCollectedFrom" to "1",
