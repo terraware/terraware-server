@@ -2876,13 +2876,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "ageYears" to "1",
                       "checkedInTime" to "$checkedInTime",
                       "collectedDate" to "2019-03-02",
-                      "collectionNotes" to "envNotes",
+                      "collectionNotes" to "siteNotes",
                       "collectionSiteCity" to "city",
                       "collectionSiteCountryCode" to "UG",
                       "collectionSiteCountrySubdivision" to "subdivision",
                       "collectionSiteLandowner" to "landowner",
                       "collectionSiteName" to "siteName",
-                      "collectionSiteNotes" to "envNotes",
+                      "collectionSiteNotes" to "siteNotes",
                       "collectors" to
                           listOf(
                               mapOf("name" to "primary", "position" to "0"),
