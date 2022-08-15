@@ -151,6 +151,10 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="54" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="55" name="collection_site_city" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="56" name="collection_site_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="57" name="collection_site_country_subdivision" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="58" name="collection_site_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -503,8 +507,8 @@
       </table>
       <table name="viability_test_selections" numRows="0" remarks="Linking table that stores the currently-selected viability test for each accession." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="accession_id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
             <parent column="id" foreignKey="viability_test_selections_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accessions"/>
+            <parent column="accession_id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="viability_test_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
