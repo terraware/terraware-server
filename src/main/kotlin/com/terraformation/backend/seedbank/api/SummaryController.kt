@@ -3,13 +3,11 @@ package com.terraformation.backend.seedbank.api
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.seedbank.db.AccessionStore
-import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.time.atMostRecent
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -28,8 +26,6 @@ class SummaryController(
     private val accessionStore: AccessionStore,
     private val clock: Clock,
     private val config: TerrawareServerConfig,
-    private val parentStore: ParentStore,
-    private val speciesStore: SpeciesStore,
 ) {
   @GetMapping
   @Operation(
@@ -65,12 +61,11 @@ class SummaryController(
     val oneWeekAgo = startOfDay.minusDays(6)
     val twoWeeksAgo = startOfDay.minusDays(13)
 
-    val organizationId =
-        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val stats = accessionStore.getSummaryStatistics(facilityId)
 
     return SummaryResponse(
-        activeAccessions = accessionStore.countActive(facilityId),
-        species = speciesStore.countSpecies(organizationId),
+        activeAccessions = stats.accessions,
+        species = stats.species,
         overduePendingAccessions =
             accessionStore.countInState(
                 facilityId, AccessionState.Pending, sinceBefore = oneWeekAgo),
@@ -82,11 +77,7 @@ class SummaryController(
             accessionStore.countInState(
                 facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
         accessionsByState = accessionStore.countByState(facilityId),
-        seedsRemaining =
-            SeedCountSummaryPayload(
-                accessionStore.countSeedsRemaining(facilityId),
-                accessionStore.estimateSeedsRemainingByWeight(facilityId),
-                accessionStore.countQuantityUnknown(facilityId)),
+        seedsRemaining = SeedCountSummaryPayload(stats),
     )
   }
 
@@ -103,9 +94,11 @@ class SummaryController(
     val oneWeekAgo = startOfDay.minusDays(6)
     val twoWeeksAgo = startOfDay.minusDays(13)
 
+    val stats = accessionStore.getSummaryStatistics(organizationId)
+
     return SummaryResponse(
-        activeAccessions = accessionStore.countActive(organizationId),
-        species = speciesStore.countSpecies(organizationId),
+        activeAccessions = stats.accessions,
+        species = stats.species,
         overduePendingAccessions =
             accessionStore.countInState(
                 organizationId, AccessionState.Pending, sinceBefore = oneWeekAgo),
@@ -117,11 +110,7 @@ class SummaryController(
             accessionStore.countInState(
                 organizationId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
         accessionsByState = accessionStore.countByState(organizationId),
-        seedsRemaining =
-            SeedCountSummaryPayload(
-                accessionStore.countSeedsRemaining(organizationId),
-                accessionStore.estimateSeedsRemainingByWeight(organizationId),
-                accessionStore.countQuantityUnknown(organizationId)),
+        seedsRemaining = SeedCountSummaryPayload(stats),
     )
   }
 }
@@ -168,13 +157,10 @@ data class SeedCountSummaryPayload(
     val unknownQuantityAccessions: Int,
 ) {
   constructor(
-      subtotalBySeedCount: Long,
-      subtotalByWeightEstimate: Long,
-      unknownQuantityAccessions: Int
+      summary: AccessionSummaryStatistics
   ) : this(
-      subtotalBySeedCount + subtotalByWeightEstimate,
-      subtotalBySeedCount,
-      subtotalByWeightEstimate,
-      unknownQuantityAccessions,
-  )
+      summary.totalSeedsRemaining,
+      summary.subtotalBySeedCount,
+      summary.subtotalByWeightEstimate,
+      summary.unknownQuantityAccessions)
 }
