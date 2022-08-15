@@ -97,7 +97,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             ViabilityTestStore(dslContext),
             parentStore,
             mockk(),
-            WithdrawalStore(dslContext, clock),
+            WithdrawalStore(dslContext, clock, mockk()),
             clock,
             mockk(),
         )

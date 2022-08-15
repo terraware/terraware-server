@@ -159,6 +159,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateAccession(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
 
+    val messages = Messages()
+
     store =
         AccessionStore(
             dslContext,
@@ -168,9 +170,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             ViabilityTestStore(dslContext),
             parentStore,
             SpeciesService(dslContext, speciesChecker, speciesStore),
-            WithdrawalStore(dslContext, clock),
+            WithdrawalStore(dslContext, clock, messages),
             clock,
-            Messages(),
+            messages,
         )
 
     insertSiteData()
@@ -2351,10 +2353,23 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchHistory {
     @Test
-    fun `returns state change events in correct order`() {
+    fun `returns history models in correct order`() {
+      // The sequence of operations here:
+      //
+      // January 1: Accession created
+      // January 1: Accession checked in (causes state to go to Pending)
+      // January 2: Seed quantity of 100 seeds entered (causes state to go to Processing)
+      // January 3: 1 seed withdrawn
+      // January 4: Viability test created with 29 seeds sown (causes a withdrawal to be created)
+      // January 5: 70 seeds withdrawn with a withdrawal date of January 3 (causes state to go to
+      //            Withdrawn)
+
       val createTime = Instant.EPOCH
       val checkInTime = createTime.plusSeconds(60)
       val processTime = checkInTime.plus(1, ChronoUnit.DAYS)
+      val firstWithdrawalTime = processTime.plus(1, ChronoUnit.DAYS)
+      val secondWithdrawalTime = firstWithdrawalTime.plus(1, ChronoUnit.DAYS)
+      val backdatedWithdrawalTime = secondWithdrawalTime.plus(1, ChronoUnit.DAYS)
 
       val createUserId = UserId(20)
       val checkInUserId = UserId(30)
@@ -2377,13 +2392,88 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       every { clock.instant() } returns processTime
       every { user.userId } returns processUserId
 
-      store.update(
-          initial.copy(
-              processingMethod = ProcessingMethod.Count,
-              total = SeedQuantityModel.of(BigDecimal.ONE, SeedQuantityUnits.Seeds)))
+      val withSeedQuantity =
+          store.updateAndFetch(
+              initial.copy(
+                  processingMethod = ProcessingMethod.Count,
+                  total = SeedQuantityModel.of(BigDecimal(100), SeedQuantityUnits.Seeds)))
+
+      every { clock.instant() } returns firstWithdrawalTime
+
+      val withFirstWithdrawal =
+          store.updateAndFetch(
+              withSeedQuantity.copy(
+                  withdrawals =
+                      listOf(
+                          WithdrawalModel(
+                              date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
+                              purpose = WithdrawalPurpose.Broadcast,
+                              staffResponsible = "First Withdrawer",
+                              withdrawn =
+                                  SeedQuantityModel.of(BigDecimal(1), SeedQuantityUnits.Seeds)))))
+
+      every { clock.instant() } returns secondWithdrawalTime
+
+      val withSecondWithdrawal =
+          store.updateAndFetch(
+              withFirstWithdrawal.copy(
+                  viabilityTests =
+                      listOf(
+                          ViabilityTestModel(
+                              testType = ViabilityTestType.Lab,
+                              startDate = LocalDate.ofInstant(secondWithdrawalTime, ZoneOffset.UTC),
+                              seedsSown = 29,
+                              staffResponsible = "Viability Tester"))))
+
+      every { clock.instant() } returns backdatedWithdrawalTime
+
+      store.updateAndFetch(
+          withSecondWithdrawal.copy(
+              withdrawals =
+                  withSecondWithdrawal.withdrawals +
+                      WithdrawalModel(
+                          // The date of the FIRST withdrawal, not the date this new model is
+                          // being created; this should come after the viability testing withdrawal
+                          // in the reverse-time-ordered history.
+                          date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
+                          staffResponsible = "Backdated Withdrawer",
+                          withdrawn =
+                              SeedQuantityModel.of(BigDecimal(70), SeedQuantityUnits.Seeds))))
 
       val expected =
           listOf(
+              AccessionHistoryModel(
+                  createdTime = backdatedWithdrawalTime,
+                  date = LocalDate.ofInstant(backdatedWithdrawalTime, ZoneOffset.UTC),
+                  description = "updated the status to Withdrawn",
+                  fullName = "Bono",
+                  type = AccessionHistoryType.StateChanged,
+                  userId = processUserId,
+              ),
+              AccessionHistoryModel(
+                  createdTime = secondWithdrawalTime,
+                  date = LocalDate.ofInstant(secondWithdrawalTime, ZoneOffset.UTC),
+                  description = "withdrew 29 seeds for viability testing",
+                  fullName = "Viability Tester",
+                  type = AccessionHistoryType.ViabilityTesting,
+                  userId = null,
+              ),
+              AccessionHistoryModel(
+                  createdTime = backdatedWithdrawalTime,
+                  date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
+                  description = "withdrew 70 seeds",
+                  fullName = "Backdated Withdrawer",
+                  type = AccessionHistoryType.Withdrawal,
+                  userId = null,
+              ),
+              AccessionHistoryModel(
+                  createdTime = firstWithdrawalTime,
+                  date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
+                  description = "withdrew 1 seed for broadcast",
+                  fullName = "First Withdrawer",
+                  type = AccessionHistoryType.Withdrawal,
+                  userId = null,
+              ),
               AccessionHistoryModel(
                   createdTime = processTime,
                   date = LocalDate.ofInstant(processTime, ZoneOffset.UTC),

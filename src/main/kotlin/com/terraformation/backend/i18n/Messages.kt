@@ -2,8 +2,13 @@ package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.GrowthForm
+import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SeedStorageBehavior
+import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.util.equalsIgnoreScale
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.annotation.ManagedBean
@@ -110,6 +115,21 @@ class Messages {
   fun historyAccessionStateChanged(newState: AccessionState) =
       "updated the status to ${newState.displayName}"
 
+  fun historyAccessionWithdrawal(
+      quantity: SeedQuantityModel?,
+      purpose: WithdrawalPurpose?
+  ): String {
+    val quantityText = quantity?.let { seedQuantity(it) }
+    val purposeText = purpose?.displayName?.lowercase()
+
+    return when {
+      quantityText != null && purposeText != null -> "withdrew $quantityText for $purposeText"
+      quantityText != null -> "withdrew $quantityText"
+      purposeText != null -> "withdrew seeds for $purposeText"
+      else -> "withdrew seeds"
+    }
+  }
+
   /**
    * Returns the full name of a user based on their first and last names. It's possible for users to
    * not have first or last names, e.g., if they were created by being added to an organization and
@@ -122,6 +142,26 @@ class Messages {
       } else {
         lastName ?: firstName
       }
+
+  private fun seedQuantity(quantity: SeedQuantityModel): String {
+    val unitsWord =
+        if (quantity.quantity.equalsIgnoreScale(BigDecimal.ONE)) {
+          // Do an exhaustive "when" rather than just stripping off the trailing "s" in case we
+          // add another unit whose plural name isn't just its singular name with a single "s".
+          when (quantity.units) {
+            SeedQuantityUnits.Seeds -> "seed"
+            SeedQuantityUnits.Grams -> "gram"
+            SeedQuantityUnits.Milligrams -> "milligram"
+            SeedQuantityUnits.Kilograms -> "kilogram"
+            SeedQuantityUnits.Ounces -> "ounce"
+            SeedQuantityUnits.Pounds -> "pound"
+          }
+        } else {
+          quantity.units.displayName.lowercase()
+        }
+
+    return quantity.quantity.toPlainString() + " $unitsWord"
+  }
 
   private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
   private val validSeedStorageBehaviors =

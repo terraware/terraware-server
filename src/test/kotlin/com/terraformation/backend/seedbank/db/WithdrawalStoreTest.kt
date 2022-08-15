@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.milligrams
@@ -47,7 +48,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setup() {
-    store = WithdrawalStore(dslContext, clock)
+    store = WithdrawalStore(dslContext, clock, Messages())
 
     every { clock.instant() } returns Instant.now()
 
