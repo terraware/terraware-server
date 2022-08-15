@@ -77,7 +77,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = accessionId,
                 date = LocalDate.of(2021, 1, 1),
                 notes = "notes 1",
-                purposeId = WithdrawalPurpose.Broadcast,
+                purposeId = WithdrawalPurpose.Nursery,
                 remainingGrams = BigDecimal(".1"),
                 remainingQuantity = BigDecimal(100),
                 remainingUnitsId = SeedQuantityUnits.Milligrams,
