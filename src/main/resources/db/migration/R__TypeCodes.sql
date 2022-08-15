@@ -21,16 +21,16 @@ VALUES (1, 'PV'),
        (2, 'Seed Bank Default')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO facility_types (id, name)
-VALUES (1, 'Seed Bank'),
-       (2, 'Desalination'),
-       (3, 'Reverse Osmosis')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO facility_connection_states (id, name)
 VALUES (1, 'Not Connected'),
        (2, 'Connected'),
        (3, 'Configured')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO facility_types (id, name)
+VALUES (1, 'Seed Bank'),
+       (2, 'Desalination'),
+       (3, 'Reverse Osmosis')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO growth_forms (id, name)
@@ -40,6 +40,24 @@ VALUES (1, 'Tree'),
        (4, 'Graminoid'),
        (5, 'Fern')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO notification_criticalities (id, name)
+VALUES (1, 'Info'),
+       (2, 'Warning'),
+       (3, 'Error'),
+       (4, 'Success')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO notification_types (id, name, notification_criticality_id)
+VALUES (1, 'User Added to Organization', 1),
+       (2, 'Facility Idle', 2),
+       (3, 'Facility Alert Requested', 3),
+       (6, 'Accession Scheduled to End Drying', 1),
+       (12, 'Sensor Out Of Bounds', 3),
+       (13, 'Unknown Automation Triggered', 3),
+       (14, 'Device Unresponsive', 3)
+ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
+                               notification_criticality_id = excluded.notification_criticality_id;
 
 INSERT INTO processing_methods (id, name)
 VALUES (1, 'Count'),
@@ -164,20 +182,4 @@ VALUES (1, 'Propagation'),
        (7, 'Viability Testing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO notification_criticalities (id, name)
-VALUES (1, 'Info'),
-       (2, 'Warning'),
-       (3, 'Error'),
-       (4, 'Success')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO notification_types (id, name, notification_criticality_id)
-VALUES (1, 'User Added to Organization', 1),
-       (2, 'Facility Idle', 2),
-       (3, 'Facility Alert Requested', 3),
-       (6, 'Accession Scheduled to End Drying', 1),
-       (12, 'Sensor Out Of Bounds', 3),
-       (13, 'Unknown Automation Triggered', 3),
-       (14, 'Device Unresponsive', 3)
-ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
-                               notification_criticality_id = excluded.notification_criticality_id;
+-- When adding new tables, put them in alphabetical (ASCII) order.

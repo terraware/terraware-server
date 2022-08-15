@@ -41,8 +41,6 @@ COMMENT ON COLUMN country_subdivisions.code IS 'Full ISO-3166-2 subdivision code
 COMMENT ON COLUMN country_subdivisions.country_code IS 'ISO-3166 alpha-2 country code.';
 COMMENT ON COLUMN country_subdivisions.name IS 'Name of subdivision in US English.';
 
-COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
-
 COMMENT ON TABLE device_managers IS 'Information about device managers. This is a combination of information from the Balena API and locally-generated values.';
 COMMENT ON COLUMN device_managers.balena_id IS 'Balena-assigned device identifier.';
 COMMENT ON COLUMN device_managers.balena_modified_time IS 'Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally.';
@@ -53,6 +51,8 @@ COMMENT ON COLUMN device_managers.update_progress IS 'Percent complete of softwa
 COMMENT ON TABLE device_template_categories IS '(Enum) User-facing categories of device templates; used to show templates for a particular class of devices where the physical device type may differ from one entry to the next.';
 
 COMMENT ON TABLE device_templates IS 'Canned device configurations for use in cases where we want to show a list of possible devices to the user and create the selected device with the correct settings so that the device manager can talk to it.';
+
+COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
 COMMENT ON COLUMN facilities.idle_after_time IS 'Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility.';
@@ -68,9 +68,9 @@ COMMENT ON TABLE flyway_schema_history IS 'Tracks which database migrations have
 
 COMMENT ON TABLE gbif_distributions IS 'Information about geographic distribution of species and their conservation statuses.';
 
-COMMENT ON TABLE gbif_names IS 'Scientific and vernacular names from the GBIF backbone dataset. Names are not required to be unique.';
-
 COMMENT ON TABLE gbif_name_words IS 'Inverted index of lower-cased words from species and family names in the GBIF backbone dataset. Used to support fast per-word prefix searches.';
+
+COMMENT ON TABLE gbif_names IS 'Scientific and vernacular names from the GBIF backbone dataset. Names are not required to be unique.';
 
 COMMENT ON TABLE gbif_taxa IS 'Taxonomic data about species and families. A subset of the GBIF backbone dataset.';
 
@@ -141,11 +141,11 @@ COMMENT ON TABLE timeseries_types IS '(Enum) Data formats of the values of a tim
 
 COMMENT ON TABLE timeseries_values IS 'Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here.';
 
+COMMENT ON TABLE upload_problem_types IS '(Enum) Specific types of problems encountered while processing a user-uploaded file.';
+
 COMMENT ON TABLE upload_problems IS 'Details about problems (validation failures, etc.) in user-uploaded files.';
 COMMENT ON COLUMN upload_problems.position IS 'Where in the uploaded file the problem appears, or null if it is a problem with the file as a whole. This may be a byte offset, a line number, or a record number depending on the type of file.';
 COMMENT ON COLUMN upload_problems.field IS 'If the problem pertains to a specific field, its name. Null if the problem affects an entire record or the entire file.';
-
-COMMENT ON TABLE upload_problem_types IS '(Enum) Specific types of problems encountered while processing a user-uploaded file.';
 
 COMMENT ON TABLE upload_statuses IS '(Enum) Available statuses of user-uploaded files. Uploads progress through these statuses as the system processes the files.';
 COMMENT ON COLUMN upload_statuses.finished IS 'If true, this status means that the system is finished processing the file.';
@@ -182,3 +182,5 @@ COMMENT ON TABLE viability_tests IS 'Information about a single batch of seeds b
 COMMENT ON TABLE withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
 
 COMMENT ON TABLE withdrawals IS 'Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here.';
+
+-- When adding new tables, put them in alphabetical (ASCII) order.

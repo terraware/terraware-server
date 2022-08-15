@@ -63,12 +63,14 @@ interface TerrawareUser : Principal {
    */
 
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean
+  fun canCountNotifications(): Boolean
   fun canCreateAccession(facilityId: FacilityId): Boolean
   fun canCreateApiKey(organizationId: OrganizationId): Boolean
   fun canCreateAutomation(facilityId: FacilityId): Boolean
   fun canCreateDevice(facilityId: FacilityId): Boolean
   fun canCreateDeviceManager(): Boolean
   fun canCreateFacility(organizationId: OrganizationId): Boolean
+  fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
   fun canCreateStorageLocation(facilityId: FacilityId): Boolean
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
@@ -81,12 +83,14 @@ interface TerrawareUser : Principal {
   fun canImportGlobalSpeciesData(): Boolean
   fun canListAutomations(facilityId: FacilityId): Boolean
   fun canListFacilities(organizationId: OrganizationId): Boolean
+  fun canListNotifications(organizationId: OrganizationId?): Boolean
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean
   fun canReadAccession(accessionId: AccessionId): Boolean
   fun canReadAutomation(automationId: AutomationId): Boolean
   fun canReadDevice(deviceId: DeviceId): Boolean
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canReadFacility(facilityId: FacilityId): Boolean
+  fun canReadNotification(notificationId: NotificationId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
@@ -104,15 +108,13 @@ interface TerrawareUser : Principal {
   fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean
   fun canUpdateDeviceTemplates(): Boolean
   fun canUpdateFacility(facilityId: FacilityId): Boolean
+  fun canUpdateNotification(notificationId: NotificationId): Boolean
+  fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean
   fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
   fun canUpdateUpload(uploadId: UploadId): Boolean
-  fun canReadNotification(notificationId: NotificationId): Boolean
-  fun canListNotifications(organizationId: OrganizationId?): Boolean
-  fun canCountNotifications(): Boolean
-  fun canUpdateNotification(notificationId: NotificationId): Boolean
-  fun canUpdateNotifications(organizationId: OrganizationId?): Boolean
-  fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean
+
+  // When adding new permissions, put them in alphabetical order in the above block.
 }

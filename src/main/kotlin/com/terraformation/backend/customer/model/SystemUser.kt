@@ -95,12 +95,17 @@ class SystemUser(
    */
 
   override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
+  override fun canCountNotifications(): Boolean = true
   override fun canCreateAccession(facilityId: FacilityId): Boolean = true
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
   override fun canCreateDeviceManager(): Boolean = true
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = true
+  override fun canCreateNotification(
+      targetUserId: UserId,
+      organizationId: OrganizationId
+  ): Boolean = true
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
   override fun canCreateStorageLocation(facilityId: FacilityId): Boolean = true
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
@@ -113,12 +118,14 @@ class SystemUser(
   override fun canImportGlobalSpeciesData(): Boolean = false
   override fun canListAutomations(facilityId: FacilityId): Boolean = true
   override fun canListFacilities(organizationId: OrganizationId): Boolean = true
+  override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
+  override fun canReadNotification(notificationId: NotificationId): Boolean = true
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
@@ -138,18 +145,11 @@ class SystemUser(
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canUpdateDeviceTemplates(): Boolean = true
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
+  override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
+  override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
   override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
   override fun canUpdateStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
   override fun canUpdateUpload(uploadId: UploadId): Boolean = true
-  override fun canReadNotification(notificationId: NotificationId): Boolean = true
-  override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
-  override fun canCountNotifications(): Boolean = true
-  override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
-  override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
-  override fun canCreateNotification(
-      targetUserId: UserId,
-      organizationId: OrganizationId
-  ): Boolean = true
 }
