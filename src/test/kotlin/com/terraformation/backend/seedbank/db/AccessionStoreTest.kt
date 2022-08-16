@@ -2422,7 +2422,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           WithdrawalModel(
                               date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
-                              purpose = WithdrawalPurpose.Broadcast,
+                              purpose = WithdrawalPurpose.Nursery,
                               staffResponsible = "First Withdrawer",
                               withdrawn =
                                   SeedQuantityModel.of(BigDecimal(1), SeedQuantityUnits.Seeds)))))
@@ -2484,7 +2484,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
               AccessionHistoryModel(
                   createdTime = firstWithdrawalTime,
                   date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
-                  description = "withdrew 1 seed for broadcast",
+                  description = "withdrew 1 seed for nursery",
                   fullName = "First Withdrawer",
                   type = AccessionHistoryType.Withdrawal,
                   userId = null,
