@@ -75,7 +75,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(ACCESSIONS)
 
-  private lateinit var accessionSearchService: AccessionSearchService
   private lateinit var searchService: SearchService
 
   private val checkedInTimeString = "2021-08-18T11:33:55Z"
@@ -87,11 +86,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   private val tables = SearchTables(clock)
   private val accessionsTable = tables.accessions
   private val rootPrefix = SearchFieldPrefix(root = accessionsTable)
+  private val accessionIdField = rootPrefix.resolve("id")
   private val accessionNumberField = rootPrefix.resolve("accessionNumber")
   private val activeField = rootPrefix.resolve("active")
   private val bagNumberField = rootPrefix.resolve("bagNumber")
   private val bagNumberFlattenedField = rootPrefix.resolve("bags_number")
   private val checkedInTimeField = rootPrefix.resolve("checkedInTime")
+  private val facilityIdField = rootPrefix.resolve("facility.id")
   private val receivedDateField = rootPrefix.resolve("receivedDate")
   private val speciesNameField = rootPrefix.resolve("speciesName")
   private val stateField = rootPrefix.resolve("state")
@@ -110,7 +111,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun init() {
     searchService = SearchService(dslContext)
-    accessionSearchService = AccessionSearchService(tables, searchService)
 
     every { clock.instant() } returns Instant.parse("2020-06-15T00:00:00.00Z")
     every { clock.zone } returns ZoneOffset.UTC
@@ -242,8 +242,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val sortOrder = fields.map { SearchSortField(it) }
 
     val result =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -278,7 +277,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
 
     val result =
-        accessionSearchService.search(
+        searchAccessions(
             facilityId,
             fields,
             criteria = FieldNode(bagNumberField, listOf("A")),
@@ -312,8 +311,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
 
     val result =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -347,8 +345,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
 
     val result =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -382,8 +379,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val sortOrder = fields.map { SearchSortField(it, SearchDirection.Descending) }
 
     val result =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -414,7 +410,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf("2", "3000"), SearchFilterType.Range)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -432,7 +428,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf(null, "3"), SearchFilterType.Range)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -448,7 +444,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf("2", null), SearchFilterType.Range)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -465,9 +461,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(treesCollectedFromField)
     val searchNode = FieldNode(treesCollectedFromField, listOf(null, null), SearchFilterType.Range)
 
-    assertThrows<IllegalArgumentException> {
-      accessionSearchService.search(facilityId, fields, searchNode)
-    }
+    assertThrows<IllegalArgumentException> { searchAccessions(facilityId, fields, searchNode) }
   }
 
   @Test
@@ -478,7 +472,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(accessionNumberField, stateField)
     val searchNode = FieldNode(activeField, listOf("Inactive"))
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -503,8 +497,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val sortOrder = listOf(SearchSortField(targetStorageConditionField, SearchDirection.Descending))
 
     val result =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     val expected =
         SearchResults(
@@ -531,7 +524,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val searchNode = FieldNode(stateField, listOf("In Storage"))
     val fields = listOf(stateField)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -552,7 +545,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     val fields = listOf(targetStorageConditionField)
 
-    val result = accessionSearchService.search(facilityId, fields, criteria = NoConditionNode())
+    val result = searchAccessions(facilityId, fields, criteria = NoConditionNode())
 
     val expected =
         SearchResults(
@@ -591,7 +584,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(targetStorageConditionField)
     val searchNode = FieldNode(targetStorageConditionField, listOf("Freezer", null))
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -625,7 +618,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(storageNotesField, listOf("matching", null), SearchFilterType.Fuzzy)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -647,7 +640,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(storageNotesField, listOf("matc"), SearchFilterType.Fuzzy)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
@@ -664,7 +657,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(storageNotesField, listOf("G"), SearchFilterType.Fuzzy)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
@@ -681,7 +674,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val searchNode =
         FieldNode(storageNotesField, listOf("some matching Notes"), SearchFilterType.Exact)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
@@ -710,7 +703,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val expected =
         SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     assertEquals(expected, result)
   }
@@ -732,7 +725,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val expected =
         SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     assertEquals(expected, result)
   }
@@ -742,9 +735,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(totalGramsField, listOf("1000 baseballs"))
 
-    assertThrows<IllegalArgumentException> {
-      accessionSearchService.search(facilityId, fields, searchNode)
-    }
+    assertThrows<IllegalArgumentException> { searchAccessions(facilityId, fields, searchNode) }
   }
 
   @Test
@@ -756,7 +747,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             listOf(checkedInTimeString.replace("Z", ".000+00:00")),
             SearchFilterType.Exact)
 
-    val result = accessionSearchService.search(facilityId, fields, searchNode)
+    val result = searchAccessions(facilityId, fields, searchNode)
 
     val expected =
         SearchResults(
@@ -788,7 +779,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         )
 
     val firstPage =
-        accessionSearchService.search(
+        searchAccessions(
             facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder, limit = 1)
     assertEquals(expectedFirstPageResults, firstPage.results)
     // We just care that we get a cursor, not what it is specifically
@@ -808,7 +799,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             cursor = null)
 
     val secondPage =
-        accessionSearchService.search(
+        searchAccessions(
             facilityId,
             fields,
             criteria = NoConditionNode(),
@@ -857,8 +848,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             cursor = null)
 
     val actual =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
     assertEquals(expected, actual)
   }
 
@@ -881,8 +871,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             cursor = null)
 
     val actual =
-        accessionSearchService.search(
-            facilityId, listOf(treesCollectedFromAlias), criteria = NoConditionNode())
+        searchAccessions(facilityId, listOf(treesCollectedFromAlias), criteria = NoConditionNode())
     assertEquals(expected, actual)
   }
 
@@ -897,7 +886,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             ),
             cursor = null)
 
-    val actual = accessionSearchService.search(facilityId, emptyList(), criteria = criteria)
+    val actual = searchAccessions(facilityId, emptyList(), criteria = criteria)
     assertEquals(expected, actual)
   }
 
@@ -914,7 +903,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             cursor = null)
 
     val actual =
-        accessionSearchService.search(
+        searchAccessions(
             facilityId, emptyList(), criteria = NoConditionNode(), sortOrder = sortOrder)
     assertEquals(expected, actual)
   }
@@ -1009,8 +998,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                 mapOf("id" to "$id", "accessionNumber" to "$value")
               },
               null)
-      val actual =
-          accessionSearchService.search(facilityId, listOf(accessionNumberField), searchNode)
+      val actual = searchAccessions(facilityId, listOf(accessionNumberField), searchNode)
 
       assertEquals(expected, actual)
     }
@@ -1245,7 +1233,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val searchNode = FieldNode(receivedDateField, listOf("2021-01-02"), SearchFilterType.Exact)
 
       val expected = SearchResults(listOf(mapOf("id" to "2", "accessionNumber" to "JAN2")), null)
-      val actual = accessionSearchService.search(facilityId, fields, searchNode)
+      val actual = searchAccessions(facilityId, fields, searchNode)
 
       assertEquals(expected, actual)
     }
@@ -1264,7 +1252,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf("id" to "1000", "accessionNumber" to "XYZ"),
               ),
               null)
-      val actual = accessionSearchService.search(facilityId, fields, searchNode)
+      val actual = searchAccessions(facilityId, fields, searchNode)
 
       assertEquals(expected, actual)
     }
@@ -1282,7 +1270,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf("id" to "2", "accessionNumber" to "JAN2"),
                   mapOf("id" to "3", "accessionNumber" to "JAN8")),
               null)
-      val actual = accessionSearchService.search(facilityId, fields, searchNode, sortOrder)
+      val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
       assertEquals(expected, actual)
     }
@@ -1295,7 +1283,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           FieldNode(receivedDateField, listOf("2021-01-07", null), SearchFilterType.Range)
 
       val expected = SearchResults(listOf(mapOf("id" to "3", "accessionNumber" to "JAN8")), null)
-      val actual = accessionSearchService.search(facilityId, fields, searchNode, sortOrder)
+      val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
       assertEquals(expected, actual)
     }
@@ -1313,7 +1301,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   mapOf("id" to "1", "accessionNumber" to "JAN1"),
                   mapOf("id" to "2", "accessionNumber" to "JAN2")),
               null)
-      val actual = accessionSearchService.search(facilityId, fields, searchNode, sortOrder)
+      val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
       assertEquals(expected, actual)
     }
@@ -1323,9 +1311,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(accessionNumberField)
       val searchNode = FieldNode(receivedDateField, listOf(null, null), SearchFilterType.Range)
 
-      assertThrows<IllegalArgumentException> {
-        accessionSearchService.search(facilityId, fields, searchNode)
-      }
+      assertThrows<IllegalArgumentException> { searchAccessions(facilityId, fields, searchNode) }
     }
 
     @Test
@@ -1333,9 +1319,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(accessionNumberField)
       val searchNode = FieldNode(receivedDateField, listOf("NOT_A_DATE"), SearchFilterType.Exact)
 
-      assertThrows<IllegalArgumentException> {
-        accessionSearchService.search(facilityId, fields, searchNode)
-      }
+      assertThrows<IllegalArgumentException> { searchAccessions(facilityId, fields, searchNode) }
     }
   }
 
@@ -1888,8 +1872,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             cursor = null)
 
     val actual =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     assertEquals(expected, actual)
   }
@@ -1904,8 +1887,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     val expected = SearchResults(emptyList(), cursor = null)
 
     val actual =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     assertEquals(expected, actual)
   }
@@ -1941,8 +1923,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             cursor = null)
 
     val actual =
-        accessionSearchService.search(
-            facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     assertEquals(expected, actual)
   }
@@ -2317,7 +2298,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val sortOrder = fields.map { SearchSortField(it) }
 
       val result =
-          accessionSearchService.search(
+          searchAccessions(
               facilityId,
               fields,
               criteria = FieldNode(bagsNumberField, listOf("1")),
@@ -2342,7 +2323,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(bagsNumberField)
 
       val result =
-          accessionSearchService.search(
+          searchAccessions(
               facilityId,
               fields,
               criteria = NoConditionNode(),
@@ -2372,7 +2353,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(seedsGerminatedField)
 
       val result =
-          accessionSearchService.search(
+          searchAccessions(
               facilityId,
               fields,
               FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
@@ -2401,7 +2382,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(accessionNumberField)
 
       val result =
-          accessionSearchService.search(
+          searchAccessions(
               facilityId,
               fields,
               NoConditionNode(),
@@ -2422,7 +2403,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(seedsGerminatedField)
 
       val result =
-          accessionSearchService.search(
+          searchAccessions(
               facilityId,
               fields,
               FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range),
@@ -2453,7 +2434,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val fields = listOf(bagsNumberField)
 
       val result =
-          accessionSearchService.search(
+          searchAccessions(
               facilityId,
               fields,
               criteria = NoConditionNode(),
@@ -2491,7 +2472,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               remainingUnitsId = SeedQuantityUnits.Grams))
 
       val result =
-          accessionSearchService.search(
+          searchAccessions(
               facilityId,
               fields,
               criteria = NoConditionNode(),
@@ -2523,7 +2504,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `returns nested results for multiple fields`() {
       val fields = listOf(bagsNumberField, seedsGerminatedField, seedsSownField)
 
-      val result = accessionSearchService.search(facilityId, fields, criteria = NoConditionNode())
+      val result = searchAccessions(facilityId, fields, criteria = NoConditionNode())
 
       val expected =
           SearchResults(
@@ -2560,8 +2541,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val sortOrder = fields.map { SearchSortField(it) }
 
       val result =
-          accessionSearchService.search(
-              facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+          searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
       val expected =
           SearchResults(
@@ -2594,8 +2574,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val sortOrder = fields.map { SearchSortField(it) }
 
       val result =
-          accessionSearchService.search(
-              facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+          searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
       val expected =
           SearchResults(
@@ -2630,8 +2609,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `can sort on nested field that is not in list of query fields`() {
       val sortOrder = listOf(SearchSortField(bagsNumberField, SearchDirection.Descending))
 
-      val result =
-          accessionSearchService.search(facilityId, emptyList(), NoConditionNode(), sortOrder)
+      val result = searchAccessions(facilityId, emptyList(), NoConditionNode(), sortOrder)
 
       val expected =
           SearchResults(
@@ -2648,8 +2626,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `can sort on flattened field that is not in list of query fields`() {
       val sortOrder = listOf(SearchSortField(bagNumberFlattenedField, SearchDirection.Descending))
 
-      val result =
-          accessionSearchService.search(facilityId, emptyList(), NoConditionNode(), sortOrder)
+      val result = searchAccessions(facilityId, emptyList(), NoConditionNode(), sortOrder)
 
       val expected =
           SearchResults(
@@ -2674,7 +2651,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val sortOrder = fields.map { SearchSortField(it) }
       val criteria = FieldNode(seedsGerminatedField, listOf("1", "100"), SearchFilterType.Range)
 
-      val result = accessionSearchService.search(facilityId, fields, criteria, sortOrder)
+      val result = searchAccessions(facilityId, fields, criteria, sortOrder)
 
       val expected =
           SearchResults(
@@ -2715,7 +2692,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val sortOrder = listOf(SearchSortField(facilityNameField))
       val criteria = FieldNode(accessionNumberField, listOf("XYZ"))
 
-      val result = accessionSearchService.search(facilityId, fields, criteria, sortOrder)
+      val result = searchAccessions(facilityId, fields, criteria, sortOrder)
 
       val expected =
           SearchResults(
@@ -2737,7 +2714,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val sortOrder = listOf(SearchSortField(seedsSownViaResults))
       val criteria = FieldNode(accessionNumberField, listOf("XYZ"))
 
-      val result = accessionSearchService.search(facilityId, fields, criteria, sortOrder)
+      val result = searchAccessions(facilityId, fields, criteria, sortOrder)
 
       val expected =
           SearchResults(
@@ -2775,7 +2752,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                   FieldNode(seedsSownViaResults, listOf("15")),
                   FieldNode(seedsSownField, listOf("15"))))
 
-      val result = accessionSearchService.search(facilityId, fields, criteria, sortOrder)
+      val result = searchAccessions(facilityId, fields, criteria, sortOrder)
 
       val expected =
           SearchResults(
@@ -3124,5 +3101,24 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(expected, result)
     }
+  }
+
+  private fun searchAccessions(
+      facilityId: FacilityId,
+      fields: Collection<SearchFieldPath>,
+      criteria: SearchNode,
+      sortOrder: List<SearchSortField> = emptyList(),
+      cursor: String? = null,
+      limit: Int = Int.MAX_VALUE,
+  ): SearchResults {
+    val fullFieldList =
+        setOf(
+            accessionIdField,
+            accessionNumberField,
+        ) + fields.toSet()
+    val facilityIdCriterion = FieldNode(facilityIdField, listOf("$facilityId"))
+    val fullCriteria = AndNode(listOf(criteria, facilityIdCriterion))
+
+    return searchService.search(rootPrefix, fullFieldList, fullCriteria, sortOrder, cursor, limit)
   }
 }

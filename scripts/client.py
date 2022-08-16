@@ -91,12 +91,14 @@ class TerrawareClient:
     def delete_accession(self, accession_id):
         return self.delete(f"/api/v1/seedbank/accessions/{accession_id}")
 
-    def export_accession_search(self, payload):
+    def export_search(self, payload):
         """Return a response with a text/csv content type."""
-        return self.post_raw("/api/v1/seedbank/search/export", json=payload)
+        return self.post_raw(
+            "/api/v1/search", headers={"Accept": "text/csv"}, json=payload
+        )
 
-    def search_accessions(self, payload):
-        return self.post("/api/v1/seedbank/search", json=payload)["results"]
+    def search(self, payload):
+        return self.post("/api/v1/search", json=payload)["results"]
 
     def search_accession_values(self, payload):
         return self.post("/api/v1/seedbank/values", json=payload)["results"]

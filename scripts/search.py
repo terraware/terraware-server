@@ -7,30 +7,31 @@ import time
 from client import add_terraware_args, client_from_args
 
 
-def export_csv(criteria, client, filename):
-    r = client.export_accession_search(criteria)
+def export_csv(payload, client, filename):
+    r = client.export_search(payload)
     with open(filename, "wb") as f:
         f.write(r.content)
 
 
-def time_search(criteria, client):
+def time_search(payload, client):
     start_time = time.time()
-    client.search_accessions(criteria)
+    client.search(payload)
     end_time = time.time()
     return end_time - start_time
 
 
-def run_timing_test(criteria, client):
+def run_timing_test(payload, client):
     total_time = 0
     runs = 100
 
     for i in range(0, runs):
-        total_time += time_search(criteria, client)
+        total_time += time_search(payload, client)
 
     print(f"Did {runs} runs in {total_time} seconds, time per run {total_time / runs}")
 
 
-example_criteria = {
+example_payload = {
+    "prefix": "facilities.accessions",
     "fields": [
         "accessionNumber",
         "active",
@@ -96,13 +97,6 @@ def main():
         help="Show count of search results rather than raw results",
     )
     parser.add_argument(
-        "--facility",
-        "-f",
-        type=int,
-        help="Generate accessions at this facility. Default is to pick the first seed bank "
-        + "facility accessible by the user.",
-    )
-    parser.add_argument(
         "--print-example",
         action="store_true",
         help="Output an example search payload and exit",
@@ -128,38 +122,29 @@ def main():
     args = parser.parse_args()
 
     if args.print_example:
-        print(json.dumps(example_criteria, indent=2))
+        print(json.dumps(example_payload, indent=2))
         return
 
     if args.file is not None:
         if args.file == "-":
-            criteria = json.load(sys.stdin)
+            payload = json.load(sys.stdin)
         else:
             with open(args.file) as fp:
-                criteria = json.load(fp)
+                payload = json.load(fp)
     else:
-        criteria = example_criteria
+        payload = example_payload
 
     client = client_from_args(args)
 
-    if args.facility:
-        criteria["facilityId"] = args.facility
-    else:
-        criteria["facilityId"] = [
-            entry["id"]
-            for entry in client.list_facilities()
-            if entry["type"] == "Seed Bank"
-        ][0]
-
     if args.timing:
-        run_timing_test(criteria, client)
+        run_timing_test(payload, client)
     else:
         if args.values:
-            results = client.search_accession_values(criteria)
+            results = client.search_accession_values(payload)
         elif args.all_values:
-            results = client.search_all_accession_values(criteria)
+            results = client.search_all_accession_values(payload)
         else:
-            results = client.search_accessions(criteria)
+            results = client.search(payload)
 
         if args.count:
             print(f"Got {len(results)} results")
