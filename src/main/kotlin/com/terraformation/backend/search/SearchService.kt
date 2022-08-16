@@ -97,6 +97,21 @@ class SearchService(private val dslContext: DSLContext) {
     return SearchResults(results.take(limit), newCursor)
   }
 
+  /** Returns a [NestedQueryBuilder] configured to perform a particular search. */
+  fun buildQuery(
+      rootPrefix: SearchFieldPrefix,
+      fields: Collection<SearchFieldPath>,
+      criteria: SearchNode,
+      sortOrder: List<SearchSortField> = emptyList(),
+  ): NestedQueryBuilder {
+    val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
+    queryBuilder.addSelectFields(fields)
+    queryBuilder.addSortFields(sortOrder)
+    queryBuilder.addCondition(filterResults(rootPrefix, criteria))
+
+    return queryBuilder
+  }
+
   private fun runQuery(
       rootPrefix: SearchFieldPrefix,
       fields: Collection<SearchFieldPath>,
@@ -106,11 +121,7 @@ class SearchService(private val dslContext: DSLContext) {
       offset: Int = 0,
       distinct: Boolean,
   ): List<Map<String, Any>?> {
-    val queryBuilder = NestedQueryBuilder(dslContext, rootPrefix)
-    queryBuilder.addSelectFields(fields)
-    queryBuilder.addSortFields(sortOrder)
-    queryBuilder.addCondition(filterResults(rootPrefix, criteria))
-
+    val queryBuilder = buildQuery(rootPrefix, fields, criteria, sortOrder)
     val query = queryBuilder.toSelectQuery(distinct)
 
     // Query one more row than the limit so we can tell the client whether or not there are
