@@ -84,149 +84,6 @@ import org.springframework.security.access.AccessDeniedException
  * should make it clear what's going on.
  */
 class PermissionRequirements(private val user: TerrawareUser) {
-  fun createAccession(facilityId: FacilityId) {
-    if (!user.canCreateAccession(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create accessions in facility $facilityId")
-    }
-  }
-
-  fun readAccession(accessionId: AccessionId) {
-    if (!user.canReadAccession(accessionId)) {
-      throw AccessionNotFoundException(accessionId)
-    }
-  }
-
-  fun updateAccession(accessionId: AccessionId) {
-    if (!user.canUpdateAccession(accessionId)) {
-      readAccession(accessionId)
-      throw AccessDeniedException("No permission to update accession $accessionId")
-    }
-  }
-
-  fun deleteAccession(accessionId: AccessionId) {
-    if (!user.canDeleteAccession(accessionId)) {
-      readAccession(accessionId)
-      throw AccessDeniedException("No permission to delete accession $accessionId")
-    }
-  }
-
-  fun createAutomation(facilityId: FacilityId) {
-    if (!user.canCreateAutomation(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create automations in facility $facilityId")
-    }
-  }
-
-  fun listAutomations(facilityId: FacilityId) {
-    if (!user.canListAutomations(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to list automations in facility $facilityId")
-    }
-  }
-
-  fun readAutomation(automationId: AutomationId) {
-    if (!user.canReadAutomation(automationId)) {
-      throw AutomationNotFoundException(automationId)
-    }
-  }
-
-  fun updateAutomation(automationId: AutomationId) {
-    if (!user.canUpdateAutomation(automationId)) {
-      readAutomation(automationId)
-      throw AccessDeniedException("No permission to update automation $automationId")
-    }
-  }
-
-  fun deleteAutomation(automationId: AutomationId) {
-    if (!user.canDeleteAutomation(automationId)) {
-      readAutomation(automationId)
-      throw AccessDeniedException("No permission to delete automation $automationId")
-    }
-  }
-
-  fun triggerAutomation(automationId: AutomationId) {
-    if (!user.canTriggerAutomation(automationId)) {
-      readAutomation(automationId)
-      throw AccessDeniedException("No permission to trigger automation $automationId")
-    }
-  }
-
-  fun createFacility(organizationId: OrganizationId) {
-    if (!user.canCreateFacility(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to create facilities in organization $organizationId")
-    }
-  }
-
-  fun readFacility(facilityId: FacilityId) {
-    if (!user.canReadFacility(facilityId)) {
-      throw FacilityNotFoundException(facilityId)
-    }
-  }
-
-  fun updateFacility(facilityId: FacilityId) {
-    if (!user.canUpdateFacility(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to update facility $facilityId")
-    }
-  }
-
-  fun sendAlert(facilityId: FacilityId) {
-    if (!user.canSendAlert(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to send alerts for facility $facilityId")
-    }
-  }
-
-  fun createDevice(facilityId: FacilityId) {
-    if (!user.canCreateDevice(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create device in facility $facilityId")
-    }
-  }
-
-  fun readDevice(deviceId: DeviceId) {
-    if (!user.canReadDevice(deviceId)) {
-      throw DeviceNotFoundException(deviceId)
-    }
-  }
-
-  fun updateDevice(deviceId: DeviceId) {
-    if (!user.canUpdateDevice(deviceId)) {
-      readDevice(deviceId)
-      throw AccessDeniedException("No permission to update device $deviceId")
-    }
-  }
-
-  fun readOrganization(organizationId: OrganizationId) {
-    if (!user.canReadOrganization(organizationId)) {
-      throw OrganizationNotFoundException(organizationId)
-    }
-  }
-
-  fun updateOrganization(organizationId: OrganizationId) {
-    if (!user.canUpdateOrganization(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to update organization $organizationId")
-    }
-  }
-
-  fun deleteOrganization(organizationId: OrganizationId) {
-    if (!user.canDeleteOrganization(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to delete organization $organizationId")
-    }
-  }
-
-  fun listOrganizationUsers(organizationId: OrganizationId) {
-    if (!user.canListOrganizationUsers(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to list users in organization $organizationId")
-    }
-  }
-
   fun addOrganizationUser(organizationId: OrganizationId) {
     if (!user.canAddOrganizationUser(organizationId)) {
       readOrganization(organizationId)
@@ -234,19 +91,16 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun removeOrganizationUser(organizationId: OrganizationId, userId: UserId) {
-    if (!user.canRemoveOrganizationUser(organizationId, userId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to remove user $userId from organization $organizationId")
+  fun countNotifications() {
+    if (!user.canCountNotifications()) {
+      throw AccessDeniedException("No permission to count notifications")
     }
   }
 
-  fun setOrganizationUserRole(organizationId: OrganizationId, role: Role) {
-    if (!user.canSetOrganizationUserRole(organizationId, role)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to grant role to users in organization $organizationId")
+  fun createAccession(facilityId: FacilityId) {
+    if (!user.canCreateAccession(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to create accessions in facility $facilityId")
     }
   }
 
@@ -258,50 +112,45 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createAutomation(facilityId: FacilityId) {
+    if (!user.canCreateAutomation(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to create automations in facility $facilityId")
+    }
+  }
+
+  fun createDevice(facilityId: FacilityId) {
+    if (!user.canCreateDevice(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to create device in facility $facilityId")
+    }
+  }
+
+  fun createDeviceManager() {
+    if (!user.canCreateDeviceManager()) {
+      throw AccessDeniedException("No permission to create device manager")
+    }
+  }
+
+  fun createFacility(organizationId: OrganizationId) {
+    if (!user.canCreateFacility(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to create facilities in organization $organizationId")
+    }
+  }
+
+  fun createNotification(userId: UserId, organizationId: OrganizationId) {
+    readOrganization(organizationId)
+    if (!user.canCreateNotification(userId, organizationId)) {
+      throw AccessDeniedException("No permission to create notification")
+    }
+  }
+
   fun createSpecies(organizationId: OrganizationId) {
     if (!user.canCreateSpecies(organizationId)) {
       readOrganization(organizationId)
       throw AccessDeniedException("No permission to create species")
-    }
-  }
-
-  fun readSpecies(speciesId: SpeciesId) {
-    if (!user.canReadSpecies(speciesId)) {
-      throw SpeciesNotFoundException(speciesId)
-    }
-  }
-
-  fun deleteSpecies(speciesId: SpeciesId) {
-    if (!user.canDeleteSpecies(speciesId)) {
-      readSpecies(speciesId)
-      throw AccessDeniedException("No permission to delete species $speciesId")
-    }
-  }
-
-  fun updateSpecies(speciesId: SpeciesId) {
-    if (!user.canUpdateSpecies(speciesId)) {
-      readSpecies(speciesId)
-      throw AccessDeniedException("No permission to update species $speciesId")
-    }
-  }
-
-  fun createTimeseries(deviceId: DeviceId) {
-    if (!user.canCreateTimeseries(deviceId)) {
-      readDevice(deviceId)
-      throw AccessDeniedException("No permission to create timeseries on device $deviceId")
-    }
-  }
-
-  fun readTimeseries(deviceId: DeviceId) {
-    if (!user.canReadTimeseries(deviceId)) {
-      throw TimeseriesNotFoundException(deviceId)
-    }
-  }
-
-  fun updateTimeseries(deviceId: DeviceId) {
-    if (!user.canUpdateTimeseries(deviceId)) {
-      readTimeseries(deviceId)
-      throw AccessDeniedException("No permission to update timeseries on device $deviceId")
     }
   }
 
@@ -313,16 +162,38 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readStorageLocation(storageLocationId: StorageLocationId) {
-    if (!user.canReadStorageLocation(storageLocationId)) {
-      throw StorageLocationNotFoundException(storageLocationId)
+  fun createTimeseries(deviceId: DeviceId) {
+    if (!user.canCreateTimeseries(deviceId)) {
+      readDevice(deviceId)
+      throw AccessDeniedException("No permission to create timeseries on device $deviceId")
     }
   }
 
-  fun updateStorageLocation(storageLocationId: StorageLocationId) {
-    if (!user.canUpdateStorageLocation(storageLocationId)) {
-      readStorageLocation(storageLocationId)
-      throw AccessDeniedException("No permission to update storage location")
+  fun deleteAccession(accessionId: AccessionId) {
+    if (!user.canDeleteAccession(accessionId)) {
+      readAccession(accessionId)
+      throw AccessDeniedException("No permission to delete accession $accessionId")
+    }
+  }
+
+  fun deleteAutomation(automationId: AutomationId) {
+    if (!user.canDeleteAutomation(automationId)) {
+      readAutomation(automationId)
+      throw AccessDeniedException("No permission to delete automation $automationId")
+    }
+  }
+
+  fun deleteOrganization(organizationId: OrganizationId) {
+    if (!user.canDeleteOrganization(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to delete organization $organizationId")
+    }
+  }
+
+  fun deleteSpecies(speciesId: SpeciesId) {
+    if (!user.canDeleteSpecies(speciesId)) {
+      readSpecies(speciesId)
+      throw AccessDeniedException("No permission to delete species $speciesId")
     }
   }
 
@@ -333,15 +204,23 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteUpload(uploadId: UploadId) {
+    if (!user.canDeleteUpload(uploadId)) {
+      readUpload(uploadId)
+      throw AccessDeniedException("No permission to delete upload")
+    }
+  }
+
   fun importGlobalSpeciesData() {
     if (!user.canImportGlobalSpeciesData()) {
       throw AccessDeniedException("No permission to import global species data")
     }
   }
 
-  fun readNotification(notificationId: NotificationId) {
-    if (!user.canReadNotification(notificationId)) {
-      throw NotificationNotFoundException(notificationId)
+  fun listAutomations(facilityId: FacilityId) {
+    if (!user.canListAutomations(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to list automations in facility $facilityId")
     }
   }
 
@@ -354,9 +233,159 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun countNotifications() {
-    if (!user.canCountNotifications()) {
-      throw AccessDeniedException("No permission to count notifications")
+  fun listOrganizationUsers(organizationId: OrganizationId) {
+    if (!user.canListOrganizationUsers(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to list users in organization $organizationId")
+    }
+  }
+
+  fun readAccession(accessionId: AccessionId) {
+    if (!user.canReadAccession(accessionId)) {
+      throw AccessionNotFoundException(accessionId)
+    }
+  }
+
+  fun readAutomation(automationId: AutomationId) {
+    if (!user.canReadAutomation(automationId)) {
+      throw AutomationNotFoundException(automationId)
+    }
+  }
+
+  fun readDevice(deviceId: DeviceId) {
+    if (!user.canReadDevice(deviceId)) {
+      throw DeviceNotFoundException(deviceId)
+    }
+  }
+
+  fun readDeviceManager(deviceManagerId: DeviceManagerId) {
+    if (!user.canReadDeviceManager(deviceManagerId)) {
+      throw DeviceManagerNotFoundException(deviceManagerId)
+    }
+  }
+
+  fun readFacility(facilityId: FacilityId) {
+    if (!user.canReadFacility(facilityId)) {
+      throw FacilityNotFoundException(facilityId)
+    }
+  }
+
+  fun readNotification(notificationId: NotificationId) {
+    if (!user.canReadNotification(notificationId)) {
+      throw NotificationNotFoundException(notificationId)
+    }
+  }
+
+  fun readOrganization(organizationId: OrganizationId) {
+    if (!user.canReadOrganization(organizationId)) {
+      throw OrganizationNotFoundException(organizationId)
+    }
+  }
+
+  fun readSpecies(speciesId: SpeciesId) {
+    if (!user.canReadSpecies(speciesId)) {
+      throw SpeciesNotFoundException(speciesId)
+    }
+  }
+
+  fun readStorageLocation(storageLocationId: StorageLocationId) {
+    if (!user.canReadStorageLocation(storageLocationId)) {
+      throw StorageLocationNotFoundException(storageLocationId)
+    }
+  }
+
+  fun readTimeseries(deviceId: DeviceId) {
+    if (!user.canReadTimeseries(deviceId)) {
+      throw TimeseriesNotFoundException(deviceId)
+    }
+  }
+
+  fun readUpload(uploadId: UploadId) {
+    if (!user.canReadUpload(uploadId)) {
+      throw UploadNotFoundException(uploadId)
+    }
+  }
+
+  fun regenerateAllDeviceManagerTokens() {
+    if (!user.canRegenerateAllDeviceManagerTokens()) {
+      throw AccessDeniedException("No permission to regenerate all device manager tokens")
+    }
+  }
+
+  fun removeOrganizationUser(organizationId: OrganizationId, userId: UserId) {
+    if (!user.canRemoveOrganizationUser(organizationId, userId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to remove user $userId from organization $organizationId")
+    }
+  }
+
+  fun sendAlert(facilityId: FacilityId) {
+    if (!user.canSendAlert(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to send alerts for facility $facilityId")
+    }
+  }
+
+  fun setOrganizationUserRole(organizationId: OrganizationId, role: Role) {
+    if (!user.canSetOrganizationUserRole(organizationId, role)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException(
+          "No permission to grant role to users in organization $organizationId")
+    }
+  }
+
+  fun setTestClock() {
+    if (!user.canSetTestClock()) {
+      throw AccessDeniedException("No permission to set test clock")
+    }
+  }
+
+  fun triggerAutomation(automationId: AutomationId) {
+    if (!user.canTriggerAutomation(automationId)) {
+      readAutomation(automationId)
+      throw AccessDeniedException("No permission to trigger automation $automationId")
+    }
+  }
+
+  fun updateAccession(accessionId: AccessionId) {
+    if (!user.canUpdateAccession(accessionId)) {
+      readAccession(accessionId)
+      throw AccessDeniedException("No permission to update accession $accessionId")
+    }
+  }
+
+  fun updateAutomation(automationId: AutomationId) {
+    if (!user.canUpdateAutomation(automationId)) {
+      readAutomation(automationId)
+      throw AccessDeniedException("No permission to update automation $automationId")
+    }
+  }
+
+  fun updateDevice(deviceId: DeviceId) {
+    if (!user.canUpdateDevice(deviceId)) {
+      readDevice(deviceId)
+      throw AccessDeniedException("No permission to update device $deviceId")
+    }
+  }
+
+  fun updateDeviceManager(deviceManagerId: DeviceManagerId) {
+    if (!user.canUpdateDeviceManager(deviceManagerId)) {
+      readDeviceManager(deviceManagerId)
+      throw AccessDeniedException("No permission to update device manager")
+    }
+  }
+
+  fun updateDeviceTemplates() {
+    if (!user.canUpdateDeviceTemplates()) {
+      throw AccessDeniedException("No permission to update device templates")
+    }
+  }
+
+  fun updateFacility(facilityId: FacilityId) {
+    if (!user.canUpdateFacility(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to update facility $facilityId")
     }
   }
 
@@ -376,16 +405,31 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun createNotification(userId: UserId, organizationId: OrganizationId) {
-    readOrganization(organizationId)
-    if (!user.canCreateNotification(userId, organizationId)) {
-      throw AccessDeniedException("No permission to create notification")
+  fun updateOrganization(organizationId: OrganizationId) {
+    if (!user.canUpdateOrganization(organizationId)) {
+      readOrganization(organizationId)
+      throw AccessDeniedException("No permission to update organization $organizationId")
     }
   }
 
-  fun readUpload(uploadId: UploadId) {
-    if (!user.canReadUpload(uploadId)) {
-      throw UploadNotFoundException(uploadId)
+  fun updateSpecies(speciesId: SpeciesId) {
+    if (!user.canUpdateSpecies(speciesId)) {
+      readSpecies(speciesId)
+      throw AccessDeniedException("No permission to update species $speciesId")
+    }
+  }
+
+  fun updateStorageLocation(storageLocationId: StorageLocationId) {
+    if (!user.canUpdateStorageLocation(storageLocationId)) {
+      readStorageLocation(storageLocationId)
+      throw AccessDeniedException("No permission to update storage location")
+    }
+  }
+
+  fun updateTimeseries(deviceId: DeviceId) {
+    if (!user.canUpdateTimeseries(deviceId)) {
+      readTimeseries(deviceId)
+      throw AccessDeniedException("No permission to update timeseries on device $deviceId")
     }
   }
 
@@ -393,50 +437,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateUpload(uploadId)) {
       readUpload(uploadId)
       throw AccessDeniedException("No permission to update upload")
-    }
-  }
-
-  fun deleteUpload(uploadId: UploadId) {
-    if (!user.canDeleteUpload(uploadId)) {
-      readUpload(uploadId)
-      throw AccessDeniedException("No permission to delete upload")
-    }
-  }
-
-  fun updateDeviceTemplates() {
-    if (!user.canUpdateDeviceTemplates()) {
-      throw AccessDeniedException("No permission to update device templates")
-    }
-  }
-
-  fun createDeviceManager() {
-    if (!user.canCreateDeviceManager()) {
-      throw AccessDeniedException("No permission to create device manager")
-    }
-  }
-
-  fun readDeviceManager(deviceManagerId: DeviceManagerId) {
-    if (!user.canReadDeviceManager(deviceManagerId)) {
-      throw DeviceManagerNotFoundException(deviceManagerId)
-    }
-  }
-
-  fun updateDeviceManager(deviceManagerId: DeviceManagerId) {
-    if (!user.canUpdateDeviceManager(deviceManagerId)) {
-      readDeviceManager(deviceManagerId)
-      throw AccessDeniedException("No permission to update device manager")
-    }
-  }
-
-  fun setTestClock() {
-    if (!user.canSetTestClock()) {
-      throw AccessDeniedException("No permission to set test clock")
-    }
-  }
-
-  fun regenerateAllDeviceManagerTokens() {
-    if (!user.canRegenerateAllDeviceManagerTokens()) {
-      throw AccessDeniedException("No permission to regenerate all device manager tokens")
     }
   }
 }

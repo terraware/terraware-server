@@ -72,224 +72,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun createAccession() {
-    assertThrows<FacilityNotFoundException> { requirements.createAccession(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.createAccession(facilityId) }
-
-    grant { user.canCreateAccession(facilityId) }
-    requirements.createAccession(facilityId)
-  }
-
-  @Test
-  fun readAccession() {
-    assertThrows<AccessionNotFoundException> { requirements.readAccession(accessionId) }
-
-    grant { user.canReadAccession(accessionId) }
-    requirements.readAccession(accessionId)
-  }
-
-  @Test
-  fun updateAccession() {
-    assertThrows<AccessionNotFoundException> { requirements.updateAccession(accessionId) }
-
-    grant { user.canReadAccession(accessionId) }
-    assertThrows<AccessDeniedException> { requirements.updateAccession(accessionId) }
-
-    grant { user.canUpdateAccession(accessionId) }
-    requirements.updateAccession(accessionId)
-  }
-
-  @Test
-  fun deleteAccession() {
-    assertThrows<AccessionNotFoundException> { requirements.deleteAccession(accessionId) }
-
-    grant { user.canReadAccession(accessionId) }
-    assertThrows<AccessDeniedException> { requirements.deleteAccession(accessionId) }
-
-    grant { user.canDeleteAccession(accessionId) }
-    requirements.deleteAccession(accessionId)
-  }
-
-  @Test
-  fun createAutomation() {
-    assertThrows<FacilityNotFoundException> { requirements.createAutomation(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.createAutomation(facilityId) }
-
-    grant { user.canCreateAutomation(facilityId) }
-    requirements.createAutomation(facilityId)
-  }
-
-  @Test
-  fun listAutomations() {
-    assertThrows<FacilityNotFoundException> { requirements.listAutomations(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.listAutomations(facilityId) }
-
-    grant { user.canListAutomations(facilityId) }
-    requirements.listAutomations(facilityId)
-  }
-
-  @Test
-  fun readAutomation() {
-    assertThrows<AutomationNotFoundException> { requirements.readAutomation(automationId) }
-
-    grant { user.canReadAutomation(automationId) }
-    requirements.readAutomation(automationId)
-  }
-
-  @Test
-  fun updateAutomation() {
-    assertThrows<AutomationNotFoundException> { requirements.updateAutomation(automationId) }
-
-    grant { user.canReadAutomation(automationId) }
-    assertThrows<AccessDeniedException> { requirements.updateAutomation(automationId) }
-
-    grant { user.canUpdateAutomation(automationId) }
-    requirements.updateAutomation(automationId)
-  }
-
-  @Test
-  fun deleteAutomation() {
-    assertThrows<AutomationNotFoundException> { requirements.deleteAutomation(automationId) }
-
-    grant { user.canReadAutomation(automationId) }
-    assertThrows<AccessDeniedException> { requirements.deleteAutomation(automationId) }
-
-    grant { user.canDeleteAutomation(automationId) }
-    requirements.deleteAutomation(automationId)
-  }
-
-  @Test
-  fun triggerAutomation() {
-    assertThrows<AutomationNotFoundException> { requirements.triggerAutomation(automationId) }
-
-    grant { user.canReadAutomation(automationId) }
-    assertThrows<AccessDeniedException> { requirements.triggerAutomation(automationId) }
-
-    grant { user.canTriggerAutomation(automationId) }
-    requirements.triggerAutomation(automationId)
-  }
-
-  @Test
-  fun createFacility() {
-    assertThrows<OrganizationNotFoundException> { requirements.createFacility(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.createFacility(organizationId) }
-
-    grant { user.canCreateFacility(organizationId) }
-    requirements.createFacility(organizationId)
-  }
-
-  @Test
-  fun readFacility() {
-    assertThrows<FacilityNotFoundException> { requirements.readFacility(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    requirements.readFacility(facilityId)
-  }
-
-  @Test
-  fun updateFacility() {
-    assertThrows<FacilityNotFoundException> { requirements.updateFacility(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.updateFacility(facilityId) }
-
-    grant { user.canUpdateFacility(facilityId) }
-    requirements.updateFacility(facilityId)
-  }
-
-  @Test
-  fun sendAlert() {
-    assertThrows<FacilityNotFoundException> { requirements.sendAlert(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.sendAlert(facilityId) }
-
-    grant { user.canSendAlert(facilityId) }
-    requirements.sendAlert(facilityId)
-  }
-
-  @Test
-  fun createDevice() {
-    assertThrows<FacilityNotFoundException> { requirements.createDevice(facilityId) }
-
-    grant { user.canReadFacility(facilityId) }
-    assertThrows<AccessDeniedException> { requirements.createDevice(facilityId) }
-
-    grant { user.canCreateDevice(facilityId) }
-    requirements.createDevice(facilityId)
-  }
-
-  @Test
-  fun readDevice() {
-    assertThrows<DeviceNotFoundException> { requirements.readDevice(deviceId) }
-
-    grant { user.canReadDevice(deviceId) }
-    requirements.readDevice(deviceId)
-  }
-
-  @Test
-  fun updateDevice() {
-    assertThrows<DeviceNotFoundException> { requirements.updateDevice(deviceId) }
-
-    grant { user.canReadDevice(deviceId) }
-    assertThrows<AccessDeniedException> { requirements.updateDevice(deviceId) }
-
-    grant { user.canUpdateDevice(deviceId) }
-    requirements.updateDevice(deviceId)
-  }
-
-  @Test
-  fun readOrganization() {
-    assertThrows<OrganizationNotFoundException> { requirements.readOrganization(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    requirements.readOrganization(organizationId)
-  }
-
-  @Test
-  fun updateOrganization() {
-    assertThrows<OrganizationNotFoundException> { requirements.updateOrganization(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.updateOrganization(organizationId) }
-
-    grant { user.canUpdateOrganization(organizationId) }
-    requirements.updateOrganization(organizationId)
-  }
-
-  @Test
-  fun deleteOrganization() {
-    assertThrows<OrganizationNotFoundException> { requirements.deleteOrganization(organizationId) }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.deleteOrganization(organizationId) }
-
-    grant { user.canDeleteOrganization(organizationId) }
-    requirements.deleteOrganization(organizationId)
-  }
-
-  @Test
-  fun listOrganizationUsers() {
-    assertThrows<OrganizationNotFoundException> {
-      requirements.listOrganizationUsers(organizationId)
-    }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.listOrganizationUsers(organizationId) }
-
-    grant { user.canListOrganizationUsers(organizationId) }
-    requirements.listOrganizationUsers(organizationId)
-  }
-
-  @Test
   fun addOrganizationUser() {
     assertThrows<OrganizationNotFoundException> { requirements.addOrganizationUser(organizationId) }
 
@@ -301,33 +83,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun removeOrganizationUser() {
-    assertThrows<OrganizationNotFoundException> {
-      requirements.removeOrganizationUser(organizationId, userId)
-    }
+  fun createAccession() {
+    assertThrows<FacilityNotFoundException> { requirements.createAccession(facilityId) }
 
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> {
-      requirements.removeOrganizationUser(organizationId, userId)
-    }
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.createAccession(facilityId) }
 
-    grant { user.canRemoveOrganizationUser(organizationId, userId) }
-    requirements.removeOrganizationUser(organizationId, userId)
-  }
-
-  @Test
-  fun setOrganizationUserRole() {
-    assertThrows<OrganizationNotFoundException> {
-      requirements.setOrganizationUserRole(organizationId, role)
-    }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> {
-      requirements.setOrganizationUserRole(organizationId, role)
-    }
-
-    grant { user.canSetOrganizationUserRole(organizationId, role) }
-    requirements.setOrganizationUserRole(organizationId, role)
+    grant { user.canCreateAccession(facilityId) }
+    requirements.createAccession(facilityId)
   }
 
   @Test
@@ -342,6 +105,62 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun createAutomation() {
+    assertThrows<FacilityNotFoundException> { requirements.createAutomation(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.createAutomation(facilityId) }
+
+    grant { user.canCreateAutomation(facilityId) }
+    requirements.createAutomation(facilityId)
+  }
+
+  @Test
+  fun createDevice() {
+    assertThrows<FacilityNotFoundException> { requirements.createDevice(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.createDevice(facilityId) }
+
+    grant { user.canCreateDevice(facilityId) }
+    requirements.createDevice(facilityId)
+  }
+
+  @Test
+  fun createDeviceManager() {
+    assertThrows<AccessDeniedException> { requirements.createDeviceManager() }
+
+    grant { user.canCreateDeviceManager() }
+    requirements.createDeviceManager()
+  }
+
+  @Test
+  fun createFacility() {
+    assertThrows<OrganizationNotFoundException> { requirements.createFacility(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.createFacility(organizationId) }
+
+    grant { user.canCreateFacility(organizationId) }
+    requirements.createFacility(organizationId)
+  }
+
+  @Test
+  fun createNotification() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.createNotification(notificationUserId, organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> {
+      requirements.createNotification(notificationUserId, organizationId)
+    }
+
+    grant { user.canCreateNotification(notificationUserId, organizationId) }
+    requirements.createNotification(notificationUserId, organizationId)
+  }
+
+  @Test
   fun createSpecies() {
     assertThrows<OrganizationNotFoundException> { requirements.createSpecies(organizationId) }
 
@@ -350,47 +169,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canCreateSpecies(organizationId) }
     requirements.createSpecies(organizationId)
-  }
-
-  @Test
-  fun readSpecies() {
-    assertThrows<SpeciesNotFoundException> { requirements.readSpecies(speciesId) }
-
-    grant { user.canReadSpecies(speciesId) }
-    requirements.readSpecies(speciesId)
-  }
-
-  @Test
-  fun deleteSpecies() {
-    assertThrows<SpeciesNotFoundException> { requirements.deleteSpecies(speciesId) }
-
-    grant { user.canReadSpecies(speciesId) }
-    assertThrows<AccessDeniedException> { requirements.deleteSpecies(speciesId) }
-
-    grant { user.canDeleteSpecies(speciesId) }
-    requirements.deleteSpecies(speciesId)
-  }
-
-  @Test
-  fun updateSpecies() {
-    assertThrows<SpeciesNotFoundException> { requirements.updateSpecies(speciesId) }
-
-    grant { user.canReadSpecies(speciesId) }
-    assertThrows<AccessDeniedException> { requirements.updateSpecies(speciesId) }
-
-    grant { user.canUpdateSpecies(speciesId) }
-    requirements.updateSpecies(speciesId)
-  }
-
-  @Test
-  fun createTimeseries() {
-    assertThrows<DeviceNotFoundException> { requirements.createTimeseries(deviceId) }
-
-    grant { user.canReadDevice(deviceId) }
-    assertThrows<AccessDeniedException> { requirements.createTimeseries(deviceId) }
-
-    grant { user.canCreateTimeseries(deviceId) }
-    requirements.createTimeseries(deviceId)
   }
 
   @Test
@@ -405,13 +183,58 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun readStorageLocation() {
-    assertThrows<StorageLocationNotFoundException> {
-      requirements.readStorageLocation(storageLocationId)
-    }
+  fun createTimeseries() {
+    assertThrows<DeviceNotFoundException> { requirements.createTimeseries(deviceId) }
 
-    grant { user.canReadStorageLocation(storageLocationId) }
-    requirements.readStorageLocation(storageLocationId)
+    grant { user.canReadDevice(deviceId) }
+    assertThrows<AccessDeniedException> { requirements.createTimeseries(deviceId) }
+
+    grant { user.canCreateTimeseries(deviceId) }
+    requirements.createTimeseries(deviceId)
+  }
+
+  @Test
+  fun deleteAccession() {
+    assertThrows<AccessionNotFoundException> { requirements.deleteAccession(accessionId) }
+
+    grant { user.canReadAccession(accessionId) }
+    assertThrows<AccessDeniedException> { requirements.deleteAccession(accessionId) }
+
+    grant { user.canDeleteAccession(accessionId) }
+    requirements.deleteAccession(accessionId)
+  }
+
+  @Test
+  fun deleteAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.deleteAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    assertThrows<AccessDeniedException> { requirements.deleteAutomation(automationId) }
+
+    grant { user.canDeleteAutomation(automationId) }
+    requirements.deleteAutomation(automationId)
+  }
+
+  @Test
+  fun deleteOrganization() {
+    assertThrows<OrganizationNotFoundException> { requirements.deleteOrganization(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.deleteOrganization(organizationId) }
+
+    grant { user.canDeleteOrganization(organizationId) }
+    requirements.deleteOrganization(organizationId)
+  }
+
+  @Test
+  fun deleteSpecies() {
+    assertThrows<SpeciesNotFoundException> { requirements.deleteSpecies(speciesId) }
+
+    grant { user.canReadSpecies(speciesId) }
+    assertThrows<AccessDeniedException> { requirements.deleteSpecies(speciesId) }
+
+    grant { user.canDeleteSpecies(speciesId) }
+    requirements.deleteSpecies(speciesId)
   }
 
   @Test
@@ -428,16 +251,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun updateStorageLocation() {
-    assertThrows<StorageLocationNotFoundException> {
-      requirements.updateStorageLocation(storageLocationId)
-    }
+  fun deleteUpload() {
+    assertThrows<UploadNotFoundException> { requirements.deleteUpload(uploadId) }
 
-    grant { user.canReadStorageLocation(storageLocationId) }
-    assertThrows<AccessDeniedException> { requirements.updateStorageLocation(storageLocationId) }
+    grant { user.canReadUpload(uploadId) }
+    assertThrows<AccessDeniedException> { requirements.deleteUpload(uploadId) }
 
-    grant { user.canUpdateStorageLocation(storageLocationId) }
-    requirements.updateStorageLocation(storageLocationId)
+    grant { user.canDeleteUpload(uploadId) }
+    requirements.deleteUpload(uploadId)
   }
 
   @Test
@@ -449,18 +270,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun createNotification() {
-    assertThrows<OrganizationNotFoundException> {
-      requirements.createNotification(notificationUserId, organizationId)
-    }
+  fun listAutomations() {
+    assertThrows<FacilityNotFoundException> { requirements.listAutomations(facilityId) }
 
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> {
-      requirements.createNotification(notificationUserId, organizationId)
-    }
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.listAutomations(facilityId) }
 
-    grant { user.canCreateNotification(notificationUserId, organizationId) }
-    requirements.createNotification(notificationUserId, organizationId)
+    grant { user.canListAutomations(facilityId) }
+    requirements.listAutomations(facilityId)
   }
 
   @Test
@@ -483,6 +300,59 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun listOrganizationUsers() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.listOrganizationUsers(organizationId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.listOrganizationUsers(organizationId) }
+
+    grant { user.canListOrganizationUsers(organizationId) }
+    requirements.listOrganizationUsers(organizationId)
+  }
+
+  @Test
+  fun readAccession() {
+    assertThrows<AccessionNotFoundException> { requirements.readAccession(accessionId) }
+
+    grant { user.canReadAccession(accessionId) }
+    requirements.readAccession(accessionId)
+  }
+
+  @Test
+  fun readAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.readAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    requirements.readAutomation(automationId)
+  }
+
+  @Test
+  fun readDevice() {
+    assertThrows<DeviceNotFoundException> { requirements.readDevice(deviceId) }
+
+    grant { user.canReadDevice(deviceId) }
+    requirements.readDevice(deviceId)
+  }
+
+  @Test
+  fun readDeviceManager() {
+    assertThrows<DeviceManagerNotFoundException> { requirements.readDeviceManager(deviceManagerId) }
+
+    grant { user.canReadDeviceManager(deviceManagerId) }
+    requirements.readDeviceManager(deviceManagerId)
+  }
+
+  @Test
+  fun readFacility() {
+    assertThrows<FacilityNotFoundException> { requirements.readFacility(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    requirements.readFacility(facilityId)
+  }
+
+  @Test
   fun readNotification() {
     assertThrows<NotificationNotFoundException> { requirements.readNotification(notificationId) }
 
@@ -491,30 +361,29 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun updateNotification() {
-    assertThrows<NotificationNotFoundException> { requirements.updateNotification(notificationId) }
-
-    grant { user.canUpdateNotification(notificationId) }
-    requirements.updateNotification(notificationId)
-  }
-
-  @Test
-  fun updateGlobalNotifications() {
-    assertThrows<AccessDeniedException> { requirements.updateNotifications(null) }
-
-    grant { user.canUpdateNotifications(null) }
-    requirements.updateNotifications(null)
-  }
-
-  @Test
-  fun updateOrganizationNotifications() {
-    assertThrows<OrganizationNotFoundException> { requirements.updateNotifications(organizationId) }
+  fun readOrganization() {
+    assertThrows<OrganizationNotFoundException> { requirements.readOrganization(organizationId) }
 
     grant { user.canReadOrganization(organizationId) }
-    assertThrows<AccessDeniedException> { requirements.updateNotifications(organizationId) }
+    requirements.readOrganization(organizationId)
+  }
 
-    grant { user.canUpdateNotifications(organizationId) }
-    requirements.updateNotifications(organizationId)
+  @Test
+  fun readSpecies() {
+    assertThrows<SpeciesNotFoundException> { requirements.readSpecies(speciesId) }
+
+    grant { user.canReadSpecies(speciesId) }
+    requirements.readSpecies(speciesId)
+  }
+
+  @Test
+  fun readStorageLocation() {
+    assertThrows<StorageLocationNotFoundException> {
+      requirements.readStorageLocation(storageLocationId)
+    }
+
+    grant { user.canReadStorageLocation(storageLocationId) }
+    requirements.readStorageLocation(storageLocationId)
   }
 
   @Test
@@ -526,49 +395,104 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun updateUpload() {
-    assertThrows<UploadNotFoundException> { requirements.updateUpload(uploadId) }
+  fun regenerateAllDeviceManagerTokens() {
+    assertThrows<AccessDeniedException> { requirements.regenerateAllDeviceManagerTokens() }
 
-    grant { user.canReadUpload(uploadId) }
-    assertThrows<AccessDeniedException> { requirements.updateUpload(uploadId) }
-
-    grant { user.canUpdateUpload(uploadId) }
-    requirements.updateUpload(uploadId)
+    grant { user.canRegenerateAllDeviceManagerTokens() }
+    requirements.regenerateAllDeviceManagerTokens()
   }
 
   @Test
-  fun deleteUpload() {
-    assertThrows<UploadNotFoundException> { requirements.deleteUpload(uploadId) }
+  fun removeOrganizationUser() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.removeOrganizationUser(organizationId, userId)
+    }
 
-    grant { user.canReadUpload(uploadId) }
-    assertThrows<AccessDeniedException> { requirements.deleteUpload(uploadId) }
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> {
+      requirements.removeOrganizationUser(organizationId, userId)
+    }
 
-    grant { user.canDeleteUpload(uploadId) }
-    requirements.deleteUpload(uploadId)
+    grant { user.canRemoveOrganizationUser(organizationId, userId) }
+    requirements.removeOrganizationUser(organizationId, userId)
   }
 
   @Test
-  fun updateDeviceTemplates() {
-    assertThrows<AccessDeniedException> { requirements.updateDeviceTemplates() }
+  fun sendAlert() {
+    assertThrows<FacilityNotFoundException> { requirements.sendAlert(facilityId) }
 
-    grant { user.canUpdateDeviceTemplates() }
-    requirements.updateDeviceTemplates()
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.sendAlert(facilityId) }
+
+    grant { user.canSendAlert(facilityId) }
+    requirements.sendAlert(facilityId)
   }
 
   @Test
-  fun createDeviceManager() {
-    assertThrows<AccessDeniedException> { requirements.createDeviceManager() }
+  fun setOrganizationUserRole() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.setOrganizationUserRole(organizationId, role)
+    }
 
-    grant { user.canCreateDeviceManager() }
-    requirements.createDeviceManager()
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> {
+      requirements.setOrganizationUserRole(organizationId, role)
+    }
+
+    grant { user.canSetOrganizationUserRole(organizationId, role) }
+    requirements.setOrganizationUserRole(organizationId, role)
   }
 
   @Test
-  fun readDeviceManager() {
-    assertThrows<DeviceManagerNotFoundException> { requirements.readDeviceManager(deviceManagerId) }
+  fun setTestClock() {
+    assertThrows<AccessDeniedException> { requirements.setTestClock() }
 
-    grant { user.canReadDeviceManager(deviceManagerId) }
-    requirements.readDeviceManager(deviceManagerId)
+    grant { user.canSetTestClock() }
+    requirements.setTestClock()
+  }
+
+  @Test
+  fun triggerAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.triggerAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    assertThrows<AccessDeniedException> { requirements.triggerAutomation(automationId) }
+
+    grant { user.canTriggerAutomation(automationId) }
+    requirements.triggerAutomation(automationId)
+  }
+
+  @Test
+  fun updateAccession() {
+    assertThrows<AccessionNotFoundException> { requirements.updateAccession(accessionId) }
+
+    grant { user.canReadAccession(accessionId) }
+    assertThrows<AccessDeniedException> { requirements.updateAccession(accessionId) }
+
+    grant { user.canUpdateAccession(accessionId) }
+    requirements.updateAccession(accessionId)
+  }
+
+  @Test
+  fun updateAutomation() {
+    assertThrows<AutomationNotFoundException> { requirements.updateAutomation(automationId) }
+
+    grant { user.canReadAutomation(automationId) }
+    assertThrows<AccessDeniedException> { requirements.updateAutomation(automationId) }
+
+    grant { user.canUpdateAutomation(automationId) }
+    requirements.updateAutomation(automationId)
+  }
+
+  @Test
+  fun updateDevice() {
+    assertThrows<DeviceNotFoundException> { requirements.updateDevice(deviceId) }
+
+    grant { user.canReadDevice(deviceId) }
+    assertThrows<AccessDeniedException> { requirements.updateDevice(deviceId) }
+
+    grant { user.canUpdateDevice(deviceId) }
+    requirements.updateDevice(deviceId)
   }
 
   @Test
@@ -585,18 +509,96 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
-  fun setTestClock() {
-    assertThrows<AccessDeniedException> { requirements.setTestClock() }
+  fun updateDeviceTemplates() {
+    assertThrows<AccessDeniedException> { requirements.updateDeviceTemplates() }
 
-    grant { user.canSetTestClock() }
-    requirements.setTestClock()
+    grant { user.canUpdateDeviceTemplates() }
+    requirements.updateDeviceTemplates()
   }
 
   @Test
-  fun regenerateAllDeviceManagerTokens() {
-    assertThrows<AccessDeniedException> { requirements.regenerateAllDeviceManagerTokens() }
+  fun updateFacility() {
+    assertThrows<FacilityNotFoundException> { requirements.updateFacility(facilityId) }
 
-    grant { user.canRegenerateAllDeviceManagerTokens() }
-    requirements.regenerateAllDeviceManagerTokens()
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.updateFacility(facilityId) }
+
+    grant { user.canUpdateFacility(facilityId) }
+    requirements.updateFacility(facilityId)
   }
+
+  @Test
+  fun updateGlobalNotifications() {
+    assertThrows<AccessDeniedException> { requirements.updateNotifications(null) }
+
+    grant { user.canUpdateNotifications(null) }
+    requirements.updateNotifications(null)
+  }
+
+  @Test
+  fun updateNotification() {
+    assertThrows<NotificationNotFoundException> { requirements.updateNotification(notificationId) }
+
+    grant { user.canUpdateNotification(notificationId) }
+    requirements.updateNotification(notificationId)
+  }
+
+  @Test
+  fun updateOrganization() {
+    assertThrows<OrganizationNotFoundException> { requirements.updateOrganization(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.updateOrganization(organizationId) }
+
+    grant { user.canUpdateOrganization(organizationId) }
+    requirements.updateOrganization(organizationId)
+  }
+
+  @Test
+  fun updateOrganizationNotifications() {
+    assertThrows<OrganizationNotFoundException> { requirements.updateNotifications(organizationId) }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<AccessDeniedException> { requirements.updateNotifications(organizationId) }
+
+    grant { user.canUpdateNotifications(organizationId) }
+    requirements.updateNotifications(organizationId)
+  }
+
+  @Test
+  fun updateSpecies() {
+    assertThrows<SpeciesNotFoundException> { requirements.updateSpecies(speciesId) }
+
+    grant { user.canReadSpecies(speciesId) }
+    assertThrows<AccessDeniedException> { requirements.updateSpecies(speciesId) }
+
+    grant { user.canUpdateSpecies(speciesId) }
+    requirements.updateSpecies(speciesId)
+  }
+
+  @Test
+  fun updateStorageLocation() {
+    assertThrows<StorageLocationNotFoundException> {
+      requirements.updateStorageLocation(storageLocationId)
+    }
+
+    grant { user.canReadStorageLocation(storageLocationId) }
+    assertThrows<AccessDeniedException> { requirements.updateStorageLocation(storageLocationId) }
+
+    grant { user.canUpdateStorageLocation(storageLocationId) }
+    requirements.updateStorageLocation(storageLocationId)
+  }
+
+  @Test
+  fun updateUpload() {
+    assertThrows<UploadNotFoundException> { requirements.updateUpload(uploadId) }
+
+    grant { user.canReadUpload(uploadId) }
+    assertThrows<AccessDeniedException> { requirements.updateUpload(uploadId) }
+
+    grant { user.canUpdateUpload(uploadId) }
+    requirements.updateUpload(uploadId)
+  }
+
+  // When adding new permission tests, put them in alphabetical order.
 }
