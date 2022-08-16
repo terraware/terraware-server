@@ -4,6 +4,7 @@ organizations
 photos
 storage_conditions
 app_devices
+collection_sources
 growth_forms
 processing_methods
 seed_storage_behaviors

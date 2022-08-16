@@ -21,6 +21,7 @@ source_plant_origins
 seed_storage_behaviors
 processing_methods
 growth_forms
+collection_sources
 app_devices
 storage_conditions
 photos

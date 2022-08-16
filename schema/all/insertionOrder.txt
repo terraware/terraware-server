@@ -3,6 +3,7 @@ accession_states
 countries
 storage_conditions
 app_devices
+collection_sources
 device_template_categories
 facility_connection_states
 facility_types

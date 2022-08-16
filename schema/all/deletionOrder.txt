@@ -54,6 +54,7 @@ growth_forms
 facility_types
 facility_connection_states
 device_template_categories
+collection_sources
 app_devices
 storage_conditions
 countries
