@@ -28,11 +28,13 @@ import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
+import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
+import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -43,6 +45,8 @@ import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.Record1
+import org.jooq.Select
 import org.jooq.conf.ParamType
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DSL
@@ -901,91 +905,90 @@ class AccessionStore(
     return AccessionState.activeValues.associateWith { totals[it] ?: 0 }
   }
 
-  fun countSeedsRemaining(facilityId: FacilityId): Long {
+  fun getSummaryStatistics(facilityId: FacilityId): AccessionSummaryStatistics {
     requirePermissions { readFacility(facilityId) }
 
-    return countSeedsRemaining(ACCESSIONS.FACILITY_ID.eq(facilityId))
+    return getSummaryStatistics(
+        DSL.select(ACCESSIONS.ID)
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
-  fun countSeedsRemaining(organizationId: OrganizationId): Long {
+  fun getSummaryStatistics(organizationId: OrganizationId): AccessionSummaryStatistics {
     requirePermissions { readOrganization(organizationId) }
 
-    return countSeedsRemaining(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+    return getSummaryStatistics(
+        DSL.select(ACCESSIONS.ID)
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
+            .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues)))
   }
 
-  fun estimateSeedsRemainingByWeight(facilityId: FacilityId): Long {
-    requirePermissions { readFacility(facilityId) }
+  fun getSummaryStatistics(subquery: Select<Record1<AccessionId?>>): AccessionSummaryStatistics {
+    val seedsRemaining =
+        DSL.sum(
+            DSL.case_()
+                .`when`(
+                    ACCESSIONS.REMAINING_UNITS_ID.eq(SeedQuantityUnits.Seeds),
+                    ACCESSIONS.REMAINING_QUANTITY)
+                .else_(BigDecimal.ZERO))
 
-    return estimateSeedsRemainingByWeight(ACCESSIONS.FACILITY_ID.eq(facilityId))
-  }
+    val estimatedSeedsRemaining =
+        DSL.sum(
+            DSL.case_()
+                .`when`(
+                    ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds)
+                        .and(ACCESSIONS.SUBSET_COUNT.isNotNull)
+                        .and(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNotNull)
+                        .and(ACCESSIONS.REMAINING_GRAMS.isNotNull),
+                    ACCESSIONS.REMAINING_GRAMS.div(ACCESSIONS.SUBSET_WEIGHT_GRAMS)
+                        .mul(ACCESSIONS.SUBSET_COUNT))
+                .else_(BigDecimal.ZERO))
 
-  fun estimateSeedsRemainingByWeight(organizationId: OrganizationId): Long {
-    requirePermissions { readOrganization(organizationId) }
+    val unknownQuantity =
+        DSL.sum(
+            DSL.case_()
+                .`when`(
+                    ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds)
+                        .and(
+                            ACCESSIONS.SUBSET_COUNT.isNull
+                                .or(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNull)
+                                .or(ACCESSIONS.REMAINING_GRAMS.isNull)),
+                    1)
+                .else_(0))
 
-    return estimateSeedsRemainingByWeight(
-        ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
-  }
+    val query =
+        dslContext
+            .select(
+                DSL.countDistinct(ACCESSIONS.ID),
+                DSL.countDistinct(ACCESSIONS.SPECIES_ID),
+                seedsRemaining,
+                estimatedSeedsRemaining,
+                unknownQuantity)
+            .from(ACCESSIONS)
+            .where(ACCESSIONS.ID.`in`(subquery))
 
-  fun countQuantityUnknown(facilityId: FacilityId): Int {
-    requirePermissions { readFacility(facilityId) }
+    val stats =
+        log.debugWithTiming("Summary statistics query: ${query.getSQL(ParamType.INLINED)}") {
+          query.fetchOne {
+              (
+                  accessions,
+                  species,
+                  subtotalBySeedCount,
+                  subtotalByWeightEstimate,
+                  unknownQuantityAccessions,
+              ) ->
+            AccessionSummaryStatistics(
+                accessions ?: 0,
+                species ?: 0,
+                subtotalBySeedCount ?: BigDecimal.ZERO,
+                subtotalByWeightEstimate ?: BigDecimal.ZERO,
+                unknownQuantityAccessions ?: BigDecimal.ZERO,
+            )
+          }
+        }
 
-    return countQuantityUnknown(ACCESSIONS.FACILITY_ID.eq(facilityId))
-  }
-
-  fun countQuantityUnknown(organizationId: OrganizationId): Int {
-    requirePermissions { readOrganization(organizationId) }
-
-    return countQuantityUnknown(ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId))
-  }
-
-  private fun countSeedsRemaining(condition: Condition): Long {
-    return dslContext
-        .select(DSL.sum(ACCESSIONS.REMAINING_QUANTITY))
-        .from(ACCESSIONS)
-        .where(condition)
-        .and(ACCESSIONS.REMAINING_UNITS_ID.eq(SeedQuantityUnits.Seeds))
-        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
-        .fetchOne()
-        ?.value1()
-        ?.toLong()
-        ?: 0
-  }
-
-  private fun estimateSeedsRemainingByWeight(condition: Condition): Long {
-    return dslContext
-        .select(
-            DSL.sum(
-                ACCESSIONS.REMAINING_GRAMS.div(ACCESSIONS.SUBSET_WEIGHT_GRAMS)
-                    .mul(ACCESSIONS.SUBSET_COUNT),
-            ),
-        )
-        .from(ACCESSIONS)
-        .where(condition)
-        .and(ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds))
-        .and(ACCESSIONS.SUBSET_COUNT.isNotNull)
-        .and(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNotNull)
-        .and(ACCESSIONS.REMAINING_GRAMS.isNotNull)
-        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
-        .fetchOne()
-        ?.value1()
-        ?.toLong()
-        ?: 0
-  }
-
-  private fun countQuantityUnknown(condition: Condition): Int {
-    return dslContext
-        .selectCount()
-        .from(ACCESSIONS)
-        .where(condition)
-        .and(ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds))
-        .and(
-            ACCESSIONS.SUBSET_COUNT.isNull
-                .or(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNull)
-                .or(ACCESSIONS.REMAINING_GRAMS.isNull),
-        )
-        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.activeValues))
-        .fetchOne()
-        ?.value1()
-        ?: 0
+    return stats ?: throw IllegalStateException("Unable to calculate statistics")
   }
 }

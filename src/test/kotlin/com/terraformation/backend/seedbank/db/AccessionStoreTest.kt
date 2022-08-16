@@ -69,6 +69,7 @@ import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.AccessionSource
+import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
@@ -96,6 +97,7 @@ import kotlin.reflect.full.declaredMemberProperties
 import org.jooq.Record
 import org.jooq.Sequence
 import org.jooq.Table
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -1991,7 +1993,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun countSeedsRemaining() {
+    fun `getSummaryStatistics counts seeds remaining`() {
       val otherOrganizationId = OrganizationId(2)
       val otherOrgFacilityId = FacilityId(4)
       val sameOrgFacilityId = FacilityId(5)
@@ -2013,7 +2015,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   processingMethodId = ProcessingMethod.Count,
                   remainingQuantity = BigDecimal(2),
                   remainingUnitsId = SeedQuantityUnits.Seeds,
-                  stateId = AccessionState.Processing,
+                  stateId = AccessionState.Processed,
               ),
               // Wrong facility
               AccessionsRow(
@@ -2060,26 +2062,28 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                     modifiedTime = clock.instant()))
           }
 
-      assertEquals(3, store.countSeedsRemaining(facilityId), "Seeds remaining for single facility")
-      assertEquals(7, store.countSeedsRemaining(organizationId), "Seeds remaining for organization")
+      assertEquals(
+          3,
+          store.getSummaryStatistics(facilityId).subtotalBySeedCount,
+          "Seeds remaining for single facility")
+      assertEquals(
+          7,
+          store.getSummaryStatistics(organizationId).subtotalBySeedCount,
+          "Seeds remaining for organization")
+      assertEquals(
+          1,
+          store
+              .getSummaryStatistics(
+                  DSL.select(ACCESSIONS.ID)
+                      .from(ACCESSIONS)
+                      .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+                      .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
+              .subtotalBySeedCount,
+          "Seeds remaining for subquery")
     }
 
     @Test
-    fun `countSeedsRemaining throws exception when no permission to read facility`() {
-      every { user.canReadFacility(facilityId) } returns false
-
-      assertThrows<FacilityNotFoundException> { store.countSeedsRemaining(facilityId) }
-    }
-
-    @Test
-    fun `countSeedsRemaining throws exception when no permission to read organization`() {
-      every { user.canReadOrganization(organizationId) } returns false
-
-      assertThrows<OrganizationNotFoundException> { store.countSeedsRemaining(organizationId) }
-    }
-
-    @Test
-    fun estimateSeedsRemainingByWeight() {
+    fun `getSummaryStatistics estimates seeds remaining by weight`() {
       val otherOrganizationId = OrganizationId(2)
       val otherOrgFacilityId = FacilityId(4)
       val sameOrgFacilityId = FacilityId(5)
@@ -2105,7 +2109,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   remainingGrams = BigDecimal(2000),
                   remainingQuantity = BigDecimal(2),
                   remainingUnitsId = SeedQuantityUnits.Kilograms,
-                  stateId = AccessionState.Processing,
+                  stateId = AccessionState.Processed,
                   subsetCount = 1,
                   subsetWeightGrams = BigDecimal(1000),
               ),
@@ -2182,32 +2186,26 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           3,
-          store.estimateSeedsRemainingByWeight(facilityId),
+          store.getSummaryStatistics(facilityId).subtotalByWeightEstimate,
           "Seeds remaining for single facility")
       assertEquals(
           7,
-          store.estimateSeedsRemainingByWeight(organizationId),
+          store.getSummaryStatistics(organizationId).subtotalByWeightEstimate,
           "Seeds remaining for organization")
+      assertEquals(
+          1,
+          store
+              .getSummaryStatistics(
+                  DSL.select(ACCESSIONS.ID)
+                      .from(ACCESSIONS)
+                      .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+                      .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
+              .subtotalByWeightEstimate,
+          "Seeds remaining for subquery")
     }
 
     @Test
-    fun `estimateSeedsRemainingByWeight throws exception when no permission to read facility`() {
-      every { user.canReadFacility(facilityId) } returns false
-
-      assertThrows<FacilityNotFoundException> { store.estimateSeedsRemainingByWeight(facilityId) }
-    }
-
-    @Test
-    fun `estimateSeedsRemainingByWeight throws exception when no permission to read organization`() {
-      every { user.canReadOrganization(organizationId) } returns false
-
-      assertThrows<OrganizationNotFoundException> {
-        store.estimateSeedsRemainingByWeight(organizationId)
-      }
-    }
-
-    @Test
-    fun countQuantityUnknown() {
+    fun `getSummaryStatistics counts unknown-quantity accessions`() {
       val otherOrganizationId = OrganizationId(2)
       val otherOrgFacilityId = FacilityId(4)
       val sameOrgFacilityId = FacilityId(5)
@@ -2242,7 +2240,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   remainingGrams = BigDecimal(1),
                   remainingQuantity = BigDecimal(1),
                   remainingUnitsId = SeedQuantityUnits.Grams,
-                  stateId = AccessionState.Processing,
+                  stateId = AccessionState.Processed,
                   subsetCount = 10,
               ),
               // Subset weight/count present
@@ -2294,26 +2292,122 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           3,
-          store.countQuantityUnknown(facilityId),
+          store.getSummaryStatistics(facilityId).unknownQuantityAccessions,
           "Accessions of unknown seed quantity for single facility")
       assertEquals(
           4,
-          store.countQuantityUnknown(organizationId),
+          store.getSummaryStatistics(organizationId).unknownQuantityAccessions,
           "Accessions of unknown seed quantity for organization")
+      assertEquals(
+          2,
+          store
+              .getSummaryStatistics(
+                  DSL.select(ACCESSIONS.ID)
+                      .from(ACCESSIONS)
+                      .where(ACCESSIONS.FACILITY_ID.eq(facilityId))
+                      .and(ACCESSIONS.STATE_ID.eq(AccessionState.Processing)))
+              .unknownQuantityAccessions,
+          "Accessions of unknown seed quantity for subquery")
     }
 
     @Test
-    fun `countQuantityUnknown throws exception when no permission to read facility`() {
+    fun `getSummaryStatistics counts species`() {
+      val otherOrganizationId = OrganizationId(2)
+      val otherOrgFacilityId = FacilityId(4)
+      val sameOrgFacilityId = FacilityId(5)
+      val speciesId = SpeciesId(1)
+      val sameOrgSpeciesId = SpeciesId(2)
+      val inactiveAccessionSpeciesId = SpeciesId(3)
+      val otherOrgSpeciesId = SpeciesId(4)
+
+      insertOrganization(otherOrganizationId)
+      insertFacility(otherOrgFacilityId, otherOrganizationId)
+      insertFacility(sameOrgFacilityId)
+      insertSpecies(speciesId)
+      insertSpecies(sameOrgSpeciesId)
+      insertSpecies(inactiveAccessionSpeciesId)
+      insertSpecies(otherOrgSpeciesId, organizationId = otherOrganizationId)
+
+      listOf(
+              // No species ID
+              AccessionsRow(
+                  facilityId = facilityId,
+                  stateId = AccessionState.Pending,
+              ),
+              // Species in org
+              AccessionsRow(
+                  facilityId = facilityId,
+                  speciesId = speciesId,
+                  stateId = AccessionState.Pending,
+              ),
+              // Second accession with same species at different facility
+              AccessionsRow(
+                  facilityId = sameOrgFacilityId,
+                  speciesId = speciesId,
+                  stateId = AccessionState.Pending,
+              ),
+              // Second species at different facility
+              AccessionsRow(
+                  facilityId = sameOrgFacilityId,
+                  speciesId = sameOrgSpeciesId,
+                  stateId = AccessionState.Pending,
+              ),
+              // Third species, but it is in a different organization
+              AccessionsRow(
+                  facilityId = otherOrgFacilityId,
+                  speciesId = otherOrgSpeciesId,
+                  stateId = AccessionState.Pending,
+              ),
+          )
+          .forEach {
+            accessionsDao.insert(
+                it.copy(
+                    createdBy = user.userId,
+                    createdTime = clock.instant(),
+                    modifiedBy = user.userId,
+                    modifiedTime = clock.instant()))
+          }
+
+      assertEquals(1, store.getSummaryStatistics(facilityId).species, "Species for single facility")
+      assertEquals(
+          2, store.getSummaryStatistics(organizationId).species, "Species for organization")
+      assertEquals(
+          1,
+          store
+              .getSummaryStatistics(
+                  DSL.select(ACCESSIONS.ID)
+                      .from(ACCESSIONS)
+                      .where(ACCESSIONS.FACILITY_ID.eq(facilityId)))
+              .species,
+          "Species for subquery")
+    }
+
+    @Test
+    fun `getSummaryStatistics returns all zeroes if no accessions match criteria`() {
+      val expected = AccessionSummaryStatistics(0, 0, 0, 0, 0, 0)
+
+      assertEquals(expected, store.getSummaryStatistics(facilityId), "No accessions in facility")
+      assertEquals(
+          expected, store.getSummaryStatistics(organizationId), "No accessions in organization")
+      assertEquals(
+          expected,
+          store.getSummaryStatistics(
+              DSL.select(ACCESSIONS.ID).from(ACCESSIONS).where(DSL.falseCondition())),
+          "No accessions for subquery")
+    }
+
+    @Test
+    fun `getSummaryStatistics throws exception when no permission to read facility`() {
       every { user.canReadFacility(facilityId) } returns false
 
-      assertThrows<FacilityNotFoundException> { store.countQuantityUnknown(facilityId) }
+      assertThrows<FacilityNotFoundException> { store.getSummaryStatistics(facilityId) }
     }
 
     @Test
-    fun `countQuantityUnknown throws exception when no permission to read organization`() {
+    fun `getSummaryStatistics throws exception when no permission to read organization`() {
       every { user.canReadOrganization(organizationId) } returns false
 
-      assertThrows<OrganizationNotFoundException> { store.countQuantityUnknown(organizationId) }
+      assertThrows<OrganizationNotFoundException> { store.getSummaryStatistics(organizationId) }
     }
   }
 
