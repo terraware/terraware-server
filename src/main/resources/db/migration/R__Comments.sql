@@ -30,6 +30,8 @@ COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the
 
 COMMENT ON TABLE bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
 
+COMMENT ON TABLE collection_sources IS '(Enum) Types of source plants that seeds can be collected from.';
+
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
 COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code.';
 COMMENT ON COLUMN countries.name IS 'Name of country in US English.';

@@ -11,6 +11,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.RareType
@@ -162,6 +163,13 @@ private fun backwardCompatibleCollectors(
   }
 }
 
+/** Maps a source plant origin to the equivalent collection source for backward compatibility. */
+private fun SourcePlantOrigin.toCollectionSource(): CollectionSource =
+    when (this) {
+      SourcePlantOrigin.Outplant -> CollectionSource.Cultivated
+      SourcePlantOrigin.Wild -> CollectionSource.Wild
+    }
+
 // Mark all fields as write-only in the schema
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayload(
@@ -173,6 +181,7 @@ data class CreateAccessionRequestPayload(
     val collectionSiteLandowner: String? = null,
     val collectionSiteName: String? = null,
     val collectionSiteNotes: String? = null,
+    val collectionSource: CollectionSource? = null,
     val collectors: List<String>? = null,
     val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
@@ -212,6 +221,7 @@ data class CreateAccessionRequestPayload(
         collectionSiteLandowner = landowner ?: collectionSiteLandowner,
         collectionSiteName = siteLocation ?: collectionSiteName,
         collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
+        collectionSource = sourcePlantOrigin?.toCollectionSource() ?: collectionSource,
         collectors =
             backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
         deviceInfo = deviceInfo?.toModel(),
@@ -241,6 +251,7 @@ data class UpdateAccessionRequestPayload(
     val collectionSiteLandowner: String? = null,
     val collectionSiteName: String? = null,
     val collectionSiteNotes: String? = null,
+    val collectionSource: CollectionSource? = null,
     val collectors: List<String>? = null,
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,
@@ -308,6 +319,7 @@ data class UpdateAccessionRequestPayload(
           collectionSiteLandowner = landowner ?: collectionSiteLandowner,
           collectionSiteName = siteLocation ?: collectionSiteName,
           collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
+          collectionSource = sourcePlantOrigin?.toCollectionSource() ?: collectionSource,
           collectors =
               backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
           cutTestSeedsCompromised = cutTestSeedsCompromised,
@@ -368,6 +380,7 @@ data class AccessionPayload(
     val collectionSiteLandowner: String? = null,
     val collectionSiteName: String? = null,
     val collectionSiteNotes: String? = null,
+    val collectionSource: CollectionSource? = null,
     @Schema(description = "Names of the people who collected the seeds.")
     val collectors: List<String>?,
     val deviceInfo: DeviceInfoPayload?,
@@ -491,6 +504,7 @@ data class AccessionPayload(
       model.collectionSiteLandowner,
       model.collectionSiteName,
       model.collectionSiteNotes,
+      model.collectionSource,
       model.collectors.orNull(),
       model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.cutTestSeedsCompromised,

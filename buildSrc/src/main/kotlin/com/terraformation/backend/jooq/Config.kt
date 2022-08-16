@@ -21,6 +21,7 @@ val ENUM_TABLES =
                 "accessions\\.state_id",
                 ".*\\.accession_state_id",
                 "accession_state_history\\.(old|new)_state_id")),
+        EnumTable("collection_sources", ".*\\.collection_source_id"),
         EnumTable(
             "device_template_categories",
             listOf("device_templates\\.category_id"),

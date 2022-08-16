@@ -104,6 +104,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.COLLECTION_SITE_LANDOWNER),
         textField("collectionSiteName", "Collection site name", ACCESSIONS.COLLECTION_SITE_NAME),
         textField("collectionSiteNotes", "Collection site notes", ACCESSIONS.COLLECTION_SITE_NOTES),
+        enumField("collectionSource", "Collection source", ACCESSIONS.COLLECTION_SOURCE_ID),
         integerField(
             "cutTestSeedsCompromised",
             "Number of seeds compromised",

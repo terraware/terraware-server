@@ -129,6 +129,7 @@ class AccessionStore(
           collectionSiteLandowner = record[COLLECTION_SITE_LANDOWNER],
           collectionSiteName = record[COLLECTION_SITE_NAME],
           collectionSiteNotes = record[COLLECTION_SITE_NOTES],
+          collectionSource = record[COLLECTION_SOURCE_ID],
           collectors = record[collectorsField],
           cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
           cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
@@ -220,6 +221,7 @@ class AccessionStore(
                         .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
                         .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
                         .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
+                        .set(COLLECTION_SOURCE_ID, accession.collectionSource)
                         .set(CREATED_BY, currentUser().userId)
                         .set(CREATED_TIME, clock.instant())
                         .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
@@ -368,6 +370,7 @@ class AccessionStore(
                 .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
                 .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
                 .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
+                .set(COLLECTION_SOURCE_ID, accession.collectionSource)
                 .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                 .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                 .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)

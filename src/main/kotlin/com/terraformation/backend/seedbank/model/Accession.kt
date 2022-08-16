@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.model
 import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.RareType
@@ -68,6 +69,7 @@ data class AccessionModel(
     val collectionSiteLandowner: String? = null,
     val collectionSiteName: String? = null,
     val collectionSiteNotes: String? = null,
+    val collectionSource: CollectionSource? = null,
     val collectors: List<String> = emptyList(),
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,

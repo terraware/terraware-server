@@ -10,6 +10,7 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.BagId
+import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -1431,6 +1432,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             collectionSiteLandowner = "landowner",
             collectionSiteName = "siteName",
             collectionSiteNotes = "siteNotes",
+            collectionSource = CollectionSource.Other,
             collectors = listOf("primaryCollector", "second1", "second2"),
             deviceInfo =
                 DeviceInfoPayload(
@@ -1504,6 +1506,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             collectionSiteLandowner = "landowner",
             collectionSiteName = "name",
             collectionSiteNotes = "notes",
+            collectionSource = CollectionSource.Reintroduced,
             collectors = listOf("primaryCollector", "second1", "second2"),
             cutTestSeedsCompromised = 20,
             cutTestSeedsEmpty = 21,
