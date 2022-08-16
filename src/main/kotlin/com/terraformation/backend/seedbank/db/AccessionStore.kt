@@ -31,6 +31,7 @@ import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.activeValues
+import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.time.toInstant
 import java.math.BigDecimal
@@ -141,6 +142,7 @@ class AccessionStore(
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
           id = accessionId,
+          isManualState = record[IS_MANUAL_STATE] ?: false,
           latestViabilityPercent = record[LATEST_VIABILITY_PERCENT],
           latestViabilityTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
           numberOfTrees = record[TREES_COLLECTED_FROM],
@@ -185,6 +187,21 @@ class AccessionStore(
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
+    val state =
+        when {
+          !accession.isManualState -> AccessionState.AwaitingCheckIn
+          accession.state == null -> AccessionState.AwaitingCheckIn
+          accession.state == AccessionState.UsedUp ->
+              throw IllegalArgumentException("Accessions cannot be set to Used Up at creation time")
+          accession.state.isV2Compatible -> accession.state
+          else -> throw IllegalArgumentException("Initial state must be v2-compatible")
+        }
+    val checkedInTime =
+        if (state != AccessionState.AwaitingCheckIn) {
+          clock.instant()
+        } else {
+          null
+        }
 
     requirePermissions { createAccession(facilityId) }
 
@@ -198,12 +215,12 @@ class AccessionStore(
             dslContext.transactionResult { _ ->
               val speciesId =
                   accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
-              val state = AccessionState.AwaitingCheckIn
 
               val accessionId =
                   with(ACCESSIONS) {
                     dslContext
                         .insertInto(ACCESSIONS)
+                        .set(CHECKED_IN_TIME, checkedInTime)
                         .set(COLLECTED_DATE, accession.collectedDate)
                         .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                         .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
@@ -224,6 +241,7 @@ class AccessionStore(
                         .set(FAMILY_NAME, accession.family)
                         .set(FIELD_NOTES, accession.fieldNotes)
                         .set(FOUNDER_ID, accession.founderId)
+                        .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
                         .set(
                             LATEST_GERMINATION_RECORDING_DATE,
                             accession.calculateLatestViabilityRecordingDate())
@@ -295,6 +313,10 @@ class AccessionStore(
     val organizationId =
         parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
 
+    if (updated.isManualState && updated.state?.isV2Compatible != true) {
+      throw IllegalArgumentException("State must be v2-compatible")
+    }
+
     if (facilityId != existingFacilityId &&
         organizationId != parentStore.getOrganizationId(existingFacilityId)) {
       throw FacilityNotFoundException(facilityId)
@@ -302,11 +324,21 @@ class AccessionStore(
 
     requirePermissions { updateAccession(accessionId) }
 
-    // Some fields are significant to the state machine, but can't be directly set on update; pull
-    // them from the existing accession for purposes of value calculation.
-    val updatedWithReadOnlyValues = updated.copy(checkedInTime = existing.checkedInTime)
+    // The checked-in time is needed as an input for non-manual state calculations, but can't be
+    // directly set on update. For manual states, a transition out of Awaiting Check-In should
+    // cause the checked-in time to get set so that if the accession is switched back to
+    // non-manual mode, we treat it as already having been checked in.
+    val checkedInTime =
+        when {
+          existing.checkedInTime != null -> existing.checkedInTime
+          !updated.isManualState -> null
+          updated.state == AccessionState.AwaitingCheckIn -> null
+          else -> clock.instant()
+        }
 
-    val accession = updatedWithReadOnlyValues.withCalculatedValues(clock, existing)
+    val updatedWithCheckedInTime = updated.copy(checkedInTime = checkedInTime)
+
+    val accession = updatedWithCheckedInTime.withCalculatedValues(clock, existing)
     val todayLocal = LocalDate.now(clock)
 
     if (accession.storageStartDate?.isAfter(todayLocal) == true) {
@@ -355,6 +387,7 @@ class AccessionStore(
           with(ACCESSIONS) {
             dslContext
                 .update(ACCESSIONS)
+                .set(CHECKED_IN_TIME, accession.checkedInTime)
                 .set(COLLECTED_DATE, accession.collectedDate)
                 .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                 .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
@@ -375,6 +408,7 @@ class AccessionStore(
                 .set(FAMILY_NAME, accession.family)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
+                .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
                 .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestViabilityTestDate)
                 .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
                 .set(MODIFIED_BY, currentUser().userId)

@@ -38,6 +38,7 @@ import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
+import com.terraformation.backend.seedbank.model.isV1Compatible
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -112,7 +113,18 @@ class AccessionsController(
   @Operation(summary = "Retrieve an existing accession.")
   fun read(@PathVariable("id") accessionId: AccessionId): GetAccessionResponsePayload {
     val accession = accessionStore.fetchOneById(accessionId)
-    return GetAccessionResponsePayload(AccessionPayload(accession, clock))
+
+    // If this accession was created/updated with manual state management, it might have a state
+    // that didn't exist in the v1 API. In that case, figure out what its calculated v1 state would
+    // have been, and return that.
+    val v1CompatibleAccession =
+        if (accession.state?.isV1Compatible == true) {
+          accession
+        } else {
+          accession.copy(isManualState = false).withCalculatedValues(clock)
+        }
+
+    return GetAccessionResponsePayload(AccessionPayload(v1CompatibleAccession, clock))
   }
 
   @ApiResponseSimpleSuccess

@@ -948,13 +948,15 @@ internal class AccessionModelTest {
       val tests = mutableListOf<DynamicTest>()
 
       fun AccessionModel.addStateTest(
-          expectedState: AccessionState,
-          displayName: String
+          modify: AccessionModel.() -> AccessionModel,
+          expectedState: AccessionState?,
+          displayName: String,
       ): AccessionModel {
+        val newModel = modify()
         tests.add(
-            DynamicTest.dynamicTest("$expectedState: $displayName") {
-              val transition = getStateTransition(this, clock)
-              if (expectedState == state) {
+            DynamicTest.dynamicTest("$state -> $expectedState: $displayName") {
+              val transition = getStateTransition(newModel, clock)
+              if (expectedState == null || expectedState == state) {
                 assertNull(transition, "Unexpected state transition $transition")
               } else {
                 assertEquals(
@@ -962,12 +964,11 @@ internal class AccessionModelTest {
               }
             })
 
-        return this
+        return newModel
       }
 
       // Start off with an accession that meets all the conditions, then peel them back in
-      // descending
-      // order of precedence to make sure the highest-precedence rule gets applied.
+      // descending order of precedence to make sure the highest-precedence rule gets applied.
       accession()
           .copy(
               nurseryStartDate = today,
@@ -982,27 +983,88 @@ internal class AccessionModelTest {
               total = seeds(10),
               checkedInTime = Instant.EPOCH,
           )
-          .addStateTest(AccessionState.Nursery, "Nursery start date entered")
-          .copy(nurseryStartDate = null)
-          .addStateTest(AccessionState.Withdrawn, "All seeds marked as withdrawn")
-          .copy(withdrawals = emptyList())
-          .addStateTest(AccessionState.InStorage, "Number of packets or location has been entered")
-          .copy(storageLocation = null)
-          .addStateTest(AccessionState.InStorage, "Number of packets or location has been entered")
-          .copy(storagePackets = null)
-          .addStateTest(AccessionState.InStorage, "Storage start date is today or earlier")
-          .copy(storageStartDate = tomorrow)
-          .addStateTest(AccessionState.Dried, "Drying end date is today or earlier")
-          .copy(dryingEndDate = tomorrow)
-          .addStateTest(AccessionState.Drying, "Drying start date is today or earlier")
-          .copy(dryingStartDate = tomorrow)
-          .addStateTest(AccessionState.Processed, "2 weeks have passed since processing start date")
-          .copy(processingStartDate = null)
-          .addStateTest(AccessionState.Processing, "Seed count/weight entered")
-          .copy(total = null, processingMethod = null)
-          .addStateTest(AccessionState.Pending, "Checked-in time entered")
-          .copy(checkedInTime = null)
-          .addStateTest(AccessionState.AwaitingCheckIn, "No state conditions applied")
+          .addStateTest({ this }, AccessionState.Nursery, "Nursery start date entered")
+          .addStateTest(
+              { copy(nurseryStartDate = null) },
+              AccessionState.Withdrawn,
+              "All seeds marked as withdrawn")
+          .addStateTest(
+              { copy(withdrawals = emptyList()) },
+              AccessionState.InStorage,
+              "Number of packets or location has been entered")
+          .addStateTest(
+              { copy(storageLocation = null) },
+              AccessionState.InStorage,
+              "Number of packets or location has been entered")
+          .addStateTest(
+              { copy(storagePackets = null) },
+              AccessionState.InStorage,
+              "Storage start date is today or earlier")
+          .addStateTest(
+              { copy(storageStartDate = tomorrow) },
+              AccessionState.Dried,
+              "Drying end date is today or earlier")
+          .addStateTest(
+              { copy(dryingEndDate = tomorrow) },
+              AccessionState.Drying,
+              "Drying start date is today or earlier")
+          .addStateTest(
+              { copy(dryingStartDate = tomorrow) },
+              AccessionState.Processed,
+              "2 weeks have passed since processing start date")
+          .addStateTest(
+              { copy(processingStartDate = null) },
+              AccessionState.Processing,
+              "Seed count/weight entered")
+          .addStateTest(
+              { copy(total = null, processingMethod = null) },
+              AccessionState.Pending,
+              "Checked-in time entered")
+          .addStateTest(
+              { copy(checkedInTime = null) },
+              AccessionState.AwaitingCheckIn,
+              "No state conditions applied")
+
+      // Make sure that manual state updates are applied except in specific cases, and that
+      // the correct automatic state updates happen even when the accession allows state editing.
+      accession()
+          .copy(
+              total = seeds(10),
+              withdrawals = listOf(withdrawal(seeds(10), remaining = seeds(0))),
+              processingMethod = ProcessingMethod.Count,
+              state = AccessionState.InStorage,
+              isManualState = true,
+          )
+          .addStateTest({ this }, AccessionState.UsedUp, "All seeds marked as withdrawn")
+          .addStateTest(
+              { copy(state = AccessionState.InStorage) },
+              AccessionState.UsedUp,
+              "Can't change from Used Up when no seeds remaining")
+          .copy(state = AccessionState.UsedUp)
+          .addStateTest(
+              { copy(withdrawals = emptyList()) },
+              AccessionState.InStorage,
+              "Accession is no longer used up")
+          .addStateTest(
+              { copy(state = AccessionState.Drying) },
+              AccessionState.Drying,
+              "Change from InStorage to Drying")
+          .addStateTest(
+              { copy(state = AccessionState.Cleaning) },
+              AccessionState.Cleaning,
+              "Change from Drying to Cleaning")
+          .addStateTest(
+              { copy(state = AccessionState.AwaitingProcessing) },
+              AccessionState.AwaitingProcessing,
+              "Change from Cleaning to Awaiting Processing")
+          .addStateTest(
+              { copy(state = AccessionState.AwaitingCheckIn) },
+              AccessionState.AwaitingProcessing,
+              "Can't change back to Awaiting Check-In")
+          .addStateTest(
+              { copy(state = AccessionState.InStorage) },
+              AccessionState.InStorage,
+              "Change from Awaiting Check-In to In Storage")
 
       return tests
     }
