@@ -1,11 +1,15 @@
 INSERT INTO accession_states (id, name, active)
-VALUES (10, 'Pending', TRUE),
+VALUES (5, 'Awaiting Check-In', TRUE),
+       (10, 'Pending', TRUE),
+       (15, 'Awaiting Processing', TRUE),
        (20, 'Processing', TRUE),
+       (25, 'Cleaning', TRUE),
        (30, 'Processed', TRUE),
        (40, 'Drying', TRUE),
        (50, 'Dried', TRUE),
        (60, 'In Storage', TRUE),
        (70, 'Withdrawn', FALSE),
+       (75, 'Used Up', FALSE),
        (80, 'Nursery', FALSE)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 

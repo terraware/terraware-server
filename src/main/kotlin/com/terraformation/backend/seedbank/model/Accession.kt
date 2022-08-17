@@ -26,13 +26,16 @@ enum class AccessionActive {
 fun AccessionState.toActiveEnum() =
     when (this) {
       AccessionState.Withdrawn,
-      AccessionState.Nursery -> AccessionActive.Inactive
+      AccessionState.Nursery,
+      AccessionState.UsedUp -> AccessionActive.Inactive
 
       // Don't use "else" here -- we want it to be a compile error if we add a state and forget
       // to specify whether it is active or inactive.
       AccessionState.AwaitingCheckIn,
+      AccessionState.AwaitingProcessing,
       AccessionState.Pending,
       AccessionState.Processing,
+      AccessionState.Cleaning,
       AccessionState.Processed,
       AccessionState.Drying,
       AccessionState.Dried,

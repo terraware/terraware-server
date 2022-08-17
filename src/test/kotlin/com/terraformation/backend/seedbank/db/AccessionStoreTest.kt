@@ -1914,6 +1914,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           mapOf(
               facilityId to
                   mapOf(
+                      AccessionState.AwaitingProcessing to 2,
                       AccessionState.Dried to 1,
                       AccessionState.Drying to 2,
                       AccessionState.InStorage to 3,
@@ -1921,6 +1922,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                       AccessionState.Pending to 4,
                       AccessionState.Processed to 1,
                       AccessionState.Processing to 2,
+                      AccessionState.UsedUp to 2,
                       AccessionState.Withdrawn to 1,
                   ),
               otherOrgFacilityId to
@@ -1930,6 +1932,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               sameOrgFacilityId to
                   mapOf(
+                      AccessionState.Cleaning to 2,
                       AccessionState.Dried to 1,
                       AccessionState.Processed to 2,
                       AccessionState.Withdrawn to 1,
@@ -1954,6 +1957,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           mapOf(
               AccessionState.AwaitingCheckIn to 0,
+              AccessionState.AwaitingProcessing to 2,
+              AccessionState.Cleaning to 0,
               AccessionState.Dried to 1,
               AccessionState.Drying to 2,
               AccessionState.InStorage to 3,
@@ -1967,6 +1972,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           mapOf(
               AccessionState.AwaitingCheckIn to 0,
+              AccessionState.AwaitingProcessing to 2,
+              AccessionState.Cleaning to 2,
               AccessionState.Dried to 2,
               AccessionState.Drying to 2,
               AccessionState.InStorage to 3,
