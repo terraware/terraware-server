@@ -20,7 +20,8 @@ val ENUM_TABLES =
             listOf(
                 "accessions\\.state_id",
                 ".*\\.accession_state_id",
-                "accession_state_history\\.(old|new)_state_id")),
+                "accession_state_history\\.(old|new)_state_id"),
+            additionalColumns = listOf(EnumTableColumnInfo("active", "Boolean"))),
         EnumTable("collection_sources", ".*\\.collection_source_id"),
         EnumTable(
             "device_template_categories",
@@ -67,7 +68,7 @@ val ENUM_TABLES =
         EnumTable(
             "upload_types",
             "uploads\\.type_id",
-            additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean", false))),
+            additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean"))),
         EnumTable("user_types", ".*\\.user_type_id"),
         EnumTable("viability_test_seed_types", "viability_tests\\.seed_type_id"),
         EnumTable("viability_test_substrates", "viability_tests\\.substrate_id"),

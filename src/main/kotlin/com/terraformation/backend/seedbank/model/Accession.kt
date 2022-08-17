@@ -18,38 +18,22 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 
+/**
+ * Enum representation of whether or not an accession is in an active state. We use this rather than
+ * a boolean because we want the API to have explicit "inactive" and "active" concepts.
+ */
 enum class AccessionActive {
   Inactive,
   Active
 }
 
-fun AccessionState.toActiveEnum() =
-    when (this) {
-      AccessionState.Withdrawn,
-      AccessionState.Nursery,
-      AccessionState.UsedUp -> AccessionActive.Inactive
-
-      // Don't use "else" here -- we want it to be a compile error if we add a state and forget
-      // to specify whether it is active or inactive.
-      AccessionState.AwaitingCheckIn,
-      AccessionState.AwaitingProcessing,
-      AccessionState.Pending,
-      AccessionState.Processing,
-      AccessionState.Cleaning,
-      AccessionState.Processed,
-      AccessionState.Drying,
-      AccessionState.Dried,
-      AccessionState.InStorage -> AccessionActive.Active
-    }
+fun AccessionState.toActiveEnum() = if (active) AccessionActive.Active else AccessionActive.Inactive
 
 /**
  * All the accession states that are considered active. This is effectively the backing field for
  * [AccessionState.Companion.activeValues], because extension properties don't have backing fields.
- * We derive this from [AccessionState.toActiveEnum] rather than the other way around so we get the
- * comprehensiveness check in the `when` expression in that function.
  */
-private val activeStates =
-    AccessionState.values().filter { it.toActiveEnum() == AccessionActive.Active }.toSet()
+private val activeStates = AccessionState.values().filter { it.active }.toSet()
 
 /** All the accession states that are considered active. */
 val AccessionState.Companion.activeValues: Set<AccessionState>
