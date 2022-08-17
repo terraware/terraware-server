@@ -122,14 +122,14 @@
 <text text-anchor="start" x="254" y="-720.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="223,-694 223,-712 365,-712 365,-694 223,-694"/>
 <text text-anchor="start" x="226" y="-700.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="223,-676 223,-694 268,-694 268,-676 223,-676"/>
-<polygon fill="none" stroke="black" points="223,-676 223,-694 268,-694 268,-676 223,-676"/>
+<polygon fill="#ffffff" stroke="none" points="223,-676 223,-694 264,-694 264,-676 223,-676"/>
+<polygon fill="none" stroke="black" points="223,-676 223,-694 264,-694 264,-676 223,-676"/>
 <text text-anchor="start" x="226" y="-682.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="268,-676 268,-694 326,-694 326,-676 268,-676"/>
-<polygon fill="none" stroke="black" points="268,-676 268,-694 326,-694 326,-676 268,-676"/>
-<text text-anchor="start" x="287" y="-682.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="326,-676 326,-694 365,-694 365,-676 326,-676"/>
-<polygon fill="none" stroke="black" points="326,-676 326,-694 365,-694 365,-676 326,-676"/>
+<polygon fill="#ffffff" stroke="none" points="264,-676 264,-694 327,-694 327,-676 264,-676"/>
+<polygon fill="none" stroke="black" points="264,-676 264,-694 327,-694 327,-676 264,-676"/>
+<text text-anchor="start" x="281" y="-682.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 rows</text>
+<polygon fill="#ffffff" stroke="none" points="327,-676 327,-694 365,-694 365,-676 327,-676"/>
+<polygon fill="none" stroke="black" points="327,-676 327,-694 365,-694 365,-676 327,-676"/>
 <text text-anchor="start" x="345" y="-682.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>

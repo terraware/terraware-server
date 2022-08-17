@@ -134,14 +134,14 @@
 <text text-anchor="start" x="500.5" y="-957.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="397.5,-931 397.5,-949 539.5,-949 539.5,-931 397.5,-931"/>
 <text text-anchor="start" x="400.5" y="-937.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="397.5,-913 397.5,-931 442.5,-931 442.5,-913 397.5,-913"/>
-<polygon fill="none" stroke="black" points="397.5,-913 397.5,-931 442.5,-931 442.5,-913 397.5,-913"/>
+<polygon fill="#ffffff" stroke="none" points="397.5,-913 397.5,-931 438.5,-931 438.5,-913 397.5,-913"/>
+<polygon fill="none" stroke="black" points="397.5,-913 397.5,-931 438.5,-931 438.5,-913 397.5,-913"/>
 <text text-anchor="start" x="400.5" y="-919.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="442.5,-913 442.5,-931 500.5,-931 500.5,-913 442.5,-913"/>
-<polygon fill="none" stroke="black" points="442.5,-913 442.5,-931 500.5,-931 500.5,-913 442.5,-913"/>
-<text text-anchor="start" x="461.5" y="-919.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="500.5,-913 500.5,-931 539.5,-931 539.5,-913 500.5,-913"/>
-<polygon fill="none" stroke="black" points="500.5,-913 500.5,-931 539.5,-931 539.5,-913 500.5,-913"/>
+<polygon fill="#ffffff" stroke="none" points="438.5,-913 438.5,-931 501.5,-931 501.5,-913 438.5,-913"/>
+<polygon fill="none" stroke="black" points="438.5,-913 438.5,-931 501.5,-931 501.5,-913 438.5,-913"/>
+<text text-anchor="start" x="455.5" y="-919.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 rows</text>
+<polygon fill="#ffffff" stroke="none" points="501.5,-913 501.5,-931 539.5,-931 539.5,-913 501.5,-913"/>
+<polygon fill="none" stroke="black" points="501.5,-913 501.5,-931 539.5,-931 539.5,-913 501.5,-913"/>
 <text text-anchor="start" x="519.5" y="-919.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>

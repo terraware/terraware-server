@@ -134,14 +134,14 @@
 <text text-anchor="start" x="999.5" y="-1349.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="896.5,-1323 896.5,-1341 1038.5,-1341 1038.5,-1323 896.5,-1323"/>
 <text text-anchor="start" x="899.5" y="-1329.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="896.5,-1305 896.5,-1323 941.5,-1323 941.5,-1305 896.5,-1305"/>
-<polygon fill="none" stroke="black" points="896.5,-1305 896.5,-1323 941.5,-1323 941.5,-1305 896.5,-1305"/>
+<polygon fill="#ffffff" stroke="none" points="896.5,-1305 896.5,-1323 937.5,-1323 937.5,-1305 896.5,-1305"/>
+<polygon fill="none" stroke="black" points="896.5,-1305 896.5,-1323 937.5,-1323 937.5,-1305 896.5,-1305"/>
 <text text-anchor="start" x="899.5" y="-1311.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="941.5,-1305 941.5,-1323 999.5,-1323 999.5,-1305 941.5,-1305"/>
-<polygon fill="none" stroke="black" points="941.5,-1305 941.5,-1323 999.5,-1323 999.5,-1305 941.5,-1305"/>
-<text text-anchor="start" x="960.5" y="-1311.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="999.5,-1305 999.5,-1323 1038.5,-1323 1038.5,-1305 999.5,-1305"/>
-<polygon fill="none" stroke="black" points="999.5,-1305 999.5,-1323 1038.5,-1323 1038.5,-1305 999.5,-1305"/>
+<polygon fill="#ffffff" stroke="none" points="937.5,-1305 937.5,-1323 1000.5,-1323 1000.5,-1305 937.5,-1305"/>
+<polygon fill="none" stroke="black" points="937.5,-1305 937.5,-1323 1000.5,-1323 1000.5,-1305 937.5,-1305"/>
+<text text-anchor="start" x="954.5" y="-1311.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 rows</text>
+<polygon fill="#ffffff" stroke="none" points="1000.5,-1305 1000.5,-1323 1038.5,-1323 1038.5,-1305 1000.5,-1305"/>
+<polygon fill="none" stroke="black" points="1000.5,-1305 1000.5,-1323 1038.5,-1323 1038.5,-1305 1000.5,-1305"/>
 <text text-anchor="start" x="1018.5" y="-1311.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>

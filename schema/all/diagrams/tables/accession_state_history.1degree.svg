@@ -167,14 +167,14 @@
 <text text-anchor="start" x="62" y="-637.425" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="31,-611.225 31,-629.225 173,-629.225 173,-611.225 31,-611.225"/>
 <text text-anchor="start" x="34" y="-617.425" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="31,-593.225 31,-611.225 76,-611.225 76,-593.225 31,-593.225"/>
-<polygon fill="none" stroke="black" points="31,-593.225 31,-611.225 76,-611.225 76,-593.225 31,-593.225"/>
+<polygon fill="#ffffff" stroke="none" points="31,-593.225 31,-611.225 72,-611.225 72,-593.225 31,-593.225"/>
+<polygon fill="none" stroke="black" points="31,-593.225 31,-611.225 72,-611.225 72,-593.225 31,-593.225"/>
 <text text-anchor="start" x="34" y="-599.425" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="76,-593.225 76,-611.225 134,-611.225 134,-593.225 76,-593.225"/>
-<polygon fill="none" stroke="black" points="76,-593.225 76,-611.225 134,-611.225 134,-593.225 76,-593.225"/>
-<text text-anchor="start" x="95" y="-599.425" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="134,-593.225 134,-611.225 173,-611.225 173,-593.225 134,-593.225"/>
-<polygon fill="none" stroke="black" points="134,-593.225 134,-611.225 173,-611.225 173,-593.225 134,-593.225"/>
+<polygon fill="#ffffff" stroke="none" points="72,-593.225 72,-611.225 135,-611.225 135,-593.225 72,-593.225"/>
+<polygon fill="none" stroke="black" points="72,-593.225 72,-611.225 135,-611.225 135,-593.225 72,-593.225"/>
+<text text-anchor="start" x="89" y="-599.425" font-family="Helvetica,sans-Serif" font-size="11.00">12 rows</text>
+<polygon fill="#ffffff" stroke="none" points="135,-593.225 135,-611.225 173,-611.225 173,-593.225 135,-593.225"/>
+<polygon fill="none" stroke="black" points="135,-593.225 135,-611.225 173,-611.225 173,-593.225 135,-593.225"/>
 <text text-anchor="start" x="153" y="-599.425" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>

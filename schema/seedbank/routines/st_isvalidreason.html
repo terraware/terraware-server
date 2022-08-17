@@ -85,7 +85,7 @@
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p><p>args: geomA - Returns text stating if a geometry is valid, or a reason for invalidity.</p></p>
+                            <p><p>args: geomA, flags - Returns text stating if a geometry is valid, or a reason for invalidity.</p></p>
                         </div>
                         <!-- /.box-body -->
                     </div>
@@ -140,7 +140,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">isvalidreason</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">&#10;&#9;SELECT CASE WHEN valid THEN &#39;Valid Geometry&#39; ELSE reason END FROM (&#10;&#9;&#9;SELECT (public.ST_isValidDetail($1, $2)).*&#10;&#9;) foo&#10;&#9;</textarea>
                         </div>
                     </div>
                 </section>

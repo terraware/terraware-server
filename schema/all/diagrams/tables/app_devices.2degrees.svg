@@ -134,14 +134,14 @@
 <text text-anchor="start" x="485.5" y="-1133.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="382.5,-1107 382.5,-1125 524.5,-1125 524.5,-1107 382.5,-1107"/>
 <text text-anchor="start" x="385.5" y="-1113.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="382.5,-1089 382.5,-1107 427.5,-1107 427.5,-1089 382.5,-1089"/>
-<polygon fill="none" stroke="black" points="382.5,-1089 382.5,-1107 427.5,-1107 427.5,-1089 382.5,-1089"/>
+<polygon fill="#ffffff" stroke="none" points="382.5,-1089 382.5,-1107 423.5,-1107 423.5,-1089 382.5,-1089"/>
+<polygon fill="none" stroke="black" points="382.5,-1089 382.5,-1107 423.5,-1107 423.5,-1089 382.5,-1089"/>
 <text text-anchor="start" x="385.5" y="-1095.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="427.5,-1089 427.5,-1107 485.5,-1107 485.5,-1089 427.5,-1089"/>
-<polygon fill="none" stroke="black" points="427.5,-1089 427.5,-1107 485.5,-1107 485.5,-1089 427.5,-1089"/>
-<text text-anchor="start" x="446.5" y="-1095.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="485.5,-1089 485.5,-1107 524.5,-1107 524.5,-1089 485.5,-1089"/>
-<polygon fill="none" stroke="black" points="485.5,-1089 485.5,-1107 524.5,-1107 524.5,-1089 485.5,-1089"/>
+<polygon fill="#ffffff" stroke="none" points="423.5,-1089 423.5,-1107 486.5,-1107 486.5,-1089 423.5,-1089"/>
+<polygon fill="none" stroke="black" points="423.5,-1089 423.5,-1107 486.5,-1107 486.5,-1089 423.5,-1089"/>
+<text text-anchor="start" x="440.5" y="-1095.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 rows</text>
+<polygon fill="#ffffff" stroke="none" points="486.5,-1089 486.5,-1107 524.5,-1107 524.5,-1089 486.5,-1089"/>
+<polygon fill="none" stroke="black" points="486.5,-1089 486.5,-1107 524.5,-1107 524.5,-1089 486.5,-1089"/>
 <text text-anchor="start" x="504.5" y="-1095.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
 </a>
 </g>
