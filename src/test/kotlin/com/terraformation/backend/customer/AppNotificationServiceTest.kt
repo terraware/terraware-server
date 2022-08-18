@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
@@ -91,7 +90,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     accessionStore =
         AccessionStore(
             dslContext,
-            AppDeviceStore(dslContext, clock),
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext),

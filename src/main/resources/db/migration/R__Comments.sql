@@ -41,6 +41,8 @@ COMMENT ON COLUMN country_subdivisions.code IS 'Full ISO-3166-2 subdivision code
 COMMENT ON COLUMN country_subdivisions.country_code IS 'ISO-3166 alpha-2 country code.';
 COMMENT ON COLUMN country_subdivisions.name IS 'Name of subdivision in US English.';
 
+COMMENT ON TABLE data_sources IS '(Enum) Original sources of data, e.g., manual entry via web app.';
+
 COMMENT ON TABLE device_managers IS 'Information about device managers. This is a combination of information from the Balena API and locally-generated values.';
 COMMENT ON COLUMN device_managers.balena_id IS 'Balena-assigned device identifier.';
 COMMENT ON COLUMN device_managers.balena_modified_time IS 'Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally.';

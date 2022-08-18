@@ -23,6 +23,7 @@ val ENUM_TABLES =
                 "accession_state_history\\.(old|new)_state_id"),
             additionalColumns = listOf(EnumTableColumnInfo("active", "Boolean"))),
         EnumTable("collection_sources", ".*\\.collection_source_id"),
+        EnumTable("data_sources", ".*\\.data_source_id"),
         EnumTable(
             "device_template_categories",
             listOf("device_templates\\.category_id"),
@@ -80,7 +81,6 @@ val ENUM_TABLES =
 val ID_WRAPPERS =
     listOf(
         IdWrapper("AccessionId", listOf("accessions\\.id", ".*\\.accession_id")),
-        IdWrapper("AppDeviceId", listOf("app_devices\\.id", ".*\\.app_device_id")),
         IdWrapper("AutomationId", listOf("automations\\.id")),
         IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
         IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),

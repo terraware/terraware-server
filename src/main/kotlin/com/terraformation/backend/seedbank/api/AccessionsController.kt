@@ -8,10 +8,10 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectionSource
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.RareType
@@ -33,7 +33,6 @@ import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
-import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
@@ -183,7 +182,6 @@ data class CreateAccessionRequestPayload(
     val collectionSiteNotes: String? = null,
     val collectionSource: CollectionSource? = null,
     val collectors: List<String>? = null,
-    val deviceInfo: DeviceInfoPayload? = null,
     val endangered: SpeciesEndangeredType? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
     val environmentalNotes: String? = null,
@@ -208,6 +206,7 @@ data class CreateAccessionRequestPayload(
     val secondaryCollectors: List<String>? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String? = null,
+    val source: DataSource? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
 ) {
@@ -224,7 +223,6 @@ data class CreateAccessionRequestPayload(
         collectionSource = sourcePlantOrigin?.toCollectionSource() ?: collectionSource,
         collectors =
             backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
-        deviceInfo = deviceInfo?.toModel(),
         endangered = endangered,
         facilityId = facilityId,
         family = family,
@@ -234,6 +232,7 @@ data class CreateAccessionRequestPayload(
         numberOfTrees = numberOfTrees,
         rare = rare,
         receivedDate = receivedDate,
+        source = source ?: DataSource.Web,
         sourcePlantOrigin = sourcePlantOrigin,
         species = species,
     )
@@ -383,7 +382,6 @@ data class AccessionPayload(
     val collectionSource: CollectionSource? = null,
     @Schema(description = "Names of the people who collected the seeds.")
     val collectors: List<String>?,
-    val deviceInfo: DeviceInfoPayload?,
     val cutTestSeedsCompromised: Int?,
     val cutTestSeedsEmpty: Int?,
     val cutTestSeedsFilled: Int?,
@@ -442,7 +440,7 @@ data class AccessionPayload(
         description =
             "Which application this accession originally came from. This is currently based on " +
                 "the presence of the deviceInfo field.")
-    val source: AccessionSource?,
+    val source: DataSource?,
     val sourcePlantOrigin: SourcePlantOrigin?,
     @Schema(
         description = "Scientific name of the species.",
@@ -506,7 +504,6 @@ data class AccessionPayload(
       model.collectionSiteNotes,
       model.collectionSource,
       model.collectors.orNull(),
-      model.deviceInfo?.let { DeviceInfoPayload(it) },
       model.cutTestSeedsCompromised,
       model.cutTestSeedsEmpty,
       model.cutTestSeedsFilled,
@@ -754,65 +751,6 @@ data class WithdrawalPayload(
           staffResponsible = staffResponsible,
           withdrawn = withdrawnQuantity?.toModel(),
       )
-}
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(
-    description =
-        "Details about the device and the application that created the accession. All these " +
-            "values are optional and most of them are platform-dependent.")
-data class DeviceInfoPayload(
-    @Schema(
-        description =
-            "Build number of application that is submitting the accession, e.g., from React Native getBuildId()")
-    val appBuild: String? = null,
-    @Schema(description = "Name of application", example = "Seed Collector")
-    val appName: String? = null,
-    @Schema(
-        description = "Brand of device, e.g., from React Native getBrand().", example = "Samsung")
-    val brand: String? = null,
-    @Schema(description = "Model of device hardware, e.g., from React Native getDeviceId().")
-    val model: String? = null,
-    @Schema(
-        description =
-            "Name the user has assigned to the device, e.g., from React Native getDeviceName().",
-        example = "Carlos's iPhone")
-    val name: String? = null,
-    @Schema(
-        description = "Type of operating system, e.g., from React Native getSystemName().",
-        example = "Android")
-    val osType: String? = null,
-    @Schema(
-        description = "Version of operating system, e.g., from React Native getSystemVersion().",
-        example = "7.1.1")
-    val osVersion: String? = null,
-    @Schema(
-        description =
-            "Unique identifier of the hardware device, e.g., from React Native getUniqueId().")
-    val uniqueId: String? = null,
-) {
-  constructor(
-      model: AppDeviceModel
-  ) : this(
-      model.appBuild,
-      model.appName,
-      model.brand,
-      model.model,
-      model.name,
-      model.osType,
-      model.osVersion,
-      model.uniqueId)
-
-  fun toModel() =
-      AppDeviceModel(
-          appBuild = appBuild,
-          appName = appName,
-          brand = brand,
-          model = model,
-          name = name,
-          osType = osType,
-          osVersion = osVersion,
-          uniqueId = uniqueId)
 }
 
 data class AccessionHistoryEntryPayload(

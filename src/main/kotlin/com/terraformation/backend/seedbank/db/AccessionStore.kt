@@ -1,12 +1,12 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.OrganizationId
@@ -27,7 +27,6 @@ import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
-import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
@@ -55,7 +54,6 @@ import org.springframework.dao.DuplicateKeyException
 @ManagedBean
 class AccessionStore(
     private val dslContext: DSLContext,
-    private val appDeviceStore: AppDeviceStore,
     private val bagStore: BagStore,
     private val geolocationStore: GeolocationStore,
     private val viabilityTestStore: ViabilityTestStore,
@@ -84,7 +82,6 @@ class AccessionStore(
     // or photos. We query those things using multisets, which causes the list of values to appear
     // as a single field in the top-level query. Each multiset field gets translated into a subquery
     // by jOOQ, so we can get everything in one database request.
-    val appDeviceField = appDeviceStore.appDeviceMultiset()
     val bagNumbersField = bagStore.bagNumbersMultiset()
     val geolocationsField = geolocationStore.geolocationsMultiset()
     val photoFilenamesField = photoFilenamesMultiset()
@@ -104,7 +101,6 @@ class AccessionStore(
                 ACCESSIONS.TARGET_STORAGE_CONDITION,
                 ACCESSIONS.PROCESSING_METHOD_ID,
                 ACCESSIONS.PROCESSING_STAFF_RESPONSIBLE,
-                appDeviceField,
                 bagNumbersField,
                 geolocationsField,
                 photoFilenamesField,
@@ -116,10 +112,6 @@ class AccessionStore(
             .where(ACCESSIONS.ID.eq(accessionId))
             .fetchOne()
             ?: throw AccessionNotFoundException(accessionId)
-
-    val source =
-        if (record[appDeviceField] != null) AccessionSource.SeedCollectorApp
-        else AccessionSource.Web
 
     return with(ACCESSIONS) {
       AccessionModel(
@@ -138,7 +130,6 @@ class AccessionStore(
           cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
           cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
           cutTestSeedsFilled = record[CUT_TEST_SEEDS_FILLED],
-          deviceInfo = record[appDeviceField],
           dryingEndDate = record[DRYING_END_DATE],
           dryingMoveDate = record[DRYING_MOVE_DATE],
           dryingStartDate = record[DRYING_START_DATE],
@@ -162,7 +153,7 @@ class AccessionStore(
           rare = record[RARE_TYPE_ID],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-          source = source,
+          source = record[DATA_SOURCE_ID] ?: DataSource.Web,
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
           species = record[species().SCIENTIFIC_NAME],
           speciesCommonName = record[species().COMMON_NAME],
@@ -205,8 +196,6 @@ class AccessionStore(
       try {
         val accessionId =
             dslContext.transactionResult { _ ->
-              val appDeviceId =
-                  accession.deviceInfo?.nullIfEmpty()?.let { appDeviceStore.getOrInsertDevice(it) }
               val speciesId =
                   accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
               val state = AccessionState.AwaitingCheckIn
@@ -215,7 +204,6 @@ class AccessionStore(
                   with(ACCESSIONS) {
                     dslContext
                         .insertInto(ACCESSIONS)
-                        .set(APP_DEVICE_ID, appDeviceId)
                         .set(COLLECTED_DATE, accession.collectedDate)
                         .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                         .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
@@ -231,6 +219,7 @@ class AccessionStore(
                         .set(CUT_TEST_SEEDS_COMPROMISED, accession.cutTestSeedsCompromised)
                         .set(CUT_TEST_SEEDS_EMPTY, accession.cutTestSeedsEmpty)
                         .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
+                        .set(DATA_SOURCE_ID, accession.source ?: DataSource.Web)
                         .set(FACILITY_ID, facilityId)
                         .set(FAMILY_NAME, accession.family)
                         .set(FIELD_NOTES, accession.fieldNotes)

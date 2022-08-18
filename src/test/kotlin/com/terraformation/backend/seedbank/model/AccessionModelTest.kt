@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.ViabilityTestId
@@ -65,7 +66,7 @@ internal class AccessionModelTest {
         dryingStartDate = dryingStartDate,
         processingMethod = processingMethod,
         processingStartDate = processingStartDate,
-        source = AccessionSource.Web,
+        source = DataSource.Web,
         state = state,
         storageLocation = storageLocation,
         storagePackets = storagePackets,

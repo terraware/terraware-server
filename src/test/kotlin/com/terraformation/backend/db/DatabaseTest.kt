@@ -9,7 +9,6 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.tables.daos.AccessionCollectorsDao
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
-import com.terraformation.backend.db.tables.daos.AppDevicesDao
 import com.terraformation.backend.db.tables.daos.AutomationsDao
 import com.terraformation.backend.db.tables.daos.BagsDao
 import com.terraformation.backend.db.tables.daos.DeviceManagersDao
@@ -192,7 +191,6 @@ abstract class DatabaseTest {
   protected val accessionCollectorsDao: AccessionCollectorsDao by lazyDao()
   protected val accessionPhotosDao: AccessionPhotosDao by lazyDao()
   protected val accessionsDao: AccessionsDao by lazyDao()
-  protected val appDevicesDao: AppDevicesDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
