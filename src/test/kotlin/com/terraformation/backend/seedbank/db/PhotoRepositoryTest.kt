@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.mercatorPoint
@@ -126,6 +127,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
             facilityId = facilityId,
             createdBy = user.userId,
             createdTime = clock.instant(),
+            dataSourceId = DataSource.Web,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             stateId = AccessionState.Pending))

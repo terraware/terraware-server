@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.FacilityConnectionState
@@ -114,6 +115,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
           .insertInto(ACCESSIONS)
           .set(CREATED_BY, user.userId)
           .set(CREATED_TIME, clock.instant())
+          .set(DATA_SOURCE_ID, DataSource.Web)
           .set(FACILITY_ID, facilityId)
           .set(MODIFIED_BY, user.userId)
           .set(MODIFIED_TIME, clock.instant())

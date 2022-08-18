@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.ViabilityTestId
@@ -61,6 +62,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
           .set(ID, accessionId)
           .set(CREATED_BY, user.userId)
           .set(CREATED_TIME, Instant.now())
+          .set(DATA_SOURCE_ID, DataSource.FileImport)
           .set(FACILITY_ID, facilityId)
           .set(MODIFIED_BY, user.userId)
           .set(MODIFIED_TIME, Instant.now())
