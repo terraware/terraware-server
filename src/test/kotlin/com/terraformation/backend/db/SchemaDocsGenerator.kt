@@ -124,7 +124,6 @@ class SchemaDocsGenerator : DatabaseTest() {
           "accession_state_history" to setOf(ALL, SEEDBANK),
           "accession_states" to setOf(ALL, SEEDBANK),
           "accessions" to setOf(ALL, SEEDBANK),
-          "app_devices" to setOf(ALL, SEEDBANK),
           "automations" to setOf(ALL, DEVICE),
           "bags" to setOf(ALL, SEEDBANK),
           "collection_sources" to setOf(ALL, SEEDBANK),
