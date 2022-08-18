@@ -1029,11 +1029,21 @@ internal class AccessionModelTest {
       // the correct automatic state updates happen even when the accession allows state editing.
       accession()
           .copy(
-              total = seeds(10),
-              withdrawals = listOf(withdrawal(seeds(10), remaining = seeds(0))),
+              isManualState = true,
+              state = AccessionState.AwaitingProcessing,
+          )
+          .addStateTest(
+              { copy(state = AccessionState.UsedUp) },
+              AccessionState.AwaitingProcessing,
+              "Can't change to Used Up when no quantity has been set")
+
+      accession()
+          .copy(
+              isManualState = true,
               processingMethod = ProcessingMethod.Count,
               state = AccessionState.InStorage,
-              isManualState = true,
+              total = seeds(10),
+              withdrawals = listOf(withdrawal(seeds(10), remaining = seeds(0))),
           )
           .addStateTest({ this }, AccessionState.UsedUp, "All seeds marked as withdrawn")
           .addStateTest(

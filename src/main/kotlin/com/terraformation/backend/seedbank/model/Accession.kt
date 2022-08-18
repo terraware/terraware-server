@@ -215,12 +215,16 @@ data class AccessionModel(
         alreadyCheckedIn && newModel.state == AccessionState.AwaitingCheckIn
     val addingSeedsWhenUsedUp =
         oldState == AccessionState.UsedUp && newState == AccessionState.UsedUp && !allSeedsWithdrawn
+    val changingToUsedUpWithoutWithdrawingAllSeeds =
+        newState == AccessionState.UsedUp && !allSeedsWithdrawn
 
     val desiredState: Pair<AccessionState, String> =
         when {
           allSeedsWithdrawn -> AccessionState.UsedUp to "All seeds marked as withdrawn"
           addingSeedsWhenUsedUp -> AccessionState.InStorage to "Accession is not used up"
           revertingToAwaitingCheckIn -> oldState to "Cannot revert to Awaiting Check-In"
+          changingToUsedUpWithoutWithdrawingAllSeeds ->
+              oldState to "Cannot change to Used Up before withdrawing all seeds"
           else -> newState to "Accession has been edited"
         }
 
