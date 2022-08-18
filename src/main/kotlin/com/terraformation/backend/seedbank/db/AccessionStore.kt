@@ -691,52 +691,6 @@ class AccessionStore(
     return countActive(condition)
   }
 
-  /**
-   * Returns the number of accessions that entered a state during a time period and are still in
-   * that state now.
-   *
-   * @param sinceAfter Only count accessions that changed to the state at or after this time.
-   * @param sinceBefore Only count accessions that changed to the state at or before this time.
-   */
-  fun countInState(
-      facilityId: FacilityId,
-      state: AccessionState,
-      sinceAfter: TemporalAccessor? = null,
-      sinceBefore: TemporalAccessor? = null,
-  ): Int {
-    requirePermissions { readFacility(facilityId) }
-
-    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
-    return countInState(condition, state, sinceAfter, sinceBefore)
-  }
-
-  /** Returns the number of accessions currently in a given state. */
-  fun countInState(facilityId: FacilityId, state: AccessionState): Int {
-    requirePermissions { readFacility(facilityId) }
-
-    val condition = ACCESSIONS.FACILITY_ID.eq(facilityId)
-    return countInState(condition, state)
-  }
-
-  fun countInState(
-      organizationId: OrganizationId,
-      state: AccessionState,
-      sinceAfter: TemporalAccessor? = null,
-      sinceBefore: TemporalAccessor? = null,
-  ): Int {
-    requirePermissions { readOrganization(organizationId) }
-
-    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
-    return countInState(condition, state, sinceAfter, sinceBefore)
-  }
-
-  fun countInState(organizationId: OrganizationId, state: AccessionState): Int {
-    requirePermissions { readOrganization(organizationId) }
-
-    val condition = ACCESSIONS.facilities().ORGANIZATION_ID.eq(organizationId)
-    return countInState(condition, state)
-  }
-
   fun countByState(facilityId: FacilityId): Map<AccessionState, Int> {
     requirePermissions { readFacility(facilityId) }
 
@@ -821,56 +775,6 @@ class AccessionStore(
     log.debug("Active accessions query ${query.getSQL(ParamType.INLINED)}")
 
     return log.debugWithTiming("Active accessions query") { query.fetchOne()?.value1() ?: 0 }
-  }
-
-  private fun countInState(
-      condition: Condition,
-      state: AccessionState,
-      sinceAfter: TemporalAccessor? = null,
-      sinceBefore: TemporalAccessor? = null,
-  ): Int {
-    val query =
-        dslContext
-            .select(DSL.count())
-            .from(
-                DSL.selectDistinct(ACCESSIONS.ID)
-                    .from(ACCESSION_STATE_HISTORY)
-                    .join(ACCESSIONS)
-                    .on(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(ACCESSIONS.ID))
-                    .where(condition)
-                    .and(ACCESSION_STATE_HISTORY.NEW_STATE_ID.eq(state))
-                    .and(ACCESSIONS.STATE_ID.eq(state))
-                    .apply {
-                      if (sinceAfter != null) {
-                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.ge(sinceAfter.toInstant()))
-                      }
-                    }
-                    .apply {
-                      if (sinceBefore != null) {
-                        and(ACCESSION_STATE_HISTORY.UPDATED_TIME.le(sinceBefore.toInstant()))
-                      }
-                    })
-
-    val sql = query.getSQL(ParamType.INLINED)
-
-    return log.debugWithTiming("Accession state count with time bounds: $sql") {
-      query.fetchOne()?.value1() ?: 0
-    }
-  }
-
-  private fun countInState(condition: Condition, state: AccessionState): Int {
-    val query =
-        dslContext
-            .select(DSL.count())
-            .from(ACCESSIONS)
-            .where(condition)
-            .and(ACCESSIONS.STATE_ID.eq(state))
-
-    val sql = query.getSQL(ParamType.INLINED)
-
-    return log.debugWithTiming("Accession state count query: $sql") {
-      query.fetchOne()?.value1() ?: 0
-    }
   }
 
   private fun countByState(condition: Condition): Map<AccessionState, Int> {
