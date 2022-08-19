@@ -39,6 +39,58 @@ private val activeStates = AccessionState.values().filter { it.active }.toSet()
 val AccessionState.Companion.activeValues: Set<AccessionState>
   get() = activeStates
 
+/** True if this accession state is supported in the v1 API. */
+val AccessionState.isV1Compatible: Boolean
+  get() =
+      when (this) {
+        AccessionState.AwaitingCheckIn,
+        AccessionState.Pending,
+        AccessionState.Processing,
+        AccessionState.Processed,
+        AccessionState.Drying,
+        AccessionState.Dried,
+        AccessionState.InStorage,
+        AccessionState.Withdrawn,
+        AccessionState.Nursery -> true
+        AccessionState.Cleaning,
+        AccessionState.AwaitingProcessing,
+        AccessionState.UsedUp -> false
+      }
+
+val AccessionState.isV2Compatible: Boolean
+  get() =
+      when (this) {
+        AccessionState.AwaitingCheckIn,
+        AccessionState.AwaitingProcessing,
+        AccessionState.Cleaning,
+        AccessionState.Drying,
+        AccessionState.InStorage,
+        AccessionState.UsedUp -> true
+        AccessionState.Pending,
+        AccessionState.Processing,
+        AccessionState.Withdrawn,
+        AccessionState.Nursery,
+        AccessionState.Processed,
+        AccessionState.Dried -> false
+      }
+
+/** Maps v1-only accession states to the corresponding v2-compatible states. */
+fun AccessionState.toV2Compatible(): AccessionState =
+    when (this) {
+      AccessionState.AwaitingCheckIn,
+      AccessionState.AwaitingProcessing,
+      AccessionState.Cleaning,
+      AccessionState.Drying,
+      AccessionState.InStorage,
+      AccessionState.UsedUp -> this
+      AccessionState.Pending -> AccessionState.AwaitingProcessing
+      AccessionState.Processing -> AccessionState.Cleaning
+      AccessionState.Processed -> AccessionState.Cleaning
+      AccessionState.Dried -> AccessionState.InStorage
+      AccessionState.Withdrawn -> AccessionState.UsedUp
+      AccessionState.Nursery -> AccessionState.UsedUp
+    }
+
 data class AccessionModel(
     val id: AccessionId? = null,
     val accessionNumber: String? = null,
@@ -66,6 +118,7 @@ data class AccessionModel(
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation> = emptySet(),
+    val isManualState: Boolean = false,
     val latestViabilityPercent: Int? = null,
     val latestViabilityTestDate: LocalDate? = null,
     val numberOfTrees: Int? = null,
@@ -106,6 +159,10 @@ data class AccessionModel(
     get() = state?.toActiveEnum()
 
   fun getStateTransition(newModel: AccessionModel, clock: Clock): AccessionStateTransition? {
+    if (newModel.isManualState) {
+      return getManualStateTransition(newModel, clock)
+    }
+
     val seedsRemaining = newModel.calculateRemaining(clock)
     val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
     val today = LocalDate.now(clock)
@@ -136,6 +193,39 @@ data class AccessionModel(
           seedCountPresent -> AccessionState.Processing to "Seed count/weight has been entered"
           checkedIn -> AccessionState.Pending to "Accession has been checked in"
           else -> AccessionState.AwaitingCheckIn to "No state conditions have been met"
+        }
+
+    return if (desiredState.first != state) {
+      AccessionStateTransition(desiredState.first, desiredState.second)
+    } else {
+      null
+    }
+  }
+
+  private fun getManualStateTransition(
+      newModel: AccessionModel,
+      clock: Clock
+  ): AccessionStateTransition? {
+    val seedsRemaining = newModel.calculateRemaining(clock)
+    val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
+    val oldState = state ?: AccessionState.AwaitingProcessing
+    val newState = newModel.state ?: AccessionState.AwaitingProcessing
+    val alreadyCheckedIn = oldState != AccessionState.AwaitingCheckIn
+    val revertingToAwaitingCheckIn =
+        alreadyCheckedIn && newModel.state == AccessionState.AwaitingCheckIn
+    val addingSeedsWhenUsedUp =
+        oldState == AccessionState.UsedUp && newState == AccessionState.UsedUp && !allSeedsWithdrawn
+    val changingToUsedUpWithoutWithdrawingAllSeeds =
+        newState == AccessionState.UsedUp && !allSeedsWithdrawn
+
+    val desiredState: Pair<AccessionState, String> =
+        when {
+          allSeedsWithdrawn -> AccessionState.UsedUp to "All seeds marked as withdrawn"
+          addingSeedsWhenUsedUp -> AccessionState.InStorage to "Accession is not used up"
+          revertingToAwaitingCheckIn -> oldState to "Cannot revert to Awaiting Check-In"
+          changingToUsedUpWithoutWithdrawingAllSeeds ->
+              oldState to "Cannot change to Used Up before withdrawing all seeds"
+          else -> newState to "Accession has been edited"
         }
 
     return if (desiredState.first != state) {

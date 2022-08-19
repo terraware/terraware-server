@@ -229,6 +229,48 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `create with isManualState allows initial state to be set`() {
+    store.create(
+        AccessionModel(
+            facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+
+    val row = accessionsDao.fetchOneById(AccessionId(1))!!
+    assertEquals(AccessionState.Cleaning, row.stateId)
+
+    // Remove this once we don't need v1 interoperability and checkedInTime goes away.
+    assertNotNull(row.checkedInTime, "Accession should be counted as checked in")
+  }
+
+  @Test
+  fun `create with isManualState defaults to Awaiting Check-In if not supplied by caller`() {
+    store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+
+    val row = accessionsDao.fetchOneById(AccessionId(1))!!
+    assertEquals(AccessionState.AwaitingCheckIn, row.stateId)
+
+    // Remove this once we don't need v1 interoperability and checkedInTime goes away.
+    assertNull(row.checkedInTime, "Accession should not be counted as checked in")
+  }
+
+  @Test
+  fun `create with isManualState does not allow setting state to Used Up`() {
+    assertThrows<IllegalArgumentException> {
+      store.create(
+          AccessionModel(
+              facilityId = facilityId, isManualState = true, state = AccessionState.UsedUp))
+    }
+  }
+
+  @Test
+  fun `create with isManualState does not allow v1-only states`() {
+    assertThrows<IllegalArgumentException> {
+      store.create(
+          AccessionModel(
+              facilityId = facilityId, isManualState = true, state = AccessionState.Dried))
+    }
+  }
+
+  @Test
   fun `existing rows are used for free-text fields that live in reference tables`() {
     val payload =
         AccessionModel(facilityId = facilityId, family = "test family", species = "test species")
@@ -928,6 +970,106 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             initial.copy(withdrawals = listOf(modifiedInitialWithdrawal, newWithdrawal)))
 
     assertEquals(initial.withdrawals, updated.withdrawals)
+  }
+
+  @Test
+  fun `update allows state to be modified if isManualState flag is set`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+
+    val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
+
+    assertEquals(AccessionState.Drying, updated.state)
+  }
+
+  @Test
+  fun `update allows setting isManualState on existing non-manual-state accession`() {
+    val initial = store.create(AccessionModel(facilityId = facilityId))
+
+    val updated =
+        store.updateAndFetch(initial.copy(isManualState = true, state = AccessionState.Drying))
+
+    assertEquals(AccessionState.Drying, updated.state)
+  }
+
+  @Test
+  fun `update computes new state if isManualState is cleared on existing manual-state accession`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+
+    val updated = store.updateAndFetch(initial.copy(isManualState = false))
+
+    assertEquals(AccessionState.Pending, updated.state)
+  }
+
+  @Test
+  fun `update allows state to be changed from Awaiting Check-In if isManualState flag is set`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId,
+                isManualState = true,
+                state = AccessionState.AwaitingCheckIn))
+
+    val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
+
+    assertEquals(AccessionState.Drying, updated.state)
+
+    // Remove this once we don't need v1 interoperability and checkedInTime goes away.
+    assertNotNull(
+        updated.checkedInTime, "Accession should be counted as checked in when state is changed")
+  }
+
+  @Test
+  fun `update does not allow state to be changed back to Awaiting Check-In`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+
+    val updated = store.updateAndFetch(initial.copy(state = AccessionState.AwaitingCheckIn))
+
+    assertEquals(AccessionState.Cleaning, updated.state)
+  }
+
+  @Test
+  fun `update forces state to Used Up if no seeds remaining`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId,
+                isManualState = true,
+                state = AccessionState.Cleaning,
+            ))
+
+    val updated =
+        store.updateAndFetch(
+            initial.copy(
+                processingMethod = ProcessingMethod.Count,
+                state = AccessionState.Drying,
+                total = seeds(1),
+                withdrawals =
+                    listOf(
+                        WithdrawalModel(
+                            date = LocalDate.EPOCH, withdrawn = seeds(1), remaining = seeds(0)))))
+
+    assertEquals(AccessionState.UsedUp, updated.state)
+  }
+
+  @Test
+  fun `update throws exception if caller tries to manually change to a v1-only state`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+
+    assertThrows<IllegalArgumentException> {
+      store.update(initial.copy(state = AccessionState.Dried))
+    }
   }
 
   @Test
