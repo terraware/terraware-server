@@ -169,6 +169,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="58" name="collection_source_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_collection_source_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="collection_sources"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="59" name="data_source_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="accessions_data_source_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="data_sources"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -310,6 +313,16 @@
          </index>
          <checkConstraint constraint="(((length(code) &gt;= 4) AND (length(code) &lt;= 6)))" name="country_subdivisions_code_length"/>
          <checkConstraint constraint="((substr(code, 1, 2) = country_code))" name="country_subdivisions_code_matches_country"/>
+      </table>
+      <table name="data_sources" numRows="3" remarks="(Enum) Original sources of data, e.g., manual entry via web app." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="data_source_id" foreignKey="accessions_data_source_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="data_sources_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
       </table>
       <table name="device_managers" numRows="0" remarks="Information about device managers. This is a combination of information from the Balena API and locally-generated values." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
@@ -1134,8 +1147,8 @@
       </table>
       <table name="viability_test_selections" numRows="0" remarks="Linking table that stores the currently-selected viability test for each accession." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="accession_id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
             <parent column="id" foreignKey="viability_test_selections_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accessions"/>
+            <parent column="accession_id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="viability_test_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>

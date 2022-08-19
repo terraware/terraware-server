@@ -13,7 +13,7 @@
 <!-- accessions -->
 <g id="node1" class="node"><title>accessions</title>
 <g id="a_node1"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
-<polygon fill="#ffffff" stroke="none" points="567,-351 567,-761 798,-761 798,-351 567,-351"/>
+<polygon fill="#ffffff" stroke="none" points="567,-329 567,-761 798,-761 798,-329 567,-329"/>
 <polygon fill="#f5f5f5" stroke="none" points="567.5,-739 567.5,-761 798.5,-761 798.5,-739 567.5,-739"/>
 <polygon fill="none" stroke="black" points="567.5,-739 567.5,-761 798.5,-761 798.5,-739 567.5,-739"/>
 <text text-anchor="start" x="572.5" y="-748.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accessions</text>
@@ -67,17 +67,20 @@
 <polygon fill="none" stroke="black" points="567.5,-387 567.5,-409 798.5,-409 798.5,-387 567.5,-387"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="572.5" y="-404"/>
 <text text-anchor="start" x="587.5" y="-395.2" font-family="Helvetica,sans-Serif" font-size="11.00">collection_source_id</text>
-<polygon fill="none" stroke="black" points="567.5,-369 567.5,-387 798.5,-387 798.5,-369 567.5,-369"/>
-<text text-anchor="start" x="570.5" y="-375.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="567.5,-351 567.5,-369 665.5,-369 665.5,-351 567.5,-351"/>
-<polygon fill="none" stroke="black" points="567.5,-351 567.5,-369 665.5,-369 665.5,-351 567.5,-351"/>
-<text text-anchor="start" x="570.5" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 12</text>
-<polygon fill="#ffffff" stroke="none" points="665.5,-351 665.5,-369 741.5,-369 741.5,-351 665.5,-351"/>
-<polygon fill="none" stroke="black" points="665.5,-351 665.5,-369 741.5,-369 741.5,-351 665.5,-351"/>
-<text text-anchor="start" x="702.5" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="741.5,-351 741.5,-369 798.5,-369 798.5,-351 741.5,-351"/>
-<polygon fill="none" stroke="black" points="741.5,-351 741.5,-369 798.5,-369 798.5,-351 741.5,-351"/>
-<text text-anchor="start" x="778.5" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<polygon fill="none" stroke="black" points="567.5,-365 567.5,-387 798.5,-387 798.5,-365 567.5,-365"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="572.5" y="-382"/>
+<text text-anchor="start" x="587.5" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">data_source_id</text>
+<polygon fill="none" stroke="black" points="567.5,-347 567.5,-365 798.5,-365 798.5,-347 567.5,-347"/>
+<text text-anchor="start" x="570.5" y="-353.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="567.5,-329 567.5,-347 665.5,-347 665.5,-329 567.5,-329"/>
+<polygon fill="none" stroke="black" points="567.5,-329 567.5,-347 665.5,-347 665.5,-329 567.5,-329"/>
+<text text-anchor="start" x="570.5" y="-335.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 13</text>
+<polygon fill="#ffffff" stroke="none" points="665.5,-329 665.5,-347 741.5,-347 741.5,-329 665.5,-329"/>
+<polygon fill="none" stroke="black" points="665.5,-329 665.5,-347 741.5,-347 741.5,-329 665.5,-329"/>
+<text text-anchor="start" x="702.5" y="-335.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="741.5,-329 741.5,-347 798.5,-347 798.5,-329 741.5,-329"/>
+<polygon fill="none" stroke="black" points="741.5,-329 741.5,-347 798.5,-347 798.5,-329 741.5,-329"/>
+<text text-anchor="start" x="778.5" y="-335.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>
 </g>
