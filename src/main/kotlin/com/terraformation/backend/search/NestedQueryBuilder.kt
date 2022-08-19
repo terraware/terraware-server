@@ -903,15 +903,20 @@ class NestedQueryBuilder(
    * query, any fields that the parent query will need to be able to use in its `ORDER BY` clause.
    */
   private fun getSelectFields(): List<Field<*>> {
-    val selectFields = scalarFields.values.flatMap { it.selectFields }
+    val fieldsInSelectOrder =
+        selectFieldPositions.keys
+            .sortedBy { selectFieldPositions[it] }
+            .flatMap { scalarOrSublistName ->
+              val scalarField = scalarFields[scalarOrSublistName]
+              if (scalarField != null) {
+                scalarField.selectFields
+              } else {
+                val multiset = getMultiset(scalarOrSublistName)
+                listOf(DSL.field(multiset.name, multiset.dataType))
+              }
+            }
 
-    val sublistFields =
-        sublistQueryBuilders.keys.map { sublistName ->
-          val multiset = getMultiset(sublistName)
-          DSL.field(multiset.name, multiset.dataType)
-        }
-
-    return selectFields + getSortFieldsToExposeToParent() + sublistFields
+    return fieldsInSelectOrder + getSortFieldsToExposeToParent()
   }
 
   /**
@@ -933,8 +938,7 @@ class NestedQueryBuilder(
           if (relativeName !in sortFieldPositions) {
             // If we are selecting and sorting on an enum field, the sortable value will be a CASE
             // expression. We need to make that available in the multiset so the parent can order
-            // by
-            // it.
+            // by it.
             val selectFieldIndex = selectFieldPositions[relativeName]
             val orderByField = field.orderByField
             if (selectFieldIndex != null &&
