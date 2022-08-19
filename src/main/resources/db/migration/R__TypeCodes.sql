@@ -11,13 +11,20 @@ VALUES (5, 'Awaiting Check-In', TRUE),
        (70, 'Withdrawn', FALSE),
        (75, 'Used Up', FALSE),
        (80, 'Nursery', FALSE)
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
+                               active = excluded.active;
 
 INSERT INTO collection_sources (id, name)
 VALUES (1, 'Wild'),
        (2, 'Reintroduced'),
        (3, 'Cultivated'),
        (4, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO data_sources (id, name)
+VALUES (1, 'Web'),
+       (2, 'Seed Collector App'),
+       (3, 'File Import')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO device_template_categories (id, name)

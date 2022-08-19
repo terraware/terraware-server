@@ -1,16 +1,14 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.db.AppDeviceStore
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.AppDeviceId
 import com.terraformation.backend.db.BagId
 import com.terraformation.backend.db.CollectionSource
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
@@ -48,7 +46,6 @@ import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
-import com.terraformation.backend.db.tables.references.APP_DEVICES
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
 import com.terraformation.backend.db.tables.references.SPECIES
@@ -57,7 +54,6 @@ import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayload
-import com.terraformation.backend.seedbank.api.DeviceInfoPayload
 import com.terraformation.backend.seedbank.api.SeedQuantityPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.ViabilityTestPayload
@@ -68,7 +64,6 @@ import com.terraformation.backend.seedbank.kilograms
 import com.terraformation.backend.seedbank.model.AccessionHistoryModel
 import com.terraformation.backend.seedbank.model.AccessionHistoryType
 import com.terraformation.backend.seedbank.model.AccessionModel
-import com.terraformation.backend.seedbank.model.AccessionSource
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
@@ -119,8 +114,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     get() = listOf(ACCESSION_NUMBER_SEQ)
 
   override val tablesToResetSequences: List<Table<out Record>>
-    get() =
-        listOf(ACCESSIONS, APP_DEVICES, BAGS, GEOLOCATIONS, VIABILITY_TESTS, SPECIES, WITHDRAWALS)
+    get() = listOf(ACCESSIONS, BAGS, GEOLOCATIONS, VIABILITY_TESTS, SPECIES, WITHDRAWALS)
 
   private val accessionNumbers =
       listOf(
@@ -167,7 +161,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     store =
         AccessionStore(
             dslContext,
-            AppDeviceStore(dslContext, clock),
             BagStore(dslContext),
             GeolocationStore(dslContext, clock),
             ViabilityTestStore(dslContext),
@@ -191,6 +184,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             facilityId = facilityId,
             createdBy = user.userId,
             createdTime = clock.instant(),
+            dataSourceId = DataSource.Web,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             number = accessionNumbers[0],
@@ -292,31 +286,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         initialBags.filter { it.bagNumber == "bag 2" },
         updatedBags.filter { it.bagNumber == "bag 2" },
         "Existing bag is not replaced")
-  }
-
-  @Test
-  fun `device info is inserted at creation`() {
-    val payload =
-        AccessionModel(deviceInfo = AppDeviceModel(model = "model"), facilityId = facilityId)
-    store.create(payload)
-
-    val appDevice = appDevicesDao.fetchOneById(AppDeviceId(1))
-    assertNotNull(appDevice, "Device row should have been inserted")
-    assertNull(appDevice?.appName, "App name should be null")
-    assertEquals(appDevice?.model, "model")
-  }
-
-  @Test
-  fun `device info is retrieved`() {
-    val payload =
-        AccessionModel(deviceInfo = AppDeviceModel(model = "model"), facilityId = facilityId)
-    val initial = store.create(payload)
-
-    val fetched = store.fetchOneById(initial.id!!)
-
-    assertNotNull(fetched.deviceInfo)
-    assertEquals("model", fetched.deviceInfo?.model)
-    assertEquals(AccessionSource.SeedCollectorApp, initial.source)
   }
 
   @Test
@@ -852,28 +821,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `absence of deviceInfo causes source to be set to Web`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
-    assertEquals(AccessionSource.Web, initial.source)
-  }
-
-  @Test
-  fun `update ignores received and collected date edits for accessions from seed collector app`() {
-    val initialCollectedDate = LocalDate.of(2021, 1, 1)
-    val initialReceivedDate = LocalDate.of(2021, 1, 2)
-    val updatedDate = LocalDate.of(2021, 2, 2)
-    val initial =
-        store.create(
-            AccessionModel(
-                collectedDate = initialCollectedDate,
-                deviceInfo = AppDeviceModel(appName = "collector"),
-                facilityId = facilityId,
-                receivedDate = initialReceivedDate))
-    val requested = initial.copy(collectedDate = updatedDate, receivedDate = updatedDate)
-
-    store.update(requested)
-
-    val actual = store.fetchOneById(initial.id!!)
-
-    assertEquals(initial, actual)
+    assertEquals(DataSource.Web, initial.source)
   }
 
   @Test
@@ -1436,16 +1384,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             collectionSiteNotes = "siteNotes",
             collectionSource = CollectionSource.Other,
             collectors = listOf("primaryCollector", "second1", "second2"),
-            deviceInfo =
-                DeviceInfoPayload(
-                    appBuild = "build",
-                    appName = "name",
-                    brand = "brand",
-                    model = "model",
-                    name = "name",
-                    osType = "osType",
-                    osVersion = "osVersion",
-                    uniqueId = "uniqueId"),
             endangered = SpeciesEndangeredType.Unsure,
             environmentalNotes = "envNotes",
             facilityId = facilityId,
@@ -1465,6 +1403,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             receivedDate = today,
             secondaryCollectors = listOf("second1", "second2"),
             siteLocation = "siteLocation",
+            source = DataSource.FileImport,
             sourcePlantOrigin = SourcePlantOrigin.Wild,
             species = "species",
         )
@@ -1484,6 +1423,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         .forEach { prop ->
           assertNotNull(prop.get(stored), "Field ${prop.name} is null in stored object")
         }
+
+    // Check fields that have different names in the create payload and the model.
+    assertEquals(DataSource.FileImport, stored.source, "Data source")
 
     assertEquals(
         listOf(

@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectionSource
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.GrowthForm
@@ -178,6 +179,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             collectionSourceId = CollectionSource.Reintroduced,
             createdBy = user.userId,
             createdTime = now,
+            dataSourceId = DataSource.SeedCollectorApp,
             facilityId = facilityId,
             modifiedBy = user.userId,
             modifiedTime = now,
@@ -2882,6 +2884,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                               mapOf("name" to "secondary 2", "position" to "2"),
                           ),
                       "siteLocation" to "siteName",
+                      "source" to "Seed Collector App",
                       "speciesName" to "Kousa Dogwood",
                       "state" to "Processed",
                       "treesCollectedFrom" to "1",

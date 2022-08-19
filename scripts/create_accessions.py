@@ -17,22 +17,6 @@ def remove_none(dictionary):
     return dict(filter(has_value, dictionary.items()))
 
 
-def generate_device_info() -> Optional[Dict]:
-    if randint(0, 3) == 0:
-        return None
-
-    return {
-        "appBuild": random.choice(["1.0", "1.2", None]),
-        "appName": "Seed Collector",
-        "brand": random.choice(["Google", "Huawei", "Samsung"]),
-        "model": "model",
-        "name": "example device",
-        "osType": "Android",
-        "osVersion": "7.1.1",
-        "uniqueId": random.choice(["uid1", "uid2", "uid3"]),
-    }
-
-
 def generate_endangered() -> Optional[str]:
     return random.choice([None, "Yes", "No", "Unsure"])
 
@@ -80,6 +64,16 @@ def generate_germination(recording_date, max_seeds_germinated: float) -> Dict:
         "recordingDate": str(recording_date),
         "seedsGerminated": randint(0, int(max_seeds_germinated)),
     }
+
+
+def generate_source() -> Optional[str]:
+    return random.choice(
+        [
+            None,
+            "Web",
+            "Seed Collector App",
+        ]
+    )
 
 
 def generate_staff_responsible() -> Optional[str]:
@@ -210,7 +204,6 @@ def generate_accession(facility_id: int) -> Dict:
     return {
         "bagNumbers": bag_numbers,
         "collectedDate": str(collected_date) if collected_date else None,
-        "deviceInfo": generate_device_info(),
         "endangered": generate_endangered(),
         "environmentalNotes": generate_notes(),
         "facilityId": facility_id,
@@ -225,6 +218,7 @@ def generate_accession(facility_id: int) -> Dict:
         "receivedDate": str(received_date) if received_date else None,
         "secondaryCollectors": secondary_collectors,
         "siteLocation": generate_site_location(),
+        "source": generate_source(),
         "sourcePlantOrigin": generate_source_plant_origin(),
         "species": species,
         "viabilityTestTypes": viability_test_types,

@@ -130,6 +130,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "collection_sources" to setOf(ALL, SEEDBANK),
           "countries" to setOf(ALL, CUSTOMER),
           "country_subdivisions" to setOf(ALL, CUSTOMER),
+          "data_sources" to setOf(ALL, SEEDBANK),
           "devices" to setOf(ALL, DEVICE),
           "device_managers" to setOf(ALL, CUSTOMER, DEVICE),
           "device_template_categories" to setOf(ALL, DEVICE),

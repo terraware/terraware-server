@@ -1,9 +1,9 @@
 package com.terraformation.backend.seedbank.model
 
-import com.terraformation.backend.customer.model.AppDeviceModel
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectionSource
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.RareType
@@ -39,11 +39,6 @@ private val activeStates = AccessionState.values().filter { it.active }.toSet()
 val AccessionState.Companion.activeValues: Set<AccessionState>
   get() = activeStates
 
-enum class AccessionSource {
-  Web,
-  SeedCollectorApp
-}
-
 data class AccessionModel(
     val id: AccessionId? = null,
     val accessionNumber: String? = null,
@@ -61,7 +56,6 @@ data class AccessionModel(
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,
     val cutTestSeedsFilled: Int? = null,
-    val deviceInfo: AppDeviceModel? = null,
     val dryingEndDate: LocalDate? = null,
     val dryingMoveDate: LocalDate? = null,
     val dryingStartDate: LocalDate? = null,
@@ -84,7 +78,7 @@ data class AccessionModel(
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
-    val source: AccessionSource? = null,
+    val source: DataSource? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
     val species: String? = null,
     val speciesCommonName: String? = null,
@@ -467,9 +461,9 @@ data class AccessionModel(
     val newProcessingStartDate =
         processingStartDate ?: existing.processingStartDate ?: calculateProcessingStartDate(clock)
     val newCollectedDate =
-        if (existing.source == AccessionSource.Web) collectedDate else existing.collectedDate
+        if (existing.source == DataSource.Web) collectedDate else existing.collectedDate
     val newReceivedDate =
-        if (existing.source == AccessionSource.Web) receivedDate else existing.receivedDate
+        if (existing.source == DataSource.Web) receivedDate else existing.receivedDate
     val newRemaining = calculateRemaining(clock)
     val newWithdrawals = calculateWithdrawals(clock, existing.withdrawals)
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }

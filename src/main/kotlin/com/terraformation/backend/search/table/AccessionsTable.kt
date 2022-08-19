@@ -141,6 +141,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         bigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),
         enumField("remainingUnits", "Remaining (units)", ACCESSIONS.REMAINING_UNITS_ID),
         textField("siteLocation", "Site location", ACCESSIONS.COLLECTION_SITE_NAME),
+        enumField("source", "Original data source", ACCESSIONS.DATA_SOURCE_ID),
         enumField("sourcePlantOrigin", "Wild/Outplant", ACCESSIONS.SOURCE_PLANT_ORIGIN_ID),
         aliasField("speciesName", "species_scientificName"),
         enumField("state", "State", ACCESSIONS.STATE_ID, nullable = false),
