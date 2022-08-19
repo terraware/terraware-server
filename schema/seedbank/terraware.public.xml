@@ -502,8 +502,8 @@
       </table>
       <table name="viability_test_selections" numRows="0" remarks="Linking table that stores the currently-selected viability test for each accession." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="viability_test_selections_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accessions"/>
             <parent column="accession_id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
+            <parent column="id" foreignKey="viability_test_selections_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accessions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="viability_test_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="viability_test_selections_viability_test_id_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="viability_tests"/>
@@ -536,7 +536,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="viability_test_types" numRows="2" remarks="(Enum) Types of tests that can be performed on seeds to check for viability." schema="public" type="TABLE">
+      <table name="viability_test_types" numRows="3" remarks="(Enum) Types of tests that can be performed on seeds to check for viability." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="test_type" foreignKey="germination_test_test_type_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
          </column>
