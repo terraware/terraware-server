@@ -602,6 +602,28 @@ data class SeedQuantityPayload(
 
 private fun SeedQuantityModel.toPayload() = SeedQuantityPayload(this)
 
+/**
+ * Test types that are compatible with the v1 API. The v2 API will change cut tests from accession
+ * attributes ([AccessionModel.cutTestSeedsEmpty] and so on) to a third category of test that can be
+ * mixed with lab and nursery tests, but clients of the v1 API won't know what to do with tests of
+ * the new type. So we map them to lab tests, which will be a lossy transformation but will at least
+ * represent them in _some_ form.
+ */
+enum class ViabilityTestTypeV1(val v2Type: ViabilityTestType) {
+  Lab(ViabilityTestType.Lab),
+  Nursery(ViabilityTestType.Nursery);
+
+  companion object {
+    @JvmStatic
+    fun of(testType: ViabilityTestType): ViabilityTestTypeV1 =
+        when (testType) {
+          ViabilityTestType.Cut,
+          ViabilityTestType.Lab -> Lab
+          ViabilityTestType.Nursery -> Nursery
+        }
+  }
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ViabilityTestPayload(
     @Schema(
@@ -611,7 +633,7 @@ data class ViabilityTestPayload(
     val id: ViabilityTestId? = null,
     @Schema(
         description = "Which type of test is described. At most one of each test type is allowed.")
-    val testType: ViabilityTestType,
+    val testType: ViabilityTestTypeV1,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val seedType: ViabilityTestSeedType? = null,
@@ -640,7 +662,7 @@ data class ViabilityTestPayload(
       model: ViabilityTestModel
   ) : this(
       model.id,
-      model.testType,
+      ViabilityTestTypeV1.of(model.testType),
       model.startDate,
       model.endDate,
       model.seedType,
@@ -669,7 +691,7 @@ data class ViabilityTestPayload(
           startDate = startDate,
           substrate = substrate,
           remaining = remainingQuantity?.toModel(),
-          testType = testType,
+          testType = testType.v2Type,
           treatment = treatment,
       )
 }

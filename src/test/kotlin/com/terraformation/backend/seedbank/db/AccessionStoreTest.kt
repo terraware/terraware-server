@@ -58,6 +58,7 @@ import com.terraformation.backend.seedbank.api.SeedQuantityPayload
 import com.terraformation.backend.seedbank.api.UpdateAccessionRequestPayload
 import com.terraformation.backend.seedbank.api.ViabilityTestPayload
 import com.terraformation.backend.seedbank.api.ViabilityTestResultPayload
+import com.terraformation.backend.seedbank.api.ViabilityTestTypeV1
 import com.terraformation.backend.seedbank.api.WithdrawalPayload
 import com.terraformation.backend.seedbank.grams
 import com.terraformation.backend.seedbank.kilograms
@@ -383,7 +384,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 viabilityTests =
                     listOf(
                         ViabilityTestPayload(
-                            testType = ViabilityTestType.Lab, startDate = startDate)),
+                            testType = ViabilityTestTypeV1.Lab, startDate = startDate)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
     store.update(withTest.toModel(id = initial.id!!))
@@ -427,7 +428,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         ViabilityTestPayload(
                             selected = true,
                             startDate = LocalDate.of(2020, 1, 1),
-                            testType = ViabilityTestType.Lab)),
+                            testType = ViabilityTestTypeV1.Lab)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
     store.update(withTest.toModel(id = initial.id!!))
@@ -449,7 +450,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         ViabilityTestPayload(
                             selected = true,
                             startDate = LocalDate.of(2020, 1, 1),
-                            testType = ViabilityTestType.Lab)),
+                            testType = ViabilityTestTypeV1.Lab)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
     store.update(withTests.toModel(id = initial.id!!))
@@ -479,10 +480,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         ViabilityTestPayload(
                             selected = true,
                             startDate = LocalDate.of(2020, 1, 1),
-                            testType = ViabilityTestType.Lab),
+                            testType = ViabilityTestTypeV1.Lab),
                         ViabilityTestPayload(
                             startDate = LocalDate.of(2020, 1, 2),
-                            testType = ViabilityTestType.Nursery)),
+                            testType = ViabilityTestTypeV1.Nursery)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
     store.update(withTests.toModel(id = initial.id!!))
@@ -511,10 +512,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         ViabilityTestPayload(
                             selected = true,
                             startDate = LocalDate.of(2020, 1, 1),
-                            testType = ViabilityTestType.Lab),
+                            testType = ViabilityTestTypeV1.Lab),
                         ViabilityTestPayload(
                             startDate = LocalDate.of(2020, 1, 2),
-                            testType = ViabilityTestType.Nursery)),
+                            testType = ViabilityTestTypeV1.Nursery)),
                 processingMethod = ProcessingMethod.Count,
                 initialQuantity = seeds(100))
     store.update(withTests.toModel(id = initial.id!!))
@@ -544,7 +545,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `existing viability tests are updated`() {
     val initial = createAndUpdate {
       it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
@@ -587,7 +588,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           viabilityTests =
               listOf(
                   ViabilityTestPayload(
-                      testType = ViabilityTestType.Lab, remainingQuantity = grams(75))),
+                      testType = ViabilityTestTypeV1.Lab, remainingQuantity = grams(75))),
           initialQuantity = grams(100),
           processingMethod = ProcessingMethod.Weight,
       )
@@ -633,13 +634,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `cannot update viability test from a different accession`() {
     val other = createAndUpdate {
       it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Nursery)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Nursery)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
     val initial = createAndUpdate {
       it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100))
     }
@@ -664,7 +665,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val localDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
     val initial = createAndUpdate {
       it.copy(
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)),
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)),
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(200))
     }
@@ -712,7 +713,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           viabilityTests =
               listOf(
                   ViabilityTestPayload(
-                      testType = ViabilityTestType.Lab,
+                      testType = ViabilityTestTypeV1.Lab,
                       seedsSown = 1000,
                       testResults =
                           listOf(
@@ -1361,7 +1362,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(100),
           viabilityTests =
-              listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab, seedsSown = 10)))
+              listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab, seedsSown = 10)))
     }
 
     assertEquals(
@@ -1392,7 +1393,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       it.copy(
           processingMethod = ProcessingMethod.Count,
           initialQuantity = seeds(10),
-          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestType.Lab)))
+          viabilityTests = listOf(ViabilityTestPayload(testType = ViabilityTestTypeV1.Lab)))
     }
 
     assertThrows<IllegalArgumentException> {
@@ -1547,7 +1548,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     ViabilityTestPayload(
                         remainingQuantity = grams(10),
-                        testType = ViabilityTestType.Lab,
+                        testType = ViabilityTestTypeV1.Lab,
                         startDate = today)),
             withdrawals =
                 listOf(
@@ -1727,7 +1728,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     ViabilityTestPayload(
                         remainingQuantity = grams(10),
-                        testType = ViabilityTestType.Lab,
+                        testType = ViabilityTestTypeV1.Lab,
                         startDate = today)),
             withdrawals =
                 listOf(
@@ -2536,7 +2537,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           viabilityTests =
               listOf(
                   ViabilityTestPayload(
-                      testType = ViabilityTestType.Lab,
+                      testType = ViabilityTestTypeV1.Lab,
                       startDate = LocalDate.of(2021, 4, 1),
                       seedsSown = 5)))
     }
