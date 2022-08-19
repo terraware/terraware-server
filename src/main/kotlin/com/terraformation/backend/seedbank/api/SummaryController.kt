@@ -14,12 +14,9 @@ import com.terraformation.backend.search.api.SearchNodePayload
 import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
-import com.terraformation.backend.time.atMostRecent
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Clock
-import java.time.DayOfWeek
-import java.time.ZonedDateTime
 import org.jooq.Record1
 import org.jooq.Select
 import org.springframework.web.bind.annotation.GetMapping
@@ -85,66 +82,22 @@ class SummaryController(
   }
 
   private fun getSummary(facilityId: FacilityId): SummaryResponse {
-    val now = ZonedDateTime.now(clock)
-    val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
-    val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
-
-    // For purposes of scanning for overdue accessions, "One week ago" is 6 days before the most
-    // recent start of day because we need to include accessions that happened after start-of-day on
-    // the same day a week earlier. Spec says if it is Monday morning, the count of week-old pending
-    // accessions should include ones that arrived the previous Monday afternoon, so we need to use
-    // start-of-day on the previous Tuesday (6 days earlier) as the cutoff.
-    val oneWeekAgo = startOfDay.minusDays(6)
-    val twoWeeksAgo = startOfDay.minusDays(13)
-
     val stats = accessionStore.getSummaryStatistics(facilityId)
 
     return SummaryResponse(
         activeAccessions = stats.accessions,
         species = stats.species,
-        overduePendingAccessions =
-            accessionStore.countInState(
-                facilityId, AccessionState.Pending, sinceBefore = oneWeekAgo),
-        overdueProcessedAccessions =
-            accessionStore.countInState(
-                facilityId, AccessionState.Processed, sinceBefore = twoWeeksAgo),
-        overdueDriedAccessions = accessionStore.countInState(facilityId, AccessionState.Dried),
-        recentlyWithdrawnAccessions =
-            accessionStore.countInState(
-                facilityId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
         accessionsByState = accessionStore.countByState(facilityId),
         seedsRemaining = SeedCountSummaryPayload(stats),
     )
   }
 
   private fun getSummary(organizationId: OrganizationId): SummaryResponse {
-    val now = ZonedDateTime.now(clock)
-    val startOfDay = now.atMostRecent(config.dailyTasks.startTime)
-    val startOfWeek = startOfDay.atMostRecent(DayOfWeek.MONDAY)
-
-    // For purposes of scanning for overdue accessions, "One week ago" is 6 days before the most
-    // recent start of day because we need to include accessions that happened after start-of-day on
-    // the same day a week earlier. Spec says if it is Monday morning, the count of week-old pending
-    // accessions should include ones that arrived the previous Monday afternoon, so we need to use
-    // start-of-day on the previous Tuesday (6 days earlier) as the cutoff.
-    val oneWeekAgo = startOfDay.minusDays(6)
-    val twoWeeksAgo = startOfDay.minusDays(13)
-
     val stats = accessionStore.getSummaryStatistics(organizationId)
 
     return SummaryResponse(
         activeAccessions = stats.accessions,
         species = stats.species,
-        overduePendingAccessions =
-            accessionStore.countInState(
-                organizationId, AccessionState.Pending, sinceBefore = oneWeekAgo),
-        overdueProcessedAccessions =
-            accessionStore.countInState(
-                organizationId, AccessionState.Processed, sinceBefore = twoWeeksAgo),
-        overdueDriedAccessions = accessionStore.countInState(organizationId, AccessionState.Dried),
-        recentlyWithdrawnAccessions =
-            accessionStore.countInState(
-                organizationId, AccessionState.Withdrawn, sinceAfter = startOfWeek),
         accessionsByState = accessionStore.countByState(organizationId),
         seedsRemaining = SeedCountSummaryPayload(stats),
     )
@@ -155,14 +108,6 @@ class SummaryController(
 data class SummaryResponse(
     val activeAccessions: Int,
     val species: Int,
-    @Schema(description = "Number of accessions in Pending state overdue for processing.")
-    val overduePendingAccessions: Int,
-    @Schema(description = "Number of accessions in Processed state overdue for drying.")
-    val overdueProcessedAccessions: Int,
-    @Schema(description = "Number of accessions in Dried state overdue for storage.")
-    val overdueDriedAccessions: Int,
-    @Schema(description = "Number of accessions withdrawn so far this week.")
-    val recentlyWithdrawnAccessions: Int,
     @Schema(description = "Number of accessions in each state.")
     val accessionsByState: Map<AccessionState, Int>,
     @Schema(description = "Summary of the number of seeds remaining across all active accessions.")

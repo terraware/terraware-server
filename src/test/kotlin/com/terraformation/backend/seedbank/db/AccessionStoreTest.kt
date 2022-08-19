@@ -85,7 +85,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
@@ -1115,98 +1114,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(expected, actual)
   }
 
-  /**
-   * Tests the query that generates the summary page's statistics.
-   *
-   * Use a test data set of accession state changes on either side of the time boundaries we're
-   * going to be scanning. The test will look for accessions in the Processing state. In the
-   * diagram, `[` is when the state enters Processing and `]` is when it enters Processed.
-   *
-   * ```
-   *    1   2   3   4   5   Time
-   *        |-------|       Search window for both time boundaries
-   *        |------------   Search window for startingAt test
-   *    ------------|       Search window for sinceBefore test
-   *
-   * 1  [---------------]   Not counted: no longer Processing
-   * 2  [----------------   Counted (sinceBefore, unbounded): entered before window
-   * 3      [------------   Counted (all): entered during window, never exited
-   * 4      [-----------]   Not counted: no longer Processing
-   * 5              [----   Counted (all): entered during window (inclusive), never exited
-   * 6                  [   Counted (sinceAfter, unbounded): entered after window
-   * 7                  [   Counted (sinceAfter, unbounded): entered after window
-   * ```
-   */
-  @Test
-  fun `countInState correctly examines state changes`() {
-    // Insert dummy accession rows so we can use the accession IDs
-    repeat(7) { store.create(AccessionModel(facilityId = facilityId)) }
-
-    listOf(1 to 6, 1 to null, 2 to null, 2 to 5, 4 to null, 6 to null, 6 to null).forEachIndexed {
-        index,
-        (processingStartTime, processedStartTime) ->
-      val accessionId = AccessionId((index + 1).toLong())
-      val currentState =
-          if (processedStartTime == null) AccessionState.Processing else AccessionState.Processed
-
-      dslContext
-          .insertInto(ACCESSION_STATE_HISTORY)
-          .set(
-              AccessionStateHistoryRecord(
-                  accessionId = accessionId,
-                  updatedBy = user.userId,
-                  updatedTime = Instant.ofEpochMilli(processingStartTime.toLong()),
-                  oldStateId = AccessionState.Pending,
-                  newStateId = AccessionState.Processing,
-                  reason = "test"))
-          .execute()
-
-      if (processedStartTime != null) {
-        dslContext
-            .insertInto(ACCESSION_STATE_HISTORY)
-            .set(
-                AccessionStateHistoryRecord(
-                    accessionId = accessionId,
-                    updatedBy = user.userId,
-                    updatedTime = Instant.ofEpochMilli(processedStartTime.toLong()),
-                    oldStateId = AccessionState.Processing,
-                    newStateId = AccessionState.Processed,
-                    reason = "test"))
-            .execute()
-      }
-
-      dslContext
-          .update(ACCESSIONS)
-          .set(ACCESSIONS.STATE_ID, currentState)
-          .where(ACCESSIONS.ID.eq(accessionId))
-          .execute()
-    }
-
-    assertEquals(
-        2,
-        store.countInState(
-            facilityId,
-            state = AccessionState.Processing,
-            sinceAfter = Instant.ofEpochMilli(2),
-            sinceBefore = Instant.ofEpochMilli(4)),
-        "Search with both time bounds")
-
-    assertEquals(
-        4,
-        store.countInState(
-            facilityId, state = AccessionState.Processing, sinceAfter = Instant.ofEpochMilli(2)),
-        "Search with startingAt")
-
-    assertEquals(
-        3,
-        store.countInState(
-            facilityId, state = AccessionState.Processing, sinceBefore = Instant.ofEpochMilli(4)),
-        "Search with sinceBefore")
-
-    assertEquals(
-        5, store.countInState(facilityId, AccessionState.Processing), "Search without time bounds")
-  }
-
   @Test
   fun `update rejects weight-based withdrawals for count-based accessions`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
@@ -1740,53 +1647,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `rejects count accessions state by facility when user cannot read facility`() {
-      every { user.canReadFacility(any()) } returns false
-
-      assertThrows<FacilityNotFoundException> {
-        store.countInState(facilityId, AccessionState.Pending)
-      }
-    }
-
-    @Test
-    fun `counts accessions state by facility`() {
-      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
-      assertEquals(1, store.countInState(facilityId, AccessionState.AwaitingCheckIn))
-      assertEquals(0, store.countInState(facilityId, AccessionState.Dried))
-    }
-
-    @Test
-    fun `rejects count accessions state by facility for duration when user cannot read facility`() {
-      every { user.canReadFacility(any()) } returns false
-
-      assertThrows<FacilityNotFoundException> {
-        store.countInState(
-            facilityId, AccessionState.Pending, sinceBefore = ZonedDateTime.now(clock))
-      }
-    }
-
-    @Test
-    fun `counts accessions state by facility for duration`() {
-      every { clock.instant() } returns Instant.now()
-
-      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
-      assertEquals(
-          0,
-          store.countInState(
-              facilityId,
-              AccessionState.AwaitingCheckIn,
-              sinceAfter = ZonedDateTime.now(clock).plusDays(1)),
-      )
-      assertEquals(
-          1,
-          store.countInState(
-              facilityId,
-              AccessionState.AwaitingCheckIn,
-              sinceBefore = ZonedDateTime.now(clock).plusDays(1)),
-      )
-    }
-
-    @Test
     fun `rejects count active accessions by organization when user cannot read organization`() {
       every { user.canReadOrganization(any()) } returns false
 
@@ -1797,51 +1657,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     fun `counts active accessions by organization`() {
       store.create(AccessionModel(facilityId = facilityId))
       assertEquals(1, store.countActive(organizationId))
-    }
-
-    @Test
-    fun `rejects count accessions state by organization when user cannot read organization`() {
-      every { user.canReadOrganization(any()) } returns false
-
-      assertThrows<OrganizationNotFoundException> {
-        store.countInState(organizationId, AccessionState.Pending)
-      }
-    }
-
-    @Test
-    fun `counts accessions state by organization`() {
-      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
-      assertEquals(1, store.countInState(organizationId, AccessionState.AwaitingCheckIn))
-      assertEquals(0, store.countInState(organizationId, AccessionState.Dried))
-    }
-
-    @Test
-    fun `rejects count accessions state by organization for duration when user cannot read organization`() {
-      every { user.canReadOrganization(any()) } returns false
-
-      assertThrows<OrganizationNotFoundException> {
-        store.countInState(
-            organizationId, AccessionState.Pending, sinceBefore = ZonedDateTime.now(clock))
-      }
-    }
-
-    @Test
-    fun `counts accessions state by organization for duration`() {
-      every { clock.instant() } returns Instant.now()
-
-      store.create(AccessionModel(facilityId = facilityId, state = AccessionState.AwaitingCheckIn))
-      assertEquals(
-          0,
-          store.countInState(
-              organizationId,
-              AccessionState.AwaitingCheckIn,
-              sinceAfter = ZonedDateTime.now(clock).plusDays(1)))
-      assertEquals(
-          1,
-          store.countInState(
-              organizationId,
-              AccessionState.AwaitingCheckIn,
-              sinceBefore = ZonedDateTime.now(clock).plusDays(1)))
     }
 
     @Test
@@ -2395,22 +2210,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       store.create(AccessionModel(facilityId = facilityId))
       assertEquals(1, store.countActive(facilityId))
       assertEquals(0, store.countActive(otherFacilityId))
-    }
-
-    @Test
-    fun `countInState without timing only counts accessions from requested facility`() {
-      val initial = store.create(AccessionModel(facilityId = facilityId))
-      assertEquals(1, store.countInState(facilityId, initial.state!!))
-      assertEquals(0, store.countInState(otherFacilityId, initial.state!!))
-    }
-
-    @Test
-    fun `countInState with timing only counts accessions from requested facility`() {
-      val initial = store.create(AccessionModel(facilityId = facilityId))
-      assertEquals(
-          1, store.countInState(facilityId, initial.state!!, Instant.EPOCH, clock.instant()))
-      assertEquals(
-          0, store.countInState(otherFacilityId, initial.state!!, Instant.EPOCH, clock.instant()))
     }
   }
 
