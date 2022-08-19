@@ -23,7 +23,6 @@ processing_methods
 growth_forms
 data_sources
 collection_sources
-app_devices
 storage_conditions
 photos
 organizations

@@ -3,7 +3,6 @@ accession_states
 organizations
 photos
 storage_conditions
-app_devices
 collection_sources
 data_sources
 growth_forms

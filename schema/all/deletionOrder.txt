@@ -56,7 +56,6 @@ facility_connection_states
 device_template_categories
 data_sources
 collection_sources
-app_devices
 storage_conditions
 countries
 accession_states

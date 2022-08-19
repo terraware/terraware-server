@@ -2,7 +2,6 @@ seed_quantity_units
 accession_states
 countries
 storage_conditions
-app_devices
 collection_sources
 data_sources
 device_template_categories
