@@ -1102,6 +1102,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           accession.copy(
               createdBy = user.userId,
               createdTime = clock.instant(),
+              dataSourceId = DataSource.Web,
               facilityId = facilityId,
               modifiedBy = user.userId,
               modifiedTime = clock.instant()))
@@ -1888,6 +1889,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 AccessionsRow(
                     createdBy = user.userId,
                     createdTime = Instant.EPOCH,
+                    dataSourceId = DataSource.Web,
                     facilityId = targetFacilityId,
                     modifiedBy = user.userId,
                     modifiedTime = Instant.EPOCH,
@@ -2007,6 +2009,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 it.copy(
                     createdBy = user.userId,
                     createdTime = clock.instant(),
+                    dataSourceId = DataSource.Web,
                     modifiedBy = user.userId,
                     modifiedTime = clock.instant()))
           }
@@ -2129,6 +2132,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 it.copy(
                     createdBy = user.userId,
                     createdTime = clock.instant(),
+                    dataSourceId = DataSource.Web,
                     modifiedBy = user.userId,
                     modifiedTime = clock.instant()))
           }
@@ -2235,6 +2239,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 it.copy(
                     createdBy = user.userId,
                     createdTime = clock.instant(),
+                    dataSourceId = DataSource.Web,
                     modifiedBy = user.userId,
                     modifiedTime = clock.instant()))
           }
@@ -2313,6 +2318,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 it.copy(
                     createdBy = user.userId,
                     createdTime = clock.instant(),
+                    dataSourceId = DataSource.Web,
                     modifiedBy = user.userId,
                     modifiedTime = clock.instant()))
           }

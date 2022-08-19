@@ -9,6 +9,7 @@ import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.BalenaDeviceId
+import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceManagerId
@@ -152,6 +153,7 @@ internal class PermissionTest : DatabaseTest() {
               stateId = AccessionState.Pending,
               createdBy = userId,
               createdTime = Instant.EPOCH,
+              dataSourceId = DataSource.Web,
               modifiedBy = userId,
               modifiedTime = Instant.EPOCH))
     }

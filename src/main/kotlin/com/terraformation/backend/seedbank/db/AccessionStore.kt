@@ -153,7 +153,7 @@ class AccessionStore(
           rare = record[RARE_TYPE_ID],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-          source = record[DATA_SOURCE_ID] ?: DataSource.Web,
+          source = record[DATA_SOURCE_ID],
           sourcePlantOrigin = record[SOURCE_PLANT_ORIGIN_ID],
           species = record[species().SCIENTIFIC_NAME],
           speciesCommonName = record[species().COMMON_NAME],
