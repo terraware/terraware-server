@@ -2642,6 +2642,56 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `can sort on scalar field that is after nested field in field list`() {
+      // We want the surrounding fields to sort in the opposite order of the nested field so we
+      // can detect if the ORDER BY clause is using the wrong field.
+      accessionsDao.update(
+          accessionsDao
+              .fetchOneById(AccessionId(1000))!!
+              .copy(number = "B", receivedDate = LocalDate.of(2020, 1, 2)))
+      accessionsDao.update(
+          accessionsDao
+              .fetchOneById(AccessionId(1001))!!
+              .copy(number = "A", receivedDate = LocalDate.of(2020, 1, 1)))
+
+      val selectFields = listOf(accessionNumberField, bagsNumberField, receivedDateField)
+      val sortOrder =
+          listOf(
+              SearchSortField(receivedDateField, SearchDirection.Descending),
+              SearchSortField(bagsNumberField, SearchDirection.Descending),
+              SearchSortField(accessionNumberField),
+          )
+
+      val result = searchService.search(rootPrefix, selectFields, NoConditionNode(), sortOrder)
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "accessionNumber" to "B",
+                      "bags" to
+                          listOf(
+                              mapOf("number" to "5"),
+                              mapOf("number" to "1"),
+                          ),
+                      "receivedDate" to "2020-01-02",
+                  ),
+                  mapOf(
+                      "accessionNumber" to "A",
+                      "bags" to
+                          listOf(
+                              mapOf("number" to "6"),
+                              mapOf("number" to "2"),
+                          ),
+                      "receivedDate" to "2020-01-01",
+                  ),
+              ),
+              cursor = null)
+
+      assertEquals(expected, result)
+    }
+
+    @Test
     fun `can sort on flattened field that is not in list of query fields`() {
       val sortOrder = listOf(SearchSortField(bagNumberFlattenedField, SearchDirection.Descending))
 
