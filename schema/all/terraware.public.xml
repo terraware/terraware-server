@@ -169,6 +169,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="58" name="data_source_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="accessions_data_source_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="data_sources"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="59" name="is_manual_state" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
