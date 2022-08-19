@@ -107,6 +107,7 @@ class WebAppUrls(private val config: TerrawareServerConfig) {
   ): String {
     return "/accessions/${accessionId.value}/" +
         when (testType) {
+          ViabilityTestType.Cut,
           ViabilityTestType.Lab -> "lab"
           ViabilityTestType.Nursery -> "nursery"
         }

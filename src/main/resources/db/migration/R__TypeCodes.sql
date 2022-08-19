@@ -180,7 +180,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO viability_test_types (id, name)
 VALUES (1, 'Lab'),
-       (2, 'Nursery')
+       (2, 'Nursery'),
+       (3, 'Cut')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO withdrawal_purposes (id, name)
