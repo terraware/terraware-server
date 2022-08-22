@@ -24,6 +24,13 @@ def main():
         action="store_true",
         help="Show updated accession data after editing.",
     )
+    parser.add_argument(
+        "--version",
+        "-V",
+        type=int,
+        help="Version number of API endpoint",
+        default=1,
+    )
     parser.add_argument("accessionId")
     parser.add_argument(
         "file",
@@ -42,11 +49,13 @@ def main():
 
     client = client_from_args(args)
 
-    accession = client.get_accession(args.accessionId)
+    accession = client.get_accession(args.accessionId, version=args.version)
 
     accession.update(edits)
 
-    updated = client.update_accession(args.accessionId, accession, args.simulate)
+    updated = client.update_accession(
+        args.accessionId, accession, args.simulate, args.version
+    )
     if args.verbose:
         print(json.dumps(updated))
     else:

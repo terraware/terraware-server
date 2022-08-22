@@ -251,7 +251,6 @@ data class CreateAccessionRequestPayload(
   }
 }
 
-// Ignore properties that are defined on AccessionFields but not accepted as input (CU-px8k25)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class UpdateAccessionRequestPayload(
     val bagNumbers: Set<String>? = null,
@@ -600,7 +599,7 @@ data class SeedQuantityPayload(
   fun toModel() = SeedQuantityModel(quantity, units)
 }
 
-private fun SeedQuantityModel.toPayload() = SeedQuantityPayload(this)
+fun SeedQuantityModel.toPayload() = SeedQuantityPayload(this)
 
 /**
  * Test types that are compatible with the v1 API. The v2 API will change cut tests from accession

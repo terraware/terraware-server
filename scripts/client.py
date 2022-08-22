@@ -68,23 +68,24 @@ class TerrawareClient:
     def list_timeseries(self, device_id):
         return self.get(f"/api/v1/timeseries?deviceId={device_id}")["timeseries"]
 
-    def create_accession(self, payload):
-        return self.post("/api/v1/seedbank/accessions", json=payload)["accession"]
+    def create_accession(self, payload, version=1):
+        uri = f"/api/v{version}/seedbank/accessions"
+        return self.post(uri, json=payload)["accession"]
 
     def check_in_accession(self, accession_id):
-        return self.post(f"/api/v1/seedbank/accessions/{accession_id}/checkIn")[
-            "accession"
-        ]
+        uri = f"/api/v1/seedbank/accessions/{accession_id}/checkIn"
+        return self.post(uri)["accession"]
 
-    def get_accession(self, accession_id):
-        return self.get(f"/api/v1/seedbank/accessions/{accession_id}")["accession"]
+    def get_accession(self, accession_id, version=1):
+        uri = f"/api/v{version}/seedbank/accessions/{accession_id}"
+        return self.get(uri)["accession"]
 
-    def update_accession(self, accession_id, payload, simulate=False):
+    def update_accession(self, accession_id, payload, simulate=False, version=1):
         if simulate:
             query = "?simulate=true"
         else:
             query = ""
-        uri = f"/api/v1/seedbank/accessions/{accession_id}{query}"
+        uri = f"/api/v{version}/seedbank/accessions/{accession_id}{query}"
 
         return self.put(uri, json=payload)["accession"]
 
