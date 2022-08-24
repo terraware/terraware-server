@@ -52,6 +52,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     store = WithdrawalStore(dslContext, clock, Messages())
 
     every { clock.instant() } returns Instant.ofEpochSecond(1000)
+    every { user.canReadAccession(any()) } returns true
 
     insertSiteData()
 
