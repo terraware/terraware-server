@@ -128,6 +128,7 @@ class AccessionStore(
           collectionSiteNotes = record[COLLECTION_SITE_NOTES],
           collectionSource = record[COLLECTION_SOURCE_ID],
           collectors = record[collectorsField],
+          createdTime = record[CREATED_TIME],
           cutTestSeedsCompromised = record[CUT_TEST_SEEDS_COMPROMISED],
           cutTestSeedsEmpty = record[CUT_TEST_SEEDS_EMPTY],
           cutTestSeedsFilled = record[CUT_TEST_SEEDS_FILLED],

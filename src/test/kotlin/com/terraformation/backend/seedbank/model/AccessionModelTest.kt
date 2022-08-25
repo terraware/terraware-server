@@ -24,6 +24,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 internal class AccessionModelTest {
@@ -59,6 +60,7 @@ internal class AccessionModelTest {
     return AccessionModel(
         id = AccessionId(1L),
         accessionNumber = "dummy",
+        createdTime = clock.instant(),
         cutTestSeedsCompromised = cutTestSeedsCompromised,
         cutTestSeedsEmpty = cutTestSeedsEmpty,
         cutTestSeedsFilled = cutTestSeedsFilled,
@@ -135,9 +137,11 @@ internal class AccessionModelTest {
           else WithdrawalPurpose.Other,
       remaining: SeedQuantityModel =
           if (withdrawn.units == SeedQuantityUnits.Seeds) seeds(10) else grams(10),
+      createdTime: Instant = clock.instant(),
   ): WithdrawalModel {
     return WithdrawalModel(
         accessionId = AccessionId(1),
+        createdTime = createdTime,
         date = date,
         viabilityTestId = viabilityTestId,
         id = nextWithdrawalId(),
@@ -406,6 +410,41 @@ internal class AccessionModelTest {
 
   @Nested
   inner class WeightBasedAccessionCalculations {
+    @Test
+    fun `observed quantity is null if no total weight`() {
+      val accession = accession(processingMethod = ProcessingMethod.Weight)
+      assertAll(
+          { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertNull(accession.calculateLatestObservedTime(), "Time") })
+    }
+
+    @Test
+    fun `observed quantity is total quantity if no withdrawals`() {
+      val accession = accession(total = grams(50))
+      assertAll(
+          { assertEquals(grams(50), accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(), "Time") })
+    }
+
+    @Test
+    fun `observed quantity is based on withdrawal remaining quantities`() {
+      val accession =
+          accession(
+              total = grams(100),
+              withdrawals =
+                  listOf(
+                      withdrawal(remaining = grams(95), createdTime = Instant.ofEpochSecond(1)),
+                      withdrawal(remaining = grams(89), createdTime = Instant.ofEpochSecond(2)),
+                      withdrawal(remaining = grams(91), createdTime = Instant.ofEpochSecond(3)),
+                  ))
+
+      assertAll(
+          { assertEquals(grams(89), accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          {
+            assertEquals(Instant.ofEpochSecond(3), accession.calculateLatestObservedTime(), "Time")
+          })
+    }
+
     @Test
     fun `estimated seed count is null if information is missing`() {
       listOf(1, null).forEach { subsetCount ->
@@ -713,6 +752,33 @@ internal class AccessionModelTest {
 
   @Nested
   inner class CountBasedAccessionCalculations {
+    @Test
+    fun `observed quantity is null if accession has no processing method`() {
+      val accession = accession()
+      assertAll(
+          { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertNull(accession.calculateLatestObservedTime(), "Time") },
+      )
+    }
+
+    @Test
+    fun `observed quantity is null if accession has no initial quantity`() {
+      val accession = accession(processingMethod = ProcessingMethod.Count)
+      assertAll(
+          { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertNull(accession.calculateLatestObservedTime(), "Time") },
+      )
+    }
+
+    @Test
+    fun `observed quantity is initial quantity if present`() {
+      val accession = accession(total = seeds(10))
+      assertAll(
+          { assertEquals(seeds(10), accession.calculateLatestObservedQuantity(clock), "Quantity") },
+          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(), "Time") },
+      )
+    }
+
     @Test
     fun `remaining defaults to total count if no withdrawals are present`() {
       val accession = accession(total = seeds(15))

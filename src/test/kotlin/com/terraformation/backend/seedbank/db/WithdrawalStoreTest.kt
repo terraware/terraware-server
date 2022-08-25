@@ -114,6 +114,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = Instant.EPOCH,
                 date = pojos[0].date!!,
                 notes = pojos[0].notes,
                 purpose = pojos[0].purposeId,
@@ -125,6 +126,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(2),
                 accessionId = accessionId,
+                createdTime = Instant.EPOCH.plusSeconds(30),
                 date = pojos[1].date!!,
                 notes = pojos[1].notes,
                 purpose = pojos[1].purposeId,
@@ -160,6 +162,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = clock.instant(),
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
                 notes = newWithdrawal.notes,
@@ -229,6 +232,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
                 viabilityTestId = viabilityTestId,
@@ -300,6 +304,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
                 notes = desired.notes,

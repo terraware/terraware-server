@@ -896,6 +896,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accession.id,
+                createdTime = clock.instant(),
                 date = test.startDate!!,
                 purpose = WithdrawalPurpose.ViabilityTesting,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),

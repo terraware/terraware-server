@@ -105,6 +105,7 @@ data class AccessionModel(
     val collectionSiteNotes: String? = null,
     val collectionSource: CollectionSource? = null,
     val collectors: List<String> = emptyList(),
+    val createdTime: Instant? = null,
     val cutTestSeedsCompromised: Int? = null,
     val cutTestSeedsEmpty: Int? = null,
     val cutTestSeedsFilled: Int? = null,
@@ -357,6 +358,24 @@ data class AccessionModel(
           (total != null && subsetCount != null && subsetWeightQuantity != null)
 
   private fun hasTestResults(): Boolean = hasCutTestResults() || hasViabilityTestResults()
+
+  fun calculateLatestObservedQuantity(clock: Clock): SeedQuantityModel? {
+    return when (processingMethod) {
+      ProcessingMethod.Count -> total
+      ProcessingMethod.Weight -> calculateRemaining(clock)
+      null -> null
+    }
+  }
+
+  fun calculateLatestObservedTime(): Instant? {
+    return when {
+      total == null -> null
+      processingMethod == ProcessingMethod.Count -> createdTime
+      processingMethod == ProcessingMethod.Weight ->
+          withdrawals.mapNotNull { it.createdTime }.maxOrNull() ?: createdTime
+      else -> null
+    }
+  }
 
   fun calculateLatestViabilityRecordingDate(): LocalDate? {
     return getLatestViabilityTestWithResults()?.calculateLatestRecordingDate()

@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import javax.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
@@ -53,7 +54,7 @@ class AccessionsV2Controller(
       @RequestBody payload: CreateAccessionRequestPayloadV2
   ): CreateAccessionResponsePayloadV2 {
     val updatedPayload = accessionStore.create(payload.toModel())
-    return CreateAccessionResponsePayloadV2(AccessionPayloadV2(updatedPayload))
+    return CreateAccessionResponsePayloadV2(AccessionPayloadV2(updatedPayload, clock))
   }
 
   @ApiResponse(
@@ -80,7 +81,7 @@ class AccessionsV2Controller(
         } else {
           accessionStore.updateAndFetch(payload.toModel(accessionId))
         }
-    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(updatedModel))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(updatedModel, clock))
   }
 
   @ApiResponse(responseCode = "200")
@@ -102,7 +103,7 @@ class AccessionsV2Controller(
               .withCalculatedValues(clock)
         }
 
-    return GetAccessionResponsePayloadV2(AccessionPayloadV2(v2CompatibleAccession))
+    return GetAccessionResponsePayloadV2(AccessionPayloadV2(v2CompatibleAccession, clock))
   }
 }
 
@@ -145,6 +146,8 @@ data class AccessionPayloadV2(
             "Initial size of accession. The units of this value must match the measurement type " +
                 "in \"processingMethod\".")
     val initialQuantity: SeedQuantityPayload?,
+    val latestObservedQuantity: SeedQuantityPayload?,
+    val latestObservedTime: Instant?,
     val latestViabilityPercent: Int?,
     val latestViabilityTestDate: LocalDate?,
     val notes: String?,
@@ -190,51 +193,56 @@ data class AccessionPayloadV2(
     val withdrawals: List<WithdrawalPayload>?,
 ) {
   constructor(
-      model: AccessionModel
+      model: AccessionModel,
+      clock: Clock
   ) : this(
-      model.accessionNumber ?: throw IllegalArgumentException("Accession did not have a number"),
-      model.active ?: AccessionActive.Active,
-      model.bagNumbers.orNull(),
-      model.collectedDate,
-      model.collectionSiteCity,
-      model.geolocations.orNull(),
-      model.collectionSiteCountryCode,
-      model.collectionSiteCountrySubdivision,
-      model.collectionSiteLandowner,
-      model.collectionSiteName,
-      model.collectionSiteNotes,
-      model.collectionSource,
-      model.collectors.orNull(),
-      model.dryingEndDate,
-      model.estimatedSeedCount,
-      model.facilityId ?: throw IllegalArgumentException("Accession did not have a facility ID"),
-      model.family,
-      model.founderId,
-      model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
-      model.total?.toPayload(),
-      model.latestViabilityPercent,
-      model.latestViabilityTestDate,
-      model.processingNotes,
-      model.photoFilenames.orNull(),
+      accessionNumber = model.accessionNumber
+              ?: throw IllegalArgumentException("Accession did not have a number"),
+      active = model.active ?: AccessionActive.Active,
+      bagNumbers = model.bagNumbers.orNull(),
+      collectedDate = model.collectedDate,
+      collectionSiteCity = model.collectionSiteCity,
+      collectionSiteCoordinates = model.geolocations.orNull(),
+      collectionSiteCountryCode = model.collectionSiteCountryCode,
+      collectionSiteCountrySubdivision = model.collectionSiteCountrySubdivision,
+      collectionSiteLandowner = model.collectionSiteLandowner,
+      collectionSiteName = model.collectionSiteName,
+      collectionSiteNotes = model.collectionSiteNotes,
+      collectionSource = model.collectionSource,
+      collectors = model.collectors.orNull(),
+      dryingEndDate = model.dryingEndDate,
+      estimatedSeedCount = model.estimatedSeedCount,
+      facilityId = model.facilityId
+              ?: throw IllegalArgumentException("Accession did not have a facility ID"),
+      family = model.family,
+      founderId = model.founderId,
+      id = model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
+      initialQuantity = model.total?.toPayload(),
+      latestObservedQuantity = model.calculateLatestObservedQuantity(clock)?.toPayload(),
+      latestObservedTime = model.calculateLatestObservedTime(),
+      latestViabilityPercent = model.latestViabilityPercent,
+      latestViabilityTestDate = model.latestViabilityTestDate,
+      notes = model.processingNotes,
+      photoFilenames = model.photoFilenames.orNull(),
       // TODO replace with max/min plants
-      model.numberOfTrees,
-      model.numberOfTrees,
-      model.processingMethod,
-      model.receivedDate,
-      model.remaining?.toPayload(),
-      model.source,
-      model.species,
-      model.speciesCommonName,
-      model.speciesId,
-      model.state ?: AccessionState.Pending,
-      model.storageCondition,
-      model.storageLocation,
-      model.subsetCount,
-      model.subsetWeightQuantity?.toPayload(),
-      model.targetStorageCondition,
-      model.totalViabilityPercent,
-      model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
-      model.withdrawals.map { WithdrawalPayload(it) }.orNull(),
+      plantsCollectedFromMax = model.numberOfTrees,
+      plantsCollectedFromMin = model.numberOfTrees,
+      processingMethod = model.processingMethod,
+      receivedDate = model.receivedDate,
+      remainingQuantity = model.remaining?.toPayload(),
+      source = model.source,
+      speciesScientificName = model.species,
+      speciesCommonName = model.speciesCommonName,
+      speciesId = model.speciesId,
+      state = model.state ?: AccessionState.Pending,
+      storageCondition = model.storageCondition,
+      storageLocation = model.storageLocation,
+      subsetCount = model.subsetCount,
+      subsetWeight = model.subsetWeightQuantity?.toPayload(),
+      targetStorageCondition = model.targetStorageCondition,
+      totalViabilityPercent = model.totalViabilityPercent,
+      viabilityTests = model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
+      withdrawals = model.withdrawals.map { WithdrawalPayload(it) }.orNull(),
   )
 }
 
