@@ -51,7 +51,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   fun setup() {
     store = WithdrawalStore(dslContext, clock, Messages())
 
-    every { clock.instant() } returns Instant.now()
+    every { clock.instant() } returns Instant.ofEpochSecond(1000)
 
     insertSiteData()
 
@@ -61,11 +61,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
           .insertInto(ACCESSIONS)
           .set(ID, accessionId)
           .set(CREATED_BY, user.userId)
-          .set(CREATED_TIME, Instant.now())
+          .set(CREATED_TIME, clock.instant())
           .set(DATA_SOURCE_ID, DataSource.FileImport)
           .set(FACILITY_ID, facilityId)
           .set(MODIFIED_BY, user.userId)
-          .set(MODIFIED_TIME, Instant.now())
+          .set(MODIFIED_TIME, clock.instant())
           .set(STATE_ID, AccessionState.InStorage)
           .execute()
     }
@@ -86,7 +86,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 staffResponsible = "staff 1",
                 destination = "dest 1",
                 createdTime = Instant.EPOCH,
-                updatedTime = Instant.now(),
+                updatedTime = clock.instant(),
                 withdrawnGrams = BigDecimal.TEN,
                 withdrawnQuantity = BigDecimal(10000),
                 withdrawnUnitsId = SeedQuantityUnits.Milligrams,
@@ -101,8 +101,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 remainingUnitsId = SeedQuantityUnits.Milligrams,
                 staffResponsible = "staff 2",
                 destination = "dest 2",
-                createdTime = Instant.EPOCH.plusSeconds(30),
-                updatedTime = Instant.now(),
+                createdTime = Instant.ofEpochSecond(30),
+                updatedTime = clock.instant(),
                 withdrawnGrams = null,
                 withdrawnQuantity = BigDecimal(2),
                 withdrawnUnitsId = SeedQuantityUnits.Seeds,
@@ -114,6 +114,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = Instant.EPOCH,
                 date = pojos[0].date!!,
                 notes = pojos[0].notes,
                 purpose = pojos[0].purposeId,
@@ -125,6 +126,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(2),
                 accessionId = accessionId,
+                createdTime = Instant.ofEpochSecond(30),
                 date = pojos[1].date!!,
                 notes = pojos[1].notes,
                 purpose = pojos[1].purposeId,
@@ -160,6 +162,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = clock.instant(),
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
                 notes = newWithdrawal.notes,
@@ -229,6 +232,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
                 viabilityTestId = viabilityTestId,
@@ -300,6 +304,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalModel(
                 id = WithdrawalId(1),
                 accessionId = accessionId,
+                createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
                 notes = desired.notes,

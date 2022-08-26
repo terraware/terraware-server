@@ -6,11 +6,13 @@ import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.records.WithdrawalsRecord
 import com.terraformation.backend.util.compareNullsFirst
+import java.time.Instant
 import java.time.LocalDate
 
 data class WithdrawalModel(
     val id: WithdrawalId? = null,
     val accessionId: AccessionId? = null,
+    val createdTime: Instant? = null,
     val date: LocalDate,
     val purpose: WithdrawalPurpose? = null,
     val destination: String? = null,
@@ -32,6 +34,7 @@ data class WithdrawalModel(
   ) : this(
       record.id,
       record.accessionId,
+      record.createdTime,
       record.date!!,
       record.purposeId,
       record.destination,
