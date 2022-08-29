@@ -1,6 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.WithdrawalId
+import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
@@ -22,9 +25,21 @@ class WithdrawalStore(
     private val clock: Clock,
     private val messages: Messages,
 ) {
-  val log = perClassLogger()
+  private val log = perClassLogger()
+
+  fun fetchOneById(withdrawalId: WithdrawalId): WithdrawalModel {
+    val record =
+        dslContext.selectFrom(WITHDRAWALS).where(WITHDRAWALS.ID.eq(withdrawalId)).fetchOne()
+            ?: throw WithdrawalNotFoundException(withdrawalId)
+
+    requirePermissions { readAccession(record.accessionId!!) }
+
+    return WithdrawalModel(record)
+  }
 
   fun fetchWithdrawals(accessionId: AccessionId): List<WithdrawalModel> {
+    requirePermissions { readAccession(accessionId) }
+
     return dslContext
         .selectFrom(WITHDRAWALS)
         .where(WITHDRAWALS.ACCESSION_ID.eq(accessionId))

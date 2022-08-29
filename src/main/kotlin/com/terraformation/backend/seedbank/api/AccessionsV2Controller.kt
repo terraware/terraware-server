@@ -75,11 +75,14 @@ class AccessionsV2Controller(
                   "have been returned if it had been saved.")
       simulate: Boolean?
   ): UpdateAccessionResponsePayloadV2 {
+    val existing = accessionStore.fetchOneById(accessionId)
+    val editedModel = payload.applyToModel(existing)
+
     val updatedModel =
         if (simulate == true) {
-          accessionStore.dryRun(payload.toModel(accessionId))
+          accessionStore.dryRun(editedModel)
         } else {
-          accessionStore.updateAndFetch(payload.toModel(accessionId))
+          accessionStore.updateAndFetch(editedModel)
         }
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(updatedModel, clock))
   }
@@ -177,8 +180,8 @@ data class AccessionPayloadV2(
     val speciesId: SpeciesId?,
     @Schema(
         description =
-            "Server-calculated accession state. Can change due to modifications to accession data " +
-                "or based on passage of time.")
+            "Server-calculated accession state. Can change due to modifications to accession " +
+                "data or based on passage of time.")
     val state: AccessionState,
     val storageCondition: StorageCondition?,
     val storageLocation: String?,
@@ -190,7 +193,7 @@ data class AccessionPayloadV2(
     val targetStorageCondition: StorageCondition?,
     val totalViabilityPercent: Int?,
     val viabilityTests: List<ViabilityTestPayload>?,
-    val withdrawals: List<WithdrawalPayload>?,
+    val withdrawals: List<GetWithdrawalPayload>?,
 ) {
   constructor(
       model: AccessionModel,
@@ -242,7 +245,7 @@ data class AccessionPayloadV2(
       targetStorageCondition = model.targetStorageCondition,
       totalViabilityPercent = model.totalViabilityPercent,
       viabilityTests = model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
-      withdrawals = model.withdrawals.map { WithdrawalPayload(it) }.orNull(),
+      withdrawals = model.withdrawals.map { GetWithdrawalPayload(it) }.orNull(),
   )
 }
 
@@ -330,10 +333,9 @@ data class UpdateAccessionRequestPayloadV2(
     private val subsetWeight: SeedQuantityPayload? = null,
     val targetStorageCondition: StorageCondition? = null,
     @Valid val viabilityTests: List<ViabilityTestPayload>? = null,
-    @Valid val withdrawals: List<WithdrawalPayload>? = null,
 ) {
-  fun toModel(id: AccessionId) =
-      AccessionModel(
+  fun applyToModel(model: AccessionModel): AccessionModel =
+      model.copy(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
           collectionSiteCity = collectionSiteCity,
@@ -348,7 +350,6 @@ data class UpdateAccessionRequestPayloadV2(
           facilityId = facilityId,
           founderId = founderId,
           geolocations = collectionSiteCoordinates.orEmpty(),
-          id = id,
           isManualState = true,
           numberOfTrees = plantsCollectedFromMax ?: plantsCollectedFromMin,
           processingMethod = processingMethod,
@@ -362,7 +363,6 @@ data class UpdateAccessionRequestPayloadV2(
           targetStorageCondition = targetStorageCondition,
           total = initialQuantity?.toModel(),
           viabilityTests = viabilityTests.orEmpty().map { it.toModel() },
-          withdrawals = withdrawals.orEmpty().map { it.toModel() },
       )
 }
 
