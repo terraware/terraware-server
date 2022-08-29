@@ -2,11 +2,13 @@ package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import java.time.Clock
 import javax.annotation.ManagedBean
@@ -48,6 +50,28 @@ class AccessionService(
 
   fun deleteWithdrawal(accessionId: AccessionId, withdrawalId: WithdrawalId): AccessionModel {
     return updateAccession(accessionId) { it.deleteWithdrawal(withdrawalId, clock) }
+  }
+
+  fun createViabilityTest(viabilityTest: ViabilityTestModel): AccessionModel {
+    val accessionId =
+        viabilityTest.accessionId ?: throw IllegalArgumentException("Accession ID must be non-null")
+
+    return updateAccession(accessionId) { it.addViabilityTest(viabilityTest, clock) }
+  }
+
+  fun updateViabilityTest(
+      accessionId: AccessionId,
+      viabilityTestId: ViabilityTestId,
+      modify: (ViabilityTestModel) -> ViabilityTestModel
+  ): AccessionModel {
+    return updateAccession(accessionId) { it.updateViabilityTest(viabilityTestId, clock, modify) }
+  }
+
+  fun deleteViabilityTest(
+      accessionId: AccessionId,
+      viabilityTestId: ViabilityTestId
+  ): AccessionModel {
+    return updateAccession(accessionId) { it.deleteViabilityTest(viabilityTestId, clock) }
   }
 
   private fun updateAccession(

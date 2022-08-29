@@ -22,6 +22,8 @@ import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -61,6 +63,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val storageLocationId = StorageLocationId(1)
   private val uploadId = UploadId(1)
   private val userId = UserId(1)
+  private val viabilityTestId = ViabilityTestId(1)
 
   /**
    * Grants permission to perform a particular operation. This is a simple wrapper around a MockK
@@ -392,6 +395,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadUpload(uploadId) }
     requirements.readUpload(uploadId)
+  }
+
+  @Test
+  fun readViabilityTest() {
+    assertThrows<ViabilityTestNotFoundException> { requirements.readViabilityTest(viabilityTestId) }
+
+    grant { user.canReadViabilityTest(viabilityTestId) }
+    requirements.readViabilityTest(viabilityTestId)
   }
 
   @Test

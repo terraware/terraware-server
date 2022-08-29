@@ -13,6 +13,7 @@ import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.ViabilityTestId
 import java.security.Principal
 
 /**
@@ -96,6 +97,7 @@ interface TerrawareUser : Principal {
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
   fun canReadUpload(uploadId: UploadId): Boolean
+  fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean
   fun canRegenerateAllDeviceManagerTokens(): Boolean
   fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canSendAlert(facilityId: FacilityId): Boolean
