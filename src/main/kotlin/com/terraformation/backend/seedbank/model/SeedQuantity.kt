@@ -3,11 +3,14 @@ package com.terraformation.backend.seedbank.model
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 private val ouncesPerGram = BigDecimal("0.035274")
-private val poundsPerGram = BigDecimal("0.00220462")
+private val ouncesPerPound = BigDecimal(16)
 private val gramsPerOunce = BigDecimal("28.3495")
-private val gramsPerPound = gramsPerOunce * BigDecimal(16)
+private val gramsPerPound = gramsPerOunce * ouncesPerPound
+private val poundsPerGram = BigDecimal("0.00220462")
+private val poundsPerOunce = BigDecimal("0.0625")
 
 fun SeedQuantityUnits.toGrams(quantity: BigDecimal): BigDecimal {
   return when (this) {
@@ -37,11 +40,46 @@ data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUn
   val grams
     get() = if (units != SeedQuantityUnits.Seeds) units.toGrams(quantity) else null
 
-  fun toUnits(newUnits: SeedQuantityUnits): SeedQuantityModel {
-    return if (units == newUnits) {
-      this
-    } else {
-      SeedQuantityModel(newUnits.fromGrams(units.toGrams(quantity)), newUnits)
+  fun toUnits(
+      newUnits: SeedQuantityUnits,
+      subsetWeight: SeedQuantityModel? = null,
+      subsetCount: Int? = null,
+  ): SeedQuantityModel {
+    return when {
+      units == newUnits -> {
+        this
+      }
+      units == SeedQuantityUnits.Pounds && newUnits == SeedQuantityUnits.Ounces -> {
+        SeedQuantityModel(quantity * ouncesPerPound, SeedQuantityUnits.Ounces)
+      }
+      units == SeedQuantityUnits.Ounces && newUnits == SeedQuantityUnits.Pounds -> {
+        SeedQuantityModel(quantity * poundsPerOunce, SeedQuantityUnits.Pounds)
+      }
+      units != SeedQuantityUnits.Seeds && newUnits != SeedQuantityUnits.Seeds -> {
+        SeedQuantityModel(newUnits.fromGrams(units.toGrams(quantity)), newUnits)
+      }
+      subsetWeight == null || subsetCount == null -> {
+        throw IllegalArgumentException(
+            "Cannot convert between weight and seed count without subset measurement")
+      }
+      newUnits == SeedQuantityUnits.Seeds -> {
+        // Seed count must always be an integer, so we need to round the calculated quantity.
+        val subsetInOurUnits = subsetWeight.toUnits(units)
+        val seeds =
+            quantity
+                .times(subsetCount.toBigDecimal())
+                .divide(subsetInOurUnits.quantity, 0, RoundingMode.HALF_UP)
+        SeedQuantityModel(seeds, SeedQuantityUnits.Seeds)
+      }
+      else -> {
+        // Limit calculated weights to 5 decimal places.
+        val subsetInNewUnits = subsetWeight.toUnits(newUnits)
+        val weight =
+            quantity
+                .times(subsetInNewUnits.quantity)
+                .divide(subsetCount.toBigDecimal(), 5, RoundingMode.HALF_UP)
+        SeedQuantityModel(weight, newUnits)
+      }
     }
   }
 
@@ -59,6 +97,19 @@ data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUn
     } else {
       units.toGrams(quantity).compareTo(other.units.toGrams(other.quantity))
     }
+  }
+
+  /**
+   * Compares two SeedQuantityModels without regard to the scales of their BigDecimal quantities.
+   */
+  override fun equals(other: Any?): Boolean {
+    return other is SeedQuantityModel &&
+        other.units == units &&
+        other.quantity.equalsIgnoreScale(quantity)
+  }
+
+  override fun hashCode(): Int {
+    return units.hashCode() xor quantity.stripTrailingZeros().hashCode()
   }
 
   companion object {
