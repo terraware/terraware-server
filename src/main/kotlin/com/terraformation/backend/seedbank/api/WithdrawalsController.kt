@@ -2,22 +2,19 @@ package com.terraformation.backend.seedbank.api
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.WithdrawalId
-import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.WithdrawalPurpose
-import com.terraformation.backend.seedbank.db.AccessionStore
+import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Clock
 import java.time.LocalDate
-import javax.ws.rs.InternalServerErrorException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -25,20 +22,19 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping("/api/v2/seedbank/withdrawals")
+@RequestMapping("/api/v2/seedbank/accessions/{accessionId}/withdrawals")
 @RestController
 class WithdrawalsController(
-    private val accessionStore: AccessionStore,
-    private val parentStore: ParentStore,
+    private val accessionService: AccessionService,
+    private val clock: Clock,
     private val withdrawalStore: WithdrawalStore,
 ) {
   @GetMapping
   @Operation(summary = "List all the withdrawals matching a search criterion.")
   fun listWithdrawals(
-      @RequestParam("accessionId") accessionId: AccessionId
+      @PathVariable("accessionId") accessionId: AccessionId
   ): GetWithdrawalsResponsePayload {
     val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
     val payloads = withdrawals.map { GetWithdrawalPayload(it) }
@@ -46,9 +42,12 @@ class WithdrawalsController(
     return GetWithdrawalsResponsePayload(payloads)
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/{withdrawalId}")
   @Operation(summary = "Get a single withdrawal.")
-  fun getWithdrawal(@PathVariable("id") withdrawalId: WithdrawalId): GetWithdrawalResponsePayload {
+  fun getWithdrawal(
+      @PathVariable("accessionId") accessionId: AccessionId,
+      @PathVariable("withdrawalId") withdrawalId: WithdrawalId
+  ): GetWithdrawalResponsePayload {
     val model = withdrawalStore.fetchOneById(withdrawalId)
     return GetWithdrawalResponsePayload(GetWithdrawalPayload(model))
   }
@@ -58,37 +57,37 @@ class WithdrawalsController(
       description = "May cause the accession's remaining quantity to change.")
   @PostMapping
   fun createWithdrawal(
+      @PathVariable("accessionId") accessionId: AccessionId,
       @RequestBody payload: CreateWithdrawalRequestPayload
-  ): UpdateWithdrawalResponsePayload {
-    throw InternalServerErrorException("Not implemented yet")
+  ): UpdateAccessionResponsePayloadV2 {
+    val accession = accessionService.createWithdrawal(payload.toModel(accessionId))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession, clock))
   }
 
   @Operation(
       summary = "Update the details of an existing withdrawal.",
       description = "May cause the accession's remaining quantity to change.")
-  @PutMapping("/{id}")
+  @PutMapping("/{withdrawalId}")
   fun updateWithdrawal(
-      @PathVariable("id") withdrawalId: WithdrawalId,
+      @PathVariable("accessionId") accessionId: AccessionId,
+      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
       @RequestBody payload: UpdateWithdrawalRequestPayload
-  ): UpdateWithdrawalResponsePayload {
-    throw InternalServerErrorException("Not implemented yet")
+  ): UpdateAccessionResponsePayloadV2 {
+    val accession =
+        accessionService.updateWithdrawal(accessionId, withdrawalId, payload::applyToModel)
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession, clock))
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/{withdrawalId}")
   @Operation(
       summary = "Delete an existing withdrawal.",
       description = "May cause the accession's remaining quantity to change.")
   fun deleteWithdrawal(
-      @PathVariable("id") withdrawalId: WithdrawalId
-  ): SimpleSuccessResponsePayload {
-    val accessionId =
-        parentStore.getAccessionId(withdrawalId) ?: throw WithdrawalNotFoundException(withdrawalId)
-    val accession = accessionStore.fetchOneById(accessionId)
-    val editedWithdrawals = accession.withdrawals.filterNot { it.id == withdrawalId }
-
-    accessionStore.update(accession.copy(withdrawals = editedWithdrawals))
-
-    return SimpleSuccessResponsePayload()
+      @PathVariable("accessionId") accessionId: AccessionId,
+      @PathVariable("withdrawalId") withdrawalId: WithdrawalId
+  ): UpdateAccessionResponsePayloadV2 {
+    val accession = accessionService.deleteWithdrawal(accessionId, withdrawalId)
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession, clock))
   }
 }
 
@@ -157,7 +156,6 @@ data class GetWithdrawalPayload(
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class CreateWithdrawalRequestPayload(
-    val accessionId: AccessionId,
     val date: LocalDate,
     val purpose: WithdrawalPurpose? = null,
     val notes: String? = null,
@@ -179,7 +177,7 @@ data class CreateWithdrawalRequestPayload(
                 "and count.")
     val withdrawnQuantity: SeedQuantityPayload? = null,
 ) {
-  fun toModel() =
+  fun toModel(accessionId: AccessionId) =
       WithdrawalModel(
           accessionId = accessionId,
           date = date,
@@ -215,11 +213,13 @@ data class UpdateWithdrawalRequestPayload(
     val withdrawnQuantity: SeedQuantityPayload? = null,
 ) {
   fun applyToModel(model: WithdrawalModel): WithdrawalModel =
-      model.copy(date = date, purpose = purpose, notes = notes)
+      model.copy(
+          date = date,
+          purpose = purpose,
+          notes = notes,
+          withdrawn = withdrawnQuantity?.toModel(),
+      )
 }
-
-data class UpdateWithdrawalResponsePayload(val withdrawal: GetWithdrawalPayload) :
-    SuccessResponsePayload
 
 data class GetWithdrawalResponsePayload(val withdrawal: GetWithdrawalPayload) :
     SuccessResponsePayload
