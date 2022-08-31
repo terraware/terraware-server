@@ -5,7 +5,6 @@ import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
-import com.terraformation.backend.db.tables.references.VIABILITY_TEST_SELECTIONS
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
@@ -23,13 +22,8 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
 
     return with(VIABILITY_TESTS) {
       DSL.multiset(
-              DSL.select(
-                      VIABILITY_TESTS.asterisk(),
-                      VIABILITY_TEST_SELECTIONS.VIABILITY_TEST_ID,
-                      viabilityTestResultsMultiset)
+              DSL.select(VIABILITY_TESTS.asterisk(), viabilityTestResultsMultiset)
                   .from(VIABILITY_TESTS)
-                  .leftJoin(VIABILITY_TEST_SELECTIONS)
-                  .on(ID.eq(VIABILITY_TEST_SELECTIONS.VIABILITY_TEST_ID))
                   .where(ACCESSION_ID.eq(idField))
                   .orderBy(ID))
           .convertFrom { result ->
@@ -50,7 +44,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
                   record[STAFF_RESPONSIBLE],
                   record[viabilityTestResultsMultiset]?.ifEmpty { null },
                   SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-                  record[VIABILITY_TEST_SELECTIONS.VIABILITY_TEST_ID] != null,
               )
             }
           }
@@ -114,10 +107,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
 
     calculatedTest.testResults?.forEach { insertTestResult(testId, it) }
 
-    if (viabilityTest.selected) {
-      insertViabilityTestSelection(accessionId, testId)
-    }
-
     return calculatedTest.copy(id = testId)
   }
 
@@ -141,10 +130,6 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
     val desired = desiredTests ?: emptyList()
     val deletedTestIds = existingIds.minus(desired.mapNotNull { it.id }.toSet())
 
-    if (desired.count { it.selected } > 1) {
-      throw IllegalArgumentException("At most one test can be selected.")
-    }
-
     if (deletedTestIds.isNotEmpty()) {
       dslContext
           .deleteFrom(VIABILITY_TESTS)
@@ -152,77 +137,47 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
           .execute()
     }
 
-    val testsWithIds =
-        desired
-            .map { it.withCalculatedValues() }
-            .map { desiredTest ->
-              val testId = desiredTest.id
+    desired
+        .map { it.withCalculatedValues() }
+        .forEach { desiredTest ->
+          val testId = desiredTest.id
 
-              if (testId == null) {
-                insertViabilityTest(accessionId, desiredTest)
-              } else {
-                val existingTest =
-                    existingById[testId]
-                        ?: throw IllegalArgumentException(
-                            "Viability test IDs must refer to existing tests; leave ID off to insert a new test.")
-                if (!desiredTest.fieldsEqual(existingTest)) {
-                  with(VIABILITY_TESTS) {
-                    dslContext
-                        .update(VIABILITY_TESTS)
-                        .set(END_DATE, desiredTest.endDate)
-                        .set(NOTES, desiredTest.notes)
-                        .set(REMAINING_GRAMS, desiredTest.remaining?.grams)
-                        .set(REMAINING_QUANTITY, desiredTest.remaining?.quantity)
-                        .set(REMAINING_UNITS_ID, desiredTest.remaining?.units)
-                        .set(SEED_TYPE_ID, desiredTest.seedType)
-                        .set(SEEDS_SOWN, desiredTest.seedsSown)
-                        .set(SUBSTRATE_ID, desiredTest.substrate)
-                        .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
-                        .set(START_DATE, desiredTest.startDate)
-                        .set(TOTAL_PERCENT_GERMINATED, desiredTest.totalPercentGerminated)
-                        .set(TOTAL_SEEDS_GERMINATED, desiredTest.totalSeedsGerminated)
-                        .set(TREATMENT_ID, desiredTest.treatment)
-                        .where(ID.eq(testId))
-                        .execute()
-                  }
-                }
-
-                // TODO: Smarter diff of test results
+          if (testId == null) {
+            insertViabilityTest(accessionId, desiredTest)
+          } else {
+            val existingTest =
+                existingById[testId]
+                    ?: throw IllegalArgumentException(
+                        "Viability test IDs must refer to existing tests; leave ID off to insert a new test.")
+            if (!desiredTest.fieldsEqual(existingTest)) {
+              with(VIABILITY_TESTS) {
                 dslContext
-                    .deleteFrom(VIABILITY_TEST_RESULTS)
-                    .where(VIABILITY_TEST_RESULTS.TEST_ID.eq(testId))
+                    .update(VIABILITY_TESTS)
+                    .set(END_DATE, desiredTest.endDate)
+                    .set(NOTES, desiredTest.notes)
+                    .set(REMAINING_GRAMS, desiredTest.remaining?.grams)
+                    .set(REMAINING_QUANTITY, desiredTest.remaining?.quantity)
+                    .set(REMAINING_UNITS_ID, desiredTest.remaining?.units)
+                    .set(SEED_TYPE_ID, desiredTest.seedType)
+                    .set(SEEDS_SOWN, desiredTest.seedsSown)
+                    .set(SUBSTRATE_ID, desiredTest.substrate)
+                    .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
+                    .set(START_DATE, desiredTest.startDate)
+                    .set(TOTAL_PERCENT_GERMINATED, desiredTest.totalPercentGerminated)
+                    .set(TOTAL_SEEDS_GERMINATED, desiredTest.totalSeedsGerminated)
+                    .set(TREATMENT_ID, desiredTest.treatment)
+                    .where(ID.eq(testId))
                     .execute()
-                desiredTest.testResults?.forEach { insertTestResult(testId, it) }
-
-                desiredTest
               }
             }
 
-    val desiredSelectedId = testsWithIds.firstOrNull { it.selected }?.id
-    val existingSelectedId = existing.firstOrNull { it.selected }?.id
-
-    if (desiredSelectedId != null && desiredSelectedId != existingSelectedId) {
-      insertViabilityTestSelection(accessionId, desiredSelectedId)
-    } else if (desiredSelectedId == null &&
-        existingSelectedId != null &&
-        existingSelectedId !in deletedTestIds) {
-      dslContext
-          .deleteFrom(VIABILITY_TEST_SELECTIONS)
-          .where(VIABILITY_TEST_SELECTIONS.ACCESSION_ID.eq(accessionId))
-          .execute()
-    }
-  }
-
-  private fun insertViabilityTestSelection(accessionId: AccessionId, testId: ViabilityTestId) {
-    with(VIABILITY_TEST_SELECTIONS) {
-      dslContext
-          .insertInto(VIABILITY_TEST_SELECTIONS)
-          .set(ACCESSION_ID, accessionId)
-          .set(VIABILITY_TEST_ID, testId)
-          .onConflict(ACCESSION_ID)
-          .doUpdate()
-          .set(VIABILITY_TEST_ID, testId)
-          .execute()
-    }
+            // TODO: Smarter diff of test results
+            dslContext
+                .deleteFrom(VIABILITY_TEST_RESULTS)
+                .where(VIABILITY_TEST_RESULTS.TEST_ID.eq(testId))
+                .execute()
+            desiredTest.testResults?.forEach { insertTestResult(testId, it) }
+          }
+        }
   }
 }
