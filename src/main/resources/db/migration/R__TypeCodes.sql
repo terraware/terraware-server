@@ -1,3 +1,8 @@
+INSERT INTO accession_quantity_history_types (id, name)
+VALUES (1, 'Observed'),
+       (2, 'Computed')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accession_states (id, name, active)
 VALUES (5, 'Awaiting Check-In', TRUE),
        (10, 'Pending', TRUE),

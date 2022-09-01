@@ -16,6 +16,8 @@ import org.jooq.meta.jaxb.EmbeddableDefinitionType
 val ENUM_TABLES =
     listOf(
         EnumTable(
+            "accession_quantity_history_types", "accession_quantity_history\\.history_type_id"),
+        EnumTable(
             "accession_states",
             listOf(
                 "accessions\\.state_id",
