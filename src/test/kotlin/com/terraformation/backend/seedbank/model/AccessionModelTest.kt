@@ -25,10 +25,11 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 internal class AccessionModelTest {
-  private val clock: Clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
+  private val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
   private val today = LocalDate.now(clock)
   private val tomorrow = today.plusDays(1)
   private val yesterday = today.minusDays(1)
@@ -340,6 +341,7 @@ internal class AccessionModelTest {
     }
   }
 
+  @Suppress("UnusedDataClassCopyResult")
   @Nested
   inner class ValidationRules {
     @Test
@@ -406,6 +408,125 @@ internal class AccessionModelTest {
         accession(processingMethod = ProcessingMethod.Weight, total = grams(-1))
       }
     }
+
+    @Test
+    fun `cannot withdraw seeds if remaining quantity is not set`() {
+      val initial = accession().copy(isManualState = true)
+
+      assertThrows<IllegalArgumentException> {
+        initial.copy(withdrawals = listOf(withdrawal(withdrawn = seeds(1))))
+      }
+    }
+
+    @Test
+    fun `cannot withdraw more seeds than most recent observed quantity`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        initial
+            .copy(withdrawals = listOf(withdrawal(withdrawn = seeds(11))))
+            .withCalculatedValues(clock, initial)
+      }
+    }
+
+    @Test
+    fun `cannot withdraw more weight than most recent observed seed count`() {
+      val initial =
+          accession()
+              .copy(
+                  isManualState = true,
+                  subsetCount = 2,
+                  subsetWeightQuantity = grams(2),
+                  remaining = seeds(10))
+              .withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        initial
+            .copy(withdrawals = listOf(withdrawal(withdrawn = grams(11))))
+            .withCalculatedValues(clock, initial)
+      }
+    }
+
+    @Test
+    fun `cannot remove remaining quantity once it has been set`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = seeds(1)).withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> { initial.copy(remaining = null) }
+    }
+
+    @Test
+    fun `cannot change remaining quantity from seeds to weight without subset info if withdrawals exist`() {
+      val initial =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .copy(withdrawals = listOf(withdrawal(seeds(1))))
+              .withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> { initial.copy(remaining = grams(1)) }
+    }
+
+    @Test
+    fun `cannot change remaining quantity from weight to seeds without subset info if withdrawals exist`() {
+      val initial =
+          accession()
+              .copy(isManualState = true, remaining = grams(10))
+              .withCalculatedValues(clock)
+              .copy(withdrawals = listOf(withdrawal(grams(1))))
+              .withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> { initial.copy(remaining = seeds(1)) }
+    }
+
+    @Test
+    fun `can change remaining quantity from seeds to weight without subset info if no withdrawals exist`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertDoesNotThrow { initial.copy(remaining = grams(1)) }
+    }
+
+    @Test
+    fun `can change remaining quantity from weight to seeds without subset info if no withdrawals exist`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = grams(10)).withCalculatedValues(clock)
+
+      assertDoesNotThrow { initial.copy(remaining = seeds(1)) }
+    }
+
+    @Test
+    fun `can change remaining quantity from seeds to weight if subset info exists`() {
+      val initial =
+          accession()
+              .copy(
+                  isManualState = true,
+                  subsetCount = 1,
+                  subsetWeightQuantity = grams(1),
+                  remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .copy(withdrawals = listOf(withdrawal(seeds(1))))
+              .withCalculatedValues(clock)
+
+      assertDoesNotThrow { initial.copy(remaining = grams(10)) }
+    }
+
+    @Test
+    fun `can change remaining quantity from weight to seeds if subset info exists`() {
+      val initial =
+          accession()
+              .copy(
+                  isManualState = true,
+                  subsetCount = 1,
+                  subsetWeightQuantity = grams(1),
+                  remaining = grams(10))
+              .withCalculatedValues(clock)
+              .copy(withdrawals = listOf(withdrawal(grams(1))))
+              .withCalculatedValues(clock)
+
+      assertDoesNotThrow { initial.copy(remaining = seeds(10)) }
+    }
   }
 
   @Nested
@@ -415,7 +536,7 @@ internal class AccessionModelTest {
       val accession = accession(processingMethod = ProcessingMethod.Weight)
       assertAll(
           { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
-          { assertNull(accession.calculateLatestObservedTime(), "Time") })
+          { assertNull(accession.calculateLatestObservedTime(clock), "Time") })
     }
 
     @Test
@@ -423,7 +544,7 @@ internal class AccessionModelTest {
       val accession = accession(total = grams(50))
       assertAll(
           { assertEquals(grams(50), accession.calculateLatestObservedQuantity(clock), "Quantity") },
-          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(), "Time") })
+          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") })
     }
 
     @Test
@@ -441,7 +562,8 @@ internal class AccessionModelTest {
       assertAll(
           { assertEquals(grams(89), accession.calculateLatestObservedQuantity(clock), "Quantity") },
           {
-            assertEquals(Instant.ofEpochSecond(3), accession.calculateLatestObservedTime(), "Time")
+            assertEquals(
+                Instant.ofEpochSecond(3), accession.calculateLatestObservedTime(clock), "Time")
           })
     }
 
@@ -757,7 +879,7 @@ internal class AccessionModelTest {
       val accession = accession()
       assertAll(
           { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
-          { assertNull(accession.calculateLatestObservedTime(), "Time") },
+          { assertNull(accession.calculateLatestObservedTime(clock), "Time") },
       )
     }
 
@@ -766,7 +888,7 @@ internal class AccessionModelTest {
       val accession = accession(processingMethod = ProcessingMethod.Count)
       assertAll(
           { assertNull(accession.calculateLatestObservedQuantity(clock), "Quantity") },
-          { assertNull(accession.calculateLatestObservedTime(), "Time") },
+          { assertNull(accession.calculateLatestObservedTime(clock), "Time") },
       )
     }
 
@@ -775,7 +897,7 @@ internal class AccessionModelTest {
       val accession = accession(total = seeds(10))
       assertAll(
           { assertEquals(seeds(10), accession.calculateLatestObservedQuantity(clock), "Quantity") },
-          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(), "Time") },
+          { assertEquals(clock.instant(), accession.calculateLatestObservedTime(clock), "Time") },
       )
     }
 
@@ -1106,10 +1228,11 @@ internal class AccessionModelTest {
       accession()
           .copy(
               isManualState = true,
-              processingMethod = ProcessingMethod.Count,
+              latestObservedQuantity = seeds(10),
+              latestObservedTime = Instant.EPOCH,
+              remaining = seeds(10),
               state = AccessionState.InStorage,
-              total = seeds(10),
-              withdrawals = listOf(withdrawal(seeds(10), remaining = seeds(0))),
+              withdrawals = listOf(withdrawal(seeds(10))),
           )
           .addStateTest({ this }, AccessionState.UsedUp, "All seeds marked as withdrawn")
           .addStateTest(
@@ -1143,6 +1266,216 @@ internal class AccessionModelTest {
               "Change from Awaiting Check-In to In Storage")
 
       return tests
+    }
+  }
+
+  @Nested
+  inner class QuantityCalculations {
+    private val todayInstant = today.atStartOfDay(ZoneOffset.UTC).toInstant()
+    private val tomorrowInstant = tomorrow.atStartOfDay(ZoneOffset.UTC).toInstant()
+    private val tomorrowClock = Clock.fixed(tomorrowInstant, ZoneOffset.UTC)
+    private val yesterdayInstant = yesterday.atStartOfDay(ZoneOffset.UTC).toInstant()
+
+    @Test
+    fun `observed quantity is updated if remaining quantity is changed`() {
+      val existing = accession().copy(isManualState = true, remaining = seeds(10))
+
+      val updated = existing.copy(remaining = seeds(9))
+
+      assertEquals(
+          seeds(9),
+          updated.calculateLatestObservedQuantity(tomorrowClock, existing),
+          "Observed quantity")
+      assertEquals(
+          tomorrowInstant,
+          updated.calculateLatestObservedTime(tomorrowClock, existing),
+          "Observed time")
+    }
+
+    @Test
+    fun `observed quantity is not updated if remaining quantity is unchanged`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = seeds(10),
+                  latestObservedTime = yesterdayInstant,
+                  remaining = seeds(9))
+
+      val updated = accession.copy(remaining = seeds(9))
+
+      assertEquals(
+          seeds(10),
+          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
+          "Observed quantity")
+      assertEquals(
+          yesterdayInstant,
+          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          "Observed time")
+    }
+
+    @Test
+    fun `observed quantity is not affected by new withdrawals`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = seeds(10),
+                  latestObservedTime = yesterdayInstant,
+                  remaining = seeds(10))
+
+      val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today)))
+
+      assertEquals(
+          seeds(10),
+          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
+          "Observed quantity")
+      assertEquals(
+          yesterdayInstant,
+          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          "Observed time")
+    }
+
+    @Test
+    fun `remaining quantity is updated by withdrawal dated after observed quantity`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = seeds(10),
+                  latestObservedTime = yesterdayInstant,
+                  remaining = seeds(10))
+
+      val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today)))
+
+      assertEquals(
+          seeds(8), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+
+    @Test
+    fun `remaining quantity is not affected by withdrawals dated before latest observed quantity`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = grams(10),
+                  latestObservedTime = todayInstant,
+                  remaining = grams(10))
+
+      val updated =
+          accession.copy(
+              withdrawals =
+                  listOf(withdrawal(grams(1), date = yesterday, createdTime = tomorrowInstant)))
+
+      assertEquals(
+          grams(10), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+
+    @Test
+    fun `remaining quantity is not affected by withdrawals created earlier on the day of the observed quantity`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = grams(10),
+                  latestObservedTime = todayInstant,
+                  remaining = grams(10))
+
+      val updated =
+          accession.copy(
+              withdrawals =
+                  listOf(withdrawal(grams(1), date = today, createdTime = yesterdayInstant)))
+
+      assertEquals(
+          grams(10), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+
+    @Test
+    fun `remaining quantity is updated by withdrawals created later on the day of the observed quantity`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = grams(10),
+                  latestObservedTime = todayInstant,
+                  remaining = grams(10))
+
+      val updated =
+          accession.copy(
+              withdrawals =
+                  listOf(
+                      withdrawal(
+                          grams(1), date = today, createdTime = todayInstant.plusSeconds(1))))
+
+      assertEquals(
+          grams(9), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+
+    @Test
+    fun `remaining quantity in weight is updated by withdrawal in seeds`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = grams(10),
+                  latestObservedTime = Instant.EPOCH,
+                  remaining = grams(10),
+                  // 3 grams per seed
+                  subsetCount = 2,
+                  subsetWeightQuantity = grams(6))
+
+      val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2))))
+
+      assertEquals(
+          grams(4), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+
+    @Test
+    fun `remaining quantity is updated by viability test but observed quantity is not`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = seeds(10),
+                  latestObservedTime = Instant.EPOCH,
+                  remaining = seeds(10))
+
+      val updated = accession.copy(viabilityTests = listOf(viabilityTest(seedsSown = 2)))
+
+      assertEquals(
+          seeds(10),
+          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
+          "Observed quantity")
+      assertEquals(
+          Instant.EPOCH,
+          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          "Observed time")
+      assertEquals(
+          seeds(8), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+
+    @Test
+    fun `remaining quantity change takes precedence over newly-added withdrawal`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = seeds(10),
+                  latestObservedTime = Instant.EPOCH,
+                  remaining = seeds(10))
+
+      val updated = accession.copy(remaining = seeds(5), withdrawals = listOf(withdrawal(seeds(1))))
+
+      assertEquals(
+          seeds(5),
+          updated.calculateLatestObservedQuantity(tomorrowClock, accession),
+          "Observed quantity")
+      assertEquals(
+          tomorrowInstant,
+          updated.calculateLatestObservedTime(tomorrowClock, accession),
+          "Observed time")
+      assertEquals(
+          seeds(5), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
     }
   }
 }

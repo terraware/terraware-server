@@ -138,8 +138,8 @@ data class GetWithdrawalPayload(
       model: WithdrawalModel
   ) : this(
       date = model.date,
-      estimatedCount = 0,
-      estimatedWeight = null,
+      estimatedCount = model.estimatedCount,
+      estimatedWeight = model.estimatedWeight?.toPayload(),
       id = model.id,
       purpose = model.purpose,
       notes = model.notes,
@@ -175,7 +175,7 @@ data class CreateWithdrawalRequestPayload(
                 "and count.")
     val withdrawnQuantity: SeedQuantityPayload? = null,
 ) {
-  fun toModel(accessionId: AccessionId) =
+  fun toModel(accessionId: AccessionId): WithdrawalModel =
       WithdrawalModel(
           accessionId = accessionId,
           date = date,

@@ -144,6 +144,10 @@ class AccessionStore(
           geolocations = record[geolocationsField],
           id = accessionId,
           isManualState = record[IS_MANUAL_STATE] ?: false,
+          latestObservedQuantity =
+              SeedQuantityModel.of(
+                  record[LATEST_OBSERVED_QUANTITY], record[LATEST_OBSERVED_UNITS_ID]),
+          latestObservedTime = record[LATEST_OBSERVED_TIME],
           latestViabilityPercent = record[LATEST_VIABILITY_PERCENT],
           latestViabilityTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
           numberOfTrees = record[TREES_COLLECTED_FROM],
@@ -411,6 +415,9 @@ class AccessionStore(
                 .set(FOUNDER_ID, accession.founderId)
                 .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
                 .set(LATEST_GERMINATION_RECORDING_DATE, accession.latestViabilityTestDate)
+                .set(LATEST_OBSERVED_QUANTITY, accession.latestObservedQuantity?.quantity)
+                .set(LATEST_OBSERVED_TIME, accession.latestObservedTime)
+                .set(LATEST_OBSERVED_UNITS_ID, accession.latestObservedQuantity?.units)
                 .set(LATEST_VIABILITY_PERCENT, accession.latestViabilityPercent)
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
