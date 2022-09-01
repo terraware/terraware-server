@@ -75,7 +75,6 @@ import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
-import com.terraformation.backend.util.orNull
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -1450,10 +1449,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         accuracy = BigDecimal(3))),
             landowner = "landowner",
             numberOfTrees = 10,
-            primaryCollector = "primaryCollector",
             rare = RareType.Yes,
             receivedDate = today,
-            secondaryCollectors = listOf("second1", "second2"),
             siteLocation = "siteLocation",
             source = DataSource.FileImport,
             sourcePlantOrigin = SourcePlantOrigin.Wild,
@@ -1526,14 +1523,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             landowner = "landowner",
             numberOfTrees = 10,
             nurseryStartDate = today,
-            primaryCollector = "primaryCollector",
             processingMethod = ProcessingMethod.Weight,
             processingNotes = "processingNotes",
             processingStaffResponsible = "procStaff",
             processingStartDate = today,
             rare = RareType.Yes,
             receivedDate = today,
-            secondaryCollectors = listOf("second1", "second2"),
             siteLocation = "siteLocation",
             sourcePlantOrigin = SourcePlantOrigin.Wild,
             species = "species",
@@ -1722,7 +1717,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             initialQuantity = kilograms(432),
             processingMethod = ProcessingMethod.Weight,
             receivedDate = today,
-            secondaryCollectors = listOf("second1", "second2"),
             species = "species",
             storageLocation = storageLocationName,
             viabilityTests =
@@ -2571,14 +2565,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         landowner = collectionSiteLandowner,
         numberOfTrees = numberOfTrees,
         nurseryStartDate = nurseryStartDate,
-        primaryCollector = collectors.getOrNull(0),
         processingMethod = processingMethod,
         processingNotes = processingNotes,
         processingStaffResponsible = processingStaffResponsible,
         processingStartDate = processingStartDate,
         rare = rare,
         receivedDate = receivedDate,
-        secondaryCollectors = collectors.drop(1).orNull(),
         siteLocation = collectionSiteName,
         sourcePlantOrigin = sourcePlantOrigin,
         species = species,

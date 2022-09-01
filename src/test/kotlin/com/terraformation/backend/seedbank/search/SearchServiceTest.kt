@@ -201,9 +201,9 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             treesCollectedFrom = 2))
 
     accessionCollectorsDao.insert(
-        AccessionCollectorsRow(AccessionId(1000), 0, "primary"),
-        AccessionCollectorsRow(AccessionId(1000), 1, "secondary 1"),
-        AccessionCollectorsRow(AccessionId(1000), 2, "secondary 2"),
+        AccessionCollectorsRow(AccessionId(1000), 0, "collector 1"),
+        AccessionCollectorsRow(AccessionId(1000), 1, "collector 2"),
+        AccessionCollectorsRow(AccessionId(1000), 2, "collector 3"),
     )
   }
 
@@ -2934,23 +2934,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "collectionSource" to "Reintroduced",
                       "collectors" to
                           listOf(
-                              mapOf("name" to "primary", "position" to "0"),
-                              mapOf("name" to "secondary 1", "position" to "1"),
-                              mapOf("name" to "secondary 2", "position" to "2"),
+                              mapOf("name" to "collector 1", "position" to "0"),
+                              mapOf("name" to "collector 2", "position" to "1"),
+                              mapOf("name" to "collector 3", "position" to "2"),
                           ),
                       "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
                       "id" to "1000",
                       "landowner" to "landowner",
-                      "primaryCollectorName" to "primary",
-                      "primaryCollectors" to
-                          listOf(
-                              mapOf("name" to "primary", "position" to "0"),
-                          ),
-                      "secondaryCollectors" to
-                          listOf(
-                              mapOf("name" to "secondary 1", "position" to "1"),
-                              mapOf("name" to "secondary 2", "position" to "2"),
-                          ),
                       "siteLocation" to "siteName",
                       "source" to "Seed Collector App",
                       "speciesName" to "Kousa Dogwood",

@@ -180,12 +180,8 @@ def generate_initial_quantity() -> Dict:
 
 
 def generate_accession(facility_id: int) -> Dict:
-    primary_collector = generate_staff_responsible()
-    secondary_collectors = (
-        [generate_staff_responsible()] if randint(0, 4) == 0 else None
-    )
-    if secondary_collectors and secondary_collectors[0] == primary_collector:
-        secondary_collectors = None
+    num_collectors = randint(1, 3) if randint(0, 2) == 0 else 0
+    collectors = [generate_staff_responsible() for n in range(num_collectors)] or None
 
     bag_numbers = generate_bag_numbers()
     geolocations = (
@@ -204,6 +200,7 @@ def generate_accession(facility_id: int) -> Dict:
     return {
         "bagNumbers": bag_numbers,
         "collectedDate": str(collected_date) if collected_date else None,
+        "collectors": collectors,
         "endangered": generate_endangered(),
         "environmentalNotes": generate_notes(),
         "facilityId": facility_id,
@@ -213,10 +210,8 @@ def generate_accession(facility_id: int) -> Dict:
         "geolocations": geolocations,
         "landowner": generate_staff_responsible(),
         "numberOfTrees": randint(1, 10),
-        "primaryCollector": primary_collector,
         "rare": generate_rare(),
         "receivedDate": str(received_date) if received_date else None,
-        "secondaryCollectors": secondary_collectors,
         "siteLocation": generate_site_location(),
         "source": generate_source(),
         "sourcePlantOrigin": generate_source_plant_origin(),

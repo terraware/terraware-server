@@ -156,24 +156,6 @@ class AccessionsController(
   }
 }
 
-/**
- * Returns the list of collectors from an incoming request payload that might be coming from a
- * client that doesn't know about the new unified `collectors` field. The client will remove the old
- * fields when it starts using the new one, so if the old fields are present, use them and ignore
- * the new one.
- */
-private fun backwardCompatibleCollectors(
-    primaryCollector: String?,
-    secondaryCollectors: List<String>?,
-    collectors: List<String>?
-): List<String> {
-  return if (primaryCollector != null || secondaryCollectors != null) {
-    listOfNotNull(primaryCollector) + secondaryCollectors.orEmpty()
-  } else {
-    collectors.orEmpty()
-  }
-}
-
 /** Maps a source plant origin to the equivalent collection source for backward compatibility. */
 private fun SourcePlantOrigin.toCollectionSource(): CollectionSource =
     when (this) {
@@ -206,16 +188,8 @@ data class CreateAccessionRequestPayload(
         deprecated = true, description = "Backward-compatibility alias for collectionSiteLandowner")
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
-    @Schema(
-        deprecated = true,
-    )
-    val primaryCollector: String? = null,
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
-    @Schema(
-        deprecated = true,
-    )
-    val secondaryCollectors: List<String>? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String? = null,
     val source: DataSource? = null,
@@ -233,8 +207,7 @@ data class CreateAccessionRequestPayload(
         collectionSiteName = siteLocation ?: collectionSiteName,
         collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
         collectionSource = sourcePlantOrigin?.toCollectionSource() ?: collectionSource,
-        collectors =
-            backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
+        collectors = collectors.orEmpty(),
         endangered = endangered,
         facilityId = facilityId,
         family = family,
@@ -287,20 +260,12 @@ data class UpdateAccessionRequestPayload(
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
     val nurseryStartDate: LocalDate? = null,
-    @Schema(
-        deprecated = true,
-    )
-    val primaryCollector: String? = null,
     val processingMethod: ProcessingMethod? = null,
     val processingNotes: String? = null,
     val processingStaffResponsible: String? = null,
     val processingStartDate: LocalDate? = null,
     val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
-    @Schema(
-        deprecated = true,
-    )
-    val secondaryCollectors: List<String>? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String? = null,
     val sourcePlantOrigin: SourcePlantOrigin? = null,
@@ -330,8 +295,7 @@ data class UpdateAccessionRequestPayload(
           collectionSiteName = siteLocation ?: collectionSiteName,
           collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
           collectionSource = sourcePlantOrigin?.toCollectionSource() ?: collectionSource,
-          collectors =
-              backwardCompatibleCollectors(primaryCollector, secondaryCollectors, collectors),
+          collectors = collectors.orEmpty(),
           cutTestSeedsCompromised = cutTestSeedsCompromised,
           cutTestSeedsEmpty = cutTestSeedsEmpty,
           cutTestSeedsFilled = cutTestSeedsFilled,
@@ -426,10 +390,6 @@ data class AccessionPayload(
     val numberOfTrees: Int?,
     val nurseryStartDate: LocalDate?,
     val photoFilenames: List<String>?,
-    @Schema(
-        deprecated = true,
-    )
-    val primaryCollector: String?,
     val processingMethod: ProcessingMethod?,
     val processingNotes: String?,
     val processingStaffResponsible: String?,
@@ -441,10 +401,6 @@ data class AccessionPayload(
             "Number or weight of seeds remaining for withdrawal and testing. Calculated by the " +
                 "server when the accession's total size is known.")
     val remainingQuantity: SeedQuantityPayload?,
-    @Schema(
-        deprecated = true,
-    )
-    val secondaryCollectors: List<String>?,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String?,
     @Schema(
@@ -537,7 +493,6 @@ data class AccessionPayload(
       model.numberOfTrees,
       model.nurseryStartDate,
       model.photoFilenames.orNull(),
-      model.collectors.getOrNull(0),
       model.processingMethod,
       model.processingNotes,
       model.processingStaffResponsible,
@@ -545,7 +500,6 @@ data class AccessionPayload(
       model.rare,
       model.receivedDate,
       model.remaining?.toPayload(),
-      model.collectors.drop(1).orNull(),
       model.collectionSiteName,
       model.source,
       model.sourcePlantOrigin,
