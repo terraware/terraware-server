@@ -41,24 +41,6 @@ private val activeStates = AccessionState.values().filter { it.active }.toSet()
 val AccessionState.Companion.activeValues: Set<AccessionState>
   get() = activeStates
 
-/** True if this accession state is supported in the v1 API. */
-val AccessionState.isV1Compatible: Boolean
-  get() =
-      when (this) {
-        AccessionState.AwaitingCheckIn,
-        AccessionState.Pending,
-        AccessionState.Processing,
-        AccessionState.Processed,
-        AccessionState.Drying,
-        AccessionState.Dried,
-        AccessionState.InStorage,
-        AccessionState.Withdrawn,
-        AccessionState.Nursery -> true
-        AccessionState.Cleaning,
-        AccessionState.AwaitingProcessing,
-        AccessionState.UsedUp -> false
-      }
-
 val AccessionState.isV2Compatible: Boolean
   get() =
       when (this) {
@@ -122,6 +104,8 @@ data class AccessionModel(
     val founderId: String? = null,
     val geolocations: Set<Geolocation> = emptySet(),
     val isManualState: Boolean = false,
+    val latestObservedQuantity: SeedQuantityModel? = null,
+    val latestObservedTime: Instant? = null,
     val latestViabilityPercent: Int? = null,
     val latestViabilityTestDate: LocalDate? = null,
     val numberOfTrees: Int? = null,
@@ -160,6 +144,24 @@ data class AccessionModel(
 
   val active: AccessionActive?
     get() = state?.toActiveEnum()
+
+  fun toV1Compatible(clock: Clock): AccessionModel {
+    return if (!isManualState) {
+      this
+    } else {
+      copy(isManualState = false).withCalculatedValues(clock)
+    }
+  }
+
+  fun toV2Compatible(clock: Clock): AccessionModel {
+    return if (isManualState) {
+      this
+    } else {
+      withCalculatedValues(clock)
+          .copy(isManualState = true, state = state?.toV2Compatible())
+          .withCalculatedValues(clock)
+    }
+  }
 
   fun getStateTransition(newModel: AccessionModel, clock: Clock): AccessionStateTransition? {
     if (newModel.isManualState) {

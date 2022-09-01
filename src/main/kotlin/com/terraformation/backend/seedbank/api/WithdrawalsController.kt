@@ -13,7 +13,6 @@ import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.Clock
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class WithdrawalsController(
     private val accessionService: AccessionService,
-    private val clock: Clock,
     private val withdrawalStore: WithdrawalStore,
 ) {
   @GetMapping
@@ -61,7 +59,7 @@ class WithdrawalsController(
       @RequestBody payload: CreateWithdrawalRequestPayload
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.createWithdrawal(payload.toModel(accessionId))
-    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession, clock))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
   }
 
   @Operation(
@@ -75,7 +73,7 @@ class WithdrawalsController(
   ): UpdateAccessionResponsePayloadV2 {
     val accession =
         accessionService.updateWithdrawal(accessionId, withdrawalId, payload::applyToModel)
-    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession, clock))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
   }
 
   @DeleteMapping("/{withdrawalId}")
@@ -87,7 +85,7 @@ class WithdrawalsController(
       @PathVariable("withdrawalId") withdrawalId: WithdrawalId
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.deleteWithdrawal(accessionId, withdrawalId)
-    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession, clock))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
   }
 }
 
