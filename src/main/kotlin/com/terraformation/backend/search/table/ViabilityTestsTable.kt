@@ -4,14 +4,12 @@ import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
-import com.terraformation.backend.db.tables.references.VIABILITY_TEST_SELECTIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
-import org.jooq.impl.DSL
 
 class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -37,13 +35,6 @@ class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
               "percentGerminated", "% Viability", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
           enumField("seedType", "Seed type", VIABILITY_TESTS.SEED_TYPE_ID),
           integerField("seedsSown", "Number of seeds sown", VIABILITY_TESTS.SEEDS_SOWN),
-          existsField(
-              "selected",
-              "Viability test selected",
-              VIABILITY_TESTS.ID,
-              DSL.selectOne()
-                  .from(VIABILITY_TEST_SELECTIONS)
-                  .where(VIABILITY_TEST_SELECTIONS.VIABILITY_TEST_ID.eq(VIABILITY_TESTS.ID))),
           dateField("startDate", "Viability test start date", VIABILITY_TESTS.START_DATE),
           enumField("substrate", "Germination substrate", VIABILITY_TESTS.SUBSTRATE_ID),
           enumField("treatment", "Germination treatment", VIABILITY_TESTS.TREATMENT_ID),

@@ -169,8 +169,6 @@ COMMENT ON TABLE viability_test_results IS 'Result from a viability test of a ba
 
 COMMENT ON TABLE viability_test_seed_types IS '(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';
 
-COMMENT ON TABLE viability_test_selections IS 'Linking table that stores the currently-selected viability test for each accession.';
-
 COMMENT ON TABLE viability_test_substrates IS '(Enum) Types of substrate that can be used to test seeds for viability.';
 
 COMMENT ON TABLE viability_test_treatments IS '(Enum) Techniques that can be used to treat seeds before testing them for viability.';

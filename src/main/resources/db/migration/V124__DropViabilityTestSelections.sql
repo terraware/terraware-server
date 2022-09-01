@@ -1,0 +1,3 @@
+DROP TABLE viability_test_selections;
+
+ALTER TABLE viability_tests DROP CONSTRAINT viability_tests_id_accession_unique;

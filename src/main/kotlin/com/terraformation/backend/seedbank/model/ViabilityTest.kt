@@ -32,7 +32,6 @@ data class ViabilityTestModel(
     val staffResponsible: String? = null,
     val testResults: Collection<ViabilityTestResultModel>? = null,
     val remaining: SeedQuantityModel? = null,
-    val selected: Boolean = false,
 ) {
   fun fieldsEqual(other: ViabilityTestModel): Boolean {
     return endDate == other.endDate &&
@@ -40,7 +39,6 @@ data class ViabilityTestModel(
         remaining.equalsIgnoreScale(other.remaining) &&
         seedsSown == other.seedsSown &&
         seedType == other.seedType &&
-        selected == other.selected &&
         staffResponsible == other.staffResponsible &&
         startDate == other.startDate &&
         substrate == other.substrate &&

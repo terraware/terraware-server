@@ -28,7 +28,6 @@ import com.terraformation.backend.db.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.tables.daos.UploadsDao
 import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.daos.ViabilityTestResultsDao
-import com.terraformation.backend.db.tables.daos.ViabilityTestSelectionsDao
 import com.terraformation.backend.db.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
@@ -211,7 +210,6 @@ abstract class DatabaseTest {
   protected val usersDao: UsersDao by lazyDao()
   protected val viabilityTestResultsDao: ViabilityTestResultsDao by lazyDao()
   protected val viabilityTestsDao: ViabilityTestsDao by lazyDao()
-  protected val viabilityTestSelectionsDao: ViabilityTestSelectionsDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
 
   /**

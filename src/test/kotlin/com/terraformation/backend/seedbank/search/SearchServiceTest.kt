@@ -29,7 +29,6 @@ import com.terraformation.backend.db.tables.pojos.BagsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.StorageLocationsRow
 import com.terraformation.backend.db.tables.pojos.ViabilityTestResultsRow
-import com.terraformation.backend.db.tables.pojos.ViabilityTestSelectionsRow
 import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
@@ -1329,126 +1328,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val searchNode = FieldNode(receivedDateField, listOf("NOT_A_DATE"), SearchFilterType.Exact)
 
       assertThrows<IllegalArgumentException> { searchAccessions(facilityId, fields, searchNode) }
-    }
-  }
-
-  @Nested
-  inner class ExistsFieldTest {
-    private val nonSelectedTestId = ViabilityTestId(1)
-    private val selectedTestId = ViabilityTestId(2)
-
-    private val selectedField = rootPrefix.resolve("viabilityTests.selected")
-    private val selectedFlattenedField = rootPrefix.resolve("viabilityTests_selected")
-    private val testIdField = rootPrefix.resolve("viabilityTests.id")
-    private val testIdFlattenedField = rootPrefix.resolve("viabilityTests_id")
-
-    @BeforeEach
-    fun insertViabilityTests() {
-      viabilityTestsDao.insert(
-          ViabilityTestsRow(
-              nonSelectedTestId,
-              AccessionId(1000),
-              ViabilityTestType.Lab,
-              remainingQuantity = BigDecimal.ONE,
-              remainingUnitsId = SeedQuantityUnits.Seeds),
-          ViabilityTestsRow(
-              selectedTestId,
-              AccessionId(1000),
-              ViabilityTestType.Lab,
-              remainingQuantity = BigDecimal.ONE,
-              remainingUnitsId = SeedQuantityUnits.Seeds),
-      )
-      viabilityTestSelectionsDao.insert(
-          ViabilityTestSelectionsRow(AccessionId(1000), selectedTestId))
-    }
-
-    @Test
-    fun `returns true if nested target exists and false if not`() {
-      val fields = listOf(accessionNumberField, selectedField, testIdField)
-      val searchNode = NoConditionNode()
-      val sortFields = listOf(SearchSortField(accessionNumberField), SearchSortField(selectedField))
-
-      val expected =
-          SearchResults(
-              listOf(
-                  mapOf(
-                      "accessionNumber" to "ABCDEFG",
-                  ),
-                  mapOf(
-                      "accessionNumber" to "XYZ",
-                      "viabilityTests" to
-                          listOf(
-                              mapOf("id" to "$nonSelectedTestId", "selected" to "false"),
-                              mapOf("id" to "$selectedTestId", "selected" to "true"),
-                          ),
-                  ),
-              ),
-              null)
-
-      val actual = searchService.search(rootPrefix, fields, searchNode, sortFields)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `returns true if flattened target exists and false if not`() {
-      val fields = listOf(accessionNumberField, selectedFlattenedField, testIdFlattenedField)
-      val searchNode = NoConditionNode()
-      val sortFields =
-          listOf(
-              SearchSortField(accessionNumberField),
-              SearchSortField(selectedFlattenedField, SearchDirection.Descending))
-
-      val expected =
-          SearchResults(
-              listOf(
-                  mapOf(
-                      "accessionNumber" to "ABCDEFG",
-                  ),
-                  mapOf(
-                      "accessionNumber" to "XYZ",
-                      "viabilityTests_id" to "$selectedTestId",
-                      "viabilityTests_selected" to "true",
-                  ),
-                  mapOf(
-                      "accessionNumber" to "XYZ",
-                      "viabilityTests_id" to "$nonSelectedTestId",
-                      "viabilityTests_selected" to "false",
-                  ),
-              ),
-              null)
-
-      val actual = searchService.search(rootPrefix, fields, searchNode, sortFields)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `searching for nonexistence filters out results where parent sublist does not exist`() {
-      val fields = listOf(accessionNumberField, testIdField)
-      val searchNode = FieldNode(selectedField, listOf("false"))
-      val sortFields = listOf(SearchSortField(selectedField))
-
-      val expected =
-          SearchResults(
-              listOf(
-                  mapOf(
-                      "accessionNumber" to "XYZ",
-                      "viabilityTests" to
-                          listOf(
-                              // Both IDs are listed here because search filters control which
-                              // top-level results are returned, not which sublist elements.
-                              mapOf("id" to "$nonSelectedTestId"),
-                              mapOf("id" to "$selectedTestId"),
-                          ),
-                  ),
-                  // We don't expect the other accession because it has no tests.
-                  ),
-              null)
-
-      val actual = searchService.search(rootPrefix, fields, searchNode, sortFields)
-
-      assertEquals(expected, actual)
     }
   }
 
@@ -2960,7 +2839,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                   "id" to "$testId",
                                   "type" to "Lab",
                                   "seedsSown" to "15",
-                                  "selected" to "false",
                               ),
                           ),
                   ))

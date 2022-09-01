@@ -8,7 +8,6 @@ import com.terraformation.backend.search.field.BooleanField
 import com.terraformation.backend.search.field.DateField
 import com.terraformation.backend.search.field.DoubleField
 import com.terraformation.backend.search.field.EnumField
-import com.terraformation.backend.search.field.ExistsField
 import com.terraformation.backend.search.field.GeometryField
 import com.terraformation.backend.search.field.GramsField
 import com.terraformation.backend.search.field.IdWrapperField
@@ -27,7 +26,6 @@ import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.OrderField
 import org.jooq.Record
-import org.jooq.Select
 import org.jooq.SelectJoinStep
 import org.jooq.Table
 import org.jooq.TableField
@@ -230,13 +228,6 @@ abstract class SearchTable {
       databaseField: TableField<*, Double?>,
       nullable: Boolean = false
   ) = DoubleField(fieldName, displayName, databaseField, this, nullable)
-
-  fun existsField(
-      fieldName: String,
-      displayName: String,
-      parentIdField: Field<*>,
-      selectQuery: Select<*>,
-  ) = ExistsField(fieldName, displayName, parentIdField, selectQuery, this)
 
   inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<E>> enumField(
       fieldName: String,
