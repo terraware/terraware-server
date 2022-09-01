@@ -4,7 +4,6 @@ withdrawals
 organization_users
 automations
 accession_state_history
-viability_test_selections
 species_problems
 notifications
 user_preferences
@@ -21,8 +20,8 @@ accession_collectors
 uploads
 timeseries
 notification_types
-photos
 viability_tests
+photos
 accessions
 storage_locations
 species

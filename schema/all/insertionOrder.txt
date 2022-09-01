@@ -35,8 +35,8 @@ devices
 species
 storage_locations
 accessions
-viability_tests
 photos
+viability_tests
 notification_types
 timeseries
 uploads
@@ -53,7 +53,6 @@ upload_problems
 user_preferences
 notifications
 species_problems
-viability_test_selections
 accession_state_history
 automations
 organization_users
