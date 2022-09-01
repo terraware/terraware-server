@@ -18,6 +18,11 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  # Cancel in-progress builds on PRs, but not on staging deploys.
+  cancel-in-progress: ${{ github.ref != 'main' }}
+
 jobs:
   build:
     runs-on: ubuntu-20.04
