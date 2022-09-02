@@ -114,6 +114,7 @@ data class WithdrawalModel(
     return when {
       quantity == null -> null
       quantity.units != SeedQuantityUnits.Seeds -> quantity
+      weightDifference != null -> weightDifference
       subsetWeight == null || subsetCount == null -> null
       units == SeedQuantityUnits.Seeds || units == null ->
           quantity.toUnits(subsetWeight.units, subsetWeight, subsetCount)

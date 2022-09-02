@@ -289,7 +289,7 @@ data class AccessionModel(
   private fun validateV2() {
     assertRemainingQuantityNotRemoved()
     assertNoQuantityTypeChangeWithoutSubsetInfo()
-    assertNoWithdrawalsWithoutQuantity(latestObservedQuantity)
+    assertNoWithdrawalsWithoutQuantity(latestObservedQuantity ?: remaining)
   }
 
   private fun assertRemainingQuantityNotRemoved() {
@@ -502,10 +502,10 @@ data class AccessionModel(
         newWithdrawals
             .filter { it.isAfter(latestObservedTime) }
             .fold(latestObservedQuantity) { runningRemaining, withdrawal ->
-              if (withdrawal.withdrawn != null) {
+              val withdrawn = withdrawal.weightDifference ?: withdrawal.withdrawn
+              if (withdrawn != null) {
                 runningRemaining -
-                    withdrawal.withdrawn.toUnits(
-                        runningRemaining.units, subsetWeightQuantity, subsetCount)
+                    withdrawn.toUnits(runningRemaining.units, subsetWeightQuantity, subsetCount)
               } else {
                 runningRemaining
               }
@@ -566,13 +566,15 @@ data class AccessionModel(
           val withdrawn =
               test.seedsSown?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
           WithdrawalModel(
+              createdTime = existingWithdrawal?.createdTime,
               date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
-              viabilityTest = test,
-              viabilityTestId = test.id,
               id = existingWithdrawal?.id,
               purpose = WithdrawalPurpose.ViabilityTesting,
               remaining = test.remaining,
               staffResponsible = test.staffResponsible,
+              viabilityTest = test,
+              viabilityTestId = test.id,
+              weightDifference = existingWithdrawal?.weightDifference,
               withdrawn = withdrawn,
           )
         }
@@ -583,24 +585,34 @@ data class AccessionModel(
         if (isManualState) {
           // V1 COMPATIBILITY: Need to track per-withdrawal remaining quantity.
           var currentRemaining =
-              latestObservedQuantity
-                  ?: throw IllegalStateException(
+              total
+                  ?: latestObservedQuantity ?: remaining
+                      ?: throw IllegalStateException(
                       "Cannot withdraw from accession before specifying a quantity")
 
           unsortedWithdrawals
               .sortedWith { a, b -> a.compareByTime(b) }
               .map { withdrawal ->
                 // V1 COMPATIBILITY: Need to track per-withdrawal remaining quantity.
-                if (withdrawal.remaining != null) {
+                if (withdrawal.remaining != null &&
+                    withdrawal.remaining.units != SeedQuantityUnits.Seeds &&
+                    withdrawal.weightDifference == null &&
+                    withdrawal.remaining != currentRemaining) {
+                  val weightDifference = currentRemaining - withdrawal.remaining
                   currentRemaining = withdrawal.remaining
-                  withdrawal
-                } else if (withdrawal.withdrawn != null) {
+                  withdrawal.copy(weightDifference = weightDifference)
+                } else if (withdrawal.remaining == null && withdrawal.withdrawn != null) {
                   currentRemaining -=
                       withdrawal.withdrawn.toUnits(
                           currentRemaining.units, subsetWeightQuantity, subsetCount)
-                  withdrawal.copy(remaining = currentRemaining)
+                  withdrawal.copy(
+                      remaining = currentRemaining,
+                      viabilityTest = withdrawal.viabilityTest?.copy(remaining = currentRemaining))
                 } else {
-                  throw IllegalArgumentException("Withdrawals must include quantities")
+                  if (withdrawal.remaining != null) {
+                    currentRemaining = withdrawal.remaining
+                  }
+                  withdrawal
                 }
               }
         } else {
@@ -640,12 +652,18 @@ data class AccessionModel(
           }
         }
 
+    // V1 COMPATIBILITY: Remaining quantity+units are non-null in the database, so sanity check
+    // that we populated them.
+    if (sortedWithdrawals.any { it.remaining == null }) {
+      throw IllegalStateException("BUG! Failed to generate remaining quantity for withdrawal.")
+    }
+
     return sortedWithdrawals.map { withdrawal ->
       withdrawal.copy(
           estimatedCount = withdrawal.calculateEstimatedCount(subsetWeightQuantity, subsetCount),
-          estimatedWeight =
-              withdrawal.calculateEstimatedWeight(
-                  subsetWeightQuantity, subsetCount, remaining?.units),
+          estimatedWeight = withdrawal.weightDifference
+                  ?: withdrawal.calculateEstimatedWeight(
+                      subsetWeightQuantity, subsetCount, remaining?.units),
       )
     }
   }
@@ -731,6 +749,7 @@ data class AccessionModel(
         remaining = newRemaining,
         state = newState,
         totalViabilityPercent = calculateTotalViabilityPercent(),
+        total = total ?: newRemaining,
         viabilityTests = newViabilityTests,
         withdrawals = newWithdrawals)
   }
