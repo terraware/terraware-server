@@ -12,6 +12,8 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.WithdrawalId
+import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.WithdrawalPurpose
 import java.math.BigDecimal
 import java.time.Clock
@@ -586,6 +588,33 @@ data class AccessionModel(
         totalViabilityPercent = calculateTotalViabilityPercent(),
         viabilityTests = newViabilityTests,
         withdrawals = newWithdrawals)
+  }
+
+  fun addWithdrawal(withdrawal: WithdrawalModel, clock: Clock): AccessionModel {
+    return copy(withdrawals = withdrawals + withdrawal).withCalculatedValues(clock, this)
+  }
+
+  fun updateWithdrawal(
+      withdrawalId: WithdrawalId,
+      clock: Clock,
+      edit: (WithdrawalModel) -> WithdrawalModel
+  ): AccessionModel {
+    if (withdrawals.none { it.id == withdrawalId }) {
+      throw WithdrawalNotFoundException(withdrawalId)
+    }
+
+    val newWithdrawals = withdrawals.map { if (it.id == withdrawalId) edit(it) else it }
+
+    return copy(withdrawals = newWithdrawals).withCalculatedValues(clock, this)
+  }
+
+  fun deleteWithdrawal(withdrawalId: WithdrawalId, clock: Clock): AccessionModel {
+    val newWithdrawals = withdrawals.filterNot { it.id == withdrawalId }
+    if (newWithdrawals.size == withdrawals.size) {
+      throw WithdrawalNotFoundException(withdrawalId)
+    }
+
+    return copy(withdrawals = newWithdrawals).withCalculatedValues(clock, this)
   }
 }
 
