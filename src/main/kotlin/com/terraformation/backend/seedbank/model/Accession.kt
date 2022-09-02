@@ -157,6 +157,10 @@ data class AccessionModel(
     return if (isManualState) {
       this
     } else {
+      // The accession might be missing some values that we now calculate on both v1- and v2-
+      // style accessions but that weren't calculated at the time it was written to the database.
+      // First backfill those values using the v1 logic, then switch to v2, then calculate any
+      // v2-specific values.
       withCalculatedValues(clock)
           .copy(isManualState = true, state = state?.toV2Compatible())
           .withCalculatedValues(clock)
