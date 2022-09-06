@@ -12,12 +12,19 @@ COMMENT ON TABLE accession_collectors IS 'Names of people who collected each acc
 
 COMMENT ON TABLE accession_photos IS 'Linking table between `accessions` and `photos`.';
 
+COMMENT ON TABLE accession_quantity_history IS 'Historical record of changes to remaining quantities of accessions.';
+
+COMMENT ON TABLE accession_quantity_history_types IS '(Enum) Types of operations that can result in changes to remaining quantities of accessions.';
+
 COMMENT ON TABLE accession_state_history IS 'Historical record of when accessions moved to different states. A row is inserted here for every state transition.';
 COMMENT ON COLUMN accession_state_history.old_state_id IS 'Null if this is the initial state for a new accession.';
 
 COMMENT ON TABLE accession_states IS '(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.';
 
 COMMENT ON TABLE accessions IS 'Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people.';
+COMMENT ON COLUMN accessions.latest_observed_quantity IS 'Most recent remaining quantity as observed by the user.';
+COMMENT ON COLUMN accessions.latest_observed_units_id IS 'Measurement units of `observed_quantity`.';
+COMMENT ON COLUMN accessions.latest_observed_time IS 'Time of most recent change to observed quantity.';
 COMMENT ON COLUMN accessions.latest_viability_percent IS 'Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet';
 COMMENT ON COLUMN accessions.number IS 'Displayed as the accession number to the user.';
 COMMENT ON COLUMN accessions.nursery_start_date IS 'When the accession was moved to a nursery, or null if it is not in a nursery.';

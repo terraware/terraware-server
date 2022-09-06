@@ -121,6 +121,8 @@ class SchemaDocsGenerator : DatabaseTest() {
       mapOf(
           "accession_collectors" to setOf(ALL, SEEDBANK),
           "accession_photos" to setOf(ALL, SEEDBANK),
+          "accession_quantity_history" to setOf(ALL, SEEDBANK),
+          "accession_quantity_history_types" to setOf(ALL, SEEDBANK),
           "accession_state_history" to setOf(ALL, SEEDBANK),
           "accession_states" to setOf(ALL, SEEDBANK),
           "accessions" to setOf(ALL, SEEDBANK),
