@@ -12,7 +12,6 @@ import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -174,14 +173,12 @@ data class AccessionPayloadV2(
     )
     val speciesId: SpeciesId?,
     val state: AccessionState,
-    val storageCondition: StorageCondition?,
     val storageLocation: String?,
     val subsetCount: Int?,
     @Schema(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     val subsetWeight: SeedQuantityPayload?,
-    val targetStorageCondition: StorageCondition?,
     val totalViabilityPercent: Int?,
     val viabilityTests: List<ViabilityTestPayload>?,
     val withdrawals: List<GetWithdrawalPayload>?,
@@ -228,11 +225,9 @@ data class AccessionPayloadV2(
       speciesCommonName = model.speciesCommonName,
       speciesId = model.speciesId,
       state = model.state ?: AccessionState.Pending,
-      storageCondition = model.storageCondition,
       storageLocation = model.storageLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
-      targetStorageCondition = model.targetStorageCondition,
       totalViabilityPercent = model.totalViabilityPercent,
       viabilityTests = model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
       withdrawals = model.withdrawals.map { GetWithdrawalPayload(it) }.orNull(),
@@ -261,6 +256,7 @@ data class CreateAccessionRequestPayloadV2(
     val source: DataSource? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionState? = null,
+    val storageLocation: String? = null,
 ) {
   fun toModel(): AccessionModel {
     return AccessionModel(
@@ -283,6 +279,7 @@ data class CreateAccessionRequestPayloadV2(
         source = source,
         speciesId = speciesId,
         state = state,
+        storageLocation = storageLocation,
     )
   }
 }
@@ -321,7 +318,6 @@ data class UpdateAccessionRequestPayloadV2(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     private val subsetWeight: SeedQuantityPayload? = null,
-    val targetStorageCondition: StorageCondition? = null,
     @Valid val viabilityTests: List<ViabilityTestPayload>? = null,
 ) {
   fun applyToModel(model: AccessionModel): AccessionModel =
@@ -350,7 +346,6 @@ data class UpdateAccessionRequestPayloadV2(
           storageLocation = storageLocation,
           subsetCount = subsetCount,
           subsetWeightQuantity = subsetWeight?.toModel(),
-          targetStorageCondition = targetStorageCondition,
           viabilityTests = viabilityTests.orEmpty().map { it.toModel() },
       )
 }
