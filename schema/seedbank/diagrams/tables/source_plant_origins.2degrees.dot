@@ -20,12 +20,15 @@ digraph "twoDegreesRelationshipsDiagram" {
   ];
   "accession_collectors":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_photos":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accession_quantity_history":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accession_quantity_history":"elipses":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_state_history":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_state_history":"elipses":w -> "accession_states":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accession_state_history":"elipses":w -> "accession_states":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"collection_source_id":w -> "collection_sources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"data_source_id":w -> "data_sources":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"facility_id":w -> "facilities":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accessions":"latest_observed_units_id":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"processing_method_id":w -> "processing_methods":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"remaining_units_id":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accessions":"source_plant_origin_id":w -> "source_plant_origins":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -42,6 +45,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "viability_tests":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "viability_tests":"elipses":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "accessions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "withdrawals":"elipses":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "withdrawals":"elipses":w -> "viability_tests":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "withdrawals":"elipses":w -> "seed_quantity_units":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -66,6 +70,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/accession_photos.html"
     target="_top"
     tooltip="accession_photos"
+  ];
+  "accession_quantity_history" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>accession_quantity_history</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/accession_quantity_history.html"
+    target="_top"
+    tooltip="accession_quantity_history"
   ];
   "accession_state_history" [
    label=<
@@ -109,8 +124,9 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="species_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">species_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="collection_source_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">collection_source_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="data_source_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">data_source_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="latest_observed_units_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">latest_observed_units_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 12</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">7 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 13</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/accessions.html"
     target="_top"
@@ -187,7 +203,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>seed_quantity_units</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/seed_quantity_units.html"
     target="_top"
@@ -254,7 +270,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>withdrawals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/withdrawals.html"
     target="_top"

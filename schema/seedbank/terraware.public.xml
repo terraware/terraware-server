@@ -30,6 +30,38 @@
             <column ascending="true" name="photo_id"/>
          </index>
       </table>
+      <table name="accession_quantity_history" numRows="0" remarks="Historical record of changes to remaining quantities of accessions." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="accession_quantity_history_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accessions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="history_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="accession_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_quantity_history_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="remaining_quantity" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="remaining_units_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="accession_quantity_history_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="accession_quantity_history_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="accession_quantity_history_accession_id_idx" unique="false">
+            <column ascending="true" name="accession_id"/>
+         </index>
+      </table>
+      <table name="accession_quantity_history_types" numRows="2" remarks="(Enum) Types of operations that can result in changes to remaining quantities of accessions." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="history_type_id" foreignKey="accession_quantity_history_history_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_quantity_history"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="accession_quantity_history_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="accession_state_history" numRows="0" remarks="Historical record of when accessions moved to different states. A row is inserted here for every state transition." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="accession_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="accession_state_history_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accessions"/>
@@ -68,6 +100,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="accession_id" foreignKey="accession_collectors_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accession_collectors"/>
             <child column="accession_id" foreignKey="accession_photo_accession_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_photos"/>
+            <child column="accession_id" foreignKey="accession_quantity_history_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accession_quantity_history"/>
             <child column="accession_id" foreignKey="accession_state_history_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accession_state_history"/>
             <child column="accession_id" foreignKey="bags_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="bags"/>
             <child column="accession_id" foreignKey="geolocations_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="geolocations"/>
@@ -157,6 +190,11 @@
             <parent column="id" foreignKey="accessions_data_source_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="data_sources"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="59" name="is_manual_state" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="60" name="latest_observed_quantity" nullable="true" remarks="Most recent remaining quantity as observed by the user." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="61" name="latest_observed_units_id" nullable="true" remarks="Measurement units of `observed_quantity`." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="62" name="latest_observed_time" nullable="true" remarks="Time of most recent change to observed quantity." size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -176,6 +214,8 @@
          <index name="accessions__facility_id_ix" unique="false">
             <column ascending="true" name="facility_id"/>
          </index>
+         <checkConstraint constraint="((((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL))))" name="observed_quantity_must_have_time"/>
+         <checkConstraint constraint="((((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL))))" name="observed_quantity_must_have_units"/>
          <checkConstraint constraint="((((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL))))" name="remaining_quantity_must_have_units"/>
          <checkConstraint constraint="((((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL))))" name="subset_weight_quantity_must_have_units"/>
          <checkConstraint constraint="(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))" name="subset_weight_units_must_not_be_seeds"/>
@@ -334,10 +374,13 @@
       </table>
       <table name="seed_quantity_units" numRows="6" remarks="(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="remaining_units_id" foreignKey="accession_quantity_history_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_quantity_history"/>
+            <child column="latest_observed_units_id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="remaining_units_id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="subset_weight_units_id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="total_units_id" foreignKey="accession_total_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="remaining_units_id" foreignKey="germination_test_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
+            <child column="estimated_weight_units_id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
             <child column="remaining_units_id" foreignKey="withdrawal_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
             <child column="withdrawn_units_id" foreignKey="withdrawal_withdrawn_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
          </column>
@@ -609,6 +652,11 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="withdrawn_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="withdrawal_withdrawn_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="estimated_count" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="estimated_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="estimated_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="withdrawal_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -622,6 +670,7 @@
          <index name="withdrawals_viability_test_id_unique" unique="true">
             <column ascending="true" name="viability_test_id"/>
          </index>
+         <checkConstraint constraint="((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))" name="estimated_weight_must_have_units"/>
          <checkConstraint constraint="((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))" name="withdrawals_viability_testing_has_test_id"/>
       </table>
    </tables>

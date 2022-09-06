@@ -4,6 +4,7 @@ withdrawals
 organization_users
 automations
 accession_state_history
+accession_quantity_history
 species_problems
 notifications
 user_preferences
@@ -55,6 +56,7 @@ facility_connection_states
 device_template_categories
 data_sources
 collection_sources
+accession_quantity_history_types
 storage_conditions
 countries
 accession_states

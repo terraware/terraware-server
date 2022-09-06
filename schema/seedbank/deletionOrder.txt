@@ -1,5 +1,6 @@
 withdrawals
 accession_state_history
+accession_quantity_history
 accession_photos
 viability_test_results
 thumbnails
@@ -22,6 +23,7 @@ processing_methods
 growth_forms
 data_sources
 collection_sources
+accession_quantity_history_types
 storage_conditions
 photos
 organizations

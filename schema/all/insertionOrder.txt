@@ -2,6 +2,7 @@ seed_quantity_units
 accession_states
 countries
 storage_conditions
+accession_quantity_history_types
 collection_sources
 data_sources
 device_template_categories
@@ -53,6 +54,7 @@ upload_problems
 user_preferences
 notifications
 species_problems
+accession_quantity_history
 accession_state_history
 automations
 organization_users

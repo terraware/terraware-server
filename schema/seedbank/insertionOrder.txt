@@ -3,6 +3,7 @@ accession_states
 organizations
 photos
 storage_conditions
+accession_quantity_history_types
 collection_sources
 data_sources
 growth_forms
@@ -25,5 +26,6 @@ geolocations
 thumbnails
 viability_test_results
 accession_photos
+accession_quantity_history
 accession_state_history
 withdrawals
