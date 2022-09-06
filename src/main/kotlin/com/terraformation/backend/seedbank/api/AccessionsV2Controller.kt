@@ -17,8 +17,6 @@ import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
-import com.terraformation.backend.seedbank.model.isV2Compatible
-import com.terraformation.backend.seedbank.model.toV2Compatible
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -54,7 +52,7 @@ class AccessionsV2Controller(
       @RequestBody payload: CreateAccessionRequestPayloadV2
   ): CreateAccessionResponsePayloadV2 {
     val updatedPayload = accessionStore.create(payload.toModel())
-    return CreateAccessionResponsePayloadV2(AccessionPayloadV2(updatedPayload, clock))
+    return CreateAccessionResponsePayloadV2(AccessionPayloadV2(updatedPayload))
   }
 
   @ApiResponse(
@@ -84,7 +82,7 @@ class AccessionsV2Controller(
         } else {
           accessionStore.updateAndFetch(editedModel)
         }
-    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(updatedModel, clock))
+    return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(updatedModel))
   }
 
   @ApiResponse(responseCode = "200")
@@ -92,21 +90,9 @@ class AccessionsV2Controller(
   @GetMapping("/{id}")
   @Operation(summary = "Retrieve an existing accession.")
   fun getAccession(@PathVariable("id") accessionId: AccessionId): GetAccessionResponsePayloadV2 {
-    val accession = accessionStore.fetchOneById(accessionId)
+    val accession = accessionStore.fetchOneById(accessionId).toV2Compatible(clock)
 
-    // If this accession was created/updated with automated state management, it might have a state
-    // that didn't exist in the v2 API. In that case, figure out what its calculated v2 state would
-    // have been, and return that.
-    val v2CompatibleAccession =
-        if (accession.state?.isV2Compatible == true) {
-          accession
-        } else {
-          accession
-              .copy(isManualState = true, state = accession.state?.toV2Compatible())
-              .withCalculatedValues(clock)
-        }
-
-    return GetAccessionResponsePayloadV2(AccessionPayloadV2(v2CompatibleAccession, clock))
+    return GetAccessionResponsePayloadV2(AccessionPayloadV2(accession))
   }
 }
 
@@ -149,7 +135,16 @@ data class AccessionPayloadV2(
             "Initial size of accession. The units of this value must match the measurement type " +
                 "in \"processingMethod\".")
     val initialQuantity: SeedQuantityPayload?,
+    @Schema(
+        description =
+            "Most recent user observation of seeds remaining in the accession. This is not " +
+                "directly editable; it is updated by the server whenever the " +
+                "\"remainingQuantity\" field is edited.")
     val latestObservedQuantity: SeedQuantityPayload?,
+    @Schema(
+        description =
+            "Time of most recent user observation of seeds remaining in the accession. This is " +
+                "updated by the server whenever the \"remainingQuantity\" field is edited.")
     val latestObservedTime: Instant?,
     val latestViabilityPercent: Int?,
     val latestViabilityTestDate: LocalDate?,
@@ -196,8 +191,7 @@ data class AccessionPayloadV2(
     val withdrawals: List<GetWithdrawalPayload>?,
 ) {
   constructor(
-      model: AccessionModel,
-      clock: Clock
+      model: AccessionModel
   ) : this(
       accessionNumber = model.accessionNumber
               ?: throw IllegalArgumentException("Accession did not have a number"),
@@ -221,8 +215,8 @@ data class AccessionPayloadV2(
       founderId = model.founderId,
       id = model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       initialQuantity = model.total?.toPayload(),
-      latestObservedQuantity = model.calculateLatestObservedQuantity(clock)?.toPayload(),
-      latestObservedTime = model.calculateLatestObservedTime(),
+      latestObservedQuantity = model.latestObservedQuantity?.toPayload(),
+      latestObservedTime = model.latestObservedTime,
       latestViabilityPercent = model.latestViabilityPercent,
       latestViabilityTestDate = model.latestViabilityTestDate,
       notes = model.processingNotes,
