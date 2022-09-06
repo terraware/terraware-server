@@ -161,22 +161,27 @@ def generate_founder_id() -> Optional[str]:
     return str(randint(100000, 999999)) if randint(0, 4) > 0 else None
 
 
-def generate_initial_quantity() -> Dict:
-    if randint(0, 1) == 0:
+def generate_quantity(unit_type: Optional[str] = None) -> Dict:
+    if unit_type is None:
+        unit_type = random.choice(["Count", "Weight"])
+
+    if unit_type == "Weight":
         return {
-            "processingMethod": "Weight",
-            "initialQuantity": {
-                "quantity": randint(1, 100),
-                "units": random.choice(
-                    ["Grams", "Kilograms", "Pounds", "Milligrams", "Ounces"]
-                ),
-            },
+            "quantity": randint(1, 100),
+            "units": random.choice(
+                ["Grams", "Kilograms", "Pounds", "Milligrams", "Ounces"]
+            ),
         }
     else:
-        return {
-            "processingMethod": "Count",
-            "initialQuantity": {"quantity": randint(1, 100), "units": "Seeds"},
-        }
+        return {"quantity": randint(1, 100), "units": "Seeds"}
+
+
+def generate_initial_quantity() -> Dict:
+    quantity = generate_quantity()
+    return {
+        "processingMethod": "Count" if quantity["units"] == "Seeds" else "Weight",
+        "initialQuantity": generate_quantity(unit_type),
+    }
 
 
 def generate_accession(facility_id: int) -> Dict:
@@ -220,6 +225,48 @@ def generate_accession(facility_id: int) -> Dict:
     }
 
 
+def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
+    num_collectors = randint(1, 3) if randint(0, 2) == 0 else 0
+    collectors = [generate_staff_responsible() for n in range(num_collectors)] or None
+
+    bag_numbers = generate_bag_numbers()
+    geolocations = (
+        list([generate_geolocation() for x in bag_numbers]) if bag_numbers else None
+    )
+    viability_test_types = [generate_test_type()]
+
+    species = generate_species()
+    family = generate_family(species)
+
+    collected_date = generate_recent_date()
+    received_date = (
+        collected_date + timedelta(days=randint(0, 3)) if collected_date else None
+    )
+
+    plants_collected_from_min = randint(1, 10)
+    plants_collected_from_max = randint(plants_collected_from_min, 10)
+
+    species_id = random.choice(species_ids) if randint(1, 5) > 1 else None
+
+    return {
+        "bagNumbers": bag_numbers,
+        "collectedDate": str(collected_date) if collected_date else None,
+        "collectionSiteCoordinates": geolocations,
+        "collectionSiteLandowner": generate_staff_responsible(),
+        "collectionSiteName": generate_site_location(),
+        "collectionSiteNotes": generate_notes(),
+        "collectors": collectors,
+        "facilityId": facility_id,
+        "founderId": generate_founder_id(),
+        "plantsCollectedFromMax": plants_collected_from_max,
+        "plantsCollectedFromMin": plants_collected_from_min,
+        "receivedDate": str(received_date) if received_date else None,
+        "source": generate_source(),
+        "speciesId": species_id,
+        "viabilityTestTypes": viability_test_types,
+    }
+
+
 def generate_accession_update(accession: Dict) -> Dict:
     quantity_fields = generate_initial_quantity()
 
@@ -237,14 +284,80 @@ def generate_accession_update(accession: Dict) -> Dict:
     return {**accession, **quantity_fields, "viabilityTests": viability_tests}
 
 
-def create_accession(client: TerrawareClient, facility_id: int) -> Dict:
-    create_payload = generate_accession(facility_id)
-    initial = client.create_accession(create_payload)
+def generate_accession_update_v2(accession: Dict) -> Dict:
+    remaining_quantity = generate_quantity()
 
-    client.check_in_accession(initial["id"])
+    received_date = (
+        date.fromisoformat(accession["receivedDate"])
+        if "receivedDate" in accession
+        else None
+    )
+    viability_tests = (
+        [generate_viability_test(received_date, remaining_quantity)]
+        if received_date
+        else None
+    )
+
+    return {
+        **accession,
+        "remainingQuantity": remaining_quantity,
+        "viabilityTests": viability_tests,
+    }
+
+
+def create_accession(
+    client: TerrawareClient, facility_id: int, species_ids: List[int]
+) -> Dict:
+    create_payload = generate_accession(facility_id)
+
+    try:
+        initial = client.create_accession(create_payload, version=1)
+    except Exception as ex:
+        print("Unable to create accession. Payload:")
+        print(json.dumps(create_payload, indent=2))
+        raise ex
+
+    accession_id = initial["id"]
+
+    client.check_in_accession(accession_id)
 
     update_payload = generate_accession_update(initial)
-    updated = client.update_accession(initial["id"], update_payload)
+
+    try:
+        updated = client.update_accession(accession_id, update_payload, version=1)
+    except Exception as ex:
+        print(f"Unable to update accession {accession_id}. Payload:")
+        print(json.dumps(update_payload, indent=2))
+        raise ex
+
+    return updated
+
+
+def create_accession_v2(
+    client: TerrawareClient, facility_id: int, species_ids: List[int]
+) -> Dict:
+    create_payload = generate_accession_v2(facility_id, species_ids)
+
+    try:
+        initial = client.create_accession(create_payload, version=2)
+    except Exception as ex:
+        print("Unable to create accession. Payload:")
+        print(json.dumps(create_payload, indent=2))
+        raise ex
+
+    accession_id = initial["id"]
+
+    client.check_in_accession(accession_id)
+
+    update_payload = generate_accession_update_v2(initial)
+
+    try:
+        updated = client.update_accession(accession_id, update_payload, version=2)
+    except Exception as ex:
+        print(f"Unable to update accession {accession_id}. Payload:")
+        print(json.dumps(update_payload, indent=2))
+        raise ex
+
     return updated
 
 
@@ -266,6 +379,9 @@ def main():
         action="store_true",
         help="Show populated accession data as returned by the server.",
     )
+    parser.add_argument(
+        "--version", "-V", type=int, help="API version to use (default 1)", default=1
+    )
     add_terraware_args(parser)
     args = parser.parse_args()
 
@@ -280,8 +396,14 @@ def main():
             if entry["type"] == "Seed Bank"
         ][0]
 
+    organization_id = client.get_facility(facility_id)["organizationId"]
+    species_ids = [species["id"] for species in client.list_species(organization_id)]
+
     for n in range(0, args.number):
-        accession = create_accession(client, facility_id)
+        if args.version == 2:
+            accession = create_accession_v2(client, facility_id, species_ids)
+        else:
+            accession = create_accession(client, facility_id, species_ids)
         if args.verbose:
             print(json.dumps(accession, indent=2))
         else:

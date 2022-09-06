@@ -50,6 +50,9 @@ class TerrawareClient:
         r.raise_for_status()
         return r.json()
 
+    def get_facility(self, facility_id):
+        return self.get(f"/api/v1/facilities/{facility_id}")["facility"]
+
     def list_facilities(self):
         return self.get("/api/v1/facilities")["facilities"]
 
@@ -106,6 +109,9 @@ class TerrawareClient:
 
     def search_all_accession_values(self, payload):
         return self.post("/api/v1/seedbank/values/all", json=payload)["results"]
+
+    def list_species(self, organization_id):
+        return self.get(f"/api/v1/species?organizationId={organization_id}")["species"]
 
 
 def add_terraware_args(parser: ArgumentParser):
