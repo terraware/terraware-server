@@ -3,9 +3,11 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.db.tables.references.COUNTRIES
 import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
 
@@ -30,4 +32,6 @@ class CountrySubdivisionsTable(tables: SearchTables) : SearchTable() {
           textField("code", "Country subdivision code", COUNTRY_SUBDIVISIONS.CODE),
           textField("name", "Country subdivision name", COUNTRY_SUBDIVISIONS.NAME),
       )
+
+  override fun conditionForScope(scope: SearchScope): Condition? = null
 }

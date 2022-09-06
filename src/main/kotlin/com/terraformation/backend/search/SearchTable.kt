@@ -109,7 +109,7 @@ abstract class SearchTable {
   open fun conditionForVisibility(): Condition? = null
 
   /** Returns a condition for scoping the table's search results where relevant. */
-  open fun conditionForScope(scope: SearchScope): Condition? = null
+  abstract fun conditionForScope(scope: SearchScope): Condition?
 
   /**
    * The default fields to sort on. These are included when doing non-distinct queries; if there are

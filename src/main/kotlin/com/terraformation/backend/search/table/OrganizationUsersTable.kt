@@ -3,9 +3,13 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.USERS
+import com.terraformation.backend.search.FacilityIdScope
+import com.terraformation.backend.search.OrganizationIdScope
+import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -51,5 +55,16 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
                     .from(USERS)
                     .where(USERS.ID.eq(ORGANIZATION_USERS.USER_ID))
                     .and(USERS.USER_TYPE_ID.`in`(UserType.Individual, UserType.SuperAdmin))))
+  }
+
+  override fun conditionForScope(scope: SearchScope): Condition {
+    return when (scope) {
+      is OrganizationIdScope -> ORGANIZATION_USERS.ORGANIZATION_ID.eq(scope.organizationId)
+      is FacilityIdScope ->
+          ORGANIZATION_USERS.ORGANIZATION_ID.eq(
+              DSL.select(FACILITIES.ORGANIZATION_ID)
+                  .from(FACILITIES)
+                  .where(FACILITIES.ID.eq(scope.facilityId)))
+    }
   }
 }

@@ -1,10 +1,15 @@
 package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
+import com.terraformation.backend.search.FacilityIdScope
+import com.terraformation.backend.search.OrganizationIdScope
+import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
+import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
@@ -39,5 +44,13 @@ class ViabilityTestResultsTable(private val tables: SearchTables) : SearchTable(
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(VIABILITY_TESTS).on(VIABILITY_TEST_RESULTS.TEST_ID.eq(VIABILITY_TESTS.ID))
+  }
+
+  override fun conditionForScope(scope: SearchScope): Condition {
+    // Accessions table will have already been referenced by joinForVisibility.
+    return when (scope) {
+      is OrganizationIdScope -> ACCESSIONS.facilities.ORGANIZATION_ID.eq(scope.organizationId)
+      is FacilityIdScope -> ACCESSIONS.FACILITY_ID.eq(scope.facilityId)
+    }
   }
 }
