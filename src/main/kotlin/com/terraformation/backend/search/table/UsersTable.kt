@@ -5,6 +5,7 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.USERS
+import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -50,4 +51,6 @@ class UsersTable(private val tables: SearchTables) : SearchTable() {
                         ORGANIZATION_USERS.ORGANIZATION_ID.`in`(
                             currentUser().organizationRoles.keys))))
   }
+
+  override fun conditionForScope(scope: SearchScope): Condition? = null
 }

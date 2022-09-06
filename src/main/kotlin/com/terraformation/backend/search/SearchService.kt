@@ -216,9 +216,8 @@ class SearchService(private val dslContext: DSLContext) {
           val selectFields =
               field.selectFields + listOf(field.orderByField.`as`(DSL.field("order_by_field")))
           val searchTable = fieldPath.searchTable
-          val permsCondition = conditionForVisibility(fieldPath.searchTable)
-          val searchConditions =
-              searchScopes.mapNotNull { fieldPath.searchTable.conditionForScope(it) }
+          val permsCondition = conditionForVisibility(searchTable)
+          val searchConditions = searchScopes.mapNotNull { searchTable.conditionForScope(it) }
           val conditions = listOfNotNull(permsCondition) + searchConditions
 
           val fullQuery =

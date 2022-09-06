@@ -1586,6 +1586,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes child table values the user has permission to view`() {
+      val collectorsNameField = rootPrefix.resolve("collectors_name")
       val hiddenAccessionId = AccessionId(1100)
 
       insertFacility(1100)
@@ -1603,6 +1604,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               modifiedTime = Instant.now(),
               treesCollectedFrom = 3))
 
+      accessionCollectorsDao.insert(
+          AccessionCollectorsRow(
+              accessionId = hiddenAccessionId, name = "hidden collector", position = 0))
+
       listOf(1000, 1100).forEach { id ->
         val accessionId = AccessionId(id.toLong())
         val testId = ViabilityTestId(id.toLong())
@@ -1619,6 +1624,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             ViabilityTestResultsRow(
                 testId = testId, recordingDate = LocalDate.EPOCH, seedsGerminated = id))
       }
+
+      assertEquals(
+          listOf(null, "collector 1", "collector 2", "collector 3"),
+          searchService.fetchAllValues(collectorsNameField, searchScopes),
+          "Value from accession_collectors table (child of accessions)")
 
       assertEquals(
           listOf(null, "1000"),
@@ -1645,9 +1655,14 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       insertOrganization(otherOrganizationId)
       insertFacility(2200, otherOrganizationId)
 
+      val accessionId = AccessionId(1100)
+      val otherAccessionId = AccessionId(2200)
+      val viabilityTestId = ViabilityTestId(1100)
+      val otherViabilityTestId = ViabilityTestId(2200)
+
       accessionsDao.insert(
           AccessionsRow(
-              id = AccessionId(1100),
+              id = accessionId,
               number = "OtherFacility",
               stateId = AccessionState.Processed,
               createdBy = user.userId,
@@ -1658,7 +1673,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               modifiedTime = Instant.now(),
           ),
           AccessionsRow(
-              id = AccessionId(2200),
+              id = otherAccessionId,
               number = "OtherOrg",
               stateId = AccessionState.Processed,
               createdBy = user.userId,
@@ -1668,66 +1683,147 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = Instant.now(),
           ))
-
-      val expectedScopedOrg = listOf("ABCDEFG", "OtherFacility", "XYZ")
-      val expectedScopedOtherOrg = listOf("OtherOrg")
+      accessionCollectorsDao.insert(
+          AccessionCollectorsRow(
+              accessionId = otherAccessionId, position = 0, name = "otherCollector"))
+      bagsDao.insert(
+          BagsRow(accessionId = accessionId, bagNumber = "bag"),
+          BagsRow(accessionId = otherAccessionId, bagNumber = "otherBag"))
+      viabilityTestsDao.insert(
+          ViabilityTestsRow(
+              accessionId = accessionId,
+              id = viabilityTestId,
+              notes = "notes",
+              remainingQuantity = BigDecimal.ONE,
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+              testType = ViabilityTestType.Lab),
+          ViabilityTestsRow(
+              accessionId = otherAccessionId,
+              id = otherViabilityTestId,
+              notes = "otherNotes",
+              remainingQuantity = BigDecimal.ONE,
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+              testType = ViabilityTestType.Nursery))
+      viabilityTestResultsDao.insert(
+          ViabilityTestResultsRow(
+              recordingDate = LocalDate.EPOCH, testId = viabilityTestId, seedsGerminated = 1),
+          ViabilityTestResultsRow(
+              recordingDate = LocalDate.EPOCH, testId = otherViabilityTestId, seedsGerminated = 2))
 
       assertEquals(
-          expectedScopedOrg,
+          listOf("ABCDEFG", "OtherFacility", "XYZ"),
           searchService.fetchAllValues(accessionNumberField, searchScopes),
-          "Expected values for organization $organizationId only.")
+          "Accession numbers for organization $organizationId")
       assertEquals(
-          expectedScopedOtherOrg,
+          listOf("OtherOrg"),
           searchService.fetchAllValues(
               accessionNumberField, listOf(OrganizationIdScope(otherOrganizationId))),
-          "Expected values for organization $otherOrganizationId only.")
+          "Accession numbers for organization $otherOrganizationId")
+      assertEquals(
+          listOf(null, "bag"),
+          searchService.fetchAllValues(bagNumberFlattenedField, searchScopes),
+          "Bag numbers for $organizationId")
+      assertEquals(
+          listOf(null, "collector 1", "collector 2", "collector 3"),
+          searchService.fetchAllValues(rootPrefix.resolve("collectors_name"), searchScopes),
+          "Collector names for $organizationId")
+      assertEquals(
+          listOf(null, "notes"),
+          searchService.fetchAllValues(rootPrefix.resolve("viabilityTests_notes"), searchScopes),
+          "Viability test types for $organizationId")
+      assertEquals(
+          listOf(null, "1"),
+          searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, searchScopes),
+          "Seeds germinated for $organizationId")
     }
 
     @Test
     fun `only includes child table values governed by facility search scope`() {
+      val otherFacilityId = FacilityId(2200)
+      val accessionId = AccessionId(1100)
+      val otherAccessionId = AccessionId(2200)
+      val viabilityTestId = ViabilityTestId(1100)
+      val otherViabilityTestId = ViabilityTestId(2200)
+
       every { user.facilityRoles } returns
-          mapOf(
-              facilityId to Role.CONTRIBUTOR,
-              FacilityId(1100) to Role.CONTRIBUTOR,
-              FacilityId(2200) to Role.OWNER)
+          mapOf(facilityId to Role.CONTRIBUTOR, otherFacilityId to Role.CONTRIBUTOR)
 
-      insertFacility(1100)
-
-      val otherOrganizationId = OrganizationId(5)
-      insertOrganization(otherOrganizationId)
-      insertFacility(2200)
+      insertFacility(otherFacilityId)
 
       accessionsDao.insert(
           AccessionsRow(
-              id = AccessionId(1100),
+              id = accessionId,
               number = "OtherProject",
               stateId = AccessionState.Processed,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               dataSourceId = DataSource.Web,
-              facilityId = FacilityId(1100),
+              facilityId = facilityId,
               modifiedBy = user.userId,
               modifiedTime = Instant.now(),
           ),
           AccessionsRow(
-              id = AccessionId(2200),
+              id = otherAccessionId,
               number = "OtherProject22",
               stateId = AccessionState.Processed,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               dataSourceId = DataSource.Web,
-              facilityId = FacilityId(2200),
+              facilityId = otherFacilityId,
               modifiedBy = user.userId,
               modifiedTime = Instant.now(),
           ))
+      accessionCollectorsDao.insert(
+          AccessionCollectorsRow(
+              accessionId = otherAccessionId, position = 0, name = "otherCollector"))
+      bagsDao.insert(
+          BagsRow(accessionId = accessionId, bagNumber = "bag"),
+          BagsRow(accessionId = otherAccessionId, bagNumber = "otherBag"))
+      viabilityTestsDao.insert(
+          ViabilityTestsRow(
+              accessionId = accessionId,
+              id = viabilityTestId,
+              notes = "notes",
+              remainingQuantity = BigDecimal.ONE,
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+              testType = ViabilityTestType.Lab),
+          ViabilityTestsRow(
+              accessionId = otherAccessionId,
+              id = otherViabilityTestId,
+              notes = "otherNotes",
+              remainingQuantity = BigDecimal.ONE,
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+              testType = ViabilityTestType.Nursery))
+      viabilityTestResultsDao.insert(
+          ViabilityTestResultsRow(
+              recordingDate = LocalDate.EPOCH, testId = viabilityTestId, seedsGerminated = 1),
+          ViabilityTestResultsRow(
+              recordingDate = LocalDate.EPOCH, testId = otherViabilityTestId, seedsGerminated = 2))
 
-      val expectedScopedFacility = listOf("OtherProject22")
+      val facilityIdScopes = listOf(FacilityIdScope(facilityId))
 
       assertEquals(
-          expectedScopedFacility,
+          listOf("OtherProject22"),
           searchService.fetchAllValues(
-              accessionNumberField, listOf(FacilityIdScope(FacilityId(2200)))),
-          "Expected values for facility 2200 only.")
+              accessionNumberField, listOf(FacilityIdScope(otherFacilityId))),
+          "Accession numbers for facility $otherFacilityId")
+      assertEquals(
+          listOf(null, "bag"),
+          searchService.fetchAllValues(bagNumberFlattenedField, facilityIdScopes),
+          "Bag numbers for $facilityId")
+      assertEquals(
+          listOf(null, "collector 1", "collector 2", "collector 3"),
+          searchService.fetchAllValues(rootPrefix.resolve("collectors_name"), facilityIdScopes),
+          "Collector names for $facilityId")
+      assertEquals(
+          listOf(null, "notes"),
+          searchService.fetchAllValues(
+              rootPrefix.resolve("viabilityTests_notes"), facilityIdScopes),
+          "Viability test types for $facilityId")
+      assertEquals(
+          listOf(null, "1"),
+          searchService.fetchAllValues(viabilityTestResultsSeedsGerminatedField, facilityIdScopes),
+          "Seeds germinated for $facilityId")
     }
 
     @Test

@@ -8,12 +8,16 @@ import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.search.FacilityIdScope
+import com.terraformation.backend.search.OrganizationIdScope
+import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class OrganizationsTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -55,5 +59,16 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
 
   override fun conditionForVisibility(): Condition {
     return ORGANIZATIONS.ID.`in`(currentUser().organizationRoles.keys)
+  }
+
+  override fun conditionForScope(scope: SearchScope): Condition {
+    return when (scope) {
+      is OrganizationIdScope -> ORGANIZATIONS.ID.eq(scope.organizationId)
+      is FacilityIdScope ->
+          ORGANIZATIONS.ID.eq(
+              DSL.select(FACILITIES.ORGANIZATION_ID)
+                  .from(FACILITIES)
+                  .where(FACILITIES.ID.eq(scope.facilityId)))
+    }
   }
 }
