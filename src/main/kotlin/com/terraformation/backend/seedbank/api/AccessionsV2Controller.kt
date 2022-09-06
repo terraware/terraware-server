@@ -156,8 +156,8 @@ data class AccessionPayloadV2(
     val receivedDate: LocalDate?,
     @Schema(
         description =
-            "Number or weight of seeds remaining for withdrawal and testing. Calculated by the " +
-                "server when the accession's total size is known.")
+            "Number or weight of seeds remaining for withdrawal and testing. May be calculated " +
+                "by the server after withdrawals.")
     val remainingQuantity: SeedQuantityPayload?,
     @Schema(description = "Which source of data this accession originally came from.")
     val source: DataSource?,
@@ -173,10 +173,6 @@ data class AccessionPayloadV2(
         description = "Server-generated unique ID of the species.",
     )
     val speciesId: SpeciesId?,
-    @Schema(
-        description =
-            "Server-calculated accession state. Can change due to modifications to accession " +
-                "data or based on passage of time.")
     val state: AccessionState,
     val storageCondition: StorageCondition?,
     val storageLocation: String?,
@@ -307,16 +303,16 @@ data class UpdateAccessionRequestPayloadV2(
     val dryingEndDate: LocalDate? = null,
     val facilityId: FacilityId? = null,
     val founderId: String? = null,
-    @Schema(
-        description =
-            "Initial size of accession. The units of this value must match the measurement type " +
-                "in \"processingMethod\".")
-    val initialQuantity: SeedQuantityPayload? = null,
     val notes: String? = null,
     val plantsCollectedFromMax: Int? = null,
     val plantsCollectedFromMin: Int? = null,
-    val processingMethod: ProcessingMethod? = null,
     val receivedDate: LocalDate? = null,
+    @Schema(
+        description =
+            "Quantity of seeds remaining in the accession. If this is different than the " +
+                "existing value, it is considered a new observation, and the new value will " +
+                "override any previously-calculated remaining quantities.")
+    val remainingQuantity: SeedQuantityPayload? = null,
     val speciesId: SpeciesId? = null,
     val state: AccessionState,
     val storageLocation: String? = null,
@@ -346,16 +342,15 @@ data class UpdateAccessionRequestPayloadV2(
           geolocations = collectionSiteCoordinates.orEmpty(),
           isManualState = true,
           numberOfTrees = plantsCollectedFromMax ?: plantsCollectedFromMin,
-          processingMethod = processingMethod,
           processingNotes = notes,
           receivedDate = receivedDate,
+          remaining = remainingQuantity?.toModel(),
           speciesId = speciesId,
           state = state,
           storageLocation = storageLocation,
           subsetCount = subsetCount,
           subsetWeightQuantity = subsetWeight?.toModel(),
           targetStorageCondition = targetStorageCondition,
-          total = initialQuantity?.toModel(),
           viabilityTests = viabilityTests.orEmpty().map { it.toModel() },
       )
 }

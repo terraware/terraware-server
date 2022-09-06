@@ -769,6 +769,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 accessionId = accession.id,
                 createdTime = clock.instant(),
                 date = test.startDate!!,
+                estimatedCount = 5,
                 purpose = WithdrawalPurpose.ViabilityTesting,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
                 viabilityTestId = test.id,
@@ -799,6 +800,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val modifiedWithdrawal =
         initialWithdrawal.copy(
             date = modifiedTest.startDate!!,
+            estimatedCount = 6,
             withdrawn = seeds(modifiedTest.seedsSown!!),
             remaining = seeds(4))
 
@@ -919,12 +921,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 state = AccessionState.Cleaning,
             ))
 
+    val withQuantity = store.updateAndFetch(initial.copy(remaining = seeds(1)))
     val updated =
         store.updateAndFetch(
-            initial.copy(
-                processingMethod = ProcessingMethod.Count,
+            withQuantity.copy(
                 state = AccessionState.Drying,
-                total = seeds(1),
                 withdrawals =
                     listOf(
                         WithdrawalModel(

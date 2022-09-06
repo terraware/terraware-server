@@ -133,6 +133,7 @@ data class AccessionModel(
     val subsetCount: Int? = null,
     val subsetWeightQuantity: SeedQuantityModel? = null,
     val targetStorageCondition: StorageCondition? = null,
+    /** The initial quantity entered by the user. */
     val total: SeedQuantityModel? = null,
     val totalViabilityPercent: Int? = null,
     val viabilityTests: List<ViabilityTestModel> = emptyList(),
@@ -149,7 +150,25 @@ data class AccessionModel(
     return if (!isManualState) {
       this
     } else {
-      copy(isManualState = false).withCalculatedValues(clock)
+      // v1 API doesn't allow count-based accessions to have weight-based withdrawals.
+      val withdrawalsWithCorrectUnits =
+          withdrawals.map { withdrawal ->
+            withdrawal.toV1Compatible(remaining, subsetWeightQuantity, subsetCount)
+          }
+
+      val effectiveProcessingMethod =
+          when (remaining?.units) {
+            SeedQuantityUnits.Seeds -> ProcessingMethod.Count
+            null -> null
+            else -> ProcessingMethod.Weight
+          }
+
+      copy(
+              isManualState = false,
+              processingMethod = effectiveProcessingMethod,
+              withdrawals = withdrawalsWithCorrectUnits,
+          )
+          .withCalculatedValues(clock)
     }
   }
 
@@ -245,6 +264,14 @@ data class AccessionModel(
   }
 
   private fun validate() {
+    if (isManualState) {
+      validateV2()
+    } else {
+      validateV1()
+    }
+  }
+
+  private fun validateV1() {
     when (processingMethod) {
       ProcessingMethod.Count -> validateCountBased()
       ProcessingMethod.Weight -> validateWeightBased()
@@ -256,7 +283,23 @@ data class AccessionModel(
       }
     }
 
-    if (total == null) {
+    assertNoWithdrawalsWithoutQuantity(total)
+  }
+
+  private fun validateV2() {
+    assertRemainingQuantityNotRemoved()
+    assertNoQuantityTypeChangeWithoutSubsetInfo()
+    assertNoWithdrawalsWithoutQuantity(latestObservedQuantity)
+  }
+
+  private fun assertRemainingQuantityNotRemoved() {
+    if (latestObservedQuantity != null && remaining == null) {
+      throw IllegalArgumentException("Cannot remove remaining quantity once it has been set")
+    }
+  }
+
+  private fun assertNoWithdrawalsWithoutQuantity(quantity: SeedQuantityModel?) {
+    if (quantity == null) {
       if (viabilityTests.isNotEmpty()) {
         throw IllegalArgumentException(
             "Cannot create viability tests before setting total accession size")
@@ -264,6 +307,23 @@ data class AccessionModel(
       if (withdrawals.isNotEmpty()) {
         throw IllegalArgumentException(
             "Cannot withdraw from accession before setting total accession size")
+      }
+    }
+  }
+
+  private fun assertNoQuantityTypeChangeWithoutSubsetInfo() {
+    if (latestObservedQuantity != null &&
+        (viabilityTests.isNotEmpty() || withdrawals.isNotEmpty()) &&
+        (subsetWeightQuantity == null || subsetCount == null)) {
+      if (latestObservedQuantity.units == SeedQuantityUnits.Seeds &&
+          remaining?.units != SeedQuantityUnits.Seeds) {
+        throw IllegalArgumentException(
+            "Cannot change remaining quantity from seeds to weight without subset weight and count")
+      }
+      if (latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
+          remaining?.units == SeedQuantityUnits.Seeds) {
+        throw IllegalArgumentException(
+            "Cannot change remaining quantity from weight to seeds without subset weight and count")
       }
     }
   }
@@ -363,21 +423,41 @@ data class AccessionModel(
 
   private fun hasTestResults(): Boolean = hasCutTestResults() || hasViabilityTestResults()
 
-  fun calculateLatestObservedQuantity(clock: Clock): SeedQuantityModel? {
-    return when (processingMethod) {
-      ProcessingMethod.Count -> total
-      ProcessingMethod.Weight -> calculateRemaining(clock)
-      null -> null
+  fun calculateLatestObservedQuantity(
+      clock: Clock,
+      existing: AccessionModel = this
+  ): SeedQuantityModel? {
+    return if (isManualState) {
+      if (existing.remaining != remaining || existing.latestObservedQuantity == null) {
+        remaining
+      } else {
+        existing.latestObservedQuantity
+      }
+    } else {
+      when (processingMethod) {
+        ProcessingMethod.Count -> total
+        ProcessingMethod.Weight -> calculateRemaining(clock)
+        null -> null
+      }
     }
   }
 
-  fun calculateLatestObservedTime(): Instant? {
-    return when {
-      total == null -> null
-      processingMethod == ProcessingMethod.Count -> createdTime
-      processingMethod == ProcessingMethod.Weight ->
-          withdrawals.mapNotNull { it.createdTime }.maxOrNull() ?: createdTime
-      else -> null
+  fun calculateLatestObservedTime(clock: Clock, existing: AccessionModel = this): Instant? {
+    return if (isManualState) {
+      if (remaining != null &&
+          (existing.remaining != remaining || existing.latestObservedQuantity == null)) {
+        clock.instant()
+      } else {
+        existing.latestObservedTime
+      }
+    } else {
+      when {
+        total == null -> null
+        processingMethod == ProcessingMethod.Count -> createdTime ?: clock.instant()
+        processingMethod == ProcessingMethod.Weight ->
+            withdrawals.mapNotNull { it.createdTime }.maxOrNull() ?: createdTime ?: clock.instant()
+        else -> null
+      }
     }
   }
 
@@ -411,9 +491,30 @@ data class AccessionModel(
     }
   }
 
-  fun calculateRemaining(clock: Clock): SeedQuantityModel? {
-    val remaining = calculateWithdrawals(clock).lastOrNull()?.remaining ?: total
-    return remaining?.toUnits(total?.units ?: remaining.units)
+  fun calculateRemaining(clock: Clock, existing: AccessionModel = this): SeedQuantityModel? {
+    val newWithdrawals = calculateWithdrawals(clock)
+    return if (isManualState) {
+      if (latestObservedQuantity == null ||
+          latestObservedTime == null ||
+          remaining != existing.remaining) {
+        remaining
+      } else {
+        newWithdrawals
+            .filter { it.isAfter(latestObservedTime) }
+            .fold(latestObservedQuantity) { runningRemaining, withdrawal ->
+              if (withdrawal.withdrawn != null) {
+                runningRemaining -
+                    withdrawal.withdrawn.toUnits(
+                        runningRemaining.units, subsetWeightQuantity, subsetCount)
+              } else {
+                runningRemaining
+              }
+            }
+      }
+    } else {
+      val remaining = newWithdrawals.lastOrNull()?.remaining ?: total
+      remaining?.toUnits(total?.units ?: remaining.units)
+    }
   }
 
   fun calculateEstimatedSeedCount(): Int? {
@@ -444,11 +545,6 @@ data class AccessionModel(
     if (withdrawals.isEmpty() && viabilityTests.isEmpty()) {
       return emptyList()
     }
-
-    var currentRemaining =
-        total
-            ?: throw IllegalStateException(
-                "Cannot withdraw from accession before specifying its total size")
 
     val existingIds = existingWithdrawals.mapNotNull { it.id }.toSet()
     withdrawals
@@ -483,33 +579,74 @@ data class AccessionModel(
 
     val unsortedWithdrawals = nonTestWithdrawals + testWithdrawals
 
-    return when (processingMethod) {
-      ProcessingMethod.Count -> {
-        unsortedWithdrawals
-            .sortedWith { a, b -> a.compareByTime(b) }
-            .map { withdrawal ->
-              withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
-              withdrawal.copy(
-                  remaining = currentRemaining,
-                  viabilityTest = withdrawal.viabilityTest?.copy(remaining = currentRemaining))
+    val sortedWithdrawals =
+        if (isManualState) {
+          // V1 COMPATIBILITY: Need to track per-withdrawal remaining quantity.
+          var currentRemaining =
+              latestObservedQuantity
+                  ?: throw IllegalStateException(
+                      "Cannot withdraw from accession before specifying a quantity")
+
+          unsortedWithdrawals
+              .sortedWith { a, b -> a.compareByTime(b) }
+              .map { withdrawal ->
+                // V1 COMPATIBILITY: Need to track per-withdrawal remaining quantity.
+                if (withdrawal.remaining != null) {
+                  currentRemaining = withdrawal.remaining
+                  withdrawal
+                } else if (withdrawal.withdrawn != null) {
+                  currentRemaining -=
+                      withdrawal.withdrawn.toUnits(
+                          currentRemaining.units, subsetWeightQuantity, subsetCount)
+                  withdrawal.copy(remaining = currentRemaining)
+                } else {
+                  throw IllegalArgumentException("Withdrawals must include quantities")
+                }
+              }
+        } else {
+          var currentRemaining =
+              total
+                  ?: throw IllegalStateException(
+                      "Cannot withdraw from accession before specifying its total size")
+
+          when (processingMethod) {
+            ProcessingMethod.Count -> {
+              unsortedWithdrawals
+                  .sortedWith { a, b -> a.compareByTime(b) }
+                  .map { withdrawal ->
+                    withdrawal.withdrawn?.let { withdrawn -> currentRemaining -= withdrawn }
+                    withdrawal.copy(
+                        remaining = currentRemaining,
+                        viabilityTest =
+                            withdrawal.viabilityTest?.copy(remaining = currentRemaining))
+                  }
             }
-      }
-      ProcessingMethod.Weight -> {
-        unsortedWithdrawals
-            .sortedByDescending { it.remaining }
-            .map { withdrawal ->
-              val remaining =
-                  withdrawal.remaining
-                      ?: throw IllegalArgumentException(
-                          "Withdrawals from weight-based accessions must include seeds remaining")
-              val difference = currentRemaining - remaining
-              currentRemaining = remaining
-              withdrawal.copy(weightDifference = difference)
+            ProcessingMethod.Weight -> {
+              unsortedWithdrawals
+                  .sortedByDescending { it.remaining }
+                  .map { withdrawal ->
+                    val remaining =
+                        withdrawal.remaining
+                            ?: throw IllegalArgumentException(
+                                "Withdrawals from weight-based accessions must include seeds remaining")
+                    val difference = currentRemaining - remaining
+                    currentRemaining = remaining
+                    withdrawal.copy(weightDifference = difference)
+                  }
             }
-      }
-      null -> {
-        throw IllegalStateException("Cannot add withdrawals before setting processingMethod")
-      }
+            null -> {
+              throw IllegalStateException("Cannot add withdrawals before setting processingMethod")
+            }
+          }
+        }
+
+    return sortedWithdrawals.map { withdrawal ->
+      withdrawal.copy(
+          estimatedCount = withdrawal.calculateEstimatedCount(subsetWeightQuantity, subsetCount),
+          estimatedWeight =
+              withdrawal.calculateEstimatedWeight(
+                  subsetWeightQuantity, subsetCount, remaining?.units),
+      )
     }
   }
 
@@ -577,7 +714,7 @@ data class AccessionModel(
         if (existing.source == DataSource.Web) collectedDate else existing.collectedDate
     val newReceivedDate =
         if (existing.source == DataSource.Web) receivedDate else existing.receivedDate
-    val newRemaining = calculateRemaining(clock)
+    val newRemaining = calculateRemaining(clock, existing)
     val newWithdrawals = calculateWithdrawals(clock, existing.withdrawals)
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
     val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
@@ -585,6 +722,8 @@ data class AccessionModel(
     return copy(
         collectedDate = newCollectedDate,
         estimatedSeedCount = calculateEstimatedSeedCount(),
+        latestObservedQuantity = calculateLatestObservedQuantity(clock, existing),
+        latestObservedTime = calculateLatestObservedTime(clock, existing),
         latestViabilityPercent = calculateLatestViabilityPercent(),
         latestViabilityTestDate = calculateLatestViabilityRecordingDate(),
         processingStartDate = newProcessingStartDate,
