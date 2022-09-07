@@ -382,6 +382,16 @@ internal class AccessionModelTest {
     }
 
     @Test
+    fun `cannot add withdrawal with more seeds than exist in the accession`() {
+      val accession =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        accession.addWithdrawal(WithdrawalModel(date = today, withdrawn = seeds(11)), tomorrowClock)
+      }
+    }
+
+    @Test
     fun `cannot specify negative seeds remaining for weight-based accessions`() {
       assertThrows<IllegalArgumentException>("Viability tests") {
         accession(

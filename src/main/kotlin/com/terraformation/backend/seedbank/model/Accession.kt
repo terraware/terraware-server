@@ -493,28 +493,35 @@ data class AccessionModel(
 
   fun calculateRemaining(clock: Clock, existing: AccessionModel = this): SeedQuantityModel? {
     val newWithdrawals = calculateWithdrawals(clock)
-    return if (isManualState) {
-      if (latestObservedQuantity == null ||
-          latestObservedTime == null ||
-          remaining != existing.remaining) {
-        remaining
-      } else {
-        newWithdrawals
-            .filter { it.isAfter(latestObservedTime) }
-            .fold(latestObservedQuantity) { runningRemaining, withdrawal ->
-              val withdrawn = withdrawal.weightDifference ?: withdrawal.withdrawn
-              if (withdrawn != null) {
-                runningRemaining -
-                    withdrawn.toUnits(runningRemaining.units, subsetWeightQuantity, subsetCount)
-              } else {
-                runningRemaining
-              }
-            }
-      }
-    } else {
-      val remaining = newWithdrawals.lastOrNull()?.remaining ?: total
-      remaining?.toUnits(total?.units ?: remaining.units)
+    val newRemaining =
+        if (isManualState) {
+          if (latestObservedQuantity == null ||
+              latestObservedTime == null ||
+              remaining != existing.remaining) {
+            remaining
+          } else {
+            newWithdrawals
+                .filter { it.isAfter(latestObservedTime) }
+                .fold(latestObservedQuantity) { runningRemaining, withdrawal ->
+                  val withdrawn = withdrawal.weightDifference ?: withdrawal.withdrawn
+                  if (withdrawn != null) {
+                    runningRemaining -
+                        withdrawn.toUnits(runningRemaining.units, subsetWeightQuantity, subsetCount)
+                  } else {
+                    runningRemaining
+                  }
+                }
+          }
+        } else {
+          val mostRecentRemaining = newWithdrawals.lastOrNull()?.remaining ?: total
+          mostRecentRemaining?.toUnits(total?.units ?: mostRecentRemaining.units)
+        }
+
+    if (newRemaining != null && newRemaining.quantity.signum() < 0) {
+      throw IllegalArgumentException("Cannot withdraw more seeds than remain in the accession")
     }
+
+    return newRemaining
   }
 
   fun calculateEstimatedSeedCount(): Int? {

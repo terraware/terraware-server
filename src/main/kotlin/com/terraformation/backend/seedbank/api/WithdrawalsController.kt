@@ -168,12 +168,10 @@ data class CreateWithdrawalRequestPayload(
     val withdrawnByUserId: UserId? = null,
     @Schema(
         description =
-            "Quantity of seeds withdrawn. For viability testing withdrawals, this is always " +
-                "the same as the test's \"seedsSown\" value. Otherwise, it is a user-supplied " +
-                "value. If this quantity is in weight and the remaining quantity of the " +
-                "accession is in seeds or vice versa, the accession must have a subset weight " +
-                "and count.")
-    val withdrawnQuantity: SeedQuantityPayload? = null,
+            "Quantity of seeds withdrawn. If this quantity is in weight and the remaining " +
+                "quantity of the accession is in seeds or vice versa, the accession must have a " +
+                "subset weight and count.")
+    val withdrawnQuantity: SeedQuantityPayload,
 ) {
   fun toModel(accessionId: AccessionId): WithdrawalModel =
       WithdrawalModel(
@@ -181,7 +179,7 @@ data class CreateWithdrawalRequestPayload(
           date = date,
           notes = notes,
           purpose = purpose,
-          withdrawn = withdrawnQuantity?.toModel(),
+          withdrawn = withdrawnQuantity.toModel(),
       )
 }
 
