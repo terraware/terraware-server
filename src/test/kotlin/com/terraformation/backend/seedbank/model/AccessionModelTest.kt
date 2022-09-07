@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.model
 
+import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DataSource
@@ -29,10 +30,14 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 internal class AccessionModelTest {
-  private val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
-  private val today = LocalDate.now(clock)
+  private val today = january(2)
+  private val todayInstant = today.atStartOfDay(ZoneOffset.UTC).toInstant()
+  private val clock: Clock = Clock.fixed(todayInstant, ZoneOffset.UTC)
   private val tomorrow = today.plusDays(1)
   private val yesterday = today.minusDays(1)
+  private val tomorrowInstant = tomorrow.atStartOfDay(ZoneOffset.UTC).toInstant()
+  private val tomorrowClock = Clock.fixed(tomorrowInstant, ZoneOffset.UTC)
+  private val yesterdayInstant = yesterday.atStartOfDay(ZoneOffset.UTC).toInstant()
 
   private var viabilityTestResultId = ViabilityTestResultId(1)
   private var viabilityTestId = ViabilityTestId(1)
@@ -1232,8 +1237,10 @@ internal class AccessionModelTest {
               latestObservedTime = Instant.EPOCH,
               remaining = seeds(10),
               state = AccessionState.InStorage,
+              total = seeds(10),
               withdrawals = listOf(withdrawal(seeds(10))),
           )
+          .withCalculatedValues(clock)
           .addStateTest({ this }, AccessionState.UsedUp, "All seeds marked as withdrawn")
           .addStateTest(
               { copy(state = AccessionState.InStorage) },
@@ -1271,11 +1278,6 @@ internal class AccessionModelTest {
 
   @Nested
   inner class QuantityCalculations {
-    private val todayInstant = today.atStartOfDay(ZoneOffset.UTC).toInstant()
-    private val tomorrowInstant = tomorrow.atStartOfDay(ZoneOffset.UTC).toInstant()
-    private val tomorrowClock = Clock.fixed(tomorrowInstant, ZoneOffset.UTC)
-    private val yesterdayInstant = yesterday.atStartOfDay(ZoneOffset.UTC).toInstant()
-
     @Test
     fun `observed quantity is updated if remaining quantity is changed`() {
       val existing = accession().copy(isManualState = true, remaining = seeds(10))
@@ -1399,6 +1401,7 @@ internal class AccessionModelTest {
                   latestObservedQuantity = grams(10),
                   latestObservedTime = todayInstant,
                   remaining = grams(10))
+              .withCalculatedValues(clock)
 
       val updated =
           accession.copy(
@@ -1476,6 +1479,90 @@ internal class AccessionModelTest {
           "Observed time")
       assertEquals(
           seeds(5), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+  }
+
+  @Nested
+  inner class V1ToV2Conversion {
+    @Test
+    fun `weight-based accession with no subset data and a viability test`() {
+      val initial =
+          AccessionModel(
+              checkedInTime = yesterdayInstant,
+              createdTime = yesterdayInstant,
+              processingMethod = ProcessingMethod.Weight,
+              total = grams(10),
+              viabilityTests =
+                  listOf(
+                      ViabilityTestModel(
+                          id = ViabilityTestId(1),
+                          remaining = grams(9),
+                          seedsSown = 1,
+                          startDate = today,
+                          testType = ViabilityTestType.Lab,
+                      ),
+                  ),
+              withdrawals =
+                  listOf(
+                      WithdrawalModel(
+                          createdTime = todayInstant,
+                          date = today,
+                          id = WithdrawalId(1),
+                          purpose = WithdrawalPurpose.ViabilityTesting,
+                          remaining = grams(9),
+                          viabilityTestId = ViabilityTestId(1),
+                          withdrawn = seeds(1),
+                      ),
+                  ),
+          )
+
+      val expected =
+          AccessionModel(
+              checkedInTime = yesterdayInstant,
+              createdTime = yesterdayInstant,
+              isManualState = true,
+              latestObservedQuantity = grams(9),
+              latestObservedTime = todayInstant,
+              processingMethod = ProcessingMethod.Weight,
+              remaining = grams(9),
+              state = AccessionState.AwaitingProcessing,
+              total = grams(10),
+              viabilityTests =
+                  listOf(
+                      ViabilityTestModel(
+                          id = ViabilityTestId(1),
+                          remaining = grams(9),
+                          seedsSown = 1,
+                          startDate = today,
+                          testType = ViabilityTestType.Lab,
+                      ),
+                  ),
+              withdrawals =
+                  listOf(
+                      WithdrawalModel(
+                          createdTime = todayInstant,
+                          date = today,
+                          id = WithdrawalId(1),
+                          estimatedCount = 1,
+                          estimatedWeight = grams(1),
+                          purpose = WithdrawalPurpose.ViabilityTesting,
+                          remaining = grams(9),
+                          viabilityTest =
+                              ViabilityTestModel(
+                                  id = ViabilityTestId(1),
+                                  remaining = grams(9),
+                                  seedsSown = 1,
+                                  startDate = today,
+                                  testType = ViabilityTestType.Lab,
+                              ),
+                          viabilityTestId = ViabilityTestId(1),
+                          weightDifference = grams(1),
+                          withdrawn = seeds(1),
+                      ),
+                  ),
+          )
+
+      assertJsonEquals(expected, initial.toV2Compatible(tomorrowClock))
     }
   }
 }
