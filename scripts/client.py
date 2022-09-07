@@ -1,6 +1,6 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 import requests
-from typing import Optional
+from typing import Dict, Optional
 
 DEFAULT_URL = "http://localhost:8080"
 
@@ -49,6 +49,9 @@ class TerrawareClient:
         r = requests.put(self.base_url + url, **kwargs_with_auth)
         r.raise_for_status()
         return r.json()
+
+    def get_facility(self, facility_id):
+        return self.get(f"/api/v1/facilities/{facility_id}")["facility"]
 
     def list_facilities(self):
         return self.get("/api/v1/facilities")["facilities"]
@@ -107,6 +110,9 @@ class TerrawareClient:
     def search_all_accession_values(self, payload):
         return self.post("/api/v1/seedbank/values/all", json=payload)["results"]
 
+    def list_species(self, organization_id):
+        return self.get(f"/api/v1/species?organizationId={organization_id}")["species"]
+
 
 def add_terraware_args(parser: ArgumentParser):
     """Add a standard set of arguments to configure a TerrawareClient.
@@ -129,5 +135,5 @@ def add_terraware_args(parser: ArgumentParser):
     )
 
 
-def client_from_args(args: str) -> TerrawareClient:
+def client_from_args(args: Namespace) -> TerrawareClient:
     return TerrawareClient(args.bearer, args.session, args.url)
