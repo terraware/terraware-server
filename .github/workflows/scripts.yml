@@ -5,8 +5,7 @@ on:
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
-  # Cancel in-progress builds on PRs, but not on staging deploys.
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -24,8 +23,7 @@ jobs:
       id: cache-scripts-python
       uses: actions/cache@v3
       with:
-        path: |
-          scripts/.venv
+        path: scripts/.venv
         key: 1-${{ hashFiles('scripts/requirements.txt', '.github/workflows/scripts.yml') }}
 
     - name: Install dependencies
