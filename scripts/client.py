@@ -1,6 +1,6 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 import requests
-from typing import Optional
+from typing import Dict, Optional
 
 DEFAULT_URL = "http://localhost:8080"
 
@@ -135,5 +135,5 @@ def add_terraware_args(parser: ArgumentParser):
     )
 
 
-def client_from_args(args: str) -> TerrawareClient:
+def client_from_args(args: Namespace) -> TerrawareClient:
     return TerrawareClient(args.bearer, args.session, args.url)

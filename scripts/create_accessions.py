@@ -5,7 +5,7 @@ from example_values import TREE_SPECIES, FIRST_NAMES
 import json
 import random
 from random import randint
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Sequence
 from client import TerrawareClient, add_terraware_args, client_from_args
 
 
@@ -26,7 +26,7 @@ def generate_rare() -> Optional[str]:
 
 
 def generate_species() -> Optional[str]:
-    return random.choice(TREE_SPECIES + [None])
+    return random.choice([*TREE_SPECIES, None])
 
 
 def generate_family(species) -> Optional[str]:
@@ -180,7 +180,7 @@ def generate_initial_quantity() -> Dict:
     quantity = generate_quantity()
     return {
         "processingMethod": "Count" if quantity["units"] == "Seeds" else "Weight",
-        "initialQuantity": generate_quantity(unit_type),
+        "initialQuantity": quantity,
     }
 
 
@@ -234,9 +234,6 @@ def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
         list([generate_geolocation() for x in bag_numbers]) if bag_numbers else None
     )
     viability_test_types = [generate_test_type()]
-
-    species = generate_species()
-    family = generate_family(species)
 
     collected_date = generate_recent_date()
     received_date = (
