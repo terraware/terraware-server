@@ -1,0 +1,48 @@
+name: terraware-server
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Cache dependencies
+      id: cache-scripts-python
+      uses: actions/cache@v3
+      with:
+        path: scripts/.venv
+        key: 1-${{ hashFiles('scripts/requirements.txt', '.github/workflows/scripts.yml') }}
+
+    - name: Install dependencies
+      run: |
+        cd scripts
+        if [ ! -d .venv ]; then
+          python3 -m venv .venv
+        fi
+        source .venv/bin/activate
+        pip3 install -r requirements.txt
+
+    - name: Check format
+      run: |
+        cd scripts
+        source .venv/bin/activate
+        black --check .
+
+    - name: Check types
+      run: |
+        cd scripts
+        source .venv/bin/activate
+        mypy .
