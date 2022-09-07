@@ -305,9 +305,7 @@ def generate_accession_update_v2(accession: Dict) -> Dict:
     }
 
 
-def create_accession(
-    client: TerrawareClient, facility_id: int, species_ids: List[int]
-) -> Dict:
+def create_accession(client: TerrawareClient, facility_id: int) -> Dict:
     create_payload = generate_accession(facility_id)
 
     try:
@@ -397,13 +395,17 @@ def main():
         ][0]
 
     organization_id = client.get_facility(facility_id)["organizationId"]
-    species_ids = [species["id"] for species in client.list_species(organization_id)]
+
+    if args.version == 2:
+        species_ids = [
+            species["id"] for species in client.list_species(organization_id)
+        ]
 
     for n in range(0, args.number):
         if args.version == 2:
             accession = create_accession_v2(client, facility_id, species_ids)
         else:
-            accession = create_accession(client, facility_id, species_ids)
+            accession = create_accession(client, facility_id)
         if args.verbose:
             print(json.dumps(accession, indent=2))
         else:
