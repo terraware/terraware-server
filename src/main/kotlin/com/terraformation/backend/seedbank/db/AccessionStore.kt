@@ -137,6 +137,8 @@ class AccessionStore(
           dryingStartDate = record[DRYING_START_DATE],
           endangered = record[SPECIES_ENDANGERED_TYPE_ID],
           estimatedSeedCount = record[EST_SEED_COUNT],
+          estimatedWeight =
+              SeedQuantityModel.of(record[EST_WEIGHT_QUANTITY], record[EST_WEIGHT_UNITS_ID]),
           facilityId = record[FACILITY_ID],
           family = record[FAMILY_NAME],
           fieldNotes = record[FIELD_NOTES],
@@ -410,6 +412,9 @@ class AccessionStore(
                 .set(DRYING_MOVE_DATE, accession.dryingMoveDate)
                 .set(DRYING_START_DATE, accession.dryingStartDate)
                 .set(EST_SEED_COUNT, accession.estimatedSeedCount)
+                .set(EST_WEIGHT_GRAMS, accession.estimatedWeight?.grams)
+                .set(EST_WEIGHT_QUANTITY, accession.estimatedWeight?.quantity)
+                .set(EST_WEIGHT_UNITS_ID, accession.estimatedWeight?.units)
                 .set(FACILITY_ID, facilityId)
                 .set(FAMILY_NAME, accession.family)
                 .set(FIELD_NOTES, accession.fieldNotes)
