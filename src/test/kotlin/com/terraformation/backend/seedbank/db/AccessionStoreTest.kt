@@ -196,18 +196,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     store.create(AccessionModel(facilityId = facilityId, processingNotes = "test processing notes"))
 
     assertEquals(
-        AccessionsRow(
-            id = AccessionId(1),
-            facilityId = facilityId,
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            dataSourceId = DataSource.Web,
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            number = accessionNumbers[0],
-            processingNotes = "test processing notes",
-            stateId = AccessionState.AwaitingCheckIn),
-        accessionsDao.fetchOneById(AccessionId(1)))
+        "test processing notes", accessionsDao.fetchOneById(AccessionId(1))?.processingNotes)
   }
 
   @Test
