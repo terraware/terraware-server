@@ -176,6 +176,7 @@ data class AccessionPayloadV2(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     val subsetWeight: SeedQuantityPayload?,
+    val viabilityPercent: Int?,
     val viabilityTests: List<GetViabilityTestPayload>?,
     val withdrawals: List<GetWithdrawalPayload>?,
 ) {
@@ -222,6 +223,7 @@ data class AccessionPayloadV2(
       storageLocation = model.storageLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
+      viabilityPercent = model.totalViabilityPercent,
       viabilityTests = model.viabilityTests.map { GetViabilityTestPayload(it) }.orNull(),
       withdrawals = model.withdrawals.map { GetWithdrawalPayload(it) }.orNull(),
   )
@@ -312,7 +314,8 @@ data class UpdateAccessionRequestPayloadV2(
     @Schema(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
-    private val subsetWeight: SeedQuantityPayload? = null,
+    val subsetWeight: SeedQuantityPayload? = null,
+    val viabilityPercent: Int? = null,
 ) {
   fun applyToModel(model: AccessionModel): AccessionModel =
       model.copy(
@@ -340,6 +343,7 @@ data class UpdateAccessionRequestPayloadV2(
           storageLocation = storageLocation,
           subsetCount = subsetCount,
           subsetWeightQuantity = subsetWeight?.toModel(),
+          totalViabilityPercent = viabilityPercent,
       )
 }
 

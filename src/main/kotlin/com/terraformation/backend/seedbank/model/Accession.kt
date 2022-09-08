@@ -137,6 +137,10 @@ data class AccessionModel(
     val targetStorageCondition: StorageCondition? = null,
     /** The initial quantity entered by the user. */
     val total: SeedQuantityModel? = null,
+    /**
+     * The accession's viability. This is calculated as an aggregate of the results of all tests in
+     * v1 and is a user-editable value in v2 (exposed in the v2 API as `viabilityPercent`).
+     */
     val totalViabilityPercent: Int? = null,
     val viabilityTests: List<ViabilityTestModel> = emptyList(),
     val withdrawals: List<WithdrawalModel> = emptyList(),
@@ -743,6 +747,8 @@ data class AccessionModel(
         if (existing.source == DataSource.Web) receivedDate else existing.receivedDate
     val newRemaining = calculateRemaining(clock, existing)
     val newWithdrawals = calculateWithdrawals(clock, existing.withdrawals)
+    val newViabilityPercent =
+        if (isManualState) totalViabilityPercent else calculateTotalViabilityPercent()
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
     val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
 
@@ -757,7 +763,7 @@ data class AccessionModel(
         receivedDate = newReceivedDate,
         remaining = newRemaining,
         state = newState,
-        totalViabilityPercent = calculateTotalViabilityPercent(),
+        totalViabilityPercent = newViabilityPercent,
         total = total ?: newRemaining,
         viabilityTests = newViabilityTests,
         withdrawals = newWithdrawals)
