@@ -76,7 +76,7 @@ def generate_source() -> Optional[str]:
     )
 
 
-def generate_staff_responsible() -> Optional[str]:
+def generate_staff_responsible() -> str:
     return random.choice(FIRST_NAMES)
 
 
