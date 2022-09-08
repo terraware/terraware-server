@@ -1,7 +1,10 @@
-name: terraware-server
+name: scripts
 
 on:
   pull_request:
+    paths:
+    - scripts/**
+    - .github/workflows/scripts.yml
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
