@@ -8,8 +8,6 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.mercatorPoint
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
@@ -35,13 +33,11 @@ import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Clock
-import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.random.Random
-import net.postgis.jdbc.geometry.Point
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -73,15 +69,10 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   private val accessionId = AccessionId(12345)
   private val accessionNumber = "ZYXWVUTSRQPO"
-  private val capturedTime = Instant.ofEpochMilli(1000)
   private val contentType = MediaType.IMAGE_JPEG_VALUE
   private val filename = "test-photo.jpg"
-  private val latitude = 23.456
-  private val longitude = 76.5432
-  private val location = Point(longitude, latitude, 0.0).apply { srid = SRID.LONG_LAT }
-  private val accuracy = 50
   private val uploadedTime = ZonedDateTime.of(2021, 2, 3, 4, 5, 6, 0, ZoneOffset.UTC).toInstant()
-  private val metadata = PhotoMetadata(filename, contentType, capturedTime, 1L, location, accuracy)
+  private val metadata = PhotoMetadata(filename, contentType, 1L)
 
   @BeforeEach
   fun setUp() {
@@ -146,11 +137,9 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     val expectedPhoto =
         PhotosRow(
-            capturedTime = capturedTime,
             contentType = contentType,
             fileName = filename,
             storageUrl = photoStorageUrl,
-            gpsHorizAccuracy = accuracy.toDouble(),
             size = photoData.size.toLong(),
             createdBy = user.userId,
             createdTime = uploadedTime,
@@ -165,26 +154,16 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     assertEquals(expectedAccessionPhoto, actualAccessionPhoto.copy(photoId = null))
 
     val actualPhoto = photosDao.fetchOneById(actualAccessionPhoto.photoId!!)!!
-    assertEquals(expectedPhoto, actualPhoto.copy(id = null, location = null))
-
-    // We'll get the coordinates back in spherical Mercator, not long/lat.
-    // select st_asewkt(st_transform(st_setsrid('point(76.5432 23.456 0)'::geometry, 4326), 3857));
-    // SRID=3857;POINT(8520750.047687698 2687258.0669861087 0)
-    val actualLocation = actualPhoto.location!! as Point
-    assertEquals(8520750.047687698, actualLocation.x, 0.00001, "Location X")
-    assertEquals(2687258.0669861087, actualLocation.y, 0.00001, "Location Y")
-    assertEquals(0.0, actualLocation.z, "Location Z")
+    assertEquals(expectedPhoto, actualPhoto.copy(id = null))
   }
 
   @Test
   fun `storePhoto deletes file if database insert fails`() {
     val photosRow =
         PhotosRow(
-            capturedTime = capturedTime,
             contentType = contentType,
             fileName = filename,
             storageUrl = URI("file:///$filename"),
-            location = mercatorPoint(1.0, 2.0, 3.0),
             size = 1,
             createdBy = user.userId,
             createdTime = uploadedTime,

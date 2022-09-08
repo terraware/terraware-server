@@ -5,14 +5,12 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.PhotoId
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.db.tables.references.PHOTOS
-import com.terraformation.backend.db.transformSrid
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
@@ -58,13 +56,10 @@ class PhotoRepository(
       dslContext.transaction { _ ->
         val photosRow =
             PhotosRow(
-                capturedTime = metadata.capturedTime,
                 contentType = metadata.contentType,
                 createdTime = clock.instant(),
                 createdBy = currentUser().userId,
                 fileName = metadata.filename,
-                gpsHorizAccuracy = metadata.gpsAccuracy?.toDouble(),
-                location = metadata.location,
                 modifiedBy = currentUser().userId,
                 modifiedTime = clock.instant(),
                 size = size,
@@ -126,25 +121,17 @@ class PhotoRepository(
     requirePermissions { readAccession(accessionId) }
 
     return dslContext
-        .select(
-            PHOTOS.CAPTURED_TIME,
-            PHOTOS.CONTENT_TYPE,
-            PHOTOS.SIZE,
-            PHOTOS.GPS_HORIZ_ACCURACY,
-            PHOTOS.LOCATION.transformSrid(SRID.LONG_LAT).`as`(PHOTOS.LOCATION),
-            PHOTOS.FILE_NAME)
+        .select(PHOTOS.CONTENT_TYPE, PHOTOS.FILE_NAME, PHOTOS.SIZE)
         .from(PHOTOS)
         .join(ACCESSION_PHOTOS)
         .on(PHOTOS.ID.eq(ACCESSION_PHOTOS.PHOTO_ID))
         .where(ACCESSION_PHOTOS.ACCESSION_ID.eq(accessionId))
         .fetch { record ->
           PhotoMetadata(
-              record[PHOTOS.FILE_NAME]!!,
-              record[PHOTOS.CONTENT_TYPE]!!,
-              record[PHOTOS.CAPTURED_TIME]!!,
-              record[PHOTOS.SIZE]!!,
-              record[PHOTOS.LOCATION]?.firstPoint,
-              record[PHOTOS.GPS_HORIZ_ACCURACY]?.toInt())
+              contentType = record[PHOTOS.CONTENT_TYPE]!!,
+              filename = record[PHOTOS.FILE_NAME]!!,
+              size = record[PHOTOS.SIZE]!!,
+          )
         }
   }
 

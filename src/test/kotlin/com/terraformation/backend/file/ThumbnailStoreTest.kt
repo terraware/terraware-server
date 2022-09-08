@@ -62,7 +62,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     photosDao.insert(
         PhotosRow(
             id = photoId,
-            capturedTime = clock.instant(),
             contentType = MediaType.IMAGE_JPEG_VALUE,
             createdBy = user.userId,
             createdTime = clock.instant(),

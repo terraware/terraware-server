@@ -668,7 +668,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             fileName = "photo.jpg",
             createdBy = user.userId,
             createdTime = Instant.now(),
-            capturedTime = Instant.now(),
             contentType = MediaType.IMAGE_JPEG_VALUE,
             modifiedBy = user.userId,
             modifiedTime = Instant.now(),
