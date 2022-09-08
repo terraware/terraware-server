@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import argparse
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from example_values import TREE_SPECIES, FIRST_NAMES
 import json
 import random
 from random import randint
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Dict, List, Optional
 from client import TerrawareClient, add_terraware_args, client_from_args
 
 
@@ -37,7 +37,7 @@ def generate_family(species) -> Optional[str]:
 
 
 def generate_notes() -> Optional[str]:
-    very = " ".join(["very" for how_very in range(0, randint(10, 200))])
+    very = " ".join(["very" for _ in range(0, randint(10, 200))])
     return random.choice(
         [
             None,
@@ -59,7 +59,7 @@ def generate_recent_date() -> Optional[date]:
     return date.today() - timedelta(days=randint(0, 90))
 
 
-def generate_germination(recording_date, max_seeds_germinated: float) -> Dict:
+def generate_test_result(recording_date, max_seeds_germinated: float) -> Dict:
     return {
         "recordingDate": str(recording_date),
         "seedsGerminated": randint(0, int(max_seeds_germinated)),
@@ -96,31 +96,27 @@ def generate_viability_test(received_date, remaining_quantity: Dict) -> Dict:
     start_date = received_date + timedelta(days=randint(0, 2))
     germination_count = randint(0, 3)
 
-    germinations = []
-    germination_date = start_date
+    test_results = []
+    recording_date = start_date
 
     for i in range(0, germination_count):
-        germinations.append(
-            generate_germination(germination_date, seeds_sown / germination_count)
+        test_results.append(
+            generate_test_result(recording_date, seeds_sown / germination_count)
         )
-        germination_date += timedelta(days=randint(1, 3))
+        recording_date += timedelta(days=randint(1, 3))
 
     return {
-        "testType": "Lab",
-        "startDate": str(start_date) if start_date else None,
-        "seedType": "Fresh",
-        "substrate": "Nursery Media",
-        "treatment": "Soak",
         "notes": generate_notes(),
-        "staffResponsible": generate_staff_responsible(),
         "seedsSown": seeds_sown,
-        "germinations": germinations or None,
+        "seedType": "Fresh",
+        "staffResponsible": generate_staff_responsible(),
+        "startDate": str(start_date) if start_date else None,
+        "substrate": "Nursery Media",
+        "testResults": test_results or None,
+        "testType": "Lab",
+        "treatment": "Soak",
         **remaining,
     }
-
-
-def generate_test_type() -> str:
-    return random.choice(["Lab", "Nursery"])
 
 
 def generate_geolocation() -> Dict:
@@ -134,7 +130,7 @@ def generate_geolocation() -> Dict:
 def generate_bag_numbers() -> Optional[List[str]]:
     if randint(0, 5) > 0:
         return list(
-            [str(randint(100000000, 999999999)) for x in range(0, randint(1, 10))]
+            [str(randint(100000000, 999999999)) for _ in range(0, randint(1, 10))]
         )
     else:
         return None
@@ -184,15 +180,16 @@ def generate_initial_quantity() -> Dict:
     }
 
 
-def generate_accession(facility_id: int) -> Dict:
+def generate_collectors() -> Optional[List[str]]:
     num_collectors = randint(1, 3) if randint(0, 2) == 0 else 0
-    collectors = [generate_staff_responsible() for n in range(num_collectors)] or None
+    return [generate_staff_responsible() for _ in range(num_collectors)] or None
 
+
+def generate_accession(facility_id: int) -> Dict:
     bag_numbers = generate_bag_numbers()
     geolocations = (
-        list([generate_geolocation() for x in bag_numbers]) if bag_numbers else None
+        list([generate_geolocation() for _ in bag_numbers]) if bag_numbers else None
     )
-    viability_test_types = [generate_test_type()]
 
     species = generate_species()
     family = generate_family(species)
@@ -205,7 +202,7 @@ def generate_accession(facility_id: int) -> Dict:
     return {
         "bagNumbers": bag_numbers,
         "collectedDate": str(collected_date) if collected_date else None,
-        "collectors": collectors,
+        "collectors": generate_collectors(),
         "endangered": generate_endangered(),
         "environmentalNotes": generate_notes(),
         "facilityId": facility_id,
@@ -221,19 +218,14 @@ def generate_accession(facility_id: int) -> Dict:
         "source": generate_source(),
         "sourcePlantOrigin": generate_source_plant_origin(),
         "species": species,
-        "viabilityTestTypes": viability_test_types,
     }
 
 
 def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
-    num_collectors = randint(1, 3) if randint(0, 2) == 0 else 0
-    collectors = [generate_staff_responsible() for n in range(num_collectors)] or None
-
     bag_numbers = generate_bag_numbers()
     geolocations = (
-        list([generate_geolocation() for x in bag_numbers]) if bag_numbers else None
+        list([generate_geolocation() for _ in bag_numbers]) if bag_numbers else None
     )
-    viability_test_types = [generate_test_type()]
 
     collected_date = generate_recent_date()
     received_date = (
@@ -252,7 +244,7 @@ def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
         "collectionSiteLandowner": generate_staff_responsible(),
         "collectionSiteName": generate_site_location(),
         "collectionSiteNotes": generate_notes(),
-        "collectors": collectors,
+        "collectors": generate_collectors(),
         "facilityId": facility_id,
         "founderId": generate_founder_id(),
         "plantsCollectedFromMax": plants_collected_from_max,
@@ -260,7 +252,6 @@ def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
         "receivedDate": str(received_date) if received_date else None,
         "source": generate_source(),
         "speciesId": species_id,
-        "viabilityTestTypes": viability_test_types,
     }
 
 
@@ -284,21 +275,22 @@ def generate_accession_update(accession: Dict) -> Dict:
 def generate_accession_update_v2(accession: Dict) -> Dict:
     remaining_quantity = generate_quantity()
 
-    received_date = (
-        date.fromisoformat(accession["receivedDate"])
-        if "receivedDate" in accession
-        else None
-    )
-    viability_tests = (
-        [generate_viability_test(received_date, remaining_quantity)]
-        if received_date
-        else None
-    )
+    # If receivedDate is set, we will be creating a viability test, so we'll need
+    # subset weight/count if the remaining quantity is weight-based.
+    if randint(0, 3) == 0 or (
+        "receivedDate" in accession and remaining_quantity["units"] != "Seeds"
+    ):
+        subset_fields = {
+            "subsetCount": randint(1, 20),
+            "subsetWeight": generate_quantity("Weight"),
+        }
+    else:
+        subset_fields = {}
 
     return {
         **accession,
+        **subset_fields,
         "remainingQuantity": remaining_quantity,
-        "viabilityTests": viability_tests,
     }
 
 
@@ -353,6 +345,21 @@ def create_accession_v2(
         print(json.dumps(update_payload, indent=2))
         raise ex
 
+    if "receivedDate" in updated:
+        received_date = date.fromisoformat(updated["receivedDate"])
+        viability_test_payload = generate_viability_test(
+            received_date, updated["remainingQuantity"]
+        )
+
+        try:
+            updated = client.create_viability_test(accession_id, viability_test_payload)
+        except Exception as ex:
+            print(
+                f"Unable to create viability test for accession {accession_id}. Payload:"
+            )
+            print(json.dumps(viability_test_payload, indent=2))
+            raise ex
+
     return updated
 
 
@@ -393,10 +400,11 @@ def main():
 
     organization_id = client.get_facility(facility_id)["organizationId"]
 
-    if args.version == 2:
-        species_ids = [
-            species["id"] for species in client.list_species(organization_id)
-        ]
+    species_ids = (
+        [species["id"] for species in client.list_species(organization_id)]
+        if args.version == 2
+        else None
+    )
 
     for n in range(0, args.number):
         if args.version == 2:

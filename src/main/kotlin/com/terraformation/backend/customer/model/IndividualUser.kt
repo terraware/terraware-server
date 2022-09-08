@@ -17,6 +17,7 @@ import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.log.perClassLogger
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -284,6 +285,11 @@ data class IndividualUser(
 
   override fun canReadUpload(uploadId: UploadId): Boolean {
     return userId == parentStore.getUserId(uploadId)
+  }
+
+  override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean {
+    val accessionId = parentStore.getAccessionId(viabilityTestId) ?: return false
+    return canReadAccession(accessionId)
   }
 
   override fun canRegenerateAllDeviceManagerTokens(): Boolean {

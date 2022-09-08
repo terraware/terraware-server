@@ -12,6 +12,8 @@ import com.terraformation.backend.db.SourcePlantOrigin
 import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.WithdrawalPurpose
@@ -786,6 +788,36 @@ data class AccessionModel(
     }
 
     return copy(withdrawals = newWithdrawals).withCalculatedValues(clock, this)
+  }
+
+  fun addViabilityTest(viabilityTest: ViabilityTestModel, clock: Clock): AccessionModel {
+    return copy(viabilityTests = viabilityTests + viabilityTest).withCalculatedValues(clock, this)
+  }
+
+  fun updateViabilityTest(
+      viabilityTestId: ViabilityTestId,
+      clock: Clock,
+      edit: (ViabilityTestModel) -> ViabilityTestModel
+  ): AccessionModel {
+    if (viabilityTests.none { it.id == viabilityTestId }) {
+      throw ViabilityTestNotFoundException(viabilityTestId)
+    }
+
+    val newViabilityTests = viabilityTests.map { if (it.id == viabilityTestId) edit(it) else it }
+
+    return copy(viabilityTests = newViabilityTests).withCalculatedValues(clock, this)
+  }
+
+  fun deleteViabilityTest(viabilityTestId: ViabilityTestId, clock: Clock): AccessionModel {
+    val newViabilityTests = viabilityTests.filterNot { it.id == viabilityTestId }
+    val newWithdrawals = withdrawals.filterNot { it.viabilityTestId == viabilityTestId }
+
+    if (newViabilityTests.size == viabilityTests.size) {
+      throw ViabilityTestNotFoundException(viabilityTestId)
+    }
+
+    return copy(viabilityTests = newViabilityTests, withdrawals = newWithdrawals)
+        .withCalculatedValues(clock, this)
   }
 }
 

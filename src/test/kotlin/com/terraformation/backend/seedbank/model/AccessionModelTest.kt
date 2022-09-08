@@ -34,9 +34,9 @@ internal class AccessionModelTest {
   private val todayInstant = today.atStartOfDay(ZoneOffset.UTC).toInstant()
   private val clock: Clock = Clock.fixed(todayInstant, ZoneOffset.UTC)
   private val tomorrow = today.plusDays(1)
-  private val yesterday = today.minusDays(1)
   private val tomorrowInstant = tomorrow.atStartOfDay(ZoneOffset.UTC).toInstant()
   private val tomorrowClock = Clock.fixed(tomorrowInstant, ZoneOffset.UTC)
+  private val yesterday = today.minusDays(1)
   private val yesterdayInstant = yesterday.atStartOfDay(ZoneOffset.UTC).toInstant()
 
   private var viabilityTestResultId = ViabilityTestResultId(1)
@@ -541,6 +541,67 @@ internal class AccessionModelTest {
               .withCalculatedValues(clock)
 
       assertDoesNotThrow { initial.copy(remaining = seeds(10)) }
+    }
+
+    @Test
+    fun `cannot create viability test on weight-based accession without subset data`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = grams(10)).withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        initial.addViabilityTest(viabilityTest(seedsSown = 1), tomorrowClock)
+      }
+    }
+
+    @Test
+    fun `cannot add viability test with more seeds sown than remaining quantity`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        initial.addViabilityTest(viabilityTest(seedsSown = 11, startDate = null), tomorrowClock)
+      }
+    }
+
+    @Test
+    fun `can add viability test with more seeds sown than remaining quantity if it is older than the latest observed quantity`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertDoesNotThrow {
+        initial.addViabilityTest(
+            viabilityTest(seedsSown = 11, startDate = yesterday), tomorrowClock)
+      }
+    }
+
+    @Test
+    fun `can add viability test with fewer seeds sown than estimated seed count by weight`() {
+      val initial =
+          accession()
+              .copy(
+                  isManualState = true,
+                  subsetCount = 2,
+                  subsetWeightQuantity = grams(2),
+                  remaining = grams(10))
+              .withCalculatedValues(clock)
+
+      assertDoesNotThrow { initial.addViabilityTest(viabilityTest(seedsSown = 9), tomorrowClock) }
+    }
+
+    @Test
+    fun `cannot add new viability test with more seeds sown than estimated seed count by weight`() {
+      val initial =
+          accession()
+              .copy(
+                  isManualState = true,
+                  subsetCount = 2,
+                  subsetWeightQuantity = grams(2),
+                  remaining = grams(10))
+              .withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        initial.addViabilityTest(viabilityTest(seedsSown = 11, startDate = null), tomorrowClock)
+      }
     }
   }
 
@@ -1465,6 +1526,25 @@ internal class AccessionModelTest {
           "Observed time")
       assertEquals(
           seeds(8), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
+    }
+
+    // V1 COMPATIBILITY
+    @Test
+    fun `remaining quantity in seeds is calculated for viability test and its withdrawal`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  latestObservedQuantity = seeds(10),
+                  latestObservedTime = Instant.EPOCH,
+                  remaining = seeds(10))
+
+      val updated = accession.addViabilityTest(viabilityTest(seedsSown = 1), clock)
+
+      assertEquals(
+          seeds(9), updated.viabilityTests.getOrNull(0)?.remaining, "Seeds remaining on test")
+      assertEquals(
+          seeds(9), updated.withdrawals.getOrNull(0)?.remaining, "Seeds remaining on withdrawal")
     }
 
     @Test

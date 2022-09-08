@@ -15,13 +15,17 @@ import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
+import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
@@ -32,8 +36,10 @@ import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.TIMESERIES
+import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import io.mockk.every
 import io.mockk.mockk
+import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -102,6 +108,7 @@ internal class PermissionTest : DatabaseTest() {
   private val automationIds = facilityIds.map { AutomationId(it.value) }
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
+  private val viabilityTestIds = facilityIds.map { ViabilityTestId(it.value) }
 
   private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
@@ -156,6 +163,14 @@ internal class PermissionTest : DatabaseTest() {
               dataSourceId = DataSource.Web,
               modifiedBy = userId,
               modifiedTime = Instant.EPOCH))
+      viabilityTestsDao.insert(
+          ViabilityTestsRow(
+              accessionId = AccessionId(facilityId.value),
+              id = ViabilityTestId(facilityId.value),
+              seedsSown = 1,
+              remainingQuantity = BigDecimal.ONE,
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+              testType = ViabilityTestType.Lab))
     }
 
     speciesIds.forEach { insertSpecies(it, organizationId = it.value, createdBy = userId) }
@@ -254,6 +269,11 @@ internal class PermissionTest : DatabaseTest() {
         readStorageLocation = true,
         updateStorageLocation = true,
         deleteStorageLocation = true,
+    )
+
+    permissions.expect(
+        *viabilityTestIds.forOrg1(),
+        readViabilityTest = true,
     )
 
     permissions.andNothingElse()
@@ -370,6 +390,11 @@ internal class PermissionTest : DatabaseTest() {
         deleteStorageLocation = true,
     )
 
+    permissions.expect(
+        *viabilityTestIds.forOrg1(),
+        readViabilityTest = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -430,6 +455,11 @@ internal class PermissionTest : DatabaseTest() {
         readStorageLocation = true,
     )
 
+    permissions.expect(
+        *viabilityTestIds.forOrg1(),
+        readViabilityTest = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -484,6 +514,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *storageLocationIds.forOrg1(),
         readStorageLocation = true,
+    )
+
+    permissions.expect(
+        *viabilityTestIds.forOrg1(),
+        readViabilityTest = true,
     )
 
     permissions.andNothingElse()
@@ -607,6 +642,7 @@ internal class PermissionTest : DatabaseTest() {
   fun `permissions require target objects to exist`() {
     givenRole(org1Id, Role.OWNER)
 
+    dslContext.deleteFrom(VIABILITY_TESTS).execute()
     dslContext.deleteFrom(STORAGE_LOCATIONS).execute()
     dslContext.deleteFrom(TIMESERIES).execute()
     dslContext.deleteFrom(DEVICE_MANAGERS).execute()
@@ -630,6 +666,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedStorageLocationIds = storageLocationIds.toMutableSet()
+    private val uncheckedViabilityTestIds = viabilityTestIds.toMutableSet()
 
     private var hasCheckedGlobalPermissions = false
 
@@ -895,6 +932,20 @@ internal class PermissionTest : DatabaseTest() {
       hasCheckedGlobalPermissions = true
     }
 
+    fun expect(
+        vararg viabilityTestIds: ViabilityTestId,
+        readViabilityTest: Boolean = false,
+    ) {
+      viabilityTestIds.forEach { viabilityTestId ->
+        assertEquals(
+            readViabilityTest,
+            user.canReadViabilityTest(viabilityTestId),
+            "Can read viability test $viabilityTestId")
+
+        uncheckedViabilityTestIds.remove(viabilityTestId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
@@ -904,6 +955,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedStorageLocationIds.toTypedArray())
+      expect(*uncheckedViabilityTestIds.toTypedArray())
 
       if (!hasCheckedGlobalPermissions) {
         expect()

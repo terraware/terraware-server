@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 import requests
-from typing import Dict, Optional
+from typing import Optional
 
 DEFAULT_URL = "http://localhost:8080"
 
@@ -94,6 +94,18 @@ class TerrawareClient:
 
     def delete_accession(self, accession_id):
         return self.delete(f"/api/v1/seedbank/accessions/{accession_id}")
+
+    def create_viability_test(self, accession_id, payload):
+        uri = f"/api/v2/seedbank/accessions/{accession_id}/viabilityTests"
+        return self.post(uri, json=payload)["accession"]
+
+    def delete_viability_test(self, accession_id, viability_test_id):
+        uri = f"/api/v2/seedbank/accessions/{accession_id}/viabilityTests/{viability_test_id}"
+        return self.delete(uri)["accession"]
+
+    def update_viability_test(self, accession_id, viability_test_id, payload):
+        uri = f"/api/v2/seedbank/accessions/{accession_id}/viabilityTests/{viability_test_id}"
+        return self.put(uri, json=payload)["accession"]
 
     def export_search(self, payload):
         """Return a response with a text/csv content type."""

@@ -23,6 +23,8 @@ import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -303,6 +305,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readUpload(uploadId: UploadId) {
     if (!user.canReadUpload(uploadId)) {
       throw UploadNotFoundException(uploadId)
+    }
+  }
+
+  fun readViabilityTest(viabilityTestId: ViabilityTestId) {
+    if (!user.canReadViabilityTest(viabilityTestId)) {
+      throw ViabilityTestNotFoundException(viabilityTestId)
     }
   }
 

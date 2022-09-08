@@ -14,6 +14,7 @@ import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.tables.daos.UsersDao
 import javax.annotation.ManagedBean
 import org.springframework.context.annotation.Lazy
@@ -131,6 +132,7 @@ class SystemUser(
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
   override fun canReadUpload(uploadId: UploadId): Boolean = true
+  override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = true
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       true

@@ -30,7 +30,7 @@ class WithdrawalsController(
     private val withdrawalStore: WithdrawalStore,
 ) {
   @GetMapping
-  @Operation(summary = "List all the withdrawals matching a search criterion.")
+  @Operation(summary = "List all the withdrawals from an accession.")
   fun listWithdrawals(
       @PathVariable("accessionId") accessionId: AccessionId
   ): GetWithdrawalsResponsePayload {
