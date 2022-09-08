@@ -124,37 +124,37 @@
 <!-- photos -->
 <g id="node3" class="node"><title>photos</title>
 <g id="a_node3"><a xlink:href="../../tables/photos.html" xlink:title="photos" target="_top">
-<polygon fill="#ffffff" stroke="none" points="56.5,-37 56.5,-139 190.5,-139 190.5,-37 56.5,-37"/>
-<polygon fill="#f5f5f5" stroke="none" points="56.5,-117 56.5,-139 190.5,-139 190.5,-117 56.5,-117"/>
-<polygon fill="none" stroke="black" points="56.5,-117 56.5,-139 190.5,-139 190.5,-117 56.5,-117"/>
-<text text-anchor="start" x="61.5" y="-126.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">photos</text>
-<text text-anchor="start" x="151.5" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="56.5,-95 56.5,-117 190.5,-117 190.5,-95 56.5,-95"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="61.5" y="-112"/>
-<text text-anchor="start" x="76.5" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="none" points="56.5,-73 56.5,-95 190.5,-95 190.5,-73 56.5,-73"/>
-<polygon fill="none" stroke="black" points="56.5,-73 56.5,-95 190.5,-95 190.5,-73 56.5,-73"/>
-<text text-anchor="start" x="76.5" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_url</text>
-<polygon fill="none" stroke="black" points="56.5,-55 56.5,-73 190.5,-73 190.5,-55 56.5,-55"/>
-<text text-anchor="start" x="59.5" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="56.5,-37 56.5,-55 97.5,-55 97.5,-37 56.5,-37"/>
-<polygon fill="none" stroke="black" points="56.5,-37 56.5,-55 97.5,-55 97.5,-37 56.5,-37"/>
-<text text-anchor="start" x="59.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="97.5,-37 97.5,-55 153.5,-55 153.5,-37 97.5,-37"/>
-<polygon fill="none" stroke="black" points="97.5,-37 97.5,-55 153.5,-55 153.5,-37 97.5,-37"/>
-<text text-anchor="start" x="114.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="153.5,-37 153.5,-55 190.5,-55 190.5,-37 153.5,-37"/>
-<polygon fill="none" stroke="black" points="153.5,-37 153.5,-55 190.5,-55 190.5,-37 153.5,-37"/>
-<text text-anchor="start" x="170.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="70,-37 70,-139 177,-139 177,-37 70,-37"/>
+<polygon fill="#f5f5f5" stroke="none" points="70.5,-117 70.5,-139 177.5,-139 177.5,-117 70.5,-117"/>
+<polygon fill="none" stroke="black" points="70.5,-117 70.5,-139 177.5,-139 177.5,-117 70.5,-117"/>
+<text text-anchor="start" x="75.5" y="-126.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">photos</text>
+<text text-anchor="start" x="138.5" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="70.5,-95 70.5,-117 177.5,-117 177.5,-95 70.5,-95"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="75.5" y="-112"/>
+<text text-anchor="start" x="90.5" y="-103.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="none" points="70.5,-73 70.5,-95 177.5,-95 177.5,-73 70.5,-73"/>
+<polygon fill="none" stroke="black" points="70.5,-73 70.5,-95 177.5,-95 177.5,-73 70.5,-73"/>
+<text text-anchor="start" x="90.5" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_url</text>
+<polygon fill="none" stroke="black" points="70.5,-55 70.5,-73 177.5,-73 177.5,-55 70.5,-55"/>
+<text text-anchor="start" x="73.5" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="70.5,-37 70.5,-55 97.5,-55 97.5,-37 70.5,-37"/>
+<polygon fill="none" stroke="black" points="70.5,-37 70.5,-55 97.5,-55 97.5,-37 70.5,-37"/>
+<text text-anchor="start" x="73.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="97.5,-37 97.5,-55 146.5,-55 146.5,-37 97.5,-37"/>
+<polygon fill="none" stroke="black" points="97.5,-37 97.5,-55 146.5,-55 146.5,-37 97.5,-37"/>
+<text text-anchor="start" x="107.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="146.5,-37 146.5,-55 177.5,-55 177.5,-37 146.5,-37"/>
+<polygon fill="none" stroke="black" points="146.5,-37 146.5,-55 177.5,-55 177.5,-37 146.5,-37"/>
+<text text-anchor="start" x="157.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>
 <!-- accession_photos&#45;&gt;photos -->
 <g id="edge2" class="edge"><title>accession_photos:photo_id:w&#45;&gt;photos:id:e</title>
-<path fill="none" stroke="black" d="M279.116,-320.265C218.538,-310.825 287.324,-212.63 247,-150 229.96,-123.533 222.978,-106 191.5,-106"/>
-<polygon fill="black" stroke="black" points="288.985,-316.953 288.419,-324.933 286.823,-324.82 287.389,-316.84 288.985,-316.953"/>
-<polyline fill="none" stroke="black" points="289.5,-321 285.51,-320.717 "/>
-<ellipse fill="none" stroke="black" cx="282.318" cy="-320.491" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M278.768,-320.189C219.13,-310.211 290.295,-210.426 247,-150 225.925,-120.587 214.684,-106 178.5,-106"/>
+<polygon fill="black" stroke="black" points="289.004,-316.951 288.401,-324.928 286.806,-324.808 287.408,-316.831 289.004,-316.951"/>
+<polyline fill="none" stroke="black" points="289.5,-321 285.511,-320.699 "/>
+<ellipse fill="none" stroke="black" cx="282.32" cy="-320.458" rx="3.2" ry="3.2"/>
 </g>
 </g>
 </svg>
