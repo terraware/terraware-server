@@ -51,7 +51,17 @@ data class WithdrawalModel(
       SeedQuantityModel.of(record.withdrawnQuantity, record.withdrawnUnitsId),
   )
 
+  init {
+    validate()
+  }
+
   fun validate() {
+    remaining?.quantity?.signum()?.let { signum ->
+      if (signum < 0) {
+        throw IllegalArgumentException("Remaining quantity may not be negative")
+      }
+    }
+
     withdrawn?.quantity?.signum()?.let { signum ->
       if (signum <= 0) {
         throw IllegalArgumentException("Withdrawn quantity must be greater than 0")
