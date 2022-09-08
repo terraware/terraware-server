@@ -255,6 +255,7 @@ class AccessionStore(
                         .set(MODIFIED_TIME, clock.instant())
                         .set(NUMBER, accessionNumber)
                         .set(NURSERY_START_DATE, accession.nurseryStartDate)
+                        .set(PROCESSING_NOTES, accession.processingNotes)
                         .set(RARE_TYPE_ID, accession.rare)
                         .set(RECEIVED_DATE, accession.receivedDate)
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
