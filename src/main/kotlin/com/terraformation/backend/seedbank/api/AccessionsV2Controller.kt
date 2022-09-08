@@ -119,7 +119,16 @@ data class AccessionPayloadV2(
     @Schema(description = "Names of the people who collected the seeds.")
     val collectors: List<String>?,
     val dryingEndDate: LocalDate?,
-    val estimatedSeedCount: Int?,
+    @Schema(
+        description =
+            "Estimated number of seeds remaining. Absent if there isn't enough " +
+                "information to calculate an estimate.")
+    val estimatedCount: Int?,
+    @Schema(
+        description =
+            "Estimated weight of seeds remaining. Absent if there isn't enough " +
+                "information to calculate an estimate.")
+    val estimatedWeight: SeedQuantityPayload?,
     val facilityId: FacilityId,
     val family: String?,
     val founderId: String?,
@@ -198,7 +207,8 @@ data class AccessionPayloadV2(
       collectionSource = model.collectionSource,
       collectors = model.collectors.orNull(),
       dryingEndDate = model.dryingEndDate,
-      estimatedSeedCount = model.estimatedSeedCount,
+      estimatedCount = model.estimatedSeedCount,
+      estimatedWeight = model.estimatedWeight?.toPayload(),
       facilityId = model.facilityId
               ?: throw IllegalArgumentException("Accession did not have a facility ID"),
       family = model.family,

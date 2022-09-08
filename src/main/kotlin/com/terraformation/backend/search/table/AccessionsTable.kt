@@ -106,6 +106,15 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         dateField("dryingMoveDate", "Drying move date", ACCESSIONS.DRYING_MOVE_DATE),
         dateField("dryingStartDate", "Drying start date", ACCESSIONS.DRYING_START_DATE),
         enumField("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
+        integerField("estimatedCount", "Estimated seed count", ACCESSIONS.EST_SEED_COUNT),
+        gramsField("estimatedWeightGrams", "Estimated weight (grams)", ACCESSIONS.EST_WEIGHT_GRAMS),
+        bigDecimalField(
+            "estimatedWeightQuantity",
+            "Estimated weight (quantity)",
+            ACCESSIONS.EST_WEIGHT_QUANTITY),
+        enumField(
+            "estimatedWeightUnits", "Estimated weight (units)", ACCESSIONS.EST_WEIGHT_UNITS_ID),
+        // TODO: Remove this once clients no longer need it (new name is estimatedCount)
         integerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
         textField("familyName", "Family name", ACCESSIONS.FAMILY_NAME),

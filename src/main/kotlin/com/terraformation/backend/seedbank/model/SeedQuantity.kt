@@ -45,6 +45,16 @@ data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUn
       subsetWeight: SeedQuantityModel? = null,
       subsetCount: Int? = null,
   ): SeedQuantityModel {
+    return toUnitsOrNull(newUnits, subsetWeight, subsetCount)
+        ?: throw IllegalArgumentException(
+            "Cannot convert between weight and seed count without subset measurement")
+  }
+
+  fun toUnitsOrNull(
+      newUnits: SeedQuantityUnits,
+      subsetWeight: SeedQuantityModel? = null,
+      subsetCount: Int? = null,
+  ): SeedQuantityModel? {
     return when {
       units == newUnits -> {
         this
@@ -59,8 +69,7 @@ data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUn
         SeedQuantityModel(newUnits.fromGrams(units.toGrams(quantity)), newUnits)
       }
       subsetWeight == null || subsetCount == null -> {
-        throw IllegalArgumentException(
-            "Cannot convert between weight and seed count without subset measurement")
+        null
       }
       newUnits == SeedQuantityUnits.Seeds -> {
         // Seed count must always be an integer, so we need to round the calculated quantity.
