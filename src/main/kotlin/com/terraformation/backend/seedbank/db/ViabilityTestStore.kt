@@ -1,7 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.ViabilityTestId
+import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
@@ -11,10 +13,37 @@ import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.Record
 import org.jooq.impl.DSL
 
 @ManagedBean
 class ViabilityTestStore(private val dslContext: DSLContext) {
+  fun fetchOneById(viabilityTestId: ViabilityTestId): ViabilityTestModel {
+    requirePermissions { readViabilityTest(viabilityTestId) }
+
+    val viabilityTestResultsMultiset = viabilityTestResultsMultiset()
+
+    return dslContext
+        .select(VIABILITY_TESTS.asterisk(), viabilityTestResultsMultiset)
+        .from(VIABILITY_TESTS)
+        .where(VIABILITY_TESTS.ID.eq(viabilityTestId))
+        .fetchOne { record -> convertToModel(record, viabilityTestResultsMultiset) }
+        ?: throw ViabilityTestNotFoundException(viabilityTestId)
+  }
+
+  fun fetchViabilityTests(accessionId: AccessionId): List<ViabilityTestModel> {
+    requirePermissions { readAccession(accessionId) }
+
+    val viabilityTestResultsMultiset = viabilityTestResultsMultiset()
+
+    return dslContext
+        .select(VIABILITY_TESTS.asterisk(), viabilityTestResultsMultiset)
+        .from(VIABILITY_TESTS)
+        .where(VIABILITY_TESTS.ACCESSION_ID.eq(accessionId))
+        .orderBy(VIABILITY_TESTS.ID)
+        .fetch { record -> convertToModel(record, viabilityTestResultsMultiset) }
+  }
+
   fun viabilityTestsMultiset(
       idField: Field<AccessionId?> = ACCESSIONS.ID
   ): Field<List<ViabilityTestModel>> {
@@ -27,26 +56,33 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
                   .where(ACCESSION_ID.eq(idField))
                   .orderBy(ID))
           .convertFrom { result ->
-            result.map { record ->
-              ViabilityTestModel(
-                  record[ID]!!,
-                  record[ACCESSION_ID]!!,
-                  record[TEST_TYPE]!!,
-                  record[START_DATE],
-                  record[END_DATE],
-                  record[SEED_TYPE_ID],
-                  record[SUBSTRATE_ID],
-                  record[TREATMENT_ID],
-                  record[SEEDS_SOWN],
-                  record[TOTAL_PERCENT_GERMINATED],
-                  record[TOTAL_SEEDS_GERMINATED],
-                  record[NOTES],
-                  record[STAFF_RESPONSIBLE],
-                  record[viabilityTestResultsMultiset]?.ifEmpty { null },
-                  SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-              )
-            }
+            result.map { record -> convertToModel(record, viabilityTestResultsMultiset) }
           }
+    }
+  }
+
+  private fun convertToModel(
+      record: Record,
+      viabilityTestResultsMultiset: Field<List<ViabilityTestResultModel>>
+  ): ViabilityTestModel {
+    return with(VIABILITY_TESTS) {
+      ViabilityTestModel(
+          record[ID]!!,
+          record[ACCESSION_ID]!!,
+          record[TEST_TYPE]!!,
+          record[START_DATE],
+          record[END_DATE],
+          record[SEED_TYPE_ID],
+          record[SUBSTRATE_ID],
+          record[TREATMENT_ID],
+          record[SEEDS_SOWN],
+          record[TOTAL_PERCENT_GERMINATED],
+          record[TOTAL_SEEDS_GERMINATED],
+          record[NOTES],
+          record[STAFF_RESPONSIBLE],
+          record[viabilityTestResultsMultiset]?.ifEmpty { null },
+          SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
+      )
     }
   }
 

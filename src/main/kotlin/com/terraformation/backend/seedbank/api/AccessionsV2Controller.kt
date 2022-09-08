@@ -23,7 +23,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import javax.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -145,8 +144,6 @@ data class AccessionPayloadV2(
             "Time of most recent user observation of seeds remaining in the accession. This is " +
                 "updated by the server whenever the \"remainingQuantity\" field is edited.")
     val latestObservedTime: Instant?,
-    val latestViabilityPercent: Int?,
-    val latestViabilityTestDate: LocalDate?,
     val notes: String?,
     val photoFilenames: List<String>?,
     val plantsCollectedFromMax: Int?,
@@ -179,8 +176,7 @@ data class AccessionPayloadV2(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     val subsetWeight: SeedQuantityPayload?,
-    val totalViabilityPercent: Int?,
-    val viabilityTests: List<ViabilityTestPayload>?,
+    val viabilityTests: List<GetViabilityTestPayload>?,
     val withdrawals: List<GetWithdrawalPayload>?,
 ) {
   constructor(
@@ -210,8 +206,6 @@ data class AccessionPayloadV2(
       initialQuantity = model.total?.toPayload(),
       latestObservedQuantity = model.latestObservedQuantity?.toPayload(),
       latestObservedTime = model.latestObservedTime,
-      latestViabilityPercent = model.latestViabilityPercent,
-      latestViabilityTestDate = model.latestViabilityTestDate,
       notes = model.processingNotes,
       photoFilenames = model.photoFilenames.orNull(),
       // TODO replace with max/min plants
@@ -228,8 +222,7 @@ data class AccessionPayloadV2(
       storageLocation = model.storageLocation,
       subsetCount = model.subsetCount,
       subsetWeight = model.subsetWeightQuantity?.toPayload(),
-      totalViabilityPercent = model.totalViabilityPercent,
-      viabilityTests = model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
+      viabilityTests = model.viabilityTests.map { GetViabilityTestPayload(it) }.orNull(),
       withdrawals = model.withdrawals.map { GetWithdrawalPayload(it) }.orNull(),
   )
 }
@@ -318,7 +311,6 @@ data class UpdateAccessionRequestPayloadV2(
         description =
             "Weight of subset of seeds. Units must be a weight measurement, not \"Seeds\".")
     private val subsetWeight: SeedQuantityPayload? = null,
-    @Valid val viabilityTests: List<ViabilityTestPayload>? = null,
 ) {
   fun applyToModel(model: AccessionModel): AccessionModel =
       model.copy(
@@ -346,7 +338,6 @@ data class UpdateAccessionRequestPayloadV2(
           storageLocation = storageLocation,
           subsetCount = subsetCount,
           subsetWeightQuantity = subsetWeight?.toModel(),
-          viabilityTests = viabilityTests.orEmpty().map { it.toModel() },
       )
 }
 

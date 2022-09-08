@@ -16,6 +16,7 @@ import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
@@ -26,6 +27,7 @@ import com.terraformation.backend.db.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.UPLOADS
+import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
@@ -44,6 +46,9 @@ import org.jooq.impl.DSL
  */
 @ManagedBean
 class ParentStore(private val dslContext: DSLContext) {
+  fun getAccessionId(viabilityTestId: ViabilityTestId): AccessionId? =
+      fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.ACCESSION_ID)
+
   fun getAccessionId(withdrawalId: WithdrawalId): AccessionId? =
       fetchFieldById(withdrawalId, WITHDRAWALS.ID, WITHDRAWALS.ACCESSION_ID)
 

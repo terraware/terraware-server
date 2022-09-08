@@ -116,6 +116,9 @@ class UserAlreadyInOrganizationException(val userId: UserId, val organizationId:
 
 class UserNotFoundException(val userId: UserId) : EntityNotFoundException("User $userId not found")
 
+class ViabilityTestNotFoundException(val viabilityTestId: ViabilityTestId) :
+    EntityNotFoundException("Viability test $viabilityTestId not found")
+
 class WithdrawalNotFoundException(val withdrawalId: WithdrawalId) :
     EntityNotFoundException("Withdrawal $withdrawalId not found")
 

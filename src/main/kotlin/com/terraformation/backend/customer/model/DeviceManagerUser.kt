@@ -15,6 +15,7 @@ import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.log.perClassLogger
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -127,6 +128,7 @@ data class DeviceManagerUser(
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false
   override fun canReadUpload(uploadId: UploadId): Boolean = false
+  override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = false
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
   override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false
