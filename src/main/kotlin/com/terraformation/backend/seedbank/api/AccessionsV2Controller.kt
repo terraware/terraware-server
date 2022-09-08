@@ -10,7 +10,6 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionActive
@@ -139,11 +138,6 @@ data class AccessionPayloadV2(
     val id: AccessionId,
     @Schema(
         description =
-            "Initial size of accession. The units of this value must match the measurement type " +
-                "in \"processingMethod\".")
-    val initialQuantity: SeedQuantityPayload?,
-    @Schema(
-        description =
             "Most recent user observation of seeds remaining in the accession. This is not " +
                 "directly editable; it is updated by the server whenever the " +
                 "\"remainingQuantity\" field is edited.")
@@ -157,7 +151,6 @@ data class AccessionPayloadV2(
     val photoFilenames: List<String>?,
     val plantsCollectedFromMax: Int?,
     val plantsCollectedFromMin: Int?,
-    val processingMethod: ProcessingMethod?,
     val receivedDate: LocalDate?,
     @Schema(
         description =
@@ -214,7 +207,6 @@ data class AccessionPayloadV2(
       family = model.family,
       founderId = model.founderId,
       id = model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
-      initialQuantity = model.total?.toPayload(),
       latestObservedQuantity = model.latestObservedQuantity?.toPayload(),
       latestObservedTime = model.latestObservedTime,
       notes = model.processingNotes,
@@ -222,7 +214,6 @@ data class AccessionPayloadV2(
       // TODO replace with max/min plants
       plantsCollectedFromMax = model.numberOfTrees,
       plantsCollectedFromMin = model.numberOfTrees,
-      processingMethod = model.processingMethod,
       receivedDate = model.receivedDate,
       remainingQuantity = model.remaining?.toPayload(),
       source = model.source,
