@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DuplicateNameException
@@ -14,7 +13,6 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.PhotoMetadata
@@ -24,15 +22,12 @@ import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import java.math.BigDecimal
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
-import java.time.Instant
 import javax.ws.rs.InternalServerErrorException
 import javax.ws.rs.NotFoundException
 import javax.ws.rs.NotSupportedException
 import javax.ws.rs.QueryParam
-import net.postgis.jdbc.geometry.Point
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -72,33 +67,18 @@ class PhotosController(private val photoRepository: PhotoRepository) {
       @PathVariable("id") accessionId: AccessionId,
       @PathVariable photoFilename: String,
       @RequestPart("file") file: MultipartFile,
-      @RequestPart("metadata") metadata: UploadPhotoMetadataPayload
   ): SimpleSuccessResponsePayload {
     val contentType = file.contentType?.substringBefore(';')
     if (contentType != MediaType.IMAGE_JPEG_VALUE) {
       throw NotSupportedException("Photos must be of type image/jpeg")
     }
 
-    val location =
-        metadata.location
-            ?: metadata.longitude?.let { longitude ->
-              metadata.latitude?.let { latitude ->
-                Point(longitude.toDouble(), latitude.toDouble(), 0.0).apply { srid = SRID.LONG_LAT }
-              }
-            }
-
     try {
       photoRepository.storePhoto(
           accessionId,
           file.inputStream,
           file.size,
-          PhotoMetadata(
-              photoFilename,
-              contentType,
-              metadata.capturedTime,
-              file.size,
-              location,
-              metadata.gpsAccuracy))
+          PhotoMetadata(photoFilename, contentType, file.size))
     } catch (e: AccessionNotFoundException) {
       throw e
     } catch (e: FileAlreadyExistsException) {
@@ -165,52 +145,12 @@ class PhotosController(private val photoRepository: PhotoRepository) {
   }
 }
 
-// JsonDeserialize annotation is needed by OctetStreamJsonConverter
-@JsonDeserialize
-data class UploadPhotoMetadataPayload(
-    val capturedTime: Instant,
-    @Schema(deprecated = true, description = "Use location field instead.")
-    val latitude: BigDecimal?,
-    @Schema(deprecated = true, description = "Use location field instead.")
-    val longitude: BigDecimal?,
-    val location: Point?,
-    @Schema(
-        description = "GPS accuracy in meters.",
-    )
-    val gpsAccuracy: Int?,
-)
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ListPhotosResponseElement(
     val filename: String,
     val size: Long,
-    val capturedTime: Instant,
-    @Schema(
-        deprecated = true,
-        description = "Use location field instead.",
-    )
-    val latitude: Double?,
-    @Schema(
-        deprecated = true,
-        description = "Use location field instead.",
-    )
-    val longitude: Double?,
-    val location: Point?,
-    @Schema(
-        description = "GPS accuracy in meters.",
-    )
-    val gpsAccuracy: Int?,
 ) {
-  constructor(
-      metadata: PhotoMetadata
-  ) : this(
-      metadata.filename,
-      metadata.size,
-      metadata.capturedTime,
-      metadata.location?.y,
-      metadata.location?.x,
-      metadata.location,
-      metadata.gpsAccuracy)
+  constructor(metadata: PhotoMetadata) : this(metadata.filename, metadata.size)
 }
 
 data class ListPhotosResponsePayload(val photos: List<ListPhotosResponseElement>) :

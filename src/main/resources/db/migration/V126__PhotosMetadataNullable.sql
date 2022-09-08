@@ -1,0 +1,1 @@
+ALTER TABLE photos ALTER COLUMN captured_time DROP NOT NULL;
