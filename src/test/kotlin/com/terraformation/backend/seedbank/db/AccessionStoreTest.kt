@@ -192,6 +192,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `create of accession with processing notes is supported`() {
+    store.create(AccessionModel(facilityId = facilityId, processingNotes = "test processing notes"))
+
+    assertEquals(
+        "test processing notes", accessionsDao.fetchOneById(AccessionId(1))?.processingNotes)
+  }
+
+  @Test
   fun `create deals with collisions in accession numbers`() {
     store.create(AccessionModel(facilityId = facilityId))
     dslContext.alterSequence(ACCESSION_NUMBER_SEQ).restartWith(197001010000000000).execute()
