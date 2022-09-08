@@ -123,6 +123,7 @@ data class AccessionPayloadV2(
     val estimatedSeedCount: Int?,
     val facilityId: FacilityId,
     val family: String?,
+    val fieldNotes: String?,
     val founderId: String?,
     @Schema(
         description =
@@ -205,6 +206,7 @@ data class AccessionPayloadV2(
       facilityId = model.facilityId
               ?: throw IllegalArgumentException("Accession did not have a facility ID"),
       family = model.family,
+      fieldNotes = model.fieldNotes,
       founderId = model.founderId,
       id = model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       initialQuantity = model.total?.toPayload(),
@@ -249,6 +251,7 @@ data class CreateAccessionRequestPayloadV2(
     val collectionSource: CollectionSource? = null,
     val collectors: List<String>? = null,
     val facilityId: FacilityId,
+    val fieldNotes: String? = null,
     val founderId: String? = null,
     val plantsCollectedFromMax: Int? = null,
     val plantsCollectedFromMin: Int? = null,
@@ -271,6 +274,7 @@ data class CreateAccessionRequestPayloadV2(
         collectionSource = collectionSource,
         collectors = collectors.orEmpty(),
         facilityId = facilityId,
+        fieldNotes = fieldNotes,
         founderId = founderId,
         geolocations = collectionSiteCoordinates.orEmpty(),
         isManualState = true,
@@ -299,6 +303,7 @@ data class UpdateAccessionRequestPayloadV2(
     val collectors: List<String>? = null,
     val dryingEndDate: LocalDate? = null,
     val facilityId: FacilityId? = null,
+    val fieldNotes: String? = null,
     val founderId: String? = null,
     val notes: String? = null,
     val plantsCollectedFromMax: Int? = null,
@@ -334,6 +339,7 @@ data class UpdateAccessionRequestPayloadV2(
           collectors = collectors.orEmpty(),
           dryingEndDate = dryingEndDate,
           facilityId = facilityId,
+          fieldNotes = fieldNotes,
           founderId = founderId,
           geolocations = collectionSiteCoordinates.orEmpty(),
           isManualState = true,
