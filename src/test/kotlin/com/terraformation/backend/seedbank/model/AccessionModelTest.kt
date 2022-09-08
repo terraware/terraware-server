@@ -344,6 +344,54 @@ internal class AccessionModelTest {
 
       assertEquals(january(4), model.calculateLatestViabilityRecordingDate())
     }
+
+    @Test
+    fun `viability percent is not auto-populated on v2 accessions when test results are added`() {
+      val model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(50))
+              .withCalculatedValues(clock)
+              .addViabilityTest(
+                  viabilityTest(
+                      seedsSown = 10,
+                      testResults =
+                          listOf(
+                              viabilityTestResult(
+                                  recordingDate = january(2), seedsGerminated = 4))),
+                  clock)
+
+      assertNull(model.totalViabilityPercent)
+    }
+
+    @Test
+    fun `viability percent is not cleared on v2 accessions without tests`() {
+      val percent = 77
+      val model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(50), totalViabilityPercent = percent)
+              .withCalculatedValues(clock)
+
+      assertEquals(percent, model.totalViabilityPercent)
+    }
+
+    @Test
+    fun `viability percent is not overwritten on v2 accessions when test results are added`() {
+      val percent = 16
+      val model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(50), totalViabilityPercent = percent)
+              .withCalculatedValues(clock)
+              .addViabilityTest(
+                  viabilityTest(
+                      seedsSown = 5,
+                      testResults =
+                          listOf(
+                              viabilityTestResult(
+                                  recordingDate = january(2), seedsGerminated = 5))),
+                  clock)
+
+      assertEquals(percent, model.totalViabilityPercent)
+    }
   }
 
   @Suppress("UnusedDataClassCopyResult")
@@ -1653,6 +1701,30 @@ internal class AccessionModelTest {
           )
 
       assertJsonEquals(expected, initial.toV2Compatible(tomorrowClock))
+    }
+  }
+
+  @Nested
+  inner class V2ToV1Conversion {
+    @Test
+    fun `viability percent is overwritten with computed value`() {
+      val expectedPercent = 40
+      val v2Model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(500))
+              .withCalculatedValues(clock)
+              .addViabilityTest(
+                  viabilityTest(
+                      seedsSown = 100,
+                      testResults =
+                          listOf(
+                              viabilityTestResult(
+                                  recordingDate = january(2), seedsGerminated = expectedPercent))),
+                  clock)
+      assertNull(v2Model.totalViabilityPercent)
+
+      val v1Model = v2Model.toV1Compatible(clock)
+      assertEquals(40, v1Model.totalViabilityPercent)
     }
   }
 }
