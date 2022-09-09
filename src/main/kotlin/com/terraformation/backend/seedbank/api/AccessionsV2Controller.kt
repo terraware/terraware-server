@@ -149,8 +149,8 @@ data class AccessionPayloadV2(
     val latestObservedTime: Instant?,
     val notes: String?,
     val photoFilenames: List<String>?,
-    val plantsCollectedFromMax: Int?,
-    val plantsCollectedFromMin: Int?,
+    @Schema(description = "Estimated number of plants the seeds were collected from.")
+    val plantsCollectedFrom: Int?,
     val receivedDate: LocalDate?,
     @Schema(
         description =
@@ -211,9 +211,7 @@ data class AccessionPayloadV2(
       latestObservedTime = model.latestObservedTime,
       notes = model.processingNotes,
       photoFilenames = model.photoFilenames.orNull(),
-      // TODO replace with max/min plants
-      plantsCollectedFromMax = model.numberOfTrees,
-      plantsCollectedFromMin = model.numberOfTrees,
+      plantsCollectedFrom = model.numberOfTrees,
       receivedDate = model.receivedDate,
       remainingQuantity = model.remaining?.toPayload(),
       source = model.source,
@@ -247,8 +245,8 @@ data class CreateAccessionRequestPayloadV2(
     val facilityId: FacilityId,
     val founderId: String? = null,
     val notes: String? = null,
-    val plantsCollectedFromMax: Int? = null,
-    val plantsCollectedFromMin: Int? = null,
+    @Schema(description = "Estimated number of plants the seeds were collected from.")
+    val plantsCollectedFrom: Int? = null,
     val receivedDate: LocalDate? = null,
     val source: DataSource? = null,
     val speciesId: SpeciesId? = null,
@@ -271,7 +269,7 @@ data class CreateAccessionRequestPayloadV2(
         founderId = founderId,
         geolocations = collectionSiteCoordinates.orEmpty(),
         isManualState = true,
-        numberOfTrees = plantsCollectedFromMax ?: plantsCollectedFromMin,
+        numberOfTrees = plantsCollectedFrom,
         processingNotes = notes,
         receivedDate = receivedDate,
         source = source,
@@ -299,8 +297,8 @@ data class UpdateAccessionRequestPayloadV2(
     val facilityId: FacilityId? = null,
     val founderId: String? = null,
     val notes: String? = null,
-    val plantsCollectedFromMax: Int? = null,
-    val plantsCollectedFromMin: Int? = null,
+    @Schema(description = "Estimated number of plants the seeds were collected from.")
+    val plantsCollectedFrom: Int? = null,
     val receivedDate: LocalDate? = null,
     @Schema(
         description =
@@ -335,7 +333,7 @@ data class UpdateAccessionRequestPayloadV2(
           founderId = founderId,
           geolocations = collectionSiteCoordinates.orEmpty(),
           isManualState = true,
-          numberOfTrees = plantsCollectedFromMax ?: plantsCollectedFromMin,
+          numberOfTrees = plantsCollectedFrom,
           processingNotes = notes,
           receivedDate = receivedDate,
           remaining = remainingQuantity?.toModel(),
