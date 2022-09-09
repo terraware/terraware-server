@@ -26,19 +26,19 @@ class TerrawareClient:
     def delete(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.delete(self.base_url + url, **kwargs_with_auth)
-        r.raise_for_status()
+        self.raise_for_status(r)
         return r.json()
 
     def get(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.get(self.base_url + url, **kwargs_with_auth)
-        r.raise_for_status()
+        self.raise_for_status(r)
         return r.json()
 
     def post_raw(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.post(self.base_url + url, **kwargs_with_auth)
-        r.raise_for_status()
+        self.raise_for_status(r)
         return r
 
     def post(self, url, **kwargs):
@@ -47,8 +47,17 @@ class TerrawareClient:
     def put(self, url, **kwargs):
         kwargs_with_auth = self._add_auth_header(kwargs)
         r = requests.put(self.base_url + url, **kwargs_with_auth)
-        r.raise_for_status()
+        self.raise_for_status(r)
         return r.json()
+
+    @staticmethod
+    def raise_for_status(r: requests.Response):
+        if r.status_code > 399:
+            if r.headers["Content-Type"].startswith("application/json"):
+                payload = r.json()
+                if "error" in payload and "message" in payload["error"]:
+                    raise requests.HTTPError(payload["error"]["message"], response=r)
+            r.raise_for_status()
 
     def get_facility(self, facility_id):
         return self.get(f"/api/v1/facilities/{facility_id}")["facility"]
