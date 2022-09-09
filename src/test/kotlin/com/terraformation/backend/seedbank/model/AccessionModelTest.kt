@@ -38,6 +38,7 @@ internal class AccessionModelTest {
   private val tomorrowClock = Clock.fixed(tomorrowInstant, ZoneOffset.UTC)
   private val yesterday = today.minusDays(1)
   private val yesterdayInstant = yesterday.atStartOfDay(ZoneOffset.UTC).toInstant()
+  private val yesterdayClock = Clock.fixed(yesterdayInstant, ZoneOffset.UTC)
 
   private var viabilityTestResultId = ViabilityTestResultId(1)
   private var viabilityTestId = ViabilityTestId(1)
@@ -144,13 +145,14 @@ internal class AccessionModelTest {
       remaining: SeedQuantityModel =
           if (withdrawn.units == SeedQuantityUnits.Seeds) seeds(10) else grams(10),
       createdTime: Instant = clock.instant(),
+      id: WithdrawalId? = nextWithdrawalId(),
   ): WithdrawalModel {
     return WithdrawalModel(
         accessionId = AccessionId(1),
         createdTime = createdTime,
         date = date,
         viabilityTestId = viabilityTestId,
-        id = nextWithdrawalId(),
+        id = id,
         purpose = purpose,
         remaining = remaining,
         withdrawn = withdrawn,
@@ -597,7 +599,7 @@ internal class AccessionModelTest {
           accession().copy(isManualState = true, remaining = grams(10)).withCalculatedValues(clock)
 
       assertThrows<IllegalArgumentException> {
-        initial.addViabilityTest(viabilityTest(seedsSown = 1), tomorrowClock)
+        initial.addViabilityTest(viabilityTest(seedsSown = 1, startDate = null), tomorrowClock)
       }
     }
 
@@ -1618,6 +1620,28 @@ internal class AccessionModelTest {
       assertEquals(
           seeds(5), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
     }
+
+    // V1 COMPATIBILITY
+    @Test
+    fun `total quantity is populated when remaining quantity is set for the first time`() {
+      val accession =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertEquals(seeds(10), accession.total)
+    }
+
+    // V1 COMPATIBILITY
+    @Test
+    fun `total quantity is not updated when remaining quantity is updated`() {
+      val accession =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .copy(remaining = seeds(9))
+              .withCalculatedValues(clock)
+
+      assertEquals(seeds(10), accession.total)
+    }
   }
 
   @Nested
@@ -1725,6 +1749,42 @@ internal class AccessionModelTest {
 
       val v1Model = v2Model.toV1Compatible(clock)
       assertEquals(40, v1Model.totalViabilityPercent)
+    }
+
+    @Test
+    fun `backdated viability tests with more seeds than initial quantity`() {
+      val initialV2Model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(2))
+              .withCalculatedValues(yesterdayClock)
+      val v2Model =
+          initialV2Model
+              .copy(remaining = seeds(1))
+              .withCalculatedValues(clock, initialV2Model)
+              // In v2, this is valid because it is dated yesterday and we have an observed quantity
+              // from today that overrides what would otherwise be a negative seeds remaining value.
+              .addViabilityTest(viabilityTest(seedsSown = 3, startDate = yesterday), clock)
+
+      val v1Model = v2Model.toV1Compatible(clock)
+      assertEquals(seeds(1), v1Model.viabilityTests.getOrNull(0)?.remaining)
+    }
+
+    @Test
+    fun `backdated withdrawals with more seeds than initial quantity`() {
+      val initialV2Model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(2))
+              .withCalculatedValues(yesterdayClock)
+      val v2Model =
+          initialV2Model
+              .copy(remaining = seeds(1))
+              .withCalculatedValues(clock, initialV2Model)
+              // In v2, this is valid because it is yesterday and we have an observed quantity from
+              // today that overrides what would otherwise be a negative seeds remaining value.
+              .addWithdrawal(withdrawal(seeds(3), date = yesterday, id = null), clock)
+
+      val v1Model = v2Model.toV1Compatible(clock)
+      assertEquals(seeds(1), v1Model.withdrawals.getOrNull(0)?.remaining)
     }
   }
 }

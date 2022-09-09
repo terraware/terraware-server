@@ -169,9 +169,24 @@ data class AccessionModel(
             else -> ProcessingMethod.Weight
           }
 
+      // For count-based accessions, v1 recomputes the remaining quantity as the total (initial)
+      // quantity minus the sum of the withdrawal amounts. Make the numbers line up by overriding
+      // the total quantity.
+      val newTotal =
+          if (remaining?.units == SeedQuantityUnits.Seeds) {
+            withdrawalsWithCorrectUnits
+                .filter { it.withdrawn != null }
+                .fold(remaining) { runningTotal, withdrawal ->
+                  runningTotal + withdrawal.withdrawn!!
+                }
+          } else {
+            total
+          }
+
       copy(
               isManualState = false,
               processingMethod = effectiveProcessingMethod,
+              total = newTotal,
               withdrawals = withdrawalsWithCorrectUnits,
           )
           .withCalculatedValues(clock)
@@ -598,8 +613,8 @@ data class AccessionModel(
         if (isManualState) {
           // V1 COMPATIBILITY: Need to track per-withdrawal remaining quantity.
           var currentRemaining =
-              total
-                  ?: latestObservedQuantity ?: remaining
+              latestObservedQuantity
+                  ?: remaining
                       ?: throw IllegalStateException(
                       "Cannot withdraw from accession before specifying a quantity")
 
@@ -615,9 +630,11 @@ data class AccessionModel(
                   currentRemaining = withdrawal.remaining
                   withdrawal.copy(weightDifference = weightDifference)
                 } else if (withdrawal.remaining == null && withdrawal.withdrawn != null) {
-                  currentRemaining -=
-                      withdrawal.withdrawn.toUnits(
-                          currentRemaining.units, subsetWeightQuantity, subsetCount)
+                  if (latestObservedTime != null && withdrawal.isAfter(latestObservedTime)) {
+                    currentRemaining -=
+                        withdrawal.withdrawn.toUnits(
+                            currentRemaining.units, subsetWeightQuantity, subsetCount)
+                  }
                   withdrawal.copy(
                       remaining = currentRemaining,
                       viabilityTest = withdrawal.viabilityTest?.copy(remaining = currentRemaining))
