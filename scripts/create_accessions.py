@@ -232,8 +232,7 @@ def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
         collected_date + timedelta(days=randint(0, 3)) if collected_date else None
     )
 
-    plants_collected_from_min = randint(1, 10)
-    plants_collected_from_max = randint(plants_collected_from_min, 10)
+    plants_collected_from = randint(1, 10)
 
     species_id = random.choice(species_ids) if randint(1, 5) > 1 else None
 
@@ -247,8 +246,7 @@ def generate_accession_v2(facility_id: int, species_ids: List[int]) -> Dict:
         "collectors": generate_collectors(),
         "facilityId": facility_id,
         "founderId": generate_founder_id(),
-        "plantsCollectedFromMax": plants_collected_from_max,
-        "plantsCollectedFromMin": plants_collected_from_min,
+        "plantsCollectedFrom": plants_collected_from,
         "receivedDate": str(received_date) if received_date else None,
         "source": generate_source(),
         "speciesId": species_id,

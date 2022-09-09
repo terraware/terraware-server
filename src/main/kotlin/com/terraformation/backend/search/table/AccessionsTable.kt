@@ -130,6 +130,10 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             "Most recent viability test result date",
             ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
+        integerField(
+            "plantsCollectedFrom",
+            "Number of plants seeds were collected from",
+            ACCESSIONS.TREES_COLLECTED_FROM),
         enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
         textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
         dateField("processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
@@ -156,6 +160,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             "totalViabilityPercent",
             "Total estimated % viability",
             ACCESSIONS.TOTAL_VIABILITY_PERCENT),
+        // TODO: Remove this once clients no longer need it (new name is plantsCollectedFrom)
         integerField(
             "treesCollectedFrom",
             "Number of trees collected from",
