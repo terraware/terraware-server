@@ -209,6 +209,11 @@
             <parent column="id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="62" name="latest_observed_time" nullable="true" remarks="Time of most recent change to observed quantity." size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="63" name="est_weight_grams" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="64" name="est_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="65" name="est_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="accessions_est_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="accession_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -700,6 +705,7 @@
       <table name="seed_quantity_units" numRows="6" remarks="(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="remaining_units_id" foreignKey="accession_quantity_history_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accession_quantity_history"/>
+            <child column="est_weight_units_id" foreignKey="accessions_est_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="latest_observed_units_id" foreignKey="accessions_latest_observed_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="remaining_units_id" foreignKey="accession_remaining_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
             <child column="subset_weight_units_id" foreignKey="accession_subset_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
