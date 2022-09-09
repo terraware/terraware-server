@@ -188,6 +188,7 @@ data class AccessionModel(
               isManualState = false,
               processingMethod = effectiveProcessingMethod,
               total = newTotal,
+              viabilityTests = viabilityTests.map { it.toV1Compatible() },
               withdrawals = withdrawalsWithCorrectUnits,
           )
           .withCalculatedValues(clock)
@@ -203,7 +204,10 @@ data class AccessionModel(
       // First backfill those values using the v1 logic, then switch to v2, then calculate any
       // v2-specific values.
       withCalculatedValues(clock)
-          .copy(isManualState = true, state = state?.toV2Compatible())
+          .copy(
+              isManualState = true,
+              state = state?.toV2Compatible(),
+              viabilityTests = viabilityTests.map { it.toV2Compatible() })
           .withCalculatedValues(clock)
     }
   }
@@ -312,6 +316,7 @@ data class AccessionModel(
     assertRemainingQuantityNotRemoved()
     assertNoQuantityTypeChangeWithoutSubsetInfo()
     assertNoWithdrawalsWithoutQuantity(latestObservedQuantity ?: remaining)
+    viabilityTests.forEach { it.validateV2() }
   }
 
   private fun assertRemainingQuantityNotRemoved() {

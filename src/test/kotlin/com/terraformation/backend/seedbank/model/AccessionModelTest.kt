@@ -8,6 +8,7 @@ import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestResultId
+import com.terraformation.backend.db.ViabilityTestSubstrate
 import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
@@ -100,6 +101,7 @@ internal class AccessionModelTest {
       seedsSown: Int? = null,
       testResults: List<ViabilityTestResultModel>? = null,
       remaining: SeedQuantityModel? = null,
+      substrate: ViabilityTestSubstrate? = null,
   ): ViabilityTestModel {
     return ViabilityTestModel(
         accessionId = AccessionId(1),
@@ -107,6 +109,7 @@ internal class AccessionModelTest {
         remaining = remaining,
         seedsSown = seedsSown,
         startDate = startDate,
+        substrate = substrate,
         testResults = testResults,
         testType = testType,
     )
@@ -651,6 +654,21 @@ internal class AccessionModelTest {
 
       assertThrows<IllegalArgumentException> {
         initial.addViabilityTest(viabilityTest(seedsSown = 11, startDate = null), tomorrowClock)
+      }
+    }
+
+    @Test
+    fun `cannot add new viability test with substrate that is not valid for test type`() {
+      val initial =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        initial.addViabilityTest(
+            viabilityTest(
+                seedsSown = 1,
+                substrate = ViabilityTestSubstrate.Paper,
+                testType = ViabilityTestType.Nursery),
+            clock)
       }
     }
   }
@@ -1797,6 +1815,78 @@ internal class AccessionModelTest {
 
       assertJsonEquals(expected, initial.toV2Compatible(tomorrowClock))
     }
+
+    @Test
+    fun `viability test substrate is removed if it is not valid for v2 nursery test`() {
+      val v1Model =
+          AccessionModel(
+              checkedInTime = yesterdayInstant,
+              createdTime = yesterdayInstant,
+              processingMethod = ProcessingMethod.Count,
+              total = seeds(10),
+              viabilityTests =
+                  listOf(
+                      ViabilityTestModel(
+                          id = ViabilityTestId(1),
+                          seedsSown = 1,
+                          startDate = today,
+                          substrate = ViabilityTestSubstrate.Agar,
+                          testType = ViabilityTestType.Nursery,
+                      ),
+                  ),
+              withdrawals =
+                  listOf(
+                      WithdrawalModel(
+                          createdTime = todayInstant,
+                          date = today,
+                          id = WithdrawalId(1),
+                          purpose = WithdrawalPurpose.ViabilityTesting,
+                          remaining = seeds(9),
+                          viabilityTestId = ViabilityTestId(1),
+                          withdrawn = seeds(1),
+                      ),
+                  ),
+          )
+
+      val v2Model = v1Model.toV2Compatible(tomorrowClock)
+      assertNull(v2Model.viabilityTests[0].substrate)
+    }
+
+    @Test
+    fun `viability test substrate is retained if it is valid for v2 nursery test`() {
+      val v1Model =
+          AccessionModel(
+              checkedInTime = yesterdayInstant,
+              createdTime = yesterdayInstant,
+              processingMethod = ProcessingMethod.Count,
+              total = seeds(10),
+              viabilityTests =
+                  listOf(
+                      ViabilityTestModel(
+                          id = ViabilityTestId(1),
+                          seedsSown = 1,
+                          startDate = today,
+                          substrate = ViabilityTestSubstrate.Other,
+                          testType = ViabilityTestType.Nursery,
+                      ),
+                  ),
+              withdrawals =
+                  listOf(
+                      WithdrawalModel(
+                          createdTime = todayInstant,
+                          date = today,
+                          id = WithdrawalId(1),
+                          purpose = WithdrawalPurpose.ViabilityTesting,
+                          remaining = seeds(9),
+                          viabilityTestId = ViabilityTestId(1),
+                          withdrawn = seeds(1),
+                      ),
+                  ),
+          )
+
+      val v2Model = v1Model.toV2Compatible(tomorrowClock)
+      assertEquals(ViabilityTestSubstrate.Other, v2Model.viabilityTests[0].substrate)
+    }
   }
 
   @Nested
@@ -1820,6 +1910,36 @@ internal class AccessionModelTest {
 
       val v1Model = v2Model.toV1Compatible(clock)
       assertEquals(40, v1Model.totalViabilityPercent)
+    }
+
+    @Test
+    fun `viability test substrate is removed if it did not exist in v1`() {
+      val v2Model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .addViabilityTest(
+                  viabilityTest(
+                      seedsSown = 1,
+                      testType = ViabilityTestType.Nursery,
+                      substrate = ViabilityTestSubstrate.Moss),
+                  clock)
+
+      val v1Model = v2Model.toV1Compatible(clock)
+      assertNull(v1Model.viabilityTests[0].substrate)
+    }
+
+    @Test
+    fun `viability test substrate is preserved if it existed in v1`() {
+      val v2Model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .addViabilityTest(
+                  viabilityTest(seedsSown = 1, substrate = ViabilityTestSubstrate.Agar), clock)
+
+      val v1Model = v2Model.toV1Compatible(clock)
+      assertEquals(ViabilityTestSubstrate.Agar, v1Model.viabilityTests[0].substrate)
     }
 
     @Test

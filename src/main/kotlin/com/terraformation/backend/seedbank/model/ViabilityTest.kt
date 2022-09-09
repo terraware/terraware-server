@@ -33,6 +33,58 @@ data class ViabilityTestModel(
     val testResults: Collection<ViabilityTestResultModel>? = null,
     val remaining: SeedQuantityModel? = null,
 ) {
+  fun validateV2() {
+    val isLab = testType == ViabilityTestType.Lab
+    val isNursery = testType == ViabilityTestType.Nursery
+
+    val substrateValidForTestType =
+        when (substrate) {
+          ViabilityTestSubstrate.Agar -> isLab
+          ViabilityTestSubstrate.MediaMix -> isNursery
+          ViabilityTestSubstrate.Moss -> isNursery
+          ViabilityTestSubstrate.NurseryMedia -> isLab
+          ViabilityTestSubstrate.Other -> isLab || isNursery
+          ViabilityTestSubstrate.Paper -> isLab
+          ViabilityTestSubstrate.PerliteVermiculite -> isNursery
+          ViabilityTestSubstrate.Sand -> isLab || isNursery
+          ViabilityTestSubstrate.Soil -> isNursery
+          null -> true
+        }
+    if (!substrateValidForTestType) {
+      throw IllegalArgumentException(
+          "Substrate ${substrate?.displayName} not valid for test type ${testType.displayName}")
+    }
+  }
+
+  fun toV1Compatible(): ViabilityTestModel {
+    val newSubstrate =
+        when (substrate) {
+          ViabilityTestSubstrate.Agar,
+          ViabilityTestSubstrate.NurseryMedia,
+          ViabilityTestSubstrate.Other,
+          ViabilityTestSubstrate.Paper -> substrate
+          else -> null
+        }
+
+    return copy(substrate = newSubstrate)
+  }
+
+  fun toV2Compatible(): ViabilityTestModel {
+    val newSubstrate: ViabilityTestSubstrate? =
+        if (testType == ViabilityTestType.Lab) {
+          substrate
+        } else {
+          // None of the v1 substrates apart from "Other" is valid for v2 nursery tests.
+          if (substrate == ViabilityTestSubstrate.Other) {
+            substrate
+          } else {
+            null
+          }
+        }
+
+    return copy(substrate = newSubstrate)
+  }
+
   fun fieldsEqual(other: ViabilityTestModel): Boolean {
     return endDate == other.endDate &&
         notes == other.notes &&

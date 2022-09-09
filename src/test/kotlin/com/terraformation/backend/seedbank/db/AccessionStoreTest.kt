@@ -438,7 +438,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         testType = ViabilityTestType.Lab,
                         seedType = ViabilityTestSeedType.Fresh,
                         treatment = ViabilityTestTreatment.Scarify,
-                        substrate = ViabilityTestSubstrate.PaperPetriDish,
+                        substrate = ViabilityTestSubstrate.Paper,
                         notes = "notes",
                         seedsSown = 5)))
     store.update(desired)
@@ -452,7 +452,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 testType = ViabilityTestType.Lab,
                 seedTypeId = ViabilityTestSeedType.Fresh,
                 treatmentId = ViabilityTestTreatment.Scarify,
-                substrateId = ViabilityTestSubstrate.PaperPetriDish,
+                substrateId = ViabilityTestSubstrate.Paper,
                 notes = "notes",
                 seedsSown = 5,
                 remainingQuantity = BigDecimal(95),
@@ -532,7 +532,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         testType = ViabilityTestType.Lab,
                         seedType = ViabilityTestSeedType.Fresh,
                         treatment = ViabilityTestTreatment.Scarify,
-                        substrate = ViabilityTestSubstrate.PaperPetriDish,
+                        substrate = ViabilityTestSubstrate.Paper,
                         notes = "notes",
                         seedsSown = 5)))
 
