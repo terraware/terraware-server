@@ -693,23 +693,26 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update recalculates estimated seed count`() {
+  fun `update recalculates estimated seed count and weight`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
+    val total = SeedQuantityModel(BigDecimal.TEN, SeedQuantityUnits.Pounds)
     store.update(
         initial.copy(
             processingMethod = ProcessingMethod.Weight,
             subsetCount = 1,
             subsetWeightQuantity = SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Ounces),
-            total = SeedQuantityModel(BigDecimal.TEN, SeedQuantityUnits.Pounds)))
+            total = total))
     val fetched = store.fetchOneById(initial.id!!)
 
     assertEquals(160, fetched.estimatedSeedCount, "Estimated seed count is added")
+    assertEquals(total, fetched.estimatedWeight, "Estimated weight is added")
 
     store.update(fetched.copy(total = null))
 
     val fetchedAfterClear = store.fetchOneById(initial.id!!)
 
     assertNull(fetchedAfterClear.estimatedSeedCount, "Estimated seed count is removed")
+    assertNull(fetchedAfterClear.estimatedWeight, "Estimated weight is removed")
   }
 
   @Test

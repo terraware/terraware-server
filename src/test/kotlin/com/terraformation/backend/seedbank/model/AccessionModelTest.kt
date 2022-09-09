@@ -705,7 +705,9 @@ internal class AccessionModelTest {
                       subsetCount = subsetCount,
                       subsetWeight = SeedQuantityModel.of(subsetWeight, SeedQuantityUnits.Grams),
                       total = SeedQuantityModel.of(totalWeight, SeedQuantityUnits.Grams))
-              assertNull(accession.calculateEstimatedSeedCount(), "Estimated seed count: $values")
+              assertNull(
+                  accession.calculateEstimatedSeedCount(accession.total),
+                  "Estimated seed count: $values")
             }
           }
         }
@@ -716,7 +718,7 @@ internal class AccessionModelTest {
     fun `estimated seed count is calculated based on weight`() {
       val accession = accession(subsetCount = 10, subsetWeight = milligrams(200), total = grams(1))
 
-      assertEquals(50, accession.calculateEstimatedSeedCount())
+      assertEquals(50, accession.calculateEstimatedSeedCount(accession.total))
     }
 
     @Test
@@ -1642,6 +1644,74 @@ internal class AccessionModelTest {
 
       assertEquals(seeds(10), accession.total)
     }
+
+    @Test
+    fun `estimated seed count is the same as remaining quantity if it is count-based`() {
+      val accession =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .addWithdrawal(withdrawal(seeds(1), date = tomorrow, id = null), tomorrowClock)
+
+      assertEquals(9, accession.estimatedSeedCount)
+    }
+
+    @Test
+    fun `estimated seed count is null if remaining quantity is weight-based and no subset data`() {
+      val accession =
+          accession().copy(isManualState = true, remaining = grams(10)).withCalculatedValues(clock)
+
+      assertNull(accession.estimatedSeedCount)
+    }
+
+    @Test
+    fun `estimated seed count is calculated based on subset data`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  remaining = grams(10),
+                  subsetCount = 1,
+                  subsetWeightQuantity = grams(2))
+              .withCalculatedValues(clock)
+              .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null), tomorrowClock)
+
+      // 9 grams, 2 grams per seed = 4.5 seeds, rounded up to 5
+      assertEquals(5, accession.estimatedSeedCount)
+    }
+
+    @Test
+    fun `estimated weight is the same as remaining quantity if it is weight-based`() {
+      val accession =
+          accession()
+              .copy(isManualState = true, remaining = grams(10))
+              .withCalculatedValues(clock)
+              .addWithdrawal(withdrawal(grams(1), date = tomorrow, id = null), tomorrowClock)
+
+      assertEquals(grams(9), accession.estimatedWeight)
+    }
+
+    @Test
+    fun `estimated weight is null if remaining quantity is count-based and no subset data`() {
+      val accession =
+          accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
+
+      assertNull(accession.estimatedWeight)
+    }
+
+    @Test
+    fun `estimated weight is calculated based on subset data`() {
+      val accession =
+          accession()
+              .copy(
+                  isManualState = true,
+                  remaining = seeds(10),
+                  subsetCount = 2,
+                  subsetWeightQuantity = grams(1))
+              .withCalculatedValues(clock)
+
+      assertEquals(grams(5), accession.estimatedWeight)
+    }
   }
 
   @Nested
@@ -1682,6 +1752,7 @@ internal class AccessionModelTest {
           AccessionModel(
               checkedInTime = yesterdayInstant,
               createdTime = yesterdayInstant,
+              estimatedWeight = grams(9),
               isManualState = true,
               latestObservedQuantity = grams(9),
               latestObservedTime = todayInstant,

@@ -100,6 +100,7 @@ data class AccessionModel(
     val dryingStartDate: LocalDate? = null,
     val endangered: SpeciesEndangeredType? = null,
     val estimatedSeedCount: Int? = null,
+    val estimatedWeight: SeedQuantityModel? = null,
     val facilityId: FacilityId? = null,
     val family: String? = null,
     val fieldNotes: String? = null,
@@ -545,16 +546,19 @@ data class AccessionModel(
     return newRemaining
   }
 
-  fun calculateEstimatedSeedCount(): Int? {
-    val total = this.total ?: return null
+  fun calculateEstimatedSeedCount(baseQuantity: SeedQuantityModel?): Int? {
+    return baseQuantity
+        ?.toUnitsOrNull(SeedQuantityUnits.Seeds, subsetWeightQuantity, subsetCount)
+        ?.quantity
+        ?.toInt()
+  }
 
-    return if (total.units == SeedQuantityUnits.Seeds) {
-      total.quantity.toInt()
-    } else {
-      val subsetCount = this.subsetCount?.let { BigDecimal(it) } ?: return null
-      val subsetGrams = this.subsetWeightQuantity?.grams ?: return null
-      val totalGrams = total.grams ?: return null
-      (subsetCount * totalGrams / subsetGrams).toInt()
+  private fun calculateEstimatedWeight(baseQuantity: SeedQuantityModel?): SeedQuantityModel? {
+    return when {
+      baseQuantity == null -> null
+      baseQuantity.units != SeedQuantityUnits.Seeds -> baseQuantity
+      subsetCount == null || subsetWeightQuantity == null -> null
+      else -> baseQuantity.toUnits(subsetWeightQuantity.units, subsetWeightQuantity, subsetCount)
     }
   }
 
@@ -768,10 +772,12 @@ data class AccessionModel(
         if (isManualState) totalViabilityPercent else calculateTotalViabilityPercent()
     val newViabilityTests = newWithdrawals.mapNotNull { it.viabilityTest }
     val newState = existing.getStateTransition(this, clock)?.newState ?: existing.state
+    val newEstimatedBaseQuantity = if (isManualState) newRemaining else total
 
     return copy(
         collectedDate = newCollectedDate,
-        estimatedSeedCount = calculateEstimatedSeedCount(),
+        estimatedSeedCount = calculateEstimatedSeedCount(newEstimatedBaseQuantity),
+        estimatedWeight = calculateEstimatedWeight(newEstimatedBaseQuantity),
         latestObservedQuantity = calculateLatestObservedQuantity(clock, existing),
         latestObservedTime = calculateLatestObservedTime(clock, existing),
         latestViabilityPercent = calculateLatestViabilityPercent(),
