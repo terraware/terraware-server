@@ -119,6 +119,38 @@ def generate_viability_test(received_date, remaining_quantity: Dict) -> Dict:
     }
 
 
+def generate_viability_test_v2(received_date, remaining_quantity: Dict) -> Dict:
+    if remaining_quantity["units"] == "Seeds":
+        seeds_tested = randint(1, remaining_quantity["quantity"])
+    else:
+        seeds_tested = randint(10, 500)
+
+    test_type = random.choice(["Lab", "Nursery"])
+
+    start_date = received_date + timedelta(days=randint(0, 2))
+    germination_count = randint(0, 3)
+
+    test_results = []
+    recording_date = start_date
+
+    for i in range(0, germination_count):
+        test_results.append(
+            generate_test_result(recording_date, seeds_tested / germination_count)
+        )
+        recording_date += timedelta(days=randint(1, 3))
+
+    return {
+        "notes": generate_notes(),
+        "seedsTested": seeds_tested,
+        "seedType": "Fresh",
+        "startDate": str(start_date) if start_date else None,
+        "substrate": "Other",
+        "testResults": test_results or None,
+        "testType": test_type,
+        "treatment": "Soak",
+    }
+
+
 def generate_geolocation() -> Dict:
     return {
         "latitude": float(randint(100, 110)),
@@ -345,7 +377,7 @@ def create_accession_v2(
 
     if "receivedDate" in updated:
         received_date = date.fromisoformat(updated["receivedDate"])
-        viability_test_payload = generate_viability_test(
+        viability_test_payload = generate_viability_test_v2(
             received_date, updated["remainingQuantity"]
         )
 

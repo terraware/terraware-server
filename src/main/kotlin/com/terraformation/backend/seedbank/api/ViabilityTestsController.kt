@@ -139,7 +139,7 @@ data class GetViabilityTestPayload(
 data class CreateViabilityTestRequestPayload(
     val endDate: LocalDate? = null,
     val notes: String? = null,
-    val seedsSown: Int? = null,
+    val seedsTested: Int? = null,
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
@@ -152,7 +152,7 @@ data class CreateViabilityTestRequestPayload(
           accessionId = accessionId,
           endDate = endDate,
           notes = notes,
-          seedsSown = seedsSown,
+          seedsSown = seedsTested,
           seedType = seedType,
           startDate = startDate,
           substrate = substrate,
@@ -167,7 +167,7 @@ data class CreateViabilityTestRequestPayload(
 data class UpdateViabilityTestRequestPayload(
     val endDate: LocalDate? = null,
     val notes: String? = null,
-    val seedsSown: Int? = null,
+    val seedsTested: Int? = null,
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
@@ -180,7 +180,7 @@ data class UpdateViabilityTestRequestPayload(
       model.copy(
           endDate = endDate,
           notes = notes,
-          seedsSown = seedsSown,
+          seedsSown = seedsTested,
           seedType = seedType,
           startDate = startDate,
           substrate = substrate,
