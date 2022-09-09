@@ -26,6 +26,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -127,6 +128,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(seeds(7), updatedAccession.remaining, "Seeds remaining")
       assertEquals(2, updatedAccession.withdrawals.size, "Number of withdrawals")
       assertEquals(seeds(3), updatedAccession.withdrawals[1].withdrawn, "Size of new withdrawal")
+      assertTrue(updatedAccession.isManualState, "Accession is converted to v2")
       verify { accessionStore.updateAndFetch(any()) }
     }
 
