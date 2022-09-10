@@ -542,7 +542,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="viability_test_substrates" numRows="4" remarks="(Enum) Types of substrate that can be used to test seeds for viability." schema="public" type="TABLE">
+      <table name="viability_test_substrates" numRows="9" remarks="(Enum) Types of substrate that can be used to test seeds for viability." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="substrate_id" foreignKey="germination_test_substrate_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
          </column>
@@ -552,7 +552,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="viability_test_treatments" numRows="5" remarks="(Enum) Techniques that can be used to treat seeds before testing them for viability." schema="public" type="TABLE">
+      <table name="viability_test_treatments" numRows="6" remarks="(Enum) Techniques that can be used to treat seeds before testing them for viability." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="treatment_id" foreignKey="germination_test_treatment_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="viability_tests"/>
          </column>
