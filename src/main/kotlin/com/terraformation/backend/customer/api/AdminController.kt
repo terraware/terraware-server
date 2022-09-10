@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.RequireExistingAdminRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.AppVersionStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
@@ -18,6 +19,7 @@ import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
+import com.terraformation.backend.db.tables.pojos.AppVersionsRow
 import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.tables.pojos.DevicesRow
@@ -46,6 +48,7 @@ import org.jooq.JSONB
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
@@ -64,6 +67,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireExistingAdminRole
 @Validated
 class AdminController(
+    private val appVersionStore: AppVersionStore,
     private val clock: DatabaseBackedClock,
     private val config: TerrawareServerConfig,
     private val deviceManagerService: DeviceManagerService,
@@ -91,6 +95,7 @@ class AdminController(
 
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
+    model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
     model.addAttribute("organizations", organizations)
     model.addAttribute("prefix", prefix)
 
@@ -190,6 +195,17 @@ class AdminController(
     model.addAttribute("prefix", prefix)
 
     return "/admin/testClock"
+  }
+
+  @GetMapping("/appVersions")
+  fun getAppVersions(model: Model, redirectAttributes: RedirectAttributes): String {
+    requirePermissions { updateAppVersions() }
+
+    val versions = appVersionStore.findAll()
+    model.addAttribute("appVersions", versions)
+    model.addAttribute("prefix", prefix)
+
+    return "/admin/appVersions"
   }
 
   @PostMapping("/createFacility")
@@ -574,6 +590,63 @@ class AdminController(
     return testClock()
   }
 
+  @PostMapping("/createAppVersion")
+  fun createAppVersion(
+      @RequestParam appName: String,
+      @RequestParam platform: String,
+      @RequestParam minimumVersion: String,
+      @RequestParam recommendedVersion: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      appVersionStore.create(AppVersionsRow(appName, platform, minimumVersion, recommendedVersion))
+      redirectAttributes.successMessage = "App version created."
+    } catch (e: DuplicateKeyException) {
+      redirectAttributes.failureMessage = "An entry for that app name and platform already exists."
+    } catch (e: Exception) {
+      log.error("Failed to create app version", e)
+      redirectAttributes.failureMessage = "Create failed: ${e.message}"
+    }
+
+    return appVersions()
+  }
+
+  @PostMapping("/updateAppVersion")
+  fun updateAppVersion(
+      @RequestParam originalAppName: String,
+      @RequestParam originalPlatform: String,
+      @RequestParam appName: String,
+      @RequestParam platform: String,
+      @RequestParam minimumVersion: String,
+      @RequestParam recommendedVersion: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    try {
+      appVersionStore.update(
+          AppVersionsRow(originalAppName, originalPlatform),
+          AppVersionsRow(appName, platform, minimumVersion, recommendedVersion))
+      redirectAttributes.successMessage = "App version updated."
+    } catch (e: DuplicateKeyException) {
+      redirectAttributes.failureMessage = "An entry for that app name and platform already exists."
+    } catch (e: Exception) {
+      log.error("Failed to update app version", e)
+      redirectAttributes.failureMessage = "Update failed: ${e.message}"
+    }
+
+    return appVersions()
+  }
+
+  @PostMapping("/deleteAppVersion")
+  fun deleteAppVersion(
+      @RequestParam appName: String,
+      @RequestParam platform: String,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    appVersionStore.delete(appName, platform)
+    redirectAttributes.successMessage = "App version deleted."
+    return appVersions()
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
@@ -599,6 +672,7 @@ class AdminController(
   // Convenience methods to redirect to the GET endpoint for each kind of thing.
 
   private fun adminHome() = redirect("/")
+  private fun appVersions() = redirect("/appVersions")
   private fun deviceManager(deviceManagerId: DeviceManagerId) =
       redirect("/deviceManagers/$deviceManagerId")
   private fun deviceTemplates() = redirect("/deviceTemplates")

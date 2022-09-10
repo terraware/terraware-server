@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/admin/header :: head"/>
+<body>
+
+<span th:include="/admin/header :: top"/>
+
+<a th:href="|${prefix}/|">Home</a>
+
+<h2>App Versions</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>App Name</th>
+        <th>Platform</th>
+        <th>Minimum</th>
+        <th>Recommended</th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="appVersion : ${appVersions}">
+        <td>
+            <form method="POST" th:action="|${prefix}/updateAppVersion|"
+                  th:id="|${appVersion.appName}-${appVersion.platform}|">
+                <input type="hidden" name="originalAppName" th:value="${appVersion.appName}"/>
+                <input type="hidden" name="originalPlatform" th:value="${appVersion.platform}"/>
+                <input type="text" name="appName" required th:value="${appVersion.appName}"/>
+            </form>
+        </td>
+        <td>
+            <input type="text" name="platform" required
+                   th:form="|${appVersion.appName}-${appVersion.platform}|"
+                   th:value="${appVersion.platform}"/>
+        </td>
+        <td>
+            <input type="text" name="minimumVersion" required
+                   th:form="|${appVersion.appName}-${appVersion.platform}|"
+                   th:value="${appVersion.minimumVersion}"/>
+        </td>
+        <td>
+            <input type="text" name="recommendedVersion" required
+                   th:form="|${appVersion.appName}-${appVersion.platform}|"
+                   th:value="${appVersion.recommendedVersion}"/>
+        </td>
+        <td>
+            <input type="submit"
+                   th:form="|${appVersion.appName}-${appVersion.platform}|"
+                   value="Update"/>
+        </td>
+        <td>
+            <form method="POST" th:action="|${prefix}/deleteAppVersion|">
+                <input type="hidden" name="appName" th:value="${appVersion.appName}"/>
+                <input type="hidden" name="platform" th:value="${appVersion.platform}"/>
+                <input type="submit" value="Delete"/>
+            </form>
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <form method="POST" th:action="|${prefix}/createAppVersion|" id="create">
+                <input type="text" name="appName" required/>
+            </form>
+        </td>
+        <td>
+            <input type="text" name="platform" required form="create"/>
+        </td>
+        <td>
+            <input type="text" name="minimumVersion" required form="create"/>
+        </td>
+        <td>
+            <input type="text" name="recommendedVersion" required form="create"/>
+        </td>
+        <td>
+            <input type="submit" form="create" value="Create"/>
+        </td>
+        <td></td>
+    </tr>
+
+    </tbody>
+</table>
+
+</body>
+</html>

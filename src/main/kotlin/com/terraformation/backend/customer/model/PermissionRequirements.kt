@@ -363,6 +363,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateAppVersions() {
+    if (!user.canUpdateAppVersions()) {
+      throw AccessDeniedException("No permission to update app versions")
+    }
+  }
+
   fun updateAutomation(automationId: AutomationId) {
     if (!user.canUpdateAutomation(automationId)) {
       readAutomation(automationId)
