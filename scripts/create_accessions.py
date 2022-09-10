@@ -93,6 +93,15 @@ def generate_viability_test(received_date, remaining_quantity: Dict) -> Dict:
             }
         }
 
+    test_type = random.choice(["Lab", "Nursery"])
+    seed_type = random.choice([None, "Fresh", "Stored"])
+    substrate = random.choice(
+        [None, "Agar Petri Dish", "Nursery Media", "Paper Petri Dish", "Other"]
+    )
+    treatment = random.choice(
+        [None, "GA3", "Other", "Scarify", "Soak", "Stratification"]
+    )
+
     start_date = received_date + timedelta(days=randint(0, 2))
     germination_count = randint(0, 3)
 
@@ -108,13 +117,13 @@ def generate_viability_test(received_date, remaining_quantity: Dict) -> Dict:
     return {
         "notes": generate_notes(),
         "seedsSown": seeds_sown,
-        "seedType": "Fresh",
+        "seedType": seed_type,
         "staffResponsible": generate_staff_responsible(),
         "startDate": str(start_date) if start_date else None,
-        "substrate": "Nursery Media",
+        "substrate": substrate,
         "testResults": test_results or None,
-        "testType": "Lab",
-        "treatment": "Soak",
+        "testType": test_type,
+        "treatment": treatment,
         **remaining,
     }
 
@@ -125,7 +134,30 @@ def generate_viability_test_v2(received_date, remaining_quantity: Dict) -> Dict:
     else:
         seeds_tested = randint(10, 500)
 
-    test_type = random.choice(["Lab", "Nursery"])
+    test_type_substrates = {
+        "Lab": [
+            "Agar",
+            "Paper",
+            "Sand",
+            "Nursery Media",
+            "Other",
+        ],
+        "Nursery": [
+            "Media Mix",
+            "Soil",
+            "Sand",
+            "Moss",
+            "Perlite/Vermiculite",
+            "Other",
+        ],
+    }
+
+    test_type = random.choice(list(test_type_substrates.keys()))
+    seed_type = random.choice([None, "Fresh", "Stored"])
+    substrate = random.choice(test_type_substrates[test_type])
+    treatment = random.choice(
+        [None, "Chemical", "Light", "Other", "Scarify", "Soak", "Stratification"]
+    )
 
     start_date = received_date + timedelta(days=randint(0, 2))
     germination_count = randint(0, 3)
@@ -142,12 +174,12 @@ def generate_viability_test_v2(received_date, remaining_quantity: Dict) -> Dict:
     return {
         "notes": generate_notes(),
         "seedsTested": seeds_tested,
-        "seedType": "Fresh",
+        "seedType": seed_type,
         "startDate": str(start_date) if start_date else None,
-        "substrate": "Other",
+        "substrate": substrate,
         "testResults": test_results or None,
         "testType": test_type,
-        "treatment": "Soak",
+        "treatment": treatment,
     }
 
 

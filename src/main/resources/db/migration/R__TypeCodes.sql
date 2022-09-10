@@ -170,17 +170,23 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO viability_test_substrates (id, name)
 VALUES (1, 'Nursery Media'),
-       (2, 'Agar Petri Dish'),
-       (3, 'Paper Petri Dish'),
-       (4, 'Other')
+       (2, 'Agar'),
+       (3, 'Paper'),
+       (4, 'Other'),
+       (5, 'Sand'),
+       (6, 'Media Mix'),
+       (7, 'Soil'),
+       (8, 'Moss'),
+       (9, 'Perlite/Vermiculite')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO viability_test_treatments (id, name)
 VALUES (1, 'Soak'),
        (2, 'Scarify'),
-       (3, 'GA3'),
+       (3, 'Chemical'),
        (4, 'Stratification'),
-       (5, 'Other')
+       (5, 'Other'),
+       (6, 'Light')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO viability_test_types (id, name)

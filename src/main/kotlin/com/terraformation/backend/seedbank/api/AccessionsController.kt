@@ -1,8 +1,10 @@
 package com.terraformation.backend.seedbank.api
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SeedBankAppEndpoint
@@ -566,6 +568,65 @@ enum class ViabilityTestTypeV1(val v2Type: ViabilityTestType) {
   }
 }
 
+/**
+ * Substrates that are compatible with the v1 API. The v2 API adds some new options and renames some
+ * existing ones.
+ */
+enum class ViabilityTestSubstrateV1(
+    val v2Type: ViabilityTestSubstrate,
+    @get:JsonValue val displayName: String
+) {
+  AgarPetriDish(ViabilityTestSubstrate.Agar, "Agar Petri Dish"),
+  NurseryMedia(ViabilityTestSubstrate.NurseryMedia, "Nursery Media"),
+  PaperPetriDish(ViabilityTestSubstrate.Paper, "Paper Petri Dish"),
+  Other(ViabilityTestSubstrate.Other, "Other");
+
+  companion object {
+    private val byDisplayName = values().associateBy { it.displayName }
+
+    @JvmStatic
+    fun of(substrate: ViabilityTestSubstrate?): ViabilityTestSubstrateV1? =
+        when (substrate) {
+          ViabilityTestSubstrate.Agar -> AgarPetriDish
+          ViabilityTestSubstrate.NurseryMedia -> NurseryMedia
+          ViabilityTestSubstrate.Other -> Other
+          ViabilityTestSubstrate.Paper -> PaperPetriDish
+          else -> null
+        }
+
+    @JsonCreator
+    @JvmStatic
+    fun forDisplayName(name: String) =
+        byDisplayName[name] ?: throw IllegalArgumentException("Unrecognized value: $name")
+  }
+}
+
+/**
+ * Treatments that are compatible with the v1 API. The v2 API renames "GA3" to "Chemical" and adds
+ * "Light".
+ */
+enum class ViabilityTestTreatmentV1(val v2Type: ViabilityTestTreatment) {
+  Soak(ViabilityTestTreatment.Soak),
+  Scarify(ViabilityTestTreatment.Scarify),
+  GA3(ViabilityTestTreatment.Chemical),
+  Stratification(ViabilityTestTreatment.Stratification),
+  Other(ViabilityTestTreatment.Other);
+
+  companion object {
+    @JvmStatic
+    fun of(treatment: ViabilityTestTreatment?): ViabilityTestTreatmentV1? =
+        when (treatment) {
+          ViabilityTestTreatment.Chemical -> GA3
+          ViabilityTestTreatment.Light,
+          ViabilityTestTreatment.Other -> Other
+          ViabilityTestTreatment.Scarify -> Scarify
+          ViabilityTestTreatment.Soak -> Soak
+          ViabilityTestTreatment.Stratification -> Stratification
+          null -> null
+        }
+  }
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ViabilityTestPayload(
     @Schema(
@@ -579,8 +640,8 @@ data class ViabilityTestPayload(
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val seedType: ViabilityTestSeedType? = null,
-    val substrate: ViabilityTestSubstrate? = null,
-    val treatment: ViabilityTestTreatment? = null,
+    val substrate: ViabilityTestSubstrateV1? = null,
+    val treatment: ViabilityTestTreatmentV1? = null,
     val notes: String? = null,
     @Schema(
         description =
@@ -602,8 +663,8 @@ data class ViabilityTestPayload(
       model.startDate,
       model.endDate,
       model.seedType,
-      model.substrate,
-      model.treatment,
+      ViabilityTestSubstrateV1.of(model.substrate),
+      ViabilityTestTreatmentV1.of(model.treatment),
       model.notes,
       model.remaining?.toPayload(),
       model.staffResponsible,
@@ -623,10 +684,10 @@ data class ViabilityTestPayload(
           seedType = seedType,
           staffResponsible = staffResponsible,
           startDate = startDate,
-          substrate = substrate,
+          substrate = substrate?.v2Type,
           remaining = remainingQuantity?.toModel(),
           testType = testType.v2Type,
-          treatment = treatment,
+          treatment = treatment?.v2Type,
       )
 }
 
