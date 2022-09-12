@@ -128,6 +128,8 @@ class SystemUser(
   override fun canReadFacility(facilityId: FacilityId): Boolean = true
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
   override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
+  override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
+      true
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
@@ -140,6 +142,7 @@ class SystemUser(
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       true
   override fun canSetTestClock(): Boolean = true
+  override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = true
   override fun canTriggerAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = true
   override fun canUpdateAppVersions(): Boolean = true

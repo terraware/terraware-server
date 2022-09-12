@@ -22,6 +22,7 @@ import com.terraformation.backend.db.StorageLocationNotFoundException
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import io.mockk.MockKMatcherScope
@@ -372,6 +373,21 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readOrganizationUser() {
+    assertThrows<OrganizationNotFoundException> {
+      requirements.readOrganizationUser(organizationId, userId)
+    }
+
+    grant { user.canReadOrganization(organizationId) }
+    assertThrows<UserNotFoundException> {
+      requirements.readOrganizationUser(organizationId, userId)
+    }
+
+    grant { user.canReadOrganizationUser(organizationId, userId) }
+    requirements.readOrganizationUser(organizationId, userId)
+  }
+
+  @Test
   fun readSpecies() {
     assertThrows<SpeciesNotFoundException> { requirements.readSpecies(speciesId) }
 
@@ -460,6 +476,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canSetTestClock() }
     requirements.setTestClock()
+  }
+
+  @Test
+  fun setWithdrawalUser() {
+    assertThrows<AccessionNotFoundException> { requirements.setWithdrawalUser(accessionId) }
+
+    grant { user.canReadAccession(accessionId) }
+    assertThrows<AccessDeniedException> { requirements.setWithdrawalUser(accessionId) }
+
+    grant { user.canSetWithdrawalUser(accessionId) }
+    requirements.setWithdrawalUser(accessionId)
   }
 
   @Test

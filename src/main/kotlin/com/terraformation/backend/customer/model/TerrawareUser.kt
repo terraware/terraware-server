@@ -93,6 +93,7 @@ interface TerrawareUser : Principal {
   fun canReadFacility(facilityId: FacilityId): Boolean
   fun canReadNotification(notificationId: NotificationId): Boolean
   fun canReadOrganization(organizationId: OrganizationId): Boolean
+  fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
   fun canReadSpecies(speciesId: SpeciesId): Boolean
   fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean
   fun canReadTimeseries(deviceId: DeviceId): Boolean
@@ -103,6 +104,7 @@ interface TerrawareUser : Principal {
   fun canSendAlert(facilityId: FacilityId): Boolean
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean
   fun canSetTestClock(): Boolean
+  fun canSetWithdrawalUser(accessionId: AccessionId): Boolean
   fun canTriggerAutomation(automationId: AutomationId): Boolean
   fun canUpdateAccession(accessionId: AccessionId): Boolean
   fun canUpdateAppVersions(): Boolean

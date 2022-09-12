@@ -269,6 +269,14 @@ data class IndividualUser(
     return organizationId in organizationRoles
   }
 
+  override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
+    return if (userId == this.userId) {
+      canReadOrganization(organizationId)
+    } else {
+      canListOrganizationUsers(organizationId) && parentStore.exists(organizationId, userId)
+    }
+  }
+
   override fun canReadSpecies(speciesId: SpeciesId): Boolean {
     // If this logic changes, make sure to also change code that bakes this rule into SQL queries
     // for efficiency. Example: SpeciesStore.fetchUncheckedSpeciesIds
@@ -316,6 +324,17 @@ data class IndividualUser(
   override fun canSetTestClock(): Boolean {
     return userType == UserType.SuperAdmin
   }
+
+  override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean {
+    val organizationId = parentStore.getOrganizationId(accessionId) ?: return false
+    return when (organizationRoles[organizationId]) {
+      Role.OWNER,
+      Role.ADMIN,
+      Role.MANAGER -> true
+      else -> false
+    }
+  }
+
   override fun canTriggerAutomation(automationId: AutomationId): Boolean {
     return canUpdateAutomation(automationId)
   }

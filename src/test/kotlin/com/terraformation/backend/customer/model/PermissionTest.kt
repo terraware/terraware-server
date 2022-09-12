@@ -113,7 +113,9 @@ internal class PermissionTest : DatabaseTest() {
   private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
 
-  private val otherUserId = UserId(8765)
+  private val sameOrgUserId = UserId(8765)
+  private val otherUserIds =
+      mapOf(OrganizationId(1) to sameOrgUserId, OrganizationId(2) to UserId(8766))
 
   private val uploadId = UploadId(1)
 
@@ -146,8 +148,11 @@ internal class PermissionTest : DatabaseTest() {
         )
 
     insertUser(userId)
-    insertUser(otherUserId)
     organizationIds.forEach { insertOrganization(it, createdBy = userId) }
+    otherUserIds.forEach { (organizationId, otherUserId) ->
+      insertUser(otherUserId)
+      insertOrganizationUser(otherUserId, organizationId, createdBy = userId)
+    }
 
     facilityIds.forEach { facilityId ->
       insertFacility(facilityId, facilityId.value / 1000, createdBy = userId)
@@ -192,7 +197,7 @@ internal class PermissionTest : DatabaseTest() {
               refreshedTime = Instant.EPOCH,
               sensorKitId = "$deviceManagerId",
               facilityId = if (facilityId in facilityIds) facilityId else null,
-              userId = if (facilityId in facilityIds) otherUserId else null))
+              userId = if (facilityId in facilityIds) sameOrgUserId else null))
     }
   }
 
@@ -207,6 +212,8 @@ internal class PermissionTest : DatabaseTest() {
         updateOrganization = true,
         deleteOrganization = true,
         listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
         addOrganizationUser = true,
         removeOrganizationUser = true,
         removeOrganizationSelf = true,
@@ -231,6 +238,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         updateAccession = true,
         deleteAccession = true,
+        setWithdrawalUser = true,
     )
 
     permissions.expect(
@@ -291,6 +299,8 @@ internal class PermissionTest : DatabaseTest() {
         updateOrganization = true,
         deleteOrganization = true,
         listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
         addOrganizationUser = true,
         removeOrganizationUser = true,
         removeOrganizationSelf = true,
@@ -326,6 +336,8 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         updateOrganization = true,
         listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
         addOrganizationUser = true,
         removeOrganizationUser = true,
         removeOrganizationSelf = true,
@@ -350,6 +362,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         updateAccession = true,
         deleteAccession = true,
+        setWithdrawalUser = true,
     )
 
     permissions.expect(
@@ -408,6 +421,8 @@ internal class PermissionTest : DatabaseTest() {
         org1Id,
         readOrganization = true,
         listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
         removeOrganizationSelf = true,
         createSpecies = true,
         listFacilities = true,
@@ -424,6 +439,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         updateAccession = true,
         deleteAccession = true,
+        setWithdrawalUser = true,
     )
 
     permissions.expect(
@@ -472,6 +488,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         readOrganization = true,
+        readOrganizationSelf = true,
         removeOrganizationSelf = true,
         listFacilities = true,
     )
@@ -617,7 +634,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `user cannot access uploads of other users`() {
-    insertUpload(uploadId, createdBy = otherUserId)
+    insertUpload(uploadId, createdBy = sameOrgUserId)
 
     assertFalse(user.canReadUpload(uploadId), "Can read upload")
     assertFalse(user.canUpdateUpload(uploadId), "Can update upload")
@@ -677,6 +694,8 @@ internal class PermissionTest : DatabaseTest() {
         updateOrganization: Boolean = false,
         deleteOrganization: Boolean = false,
         listOrganizationUsers: Boolean = false,
+        readOrganizationUser: Boolean = false,
+        readOrganizationSelf: Boolean = false,
         addOrganizationUser: Boolean = false,
         removeOrganizationUser: Boolean = false,
         removeOrganizationSelf: Boolean = false,
@@ -702,12 +721,20 @@ internal class PermissionTest : DatabaseTest() {
             user.canListOrganizationUsers(organizationId),
             "Can list users in organization $organizationId")
         assertEquals(
+            readOrganizationUser,
+            user.canReadOrganizationUser(organizationId, otherUserIds[organizationId]!!),
+            "Can read user in organization $organizationId")
+        assertEquals(
+            readOrganizationSelf,
+            user.canReadOrganizationUser(organizationId, userId),
+            "Can read self in organization $organizationId")
+        assertEquals(
             addOrganizationUser,
             user.canAddOrganizationUser(organizationId),
             "Can add organization $organizationId user")
         assertEquals(
             removeOrganizationUser,
-            user.canRemoveOrganizationUser(organizationId, otherUserId),
+            user.canRemoveOrganizationUser(organizationId, otherUserIds[organizationId]!!),
             "Can remove user from organization $organizationId")
         assertEquals(
             removeOrganizationSelf,
@@ -775,6 +802,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession: Boolean = false,
         updateAccession: Boolean = false,
         deleteAccession: Boolean = false,
+        setWithdrawalUser: Boolean = false,
     ) {
       accessions.forEach { accessionId ->
         assertEquals(
@@ -787,6 +815,10 @@ internal class PermissionTest : DatabaseTest() {
             deleteAccession,
             user.canDeleteAccession(accessionId),
             "Can delete accession $accessionId")
+        assertEquals(
+            setWithdrawalUser,
+            user.canSetWithdrawalUser(accessionId),
+            "Can set withdrawal user for accession $accessionId")
 
         uncheckedAccessions.remove(accessionId)
       }

@@ -125,6 +125,8 @@ data class DeviceManagerUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = false
   override fun canReadAccession(accessionId: AccessionId): Boolean = false
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
+  override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
+      false
   override fun canReadSpecies(speciesId: SpeciesId): Boolean = false
   override fun canReadStorageLocation(storageLocationId: StorageLocationId): Boolean = false
   override fun canReadUpload(uploadId: UploadId): Boolean = false
@@ -135,6 +137,7 @@ data class DeviceManagerUser(
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       false
   override fun canSetTestClock(): Boolean = false
+  override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = false
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = false
   override fun canUpdateAppVersions(): Boolean = false
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = false

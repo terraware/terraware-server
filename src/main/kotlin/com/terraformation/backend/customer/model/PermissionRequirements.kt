@@ -23,6 +23,7 @@ import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import org.springframework.security.access.AccessDeniedException
@@ -284,6 +285,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readOrganizationUser(organizationId: OrganizationId, userId: UserId) {
+    if (!user.canReadOrganizationUser(organizationId, userId)) {
+      readOrganization(organizationId)
+      throw UserNotFoundException(userId)
+    }
+  }
+
   fun readSpecies(speciesId: SpeciesId) {
     if (!user.canReadSpecies(speciesId)) {
       throw SpeciesNotFoundException(speciesId)
@@ -346,6 +354,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun setTestClock() {
     if (!user.canSetTestClock()) {
       throw AccessDeniedException("No permission to set test clock")
+    }
+  }
+
+  fun setWithdrawalUser(accessionId: AccessionId) {
+    if (!user.canSetWithdrawalUser(accessionId)) {
+      readAccession(accessionId)
+      throw AccessDeniedException("No permission to set withdrawal user for accession $accessionId")
     }
   }
 
