@@ -31,6 +31,8 @@ COMMENT ON COLUMN accessions.nursery_start_date IS 'When the accession was moved
 COMMENT ON COLUMN accessions.target_storage_condition IS 'The intended storage condition of the accession as determined during initial processing.';
 COMMENT ON COLUMN accessions.total_viability_percent IS 'Percentage of viable seeds across all tests.';
 
+COMMENT ON TABLE app_versions IS 'Minimum and recommended versions for Terraware mobile apps.';
+
 COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the device manager.';
 
 COMMENT ON TABLE bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';

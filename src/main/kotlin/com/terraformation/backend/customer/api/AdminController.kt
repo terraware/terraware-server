@@ -627,6 +627,7 @@ class AdminController(
           AppVersionsRow(appName, platform, minimumVersion, recommendedVersion))
       redirectAttributes.successMessage = "App version updated."
     } catch (e: DuplicateKeyException) {
+      // User edited the appName/platform to collide with an existing one.
       redirectAttributes.failureMessage = "An entry for that app name and platform already exists."
     } catch (e: Exception) {
       log.error("Failed to update app version", e)
