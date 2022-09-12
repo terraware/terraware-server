@@ -130,19 +130,6 @@ class Messages {
     }
   }
 
-  /**
-   * Returns the full name of a user based on their first and last names. It's possible for users to
-   * not have first or last names, e.g., if they were created by being added to an organization and
-   * haven't gone through the registration flow yet; returns null in that case. If the user has only
-   * a first name or only a last name, returns whichever name exists.
-   */
-  fun userFullName(firstName: String?, lastName: String?): String? =
-      if (firstName != null && lastName != null) {
-        "$firstName $lastName"
-      } else {
-        lastName ?: firstName
-      }
-
   private fun seedQuantity(quantity: SeedQuantityModel): String {
     val unitsWord =
         if (quantity.quantity.equalsIgnoreScale(BigDecimal.ONE)) {
