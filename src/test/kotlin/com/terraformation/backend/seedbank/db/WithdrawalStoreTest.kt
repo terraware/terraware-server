@@ -1,12 +1,15 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.WithdrawalId
@@ -35,7 +38,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+  override val user: IndividualUser = mockUser()
 
   private lateinit var store: WithdrawalStore
 
@@ -49,10 +52,13 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setup() {
-    store = WithdrawalStore(dslContext, clock, Messages())
+    store = WithdrawalStore(dslContext, clock, Messages(), ParentStore(dslContext))
 
     every { clock.instant() } returns Instant.ofEpochSecond(1000)
     every { user.canReadAccession(any()) } returns true
+    every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadOrganizationUser(organizationId, any()) } returns true
+    every { user.canSetWithdrawalUser(any()) } returns true
 
     insertSiteData()
 
@@ -74,6 +80,9 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetches existing withdrawals`() {
+    val otherUserId = UserId(10)
+    insertUser(otherUserId, firstName = "Other", lastName = "User")
+
     val pojos =
         listOf(
             WithdrawalsRow(
@@ -88,6 +97,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 destination = "dest 1",
                 createdTime = Instant.EPOCH,
                 updatedTime = clock.instant(),
+                withdrawnBy = user.userId,
                 withdrawnGrams = BigDecimal.TEN,
                 withdrawnQuantity = BigDecimal(10000),
                 withdrawnUnitsId = SeedQuantityUnits.Milligrams,
@@ -104,6 +114,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 destination = "dest 2",
                 createdTime = Instant.ofEpochSecond(30),
                 updatedTime = clock.instant(),
+                withdrawnBy = otherUserId,
                 withdrawnGrams = null,
                 withdrawnQuantity = BigDecimal(2),
                 withdrawnUnitsId = SeedQuantityUnits.Seeds,
@@ -123,6 +134,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 destination = pojos[0].destination,
                 staffResponsible = pojos[0].staffResponsible,
                 withdrawn = milligrams(10000),
+                withdrawnByName = user.fullName,
+                withdrawnByUserId = user.userId,
             ),
             WithdrawalModel(
                 id = WithdrawalId(2),
@@ -135,6 +148,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 destination = pojos[1].destination,
                 staffResponsible = pojos[1].staffResponsible,
                 withdrawn = seeds(2),
+                withdrawnByName = "Other User",
+                withdrawnByUserId = otherUserId,
             ),
         )
 
@@ -171,6 +186,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 remaining = grams(10),
                 staffResponsible = newWithdrawal.staffResponsible,
                 withdrawn = seeds(1),
+                withdrawnByName = user.fullName,
+                withdrawnByUserId = user.userId,
             ),
         )
 
@@ -179,6 +196,117 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val actual = store.fetchWithdrawals(accessionId)
 
     assertEquals(expected, actual.toSet())
+  }
+
+  @Test
+  fun `allows new withdrawals to be attributed to other organization users`() {
+    val otherUserId = UserId(20)
+    insertUser(otherUserId, firstName = "Other", lastName = "User")
+    insertOrganizationUser(otherUserId, organizationId)
+
+    val newWithdrawal =
+        WithdrawalModel(
+            date = LocalDate.now(),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            remaining = grams(10),
+            staffResponsible = "staff 1",
+            withdrawn = seeds(1),
+            withdrawnByUserId = otherUserId,
+        )
+
+    val expected =
+        setOf(
+            WithdrawalModel(
+                id = WithdrawalId(1),
+                accessionId = accessionId,
+                createdTime = clock.instant(),
+                date = newWithdrawal.date,
+                destination = newWithdrawal.destination,
+                notes = newWithdrawal.notes,
+                purpose = newWithdrawal.purpose,
+                remaining = grams(10),
+                staffResponsible = newWithdrawal.staffResponsible,
+                withdrawn = seeds(1),
+                withdrawnByName = "Other User",
+                withdrawnByUserId = otherUserId,
+            ),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    val actual = store.fetchWithdrawals(accessionId)
+
+    assertEquals(expected, actual.toSet())
+  }
+
+  @Test
+  fun `throws exception if user sets withdrawn by to another user and has no permission to read user`() {
+    val otherUserId = UserId(20)
+    insertUser(otherUserId)
+
+    every { user.canReadOrganizationUser(organizationId, otherUserId) } returns false
+
+    val newWithdrawal =
+        WithdrawalModel(
+            date = LocalDate.now(),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            remaining = grams(10),
+            staffResponsible = "staff 1",
+            withdrawn = seeds(1),
+            withdrawnByUserId = otherUserId,
+        )
+
+    assertThrows<UserNotFoundException> {
+      store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+    }
+  }
+
+  @Test
+  fun `ignores withdrawnByUserId on new withdrawal if user has no permission to set withdrawal users`() {
+    val otherUserId = UserId(20)
+    insertUser(otherUserId)
+
+    every { user.canSetWithdrawalUser(any()) } returns false
+
+    val newWithdrawal =
+        WithdrawalModel(
+            date = LocalDate.now(),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            remaining = grams(10),
+            staffResponsible = "staff 1",
+            withdrawn = seeds(1),
+            withdrawnByUserId = otherUserId,
+        )
+
+    val expected =
+        listOf(
+            WithdrawalModel(
+                accessionId = accessionId,
+                createdTime = clock.instant(),
+                date = LocalDate.now(),
+                destination = "dest 1",
+                id = WithdrawalId(1),
+                notes = "notes 1",
+                purpose = WithdrawalPurpose.Other,
+                remaining = grams(10),
+                staffResponsible = "staff 1",
+                withdrawn = seeds(1),
+                withdrawnByName = user.fullName,
+                withdrawnByUserId = user.userId,
+            ),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(newWithdrawal))
+
+    val actual = store.fetchWithdrawals(accessionId)
+
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -242,6 +370,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 remaining = grams(4),
                 staffResponsible = desired.staffResponsible,
                 withdrawn = seeds(1),
+                withdrawnByName = user.fullName,
+                withdrawnByUserId = user.userId,
             ),
         )
 
@@ -313,11 +443,69 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 remaining = grams(4),
                 staffResponsible = desired.staffResponsible,
                 withdrawn = grams(2),
+                withdrawnByName = user.fullName,
+                withdrawnByUserId = user.userId,
             ),
         )
 
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
     val afterInsert = store.fetchWithdrawals(accessionId)
+
+    store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
+
+    val actual = store.fetchWithdrawals(accessionId)
+
+    assertEquals(expected, actual.toSet())
+  }
+
+  @Test
+  fun `update ignores withdrawnByUserId if user has no permission to set withdrawal users`() {
+    val otherUserId = UserId(20)
+    insertUser(otherUserId, firstName = "Other", lastName = "User")
+
+    val initial =
+        WithdrawalModel(
+            date = LocalDate.now(),
+            destination = "dest 1",
+            notes = "notes 1",
+            purpose = WithdrawalPurpose.Other,
+            remaining = grams(4),
+            staffResponsible = "staff 1",
+            withdrawn = grams(1),
+            withdrawnByUserId = otherUserId,
+        )
+    val desired =
+        initial.copy(
+            id = WithdrawalId(1),
+            destination = "updated dest",
+            notes = "updated notes",
+            purpose = null,
+            withdrawn = grams(2),
+            withdrawnByUserId = user.userId,
+        )
+
+    val expected =
+        setOf(
+            WithdrawalModel(
+                id = WithdrawalId(1),
+                accessionId = accessionId,
+                createdTime = clock.instant(),
+                date = desired.date,
+                destination = desired.destination,
+                notes = desired.notes,
+                purpose = desired.purpose,
+                remaining = grams(4),
+                staffResponsible = desired.staffResponsible,
+                withdrawn = grams(2),
+                withdrawnByName = "Other User",
+                withdrawnByUserId = otherUserId,
+            ),
+        )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+
+    every { user.canSetWithdrawalUser(accessionId) } returns false
 
     store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
 

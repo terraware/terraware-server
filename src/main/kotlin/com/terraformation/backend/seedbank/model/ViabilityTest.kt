@@ -1,6 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestResultId
 import com.terraformation.backend.db.ViabilityTestSeedType
@@ -32,6 +33,8 @@ data class ViabilityTestModel(
     val staffResponsible: String? = null,
     val testResults: Collection<ViabilityTestResultModel>? = null,
     val remaining: SeedQuantityModel? = null,
+    val withdrawnByUserId: UserId? = null,
+    val withdrawnByName: String? = null,
 ) {
   fun validateV2() {
     val isLab = testType == ViabilityTestType.Lab
@@ -97,7 +100,8 @@ data class ViabilityTestModel(
         testType == other.testType &&
         totalPercentGerminated == other.totalPercentGerminated &&
         totalSeedsGerminated == other.totalSeedsGerminated &&
-        treatment == other.treatment
+        treatment == other.treatment &&
+        withdrawnByUserId == other.withdrawnByUserId
   }
 
   fun calculateLatestRecordingDate(): LocalDate? {

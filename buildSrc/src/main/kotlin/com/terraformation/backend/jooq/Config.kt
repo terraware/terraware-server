@@ -109,11 +109,13 @@ val ID_WRAPPERS =
             "UserId",
             listOf(
                 "users\\.id",
+                "withdrawals\\.withdrawn_by",
                 ".*\\.user_id",
                 ".*\\.created_by",
                 ".*\\.deleted_by",
                 ".*\\.modified_by",
-                ".*\\.updated_by")),
+                ".*\\.updated_by",
+            )),
         IdWrapper(
             "ViabilityTestId",
             listOf(

@@ -1,12 +1,15 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
+import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel
@@ -24,8 +27,17 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
     val viabilityTestResultsMultiset = viabilityTestResultsMultiset()
 
     return dslContext
-        .select(VIABILITY_TESTS.asterisk(), viabilityTestResultsMultiset)
+        .select(
+            VIABILITY_TESTS.asterisk(),
+            USERS.ID,
+            USERS.FIRST_NAME,
+            USERS.LAST_NAME,
+            viabilityTestResultsMultiset)
         .from(VIABILITY_TESTS)
+        .leftJoin(WITHDRAWALS)
+        .on(VIABILITY_TESTS.ID.eq(WITHDRAWALS.VIABILITY_TEST_ID))
+        .leftJoin(USERS)
+        .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
         .where(VIABILITY_TESTS.ID.eq(viabilityTestId))
         .fetchOne { record -> convertToModel(record, viabilityTestResultsMultiset) }
         ?: throw ViabilityTestNotFoundException(viabilityTestId)
@@ -37,8 +49,17 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
     val viabilityTestResultsMultiset = viabilityTestResultsMultiset()
 
     return dslContext
-        .select(VIABILITY_TESTS.asterisk(), viabilityTestResultsMultiset)
+        .select(
+            VIABILITY_TESTS.asterisk(),
+            USERS.ID,
+            USERS.FIRST_NAME,
+            USERS.LAST_NAME,
+            viabilityTestResultsMultiset)
         .from(VIABILITY_TESTS)
+        .leftJoin(WITHDRAWALS)
+        .on(VIABILITY_TESTS.ID.eq(WITHDRAWALS.VIABILITY_TEST_ID))
+        .leftJoin(USERS)
+        .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
         .where(VIABILITY_TESTS.ACCESSION_ID.eq(accessionId))
         .orderBy(VIABILITY_TESTS.ID)
         .fetch { record -> convertToModel(record, viabilityTestResultsMultiset) }
@@ -51,8 +72,17 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
 
     return with(VIABILITY_TESTS) {
       DSL.multiset(
-              DSL.select(VIABILITY_TESTS.asterisk(), viabilityTestResultsMultiset)
+              DSL.select(
+                      VIABILITY_TESTS.asterisk(),
+                      USERS.ID,
+                      USERS.FIRST_NAME,
+                      USERS.LAST_NAME,
+                      viabilityTestResultsMultiset)
                   .from(VIABILITY_TESTS)
+                  .leftJoin(WITHDRAWALS)
+                  .on(VIABILITY_TESTS.ID.eq(WITHDRAWALS.VIABILITY_TEST_ID))
+                  .leftJoin(USERS)
+                  .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
                   .where(ACCESSION_ID.eq(idField))
                   .orderBy(ID))
           .convertFrom { result ->
@@ -82,6 +112,8 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
           record[STAFF_RESPONSIBLE],
           record[viabilityTestResultsMultiset]?.ifEmpty { null },
           SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
+          record[USERS.ID],
+          IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
       )
     }
   }
