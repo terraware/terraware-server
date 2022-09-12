@@ -4,6 +4,18 @@
       <sequence increment="1" name="accession_number_seq" startValue="1"/>
    </sequences>
    <tables>
+      <table name="app_versions" numRows="2" remarks="Minimum and recommended versions for Terraware mobile apps." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="platform" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="minimum_version" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="recommended_version" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="app_name" sequenceNumberInPK="1"/>
+         <primaryKey column="platform" sequenceNumberInPK="2"/>
+         <index name="app_versions_pkey" unique="true">
+            <column ascending="true" name="app_name"/>
+            <column ascending="true" name="platform"/>
+         </index>
+      </table>
       <table name="countries" numRows="249" remarks="Country information per ISO-3166." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code." size="2147483647" type="text" typeCode="12">
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>

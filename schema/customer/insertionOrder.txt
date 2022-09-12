@@ -18,3 +18,4 @@ upload_problems
 user_preferences
 notifications
 organization_users
+app_versions

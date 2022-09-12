@@ -240,6 +240,18 @@
          <checkConstraint constraint="(((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL)))" name="subset_weight_units_must_not_be_seeds"/>
          <checkConstraint constraint="((((total_quantity IS NOT NULL) AND (total_units_id IS NOT NULL)) OR ((total_quantity IS NULL) AND (total_units_id IS NULL))))" name="total_quantity_must_have_units"/>
       </table>
+      <table name="app_versions" numRows="2" remarks="Minimum and recommended versions for Terraware mobile apps." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="platform" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="minimum_version" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="recommended_version" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="app_name" sequenceNumberInPK="1"/>
+         <primaryKey column="platform" sequenceNumberInPK="2"/>
+         <index name="app_versions_pkey" unique="true">
+            <column ascending="true" name="app_name"/>
+            <column ascending="true" name="platform"/>
+         </index>
+      </table>
       <table name="automations" numRows="0" remarks="Configuration of automatic processes run by the device manager." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">

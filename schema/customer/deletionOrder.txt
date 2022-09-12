@@ -1,3 +1,4 @@
+app_versions
 organization_users
 notifications
 user_preferences

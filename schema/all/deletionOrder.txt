@@ -1,5 +1,6 @@
 test_clock
 task_processed_times
+app_versions
 withdrawals
 organization_users
 automations

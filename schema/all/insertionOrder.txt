@@ -59,5 +59,6 @@ accession_state_history
 automations
 organization_users
 withdrawals
+app_versions
 task_processed_times
 test_clock
