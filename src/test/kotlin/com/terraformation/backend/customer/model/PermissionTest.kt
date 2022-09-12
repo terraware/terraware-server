@@ -601,6 +601,7 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
+        updateAppVersions = true,
         updateDeviceTemplates = true,
     )
   }
@@ -914,6 +915,7 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
+        updateAppVersions: Boolean = false,
         updateDeviceTemplates: Boolean = false,
     ) {
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
@@ -926,6 +928,7 @@ internal class PermissionTest : DatabaseTest() {
           user.canRegenerateAllDeviceManagerTokens(),
           "Can regenerate all device manager tokens")
       assertEquals(setTestClock, user.canSetTestClock(), "Can set test clock")
+      assertEquals(updateAppVersions, user.canUpdateAppVersions(), "Can update app versions")
       assertEquals(
           updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
 

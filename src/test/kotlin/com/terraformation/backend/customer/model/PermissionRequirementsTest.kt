@@ -485,6 +485,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun updateAppVersions() {
+    assertThrows<AccessDeniedException> { requirements.updateAppVersions() }
+
+    grant { user.canUpdateAppVersions() }
+    requirements.updateAppVersions()
+  }
+
+  @Test
   fun updateAutomation() {
     assertThrows<AutomationNotFoundException> { requirements.updateAutomation(automationId) }
 

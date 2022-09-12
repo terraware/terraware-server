@@ -326,6 +326,10 @@ data class IndividualUser(
     return canReadAccession(accessionId)
   }
 
+  override fun canUpdateAppVersions(): Boolean {
+    return userType == UserType.SuperAdmin
+  }
+
   override fun canUpdateAutomation(automationId: AutomationId): Boolean {
     val facilityId = parentStore.getFacilityId(automationId) ?: return false
     return canUpdateFacility(facilityId)

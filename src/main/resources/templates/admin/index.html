@@ -40,6 +40,14 @@
     <a th:href="|${prefix}/deviceTemplates|">Device Templates</a>
 </p>
 
+<div th:if="${canUpdateAppVersions}">
+    <h2>App Versions</h2>
+
+    <p>
+        <a th:href="|${prefix}/appVersions|">Update app versions</a>
+    </p>
+</div>
+
 <div th:if="${canSetTestClock}">
     <h2>Test utilities</h2>
 

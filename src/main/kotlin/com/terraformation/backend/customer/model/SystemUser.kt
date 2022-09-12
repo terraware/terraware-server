@@ -142,6 +142,7 @@ class SystemUser(
   override fun canSetTestClock(): Boolean = true
   override fun canTriggerAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateAccession(accessionId: AccessionId): Boolean = true
+  override fun canUpdateAppVersions(): Boolean = true
   override fun canUpdateAutomation(automationId: AutomationId): Boolean = true
   override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true

@@ -67,6 +67,9 @@ class SecurityConfig(private val userStore: UserStore) : KeycloakWebSecurityConf
         // Allow unauthenticated users to fetch the endpoint that redirects them to the login page.
         authorize("/api/v1/login", permitAll)
 
+        // Allow unauthenticated users to check their app versions for compatibility.
+        authorize("/api/v1/versions", permitAll)
+
         authorize("/api/**", fullyAuthenticated)
         authorize("/admin/**", fullyAuthenticated)
       }
