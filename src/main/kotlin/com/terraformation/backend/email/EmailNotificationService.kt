@@ -153,7 +153,9 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: AccessionDryingEndEvent) {
-    val organizationId = parentStore.getOrganizationId(event.accessionId)
+    val organizationId =
+        parentStore.getOrganizationId(event.accessionId)
+            ?: throw AccessionNotFoundException(event.accessionId)
     val facilityName = parentStore.getFacilityName(event.accessionId)
     val accessionUrl = webAppUrls.fullAccession(event.accessionId, organizationId).toString()
     getRecipients(event.accessionId).forEach { user ->

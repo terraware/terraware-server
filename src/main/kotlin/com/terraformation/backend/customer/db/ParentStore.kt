@@ -24,6 +24,7 @@ import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.tables.references.FACILITIES
 import com.terraformation.backend.db.tables.references.NOTIFICATIONS
+import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
 import com.terraformation.backend.db.tables.references.UPLOADS
@@ -80,9 +81,8 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
 
-  fun getOrganizationId(accessionId: AccessionId): OrganizationId {
-    return getFacilityId(accessionId)?.let { getOrganizationId(it) }
-        ?: throw AccessionNotFoundException(accessionId)
+  fun getOrganizationId(accessionId: AccessionId): OrganizationId? {
+    return fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.facilities().ORGANIZATION_ID)
   }
 
   fun getFacilityConnectionState(deviceId: DeviceId): FacilityConnectionState {
@@ -104,6 +104,15 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
+
+  fun exists(organizationId: OrganizationId, userId: UserId): Boolean =
+      dslContext
+          .selectOne()
+          .from(ORGANIZATION_USERS)
+          .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+          .and(ORGANIZATION_USERS.USER_ID.eq(userId))
+          .fetch()
+          .isNotEmpty
 
   /**
    * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
