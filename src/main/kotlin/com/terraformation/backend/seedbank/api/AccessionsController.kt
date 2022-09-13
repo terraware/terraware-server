@@ -676,16 +676,16 @@ data class ViabilityTestPayload(
 
   fun toModel() =
       ViabilityTestModel(
-          testResults = testResults?.map { it.toModel() },
-          id = id,
           endDate = endDate,
+          id = id,
           notes = notes,
+          remaining = remainingQuantity?.toModel(),
           seedsTested = seedsSown,
           seedType = seedType,
           staffResponsible = staffResponsible,
           startDate = startDate,
           substrate = substrate?.v2Type,
-          remaining = remainingQuantity?.toModel(),
+          testResults = testResults?.map { it.toModel() },
           testType = testType.v2Type,
           treatment = treatment?.v2Type,
       )
@@ -700,7 +700,7 @@ data class ViabilityTestResultPayload(
 ) {
   constructor(model: ViabilityTestResultModel) : this(model.recordingDate, model.seedsGerminated)
 
-  fun toModel() = ViabilityTestResultModel(null, null, recordingDate, seedsGerminated)
+  fun toModel() = ViabilityTestResultModel(null, recordingDate, seedsGerminated, null)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -772,12 +772,12 @@ data class WithdrawalPayload(
       WithdrawalModel(
           date = date,
           destination = destination,
-          viabilityTestId = viabilityTestId,
           id = id,
           notes = notes,
           purpose = purpose,
           remaining = remainingQuantity?.toModel(),
           staffResponsible = staffResponsible,
+          viabilityTestId = viabilityTestId,
           withdrawn = withdrawnQuantity?.toModel(),
       )
 }

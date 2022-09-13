@@ -124,28 +124,28 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val expected =
         setOf(
             WithdrawalModel(
-                id = WithdrawalId(1),
                 accessionId = accessionId,
                 createdTime = Instant.EPOCH,
                 date = pojos[0].date!!,
+                destination = pojos[0].destination,
+                id = WithdrawalId(1),
                 notes = pojos[0].notes,
                 purpose = pojos[0].purposeId,
                 remaining = milligrams(100),
-                destination = pojos[0].destination,
                 staffResponsible = pojos[0].staffResponsible,
                 withdrawn = milligrams(10000),
                 withdrawnByName = user.fullName,
                 withdrawnByUserId = user.userId,
             ),
             WithdrawalModel(
-                id = WithdrawalId(2),
                 accessionId = accessionId,
                 createdTime = Instant.ofEpochSecond(30),
                 date = pojos[1].date!!,
+                destination = pojos[1].destination,
+                id = WithdrawalId(2),
                 notes = pojos[1].notes,
                 purpose = pojos[1].purposeId,
                 remaining = milligrams(15000),
-                destination = pojos[1].destination,
                 staffResponsible = pojos[1].staffResponsible,
                 withdrawn = seeds(2),
                 withdrawnByName = "Other User",
@@ -176,11 +176,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val expected =
         setOf(
             WithdrawalModel(
-                id = WithdrawalId(1),
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
+                id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
                 remaining = grams(10),
@@ -219,11 +219,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val expected =
         setOf(
             WithdrawalModel(
-                id = WithdrawalId(1),
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
+                id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
                 remaining = grams(10),
@@ -328,9 +328,9 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val desired =
         WithdrawalModel(
             date = LocalDate.now(),
-            viabilityTestId = viabilityTestId,
             purpose = WithdrawalPurpose.Other,
             remaining = grams(4),
+            viabilityTestId = viabilityTestId,
             withdrawn = grams(1))
 
     assertThrows<IllegalArgumentException> {
@@ -351,24 +351,24 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val desired =
         WithdrawalModel(
             date = LocalDate.now(),
-            viabilityTestId = viabilityTestId,
             purpose = WithdrawalPurpose.ViabilityTesting,
             remaining = grams(4),
+            viabilityTestId = viabilityTestId,
             withdrawn = seeds(1))
 
     val expected =
         setOf(
             WithdrawalModel(
-                id = WithdrawalId(1),
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
-                viabilityTestId = viabilityTestId,
+                id = WithdrawalId(1),
                 notes = desired.notes,
                 purpose = desired.purpose,
                 remaining = grams(4),
                 staffResponsible = desired.staffResponsible,
+                viabilityTestId = viabilityTestId,
                 withdrawn = seeds(1),
                 withdrawnByName = user.fullName,
                 withdrawnByUserId = user.userId,
@@ -395,9 +395,9 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         WithdrawalModel(
             date = LocalDate.now(),
-            viabilityTestId = viabilityTestId,
             purpose = WithdrawalPurpose.ViabilityTesting,
             remaining = grams(4),
+            viabilityTestId = viabilityTestId,
             withdrawn = seeds(1))
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
     val inserted = store.fetchWithdrawals(accessionId).first()
@@ -433,11 +433,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val expected =
         setOf(
             WithdrawalModel(
-                id = WithdrawalId(1),
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
+                id = WithdrawalId(1),
                 notes = desired.notes,
                 purpose = desired.purpose,
                 remaining = grams(4),
@@ -487,11 +487,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     val expected =
         setOf(
             WithdrawalModel(
-                id = WithdrawalId(1),
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
+                id = WithdrawalId(1),
                 notes = desired.notes,
                 purpose = desired.purpose,
                 remaining = grams(4),
