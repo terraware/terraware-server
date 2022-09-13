@@ -131,7 +131,7 @@ data class GetWithdrawalPayload(
     @Schema(
         description =
             "Quantity of seeds withdrawn. For viability testing withdrawals, this is always the " +
-                "same as the test's \"seedsSown\" value.")
+                "same as the test's \"seedsTested\" value.")
     val withdrawnQuantity: SeedQuantityPayload? = null,
 ) {
   constructor(
@@ -196,7 +196,7 @@ data class UpdateWithdrawalRequestPayload(
     @Schema(
         description =
             "Quantity of seeds withdrawn. For viability testing withdrawals, this is always " +
-                "the same as the test's \"seedsSown\" value. Otherwise, it is a user-supplied " +
+                "the same as the test's \"seedsTested\" value. Otherwise, it is a user-supplied " +
                 "value. If this quantity is in weight and the remaining quantity of the " +
                 "accession is in seeds or vice versa, the accession must have a subset weight " +
                 "and count.")

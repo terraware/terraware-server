@@ -482,7 +482,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         treatment = ViabilityTestTreatment.Scarify,
                         substrate = ViabilityTestSubstrate.Paper,
                         notes = "notes",
-                        seedsSown = 5)))
+                        seedsTested = 5)))
     store.update(desired)
 
     val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
@@ -576,7 +576,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         treatment = ViabilityTestTreatment.Scarify,
                         substrate = ViabilityTestSubstrate.Paper,
                         notes = "notes",
-                        seedsSown = 5)))
+                        seedsTested = 5)))
 
     assertThrows<IllegalArgumentException> { store.update(desired) }
   }
@@ -597,7 +597,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                     ViabilityTestModel(
                         id = initial.viabilityTests[0].id,
                         testType = ViabilityTestType.Lab,
-                        seedsSown = 200,
+                        seedsTested = 200,
                         testResults =
                             listOf(
                                 ViabilityTestResultModel(
@@ -851,12 +851,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initialWithdrawal = initial.withdrawals[0]
 
     val modifiedStartDate = initialTest.startDate!!.plusDays(10)
-    val modifiedTest = initialTest.copy(startDate = modifiedStartDate, seedsSown = 6)
+    val modifiedTest = initialTest.copy(startDate = modifiedStartDate, seedsTested = 6)
     val modifiedWithdrawal =
         initialWithdrawal.copy(
             date = modifiedTest.startDate!!,
             estimatedCount = 6,
-            withdrawn = seeds(modifiedTest.seedsSown!!),
+            withdrawn = seeds(modifiedTest.seedsTested!!),
             remaining = seeds(4))
 
     val afterTestModified =
@@ -2338,7 +2338,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                           ViabilityTestModel(
                               testType = ViabilityTestType.Lab,
                               startDate = LocalDate.ofInstant(secondWithdrawalTime, ZoneOffset.UTC),
-                              seedsSown = 29,
+                              seedsTested = 29,
                               withdrawnByUserId = viabilityTesterUserId))))
 
       every { clock.instant() } returns backdatedWithdrawalTime

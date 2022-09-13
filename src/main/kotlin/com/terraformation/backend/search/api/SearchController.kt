@@ -138,7 +138,7 @@ data class SearchRequestPayload(
         description =
             "List of fields to return. Field names should be relative to the prefix. They may " +
                 "navigate the data hierarchy using '.' or '_' as delimiters.",
-        example = """["processingStartDate","germinationTests.seedsSown","facility_name"]""")
+        example = """["processingStartDate","viabilityTests.seedsTested","facility_name"]""")
     override val fields: List<String>,
     @Schema(
         description =

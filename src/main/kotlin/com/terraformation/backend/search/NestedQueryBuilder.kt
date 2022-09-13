@@ -498,7 +498,7 @@ class NestedQueryBuilder(
     private val dslContext: DSLContext,
     /**
      * Field path covered by this node. For example, the node that contains the field
-     * `viabilityTests.viabilityTestResults.seedsSown` would have a prefix of
+     * `viabilityTests.viabilityTestResults.seedsTested` would have a prefix of
      * `viabilityTests.viabilityTestResults`. Must be an absolute path.
      */
     private val prefix: SearchFieldPrefix,
