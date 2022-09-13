@@ -153,6 +153,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadOrganizationUser(organizationId, any()) } returns true
+    every { user.canReadSpecies(any()) } returns true
     every { user.canSetWithdrawalUser(any()) } returns true
     every { user.canUpdateAccession(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
@@ -278,6 +279,45 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           AccessionModel(
               facilityId = facilityId, isManualState = true, state = AccessionState.Dried))
     }
+  }
+
+  @Test
+  fun `create without isManualState uses caller-supplied species name`() {
+    val oldSpeciesId = SpeciesId(1)
+    val newSpeciesId = SpeciesId(2)
+    val oldSpeciesName = "Old species"
+    val newSpeciesName = "New species"
+    insertSpecies(oldSpeciesId, oldSpeciesName)
+    insertSpecies(newSpeciesId, newSpeciesName)
+
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId, species = newSpeciesName, speciesId = oldSpeciesId))
+
+    assertEquals(newSpeciesId, initial.speciesId, "Species ID")
+    assertEquals(newSpeciesName, initial.species, "Species name")
+  }
+
+  @Test
+  fun `create with isManualState uses caller-supplied species ID`() {
+    val oldSpeciesId = SpeciesId(1)
+    val newSpeciesId = SpeciesId(2)
+    val oldSpeciesName = "Old species"
+    val newSpeciesName = "New species"
+    insertSpecies(oldSpeciesId, oldSpeciesName)
+    insertSpecies(newSpeciesId, newSpeciesName)
+
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId,
+                isManualState = true,
+                species = oldSpeciesName,
+                speciesId = newSpeciesId))
+
+    assertEquals(newSpeciesId, initial.speciesId, "Species ID")
+    assertEquals(newSpeciesName, initial.species, "Species name")
   }
 
   @Test
@@ -1486,6 +1526,40 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             AccessionCollectorsRow(stored.id, 2, "second2")),
         accessionCollectorsDao.findAll().sortedBy { it.position },
         "Collectors are stored")
+  }
+
+  @Test
+  fun `update without isManualState uses caller-supplied species name`() {
+    val oldSpeciesId = SpeciesId(1)
+    val newSpeciesId = SpeciesId(2)
+    val oldSpeciesName = "Old species"
+    val newSpeciesName = "New species"
+    insertSpecies(oldSpeciesId, oldSpeciesName)
+    insertSpecies(newSpeciesId, newSpeciesName)
+
+    val initial = store.create(AccessionModel(facilityId = facilityId, species = oldSpeciesName))
+    val updated =
+        store.updateAndFetch(initial.copy(species = newSpeciesName, speciesId = oldSpeciesId))
+
+    assertEquals(newSpeciesId, updated.speciesId, "Species ID")
+    assertEquals(newSpeciesName, updated.species, "Species scientific name")
+  }
+
+  @Test
+  fun `update with isManualState uses caller-supplied species ID`() {
+    val oldSpeciesId = SpeciesId(1)
+    val newSpeciesId = SpeciesId(2)
+    insertSpecies(oldSpeciesId, "Old species")
+    insertSpecies(newSpeciesId, "New species")
+
+    val initial =
+        store.create(
+            AccessionModel(facilityId = facilityId, isManualState = true, speciesId = oldSpeciesId))
+    val updated =
+        store.updateAndFetch(initial.copy(species = "Implicit species", speciesId = newSpeciesId))
+
+    assertEquals(newSpeciesId, updated.speciesId, "Species ID")
+    assertEquals("New species", updated.species, "Species scientific name")
   }
 
   @Test

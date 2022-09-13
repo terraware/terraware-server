@@ -211,7 +211,10 @@ class AccessionStore(
           null
         }
 
-    requirePermissions { createAccession(facilityId) }
+    requirePermissions {
+      createAccession(facilityId)
+      accession.speciesId?.let { readSpecies(it) }
+    }
 
     var attemptsRemaining = ACCESSION_NUMBER_RETRIES
 
@@ -222,7 +225,11 @@ class AccessionStore(
         val accessionId =
             dslContext.transactionResult { _ ->
               val speciesId =
-                  accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
+                  if (accession.isManualState) {
+                    accession.speciesId
+                  } else {
+                    accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
+                  }
 
               val accessionId =
                   with(ACCESSIONS) {
@@ -331,7 +338,10 @@ class AccessionStore(
       throw FacilityNotFoundException(facilityId)
     }
 
-    requirePermissions { updateAccession(accessionId) }
+    requirePermissions {
+      updateAccession(accessionId)
+      updated.speciesId?.let { readSpecies(it) }
+    }
 
     // The checked-in time is needed as an input for non-manual state calculations, but can't be
     // directly set on update. For manual states, a transition out of Awaiting Check-In should
@@ -390,7 +400,11 @@ class AccessionStore(
       insertStateHistory(existing, accession)
 
       val speciesId =
-          accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
+          if (accession.isManualState) {
+            accession.speciesId
+          } else {
+            accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
+          }
 
       val rowsUpdated =
           with(ACCESSIONS) {
