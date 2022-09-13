@@ -462,6 +462,40 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="created_by">created_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="withdrawn_by">withdrawn_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -533,12 +567,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_viability_testing_has_test_id</td>
-                                    <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>estimated_weight_must_have_units</td>
                                     <td>((((estimated_weight_quantity IS NOT NULL) AND (estimated_weight_units_id IS NOT NULL)) OR ((estimated_weight_quantity IS NULL) AND (estimated_weight_units_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_viability_testing_has_test_id</td>
+                                    <td>((((purpose_id &lt;&gt; 7) AND (viability_test_id IS NULL)) OR ((purpose_id = 7) AND (viability_test_id IS NOT NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -566,7 +600,7 @@
 <area shape="rect" id="node1" href="../../tables/accessions.html" target="_top" title="accessions" alt="" coords="288,5,617,621">
 <area shape="rect" id="node2" href="../../tables/seed_quantity_units.html" target="_top" title="seed_quantity_units" alt="" coords="5,504,244,621">
 <area shape="rect" id="node3" href="../../tables/viability_tests.html" target="_top" title="viability_tests" alt="" coords="661,364,916,657">
-<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="960,157,1368,784">
+<area shape="rect" id="node4" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="960,157,1368,843">
 <area shape="rect" id="node5" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="664,229,913,347">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawals.1degree.svg" class="diagram" border="0" align="left"></object></a>
@@ -596,7 +630,7 @@
 <area shape="rect" id="node21" href="../../tables/viability_test_substrates.html" target="_top" title="viability_test_substrates" alt="" coords="590,988,862,1076">
 <area shape="rect" id="node22" href="../../tables/viability_test_types.html" target="_top" title="viability_test_types" alt="" coords="609,777,843,865">
 <area shape="rect" id="node23" href="../../tables/viability_test_treatments.html" target="_top" title="viability_test_treatments" alt="" coords="587,1093,865,1181">
-<area shape="rect" id="node24" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1269,664,1677,1291">
+<area shape="rect" id="node24" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="1269,664,1677,1349">
 <area shape="rect" id="node25" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="955,419,1205,536">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/withdrawals.2degrees.svg" class="diagram" border="0" align="left"></object></a>

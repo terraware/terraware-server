@@ -1124,6 +1124,8 @@
             <child column="modified_by" foreignKey="timeseries_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
             <child column="created_by" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="user_id" foreignKey="user_preferences_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_preferences"/>
+            <child column="created_by" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
+            <child column="withdrawn_by" foreignKey="withdrawals_withdrawn_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="true" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -1286,6 +1288,12 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="estimated_weight_quantity" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="estimated_weight_units_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="withdrawals_estimated_weight_units_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_quantity_units"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="created_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="withdrawn_by" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_withdrawn_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="withdrawal_pkey" unique="true">
