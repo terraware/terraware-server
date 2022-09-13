@@ -513,8 +513,19 @@ data class AccessionPayload(
       model.calculateTotalScheduledWithdrawalQuantity(clock)?.toPayload(),
       model.totalViabilityPercent,
       model.calculateTotalWithdrawalQuantity(clock)?.toPayload(),
-      model.viabilityTests.map { ViabilityTestPayload(it) }.orNull(),
-      model.withdrawals.map { WithdrawalPayload(it) }.orNull(),
+      model.viabilityTests
+          .filter { it.testType != ViabilityTestType.Cut }
+          .map { ViabilityTestPayload(it) }
+          .orNull(),
+      model.withdrawals
+          .filter { withdrawal ->
+            withdrawal.viabilityTestId == null ||
+                model.viabilityTests
+                    .firstOrNull { test -> test.id == withdrawal.viabilityTestId }
+                    ?.testType != ViabilityTestType.Cut
+          }
+          .map { WithdrawalPayload(it) }
+          .orNull(),
   )
 }
 

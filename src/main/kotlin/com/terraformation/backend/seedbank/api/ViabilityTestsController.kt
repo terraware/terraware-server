@@ -101,6 +101,9 @@ data class GetViabilityTestPayload(
     val endDate: LocalDate? = null,
     val id: ViabilityTestId,
     val notes: String? = null,
+    val seedsCompromised: Int? = null,
+    val seedsEmpty: Int? = null,
+    val seedsFilled: Int? = null,
     val seedsTested: Int? = null,
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
@@ -109,6 +112,11 @@ data class GetViabilityTestPayload(
     val testType: ViabilityTestType,
     val totalSeedsGerminated: Int? = null,
     val treatment: ViabilityTestTreatment? = null,
+    @Schema(
+        description =
+            "Server-calculated viability percent for this test. For lab and nursery tests, this " +
+                "is based on the total seeds germinated across all test results. For cut tests, " +
+                "it is based on the number of seeds filled.")
     val viabilityPercent: Int? = null,
     @Schema(description = "Full name of user who withdrew seeds to perform the test.")
     val withdrawnByName: String? = null,
@@ -122,6 +130,9 @@ data class GetViabilityTestPayload(
       endDate = model.endDate,
       id = model.id!!,
       notes = model.notes,
+      seedsCompromised = model.seedsCompromised,
+      seedsEmpty = model.seedsEmpty,
+      seedsFilled = model.seedsFilled,
       seedsTested = model.seedsTested,
       seedType = model.seedType,
       startDate = model.startDate,
@@ -178,6 +189,9 @@ data class CreateViabilityTestRequestPayload(
 data class UpdateViabilityTestRequestPayload(
     val endDate: LocalDate? = null,
     val notes: String? = null,
+    val seedsCompromised: Int? = null,
+    val seedsEmpty: Int? = null,
+    val seedsFilled: Int? = null,
     val seedsTested: Int? = null,
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
@@ -196,6 +210,9 @@ data class UpdateViabilityTestRequestPayload(
       model.copy(
           endDate = endDate,
           notes = notes,
+          seedsCompromised = seedsCompromised,
+          seedsEmpty = seedsEmpty,
+          seedsFilled = seedsFilled,
           seedsTested = seedsTested,
           seedType = seedType,
           startDate = startDate,
