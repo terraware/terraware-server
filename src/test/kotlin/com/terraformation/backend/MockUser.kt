@@ -16,6 +16,7 @@ fun mockUser(userId: UserId = UserId(2)): IndividualUser {
   every { user.authId } returns "$userId"
   every { user.firstName } returns "First"
   every { user.lastName } returns "Last"
+  every { user.fullName } returns "First Last"
   every { user.userType } returns UserType.Individual
 
   val funcSlot = CapturingSlot<() -> Any>()

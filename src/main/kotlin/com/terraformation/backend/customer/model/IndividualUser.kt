@@ -66,6 +66,23 @@ data class IndividualUser(
 ) : TerrawareUser, UserDetails {
   companion object {
     private val log = perClassLogger()
+
+    /**
+     * Constructs a user's full name, if available. Currently this is just the first and last name
+     * if both are set. Eventually this will need logic to deal with users in locales where names
+     * aren't rendered the same way they are in English.
+     *
+     * It's possible for users to not have first or last names, e.g., if they were created by being
+     * added to an organization and haven't gone through the registration flow yet; returns null in
+     * that case. If the user has only a first name or only a last name, returns whichever name
+     * exists.
+     */
+    fun makeFullName(firstName: String?, lastName: String?): String? =
+        if (firstName != null && lastName != null) {
+          "$firstName $lastName"
+        } else {
+          lastName ?: firstName
+        }
   }
 
   override val organizationRoles: Map<OrganizationId, Role> by lazy {
@@ -76,13 +93,8 @@ data class IndividualUser(
     permissionStore.fetchFacilityRoles(userId)
   }
 
-  /**
-   * The user's full name, if available. Currently this is just the first and last name if both are
-   * set. Eventually this will need logic to deal with users in locales where names aren't rendered
-   * the same way they are in English.
-   */
   val fullName: String?
-    get() = if (firstName != null && lastName != null) "$firstName $lastName" else null
+    get() = makeFullName(firstName, lastName)
 
   override fun <T> run(func: () -> T): T {
     return CurrentUserHolder.runAs(this, func, authorities)

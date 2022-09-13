@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -508,7 +509,7 @@ class AccessionStore(
               val oldState = record[ACCESSION_STATE_HISTORY.OLD_STATE_ID]
               val userId = record[ACCESSION_STATE_HISTORY.UPDATED_BY]!!
               val fullName =
-                  messages.userFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+                  IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
 
               if (oldState == null) {
                 AccessionHistoryModel(
