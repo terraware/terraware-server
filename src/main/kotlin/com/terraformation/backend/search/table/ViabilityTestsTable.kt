@@ -35,6 +35,7 @@ class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
           dateField("endDate", "Viability test end date", VIABILITY_TESTS.END_DATE),
           idWrapperField("id", "Viability test ID", VIABILITY_TESTS.ID) { ViabilityTestId(it) },
           textField("notes", "Notes (viability test)", VIABILITY_TESTS.NOTES),
+          // TODO: Remove this once clients are no longer using it (new name is viabilityPercent)
           integerField(
               "percentGerminated", "% Viability", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
           enumField("seedType", "Seed type", VIABILITY_TESTS.SEED_TYPE_ID),
@@ -45,6 +46,7 @@ class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
           enumField("substrate", "Germination substrate", VIABILITY_TESTS.SUBSTRATE_ID),
           enumField("treatment", "Germination treatment", VIABILITY_TESTS.TREATMENT_ID),
           enumField("type", "Viability test type", VIABILITY_TESTS.TEST_TYPE),
+          integerField("viabilityPercent", "Viability %", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
       )
 
   override val inheritsVisibilityFrom: SearchTable

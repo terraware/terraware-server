@@ -109,9 +109,9 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
           substrate = record[SUBSTRATE_ID],
           testResults = record[viabilityTestResultsMultiset]?.ifEmpty { null },
           testType = record[TEST_TYPE]!!,
-          totalPercentGerminated = record[TOTAL_PERCENT_GERMINATED],
           totalSeedsGerminated = record[TOTAL_SEEDS_GERMINATED],
           treatment = record[TREATMENT_ID],
+          viabilityPercent = record[TOTAL_PERCENT_GERMINATED],
           withdrawnByName =
               IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
           withdrawnByUserId = record[USERS.ID],
@@ -166,7 +166,7 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
               .set(START_DATE, calculatedTest.startDate)
               .set(SUBSTRATE_ID, calculatedTest.substrate)
               .set(TEST_TYPE, calculatedTest.testType)
-              .set(TOTAL_PERCENT_GERMINATED, calculatedTest.totalPercentGerminated)
+              .set(TOTAL_PERCENT_GERMINATED, calculatedTest.viabilityPercent)
               .set(TOTAL_SEEDS_GERMINATED, calculatedTest.totalSeedsGerminated)
               .set(TREATMENT_ID, calculatedTest.treatment)
               .returning(ID)
@@ -232,7 +232,7 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
                     .set(SUBSTRATE_ID, desiredTest.substrate)
                     .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)
                     .set(START_DATE, desiredTest.startDate)
-                    .set(TOTAL_PERCENT_GERMINATED, desiredTest.totalPercentGerminated)
+                    .set(TOTAL_PERCENT_GERMINATED, desiredTest.viabilityPercent)
                     .set(TOTAL_SEEDS_GERMINATED, desiredTest.totalSeedsGerminated)
                     .set(TREATMENT_ID, desiredTest.treatment)
                     .where(ID.eq(testId))

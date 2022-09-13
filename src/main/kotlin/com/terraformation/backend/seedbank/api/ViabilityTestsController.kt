@@ -105,11 +105,11 @@ data class GetViabilityTestPayload(
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
-    val treatment: ViabilityTestTreatment? = null,
     val testResults: List<ViabilityTestResultPayload>? = null,
     val testType: ViabilityTestType,
-    val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
+    val treatment: ViabilityTestTreatment? = null,
+    val viabilityPercent: Int? = null,
     @Schema(description = "Full name of user who withdrew seeds to perform the test.")
     val withdrawnByName: String? = null,
     @Schema(description = "ID of user who withdrew seeds to perform the test.")
@@ -128,9 +128,9 @@ data class GetViabilityTestPayload(
       substrate = model.substrate,
       testResults = model.testResults?.map { ViabilityTestResultPayload(it) },
       testType = model.testType,
-      totalPercentGerminated = model.totalPercentGerminated,
       totalSeedsGerminated = model.totalSeedsGerminated,
       treatment = model.treatment,
+      viabilityPercent = model.viabilityPercent,
       withdrawnByName = model.withdrawnByName,
       withdrawnByUserId = model.withdrawnByUserId,
   )
