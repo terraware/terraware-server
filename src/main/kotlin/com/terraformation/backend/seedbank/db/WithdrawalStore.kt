@@ -1,11 +1,16 @@
 package com.terraformation.backend.seedbank.db
 
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalNotFoundException
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.USERS
 import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
@@ -24,28 +29,43 @@ class WithdrawalStore(
     private val dslContext: DSLContext,
     private val clock: Clock,
     private val messages: Messages,
+    private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
 
   fun fetchOneById(withdrawalId: WithdrawalId): WithdrawalModel {
     val record =
-        dslContext.selectFrom(WITHDRAWALS).where(WITHDRAWALS.ID.eq(withdrawalId)).fetchOne()
+        dslContext
+            .select(WITHDRAWALS.asterisk(), USERS.FIRST_NAME, USERS.LAST_NAME)
+            .from(WITHDRAWALS)
+            .leftJoin(USERS)
+            .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
+            .where(WITHDRAWALS.ID.eq(withdrawalId))
+            .fetchOne()
             ?: throw WithdrawalNotFoundException(withdrawalId)
 
-    requirePermissions { readAccession(record.accessionId!!) }
+    requirePermissions { readAccession(record[WITHDRAWALS.ACCESSION_ID]!!) }
 
-    return WithdrawalModel(record)
+    return WithdrawalModel(
+        record, IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
   }
 
   fun fetchWithdrawals(accessionId: AccessionId): List<WithdrawalModel> {
     requirePermissions { readAccession(accessionId) }
 
     return dslContext
-        .selectFrom(WITHDRAWALS)
+        .select(WITHDRAWALS.asterisk(), USERS.FIRST_NAME, USERS.LAST_NAME)
+        .from(WITHDRAWALS)
+        .leftJoin(USERS)
+        .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
         .where(WITHDRAWALS.ACCESSION_ID.eq(accessionId))
         .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc())
         .fetch()
-        .map { WithdrawalModel(it) }
+        .map { record ->
+          WithdrawalModel(
+              record,
+              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+        }
   }
 
   fun fetchHistory(accessionId: AccessionId): List<AccessionHistoryModel> {
@@ -56,9 +76,15 @@ class WithdrawalStore(
               DATE,
               PURPOSE_ID,
               STAFF_RESPONSIBLE,
+              WITHDRAWN_BY,
               WITHDRAWN_QUANTITY,
-              WITHDRAWN_UNITS_ID)
+              WITHDRAWN_UNITS_ID,
+              USERS.FIRST_NAME,
+              USERS.LAST_NAME,
+          )
           .from(WITHDRAWALS)
+          .leftJoin(USERS)
+          .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
           .where(ACCESSION_ID.eq(accessionId))
           .fetch { record ->
             val quantity =
@@ -76,9 +102,11 @@ class WithdrawalStore(
                 createdTime = record[CREATED_TIME]!!,
                 date = record[DATE]!!,
                 description = description,
-                fullName = record[STAFF_RESPONSIBLE],
+                fullName =
+                    IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+                        ?: record[STAFF_RESPONSIBLE],
                 type = type,
-                userId = null,
+                userId = record[WITHDRAWN_BY],
             )
           }
     }
@@ -88,10 +116,19 @@ class WithdrawalStore(
       idField: Field<AccessionId?> = ACCESSIONS.ID
   ): Field<List<WithdrawalModel>> {
     return DSL.multiset(
-            DSL.selectFrom(WITHDRAWALS)
+            DSL.select(WITHDRAWALS.asterisk(), USERS.FIRST_NAME, USERS.LAST_NAME)
+                .from(WITHDRAWALS)
+                .leftJoin(USERS)
+                .on(WITHDRAWALS.WITHDRAWN_BY.eq(USERS.ID))
                 .where(WITHDRAWALS.ACCESSION_ID.eq(idField))
                 .orderBy(WITHDRAWALS.DATE.desc(), WITHDRAWALS.CREATED_TIME.desc()))
-        .convertFrom { result -> result.map { WithdrawalModel(it) } }
+        .convertFrom { result ->
+          result.map { record ->
+            WithdrawalModel(
+                record,
+                IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]))
+          }
+        }
   }
 
   fun updateWithdrawals(
@@ -107,6 +144,22 @@ class WithdrawalStore(
     val newWithdrawals = desiredWithdrawals?.filter { it.id == null } ?: emptyList()
     val idsToDelete = existingById.keys - desiredById.keys
     val idsToUpdate = existingById.keys.intersect(desiredById.keys)
+
+    val organizationId =
+        parentStore.getOrganizationId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+
+    // For any withdrawals where withdrawnByUserId is being changed, the current user must have
+    // permission to read the user in question in the organization.
+    desiredWithdrawals
+        .orEmpty()
+        .filter {
+          it.id == null ||
+              it.id !in existingById ||
+              it.withdrawnByUserId != existingById[it.id]?.withdrawnByUserId
+        }
+        .mapNotNull { it.withdrawnByUserId }
+        .distinct()
+        .forEach { userId -> requirePermissions { readOrganizationUser(organizationId, userId) } }
 
     idsToUpdate.forEach { id ->
       val existing = existingById[id]!!
@@ -137,10 +190,18 @@ class WithdrawalStore(
 
     with(WITHDRAWALS) {
       newWithdrawals.forEach { withdrawal ->
+        val withdrawnByUserId =
+            if (currentUser().canSetWithdrawalUser(accessionId)) {
+              withdrawal.withdrawnByUserId ?: currentUser().userId
+            } else {
+              currentUser().userId
+            }
+
         val newId =
             dslContext
                 .insertInto(WITHDRAWALS)
                 .set(ACCESSION_ID, accessionId)
+                .set(CREATED_BY, currentUser().userId)
                 .set(CREATED_TIME, clock.instant())
                 .set(DATE, withdrawal.date)
                 .set(DESTINATION, withdrawal.destination)
@@ -155,6 +216,7 @@ class WithdrawalStore(
                 .set(REMAINING_UNITS_ID, withdrawal.remaining?.units)
                 .set(STAFF_RESPONSIBLE, withdrawal.staffResponsible)
                 .set(UPDATED_TIME, clock.instant())
+                .set(WITHDRAWN_BY, withdrawnByUserId)
                 .set(WITHDRAWN_GRAMS, withdrawal.withdrawn?.grams)
                 .set(WITHDRAWN_QUANTITY, withdrawal.withdrawn?.quantity)
                 .set(WITHDRAWN_UNITS_ID, withdrawal.withdrawn?.units)
@@ -183,6 +245,13 @@ class WithdrawalStore(
         if (!existing.fieldsEqual(desired)) {
           log.debug("Updating withdrawal $withdrawalId for accession $accessionId")
 
+          val withdrawnByUserId =
+              if (currentUser().canSetWithdrawalUser(accessionId)) {
+                desired.withdrawnByUserId ?: existing.withdrawnByUserId
+              } else {
+                existing.withdrawnByUserId
+              }
+
           dslContext
               .update(WITHDRAWALS)
               .set(DATE, desired.date)
@@ -197,6 +266,7 @@ class WithdrawalStore(
               .set(REMAINING_UNITS_ID, desired.remaining?.units)
               .set(STAFF_RESPONSIBLE, desired.staffResponsible)
               .set(UPDATED_TIME, clock.instant())
+              .set(WITHDRAWN_BY, withdrawnByUserId)
               .set(WITHDRAWN_GRAMS, desired.withdrawn?.grams)
               .set(WITHDRAWN_QUANTITY, desired.withdrawn?.quantity)
               .set(WITHDRAWN_UNITS_ID, desired.withdrawn?.units)

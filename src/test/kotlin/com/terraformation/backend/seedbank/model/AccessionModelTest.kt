@@ -6,6 +6,7 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.ProcessingMethod
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestResultId
 import com.terraformation.backend.db.ViabilityTestSubstrate
@@ -102,6 +103,7 @@ internal class AccessionModelTest {
       testResults: List<ViabilityTestResultModel>? = null,
       remaining: SeedQuantityModel? = null,
       substrate: ViabilityTestSubstrate? = null,
+      withdrawnByUserId: UserId? = null,
   ): ViabilityTestModel {
     return ViabilityTestModel(
         accessionId = AccessionId(1),
@@ -112,6 +114,7 @@ internal class AccessionModelTest {
         substrate = substrate,
         testResults = testResults,
         testType = testType,
+        withdrawnByUserId = withdrawnByUserId,
     )
   }
 
@@ -149,6 +152,7 @@ internal class AccessionModelTest {
           if (withdrawn.units == SeedQuantityUnits.Seeds) seeds(10) else grams(10),
       createdTime: Instant = clock.instant(),
       id: WithdrawalId? = nextWithdrawalId(),
+      withdrawnByUserId: UserId? = null,
   ): WithdrawalModel {
     return WithdrawalModel(
         accessionId = AccessionId(1),
@@ -159,6 +163,7 @@ internal class AccessionModelTest {
         purpose = purpose,
         remaining = remaining,
         withdrawn = withdrawn,
+        withdrawnByUserId = withdrawnByUserId,
     )
   }
 
@@ -396,6 +401,70 @@ internal class AccessionModelTest {
                   clock)
 
       assertEquals(percent, model.totalViabilityPercent)
+    }
+
+    @Test
+    fun `viability test withdrawnByUserId is propagated to new withdrawals`() {
+      val withdrawnByUserId = UserId(1234)
+      val model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .addViabilityTest(
+                  viabilityTest(seedsSown = 1, withdrawnByUserId = withdrawnByUserId), clock)
+
+      assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
+    }
+
+    @Test
+    fun `viability test withdrawnByUserId change is propagated to existing withdrawals`() {
+      val oldWithdrawnByUserId = UserId(1234)
+      val newWithdrawnByUserId = UserId(5678)
+
+      val viabilityTest = viabilityTest(seedsSown = 1, withdrawnByUserId = oldWithdrawnByUserId)
+      val viabilityTestId = viabilityTest.id!!
+
+      val model =
+          accession()
+              .copy(
+                  isManualState = true,
+                  remaining = seeds(10),
+                  viabilityTests = listOf(viabilityTest),
+                  withdrawals =
+                      listOf(
+                          withdrawal(
+                              purpose = WithdrawalPurpose.ViabilityTesting,
+                              viabilityTestId = viabilityTestId)))
+              .withCalculatedValues(clock)
+              .updateViabilityTest(viabilityTestId, clock) {
+                it.copy(withdrawnByUserId = newWithdrawnByUserId)
+              }
+
+      assertEquals(newWithdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
+    }
+
+    @Test
+    fun `viability test update with null withdrawnByUserId does not change user ID of existing withdrawal`() {
+      val withdrawnByUserId = UserId(1234)
+
+      val viabilityTest = viabilityTest(seedsSown = 1, withdrawnByUserId = withdrawnByUserId)
+      val viabilityTestId = viabilityTest.id!!
+
+      val model =
+          accession()
+              .copy(
+                  isManualState = true,
+                  remaining = seeds(10),
+                  viabilityTests = listOf(viabilityTest),
+                  withdrawals =
+                      listOf(
+                          withdrawal(
+                              purpose = WithdrawalPurpose.ViabilityTesting,
+                              viabilityTestId = viabilityTestId)))
+              .withCalculatedValues(clock)
+              .updateViabilityTest(viabilityTestId, clock) { it.copy(withdrawnByUserId = null) }
+
+      assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
     }
   }
 

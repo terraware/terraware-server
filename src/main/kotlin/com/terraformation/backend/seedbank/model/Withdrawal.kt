@@ -2,14 +2,16 @@ package com.terraformation.backend.seedbank.model
 
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalPurpose
-import com.terraformation.backend.db.tables.records.WithdrawalsRecord
+import com.terraformation.backend.db.tables.references.WITHDRAWALS
 import com.terraformation.backend.util.compareNullsFirst
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import org.jooq.Record
 
 data class WithdrawalModel(
     val id: WithdrawalId? = null,
@@ -26,6 +28,8 @@ data class WithdrawalModel(
     val remaining: SeedQuantityModel? = null,
     /** The user-entered withdrawal quantity. */
     val withdrawn: SeedQuantityModel? = null,
+    val withdrawnByUserId: UserId? = null,
+    val withdrawnByName: String? = null,
     val viabilityTest: ViabilityTestModel? = null,
     /**
      * The server-calculated withdrawal weight based on the difference between [remaining] on this
@@ -34,21 +38,31 @@ data class WithdrawalModel(
     val weightDifference: SeedQuantityModel? = null,
 ) {
   constructor(
-      record: WithdrawalsRecord
+      record: Record,
+      fullName: String?,
   ) : this(
-      record.id,
-      record.accessionId,
-      record.createdTime,
-      record.date!!,
-      record.estimatedCount,
-      SeedQuantityModel.of(record.estimatedWeightQuantity, record.estimatedWeightUnitsId),
-      record.purposeId,
-      record.destination,
-      record.notes,
-      record.staffResponsible,
-      record.viabilityTestId,
-      SeedQuantityModel.of(record.remainingQuantity, record.remainingUnitsId),
-      SeedQuantityModel.of(record.withdrawnQuantity, record.withdrawnUnitsId),
+      accessionId = record[WITHDRAWALS.ACCESSION_ID],
+      createdTime = record[WITHDRAWALS.CREATED_TIME],
+      date = record[WITHDRAWALS.DATE]!!,
+      destination = record[WITHDRAWALS.DESTINATION],
+      estimatedCount = record[WITHDRAWALS.ESTIMATED_COUNT],
+      estimatedWeight =
+          SeedQuantityModel.of(
+              record[WITHDRAWALS.ESTIMATED_WEIGHT_QUANTITY],
+              record[WITHDRAWALS.ESTIMATED_WEIGHT_UNITS_ID]),
+      id = record[WITHDRAWALS.ID],
+      notes = record[WITHDRAWALS.NOTES],
+      purpose = record[WITHDRAWALS.PURPOSE_ID],
+      remaining =
+          SeedQuantityModel.of(
+              record[WITHDRAWALS.REMAINING_QUANTITY], record[WITHDRAWALS.REMAINING_UNITS_ID]),
+      staffResponsible = record[WITHDRAWALS.STAFF_RESPONSIBLE],
+      withdrawn =
+          SeedQuantityModel.of(
+              record[WITHDRAWALS.WITHDRAWN_QUANTITY], record[WITHDRAWALS.WITHDRAWN_UNITS_ID]),
+      withdrawnByName = fullName,
+      withdrawnByUserId = record[WITHDRAWALS.WITHDRAWN_BY],
+      viabilityTestId = record[WITHDRAWALS.VIABILITY_TEST_ID],
   )
 
   init {
@@ -85,7 +99,8 @@ data class WithdrawalModel(
         staffResponsible == other.staffResponsible &&
         remaining.equalsIgnoreScale(other.remaining) &&
         weightDifference.equalsIgnoreScale(other.weightDifference) &&
-        withdrawn.equalsIgnoreScale(other.withdrawn)
+        withdrawn.equalsIgnoreScale(other.withdrawn) &&
+        withdrawnByUserId == other.withdrawnByUserId
   }
 
   fun compareByTime(other: WithdrawalModel): Int {

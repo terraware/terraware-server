@@ -613,6 +613,7 @@ data class AccessionModel(
               viabilityTestId = test.id,
               weightDifference = existingWithdrawal?.weightDifference,
               withdrawn = withdrawn,
+              withdrawnByUserId = test.withdrawnByUserId ?: existingWithdrawal?.withdrawnByUserId,
           )
         }
 

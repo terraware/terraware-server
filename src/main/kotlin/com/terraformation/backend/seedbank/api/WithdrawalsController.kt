@@ -144,8 +144,8 @@ data class GetWithdrawalPayload(
       purpose = model.purpose,
       notes = model.notes,
       viabilityTestId = model.viabilityTestId,
-      withdrawnByName = model.staffResponsible,
-      withdrawnByUserId = null,
+      withdrawnByName = model.withdrawnByName,
+      withdrawnByUserId = model.withdrawnByUserId,
       withdrawnQuantity = model.withdrawn?.toPayload(),
   )
 }
@@ -159,12 +159,9 @@ data class CreateWithdrawalRequestPayload(
     val notes: String? = null,
     @Schema(
         description =
-            "ID of the user who withdrew the seeds. Default for new withdrawals is the current " +
-                "user; for existing withdrawals, default is the withdrawal's existing user ID. " +
-                "Ignored if the current user does not have permission to list organization " +
-                "users. " +
-                "V1 COMPATIBILITY: If this is null and the withdrawal doesn't have a user ID, " +
-                "the existing \"staffResponsible\" value will be preserved.")
+            "ID of the user who withdrew the seeds. Default is the current user's ID. If " +
+                "non-null, the current user must have permission to read the referenced user's " +
+                "membership details in the organization.")
     val withdrawnByUserId: UserId? = null,
     @Schema(
         description =
@@ -192,12 +189,9 @@ data class UpdateWithdrawalRequestPayload(
     val notes: String? = null,
     @Schema(
         description =
-            "ID of the user who withdrew the seeds. Default for new withdrawals is the current " +
-                "user; for existing withdrawals, default is the withdrawal's existing user ID. " +
-                "Ignored if the current user does not have permission to list organization " +
-                "users. " +
-                "V1 COMPATIBILITY: If this is null and the withdrawal doesn't have a user ID, " +
-                "the existing \"staffResponsible\" value will be preserved.")
+            "ID of the user who withdrew the seeds. Default is the withdrawal's existing user " +
+                "ID. If non-null, the current user must have permission to read the referenced " +
+                "user's membership details in the organization.")
     val withdrawnByUserId: UserId? = null,
     @Schema(
         description =
@@ -214,6 +208,7 @@ data class UpdateWithdrawalRequestPayload(
           purpose = purpose,
           notes = notes,
           withdrawn = withdrawnQuantity?.toModel(),
+          withdrawnByUserId = withdrawnByUserId ?: model.withdrawnByUserId,
       )
 }
 

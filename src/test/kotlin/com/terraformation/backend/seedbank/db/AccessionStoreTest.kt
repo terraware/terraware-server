@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
@@ -107,7 +107,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+  override val user: IndividualUser = mockUser()
 
   override val sequencesToReset: List<Sequence<Long>>
     get() = listOf(ACCESSION_NUMBER_SEQ)
@@ -152,6 +152,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAccession(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
+    every { user.canReadOrganizationUser(organizationId, any()) } returns true
+    every { user.canSetWithdrawalUser(any()) } returns true
     every { user.canUpdateAccession(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
 
@@ -165,7 +167,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             ViabilityTestStore(dslContext),
             parentStore,
             SpeciesService(dslContext, speciesChecker, speciesStore),
-            WithdrawalStore(dslContext, clock, messages),
+            WithdrawalStore(dslContext, clock, messages, parentStore),
             clock,
             messages,
         )
@@ -782,8 +784,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 estimatedCount = 5,
                 purpose = WithdrawalPurpose.ViabilityTesting,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
+                withdrawnByUserId = user.userId,
+                withdrawnByName = user.fullName,
                 viabilityTestId = test.id,
-                remaining = seeds(5))),
+                remaining = seeds(5),
+            )),
         accession.withdrawals)
   }
 
@@ -2258,10 +2263,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       val createUserId = UserId(20)
       val checkInUserId = UserId(30)
       val processUserId = UserId(40)
+      val firstWithdrawerUserId = UserId(50)
+      val viabilityTesterUserId = UserId(60)
 
       insertUser(createUserId, firstName = "First", lastName = "Last")
       insertUser(checkInUserId, firstName = null, lastName = null)
       insertUser(processUserId, firstName = "Bono", lastName = null)
+      insertUser(firstWithdrawerUserId, firstName = "First", lastName = "Withdrawer")
+      insertUser(viabilityTesterUserId, firstName = "Viability", lastName = "Tester")
 
       every { clock.instant() } returns createTime
       every { user.userId } returns createUserId
@@ -2292,9 +2301,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                           WithdrawalModel(
                               date = LocalDate.ofInstant(firstWithdrawalTime, ZoneOffset.UTC),
                               purpose = WithdrawalPurpose.Nursery,
-                              staffResponsible = "First Withdrawer",
                               withdrawn =
-                                  SeedQuantityModel.of(BigDecimal(1), SeedQuantityUnits.Seeds)))))
+                                  SeedQuantityModel.of(BigDecimal(1), SeedQuantityUnits.Seeds),
+                              withdrawnByUserId = firstWithdrawerUserId))))
 
       every { clock.instant() } returns secondWithdrawalTime
 
@@ -2307,7 +2316,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                               testType = ViabilityTestType.Lab,
                               startDate = LocalDate.ofInstant(secondWithdrawalTime, ZoneOffset.UTC),
                               seedsSown = 29,
-                              staffResponsible = "Viability Tester"))))
+                              withdrawnByUserId = viabilityTesterUserId))))
 
       every { clock.instant() } returns backdatedWithdrawalTime
 
@@ -2323,6 +2332,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                           staffResponsible = "Backdated Withdrawer",
                           withdrawn =
                               SeedQuantityModel.of(BigDecimal(70), SeedQuantityUnits.Seeds))))
+
+      // V1 COMPATIBILITY: Test the fallback to the staffResponsible field for withdrawals without
+      // user IDs.
+      withdrawalsDao.update(
+          withdrawalsDao
+              .fetchByStaffResponsible("Backdated Withdrawer")
+              .first()
+              .copy(withdrawnBy = null))
 
       val expected =
           listOf(
@@ -2340,7 +2357,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   description = "withdrew 29 seeds for viability testing",
                   fullName = "Viability Tester",
                   type = AccessionHistoryType.ViabilityTesting,
-                  userId = null,
+                  userId = viabilityTesterUserId,
               ),
               AccessionHistoryModel(
                   createdTime = backdatedWithdrawalTime,
@@ -2356,7 +2373,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   description = "withdrew 1 seed for nursery",
                   fullName = "First Withdrawer",
                   type = AccessionHistoryType.Withdrawal,
-                  userId = null,
+                  userId = firstWithdrawerUserId,
               ),
               AccessionHistoryModel(
                   createdTime = processTime,

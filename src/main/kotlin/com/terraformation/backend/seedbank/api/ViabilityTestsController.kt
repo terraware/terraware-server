@@ -15,6 +15,7 @@ import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.validation.Valid
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -105,12 +106,14 @@ data class GetViabilityTestPayload(
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
     val treatment: ViabilityTestTreatment? = null,
-    val testingStaffName: String? = null,
-    val testingStaffUserId: UserId? = null,
     val testResults: List<ViabilityTestResultPayload>? = null,
     val testType: ViabilityTestType,
     val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
+    @Schema(description = "Full name of user who withdrew seeds to perform the test.")
+    val withdrawnByName: String? = null,
+    @Schema(description = "ID of user who withdrew seeds to perform the test.")
+    val withdrawnByUserId: UserId? = null,
 ) {
   constructor(
       model: ViabilityTestModel
@@ -123,13 +126,13 @@ data class GetViabilityTestPayload(
       seedType = model.seedType,
       startDate = model.startDate,
       substrate = model.substrate,
-      testingStaffName = model.staffResponsible,
-      testingStaffUserId = null,
       testResults = model.testResults?.map { ViabilityTestResultPayload(it) },
       testType = model.testType,
       totalPercentGerminated = model.totalPercentGerminated,
       totalSeedsGerminated = model.totalSeedsGerminated,
       treatment = model.treatment,
+      withdrawnByName = model.withdrawnByName,
+      withdrawnByUserId = model.withdrawnByUserId,
   )
 }
 
@@ -143,9 +146,14 @@ data class CreateViabilityTestRequestPayload(
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
-    val testingStaffUserId: UserId? = null,
     val testType: ViabilityTestType,
     val treatment: ViabilityTestTreatment? = null,
+    @Schema(
+        description =
+            "ID of user who withdrew seeds to perform the test. Defaults to the current user. If " +
+                "non-null, the current user must have permission to see the referenced user's " +
+                "membership details in the organization.")
+    val withdrawnByUserId: UserId? = null,
 ) {
   fun toModel(accessionId: AccessionId) =
       ViabilityTestModel(
@@ -158,6 +166,7 @@ data class CreateViabilityTestRequestPayload(
           substrate = substrate,
           testType = testType,
           treatment = treatment,
+          withdrawnByUserId = withdrawnByUserId,
       )
 }
 
@@ -171,10 +180,15 @@ data class UpdateViabilityTestRequestPayload(
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
-    val testingStaffUserId: UserId? = null,
     @Valid val testResults: List<ViabilityTestResultPayload>? = null,
     val testType: ViabilityTestType,
     val treatment: ViabilityTestTreatment? = null,
+    @Schema(
+        description =
+            "ID of user who withdrew seeds to perform the test. If non-null, the current user " +
+                "must have permission to see the referenced user's membership details in the " +
+                "organization. If absent or null, the existing value is left unchanged.")
+    val withdrawnByUserId: UserId? = null,
 ) {
   fun applyToModel(model: ViabilityTestModel): ViabilityTestModel =
       model.copy(
@@ -187,6 +201,7 @@ data class UpdateViabilityTestRequestPayload(
           testResults = testResults?.map { it.toModel() },
           testType = testType,
           treatment = treatment,
+          withdrawnByUserId = withdrawnByUserId ?: model.withdrawnByUserId,
       )
 }
 
