@@ -110,7 +110,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     usersResource.create(userRepresentation)
 
-    organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
+    organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     parentStore = ParentStore(dslContext)
     permissionStore = PermissionStore(dslContext)
 

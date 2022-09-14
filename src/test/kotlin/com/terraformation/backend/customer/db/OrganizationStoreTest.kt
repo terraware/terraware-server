@@ -2,6 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
@@ -21,8 +22,11 @@ import com.terraformation.backend.db.tables.pojos.UserPreferencesRow
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
 import org.jooq.JSONB
@@ -33,6 +37,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
@@ -42,6 +47,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock: Clock = mockk()
   private lateinit var permissionStore: PermissionStore
+  private val publisher: ApplicationEventPublisher = mockk()
   private lateinit var store: OrganizationStore
 
   private val facilityModel =
@@ -69,7 +75,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     permissionStore = PermissionStore(dslContext)
-    store = OrganizationStore(clock, dslContext, organizationsDao)
+    store = OrganizationStore(clock, dslContext, organizationsDao, publisher)
 
     every { clock.instant() } returns Instant.EPOCH
 
@@ -437,13 +443,25 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `removeUser does not allow removing the only owner`() {
+  fun `removeUser does not allow removing the only owner by default`() {
     val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
     val admin = organizationUserModel(userId = UserId(101), role = Role.ADMIN)
     configureUser(owner)
     configureUser(admin)
 
     assertThrows<CannotRemoveLastOwnerException> { store.removeUser(organizationId, owner.userId) }
+  }
+
+  @Test
+  fun `removeUser publishes OrganizationAbandonedEvent if last user is removed`() {
+    every { publisher.publishEvent(any<OrganizationAbandonedEvent>()) } just Runs
+
+    val owner = organizationUserModel(userId = UserId(100), role = Role.OWNER)
+    configureUser(owner)
+
+    store.removeUser(organizationId, owner.userId, allowRemovingLastOwner = true)
+
+    verify { publisher.publishEvent(OrganizationAbandonedEvent(organizationId)) }
   }
 
   @Test
