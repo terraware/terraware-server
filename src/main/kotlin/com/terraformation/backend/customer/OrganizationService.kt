@@ -71,8 +71,8 @@ class OrganizationService(
       user.organizationRoles.keys.forEach { organizationId ->
         organizationStore.removeUser(organizationId, user.userId, allowRemovingLastOwner = true)
 
-        val remainingUsers = organizationStore.countRoleUsers(organizationId)
-        if (remainingUsers.values.none { it > 0 }) {
+        val remainingUsersByRole = organizationStore.countRoleUsers(organizationId)
+        if (remainingUsersByRole.values.none { it > 0 }) {
           publisher.publishEvent(OrganizationAbandonedEvent(organizationId))
         }
       }
