@@ -231,6 +231,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun deleteSelf() {
+    assertThrows<AccessDeniedException> { requirements.deleteSelf() }
+
+    grant { user.canDeleteSelf() }
+    requirements.deleteSelf()
+  }
+
+  @Test
   fun deleteSpecies() {
     assertThrows<SpeciesNotFoundException> { requirements.deleteSpecies(speciesId) }
 

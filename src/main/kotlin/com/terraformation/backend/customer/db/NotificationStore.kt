@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.UserDeletedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
@@ -13,6 +14,7 @@ import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.event.EventListener
 
 @ManagedBean
 class NotificationStore(
@@ -119,6 +121,11 @@ class NotificationStore(
             .execute()
       }
     }
+  }
+
+  @EventListener
+  fun on(event: UserDeletedEvent) {
+    dslContext.deleteFrom(NOTIFICATIONS).where(NOTIFICATIONS.USER_ID.eq(event.userId)).execute()
   }
 
   private fun isOrganizationIdClause(organizationId: OrganizationId?) =

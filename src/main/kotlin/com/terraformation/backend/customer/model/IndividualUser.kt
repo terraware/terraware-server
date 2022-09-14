@@ -207,6 +207,8 @@ data class IndividualUser(
     return role == Role.OWNER
   }
 
+  override fun canDeleteSelf(): Boolean = true
+
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = canUpdateSpecies(speciesId)
 
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean =

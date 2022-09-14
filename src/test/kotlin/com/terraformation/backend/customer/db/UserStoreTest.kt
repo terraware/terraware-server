@@ -4,8 +4,11 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.UserDeletedEvent
+import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
@@ -13,6 +16,7 @@ import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
@@ -29,6 +33,8 @@ import java.time.Instant
 import java.time.ZoneOffset
 import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -38,6 +44,7 @@ import org.junit.jupiter.api.assertThrows
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.UserRepresentation
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -51,6 +58,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val config: TerrawareServerConfig = mockk()
   private val httpClient: HttpClient = mockk()
   private val objectMapper = jacksonObjectMapper()
+  private val publisher: ApplicationEventPublisher = mockk()
   private val realmResource: RealmResource = mockk()
   private val usersResource = InMemoryKeycloakUsersResource()
   override val user: TerrawareUser = mockUser()
@@ -117,6 +125,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
             organizationStore,
             parentStore,
             permissionStore,
+            publisher,
             realmResource,
             usersDao,
         )
@@ -502,6 +511,99 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           .values(
               userId, organizationId, JSONB.valueOf(objectMapper.writeValueAsString(preferences)))
           .execute()
+    }
+  }
+
+  @Nested
+  inner class DeleteSelf {
+    @BeforeEach
+    fun setUp() {
+      every { publisher.publishEvent(any<UserDeletedEvent>()) } just Runs
+      every { user.authId } returns authId
+      every { user.canDeleteSelf() } returns true
+    }
+
+    @Test
+    fun `system user cannot delete itself`() {
+      SystemUser(usersDao).run { assertThrows<AccessDeniedException> { userStore.deleteSelf() } }
+    }
+
+    @Test
+    fun `device manager user cannot delete itself`() {
+      DeviceManagerUser(user.userId, authId, parentStore, permissionStore).run {
+        assertThrows<AccessDeniedException> { userStore.deleteSelf() }
+      }
+    }
+
+    @Test
+    fun `anonymizes user in local database`() {
+      insertUser(
+          authId = authId,
+          email = userRepresentation.email,
+          firstName = userRepresentation.firstName,
+          lastName = userRepresentation.lastName)
+
+      userStore.deleteSelf()
+
+      val updatedUser = usersDao.fetchOneById(user.userId)!!
+
+      assertNotEquals(authId, updatedUser.authId, "Auth ID")
+      assertNotEquals(userRepresentation.email, updatedUser.email, "Email address")
+      assertNotNull(updatedUser.deletedTime, "Deleted time")
+      assertEquals("Deleted", updatedUser.firstName, "First name")
+      assertEquals("User", updatedUser.lastName, "Last name")
+    }
+
+    @Test
+    fun `publishes UserDeletedEvent`() {
+      insertUser(authId = authId)
+
+      userStore.deleteSelf()
+
+      val expectedEvent = UserDeletedEvent(user.userId)
+      verify { publisher.publishEvent(expectedEvent) }
+    }
+
+    @Test
+    fun `removes user from Keycloak`() {
+      insertUser(authId = authId)
+
+      userStore.deleteSelf()
+
+      assertNull(usersResource.get(authId), "User should be deleted from Keycloak")
+    }
+
+    @Test
+    fun `deletes user preferences`() {
+      insertUser(authId = authId)
+      insertOrganization()
+
+      userStore.updatePreferences(null, mapOf("key" to "value"))
+      userStore.updatePreferences(organizationId, mapOf("key" to "value"))
+
+      userStore.deleteSelf()
+
+      val preferences = dslContext.selectFrom(USER_PREFERENCES).fetch()
+      assertEquals(emptyList<UserPreferencesRecord>(), preferences, "Preferences")
+    }
+
+    @Test
+    fun `does not delete user from database if Keycloak deletion fails`() {
+      usersResource.simulateRequestFailures = true
+
+      insertUser(
+          authId = authId,
+          email = userRepresentation.email,
+          firstName = userRepresentation.firstName,
+          lastName = userRepresentation.lastName)
+
+      val usersRowBefore = usersDao.fetchOneById(user.userId)!!
+
+      assertThrows<Exception> { userStore.deleteSelf() }
+
+      val usersRowAfter = usersDao.fetchOneById(user.userId)
+
+      assertEquals(usersRowBefore, usersRowAfter)
     }
   }
 }

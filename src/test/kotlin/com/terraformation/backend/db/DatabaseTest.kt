@@ -17,6 +17,7 @@ import com.terraformation.backend.db.tables.daos.DevicesDao
 import com.terraformation.backend.db.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.tables.daos.GeolocationsDao
 import com.terraformation.backend.db.tables.daos.NotificationsDao
+import com.terraformation.backend.db.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tables.daos.PhotosDao
 import com.terraformation.backend.db.tables.daos.SpeciesDao
@@ -199,6 +200,7 @@ abstract class DatabaseTest {
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
+  protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val photosDao: PhotosDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()

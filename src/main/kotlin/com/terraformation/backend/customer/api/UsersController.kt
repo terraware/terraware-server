@@ -11,7 +11,9 @@ import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import javax.servlet.http.HttpSession
 import javax.ws.rs.ForbiddenException
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -56,6 +58,16 @@ class UsersController(private val userStore: UserStore) {
     } else {
       throw ForbiddenException("Can only update information about ordinary users")
     }
+  }
+
+  @DeleteMapping("/me")
+  @Operation(
+      summary = "Deletes the current user's account.",
+      description = "WARNING! This operation is not reversible.")
+  fun deleteMyself(session: HttpSession?): SimpleSuccessResponsePayload {
+    userStore.deleteSelf()
+    session?.invalidate()
+    return SimpleSuccessResponsePayload()
   }
 
   @GetMapping("/me/preferences")
