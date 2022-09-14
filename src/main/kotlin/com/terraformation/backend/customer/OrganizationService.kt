@@ -3,8 +3,9 @@ package com.terraformation.backend.customer
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.event.OrganizationDeletedEvent
+import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
+import com.terraformation.backend.customer.event.UserDeletedEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
@@ -14,6 +15,7 @@ import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 /** Organization-related business logic that needs to interact with multiple services. */
 @ManagedBean
@@ -57,7 +59,23 @@ class OrganizationService(
 
       log.info("Deleted last owner from organization $organizationId")
 
-      publisher.publishEvent(OrganizationDeletedEvent(organizationId))
+      publisher.publishEvent(OrganizationAbandonedEvent(organizationId))
+    }
+  }
+
+  @EventListener
+  fun on(event: UserDeletedEvent) {
+    val user = userStore.fetchOneById(event.userId)
+
+    dslContext.transaction { _ ->
+      user.organizationRoles.keys.forEach { organizationId ->
+        organizationStore.removeUser(organizationId, user.userId, allowRemovingLastOwner = true)
+
+        val remainingUsersByRole = organizationStore.countRoleUsers(organizationId)
+        if (remainingUsersByRole.values.none { it > 0 }) {
+          publisher.publishEvent(OrganizationAbandonedEvent(organizationId))
+        }
+      }
     }
   }
 }

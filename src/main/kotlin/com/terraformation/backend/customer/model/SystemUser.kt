@@ -113,6 +113,7 @@ class SystemUser(
   override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
   override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
+  override fun canDeleteSelf(): Boolean = false
   override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
   override fun canDeleteStorageLocation(storageLocationId: StorageLocationId): Boolean = true
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true

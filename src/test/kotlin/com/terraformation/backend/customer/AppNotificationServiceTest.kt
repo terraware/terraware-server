@@ -113,6 +113,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             organizationStore,
             ParentStore(dslContext),
             PermissionStore(dslContext),
+            mockk(),
             realmResource,
             usersDao,
         )

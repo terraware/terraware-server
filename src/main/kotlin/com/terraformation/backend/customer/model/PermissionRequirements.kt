@@ -193,6 +193,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteSelf() {
+    if (!user.canDeleteSelf()) {
+      throw AccessDeniedException("No permission to delete self")
+    }
+  }
+
   fun deleteSpecies(speciesId: SpeciesId) {
     if (!user.canDeleteSpecies(speciesId)) {
       readSpecies(speciesId)

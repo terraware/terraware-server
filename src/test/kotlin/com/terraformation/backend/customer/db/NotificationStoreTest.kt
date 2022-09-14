@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.customer.event.UserDeletedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.customer.model.Role
@@ -233,5 +234,22 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
       store.create(notification, organizationId)
       store.fetchById(NotificationId(1))
     }
+  }
+
+  @Test
+  fun `should delete user notifications when user is deleted`() {
+    val otherUserId = UserId(3)
+    insertUser(otherUserId)
+
+    store.create(notificationModel(userId = otherUserId), organizationId)
+
+    val notificationsForOtherUser = notificationsDao.findAll()
+
+    store.create(notificationModel(), organizationId)
+    store.create(notificationModel(true), organizationId)
+
+    store.on(UserDeletedEvent(user.userId))
+
+    assertEquals(notificationsForOtherUser, notificationsDao.findAll())
   }
 }

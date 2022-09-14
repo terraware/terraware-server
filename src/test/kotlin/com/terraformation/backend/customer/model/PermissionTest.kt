@@ -91,7 +91,7 @@ internal class PermissionTest : DatabaseTest() {
   private val realmResource: RealmResource = mockk()
 
   private val userId = UserId(1234)
-  private val user: TerrawareUser by lazy { userStore.fetchOneById(userId) }
+  private val user: TerrawareUser by lazy { fetchUser() }
 
   /*
    * Test data set; see class docs for a prettier version. This takes advantage of the default
@@ -143,6 +143,7 @@ internal class PermissionTest : DatabaseTest() {
             mockk(),
             parentStore,
             permissionStore,
+            mockk(),
             realmResource,
             usersDao,
         )
@@ -284,6 +285,10 @@ internal class PermissionTest : DatabaseTest() {
         readViabilityTest = true,
     )
 
+    permissions.expect(
+        deleteSelf = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -320,6 +325,10 @@ internal class PermissionTest : DatabaseTest() {
         readSpecies = true,
         updateSpecies = true,
         deleteSpecies = true,
+    )
+
+    permissions.expect(
+        deleteSelf = true,
     )
 
     permissions.andNothingElse()
@@ -408,6 +417,10 @@ internal class PermissionTest : DatabaseTest() {
         readViabilityTest = true,
     )
 
+    permissions.expect(
+        deleteSelf = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -476,6 +489,10 @@ internal class PermissionTest : DatabaseTest() {
         readViabilityTest = true,
     )
 
+    permissions.expect(
+        deleteSelf = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -538,6 +555,10 @@ internal class PermissionTest : DatabaseTest() {
         readViabilityTest = true,
     )
 
+    permissions.expect(
+        deleteSelf = true,
+    )
+
     permissions.andNothingElse()
   }
 
@@ -596,12 +617,110 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
+  fun `system user can perform most operations`() {
+    usersDao.update(usersDao.fetchOneById(userId)!!.copy(userTypeId = UserType.System))
+
+    val permissions = PermissionsTracker()
+
+    permissions.expect(
+        *organizationIds.toTypedArray(),
+        readOrganization = true,
+        updateOrganization = true,
+        deleteOrganization = true,
+        listOrganizationUsers = true,
+        readOrganizationUser = true,
+        readOrganizationSelf = true,
+        addOrganizationUser = true,
+        removeOrganizationUser = true,
+        removeOrganizationSelf = true,
+        createSpecies = true,
+        createFacility = true,
+        listFacilities = true,
+    )
+
+    permissions.expect(
+        *facilityIds.toTypedArray(),
+        createAccession = true,
+        createAutomation = true,
+        createDevice = true,
+        createStorageLocation = true,
+        updateFacility = true,
+        listAutomations = true,
+        sendAlert = true,
+    )
+
+    permissions.expect(
+        *accessionIds.toTypedArray(),
+        readAccession = true,
+        updateAccession = true,
+        deleteAccession = true,
+        setWithdrawalUser = true,
+    )
+
+    permissions.expect(
+        *automationIds.toTypedArray(),
+        readAutomation = true,
+        updateAutomation = true,
+        deleteAutomation = true,
+        triggerAutomation = true,
+    )
+
+    permissions.expect(
+        *deviceManagerIds.toTypedArray(),
+        *nonConnectedDeviceManagerIds,
+        readDeviceManager = true,
+        updateDeviceManager = true,
+    )
+
+    permissions.expect(
+        *deviceIds.toTypedArray(),
+        createTimeseries = true,
+        readTimeseries = true,
+        updateTimeseries = true,
+        readDevice = true,
+        updateDevice = true,
+    )
+
+    permissions.expect(
+        *speciesIds.toTypedArray(),
+        readSpecies = true,
+        updateSpecies = true,
+        deleteSpecies = true,
+    )
+
+    permissions.expect(
+        *storageLocationIds.toTypedArray(),
+        readStorageLocation = true,
+        updateStorageLocation = true,
+        deleteStorageLocation = true,
+    )
+
+    permissions.expect(
+        *viabilityTestIds.toTypedArray(),
+        readViabilityTest = true,
+    )
+
+    permissions.expect(
+        createDeviceManager = true,
+        setTestClock = true,
+        updateAppVersions = true,
+        updateDeviceTemplates = true,
+    )
+
+    permissions.andNothingElse()
+  }
+
+  @Test
   fun `user with no organization memberships has no organization-level permissions`() {
     val permissions = PermissionsTracker()
 
     permissions.expect(
         *nonConnectedDeviceManagerIds,
         readDeviceManager = true,
+    )
+
+    permissions.expect(
+        deleteSelf = true,
     )
 
     permissions.andNothingElse()
@@ -615,6 +734,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         createDeviceManager = true,
+        deleteSelf = true,
         importGlobalSpeciesData = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
@@ -656,8 +776,19 @@ internal class PermissionTest : DatabaseTest() {
     }
   }
 
+  private fun fetchUser(): TerrawareUser {
+    val user = userStore.fetchOneById(userId)
+    return if (user.userType == UserType.System) {
+      SystemUser(usersDao)
+    } else {
+      user
+    }
+  }
+
   @Test
   fun `permissions require target objects to exist`() {
+    val permissions = PermissionsTracker()
+
     givenRole(org1Id, Role.OWNER)
 
     dslContext.deleteFrom(VIABILITY_TESTS).execute()
@@ -672,7 +803,11 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(ORGANIZATION_USERS).execute()
     dslContext.deleteFrom(ORGANIZATIONS).execute()
 
-    PermissionsTracker().andNothingElse()
+    permissions.expect(
+        deleteSelf = true,
+    )
+
+    permissions.andNothingElse()
   }
 
   inner class PermissionsTracker {
@@ -944,6 +1079,7 @@ internal class PermissionTest : DatabaseTest() {
     /** Checks for globally-scoped permissions. */
     fun expect(
         createDeviceManager: Boolean = false,
+        deleteSelf: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
@@ -951,6 +1087,7 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceTemplates: Boolean = false,
     ) {
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
+      assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.UserDeletedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
@@ -41,6 +42,7 @@ import org.jooq.JSONB
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
@@ -73,6 +75,7 @@ class UserStore(
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
+    private val publisher: ApplicationEventPublisher,
     realmResource: RealmResource,
     private val usersDao: UsersDao,
 ) {
@@ -136,6 +139,14 @@ class UserStore(
    */
   fun fetchByEmail(email: String): IndividualUser? {
     val existingUser = usersDao.fetchByEmail(email).firstOrNull()
+
+    // Deleted users have invalid email addresses that should never match legitimate calls to this
+    // method, but if a caller somehow passes in one of those values, we still don't want to treat
+    // it as a match.
+    if (existingUser?.deletedTime != null) {
+      return null
+    }
+
     val user =
         if (existingUser != null) {
           existingUser
@@ -432,6 +443,42 @@ class UserStore(
               // sticking around afterwards should be harmless.
             }
           }
+    }
+  }
+
+  fun deleteSelf() {
+    requirePermissions { deleteSelf() }
+
+    val user = currentUser()
+
+    dslContext.transaction { _ ->
+      val authId = user.authId
+
+      log.info("Deleting user ${user.userId} (auth ID $authId)")
+
+      val row = usersDao.fetchOneById(user.userId) ?: throw UserNotFoundException(user.userId)
+      val anonymizedRow =
+          row.copy(
+              authId = "deleted:${user.userId}",
+              deletedTime = clock.instant(),
+              email = "deleted:${user.userId}",
+              emailNotificationsEnabled = false,
+              firstName = "Deleted",
+              lastName = "User")
+      usersDao.update(anonymizedRow)
+
+      dslContext
+          .deleteFrom(USER_PREFERENCES)
+          .where(USER_PREFERENCES.USER_ID.eq(user.userId))
+          .execute()
+
+      // Handlers in other parts of the system will clean up dangling references to the user. Event
+      // handlers run synchronously in the same transaction as the deletion.
+      publisher.publishEvent(UserDeletedEvent(user.userId))
+
+      // Keycloak account deletion should come last because it can't be rolled back if some other
+      // step in the deletion process fails.
+      usersResource.delete(authId)
     }
   }
 
