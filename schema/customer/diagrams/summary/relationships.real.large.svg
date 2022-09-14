@@ -190,7 +190,7 @@
 <!-- users -->
 <g id="node20" class="node"><title>users</title>
 <g id="a_node20"><a xlink:href="../../tables/users.html" xlink:title="users" target="_top">
-<polygon fill="#ffffff" stroke="none" points="166,-507 166,-767 354,-767 354,-507 166,-507"/>
+<polygon fill="#ffffff" stroke="none" points="166,-485 166,-767 354,-767 354,-485 166,-485"/>
 <polygon fill="#f5f5f5" stroke="none" points="166,-745 166,-767 354,-767 354,-745 166,-745"/>
 <polygon fill="none" stroke="black" points="166,-745 166,-767 354,-767 354,-745 166,-745"/>
 <text text-anchor="start" x="171" y="-754.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">users</text>
@@ -219,15 +219,17 @@
 <text text-anchor="start" x="186" y="-555.2" font-family="Helvetica,sans-Serif" font-size="11.00">last_activity_time</text>
 <polygon fill="none" stroke="black" points="166,-525 166,-547 354,-547 354,-525 166,-525"/>
 <text text-anchor="start" x="186" y="-533.2" font-family="Helvetica,sans-Serif" font-size="11.00">email_notifications_enabled</text>
-<polygon fill="#ffffff" stroke="none" points="166,-507 166,-525 238,-525 238,-507 166,-507"/>
-<polygon fill="none" stroke="black" points="166,-507 166,-525 238,-525 238,-507 166,-507"/>
-<text text-anchor="start" x="169" y="-513.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="238,-507 238,-525 299,-525 299,-507 238,-507"/>
-<polygon fill="none" stroke="black" points="238,-507 238,-525 299,-525 299,-507 238,-507"/>
-<text text-anchor="start" x="265" y="-513.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="299,-507 299,-525 354,-525 354,-507 299,-507"/>
-<polygon fill="none" stroke="black" points="299,-507 299,-525 354,-525 354,-507 299,-507"/>
-<text text-anchor="start" x="327" y="-513.2" font-family="Helvetica,sans-Serif" font-size="11.00">11 &gt;</text>
+<polygon fill="none" stroke="black" points="166,-503 166,-525 354,-525 354,-503 166,-503"/>
+<text text-anchor="start" x="186" y="-511.2" font-family="Helvetica,sans-Serif" font-size="11.00">deleted_time</text>
+<polygon fill="#ffffff" stroke="none" points="166,-485 166,-503 238,-503 238,-485 166,-485"/>
+<polygon fill="none" stroke="black" points="166,-485 166,-503 238,-503 238,-485 166,-485"/>
+<text text-anchor="start" x="169" y="-491.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="238,-485 238,-503 299,-503 299,-485 238,-485"/>
+<polygon fill="none" stroke="black" points="238,-485 238,-503 299,-503 299,-485 238,-485"/>
+<text text-anchor="start" x="265" y="-491.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
+<polygon fill="#ffffff" stroke="none" points="299,-485 299,-503 354,-503 354,-485 299,-485"/>
+<polygon fill="none" stroke="black" points="299,-485 299,-503 354,-503 354,-485 299,-485"/>
+<text text-anchor="start" x="327" y="-491.2" font-family="Helvetica,sans-Serif" font-size="11.00">11 &gt;</text>
 </a>
 </g>
 </g>

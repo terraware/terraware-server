@@ -133,7 +133,7 @@
 <!-- users -->
 <g id="node6" class="node"><title>users</title>
 <g id="a_node6"><a xlink:href="../../tables/users.html" xlink:title="users" target="_top">
-<polygon fill="#ffffff" stroke="none" points="166,-1210.46 166,-1474.46 460,-1474.46 460,-1210.46 166,-1210.46"/>
+<polygon fill="#ffffff" stroke="none" points="166,-1188.46 166,-1474.46 460,-1474.46 460,-1188.46 166,-1188.46"/>
 <polygon fill="#f5f5f5" stroke="none" points="168,-1450.46 168,-1472.46 458,-1472.46 458,-1450.46 168,-1450.46"/>
 <polygon fill="none" stroke="black" points="168,-1450.46 168,-1472.46 458,-1472.46 458,-1450.46 168,-1450.46"/>
 <text text-anchor="start" x="173" y="-1459.66" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">users</text>
@@ -182,16 +182,20 @@
 <text text-anchor="start" x="188" y="-1238.66" font-family="Helvetica,sans-Serif" font-size="11.00">email_notifications_enabled</text>
 <polygon fill="none" stroke="black" points="356,-1230.46 356,-1252.46 458,-1252.46 458,-1230.46 356,-1230.46"/>
 <text text-anchor="start" x="359" y="-1238.66" font-family="Helvetica,sans-Serif" font-size="11.00">bool[1]</text>
-<polygon fill="#ffffff" stroke="none" points="168,-1212.46 168,-1230.46 255,-1230.46 255,-1212.46 168,-1212.46"/>
-<polygon fill="none" stroke="black" points="168,-1212.46 168,-1230.46 255,-1230.46 255,-1212.46 168,-1212.46"/>
-<text text-anchor="start" x="171" y="-1218.66" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="255,-1212.46 255,-1230.46 356,-1230.46 356,-1212.46 255,-1212.46"/>
-<polygon fill="none" stroke="black" points="255,-1212.46 255,-1230.46 356,-1230.46 356,-1212.46 255,-1212.46"/>
-<text text-anchor="start" x="322" y="-1218.66" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="356,-1212.46 356,-1230.46 458,-1230.46 458,-1212.46 356,-1212.46"/>
-<polygon fill="none" stroke="black" points="356,-1212.46 356,-1230.46 458,-1230.46 458,-1212.46 356,-1212.46"/>
-<text text-anchor="start" x="431" y="-1218.66" font-family="Helvetica,sans-Serif" font-size="11.00">30 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="167,-1211.46 167,-1473.46 459,-1473.46 459,-1211.46 167,-1211.46"/>
+<polygon fill="none" stroke="black" points="168,-1208.46 168,-1230.46 356,-1230.46 356,-1208.46 168,-1208.46"/>
+<text text-anchor="start" x="188" y="-1216.66" font-family="Helvetica,sans-Serif" font-size="11.00">deleted_time</text>
+<polygon fill="none" stroke="black" points="356,-1208.46 356,-1230.46 458,-1230.46 458,-1208.46 356,-1208.46"/>
+<text text-anchor="start" x="359" y="-1216.66" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
+<polygon fill="#ffffff" stroke="none" points="168,-1190.46 168,-1208.46 255,-1208.46 255,-1190.46 168,-1190.46"/>
+<polygon fill="none" stroke="black" points="168,-1190.46 168,-1208.46 255,-1208.46 255,-1190.46 168,-1190.46"/>
+<text text-anchor="start" x="171" y="-1196.66" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="255,-1190.46 255,-1208.46 356,-1208.46 356,-1190.46 255,-1190.46"/>
+<polygon fill="none" stroke="black" points="255,-1190.46 255,-1208.46 356,-1208.46 356,-1190.46 255,-1190.46"/>
+<text text-anchor="start" x="322" y="-1196.66" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
+<polygon fill="#ffffff" stroke="none" points="356,-1190.46 356,-1208.46 458,-1208.46 458,-1190.46 356,-1190.46"/>
+<polygon fill="none" stroke="black" points="356,-1190.46 356,-1208.46 458,-1208.46 458,-1190.46 356,-1190.46"/>
+<text text-anchor="start" x="431" y="-1196.66" font-family="Helvetica,sans-Serif" font-size="11.00">30 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="167,-1189.46 167,-1473.46 459,-1473.46 459,-1189.46 167,-1189.46"/>
 </a>
 </g>
 </g>
@@ -311,9 +315,9 @@
 </g>
 <!-- accessions&#45;&gt;countries -->
 <g id="edge12" class="edge"><title>accessions:collection_site_country_code:w&#45;&gt;countries:elipses:e</title>
-<path fill="none" stroke="black" d="M1212.4,-576.787C1092.74,-581.218 566.186,-629.465 501,-671.457 265.753,-823.004 247.529,-934.33 158,-1199.46 137.894,-1259 178.344,-1763.46 115.5,-1763.46"/>
-<polygon fill="black" stroke="black" points="1219,-576.638 1227.08,-580.057 1223,-576.548 1227,-576.457 1227,-576.457 1227,-576.457 1223,-576.548 1226.92,-572.858 1219,-576.638 1219,-576.638"/>
-<ellipse fill="none" stroke="black" cx="1215.8" cy="-576.71" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1212.4,-576.791C1092.78,-581.278 566.594,-630.106 501,-671.457 271.17,-816.346 247.081,-920.788 158,-1177.46 136.595,-1239.13 180.782,-1763.46 115.5,-1763.46"/>
+<polygon fill="black" stroke="black" points="1219,-576.641 1227.08,-580.056 1223,-576.549 1227,-576.457 1227,-576.457 1227,-576.457 1223,-576.549 1226.92,-572.858 1219,-576.641 1219,-576.641"/>
+<ellipse fill="none" stroke="black" cx="1215.8" cy="-576.714" rx="3.2" ry="3.2"/>
 </g>
 <!-- collection_sources -->
 <g id="node12" class="node"><title>collection_sources</title>
