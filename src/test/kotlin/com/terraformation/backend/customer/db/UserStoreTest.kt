@@ -605,5 +605,21 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(usersRowBefore, usersRowAfter)
     }
+
+    @Test
+    fun `user is not searchable by email after deletion`() {
+      insertUser(authId = authId, email = userRepresentation.email)
+
+      userStore.deleteSelf()
+
+      val updatedUser = usersDao.fetchOneById(user.userId)!!
+
+      assertNull(
+          userStore.fetchByEmail(userRepresentation.email),
+          "Original email address should not be searchable")
+      assertNull(
+          userStore.fetchByEmail(updatedUser.email!!),
+          "Dummy post-deletion email address should not be searchable")
+    }
   }
 }

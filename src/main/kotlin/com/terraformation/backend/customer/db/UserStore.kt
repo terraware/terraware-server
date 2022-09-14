@@ -139,6 +139,14 @@ class UserStore(
    */
   fun fetchByEmail(email: String): IndividualUser? {
     val existingUser = usersDao.fetchByEmail(email).firstOrNull()
+
+    // Deleted users have invalid email addresses that should never match legitimate calls to this
+    // method, but if a caller somehow passes in one of those values, we still don't want to treat
+    // it as a match.
+    if (existingUser?.deletedTime != null) {
+      return null
+    }
+
     val user =
         if (existingUser != null) {
           existingUser
