@@ -85,7 +85,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { realmResource.users() } returns mockk()
 
     notificationStore = NotificationStore(dslContext, clock)
-    organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
+    organizationStore = OrganizationStore(clock, dslContext, organizationsDao, mockk())
     parentStore = ParentStore(dslContext)
     accessionStore =
         AccessionStore(

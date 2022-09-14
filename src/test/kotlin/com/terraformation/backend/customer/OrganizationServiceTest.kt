@@ -2,20 +2,24 @@ package com.terraformation.backend.customer
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.tables.pojos.OrganizationUsersRow
+import com.terraformation.backend.db.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.tables.records.OrganizationUsersRecord
 import com.terraformation.backend.db.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
@@ -25,12 +29,18 @@ import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import java.time.Clock
 import java.time.Instant
+import java.util.UUID
+import org.jobrunr.jobs.JobId
+import org.jobrunr.jobs.lambdas.IocJobLambda
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.Record
 import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -51,6 +61,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var parentStore: ParentStore
   private val publisher: ApplicationEventPublisher = mockk()
   private val realmResource: RealmResource = mockk()
+  private val scheduler: JobScheduler = mockk()
   private lateinit var userStore: UserStore
 
   private lateinit var service: OrganizationService
@@ -60,7 +71,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     every { realmResource.users() } returns mockk()
 
     parentStore = ParentStore(dslContext)
-    organizationStore = OrganizationStore(clock, dslContext, organizationsDao)
+    organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     userStore =
         UserStore(
             clock,
@@ -77,7 +88,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
             usersDao,
         )
 
-    service = OrganizationService(dslContext, organizationStore, publisher, userStore)
+    service =
+        OrganizationService(
+            dslContext, organizationStore, publisher, scheduler, SystemUser(usersDao), userStore)
 
     every { clock.instant() } returns Instant.EPOCH
     every { user.canCreateFacility(any()) } returns true
@@ -193,5 +206,42 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     verify { publisher.publishEvent(OrganizationAbandonedEvent(soloOrganizationId1)) }
     verify { publisher.publishEvent(OrganizationAbandonedEvent(soloOrganizationId2)) }
     confirmVerified(publisher)
+  }
+
+  @Test
+  fun `event listeners are annotated correctly`() {
+    assertIsEventListener<OrganizationAbandonedEvent>(service)
+    assertIsEventListener<UserDeletionStartedEvent>(service)
+  }
+
+  @Test
+  fun `OrganizationAbandonedEvent listener schedules deletion of organization data`() {
+    // Capture the scheduled function so we can verify the end result. We don't need to test whether
+    // or not JobRunr itself correctly runs scheduled jobs in this test, but we do need to test that
+    // the scheduled job does what it's supposed to.
+    val slot = slot<IocJobLambda<OrganizationService>>()
+    every { scheduler.enqueue(capture(slot)) } answers { JobId(UUID.randomUUID()) }
+    every { publisher.publishEvent(any<Any>()) } just Runs
+
+    insertSiteData()
+
+    service.on(OrganizationAbandonedEvent(organizationId))
+
+    assertNotEquals(
+        emptyList<OrganizationsRow>(),
+        organizationsDao.findAll(),
+        "Should not have deleted organization synchronously")
+
+    verify { scheduler.enqueue<OrganizationService>(any()) }
+
+    // Now run the job that was just enqueued.
+    slot.captured.accept(service)
+
+    assertEquals(
+        emptyList<OrganizationsRow>(),
+        organizationsDao.findAll(),
+        "Scheduled job should have deleted organization")
+
+    verify { publisher.publishEvent(OrganizationDeletionStartedEvent(organizationId)) }
   }
 }

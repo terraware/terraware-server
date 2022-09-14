@@ -1,6 +1,8 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
@@ -29,6 +31,7 @@ import javax.annotation.ManagedBean
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 
 @ManagedBean
@@ -36,6 +39,7 @@ class OrganizationStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val organizationsDao: OrganizationsDao,
+    private val publisher: ApplicationEventPublisher,
 ) {
   private val log = perClassLogger()
 
@@ -156,6 +160,38 @@ class OrganizationStore(
     }
   }
 
+  /**
+   * Deletes the organization from the database. This also has the effect of deleting data from the
+   * tree of child tables that reference the organization, even indirectly, and thus can take a long
+   * time. Avoid calling this from a request handler; call it from an asynchronous job instead.
+   *
+   * This can fail if the organization contains data that can't be automatically deleted by the
+   * database, such as references to external files that need to be deleted by application code. A
+   * good place to do that is in listeners for the [OrganizationDeletionStartedEvent] that is
+   * published here before the organization is actually deleted.
+   */
+  fun delete(organizationId: OrganizationId) {
+    requirePermissions { deleteOrganization(organizationId) }
+
+    // Inform the system that we're about to delete the organization and that any external resources
+    // tied to the organization should be cleaned up.
+    //
+    // This is not wrapped in a transaction because listeners are expected to delete external
+    // resources and then update the database to remove the references to them; if that happened
+    // inside an enclosing transaction, then a listener throwing an exception could cause the system
+    // to roll back the updates that recorded the successful removal of external resources by an
+    // earlier one.
+    //
+    // There's an unavoidable tradeoff here: if a listener fails, the organization data will end up
+    // partially deleted.
+    publisher.publishEvent(OrganizationDeletionStartedEvent(organizationId))
+
+    // Deleting the organization will trigger cascading deletes of data in other tables that refer
+    // to the organization. This can cause the deletion to take a long time to finish: consider,
+    // for example, an organization with a month's worth of historical sensor data.
+    organizationsDao.deleteById(organizationId)
+  }
+
   /** Returns a list of the organization's individual users. */
   fun fetchUsers(organizationId: OrganizationId): List<OrganizationUserModel> {
     requirePermissions { listOrganizationUsers(organizationId) }
@@ -173,6 +209,16 @@ class OrganizationStore(
                 .and(ORGANIZATION_USERS.USER_ID.eq(userId)))
         .firstOrNull()
         ?: throw UserNotFoundException(userId)
+  }
+
+  fun fetchOrganizationIds(userId: UserId): List<OrganizationId> {
+    return dslContext
+        .select(ORGANIZATION_USERS.ORGANIZATION_ID)
+        .from(ORGANIZATION_USERS)
+        .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+        .fetch(ORGANIZATION_USERS.ORGANIZATION_ID)
+        .filterNotNull()
+        .filter { currentUser().canListOrganizationUsers(it) }
   }
 
   private fun queryOrganizationUsers(condition: Condition): List<OrganizationUserModel> {
@@ -315,6 +361,22 @@ class OrganizationStore(
           .where(USER_PREFERENCES.USER_ID.eq(userId))
           .and(USER_PREFERENCES.ORGANIZATION_ID.eq(organizationId))
           .execute()
+
+      if (allowRemovingLastOwner) {
+        val hasRemainingUsers =
+            dslContext
+                .selectOne()
+                .from(ORGANIZATION_USERS)
+                .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+                .fetch()
+                .isNotEmpty
+
+        if (!hasRemainingUsers) {
+          log.info("Deleted last owner from organization $organizationId")
+
+          publisher.publishEvent(OrganizationAbandonedEvent(organizationId))
+        }
+      }
     }
   }
 

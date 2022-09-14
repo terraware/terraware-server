@@ -1,13 +1,17 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
@@ -22,6 +26,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -339,5 +344,64 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(emptyList<AccessionPhotosRow>(), accessionPhotosDao.findAll(), "Accession photos")
     assertEquals(emptyList<PhotosRow>(), photosDao.findAll(), "Photos")
+  }
+
+  @Test
+  fun `OrganizationDeletionStartedEvent listener deletes photos from all facilities in organization`() {
+    val sameOrgFacilityId = FacilityId(2)
+    val sameOrgAccessionId = AccessionId(2)
+    val otherOrganizationId = OrganizationId(2)
+    val otherOrgFacilityId = FacilityId(3)
+    val otherOrgAccessionId = AccessionId(3)
+
+    insertOrganization(otherOrganizationId)
+    insertFacility(sameOrgFacilityId)
+    insertFacility(otherOrgFacilityId, otherOrganizationId)
+
+    listOf(
+            facilityId to accessionId,
+            sameOrgFacilityId to sameOrgAccessionId,
+            otherOrgFacilityId to otherOrgAccessionId)
+        .forEach { (facilityId, newAccessionId) ->
+          val accessionsRow =
+              AccessionsRow(
+                  id = newAccessionId,
+                  number = "$newAccessionId",
+                  facilityId = facilityId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  dataSourceId = DataSource.Web,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
+                  stateId = AccessionState.Pending)
+
+          val photosRow =
+              PhotosRow(
+                  contentType = contentType,
+                  fileName = "$newAccessionId",
+                  storageUrl = URI("file:///$newAccessionId"),
+                  size = 1,
+                  createdBy = user.userId,
+                  createdTime = uploadedTime,
+                  modifiedBy = user.userId,
+                  modifiedTime = uploadedTime)
+
+          accessionsDao.merge(accessionsRow)
+          photosDao.insert(photosRow)
+          accessionPhotosDao.insert(
+              AccessionPhotosRow(accessionId = newAccessionId, photoId = photosRow.id))
+        }
+
+    // deleteAllPhotos is tested separately; we just care that it's called for each accession.
+    val spyRepository = spyk(repository)
+    every { spyRepository.deleteAllPhotos(any()) } just Runs
+
+    spyRepository.on(OrganizationDeletionStartedEvent(organizationId))
+
+    assertIsEventListener<OrganizationDeletionStartedEvent>(repository)
+
+    verify { spyRepository.deleteAllPhotos(accessionId) }
+    verify { spyRepository.deleteAllPhotos(sameOrgAccessionId) }
+    verify(exactly = 0) { spyRepository.deleteAllPhotos(otherOrgAccessionId) }
   }
 }

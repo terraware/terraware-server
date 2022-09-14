@@ -7,14 +7,17 @@ import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.Role
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UserId
 import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
 
 /** Organization-related business logic that needs to interact with multiple services. */
@@ -23,6 +26,8 @@ class OrganizationService(
     private val dslContext: DSLContext,
     private val organizationStore: OrganizationStore,
     private val publisher: ApplicationEventPublisher,
+    @Lazy private val scheduler: JobScheduler,
+    private val systemUser: SystemUser,
     private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
@@ -56,26 +61,40 @@ class OrganizationService(
 
       organizationStore.removeUser(
           organizationId, currentUser().userId, allowRemovingLastOwner = true)
-
-      log.info("Deleted last owner from organization $organizationId")
-
-      publisher.publishEvent(OrganizationAbandonedEvent(organizationId))
     }
   }
 
   @EventListener
   fun on(event: UserDeletionStartedEvent) {
-    val user = userStore.fetchOneById(event.userId)
+    val organizationIds = organizationStore.fetchOrganizationIds(event.userId)
 
     dslContext.transaction { _ ->
-      user.organizationRoles.keys.forEach { organizationId ->
-        organizationStore.removeUser(organizationId, user.userId, allowRemovingLastOwner = true)
-
-        val remainingUsersByRole = organizationStore.countRoleUsers(organizationId)
-        if (remainingUsersByRole.values.none { it > 0 }) {
-          publisher.publishEvent(OrganizationAbandonedEvent(organizationId))
-        }
+      organizationIds.forEach { organizationId ->
+        organizationStore.removeUser(organizationId, event.userId, allowRemovingLastOwner = true)
       }
     }
+  }
+
+  @EventListener
+  fun on(event: OrganizationAbandonedEvent) {
+    val organizationId = event.organizationId
+
+    // Schedule the actual deletion via JobRunr rather than just spawning a thread so it will be
+    // retried if the server is killed before it finishes.
+    scheduler.enqueue<OrganizationService> { deleteAbandonedOrganization(organizationId) }
+  }
+
+  /**
+   * Purges all of an organization's data from the system. This should always be run asynchronously
+   * since it may take a long time if the organization has lots of data such as photos or sensor
+   * readings.
+   */
+  @Suppress("MemberVisibilityCanBePrivate") // Needs to be public for JobRunr
+  fun deleteAbandonedOrganization(organizationId: OrganizationId) {
+    log.info("Deleting organization $organizationId (may take a while)")
+
+    systemUser.run { organizationStore.delete(organizationId) }
+
+    log.info("Finished deleting organization $organizationId")
   }
 }
