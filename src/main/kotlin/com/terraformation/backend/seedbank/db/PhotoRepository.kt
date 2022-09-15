@@ -2,6 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.PhotoId
@@ -24,6 +25,7 @@ import java.nio.file.NoSuchFileException
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
+import org.springframework.context.event.EventListener
 
 /**
  * Manages storage of photos including metadata. In this implementation, image files are stored on
@@ -162,6 +164,18 @@ class PhotoRepository(
             }
           }
         }
+  }
+
+  /** Deletes all the photos from all the accessions owned by an organization. */
+  @EventListener
+  fun on(event: OrganizationDeletionStartedEvent) {
+    dslContext
+        .selectDistinct(ACCESSION_PHOTOS.ACCESSION_ID)
+        .from(ACCESSION_PHOTOS)
+        .where(ACCESSION_PHOTOS.accessions().facilities().ORGANIZATION_ID.eq(event.organizationId))
+        .fetch(ACCESSION_PHOTOS.ACCESSION_ID)
+        .filterNotNull()
+        .forEach { deleteAllPhotos(it) }
   }
 
   /**

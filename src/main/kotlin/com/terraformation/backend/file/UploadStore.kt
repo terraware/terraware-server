@@ -1,6 +1,8 @@
 package com.terraformation.backend.file
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.tables.daos.UploadProblemsDao
@@ -26,6 +28,18 @@ class UploadStore(
     return UploadModel(uploadsRow, problemRows)
   }
 
+  fun fetchIdsByOrganization(organizationId: OrganizationId): List<UploadId> {
+    requirePermissions { readOrganization(organizationId) }
+
+    return dslContext
+        .select(UPLOADS.ID)
+        .from(UPLOADS)
+        .where(UPLOADS.ORGANIZATION_ID.eq(organizationId))
+        .fetch(UPLOADS.ID)
+        .filterNotNull()
+        .filter { currentUser().canReadUpload(it) }
+  }
+
   fun deleteProblems(uploadId: UploadId) {
     requirePermissions { updateUpload(uploadId) }
 
@@ -35,9 +49,6 @@ class UploadStore(
   fun delete(uploadId: UploadId) {
     requirePermissions { deleteUpload(uploadId) }
 
-    dslContext.transaction { _ ->
-      dslContext.deleteFrom(UPLOAD_PROBLEMS).where(UPLOAD_PROBLEMS.UPLOAD_ID.eq(uploadId)).execute()
-      dslContext.deleteFrom(UPLOADS).where(UPLOADS.ID.eq(uploadId)).execute()
-    }
+    dslContext.deleteFrom(UPLOADS).where(UPLOADS.ID.eq(uploadId)).execute()
   }
 }
