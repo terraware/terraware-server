@@ -1,7 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.customer.event.UserDeletedEvent
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.customer.model.Role
@@ -248,7 +248,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     store.create(notificationModel(), organizationId)
     store.create(notificationModel(true), organizationId)
 
-    store.on(UserDeletedEvent(user.userId))
+    store.on(UserDeletionStartedEvent(user.userId))
 
     assertEquals(notificationsForOtherUser, notificationsDao.findAll())
   }

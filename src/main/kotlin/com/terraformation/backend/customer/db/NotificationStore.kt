@@ -1,7 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.event.UserDeletedEvent
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
@@ -124,7 +124,7 @@ class NotificationStore(
   }
 
   @EventListener
-  fun on(event: UserDeletedEvent) {
+  fun on(event: UserDeletionStartedEvent) {
     dslContext.deleteFrom(NOTIFICATIONS).where(NOTIFICATIONS.USER_ID.eq(event.userId)).execute()
   }
 
