@@ -212,13 +212,15 @@ class OrganizationStore(
   }
 
   fun fetchOrganizationIds(userId: UserId): List<OrganizationId> {
+    val user = currentUser()
+
     return dslContext
         .select(ORGANIZATION_USERS.ORGANIZATION_ID)
         .from(ORGANIZATION_USERS)
         .where(ORGANIZATION_USERS.USER_ID.eq(userId))
         .fetch(ORGANIZATION_USERS.ORGANIZATION_ID)
         .filterNotNull()
-        .filter { currentUser().canListOrganizationUsers(it) }
+        .filter { user.userId == userId || user.canListOrganizationUsers(it) }
   }
 
   private fun queryOrganizationUsers(condition: Condition): List<OrganizationUserModel> {
