@@ -1167,16 +1167,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 storageStartDate = tomorrow),
         )
 
-    (shouldMatch + shouldNotMatch).forEach { accession ->
-      accessionsDao.insert(
-          accession.copy(
-              createdBy = user.userId,
-              createdTime = clock.instant(),
-              dataSourceId = DataSource.Web,
-              facilityId = facilityId,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant()))
-    }
+    (shouldMatch + shouldNotMatch).forEach { insertAccession(it) }
 
     val expected = shouldMatch.map { it.number!! }.toSortedSet()
     val actual =
@@ -1799,17 +1790,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
       toCreate.forEach { (targetFacilityId, stateCounts) ->
         stateCounts.forEach { (state, count) ->
-          repeat(count) {
-            accessionsDao.insert(
-                AccessionsRow(
-                    createdBy = user.userId,
-                    createdTime = Instant.EPOCH,
-                    dataSourceId = DataSource.Web,
-                    facilityId = targetFacilityId,
-                    modifiedBy = user.userId,
-                    modifiedTime = Instant.EPOCH,
-                    stateId = state))
-          }
+          repeat(count) { insertAccession(facilityId = targetFacilityId, stateId = state) }
         }
       }
 
@@ -1919,15 +1900,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   subsetWeightGrams = BigDecimal(10),
               ),
           )
-          .forEach {
-            accessionsDao.insert(
-                it.copy(
-                    createdBy = user.userId,
-                    createdTime = clock.instant(),
-                    dataSourceId = DataSource.Web,
-                    modifiedBy = user.userId,
-                    modifiedTime = clock.instant()))
-          }
+          .forEach { insertAccession(it) }
 
       assertEquals(
           3,
@@ -2042,15 +2015,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   stateId = AccessionState.Processing,
               ),
           )
-          .forEach {
-            accessionsDao.insert(
-                it.copy(
-                    createdBy = user.userId,
-                    createdTime = clock.instant(),
-                    dataSourceId = DataSource.Web,
-                    modifiedBy = user.userId,
-                    modifiedTime = clock.instant()))
-          }
+          .forEach { insertAccession(it) }
 
       assertEquals(
           3,
@@ -2149,15 +2114,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   stateId = AccessionState.Processing,
               ),
           )
-          .forEach {
-            accessionsDao.insert(
-                it.copy(
-                    createdBy = user.userId,
-                    createdTime = clock.instant(),
-                    dataSourceId = DataSource.Web,
-                    modifiedBy = user.userId,
-                    modifiedTime = clock.instant()))
-          }
+          .forEach { insertAccession(it) }
 
       assertEquals(
           3,
@@ -2228,15 +2185,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   stateId = AccessionState.Pending,
               ),
           )
-          .forEach {
-            accessionsDao.insert(
-                it.copy(
-                    createdBy = user.userId,
-                    createdTime = clock.instant(),
-                    dataSourceId = DataSource.Web,
-                    modifiedBy = user.userId,
-                    modifiedTime = clock.instant()))
-          }
+          .forEach { insertAccession(it) }
 
       assertEquals(1, store.getSummaryStatistics(facilityId).species, "Species for single facility")
       assertEquals(

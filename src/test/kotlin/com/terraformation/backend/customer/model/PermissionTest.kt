@@ -6,10 +6,8 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.BalenaDeviceId
-import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceManagerId
@@ -23,7 +21,6 @@ import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserType
 import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestType
-import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
@@ -159,16 +156,7 @@ internal class PermissionTest : DatabaseTest() {
       insertFacility(facilityId, facilityId.value / 1000, createdBy = userId)
       insertDevice(facilityId.value, facilityId, createdBy = userId)
       insertAutomation(facilityId.value, facilityId, createdBy = userId)
-      accessionsDao.insert(
-          AccessionsRow(
-              id = AccessionId(facilityId.value),
-              facilityId = facilityId,
-              stateId = AccessionState.Pending,
-              createdBy = userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              modifiedBy = userId,
-              modifiedTime = Instant.EPOCH))
+      insertAccession(id = facilityId.value, facilityId = facilityId, createdBy = userId)
       viabilityTestsDao.insert(
           ViabilityTestsRow(
               accessionId = AccessionId(facilityId.value),

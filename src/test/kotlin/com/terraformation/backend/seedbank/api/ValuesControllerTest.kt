@@ -3,15 +3,12 @@ package com.terraformation.backend.seedbank.api
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.ViabilityTestType
 import com.terraformation.backend.db.tables.pojos.AccessionCollectorsRow
-import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.SearchService
@@ -56,26 +53,13 @@ internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
     every { user.facilityRoles } returns
         mapOf(facilityId to Role.MANAGER, otherFacilityId to Role.MANAGER)
 
-    val accessionsRow =
-        AccessionsRow(
-            createdBy = user.userId,
-            createdTime = Instant.EPOCH,
-            dataSourceId = DataSource.Web,
-            facilityId = facilityId,
-            isManualState = true,
-            modifiedBy = user.userId,
-            modifiedTime = Instant.EPOCH,
-            stateId = AccessionState.Cleaning,
-        )
-
-    val org1Accession = accessionsRow.copy(facilityId = facilityId)
-    val org2Accession = accessionsRow.copy(facilityId = otherFacilityId)
-    accessionsDao.insert(org1Accession, org2Accession)
+    val org1AccessionId = insertAccession()
+    val org2AccessionId = insertAccession(facilityId = otherFacilityId)
 
     accessionCollectorsDao.insert(
-        AccessionCollectorsRow(org1Accession.id, 0, "o1c0"),
-        AccessionCollectorsRow(org1Accession.id, 1, "o1c1"),
-        AccessionCollectorsRow(org2Accession.id, 0, "o2c0"),
+        AccessionCollectorsRow(org1AccessionId, 0, "o1c0"),
+        AccessionCollectorsRow(org1AccessionId, 1, "o1c1"),
+        AccessionCollectorsRow(org2AccessionId, 0, "o2c0"),
     )
 
     val viabilityTestsRow =
@@ -83,8 +67,8 @@ internal class ValuesControllerTest : DatabaseTest(), RunsAsUser {
             testType = ViabilityTestType.Lab,
             remainingQuantity = BigDecimal.ONE,
             remainingUnitsId = SeedQuantityUnits.Seeds)
-    val org1Test = viabilityTestsRow.copy(accessionId = org1Accession.id, notes = "o1")
-    val org2Test = viabilityTestsRow.copy(accessionId = org2Accession.id, notes = "o2")
+    val org1Test = viabilityTestsRow.copy(accessionId = org1AccessionId, notes = "o1")
+    val org2Test = viabilityTestsRow.copy(accessionId = org2AccessionId, notes = "o2")
     viabilityTestsDao.insert(org1Test, org2Test)
 
     val request =
