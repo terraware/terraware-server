@@ -1,8 +1,11 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadStatus
 import com.terraformation.backend.db.UploadType
@@ -10,6 +13,7 @@ import com.terraformation.backend.db.tables.pojos.UploadsRow
 import com.terraformation.backend.db.tables.references.UPLOADS
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -187,5 +191,39 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
     val actualIds = dslContext.select(UPLOADS.ID).from(UPLOADS).fetch(UPLOADS.ID)
     assertEquals(expectedIds, actualIds)
+  }
+
+  @Test
+  fun `OrganizationDeletionStartedEvent listener deletes all uploads in organization`() {
+    val otherOrganizationId = OrganizationId(2)
+    val uploadId1 = UploadId(1)
+    val uploadId2 = UploadId(2)
+    val otherOrgUploadId = UploadId(3)
+    val storageUrl1 = URI("file:///1")
+    val storageUrl2 = URI("file:///1")
+    val otherOrgStorageUrl = URI("file:///3")
+
+    every { fileStore.delete(any()) } just Runs
+    every { user.canReadOrganization(any()) } returns true
+
+    insertOrganization(organizationId)
+    insertOrganization(otherOrganizationId)
+    insertUpload(uploadId1, organizationId = organizationId, storageUrl = storageUrl1)
+    insertUpload(uploadId2, organizationId = organizationId, storageUrl = storageUrl2)
+    insertUpload(
+        otherOrgUploadId, organizationId = otherOrganizationId, storageUrl = otherOrgStorageUrl)
+
+    service.on(OrganizationDeletionStartedEvent(organizationId))
+
+    assertIsEventListener<OrganizationDeletionStartedEvent>(service)
+
+    assertEquals(
+        listOf(otherOrgUploadId),
+        uploadsDao.findAll().map { it.id },
+        "Should still have upload for other organization")
+
+    verify { fileStore.delete(storageUrl1) }
+    verify { fileStore.delete(storageUrl2) }
+    confirmVerified(fileStore)
   }
 }

@@ -1,6 +1,7 @@
 package com.terraformation.backend.file
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.OrganizationId
@@ -148,6 +149,11 @@ class UploadService(
 
       log.debug("Deleted expired upload $uploadId")
     }
+  }
+
+  @EventListener
+  fun on(event: OrganizationDeletionStartedEvent) {
+    uploadStore.fetchIdsByOrganization(event.organizationId).forEach { delete(it) }
   }
 
   companion object {

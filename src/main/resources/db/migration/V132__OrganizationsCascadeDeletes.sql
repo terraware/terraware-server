@@ -70,10 +70,6 @@ ALTER TABLE upload_problems DROP CONSTRAINT upload_problems_upload_id_fkey;
 ALTER TABLE upload_problems ADD CONSTRAINT upload_problems_upload_id_fkey
     FOREIGN KEY (upload_id) REFERENCES uploads (id) ON DELETE CASCADE;
 
-ALTER TABLE uploads DROP CONSTRAINT uploads_organization_id_fkey;
-ALTER TABLE uploads ADD CONSTRAINT uploads_organization_id_fkey
-    FOREIGN KEY (organization_id) REFERENCES organizations (id) ON DELETE CASCADE;
-
 ALTER TABLE user_preferences DROP CONSTRAINT user_preferences_organization_id_fkey;
 ALTER TABLE user_preferences ADD CONSTRAINT user_preferences_organization_id_fkey
     FOREIGN KEY (organization_id) REFERENCES organizations (id) ON DELETE CASCADE;
