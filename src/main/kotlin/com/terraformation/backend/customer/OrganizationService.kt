@@ -5,7 +5,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
-import com.terraformation.backend.customer.event.UserDeletedEvent
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
@@ -64,7 +64,7 @@ class OrganizationService(
   }
 
   @EventListener
-  fun on(event: UserDeletedEvent) {
+  fun on(event: UserDeletionStartedEvent) {
     val user = userStore.fetchOneById(event.userId)
 
     dslContext.transaction { _ ->

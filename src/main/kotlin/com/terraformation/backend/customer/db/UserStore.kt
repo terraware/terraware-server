@@ -7,7 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.event.UserDeletedEvent
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
@@ -474,7 +474,7 @@ class UserStore(
 
       // Handlers in other parts of the system will clean up dangling references to the user. Event
       // handlers run synchronously in the same transaction as the deletion.
-      publisher.publishEvent(UserDeletedEvent(user.userId))
+      publisher.publishEvent(UserDeletionStartedEvent(user.userId))
 
       // Keycloak account deletion should come last because it can't be rolled back if some other
       // step in the deletion process fails.

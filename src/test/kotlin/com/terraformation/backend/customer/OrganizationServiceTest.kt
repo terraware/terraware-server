@@ -8,7 +8,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.OrganizationAbandonedEvent
-import com.terraformation.backend.customer.event.UserDeletedEvent
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -140,7 +140,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `UserDeletedEvent handler removes user from all their organizations`() {
+  fun `UserDeletionStartedEvent handler removes user from all their organizations`() {
     val otherUserId = UserId(100)
     val soloOrganizationId1 = OrganizationId(1)
     val soloOrganizationId2 = OrganizationId(2)
@@ -163,7 +163,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     every { publisher.publishEvent(any<OrganizationAbandonedEvent>()) } just Runs
 
-    service.on(UserDeletedEvent(user.userId))
+    service.on(UserDeletionStartedEvent(user.userId))
 
     val expectedOrganizationUsers =
         setOf(

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.customer.event.UserDeletedEvent
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
@@ -518,7 +518,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   inner class DeleteSelf {
     @BeforeEach
     fun setUp() {
-      every { publisher.publishEvent(any<UserDeletedEvent>()) } just Runs
+      every { publisher.publishEvent(any<UserDeletionStartedEvent>()) } just Runs
       every { user.authId } returns authId
       every { user.canDeleteSelf() } returns true
     }
@@ -560,7 +560,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       userStore.deleteSelf()
 
-      val expectedEvent = UserDeletedEvent(user.userId)
+      val expectedEvent = UserDeletionStartedEvent(user.userId)
       verify { publisher.publishEvent(expectedEvent) }
     }
 
