@@ -112,7 +112,7 @@
             <child column="accession_id" foreignKey="withdrawals_accession_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="withdrawals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="accession_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <parent column="id" foreignKey="accessions_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="number" nullable="true" remarks="Displayed as the accession number to the user." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="collected_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
@@ -255,7 +255,7 @@
       <table name="automations" numRows="0" remarks="Configuration of automatic processes run by the device manager." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <parent column="id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -270,7 +270,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="device_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <parent column="id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="timeseries_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="verbosity" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
@@ -427,12 +427,12 @@
       </table>
       <table name="devices" numRows="0" remarks="Hardware devices managed by the device manager at a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="device_id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
+            <child column="device_id" foreignKey="automations_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="automations"/>
             <child column="parent_id" foreignKey="devices_parent_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
-            <child column="device_id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
+            <child column="device_id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="device_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <parent column="id" foreignKey="devices_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="device_type" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -460,11 +460,11 @@
       </table>
       <table name="facilities" numRows="0" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="facility_id" foreignKey="accession_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-            <child column="facility_id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="automations"/>
+            <child column="facility_id" foreignKey="accessions_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="accessions"/>
+            <child column="facility_id" foreignKey="automations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="automations"/>
             <child column="facility_id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
-            <child column="facility_id" foreignKey="device_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
-            <child column="facility_id" foreignKey="storage_location_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="storage_locations"/>
+            <child column="facility_id" foreignKey="devices_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
+            <child column="facility_id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="storage_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="site_module_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_types"/>
@@ -487,7 +487,7 @@
             <parent column="id" foreignKey="facilities_connection_state_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_connection_states"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <parent column="id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
@@ -579,7 +579,7 @@
             <parent column="id" foreignKey="notifications_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="organization_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <parent column="id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="title" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="body" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -596,7 +596,7 @@
             <parent column="id" foreignKey="organization_users_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <parent column="id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="role_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="roles"/>
@@ -621,12 +621,12 @@
       </table>
       <table name="organizations" numRows="0" remarks="Top-level information about organizations." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
-            <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
-            <child column="organization_id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="notifications"/>
-            <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
-            <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <child column="organization_id" foreignKey="facilities_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
+            <child column="organization_id" foreignKey="notifications_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="notifications"/>
+            <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
+            <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
             <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
-            <child column="organization_id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="user_preferences"/>
+            <child column="organization_id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_preferences"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
@@ -759,10 +759,10 @@
       <table name="species" numRows="0" remarks="Per-organization information about species." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
-            <child column="species_id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problems"/>
+            <child column="species_id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_problems"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <parent column="id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="common_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -838,7 +838,7 @@
       <table name="species_problems" numRows="0" remarks="Problems found in species data. Rows are deleted from this table when the problem is marked as ignored by the user or the user accepts the suggested fix." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <parent column="id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="field_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="species_problems_field_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problem_fields"/>
@@ -875,7 +875,7 @@
             <child column="storage_location_id" foreignKey="accession_storage_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="accessions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="storage_location_site_module_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+            <parent column="id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="name" nullable="false" remarks="E.g., Freezer 1, Freezer 2" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="condition_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -937,13 +937,13 @@
       </table>
       <table name="timeseries" numRows="0" remarks="Properties of a series of values collected from a device. Each device metric is represented as a timeseries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="timeseries_id" foreignKey="timeseries_value_timeseries_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries_values"/>
+            <child column="timeseries_id" foreignKey="timeseries_values_timeseries_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries_values"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="timeseries_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="device_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="devices"/>
+            <parent column="id" foreignKey="timeseries_device_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="units" nullable="true" remarks="For numeric timeseries, the units represented by the values; unit names should be short (possibly abbreviations) and in the default language of the site." size="2147483647" type="text" typeCode="12"/>
@@ -978,7 +978,7 @@
       </table>
       <table name="timeseries_values" numRows="0" remarks="Individual data points on a timeseries. For example, each time the temperature is read from a thermometer, the reading is inserted here." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="timeseries_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="timeseries_value_timeseries_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="timeseries"/>
+            <parent column="id" foreignKey="timeseries_values_timeseries_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="timeseries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -1000,7 +1000,7 @@
       <table name="upload_problems" numRows="0" remarks="Details about problems (validation failures, etc.) in user-uploaded files." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="upload_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
+            <parent column="id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="uploads"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="upload_problems_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_problem_types"/>
@@ -1042,7 +1042,7 @@
       </table>
       <table name="uploads" numRows="0" remarks="Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="upload_id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="upload_problems"/>
+            <child column="upload_id" foreignKey="upload_problems_upload_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="upload_problems"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="uploads_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
@@ -1070,7 +1070,7 @@
             <parent column="id" foreignKey="user_preferences_user_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="true" remarks="If null, preferences are global to the user. Otherwise, they are specific to the user and the organization." size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <parent column="id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="preferences" nullable="false" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
          <index name="user_preferences_user_id_idx" unique="true">

@@ -125,8 +125,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="timeseries_values.timeseries_id references timeseries.id via timeseries_value_timeseries_id_fkey"><a href='timeseries_values.html'>timeseries_values</a><span class='relatedKey'>.timeseries_id</span></td>
-                                                <td class="constraint detail">timeseries_value_timeseries_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="timeseries_values.timeseries_id references timeseries.id via timeseries_values_timeseries_id_fkey"><a href='timeseries_values.html'>timeseries_values</a><span class='relatedKey'>.timeseries_id</span></td>
+                                                <td class="constraint detail">timeseries_values_timeseries_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -172,7 +172,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="timeseries.device_id references devices.id via timeseries_device_id_fkey"><a href='devices.html'>devices</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">timeseries_device_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">timeseries_device_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>

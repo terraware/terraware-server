@@ -126,15 +126,15 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="automations.facility_id references facilities.id via automations_facility_id_fkey"><a href='automations.html'>automations</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">automations_facility_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">automations_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="device_managers.facility_id references facilities.id via device_managers_facility_id_fkey"><a href='device_managers.html'>device_managers</a><span class='relatedKey'>.facility_id</span></td>
                                                 <td class="constraint detail">device_managers_facility_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="devices.facility_id references facilities.id via device_site_module_id_fkey"><a href='devices.html'>devices</a><span class='relatedKey'>.facility_id</span></td>
-                                                <td class="constraint detail">device_site_module_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="devices.facility_id references facilities.id via devices_facility_id_fkey"><a href='devices.html'>devices</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">devices_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -367,7 +367,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
                                                 <td title="facilities.organization_id references organizations.id via facilities_organization_id_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">facilities_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td class="constraint detail">facilities_organization_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
