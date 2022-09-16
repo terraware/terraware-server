@@ -16,10 +16,8 @@ import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.ProcessingMethod
-import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
-import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.ViabilityTestId
@@ -167,11 +165,9 @@ data class CreateAccessionRequestPayload(
     val collectionSiteNotes: String? = null,
     val collectionSource: CollectionSource? = null,
     val collectors: List<String>? = null,
-    val endangered: SpeciesEndangeredType? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
     val environmentalNotes: String? = null,
     val facilityId: FacilityId,
-    val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
@@ -179,7 +175,6 @@ data class CreateAccessionRequestPayload(
         deprecated = true, description = "Backward-compatibility alias for collectionSiteLandowner")
     val landowner: String? = null,
     val numberOfTrees: Int? = null,
-    val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String? = null,
@@ -199,14 +194,11 @@ data class CreateAccessionRequestPayload(
         collectionSiteNotes = environmentalNotes ?: collectionSiteNotes,
         collectionSource = sourcePlantOrigin?.toCollectionSource() ?: collectionSource,
         collectors = collectors.orEmpty(),
-        endangered = endangered,
         facilityId = facilityId,
-        family = family,
         fieldNotes = fieldNotes,
         founderId = founderId,
         geolocations = geolocations.orEmpty(),
         numberOfTrees = numberOfTrees,
-        rare = rare,
         receivedDate = receivedDate,
         source = source ?: DataSource.Web,
         sourcePlantOrigin = sourcePlantOrigin,
@@ -233,11 +225,9 @@ data class UpdateAccessionRequestPayload(
     val dryingEndDate: LocalDate? = null,
     val dryingMoveDate: LocalDate? = null,
     val dryingStartDate: LocalDate? = null,
-    val endangered: SpeciesEndangeredType? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
     val environmentalNotes: String? = null,
     val facilityId: FacilityId? = null,
-    val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation>? = null,
@@ -255,7 +245,6 @@ data class UpdateAccessionRequestPayload(
     val processingNotes: String? = null,
     val processingStaffResponsible: String? = null,
     val processingStartDate: LocalDate? = null,
-    val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteName")
     val siteLocation: String? = null,
@@ -293,9 +282,7 @@ data class UpdateAccessionRequestPayload(
           dryingEndDate = dryingEndDate,
           dryingMoveDate = dryingMoveDate,
           dryingStartDate = dryingStartDate,
-          endangered = endangered,
           facilityId = facilityId,
-          family = family,
           fieldNotes = fieldNotes,
           founderId = founderId,
           geolocations = geolocations.orEmpty(),
@@ -306,7 +293,6 @@ data class UpdateAccessionRequestPayload(
           processingNotes = processingNotes,
           processingStaffResponsible = processingStaffResponsible,
           processingStartDate = processingStartDate,
-          rare = rare,
           receivedDate = receivedDate,
           sourcePlantOrigin = sourcePlantOrigin,
           species = species,
@@ -354,12 +340,10 @@ data class AccessionPayload(
     val dryingEndDate: LocalDate?,
     val dryingMoveDate: LocalDate?,
     val dryingStartDate: LocalDate?,
-    val endangered: SpeciesEndangeredType?,
     @Schema(deprecated = true, description = "Backward-compatibility alias for collectionSiteNotes")
     val environmentalNotes: String?,
     val estimatedSeedCount: Int?,
     val facilityId: FacilityId,
-    val family: String?,
     val fieldNotes: String?,
     val founderId: String?,
     val geolocations: Set<Geolocation>?,
@@ -385,7 +369,6 @@ data class AccessionPayload(
     val processingNotes: String?,
     val processingStaffResponsible: String?,
     val processingStartDate: LocalDate?,
-    val rare: RareType?,
     val receivedDate: LocalDate?,
     @Schema(
         description =
@@ -468,11 +451,9 @@ data class AccessionPayload(
       model.dryingEndDate,
       model.dryingMoveDate,
       model.dryingStartDate,
-      model.endangered,
       model.collectionSiteNotes,
       model.estimatedSeedCount,
       model.facilityId ?: throw IllegalArgumentException("Accession did not have a facility ID"),
-      model.family,
       model.fieldNotes,
       model.founderId,
       model.geolocations.orNull(),
@@ -488,7 +469,6 @@ data class AccessionPayload(
       model.processingNotes,
       model.processingStaffResponsible,
       model.processingStartDate,
-      model.rare,
       model.receivedDate,
       model.remaining?.toPayload(),
       model.collectionSiteName,

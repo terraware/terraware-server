@@ -102,8 +102,6 @@ COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos 
 
 COMMENT ON TABLE processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
 
-COMMENT ON TABLE rare_types IS '(Enum) Possible values of the "Rare" attribute of an accession. This refers to whether the seed is rare at a site, not whether the species as a whole is rare or endangered.';
-
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
 
 COMMENT ON TABLE seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
@@ -116,8 +114,6 @@ COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (co
 
 COMMENT ON TABLE species IS 'Per-organization information about species.';
 COMMENT ON COLUMN species.checked_time IS 'If non-null, when the species was checked for possible suggested edits. If null, the species has not been checked yet.';
-
-COMMENT ON TABLE species_endangered_types IS '(Enum) Possible values for the "Endangered" attribute of an accession. This is not used for plants whose locations are being tracked; see `conservation_statuses` instead.';
 
 COMMENT ON TABLE species_problem_fields IS '(Enum) Species fields that can be scanned for problems.';
 

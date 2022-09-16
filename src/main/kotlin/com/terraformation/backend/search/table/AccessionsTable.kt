@@ -105,7 +105,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         dateField("dryingEndDate", "Drying end date", ACCESSIONS.DRYING_END_DATE),
         dateField("dryingMoveDate", "Drying move date", ACCESSIONS.DRYING_MOVE_DATE),
         dateField("dryingStartDate", "Drying start date", ACCESSIONS.DRYING_START_DATE),
-        enumField("endangered", "Endangered", ACCESSIONS.SPECIES_ENDANGERED_TYPE_ID),
         integerField("estimatedCount", "Estimated seed count", ACCESSIONS.EST_SEED_COUNT),
         gramsField("estimatedWeightGrams", "Estimated weight (grams)", ACCESSIONS.EST_WEIGHT_GRAMS),
         bigDecimalField(
@@ -117,7 +116,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         // TODO: Remove this once clients no longer need it (new name is estimatedCount)
         integerField(
             "estimatedSeedsIncoming", "Estimated seeds incoming", ACCESSIONS.EST_SEED_COUNT),
-        textField("familyName", "Family name", ACCESSIONS.FAMILY_NAME),
         aliasField("geolocation", "geolocations_coordinates"),
         idWrapperField("id", "ID", ACCESSIONS.ID) { AccessionId(it) },
         textField("landowner", "Landowner", ACCESSIONS.COLLECTION_SITE_LANDOWNER),
@@ -137,7 +135,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
         enumField("processingMethod", "Processing method", ACCESSIONS.PROCESSING_METHOD_ID),
         textField("processingNotes", "Notes (processing)", ACCESSIONS.PROCESSING_NOTES),
         dateField("processingStartDate", "Processing start date", ACCESSIONS.PROCESSING_START_DATE),
-        enumField("rare", "Rare", ACCESSIONS.RARE_TYPE_ID),
         dateField("receivedDate", "Received on", ACCESSIONS.RECEIVED_DATE),
         gramsField("remainingGrams", "Remaining (grams)", ACCESSIONS.REMAINING_GRAMS),
         bigDecimalField("remainingQuantity", "Remaining (quantity)", ACCESSIONS.REMAINING_QUANTITY),

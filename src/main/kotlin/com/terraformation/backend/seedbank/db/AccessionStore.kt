@@ -136,12 +136,10 @@ class AccessionStore(
           dryingEndDate = record[DRYING_END_DATE],
           dryingMoveDate = record[DRYING_MOVE_DATE],
           dryingStartDate = record[DRYING_START_DATE],
-          endangered = record[SPECIES_ENDANGERED_TYPE_ID],
           estimatedSeedCount = record[EST_SEED_COUNT],
           estimatedWeight =
               SeedQuantityModel.of(record[EST_WEIGHT_QUANTITY], record[EST_WEIGHT_UNITS_ID]),
           facilityId = record[FACILITY_ID],
-          family = record[FAMILY_NAME],
           fieldNotes = record[FIELD_NOTES],
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
@@ -160,7 +158,6 @@ class AccessionStore(
           processingNotes = record[PROCESSING_NOTES],
           processingStaffResponsible = record[PROCESSING_STAFF_RESPONSIBLE],
           processingStartDate = record[PROCESSING_START_DATE],
-          rare = record[RARE_TYPE_ID],
           receivedDate = record[RECEIVED_DATE],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
           source = record[DATA_SOURCE_ID],
@@ -253,7 +250,6 @@ class AccessionStore(
                         .set(CUT_TEST_SEEDS_FILLED, accession.cutTestSeedsFilled)
                         .set(DATA_SOURCE_ID, accession.source ?: DataSource.Web)
                         .set(FACILITY_ID, facilityId)
-                        .set(FAMILY_NAME, accession.family)
                         .set(FIELD_NOTES, accession.fieldNotes)
                         .set(FOUNDER_ID, accession.founderId)
                         .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
@@ -266,10 +262,8 @@ class AccessionStore(
                         .set(NUMBER, accessionNumber)
                         .set(NURSERY_START_DATE, accession.nurseryStartDate)
                         .set(PROCESSING_NOTES, accession.processingNotes)
-                        .set(RARE_TYPE_ID, accession.rare)
                         .set(RECEIVED_DATE, accession.receivedDate)
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
-                        .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                         .set(SPECIES_ID, speciesId)
                         .set(STATE_ID, state)
                         .set(
@@ -431,7 +425,6 @@ class AccessionStore(
                 .set(EST_WEIGHT_QUANTITY, accession.estimatedWeight?.quantity)
                 .set(EST_WEIGHT_UNITS_ID, accession.estimatedWeight?.units)
                 .set(FACILITY_ID, facilityId)
-                .set(FAMILY_NAME, accession.family)
                 .set(FIELD_NOTES, accession.fieldNotes)
                 .set(FOUNDER_ID, accession.founderId)
                 .set(IS_MANUAL_STATE, if (accession.isManualState) true else null)
@@ -447,13 +440,11 @@ class AccessionStore(
                 .set(PROCESSING_NOTES, accession.processingNotes)
                 .set(PROCESSING_STAFF_RESPONSIBLE, accession.processingStaffResponsible)
                 .set(PROCESSING_START_DATE, accession.processingStartDate)
-                .set(RARE_TYPE_ID, accession.rare)
                 .set(RECEIVED_DATE, accession.receivedDate)
                 .set(REMAINING_GRAMS, accession.remaining?.grams)
                 .set(REMAINING_QUANTITY, accession.remaining?.quantity)
                 .set(REMAINING_UNITS_ID, accession.remaining?.units)
                 .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
-                .set(SPECIES_ENDANGERED_TYPE_ID, accession.endangered)
                 .set(SPECIES_ID, speciesId)
                 .set(STATE_ID, accession.state)
                 .set(

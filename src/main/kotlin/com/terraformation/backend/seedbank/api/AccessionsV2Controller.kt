@@ -129,7 +129,6 @@ data class AccessionPayloadV2(
                 "information to calculate an estimate.")
     val estimatedWeight: SeedQuantityPayload?,
     val facilityId: FacilityId,
-    val family: String?,
     val founderId: String?,
     @Schema(
         description =
@@ -204,7 +203,6 @@ data class AccessionPayloadV2(
       estimatedWeight = model.estimatedWeight?.toPayload(),
       facilityId = model.facilityId
               ?: throw IllegalArgumentException("Accession did not have a facility ID"),
-      family = model.family,
       founderId = model.founderId,
       id = model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       latestObservedQuantity = model.latestObservedQuantity?.toPayload(),
