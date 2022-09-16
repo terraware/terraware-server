@@ -49,13 +49,11 @@ val ENUM_TABLES =
                         true,
                     ))),
         EnumTable("processing_methods", "accessions\\.processing_method_id"),
-        EnumTable("rare_types", ".*\\.rare_type_id"),
         EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
         EnumTable(
             "seed_storage_behaviors",
             listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),
         EnumTable("source_plant_origins", ".*\\.source_plant_origin_id"),
-        EnumTable("species_endangered_types", ".*\\.species_endangered_type_id"),
         EnumTable("species_problem_fields", "species_problems\\.field_id"),
         EnumTable("species_problem_types", "species_problems\\.type_id"),
         EnumTable(

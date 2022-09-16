@@ -6,10 +6,8 @@ import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.ProcessingMethod
-import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
-import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.ViabilityTestId
@@ -100,11 +98,9 @@ data class AccessionModel(
     val dryingEndDate: LocalDate? = null,
     val dryingMoveDate: LocalDate? = null,
     val dryingStartDate: LocalDate? = null,
-    val endangered: SpeciesEndangeredType? = null,
     val estimatedSeedCount: Int? = null,
     val estimatedWeight: SeedQuantityModel? = null,
     val facilityId: FacilityId? = null,
-    val family: String? = null,
     val fieldNotes: String? = null,
     val founderId: String? = null,
     val geolocations: Set<Geolocation> = emptySet(),
@@ -120,7 +116,6 @@ data class AccessionModel(
     val processingNotes: String? = null,
     val processingStaffResponsible: String? = null,
     val processingStartDate: LocalDate? = null,
-    val rare: RareType? = null,
     val receivedDate: LocalDate? = null,
     val remaining: SeedQuantityModel? = null,
     val source: DataSource? = null,

@@ -16,10 +16,8 @@ import com.terraformation.backend.db.GeolocationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProcessingMethod
-import com.terraformation.backend.db.RareType
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SourcePlantOrigin
-import com.terraformation.backend.db.SpeciesEndangeredType
 import com.terraformation.backend.db.SpeciesId
 import com.terraformation.backend.db.StorageCondition
 import com.terraformation.backend.db.StorageLocationId
@@ -322,8 +320,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `existing rows are used for free-text fields that live in reference tables`() {
-    val payload =
-        AccessionModel(facilityId = facilityId, family = "test family", species = "test species")
+    val payload = AccessionModel(facilityId = facilityId, species = "test species")
 
     // First time inserts the reference table rows
     val initialAccession = store.create(payload)
@@ -338,7 +335,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         initialRow.speciesId, initialAccession.speciesId, "Species ID as returned on insert")
     assertEquals(secondRow.speciesId, secondAccession.speciesId, "Species ID as returned on update")
-    assertEquals(initialRow.familyName, secondRow.familyName, "Family")
   }
 
   @Test
@@ -1354,10 +1350,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             collectionSiteNotes = "siteNotes",
             collectionSource = CollectionSource.Other,
             collectors = listOf("primaryCollector", "second1", "second2"),
-            endangered = SpeciesEndangeredType.Unsure,
             environmentalNotes = "envNotes",
             facilityId = facilityId,
-            family = "family",
             fieldNotes = "fieldNotes",
             founderId = "founderId",
             geolocations =
@@ -1368,7 +1362,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                         accuracy = BigDecimal(3))),
             landowner = "landowner",
             numberOfTrees = 10,
-            rare = RareType.Yes,
             receivedDate = today,
             siteLocation = "siteLocation",
             source = DataSource.FileImport,
@@ -1426,10 +1419,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             dryingEndDate = today,
             dryingMoveDate = today,
             dryingStartDate = today,
-            endangered = SpeciesEndangeredType.Unsure,
             environmentalNotes = "envNotes",
             facilityId = facilityId,
-            family = "family",
             fieldNotes = "fieldNotes",
             founderId = "founderId",
             geolocations =
@@ -1446,7 +1437,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             processingNotes = "processingNotes",
             processingStaffResponsible = "procStaff",
             processingStartDate = today,
-            rare = RareType.Yes,
             receivedDate = today,
             siteLocation = "siteLocation",
             sourcePlantOrigin = SourcePlantOrigin.Wild,
@@ -1660,7 +1650,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             bagNumbers = setOf("abc"),
             collectedDate = today,
             facilityId = facilityId,
-            family = "family",
             geolocations =
                 setOf(
                     Geolocation(
@@ -2477,10 +2466,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         dryingEndDate = dryingEndDate,
         dryingMoveDate = dryingMoveDate,
         dryingStartDate = dryingStartDate,
-        endangered = endangered,
         environmentalNotes = collectionSiteNotes,
         facilityId = facilityId,
-        family = family,
         fieldNotes = fieldNotes,
         founderId = founderId,
         geolocations = geolocations,
@@ -2492,7 +2479,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         processingNotes = processingNotes,
         processingStaffResponsible = processingStaffResponsible,
         processingStartDate = processingStartDate,
-        rare = rare,
         receivedDate = receivedDate,
         siteLocation = collectionSiteName,
         sourcePlantOrigin = sourcePlantOrigin,
