@@ -130,9 +130,9 @@ internal class AccessionModelTest {
   ): ViabilityTestResultModel {
     return ViabilityTestResultModel(
         id = nextViabilityTestResultId(),
-        testId = viabilityTestId,
         recordingDate = recordingDate,
-        seedsGerminated = seedsGerminated)
+        seedsGerminated = seedsGerminated,
+        testId = viabilityTestId)
   }
 
   private fun nextWithdrawalId(): WithdrawalId {
@@ -158,10 +158,10 @@ internal class AccessionModelTest {
         accessionId = AccessionId(1),
         createdTime = createdTime,
         date = date,
-        viabilityTestId = viabilityTestId,
         id = id,
         purpose = purpose,
         remaining = remaining,
+        viabilityTestId = viabilityTestId,
         withdrawn = withdrawn,
         withdrawnByUserId = withdrawnByUserId,
     )
@@ -1199,10 +1199,10 @@ internal class AccessionModelTest {
                       WithdrawalModel(
                           accessionId = AccessionId(1),
                           date = january(15), // different from test date
-                          viabilityTestId = testWithExistingWithdrawal.id,
                           id = nextWithdrawalId(),
                           purpose = WithdrawalPurpose.ViabilityTesting,
                           remaining = seeds(0),
+                          viabilityTestId = testWithExistingWithdrawal.id,
                           withdrawn = seeds(testWithExistingWithdrawal.seedsTested!!),
                       ),
                       withdrawal(seeds(2), remaining = seeds(0), date = january(3)),
@@ -1863,9 +1863,9 @@ internal class AccessionModelTest {
                       WithdrawalModel(
                           createdTime = todayInstant,
                           date = today,
-                          id = WithdrawalId(1),
                           estimatedCount = 1,
                           estimatedWeight = grams(1),
+                          id = WithdrawalId(1),
                           purpose = WithdrawalPurpose.ViabilityTesting,
                           remaining = grams(9),
                           viabilityTest =

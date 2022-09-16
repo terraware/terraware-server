@@ -97,23 +97,24 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
   ): ViabilityTestModel {
     return with(VIABILITY_TESTS) {
       ViabilityTestModel(
-          record[ID]!!,
-          record[ACCESSION_ID]!!,
-          record[TEST_TYPE]!!,
-          record[START_DATE],
-          record[END_DATE],
-          record[SEED_TYPE_ID],
-          record[SUBSTRATE_ID],
-          record[TREATMENT_ID],
-          record[SEEDS_SOWN],
-          record[TOTAL_PERCENT_GERMINATED],
-          record[TOTAL_SEEDS_GERMINATED],
-          record[NOTES],
-          record[STAFF_RESPONSIBLE],
-          record[viabilityTestResultsMultiset]?.ifEmpty { null },
-          SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
-          record[USERS.ID],
-          IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+          accessionId = record[ACCESSION_ID]!!,
+          endDate = record[END_DATE],
+          id = record[ID]!!,
+          notes = record[NOTES],
+          remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
+          seedsTested = record[SEEDS_SOWN],
+          seedType = record[SEED_TYPE_ID],
+          staffResponsible = record[STAFF_RESPONSIBLE],
+          startDate = record[START_DATE],
+          substrate = record[SUBSTRATE_ID],
+          testResults = record[viabilityTestResultsMultiset]?.ifEmpty { null },
+          testType = record[TEST_TYPE]!!,
+          totalPercentGerminated = record[TOTAL_PERCENT_GERMINATED],
+          totalSeedsGerminated = record[TOTAL_SEEDS_GERMINATED],
+          treatment = record[TREATMENT_ID],
+          withdrawnByName =
+              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+          withdrawnByUserId = record[USERS.ID],
       )
     }
   }
@@ -135,9 +136,9 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
           result.map { record ->
             ViabilityTestResultModel(
                 record[VIABILITY_TEST_RESULTS.ID]!!,
-                record[VIABILITY_TEST_RESULTS.TEST_ID]!!,
                 record[VIABILITY_TEST_RESULTS.RECORDING_DATE]!!,
                 record[VIABILITY_TEST_RESULTS.SEEDS_GERMINATED]!!,
+                record[VIABILITY_TEST_RESULTS.TEST_ID]!!,
             )
           }
         }

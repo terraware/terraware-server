@@ -14,28 +14,28 @@ import java.time.ZoneOffset
 import org.jooq.Record
 
 data class WithdrawalModel(
-    val id: WithdrawalId? = null,
     val accessionId: AccessionId? = null,
     val createdTime: Instant? = null,
     val date: LocalDate,
+    val destination: String? = null,
     val estimatedCount: Int? = null,
     val estimatedWeight: SeedQuantityModel? = null,
-    val purpose: WithdrawalPurpose? = null,
-    val destination: String? = null,
+    val id: WithdrawalId? = null,
     val notes: String? = null,
-    val staffResponsible: String? = null,
-    val viabilityTestId: ViabilityTestId? = null,
+    val purpose: WithdrawalPurpose? = null,
     val remaining: SeedQuantityModel? = null,
-    /** The user-entered withdrawal quantity. */
-    val withdrawn: SeedQuantityModel? = null,
-    val withdrawnByUserId: UserId? = null,
-    val withdrawnByName: String? = null,
+    val staffResponsible: String? = null,
     val viabilityTest: ViabilityTestModel? = null,
+    val viabilityTestId: ViabilityTestId? = null,
     /**
      * The server-calculated withdrawal weight based on the difference between [remaining] on this
      * withdrawal and the previous one. Only valid for weight-based accessions.
      */
     val weightDifference: SeedQuantityModel? = null,
+    /** The user-entered withdrawal quantity. */
+    val withdrawn: SeedQuantityModel? = null,
+    val withdrawnByName: String? = null,
+    val withdrawnByUserId: UserId? = null,
 ) {
   constructor(
       record: Record,
@@ -57,12 +57,12 @@ data class WithdrawalModel(
           SeedQuantityModel.of(
               record[WITHDRAWALS.REMAINING_QUANTITY], record[WITHDRAWALS.REMAINING_UNITS_ID]),
       staffResponsible = record[WITHDRAWALS.STAFF_RESPONSIBLE],
+      viabilityTestId = record[WITHDRAWALS.VIABILITY_TEST_ID],
       withdrawn =
           SeedQuantityModel.of(
               record[WITHDRAWALS.WITHDRAWN_QUANTITY], record[WITHDRAWALS.WITHDRAWN_UNITS_ID]),
       withdrawnByName = fullName,
       withdrawnByUserId = record[WITHDRAWALS.WITHDRAWN_BY],
-      viabilityTestId = record[WITHDRAWALS.VIABILITY_TEST_ID],
   )
 
   init {

@@ -477,12 +477,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     ViabilityTestModel(
                         id = initial.viabilityTests[0].id,
-                        testType = ViabilityTestType.Lab,
-                        seedType = ViabilityTestSeedType.Fresh,
-                        treatment = ViabilityTestTreatment.Scarify,
-                        substrate = ViabilityTestSubstrate.Paper,
                         notes = "notes",
-                        seedsTested = 5)))
+                        seedsTested = 5,
+                        seedType = ViabilityTestSeedType.Fresh,
+                        substrate = ViabilityTestSubstrate.Paper,
+                        testType = ViabilityTestType.Lab,
+                        treatment = ViabilityTestTreatment.Scarify)))
     store.update(desired)
 
     val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
@@ -571,12 +571,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     ViabilityTestModel(
                         id = other.viabilityTests[0].id,
-                        testType = ViabilityTestType.Lab,
-                        seedType = ViabilityTestSeedType.Fresh,
-                        treatment = ViabilityTestTreatment.Scarify,
-                        substrate = ViabilityTestSubstrate.Paper,
                         notes = "notes",
-                        seedsTested = 5)))
+                        seedsTested = 5,
+                        seedType = ViabilityTestSeedType.Fresh,
+                        substrate = ViabilityTestSubstrate.Paper,
+                        testType = ViabilityTestType.Lab,
+                        treatment = ViabilityTestTreatment.Scarify)))
 
     assertThrows<IllegalArgumentException> { store.update(desired) }
   }
@@ -596,12 +596,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 listOf(
                     ViabilityTestModel(
                         id = initial.viabilityTests[0].id,
-                        testType = ViabilityTestType.Lab,
                         seedsTested = 200,
                         testResults =
                             listOf(
                                 ViabilityTestResultModel(
-                                    recordingDate = localDate, seedsGerminated = 75)))))
+                                    recordingDate = localDate, seedsGerminated = 75)),
+                        testType = ViabilityTestType.Lab)))
     store.update(desired)
 
     val viabilityTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
@@ -817,17 +817,17 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(
             WithdrawalModel(
-                id = WithdrawalId(1),
                 accessionId = accession.id,
                 createdTime = clock.instant(),
                 date = test.startDate!!,
                 estimatedCount = 5,
+                id = WithdrawalId(1),
                 purpose = WithdrawalPurpose.ViabilityTesting,
-                withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
-                withdrawnByUserId = user.userId,
-                withdrawnByName = user.fullName,
-                viabilityTestId = test.id,
                 remaining = seeds(5),
+                viabilityTestId = test.id,
+                withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
+                withdrawnByName = user.fullName,
+                withdrawnByUserId = user.userId,
             )),
         accession.withdrawals)
   }
@@ -892,8 +892,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.ViabilityTesting,
-            withdrawn = seeds(1),
-            viabilityTestId = initialWithdrawal.viabilityTestId)
+            viabilityTestId = initialWithdrawal.viabilityTestId,
+            withdrawn = seeds(1))
 
     val updated =
         store.updateAndFetch(
@@ -984,7 +984,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 withdrawals =
                     listOf(
                         WithdrawalModel(
-                            date = LocalDate.EPOCH, withdrawn = seeds(1), remaining = seeds(0)))))
+                            date = LocalDate.EPOCH, remaining = seeds(0), withdrawn = seeds(1)))))
 
     assertEquals(AccessionState.UsedUp, updated.state)
   }
@@ -1189,8 +1189,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   listOf(
                       WithdrawalModel(
                           date = LocalDate.now(clock),
-                          withdrawn = grams(1),
-                          purpose = WithdrawalPurpose.Other))))
+                          purpose = WithdrawalPurpose.Other,
+                          withdrawn = grams(1)))))
     }
   }
 
@@ -2336,9 +2336,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   viabilityTests =
                       listOf(
                           ViabilityTestModel(
-                              testType = ViabilityTestType.Lab,
-                              startDate = LocalDate.ofInstant(secondWithdrawalTime, ZoneOffset.UTC),
                               seedsTested = 29,
+                              startDate = LocalDate.ofInstant(secondWithdrawalTime, ZoneOffset.UTC),
+                              testType = ViabilityTestType.Lab,
                               withdrawnByUserId = viabilityTesterUserId))))
 
       every { clock.instant() } returns backdatedWithdrawalTime

@@ -12,29 +12,29 @@ import java.time.LocalDate
 
 data class ViabilityTestResultModel(
     val id: ViabilityTestResultId? = null,
-    val testId: ViabilityTestId? = null,
     val recordingDate: LocalDate,
-    val seedsGerminated: Int
+    val seedsGerminated: Int,
+    val testId: ViabilityTestId? = null
 )
 
 data class ViabilityTestModel(
-    val id: ViabilityTestId? = null,
     val accessionId: AccessionId? = null,
-    val testType: ViabilityTestType,
-    val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
-    val seedType: ViabilityTestSeedType? = null,
-    val substrate: ViabilityTestSubstrate? = null,
-    val treatment: ViabilityTestTreatment? = null,
+    val id: ViabilityTestId? = null,
+    val notes: String? = null,
+    val remaining: SeedQuantityModel? = null,
     val seedsTested: Int? = null,
+    val seedType: ViabilityTestSeedType? = null,
+    val staffResponsible: String? = null,
+    val startDate: LocalDate? = null,
+    val substrate: ViabilityTestSubstrate? = null,
+    val testResults: Collection<ViabilityTestResultModel>? = null,
+    val testType: ViabilityTestType,
     val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
-    val notes: String? = null,
-    val staffResponsible: String? = null,
-    val testResults: Collection<ViabilityTestResultModel>? = null,
-    val remaining: SeedQuantityModel? = null,
-    val withdrawnByUserId: UserId? = null,
+    val treatment: ViabilityTestTreatment? = null,
     val withdrawnByName: String? = null,
+    val withdrawnByUserId: UserId? = null,
 ) {
   fun validateV2() {
     val isLab = testType == ViabilityTestType.Lab
