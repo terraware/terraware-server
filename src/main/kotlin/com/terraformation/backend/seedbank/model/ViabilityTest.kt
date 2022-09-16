@@ -30,9 +30,9 @@ data class ViabilityTestModel(
     val substrate: ViabilityTestSubstrate? = null,
     val testResults: Collection<ViabilityTestResultModel>? = null,
     val testType: ViabilityTestType,
-    val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
     val treatment: ViabilityTestTreatment? = null,
+    val viabilityPercent: Int? = null,
     val withdrawnByName: String? = null,
     val withdrawnByUserId: UserId? = null,
 ) {
@@ -98,9 +98,9 @@ data class ViabilityTestModel(
         startDate == other.startDate &&
         substrate == other.substrate &&
         testType == other.testType &&
-        totalPercentGerminated == other.totalPercentGerminated &&
         totalSeedsGerminated == other.totalSeedsGerminated &&
         treatment == other.treatment &&
+        viabilityPercent == other.viabilityPercent &&
         withdrawnByUserId == other.withdrawnByUserId
   }
 
@@ -125,8 +125,8 @@ data class ViabilityTestModel(
 
   fun withCalculatedValues(): ViabilityTestModel {
     return copy(
-        totalPercentGerminated = calculateTotalPercentGerminated(),
         totalSeedsGerminated = calculateTotalSeedsGerminated(),
+        viabilityPercent = calculateTotalPercentGerminated(),
     )
   }
 }

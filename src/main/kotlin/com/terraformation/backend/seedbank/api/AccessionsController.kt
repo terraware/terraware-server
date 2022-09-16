@@ -670,7 +670,7 @@ data class ViabilityTestPayload(
       model.staffResponsible,
       model.seedsTested,
       model.testResults?.map { ViabilityTestResultPayload(it) },
-      model.totalPercentGerminated,
+      model.viabilityPercent,
       model.totalSeedsGerminated,
   )
 

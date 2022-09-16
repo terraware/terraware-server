@@ -1918,10 +1918,13 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val viabilityTestResultsRow =
           ViabilityTestsRow(
               accessionId = AccessionId(1000),
-              testType = ViabilityTestType.Lab,
-              seedsSown = 15,
               remainingQuantity = BigDecimal.TEN,
-              remainingUnitsId = SeedQuantityUnits.Grams)
+              remainingUnitsId = SeedQuantityUnits.Grams,
+              seedsSown = 15,
+              testType = ViabilityTestType.Lab,
+              totalPercentGerminated = 100,
+              totalSeedsGerminated = 15,
+          )
 
       viabilityTestsDao.insert(viabilityTestResultsRow)
 
@@ -2761,9 +2764,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                               "recordingDate" to "1970-01-02",
                                               "seedsGerminated" to "10")),
                                   "id" to "$testId",
-                                  "type" to "Lab",
+                                  "percentGerminated" to "100",
                                   "seedsSown" to "15",
                                   "seedsTested" to "15",
+                                  "type" to "Lab",
+                                  "viabilityPercent" to "100",
                               ),
                           ),
                   ))
