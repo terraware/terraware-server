@@ -162,9 +162,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             deletedTime = now,
             organizationId = organizationId))
 
-    accessionsDao.insert(
+    insertAccession(
         AccessionsRow(
-            id = AccessionId(1000),
             number = "XYZ",
             stateId = AccessionState.Processed,
             checkedInTime = checkedInTime,
@@ -176,26 +175,16 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
             collectionSiteName = "siteName",
             collectionSiteNotes = "siteNotes",
             collectionSourceId = CollectionSource.Reintroduced,
-            createdBy = user.userId,
-            createdTime = now,
             dataSourceId = DataSource.SeedCollectorApp,
-            facilityId = facilityId,
-            modifiedBy = user.userId,
-            modifiedTime = now,
+            id = AccessionId(1000),
             speciesId = SpeciesId(10000),
             treesCollectedFrom = 1,
         ))
-    accessionsDao.insert(
+    insertAccession(
         AccessionsRow(
             id = AccessionId(1001),
             number = "ABCDEFG",
             stateId = AccessionState.Processing,
-            createdBy = user.userId,
-            createdTime = now,
-            dataSourceId = DataSource.Web,
-            facilityId = facilityId,
-            modifiedBy = user.userId,
-            modifiedTime = now,
             speciesId = SpeciesId(10001),
             treesCollectedFrom = 2))
 
@@ -565,16 +554,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can do exact search for null values`() {
-    accessionsDao.insert(
-        AccessionsRow(
-            createdBy = user.userId,
-            createdTime = Instant.now(),
-            dataSourceId = DataSource.Web,
-            number = "MISSING",
-            facilityId = facilityId,
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-            stateId = AccessionState.Processing))
+    insertAccession(number = "MISSING")
     accessionsDao.update(
         accessionsDao
             .fetchOneByNumber("ABCDEFG")!!
@@ -605,16 +585,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can do fuzzy search for null values`() {
-    accessionsDao.insert(
-        AccessionsRow(
-            createdBy = user.userId,
-            createdTime = Instant.now(),
-            dataSourceId = DataSource.Web,
-            number = "MISSING",
-            facilityId = facilityId,
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-            stateId = AccessionState.Processing))
+    insertAccession(number = "MISSING")
     accessionsDao.update(
         accessionsDao.fetchOneByNumber("ABCDEFG")!!.copy(storageNotes = "some matching notes"))
     accessionsDao.update(accessionsDao.fetchOneByNumber("XYZ")!!.copy(storageNotes = "not it"))
@@ -916,19 +887,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   inner class CompoundSearchTest {
     @BeforeEach
     fun insertTreesCollectedFromExamples() {
-      (10..20).forEach { value ->
-        accessionsDao.insert(
-            AccessionsRow(
-                createdBy = user.userId,
-                createdTime = Instant.now(),
-                dataSourceId = DataSource.Web,
-                number = "$value",
-                facilityId = facilityId,
-                modifiedBy = user.userId,
-                modifiedTime = Instant.now(),
-                stateId = AccessionState.Processing,
-                treesCollectedFrom = value))
-      }
+      (10..20).forEach { value -> insertAccession(number = "$value", treesCollectedFrom = value) }
     }
 
     @Test
@@ -1019,17 +978,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `can search for exact ages`() {
       listOf(1100L, 1101L, 1102L).forEach { id ->
-        accessionsDao.insert(
-            AccessionsRow(
-                id = AccessionId(id),
-                number = "$id",
-                stateId = AccessionState.Processed,
-                createdBy = user.userId,
-                createdTime = Instant.EPOCH,
-                dataSourceId = DataSource.Web,
-                facilityId = facilityId,
-                modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH))
+        insertAccession(id = id, stateId = AccessionState.Processed)
       }
 
       setCollectedDates(
@@ -1149,17 +1098,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `range search by age in years returns results from entire year`() {
-      accessionsDao.insert(
-          AccessionsRow(
-              id = AccessionId(1100),
-              number = "1100",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = facilityId,
-              modifiedBy = user.userId,
-              modifiedTime = Instant.EPOCH))
+      insertAccession(id = 1100)
 
       setCollectedDates(1000 to "2018-01-01", 1001 to "2019-12-31", 1100 to "2020-01-01")
 
@@ -1221,17 +1160,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun insertReceivedDateExamples() {
       listOf(1, 2, 8).forEach { day ->
-        accessionsDao.insert(
-            AccessionsRow(
-                createdBy = user.userId,
-                createdTime = Instant.now(),
-                dataSourceId = DataSource.Web,
-                number = "JAN$day",
-                facilityId = facilityId,
-                modifiedBy = user.userId,
-                modifiedTime = Instant.now(),
-                stateId = AccessionState.Processing,
-                receivedDate = LocalDate.of(2021, 1, day)))
+        insertAccession(number = "JAN$day", receivedDate = LocalDate.of(2021, 1, day))
       }
     }
 
@@ -1415,18 +1344,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `only includes values from accessions the user has permission to view`() {
       insertFacility(1100)
 
-      accessionsDao.insert(
-          AccessionsRow(
-              id = AccessionId(1100),
-              number = "OtherProject",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = FacilityId(1100),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.EPOCH,
-              treesCollectedFrom = 3))
+      insertAccession(facilityId = 1100, treesCollectedFrom = 3)
 
       val expected = listOf("1", "2")
 
@@ -1442,18 +1360,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       insertFacility(1100)
 
-      accessionsDao.insert(
-          AccessionsRow(
-              id = AccessionId(1100),
-              number = "OtherProject",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = FacilityId(1100),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.now(),
-              treesCollectedFrom = 3))
+      insertAccession(facilityId = 1100, treesCollectedFrom = 3)
 
       val expected = listOf("1", "2", "3")
 
@@ -1564,18 +1471,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     fun `only includes accession values the user has permission to view`() {
       insertFacility(1100)
 
-      accessionsDao.insert(
-          AccessionsRow(
-              id = AccessionId(1100),
-              number = "OtherProject",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = FacilityId(1100),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.now(),
-              treesCollectedFrom = 3))
+      insertAccession(id = 1100, number = "OtherProject", facilityId = 1100, treesCollectedFrom = 3)
 
       val expected = listOf(null, "1", "2")
 
@@ -1591,18 +1487,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       insertFacility(1100)
 
-      accessionsDao.insert(
-          AccessionsRow(
-              id = hiddenAccessionId,
-              number = "OtherProject",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = FacilityId(1100),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.now(),
-              treesCollectedFrom = 3))
+      insertAccession(
+          id = hiddenAccessionId,
+          number = "OtherProject",
+          facilityId = 1100,
+          treesCollectedFrom = 3)
 
       accessionCollectorsDao.insert(
           AccessionCollectorsRow(
@@ -1660,29 +1549,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val viabilityTestId = ViabilityTestId(1100)
       val otherViabilityTestId = ViabilityTestId(2200)
 
-      accessionsDao.insert(
-          AccessionsRow(
-              id = accessionId,
-              number = "OtherFacility",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = FacilityId(1100),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.now(),
-          ),
-          AccessionsRow(
-              id = otherAccessionId,
-              number = "OtherOrg",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = FacilityId(2200),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.now(),
-          ))
+      insertAccession(id = accessionId, number = "OtherFacility", facilityId = 1100)
+      insertAccession(id = otherAccessionId, number = "OtherOrg", facilityId = 2200)
       accessionCollectorsDao.insert(
           AccessionCollectorsRow(
               accessionId = otherAccessionId, position = 0, name = "otherCollector"))
@@ -1750,29 +1618,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       insertFacility(otherFacilityId)
 
-      accessionsDao.insert(
-          AccessionsRow(
-              id = accessionId,
-              number = "OtherProject",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = facilityId,
-              modifiedBy = user.userId,
-              modifiedTime = Instant.now(),
-          ),
-          AccessionsRow(
-              id = otherAccessionId,
-              number = "OtherProject22",
-              stateId = AccessionState.Processed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              dataSourceId = DataSource.Web,
-              facilityId = otherFacilityId,
-              modifiedBy = user.userId,
-              modifiedTime = Instant.now(),
-          ))
+      insertAccession(id = accessionId, number = "OtherProject")
+      insertAccession(
+          id = otherAccessionId, number = "OtherProject22", facilityId = otherFacilityId)
+
       accessionCollectorsDao.insert(
           AccessionCollectorsRow(
               accessionId = otherAccessionId, position = 0, name = "otherCollector"))
@@ -1839,19 +1688,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     // A facility in an org the user isn't in
     insertOrganization(2)
     insertFacility(2000)
-
-    accessionsDao.insert(
-        AccessionsRow(
-            id = AccessionId(2000),
-            number = "OtherOrg",
-            stateId = AccessionState.Processed,
-            createdBy = user.userId,
-            createdTime = Instant.EPOCH,
-            dataSourceId = DataSource.Web,
-            facilityId = FacilityId(2000),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
+    insertAccession(facilityId = 2000)
 
     val fields = listOf(accessionNumberField)
     val sortOrder = fields.map { SearchSortField(it) }
@@ -1891,19 +1728,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         mapOf(facilityId to Role.MANAGER, FacilityId(1100) to Role.CONTRIBUTOR)
 
     insertFacility(1100)
-
-    accessionsDao.insert(
-        AccessionsRow(
-            id = AccessionId(1100),
-            number = "OtherProject",
-            stateId = AccessionState.Processed,
-            createdBy = user.userId,
-            createdTime = Instant.EPOCH,
-            dataSourceId = DataSource.Web,
-            facilityId = FacilityId(1100),
-            modifiedBy = user.userId,
-            modifiedTime = Instant.now(),
-        ))
+    insertAccession(facilityId = 1100)
 
     val fields = listOf(accessionNumberField)
     val sortOrder = fields.map { SearchSortField(it) }

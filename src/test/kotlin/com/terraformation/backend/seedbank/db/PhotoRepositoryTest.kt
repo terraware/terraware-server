@@ -7,13 +7,10 @@ import com.terraformation.backend.customer.event.OrganizationDeletionStartedEven
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
-import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
-import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.PhotosRow
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.LocalFileStore
@@ -116,17 +113,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
         PhotoRepository(accessionPhotosDao, dslContext, clock, fileStore, photosDao, thumbnailStore)
 
     insertSiteData()
-    accessionsDao.insert(
-        AccessionsRow(
-            id = accessionId,
-            number = accessionNumber,
-            facilityId = facilityId,
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            dataSourceId = DataSource.Web,
-            modifiedBy = user.userId,
-            modifiedTime = clock.instant(),
-            stateId = AccessionState.Pending))
+    insertAccession(id = accessionId, number = accessionNumber)
   }
 
   @AfterEach
@@ -357,40 +344,25 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     insertOrganization(otherOrganizationId)
     insertFacility(sameOrgFacilityId)
     insertFacility(otherOrgFacilityId, otherOrganizationId)
+    insertAccession(id = sameOrgAccessionId, facilityId = sameOrgFacilityId)
+    insertAccession(id = otherOrgAccessionId, facilityId = otherOrgFacilityId)
 
-    listOf(
-            facilityId to accessionId,
-            sameOrgFacilityId to sameOrgAccessionId,
-            otherOrgFacilityId to otherOrgAccessionId)
-        .forEach { (facilityId, newAccessionId) ->
-          val accessionsRow =
-              AccessionsRow(
-                  id = newAccessionId,
-                  number = "$newAccessionId",
-                  facilityId = facilityId,
-                  createdBy = user.userId,
-                  createdTime = clock.instant(),
-                  dataSourceId = DataSource.Web,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant(),
-                  stateId = AccessionState.Pending)
+    listOf(accessionId, sameOrgAccessionId, otherOrgAccessionId).forEach { photoAccessionId ->
+      val photosRow =
+          PhotosRow(
+              contentType = contentType,
+              fileName = "$photoAccessionId",
+              storageUrl = URI("file:///$photoAccessionId"),
+              size = 1,
+              createdBy = user.userId,
+              createdTime = uploadedTime,
+              modifiedBy = user.userId,
+              modifiedTime = uploadedTime)
 
-          val photosRow =
-              PhotosRow(
-                  contentType = contentType,
-                  fileName = "$newAccessionId",
-                  storageUrl = URI("file:///$newAccessionId"),
-                  size = 1,
-                  createdBy = user.userId,
-                  createdTime = uploadedTime,
-                  modifiedBy = user.userId,
-                  modifiedTime = uploadedTime)
-
-          accessionsDao.merge(accessionsRow)
-          photosDao.insert(photosRow)
-          accessionPhotosDao.insert(
-              AccessionPhotosRow(accessionId = newAccessionId, photoId = photosRow.id))
-        }
+      photosDao.insert(photosRow)
+      accessionPhotosDao.insert(
+          AccessionPhotosRow(accessionId = photoAccessionId, photoId = photosRow.id))
+    }
 
     // deleteAllPhotos is tested separately; we just care that it's called for each accession.
     val spyRepository = spyk(repository)

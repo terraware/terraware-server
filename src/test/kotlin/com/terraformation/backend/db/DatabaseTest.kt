@@ -31,6 +31,7 @@ import com.terraformation.backend.db.tables.daos.UsersDao
 import com.terraformation.backend.db.tables.daos.ViabilityTestResultsDao
 import com.terraformation.backend.db.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.tables.daos.WithdrawalsDao
+import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.tables.references.DEVICES
 import com.terraformation.backend.db.tables.references.FACILITIES
@@ -43,6 +44,7 @@ import com.terraformation.backend.db.tables.references.UPLOADS
 import com.terraformation.backend.db.tables.references.USERS
 import java.net.URI
 import java.time.Instant
+import java.time.LocalDate
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
 import org.jooq.Configuration
@@ -491,6 +493,51 @@ abstract class DatabaseTest {
           .set(IS_READ, isRead)
           .execute()
     }
+  }
+
+  /**
+   * Inserts a new accession with reasonable defaults for required fields.
+   *
+   * Since accessions have a ton of fields, this works a little differently than the other insert
+   * helper methods in that it takes an optional [row] argument. Any fields in [row] that are not
+   * overridden by other parameters to this function are retained as-is. This approach means we
+   * don't have to have a parameter here for every single accession field, just the ones that are
+   * used in more than one or two places in the test suite.
+   */
+  fun insertAccession(
+      row: AccessionsRow = AccessionsRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      dataSourceId: DataSource = row.dataSourceId ?: DataSource.Web,
+      facilityId: Any = row.facilityId ?: this.facilityId,
+      id: Any? = row.id,
+      isManualState: Boolean = row.isManualState ?: false,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      number: String? = row.number ?: id?.let { "$it" },
+      receivedDate: LocalDate? = row.receivedDate,
+      stateId: AccessionState = row.stateId ?: AccessionState.Processing,
+      treesCollectedFrom: Int? = row.treesCollectedFrom,
+  ): AccessionId {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            dataSourceId = dataSourceId,
+            facilityId = facilityId.toIdWrapper { FacilityId(it) },
+            id = id?.toIdWrapper { AccessionId(it) },
+            isManualState = isManualState,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            number = number,
+            receivedDate = receivedDate,
+            stateId = stateId,
+            treesCollectedFrom = treesCollectedFrom,
+        )
+
+    accessionsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
   }
 
   class DockerPostgresDataSourceInitializer :
