@@ -146,6 +146,7 @@ data class CreateViabilityTestRequestPayload(
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
+    @Valid val testResults: List<ViabilityTestResultPayload>? = null,
     val testType: ViabilityTestType,
     val treatment: ViabilityTestTreatment? = null,
     @Schema(
@@ -164,6 +165,7 @@ data class CreateViabilityTestRequestPayload(
           seedType = seedType,
           startDate = startDate,
           substrate = substrate,
+          testResults = testResults?.map { it.toModel() },
           testType = testType,
           treatment = treatment,
           withdrawnByUserId = withdrawnByUserId,
