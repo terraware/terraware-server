@@ -38,10 +38,18 @@ class ViabilityTestsTable(private val tables: SearchTables) : SearchTable() {
           // TODO: Remove this once clients are no longer using it (new name is viabilityPercent)
           integerField(
               "percentGerminated", "% Viability", VIABILITY_TESTS.TOTAL_PERCENT_GERMINATED),
-          enumField("seedType", "Seed type", VIABILITY_TESTS.SEED_TYPE_ID),
+          integerField(
+              "seedsCompromised",
+              "Number of seeds compromised (cut test)",
+              VIABILITY_TESTS.SEEDS_COMPROMISED),
+          integerField(
+              "seedsEmpty", "Number of seeds empty (cut test)", VIABILITY_TESTS.SEEDS_EMPTY),
+          integerField(
+              "seedsFilled", "Number of seeds filled (cut test)", VIABILITY_TESTS.SEEDS_FILLED),
           // TODO: Remove this once clients are no longer using it (new name is seedsTested)
           integerField("seedsSown", "Number of seeds sown", VIABILITY_TESTS.SEEDS_SOWN),
           integerField("seedsTested", "Number of seeds tested", VIABILITY_TESTS.SEEDS_SOWN),
+          enumField("seedType", "Seed type", VIABILITY_TESTS.SEED_TYPE_ID),
           dateField("startDate", "Viability test start date", VIABILITY_TESTS.START_DATE),
           enumField("substrate", "Germination substrate", VIABILITY_TESTS.SUBSTRATE_ID),
           enumField("treatment", "Germination treatment", VIABILITY_TESTS.TREATMENT_ID),

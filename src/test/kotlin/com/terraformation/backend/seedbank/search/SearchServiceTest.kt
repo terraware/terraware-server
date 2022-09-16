@@ -2709,6 +2709,18 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
         }
       }
 
+      val cutTestRow =
+          ViabilityTestsRow(
+              accessionId = AccessionId(1000),
+              remainingQuantity = BigDecimal.ONE,
+              remainingUnitsId = SeedQuantityUnits.Seeds,
+              seedsCompromised = 1,
+              seedsEmpty = 2,
+              seedsFilled = 3,
+              seedsSown = 10,
+              testType = ViabilityTestType.Cut)
+      viabilityTestsDao.insert(cutTestRow)
+
       val expectedAccessions =
           listOf(
                   mapOf(
@@ -2769,6 +2781,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                   "seedsTested" to "15",
                                   "type" to "Lab",
                                   "viabilityPercent" to "100",
+                              ),
+                              mapOf(
+                                  "id" to "${cutTestRow.id}",
+                                  "seedsCompromised" to "1",
+                                  "seedsEmpty" to "2",
+                                  "seedsFilled" to "3",
+                                  "seedsSown" to "10",
+                                  "seedsTested" to "10",
+                                  "type" to "Cut",
                               ),
                           ),
                   ))

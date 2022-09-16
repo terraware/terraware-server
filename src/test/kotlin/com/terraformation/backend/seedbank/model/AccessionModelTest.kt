@@ -22,6 +22,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Nested
@@ -104,11 +105,17 @@ internal class AccessionModelTest {
       remaining: SeedQuantityModel? = null,
       substrate: ViabilityTestSubstrate? = null,
       withdrawnByUserId: UserId? = null,
+      seedsCompromised: Int? = null,
+      seedsEmpty: Int? = null,
+      seedsFilled: Int? = null,
   ): ViabilityTestModel {
     return ViabilityTestModel(
         accessionId = AccessionId(1),
         id = nextViabilityTestId(),
         remaining = remaining,
+        seedsCompromised = seedsCompromised,
+        seedsEmpty = seedsEmpty,
+        seedsFilled = seedsFilled,
         seedsTested = seedsTested,
         startDate = startDate,
         substrate = substrate,
@@ -153,11 +160,13 @@ internal class AccessionModelTest {
       createdTime: Instant = clock.instant(),
       id: WithdrawalId? = nextWithdrawalId(),
       withdrawnByUserId: UserId? = null,
+      estimatedCount: Int? =
+          if (withdrawn.units == SeedQuantityUnits.Seeds) withdrawn.quantity.toInt() else null,
   ): WithdrawalModel {
     return WithdrawalModel(
-        accessionId = AccessionId(1),
         createdTime = createdTime,
         date = date,
+        estimatedCount = estimatedCount,
         id = id,
         purpose = purpose,
         remaining = remaining,
@@ -465,6 +474,120 @@ internal class AccessionModelTest {
               .updateViabilityTest(viabilityTestId, clock) { it.copy(withdrawnByUserId = null) }
 
       assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
+    }
+
+    @Test
+    fun `cut test results are reflected in v1 cut test fields`() {
+      val model =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .addViabilityTest(
+                  viabilityTest(
+                      ViabilityTestType.Cut,
+                      seedsCompromised = 1,
+                      seedsEmpty = 2,
+                      seedsFilled = 3,
+                      seedsTested = 6),
+                  clock)
+              .addViabilityTest(
+                  viabilityTest(ViabilityTestType.Cut, seedsFilled = 1, seedsTested = 1), clock)
+
+      assertEquals(1, model.cutTestSeedsCompromised, "Compromised")
+      assertEquals(2, model.cutTestSeedsEmpty, "Empty")
+      assertEquals(4, model.cutTestSeedsFilled, "Filled")
+    }
+
+    @Test
+    fun `new cut test is added if v1 cut test fields are newly populated`() {
+      val initial = accession(total = seeds(10))
+      val updated =
+          initial
+              .copy(cutTestSeedsCompromised = 1, cutTestSeedsEmpty = 2, cutTestSeedsFilled = 3)
+              .withCalculatedValues(clock, initial)
+
+      val expectedTest =
+          ViabilityTestModel(
+              remaining = seeds(4),
+              seedsCompromised = 1,
+              seedsEmpty = 2,
+              seedsFilled = 3,
+              seedsTested = 6,
+              testType = ViabilityTestType.Cut,
+          )
+
+      assertEquals(listOf(expectedTest), updated.viabilityTests)
+    }
+
+    @Test
+    fun `cut test is removed if v1 cut test fields are cleared`() {
+      val initial = accession(total = seeds(10)).withCalculatedValues(clock)
+      val withCutTest = initial.copy(cutTestSeedsEmpty = 1).withCalculatedValues(clock, initial)
+      val updated =
+          withCutTest.copy(cutTestSeedsEmpty = null).withCalculatedValues(clock, withCutTest)
+
+      assertNotEquals(emptyList<ViabilityTestModel>(), withCutTest.viabilityTests, "Before edit")
+      assertEquals(emptyList<ViabilityTestModel>(), updated.viabilityTests, "After edit")
+    }
+
+    @Test
+    fun `existing cut test is updated if v1 cut test fields are modified`() {
+      val initialViabilityTest =
+          ViabilityTestModel(
+              id = ViabilityTestId(1),
+              remaining = seeds(9),
+              seedsFilled = 1,
+              seedsTested = 1,
+              testType = ViabilityTestType.Cut)
+      val initialWithdrawal =
+          withdrawal(
+              remaining = seeds(9), viabilityTestId = initialViabilityTest.id, withdrawn = seeds(1))
+
+      val initialAccession =
+          accession(
+                  cutTestSeedsFilled = 1,
+                  total = seeds(10),
+                  viabilityTests = listOf(initialViabilityTest),
+                  withdrawals = listOf(initialWithdrawal))
+              .withCalculatedValues(clock)
+      val updatedAccession =
+          initialAccession
+              .copy(
+                  cutTestSeedsCompromised = 1,
+                  cutTestSeedsFilled = 2,
+                  // v1 PUT requests won't include the cut test or its withdrawal since we filter
+                  // them out of v1 GET responses.
+                  viabilityTests = emptyList(),
+                  withdrawals = emptyList())
+              .withCalculatedValues(clock, initialAccession)
+
+      val expectedViabilityTest =
+          initialViabilityTest.copy(
+              remaining = seeds(7), seedsCompromised = 1, seedsFilled = 2, seedsTested = 3)
+      val expectedWithdrawal =
+          initialWithdrawal.copy(
+              estimatedCount = 3,
+              remaining = seeds(7),
+              viabilityTest = expectedViabilityTest,
+              withdrawn = seeds(3))
+
+      assertEquals(
+          listOf(expectedViabilityTest),
+          updatedAccession.viabilityTests,
+          "Existing viability test should be updated")
+      assertEquals(
+          listOf(expectedWithdrawal),
+          updatedAccession.withdrawals,
+          "Existing withdrawal should be updated")
+      assertEquals(seeds(7), updatedAccession.remaining, "Remaining quantity")
+    }
+
+    @Test
+    fun `cut test on weight-based accession requires subset data`() {
+      val initial = accession(total = grams(10)).withCalculatedValues(clock)
+
+      assertThrows<IllegalArgumentException> {
+        initial.copy(cutTestSeedsFilled = 1).withCalculatedValues(clock, initial)
+      }
     }
   }
 
@@ -886,7 +1009,8 @@ internal class AccessionModelTest {
       val accession = accession(total = grams(100), withdrawals = listOf(withdrawal(grams(1))))
 
       assertThrows<IllegalArgumentException> {
-        accession.calculateWithdrawals(clock, listOf(withdrawal(grams(1))))
+        accession.calculateWithdrawals(
+            clock, AccessionModel(withdrawals = listOf(withdrawal(grams(1)))))
       }
     }
 
@@ -908,7 +1032,10 @@ internal class AccessionModelTest {
 
       val withdrawals =
           accession.calculateWithdrawals(
-              clock, listOf(existingWithdrawalForTest, otherExistingWithdrawal))
+              clock,
+              accession(
+                  total = grams(100),
+                  withdrawals = listOf(existingWithdrawalForTest, otherExistingWithdrawal)))
       assertEquals(existingWithdrawalForTest.id, withdrawals[0].id, "Withdrawal ID")
     }
 
@@ -1559,7 +1686,8 @@ internal class AccessionModelTest {
                   latestObservedTime = yesterdayInstant,
                   remaining = seeds(10))
 
-      val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today)))
+      val updated =
+          accession.copy(withdrawals = listOf(withdrawal(seeds(2), date = today, id = null)))
 
       assertEquals(
           seeds(8), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
@@ -1578,7 +1706,9 @@ internal class AccessionModelTest {
       val updated =
           accession.copy(
               withdrawals =
-                  listOf(withdrawal(grams(1), date = yesterday, createdTime = tomorrowInstant)))
+                  listOf(
+                      withdrawal(
+                          grams(1), date = yesterday, createdTime = tomorrowInstant, id = null)))
 
       assertEquals(
           grams(10), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
@@ -1597,7 +1727,9 @@ internal class AccessionModelTest {
       val updated =
           accession.copy(
               withdrawals =
-                  listOf(withdrawal(grams(1), date = today, createdTime = yesterdayInstant)))
+                  listOf(
+                      withdrawal(
+                          grams(1), date = today, createdTime = yesterdayInstant, id = null)))
 
       assertEquals(
           grams(10), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
@@ -1619,7 +1751,10 @@ internal class AccessionModelTest {
               withdrawals =
                   listOf(
                       withdrawal(
-                          grams(1), date = today, createdTime = todayInstant.plusSeconds(1))))
+                          grams(1),
+                          date = today,
+                          createdTime = todayInstant.plusSeconds(1),
+                          id = null)))
 
       assertEquals(
           grams(9), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
@@ -1638,7 +1773,7 @@ internal class AccessionModelTest {
                   subsetCount = 2,
                   subsetWeightQuantity = grams(6))
 
-      val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2))))
+      val updated = accession.copy(withdrawals = listOf(withdrawal(seeds(2), id = null)))
 
       assertEquals(
           grams(4), updated.calculateRemaining(tomorrowClock, accession), "Remaining quantity")
@@ -1697,7 +1832,9 @@ internal class AccessionModelTest {
                   latestObservedTime = Instant.EPOCH,
                   remaining = seeds(10))
 
-      val updated = accession.copy(remaining = seeds(5), withdrawals = listOf(withdrawal(seeds(1))))
+      val updated =
+          accession.copy(
+              remaining = seeds(5), withdrawals = listOf(withdrawal(seeds(1), id = null)))
 
       assertEquals(
           seeds(5),

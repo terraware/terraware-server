@@ -102,6 +102,9 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
           id = record[ID]!!,
           notes = record[NOTES],
           remaining = SeedQuantityModel.of(record[REMAINING_QUANTITY], record[REMAINING_UNITS_ID]),
+          seedsCompromised = record[SEEDS_COMPROMISED],
+          seedsEmpty = record[SEEDS_EMPTY],
+          seedsFilled = record[SEEDS_FILLED],
           seedsTested = record[SEEDS_SOWN],
           seedType = record[SEED_TYPE_ID],
           staffResponsible = record[STAFF_RESPONSIBLE],
@@ -161,6 +164,9 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
               .set(REMAINING_QUANTITY, calculatedTest.remaining?.quantity)
               .set(REMAINING_UNITS_ID, calculatedTest.remaining?.units)
               .set(SEED_TYPE_ID, calculatedTest.seedType)
+              .set(SEEDS_COMPROMISED, calculatedTest.seedsCompromised)
+              .set(SEEDS_EMPTY, calculatedTest.seedsEmpty)
+              .set(SEEDS_FILLED, calculatedTest.seedsFilled)
               .set(SEEDS_SOWN, calculatedTest.seedsTested)
               .set(STAFF_RESPONSIBLE, calculatedTest.staffResponsible)
               .set(START_DATE, calculatedTest.startDate)
@@ -228,6 +234,9 @@ class ViabilityTestStore(private val dslContext: DSLContext) {
                     .set(REMAINING_QUANTITY, desiredTest.remaining?.quantity)
                     .set(REMAINING_UNITS_ID, desiredTest.remaining?.units)
                     .set(SEED_TYPE_ID, desiredTest.seedType)
+                    .set(SEEDS_COMPROMISED, desiredTest.seedsCompromised)
+                    .set(SEEDS_EMPTY, desiredTest.seedsEmpty)
+                    .set(SEEDS_FILLED, desiredTest.seedsFilled)
                     .set(SEEDS_SOWN, desiredTest.seedsTested)
                     .set(SUBSTRATE_ID, desiredTest.substrate)
                     .set(STAFF_RESPONSIBLE, desiredTest.staffResponsible)

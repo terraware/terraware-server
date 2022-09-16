@@ -9,6 +9,7 @@ import com.terraformation.backend.db.ViabilityTestSubstrate
 import com.terraformation.backend.db.ViabilityTestTreatment
 import com.terraformation.backend.db.ViabilityTestType
 import java.time.LocalDate
+import kotlin.math.sign
 
 data class ViabilityTestResultModel(
     val id: ViabilityTestResultId? = null,
@@ -23,6 +24,9 @@ data class ViabilityTestModel(
     val id: ViabilityTestId? = null,
     val notes: String? = null,
     val remaining: SeedQuantityModel? = null,
+    val seedsCompromised: Int? = null,
+    val seedsEmpty: Int? = null,
+    val seedsFilled: Int? = null,
     val seedsTested: Int? = null,
     val seedType: ViabilityTestSeedType? = null,
     val staffResponsible: String? = null,
@@ -36,6 +40,11 @@ data class ViabilityTestModel(
     val withdrawnByName: String? = null,
     val withdrawnByUserId: UserId? = null,
 ) {
+  fun validateV1() {
+    assertNotMixingCutAndGerminationResults()
+    assertValidSeedCounts()
+  }
+
   fun validateV2() {
     val isLab = testType == ViabilityTestType.Lab
     val isNursery = testType == ViabilityTestType.Nursery
@@ -56,6 +65,32 @@ data class ViabilityTestModel(
     if (!substrateValidForTestType) {
       throw IllegalArgumentException(
           "Substrate ${substrate?.displayName} not valid for test type ${testType.displayName}")
+    }
+
+    assertNotMixingCutAndGerminationResults()
+    assertValidSeedCounts()
+  }
+
+  private fun assertNotMixingCutAndGerminationResults() {
+    if (testType == ViabilityTestType.Cut) {
+      if (!testResults.isNullOrEmpty()) {
+        throw IllegalArgumentException("Cut tests cannot have germination test results")
+      }
+    } else if (seedsCompromised != null || seedsEmpty != null || seedsFilled != null) {
+      throw IllegalArgumentException("Germination tests cannot have cut test results")
+    }
+  }
+
+  private fun assertValidSeedCounts() {
+    if (seedsCompromised?.sign == -1 ||
+        seedsEmpty?.sign == -1 ||
+        seedsFilled?.sign == -1 ||
+        seedsTested?.sign == -1) {
+      throw IllegalArgumentException("Seed counts cannot be negative")
+    }
+
+    if ((seedsCompromised ?: 0) + (seedsEmpty ?: 0) + (seedsFilled ?: 0) > (seedsTested ?: 0)) {
+      throw IllegalArgumentException("Cut test cannot have results for more seeds than were tested")
     }
   }
 
@@ -92,6 +127,9 @@ data class ViabilityTestModel(
     return endDate == other.endDate &&
         notes == other.notes &&
         remaining.equalsIgnoreScale(other.remaining) &&
+        seedsCompromised == other.seedsCompromised &&
+        seedsEmpty == other.seedsEmpty &&
+        seedsFilled == other.seedsFilled &&
         seedsTested == other.seedsTested &&
         seedType == other.seedType &&
         staffResponsible == other.staffResponsible &&
@@ -112,21 +150,31 @@ data class ViabilityTestModel(
     return testResults?.sumOf { it.seedsGerminated }
   }
 
-  fun calculateTotalPercentGerminated(): Int? {
-    return calculateTotalSeedsGerminated()?.let { germinated ->
-      val sown = seedsTested ?: 0
-      if (sown > 0) {
-        germinated * 100 / sown
-      } else {
-        null
-      }
+  fun calculateViabilityPercent(): Int? {
+    return when (testType) {
+      ViabilityTestType.Cut ->
+          if (seedsTested != null && seedsFilled != null && seedsTested > 0) {
+            seedsFilled * 100 / seedsTested
+          } else {
+            null
+          }
+      ViabilityTestType.Lab,
+      ViabilityTestType.Nursery ->
+          calculateTotalSeedsGerminated()?.let { germinated ->
+            val sown = seedsTested ?: 0
+            if (sown > 0) {
+              germinated * 100 / sown
+            } else {
+              null
+            }
+          }
     }
   }
 
   fun withCalculatedValues(): ViabilityTestModel {
     return copy(
         totalSeedsGerminated = calculateTotalSeedsGerminated(),
-        viabilityPercent = calculateTotalPercentGerminated(),
+        viabilityPercent = calculateViabilityPercent(),
     )
   }
 }
