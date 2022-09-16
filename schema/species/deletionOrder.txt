@@ -1,5 +1,3 @@
-species_endangered_types
-rare_types
 gbif_vernacular_names
 gbif_distributions
 species_problems

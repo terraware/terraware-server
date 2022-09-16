@@ -8,5 +8,3 @@ gbif_name_words
 species_problems
 gbif_distributions
 gbif_vernacular_names
-rare_types
-species_endangered_types

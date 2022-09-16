@@ -11,11 +11,9 @@ facility_types
 growth_forms
 notification_criticalities
 processing_methods
-rare_types
 roles
 seed_storage_behaviors
 source_plant_origins
-species_endangered_types
 species_problem_fields
 species_problem_types
 timeseries_types

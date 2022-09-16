@@ -44,11 +44,9 @@ upload_problem_types
 timeseries_types
 species_problem_types
 species_problem_fields
-species_endangered_types
 source_plant_origins
 seed_storage_behaviors
 roles
-rare_types
 processing_methods
 notification_criticalities
 growth_forms
