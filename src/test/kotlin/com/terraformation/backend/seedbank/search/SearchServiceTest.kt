@@ -105,7 +105,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       SearchFieldPath(rootPrefix, AliasField("treesCollectedFromAlias", treesCollectedFromField))
   private val viabilityTestResultsSeedsGerminatedField =
       rootPrefix.resolve("viabilityTests_viabilityTestResults_seedsGerminated")
-  private val viabilityTestSeedsSownField = rootPrefix.resolve("viabilityTests_seedsSown")
+  private val viabilityTestSeedsTestedField = rootPrefix.resolve("viabilityTests_seedsTested")
   private val viabilityTestsTypeField = rootPrefix.resolve("viabilityTests_type")
 
   @BeforeEach
@@ -1526,7 +1526,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(null, "1000"),
-          searchService.fetchAllValues(viabilityTestSeedsSownField, searchScopes),
+          searchService.fetchAllValues(viabilityTestSeedsTestedField, searchScopes),
           "Value from viability_tests table (child of accessions)")
     }
 
@@ -1898,7 +1898,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
   inner class NestedFieldsTest {
     private val bagsNumberField = rootPrefix.resolve("bags.number")
     private val facilityNameField = rootPrefix.resolve("facility.name")
-    private val seedsSownField = rootPrefix.resolve("viabilityTests.seedsSown")
+    private val seedsTestedField = rootPrefix.resolve("viabilityTests.seedsTested")
     private val seedsGerminatedField =
         rootPrefix.resolve("viabilityTests.viabilityTestResults.seedsGerminated")
     private val testTypeField = rootPrefix.resolve("viabilityTests.type")
@@ -1940,11 +1940,12 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       // Use searchService rather than accessionSearchService; we don't want to include the
       // accession ID/number fields because those would cause the results for accession 1001 to
       // no longer be empty.
-      val result = searchService.search(rootPrefix, listOf(seedsSownField), NoConditionNode())
+      val result = searchService.search(rootPrefix, listOf(seedsTestedField), NoConditionNode())
 
       val expected =
           SearchResults(
-              listOf(mapOf("viabilityTests" to listOf(mapOf("seedsSown" to "15")))), cursor = null)
+              listOf(mapOf("viabilityTests" to listOf(mapOf("seedsTested" to "15")))),
+              cursor = null)
 
       assertEquals(expected, result)
     }
@@ -2280,7 +2281,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can sort on nested enum field`() {
-      val fields = listOf(seedsSownField, testTypeField)
+      val fields = listOf(seedsTestedField, testTypeField)
 
       viabilityTestsDao.insert(
           ViabilityTestsRow(
@@ -2305,8 +2306,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "accessionNumber" to "XYZ",
                       "viabilityTests" to
                           listOf(
-                              mapOf("seedsSown" to "15", "type" to "Lab"),
-                              mapOf("seedsSown" to "1", "type" to "Nursery"),
+                              mapOf("seedsTested" to "15", "type" to "Lab"),
+                              mapOf("seedsTested" to "1", "type" to "Nursery"),
                           ),
                   ),
                   mapOf(
@@ -2321,7 +2322,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns nested results for multiple fields`() {
-      val fields = listOf(bagsNumberField, seedsGerminatedField, seedsSownField)
+      val fields = listOf(bagsNumberField, seedsGerminatedField, seedsTestedField)
 
       val result = searchAccessions(facilityId, fields, criteria = NoConditionNode())
 
@@ -2339,7 +2340,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "seedsSown" to "15",
+                                  "seedsTested" to "15",
                                   "viabilityTestResults" to
                                       listOf(
                                           mapOf("seedsGerminated" to "5"),
@@ -2577,10 +2578,10 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can navigate up and down table hierarchy`() {
-      val seedsSownViaResults =
-          rootPrefix.resolve("viabilityTests.viabilityTestResults.viabilityTest.seedsSown")
-      val fields = listOf(seedsSownViaResults)
-      val sortOrder = listOf(SearchSortField(seedsSownViaResults))
+      val seedsTestedViaResults =
+          rootPrefix.resolve("viabilityTests.viabilityTestResults.viabilityTest.seedsTested")
+      val fields = listOf(seedsTestedViaResults)
+      val sortOrder = listOf(SearchSortField(seedsTestedViaResults))
       val criteria = FieldNode(accessionNumberField, listOf("XYZ"))
 
       val result = searchAccessions(facilityId, fields, criteria, sortOrder)
@@ -2599,8 +2600,8 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                           // There are two test results. We want to make sure we
                                           // can navigate back up from them even if we don't select
                                           // any fields from them.
-                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
-                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
                                       ))),
                   ),
               ),
@@ -2611,15 +2612,15 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can reference same field using two different paths`() {
-      val seedsSownViaResults =
-          rootPrefix.resolve("viabilityTests.viabilityTestResults.viabilityTest.seedsSown")
-      val fields = listOf(seedsSownField, seedsSownViaResults)
-      val sortOrder = listOf(SearchSortField(seedsSownViaResults))
+      val seedsTestedViaResults =
+          rootPrefix.resolve("viabilityTests.viabilityTestResults.viabilityTest.seedsTested")
+      val fields = listOf(seedsTestedField, seedsTestedViaResults)
+      val sortOrder = listOf(SearchSortField(seedsTestedViaResults))
       val criteria =
           AndNode(
               listOf(
-                  FieldNode(seedsSownViaResults, listOf("15")),
-                  FieldNode(seedsSownField, listOf("15"))))
+                  FieldNode(seedsTestedViaResults, listOf("15")),
+                  FieldNode(seedsTestedField, listOf("15"))))
 
       val result = searchAccessions(facilityId, fields, criteria, sortOrder)
 
@@ -2632,11 +2633,11 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "viabilityTests" to
                           listOf(
                               mapOf(
-                                  "seedsSown" to "15",
+                                  "seedsTested" to "15",
                                   "viabilityTestResults" to
                                       listOf(
-                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
-                                          mapOf("viabilityTest" to mapOf("seedsSown" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
+                                          mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
                                       ))),
                   ),
               ),
@@ -2762,6 +2763,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                                   "id" to "$testId",
                                   "type" to "Lab",
                                   "seedsSown" to "15",
+                                  "seedsTested" to "15",
                               ),
                           ),
                   ))

@@ -26,7 +26,7 @@ data class ViabilityTestModel(
     val seedType: ViabilityTestSeedType? = null,
     val substrate: ViabilityTestSubstrate? = null,
     val treatment: ViabilityTestTreatment? = null,
-    val seedsSown: Int? = null,
+    val seedsTested: Int? = null,
     val totalPercentGerminated: Int? = null,
     val totalSeedsGerminated: Int? = null,
     val notes: String? = null,
@@ -92,7 +92,7 @@ data class ViabilityTestModel(
     return endDate == other.endDate &&
         notes == other.notes &&
         remaining.equalsIgnoreScale(other.remaining) &&
-        seedsSown == other.seedsSown &&
+        seedsTested == other.seedsTested &&
         seedType == other.seedType &&
         staffResponsible == other.staffResponsible &&
         startDate == other.startDate &&
@@ -114,7 +114,7 @@ data class ViabilityTestModel(
 
   fun calculateTotalPercentGerminated(): Int? {
     return calculateTotalSeedsGerminated()?.let { germinated ->
-      val sown = seedsSown ?: 0
+      val sown = seedsTested ?: 0
       if (sown > 0) {
         germinated * 100 / sown
       } else {

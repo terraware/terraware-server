@@ -99,7 +99,7 @@ internal class AccessionModelTest {
   private fun viabilityTest(
       testType: ViabilityTestType = ViabilityTestType.Lab,
       startDate: LocalDate? = january(1),
-      seedsSown: Int? = null,
+      seedsTested: Int? = null,
       testResults: List<ViabilityTestResultModel>? = null,
       remaining: SeedQuantityModel? = null,
       substrate: ViabilityTestSubstrate? = null,
@@ -109,7 +109,7 @@ internal class AccessionModelTest {
         accessionId = AccessionId(1),
         id = nextViabilityTestId(),
         remaining = remaining,
-        seedsSown = seedsSown,
+        seedsTested = seedsTested,
         startDate = startDate,
         substrate = substrate,
         testResults = testResults,
@@ -205,7 +205,7 @@ internal class AccessionModelTest {
                       viabilityTest(
                           testType = ViabilityTestType.Lab,
                           startDate = january(1),
-                          seedsSown = 5,
+                          seedsTested = 5,
                           testResults =
                               listOf(
                                   viabilityTestResult(
@@ -215,7 +215,7 @@ internal class AccessionModelTest {
                       viabilityTest(
                           testType = ViabilityTestType.Lab,
                           startDate = january(3),
-                          seedsSown = 4,
+                          seedsTested = 4,
                           testResults =
                               listOf(
                                   viabilityTestResult(
@@ -227,7 +227,7 @@ internal class AccessionModelTest {
                       viabilityTest(
                           testType = ViabilityTestType.Lab,
                           startDate = january(8), // most recent start date
-                          seedsSown = 3,
+                          seedsTested = 3,
                           testResults =
                               listOf(
                                   viabilityTestResult(
@@ -250,7 +250,7 @@ internal class AccessionModelTest {
               viabilityTests =
                   listOf(
                       viabilityTest(
-                          seedsSown = 10,
+                          seedsTested = 10,
                           testResults =
                               listOf(
                                   viabilityTestResult(
@@ -261,7 +261,7 @@ internal class AccessionModelTest {
                       ),
                       viabilityTest(
                           startDate = january(8),
-                          seedsSown = 5,
+                          seedsTested = 5,
                           testResults =
                               listOf(
                                   viabilityTestResult(
@@ -285,7 +285,7 @@ internal class AccessionModelTest {
       val model =
           accession(
               total = seeds(20),
-              viabilityTests = listOf(viabilityTest(seedsSown = 10)),
+              viabilityTests = listOf(viabilityTest(seedsTested = 10)),
           )
 
       assertNull(model.calculateTotalViabilityPercent())
@@ -299,7 +299,7 @@ internal class AccessionModelTest {
               viabilityTests =
                   listOf(
                       viabilityTest(
-                          seedsSown = 10,
+                          seedsTested = 10,
                           testResults =
                               listOf(
                                   viabilityTestResult(
@@ -338,7 +338,7 @@ internal class AccessionModelTest {
               viabilityTests =
                   listOf(
                       viabilityTest(
-                          seedsSown = 1,
+                          seedsTested = 1,
                           testResults =
                               listOf(
                                   viabilityTestResult(
@@ -363,7 +363,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(clock)
               .addViabilityTest(
                   viabilityTest(
-                      seedsSown = 10,
+                      seedsTested = 10,
                       testResults =
                           listOf(
                               viabilityTestResult(
@@ -393,7 +393,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(clock)
               .addViabilityTest(
                   viabilityTest(
-                      seedsSown = 5,
+                      seedsTested = 5,
                       testResults =
                           listOf(
                               viabilityTestResult(
@@ -411,7 +411,7 @@ internal class AccessionModelTest {
               .copy(isManualState = true, remaining = seeds(10))
               .withCalculatedValues(clock)
               .addViabilityTest(
-                  viabilityTest(seedsSown = 1, withdrawnByUserId = withdrawnByUserId), clock)
+                  viabilityTest(seedsTested = 1, withdrawnByUserId = withdrawnByUserId), clock)
 
       assertEquals(withdrawnByUserId, model.withdrawals[0].withdrawnByUserId)
     }
@@ -421,7 +421,7 @@ internal class AccessionModelTest {
       val oldWithdrawnByUserId = UserId(1234)
       val newWithdrawnByUserId = UserId(5678)
 
-      val viabilityTest = viabilityTest(seedsSown = 1, withdrawnByUserId = oldWithdrawnByUserId)
+      val viabilityTest = viabilityTest(seedsTested = 1, withdrawnByUserId = oldWithdrawnByUserId)
       val viabilityTestId = viabilityTest.id!!
 
       val model =
@@ -447,7 +447,7 @@ internal class AccessionModelTest {
     fun `viability test update with null withdrawnByUserId does not change user ID of existing withdrawal`() {
       val withdrawnByUserId = UserId(1234)
 
-      val viabilityTest = viabilityTest(seedsSown = 1, withdrawnByUserId = withdrawnByUserId)
+      val viabilityTest = viabilityTest(seedsTested = 1, withdrawnByUserId = withdrawnByUserId)
       val viabilityTestId = viabilityTest.id!!
 
       val model =
@@ -498,7 +498,7 @@ internal class AccessionModelTest {
         accession(
             processingMethod = ProcessingMethod.Count,
             total = seeds(1),
-            viabilityTests = listOf(viabilityTest(seedsSown = 1)),
+            viabilityTests = listOf(viabilityTest(seedsTested = 1)),
             withdrawals = listOf(withdrawal(withdrawn = seeds(1), date = tomorrow)))
       }
     }
@@ -519,7 +519,7 @@ internal class AccessionModelTest {
         accession(
             processingMethod = ProcessingMethod.Weight,
             total = grams(1),
-            viabilityTests = listOf(viabilityTest(seedsSown = 1, remaining = grams(-1))))
+            viabilityTests = listOf(viabilityTest(seedsTested = 1, remaining = grams(-1))))
       }
 
       assertThrows<IllegalArgumentException>("withdrawals") {
@@ -671,7 +671,7 @@ internal class AccessionModelTest {
           accession().copy(isManualState = true, remaining = grams(10)).withCalculatedValues(clock)
 
       assertThrows<IllegalArgumentException> {
-        initial.addViabilityTest(viabilityTest(seedsSown = 1, startDate = null), tomorrowClock)
+        initial.addViabilityTest(viabilityTest(seedsTested = 1, startDate = null), tomorrowClock)
       }
     }
 
@@ -681,7 +681,7 @@ internal class AccessionModelTest {
           accession().copy(isManualState = true, remaining = seeds(10)).withCalculatedValues(clock)
 
       assertThrows<IllegalArgumentException> {
-        initial.addViabilityTest(viabilityTest(seedsSown = 11, startDate = null), tomorrowClock)
+        initial.addViabilityTest(viabilityTest(seedsTested = 11, startDate = null), tomorrowClock)
       }
     }
 
@@ -692,7 +692,7 @@ internal class AccessionModelTest {
 
       assertDoesNotThrow {
         initial.addViabilityTest(
-            viabilityTest(seedsSown = 11, startDate = yesterday), tomorrowClock)
+            viabilityTest(seedsTested = 11, startDate = yesterday), tomorrowClock)
       }
     }
 
@@ -707,7 +707,7 @@ internal class AccessionModelTest {
                   remaining = grams(10))
               .withCalculatedValues(clock)
 
-      assertDoesNotThrow { initial.addViabilityTest(viabilityTest(seedsSown = 9), tomorrowClock) }
+      assertDoesNotThrow { initial.addViabilityTest(viabilityTest(seedsTested = 9), tomorrowClock) }
     }
 
     @Test
@@ -722,7 +722,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(clock)
 
       assertThrows<IllegalArgumentException> {
-        initial.addViabilityTest(viabilityTest(seedsSown = 11, startDate = null), tomorrowClock)
+        initial.addViabilityTest(viabilityTest(seedsTested = 11, startDate = null), tomorrowClock)
       }
     }
 
@@ -734,7 +734,7 @@ internal class AccessionModelTest {
       assertThrows<IllegalArgumentException> {
         initial.addViabilityTest(
             viabilityTest(
-                seedsSown = 1,
+                seedsTested = 1,
                 substrate = ViabilityTestSubstrate.Paper,
                 testType = ViabilityTestType.Nursery),
             clock)
@@ -952,7 +952,7 @@ internal class AccessionModelTest {
     @Nested
     inner class TimeBasedWeightCalculations {
       private val futureTest =
-          viabilityTest(seedsSown = 8, startDate = tomorrow, remaining = grams(85))
+          viabilityTest(seedsTested = 8, startDate = tomorrow, remaining = grams(85))
       private val futureTestWithdrawal =
           withdrawal(
               grams(8),
@@ -992,7 +992,8 @@ internal class AccessionModelTest {
             accession(
                 total = grams(100),
                 viabilityTests =
-                    listOf(viabilityTest(seedsSown = 1, startDate = today, remaining = grams(96))),
+                    listOf(
+                        viabilityTest(seedsTested = 1, startDate = today, remaining = grams(96))),
                 withdrawals =
                     listOf(
                         withdrawal(grams(1), date = yesterday, remaining = grams(99)),
@@ -1142,8 +1143,8 @@ internal class AccessionModelTest {
           accession(
               viabilityTests =
                   listOf(
-                      viabilityTest(seedsSown = 10),
-                      viabilityTest(seedsSown = 5),
+                      viabilityTest(seedsTested = 10),
+                      viabilityTest(seedsTested = 5),
                   ),
               total = seeds(40),
           )
@@ -1184,13 +1185,13 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals updates seeds remaining on tests`() {
-      val testWithExistingWithdrawal = viabilityTest(seedsSown = 4, startDate = january(2))
+      val testWithExistingWithdrawal = viabilityTest(seedsTested = 4, startDate = january(2))
       val accession =
           accession(
               total = seeds(100),
               viabilityTests =
                   listOf(
-                      viabilityTest(seedsSown = 8, startDate = january(4)),
+                      viabilityTest(seedsTested = 8, startDate = january(4)),
                       testWithExistingWithdrawal,
                   ),
               withdrawals =
@@ -1202,7 +1203,7 @@ internal class AccessionModelTest {
                           id = nextWithdrawalId(),
                           purpose = WithdrawalPurpose.ViabilityTesting,
                           remaining = seeds(0),
-                          withdrawn = seeds(testWithExistingWithdrawal.seedsSown!!),
+                          withdrawn = seeds(testWithExistingWithdrawal.seedsTested!!),
                       ),
                       withdrawal(seeds(2), remaining = seeds(0), date = january(3)),
                   ),
@@ -1221,8 +1222,8 @@ internal class AccessionModelTest {
               total = seeds(100),
               viabilityTests =
                   listOf(
-                      viabilityTest(seedsSown = 4, startDate = january(2)),
-                      viabilityTest(seedsSown = 8, startDate = january(4)),
+                      viabilityTest(seedsTested = 4, startDate = january(2)),
+                      viabilityTest(seedsTested = 8, startDate = january(4)),
                   ),
               withdrawals =
                   listOf(
@@ -1239,7 +1240,7 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals retains withdrawal date if test is undated`() {
-      val test = viabilityTest(seedsSown = 1, startDate = null)
+      val test = viabilityTest(seedsTested = 1, startDate = null)
       val accession =
           accession(
               total = seeds(100),
@@ -1254,7 +1255,7 @@ internal class AccessionModelTest {
 
     @Test
     fun `calculateWithdrawals updates withdrawal date based on updated test date`() {
-      val test = viabilityTest(seedsSown = 1, startDate = january(5))
+      val test = viabilityTest(seedsTested = 1, startDate = january(5))
       val accession =
           accession(
               total = seeds(100),
@@ -1271,9 +1272,9 @@ internal class AccessionModelTest {
     }
 
     @Test
-    fun `calculateWithdrawals generates withdrawals for tests without seedsSown values`() {
+    fun `calculateWithdrawals generates withdrawals for tests without seedsTested values`() {
       val accession =
-          accession(total = seeds(100), viabilityTests = listOf(viabilityTest(seedsSown = null)))
+          accession(total = seeds(100), viabilityTests = listOf(viabilityTest(seedsTested = null)))
 
       val withdrawals = accession.calculateWithdrawals(clock)
       assertEquals(1, withdrawals.size, "Number of generated withdrawals")
@@ -1286,7 +1287,7 @@ internal class AccessionModelTest {
 
     @Nested
     inner class TimeBasedCalculations {
-      private val viabilityTest = viabilityTest(seedsSown = 8, startDate = tomorrow)
+      private val viabilityTest = viabilityTest(seedsTested = 8, startDate = tomorrow)
 
       private val accession =
           accession(
@@ -1653,7 +1654,7 @@ internal class AccessionModelTest {
                   latestObservedTime = Instant.EPOCH,
                   remaining = seeds(10))
 
-      val updated = accession.copy(viabilityTests = listOf(viabilityTest(seedsSown = 2)))
+      val updated = accession.copy(viabilityTests = listOf(viabilityTest(seedsTested = 2)))
 
       assertEquals(
           seeds(10),
@@ -1678,7 +1679,7 @@ internal class AccessionModelTest {
                   latestObservedTime = Instant.EPOCH,
                   remaining = seeds(10))
 
-      val updated = accession.addViabilityTest(viabilityTest(seedsSown = 1), clock)
+      val updated = accession.addViabilityTest(viabilityTest(seedsTested = 1), clock)
 
       assertEquals(
           seeds(9), updated.viabilityTests.getOrNull(0)?.remaining, "Seeds remaining on test")
@@ -1816,7 +1817,7 @@ internal class AccessionModelTest {
                       ViabilityTestModel(
                           id = ViabilityTestId(1),
                           remaining = grams(9),
-                          seedsSown = 1,
+                          seedsTested = 1,
                           startDate = today,
                           testType = ViabilityTestType.Lab,
                       ),
@@ -1852,7 +1853,7 @@ internal class AccessionModelTest {
                       ViabilityTestModel(
                           id = ViabilityTestId(1),
                           remaining = grams(9),
-                          seedsSown = 1,
+                          seedsTested = 1,
                           startDate = today,
                           testType = ViabilityTestType.Lab,
                       ),
@@ -1871,7 +1872,7 @@ internal class AccessionModelTest {
                               ViabilityTestModel(
                                   id = ViabilityTestId(1),
                                   remaining = grams(9),
-                                  seedsSown = 1,
+                                  seedsTested = 1,
                                   startDate = today,
                                   testType = ViabilityTestType.Lab,
                               ),
@@ -1897,7 +1898,7 @@ internal class AccessionModelTest {
                   listOf(
                       ViabilityTestModel(
                           id = ViabilityTestId(1),
-                          seedsSown = 1,
+                          seedsTested = 1,
                           startDate = today,
                           substrate = ViabilityTestSubstrate.Agar,
                           testType = ViabilityTestType.Nursery,
@@ -1933,7 +1934,7 @@ internal class AccessionModelTest {
                   listOf(
                       ViabilityTestModel(
                           id = ViabilityTestId(1),
-                          seedsSown = 1,
+                          seedsTested = 1,
                           startDate = today,
                           substrate = ViabilityTestSubstrate.Other,
                           testType = ViabilityTestType.Nursery,
@@ -1969,7 +1970,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(clock)
               .addViabilityTest(
                   viabilityTest(
-                      seedsSown = 100,
+                      seedsTested = 100,
                       testResults =
                           listOf(
                               viabilityTestResult(
@@ -1989,7 +1990,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(clock)
               .addViabilityTest(
                   viabilityTest(
-                      seedsSown = 1,
+                      seedsTested = 1,
                       testType = ViabilityTestType.Nursery,
                       substrate = ViabilityTestSubstrate.Moss),
                   clock)
@@ -2005,7 +2006,7 @@ internal class AccessionModelTest {
               .copy(isManualState = true, remaining = seeds(10))
               .withCalculatedValues(clock)
               .addViabilityTest(
-                  viabilityTest(seedsSown = 1, substrate = ViabilityTestSubstrate.Agar), clock)
+                  viabilityTest(seedsTested = 1, substrate = ViabilityTestSubstrate.Agar), clock)
 
       val v1Model = v2Model.toV1Compatible(clock)
       assertEquals(ViabilityTestSubstrate.Agar, v1Model.viabilityTests[0].substrate)
@@ -2023,7 +2024,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(clock, initialV2Model)
               // In v2, this is valid because it is dated yesterday and we have an observed quantity
               // from today that overrides what would otherwise be a negative seeds remaining value.
-              .addViabilityTest(viabilityTest(seedsSown = 3, startDate = yesterday), clock)
+              .addViabilityTest(viabilityTest(seedsTested = 3, startDate = yesterday), clock)
 
       val v1Model = v2Model.toV1Compatible(clock)
       assertEquals(seeds(1), v1Model.viabilityTests.getOrNull(0)?.remaining)

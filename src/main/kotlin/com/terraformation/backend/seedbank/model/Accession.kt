@@ -388,7 +388,7 @@ data class AccessionModel(
                 withdrawals
                     .filter { it.purpose != WithdrawalPurpose.ViabilityTesting }
                     .mapNotNull { it.withdrawn?.quantity },
-                viabilityTests.mapNotNull { it.seedsSown?.toBigDecimal() })
+                viabilityTests.mapNotNull { it.seedsTested?.toBigDecimal() })
             .flatten()
             .sumOf { it }
     if (total != null && totalWithdrawn > total.quantity) {
@@ -427,7 +427,7 @@ data class AccessionModel(
 
   private fun getLatestViabilityTestWithResults(): ViabilityTestModel? {
     return viabilityTests
-        .filter { it.calculateLatestRecordingDate() != null && it.seedsSown != null }
+        .filter { it.calculateLatestRecordingDate() != null && it.seedsTested != null }
         .maxByOrNull { it.calculateLatestRecordingDate()!! }
   }
 
@@ -503,7 +503,7 @@ data class AccessionModel(
 
     val tests = viabilityTests
 
-    val totalViabilityTested = tests.mapNotNull { it.seedsSown }.sum()
+    val totalViabilityTested = tests.mapNotNull { it.seedsTested }.sum()
     val totalGerminated =
         tests.sumOf { test -> test.testResults?.sumOf { it.seedsGerminated } ?: 0 }
 
@@ -601,7 +601,7 @@ data class AccessionModel(
         viabilityTests.map { test ->
           val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
           val withdrawn =
-              test.seedsSown?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
+              test.seedsTested?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
           WithdrawalModel(
               createdTime = existingWithdrawal?.createdTime,
               date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
