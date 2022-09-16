@@ -19,10 +19,10 @@ SELECT id,
        cut_test_seeds_compromised,
        cut_test_seeds_empty,
        cut_test_seeds_filled,
-       COALESCE(cut_test_seeds_compromised, 0)
+       (COALESCE(cut_test_seeds_compromised, 0)
            + COALESCE(cut_test_seeds_empty, 0)
-           + COALESCE(cut_test_seeds_filled, 0),
-       3 -- Cut
+           + COALESCE(cut_test_seeds_filled, 0)) AS seeds_sown,
+       3 AS test_type -- 3 is the type ID for cut tests
 FROM accessions
 WHERE (cut_test_seeds_compromised IS NOT NULL
     OR cut_test_seeds_empty IS NOT NULL

@@ -519,10 +519,16 @@ data class AccessionPayload(
           .orNull(),
       model.withdrawals
           .filter { withdrawal ->
-            withdrawal.viabilityTestId == null ||
-                model.viabilityTests
-                    .firstOrNull { test -> test.id == withdrawal.viabilityTestId }
-                    ?.testType != ViabilityTestType.Cut
+            // If this withdrawal is for a viability test, only include it if the test is something
+            // other than a cut test. Do a linear search to find the test with the right ID for each
+            // withdrawal; accessions never have more than two or three tests, so it's not worth
+            // building a more sophisticated index here.
+            val viabilityTestForWithdrawal =
+                withdrawal.viabilityTestId?.let { testId ->
+                  model.viabilityTests.firstOrNull { it.id == testId }
+                }
+            viabilityTestForWithdrawal == null ||
+                viabilityTestForWithdrawal.testType != ViabilityTestType.Cut
           }
           .map { WithdrawalPayload(it) }
           .orNull(),
