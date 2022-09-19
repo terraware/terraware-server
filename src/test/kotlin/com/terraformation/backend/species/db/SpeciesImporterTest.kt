@@ -255,7 +255,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 true,
                 1,
                 null,
-                messages.speciesCsvBadHeader()))
+                messages.csvBadHeader()))
 
     val actualProblems = uploadProblemsDao.findAll()
     assertEquals(expectedProblems, actualProblems, "Upload problems")

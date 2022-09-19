@@ -75,6 +75,23 @@ class AccessionStore(
   fun fetchOneById(accessionId: AccessionId): AccessionModel {
     requirePermissions { readAccession(accessionId) }
 
+    return fetchOneByCondition(ACCESSIONS.ID.eq(accessionId))
+        ?: throw AccessionNotFoundException(accessionId)
+  }
+
+  fun fetchOneByNumber(facilityId: FacilityId, accessionNumber: String): AccessionModel? {
+    val model =
+        fetchOneByCondition(
+            ACCESSIONS.FACILITY_ID.eq(facilityId).and(ACCESSIONS.NUMBER.eq(accessionNumber)))
+
+    return if (model?.id != null && currentUser().canReadAccession(model.id)) {
+      model
+    } else {
+      null
+    }
+  }
+
+  private fun fetchOneByCondition(condition: Condition): AccessionModel? {
     // The accession data forms a tree structure. The parent node is the data from the accessions
     // table itself, as well as data in reference tables where a given accession can only have a
     // single value. For example, there is a species table, but an accession only has one species,
@@ -111,9 +128,9 @@ class AccessionStore(
                 withdrawalsField,
             )
             .from(ACCESSIONS)
-            .where(ACCESSIONS.ID.eq(accessionId))
+            .where(condition)
             .fetchOne()
-            ?: throw AccessionNotFoundException(accessionId)
+            ?: return null
 
     return with(ACCESSIONS) {
       AccessionModel(
@@ -143,11 +160,13 @@ class AccessionStore(
           fieldNotes = record[FIELD_NOTES],
           founderId = record[FOUNDER_ID],
           geolocations = record[geolocationsField],
-          id = accessionId,
+          id = record[ID],
           isManualState = record[IS_MANUAL_STATE] ?: false,
           latestObservedQuantity =
               SeedQuantityModel.of(
-                  record[LATEST_OBSERVED_QUANTITY], record[LATEST_OBSERVED_UNITS_ID]),
+                  record[LATEST_OBSERVED_QUANTITY],
+                  record[LATEST_OBSERVED_UNITS_ID],
+              ),
           latestObservedTime = record[LATEST_OBSERVED_TIME],
           latestViabilityPercent = record[LATEST_VIABILITY_PERCENT],
           latestViabilityTestDate = record[LATEST_GERMINATION_RECORDING_DATE],
@@ -213,10 +232,10 @@ class AccessionStore(
       accession.speciesId?.let { readSpecies(it) }
     }
 
-    var attemptsRemaining = ACCESSION_NUMBER_RETRIES
+    var attemptsRemaining = if (accession.accessionNumber != null) 1 else ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
-      val accessionNumber = generateAccessionNumber()
+      val accessionNumber = accession.accessionNumber ?: generateAccessionNumber()
 
       try {
         val accessionId =
@@ -263,6 +282,9 @@ class AccessionStore(
                         .set(NURSERY_START_DATE, accession.nurseryStartDate)
                         .set(PROCESSING_NOTES, accession.processingNotes)
                         .set(RECEIVED_DATE, accession.receivedDate)
+                        .set(REMAINING_GRAMS, accession.remaining?.grams)
+                        .set(REMAINING_QUANTITY, accession.remaining?.quantity)
+                        .set(REMAINING_UNITS_ID, accession.remaining?.units)
                         .set(SOURCE_PLANT_ORIGIN_ID, accession.sourcePlantOrigin)
                         .set(SPECIES_ID, speciesId)
                         .set(STATE_ID, state)
@@ -273,6 +295,9 @@ class AccessionStore(
                         .set(STORAGE_PACKETS, accession.storagePackets)
                         .set(STORAGE_STAFF_RESPONSIBLE, accession.storageStaffResponsible)
                         .set(STORAGE_START_DATE, accession.storageStartDate)
+                        .set(TOTAL_GRAMS, accession.total?.grams)
+                        .set(TOTAL_QUANTITY, accession.total?.quantity)
+                        .set(TOTAL_UNITS_ID, accession.total?.units)
                         .set(TOTAL_VIABILITY_PERCENT, accession.calculateTotalViabilityPercent())
                         .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
                         .returning(ID)

@@ -7,6 +7,7 @@ import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadProblemType
 import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.species.model.validateScientificNameSyntax
 import java.io.InputStream
 import java.io.InputStreamReader
 import org.apache.commons.lang3.BooleanUtils
@@ -41,7 +42,7 @@ class SpeciesCsvValidator(
 
   private fun validateHeaderRow(values: Array<String?>?) {
     if (values?.asList() != SPECIES_CSV_HEADERS) {
-      addError(UploadProblemType.MalformedValue, null, null, messages.speciesCsvBadHeader())
+      addError(UploadProblemType.MalformedValue, null, null, messages.csvBadHeader())
     }
   }
 
@@ -51,7 +52,7 @@ class SpeciesCsvValidator(
           UploadProblemType.MalformedValue,
           null,
           null,
-          messages.speciesCsvWrongFieldCount(SPECIES_CSV_HEADERS.size, rawValues.size))
+          messages.csvWrongFieldCount(SPECIES_CSV_HEADERS.size, rawValues.size))
       // Field count is wrong, so we don't know which value is which; no point validating the
       // individual fields.
       return
@@ -75,33 +76,30 @@ class SpeciesCsvValidator(
           UploadProblemType.MissingRequiredValue,
           field,
           null,
-          messages.speciesCsvScientificNameMissing(),
+          messages.csvScientificNameMissing(),
       )
     } else {
-      val invalidChar = Regex("[^A-Za-z. ]").find(value)?.value
-      if (invalidChar != null) {
-        addError(
-            UploadProblemType.MalformedValue,
-            field,
-            value,
-            messages.speciesCsvScientificNameInvalidChar(invalidChar),
-        )
-      }
-
-      val wordCount = value.split(' ').size
-      if (wordCount < 2) {
-        addError(
-            UploadProblemType.MalformedValue,
-            field,
-            value,
-            messages.speciesCsvScientificNameTooShort())
-      } else if (wordCount > 4) {
-        addError(
-            UploadProblemType.MalformedValue,
-            field,
-            value,
-            messages.speciesCsvScientificNameTooLong())
-      }
+      validateScientificNameSyntax(
+          value,
+          onTooShort = {
+            addError(
+                UploadProblemType.MalformedValue,
+                field,
+                value,
+                messages.csvScientificNameTooShort())
+          },
+          onTooLong = {
+            addError(
+                UploadProblemType.MalformedValue, field, value, messages.csvScientificNameTooLong())
+          },
+          onInvalidCharacter = { invalidChar ->
+            addError(
+                UploadProblemType.MalformedValue,
+                field,
+                value,
+                messages.csvScientificNameInvalidChar(invalidChar),
+            )
+          })
 
       if (value in existingScientificNames) {
         addWarning(

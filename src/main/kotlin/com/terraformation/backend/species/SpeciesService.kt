@@ -15,10 +15,17 @@ class SpeciesService(
     private val speciesStore: SpeciesStore,
 ) {
   /** Returns an existing species with a scientific name or creates it if it doesn't exist. */
-  fun getOrCreateSpecies(organizationId: OrganizationId, scientificName: String): SpeciesId {
+  fun getOrCreateSpecies(
+      organizationId: OrganizationId,
+      scientificName: String,
+      commonName: String? = null,
+  ): SpeciesId {
     return speciesStore.fetchSpeciesIdByName(organizationId, scientificName)
         ?: createSpecies(
-            SpeciesRow(organizationId = organizationId, scientificName = scientificName))
+            SpeciesRow(
+                commonName = commonName,
+                organizationId = organizationId,
+                scientificName = scientificName))
   }
 
   /** Creates a new species and checks it for potential problems. */

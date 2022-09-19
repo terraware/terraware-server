@@ -186,7 +186,6 @@ class SpeciesImporter(
 
       try {
         var totalImported = 0
-        var totalIgnored = 0
 
         dslContext.transaction { _ ->
           fileStore.read(storageUrl).use { inputStream ->
@@ -211,11 +210,8 @@ class SpeciesImporter(
                   )
                 }
                 .forEach { row ->
-                  if (speciesStore.importRow(row, overwriteExisting)) {
-                    totalImported++
-                  } else {
-                    totalIgnored++
-                  }
+                  speciesStore.importRow(row, overwriteExisting)
+                  totalImported++
                 }
           }
 
@@ -229,7 +225,7 @@ class SpeciesImporter(
           uploadStore.updateStatus(uploadId, UploadStatus.Completed)
         }
 
-        log.info("Imported $totalImported and ignored $totalIgnored species from upload $uploadId")
+        log.info("Processed $totalImported species from upload $uploadId")
       } catch (e: Exception) {
         log.error("Unable to process species CSV $uploadId", e)
         uploadStore.updateStatus(uploadId, UploadStatus.ProcessingFailed)
