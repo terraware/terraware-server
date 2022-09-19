@@ -1,7 +1,8 @@
 package com.terraformation.backend.seedbank.api
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.UserId
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.validation.Valid
+import javax.validation.constraints.Min
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -104,7 +106,7 @@ data class GetViabilityTestPayload(
     val seedsCompromised: Int? = null,
     val seedsEmpty: Int? = null,
     val seedsFilled: Int? = null,
-    val seedsTested: Int? = null,
+    val seedsTested: Int,
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
@@ -133,7 +135,7 @@ data class GetViabilityTestPayload(
       seedsCompromised = model.seedsCompromised,
       seedsEmpty = model.seedsEmpty,
       seedsFilled = model.seedsFilled,
-      seedsTested = model.seedsTested,
+      seedsTested = model.seedsTested ?: 1,
       seedType = model.seedType,
       startDate = model.startDate,
       substrate = model.substrate,
@@ -147,13 +149,11 @@ data class GetViabilityTestPayload(
   )
 }
 
-// Mark all fields as write-only in the schema
-@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class CreateViabilityTestRequestPayload(
     val endDate: LocalDate? = null,
     val notes: String? = null,
-    val seedsTested: Int? = null,
+    @JsonSetter(nulls = Nulls.FAIL) @Min(1) val seedsTested: Int,
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
@@ -183,8 +183,6 @@ data class CreateViabilityTestRequestPayload(
       )
 }
 
-// Mark all fields as write-only in the schema
-@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class UpdateViabilityTestRequestPayload(
     val endDate: LocalDate? = null,
@@ -192,7 +190,7 @@ data class UpdateViabilityTestRequestPayload(
     val seedsCompromised: Int? = null,
     val seedsEmpty: Int? = null,
     val seedsFilled: Int? = null,
-    val seedsTested: Int? = null,
+    @JsonSetter(nulls = Nulls.FAIL) @Min(1) val seedsTested: Int,
     val seedType: ViabilityTestSeedType? = null,
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
