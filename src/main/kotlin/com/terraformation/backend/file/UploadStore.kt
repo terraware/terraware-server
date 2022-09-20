@@ -4,7 +4,9 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UploadId
+import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.UploadNotFoundException
+import com.terraformation.backend.db.UploadStatus
 import com.terraformation.backend.db.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.tables.daos.UploadsDao
 import com.terraformation.backend.db.tables.references.UPLOADS
@@ -50,5 +52,28 @@ class UploadStore(
     requirePermissions { deleteUpload(uploadId) }
 
     dslContext.deleteFrom(UPLOADS).where(UPLOADS.ID.eq(uploadId)).execute()
+  }
+
+  /** Updates an upload's status. */
+  fun updateStatus(uploadId: UploadId, status: UploadStatus) {
+    requirePermissions { updateUpload(uploadId) }
+
+    dslContext
+        .update(UPLOADS)
+        .set(UPLOADS.STATUS_ID, status)
+        .where(UPLOADS.ID.eq(uploadId))
+        .execute()
+  }
+
+  /**
+   * Throws [UploadNotAwaitingActionException] if the upload is not currently awaiting user action.
+   */
+  fun requireAwaitingAction(uploadId: UploadId) {
+    requirePermissions { readUpload(uploadId) }
+
+    val uploadsRow = uploadsDao.fetchOneById(uploadId) ?: throw UploadNotFoundException(uploadId)
+    if (uploadsRow.statusId != UploadStatus.AwaitingUserAction) {
+      throw UploadNotAwaitingActionException(uploadId)
+    }
   }
 }
