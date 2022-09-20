@@ -120,7 +120,7 @@ data class ViabilityTestModel(
           }
         }
 
-    return copy(substrate = newSubstrate)
+    return copy(seedsTested = seedsTested ?: 1, substrate = newSubstrate)
   }
 
   fun fieldsEqual(other: ViabilityTestModel): Boolean {
