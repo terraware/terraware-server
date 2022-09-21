@@ -1594,13 +1594,13 @@ internal class AccessionModelTest {
               AccessionState.Drying,
               "Change from InStorage to Drying")
           .addStateTest(
-              { copy(state = AccessionState.Cleaning) },
-              AccessionState.Cleaning,
-              "Change from Drying to Cleaning")
+              { copy(state = AccessionState.Processing) },
+              AccessionState.Processing,
+              "Change from Drying to Processing")
           .addStateTest(
               { copy(state = AccessionState.AwaitingProcessing) },
               AccessionState.AwaitingProcessing,
-              "Change from Cleaning to Awaiting Processing")
+              "Change from Processing to Awaiting Processing")
           .addStateTest(
               { copy(state = AccessionState.AwaitingCheckIn) },
               AccessionState.AwaitingProcessing,
