@@ -1052,6 +1052,15 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `checkIn of v2 accession transitions state to AwaitingProcessing`() {
+    val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+    val updated = store.checkIn(initial.id!!)
+
+    assertEquals(AccessionState.AwaitingProcessing, updated.state, "v2 state")
+    assertEquals(AccessionState.Pending, updated.toV1Compatible(clock).state, "v1 state")
+  }
+
+  @Test
   fun `checkIn does not modify accession that is already checked in`() {
     val initial = store.create(AccessionModel(facilityId = facilityId))
     store.checkIn(initial.id!!)
