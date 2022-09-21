@@ -593,7 +593,7 @@ class AccessionStore(
 
     requirePermissions { updateAccession(accessionId) }
 
-    if (accession.checkedInTime != null) {
+    if (accession.state != AccessionState.AwaitingCheckIn) {
       log.info("Accession $accessionId is already checked in; ignoring request to check in again")
       return accession
     }
@@ -602,8 +602,16 @@ class AccessionStore(
     // problematic in the face of systems with different levels of precision in their native time
     // representations.
     val checkedInTime = clock.instant().truncatedTo(ChronoUnit.SECONDS)
+
+    // V1 COMPATIBILITY: Set checkedInTime as well as state. For v2 accessions, "check in" is just
+    // "set the state to AwaitingProcessing" but for v1 accessions, checkedInTime needs to be
+    // present. Setting both will do the right thing whether this is a v1 or a v2 accession: the v1
+    // path will recalculate the state, ignoring the value we set here, and the v2 path will ignore
+    // checkedInTime and use the state we set here.
     val withCheckedInTime =
-        accession.copy(checkedInTime = checkedInTime).withCalculatedValues(clock, accession)
+        accession
+            .copy(checkedInTime = checkedInTime, state = AccessionState.AwaitingProcessing)
+            .withCalculatedValues(clock, accession)
 
     dslContext.transaction { _ ->
       with(ACCESSIONS) {
