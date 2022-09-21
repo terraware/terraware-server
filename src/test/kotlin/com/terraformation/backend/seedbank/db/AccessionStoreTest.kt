@@ -1053,8 +1053,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `checkIn of v2 accession transitions state to AwaitingProcessing`() {
-    every { clock.instant() } returns Instant.EPOCH.plusMillis(600)
-
     val initial = store.create(AccessionModel(facilityId = facilityId, isManualState = true))
     val updated = store.checkIn(initial.id!!)
 
