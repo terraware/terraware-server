@@ -48,12 +48,11 @@ val AccessionState.isV2Compatible: Boolean
       when (this) {
         AccessionState.AwaitingCheckIn,
         AccessionState.AwaitingProcessing,
-        AccessionState.Cleaning,
+        AccessionState.Processing,
         AccessionState.Drying,
         AccessionState.InStorage,
         AccessionState.UsedUp -> true
         AccessionState.Pending,
-        AccessionState.Processing,
         AccessionState.Withdrawn,
         AccessionState.Nursery,
         AccessionState.Processed,
@@ -65,13 +64,12 @@ fun AccessionState.toV2Compatible(): AccessionState =
     when (this) {
       AccessionState.AwaitingCheckIn,
       AccessionState.AwaitingProcessing,
-      AccessionState.Cleaning,
+      AccessionState.Processing,
       AccessionState.Drying,
       AccessionState.InStorage,
       AccessionState.UsedUp -> this
       AccessionState.Pending -> AccessionState.AwaitingProcessing
-      AccessionState.Processing -> AccessionState.Cleaning
-      AccessionState.Processed -> AccessionState.Cleaning
+      AccessionState.Processed -> AccessionState.Drying
       AccessionState.Dried -> AccessionState.InStorage
       AccessionState.Withdrawn -> AccessionState.UsedUp
       AccessionState.Nursery -> AccessionState.UsedUp

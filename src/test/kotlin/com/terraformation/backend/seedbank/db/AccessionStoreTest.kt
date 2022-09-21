@@ -241,10 +241,10 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   fun `create with isManualState allows initial state to be set`() {
     store.create(
         AccessionModel(
-            facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+            facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
 
     val row = accessionsDao.fetchOneById(AccessionId(1))!!
-    assertEquals(AccessionState.Cleaning, row.stateId)
+    assertEquals(AccessionState.Processing, row.stateId)
 
     // Remove this once we don't need v1 interoperability and checkedInTime goes away.
     assertNotNull(row.checkedInTime, "Accession should be counted as checked in")
@@ -903,7 +903,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.Drying))
 
@@ -925,7 +925,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
 
     val updated = store.updateAndFetch(initial.copy(isManualState = false))
 
@@ -955,11 +955,11 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
 
     val updated = store.updateAndFetch(initial.copy(state = AccessionState.AwaitingCheckIn))
 
-    assertEquals(AccessionState.Cleaning, updated.state)
+    assertEquals(AccessionState.Processing, updated.state)
   }
 
   @Test
@@ -969,7 +969,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             AccessionModel(
                 facilityId = facilityId,
                 isManualState = true,
-                state = AccessionState.Cleaning,
+                state = AccessionState.Processing,
             ))
 
     val withQuantity = store.updateAndFetch(initial.copy(remaining = seeds(1)))
@@ -990,7 +990,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     val initial =
         store.create(
             AccessionModel(
-                facilityId = facilityId, isManualState = true, state = AccessionState.Cleaning))
+                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
 
     assertThrows<IllegalArgumentException> {
       store.update(initial.copy(state = AccessionState.Dried))
@@ -1768,7 +1768,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                       AccessionState.Nursery to 1,
                       AccessionState.Pending to 4,
                       AccessionState.Processed to 1,
-                      AccessionState.Processing to 2,
                       AccessionState.UsedUp to 2,
                       AccessionState.Withdrawn to 1,
                   ),
@@ -1779,9 +1778,9 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               sameOrgFacilityId to
                   mapOf(
-                      AccessionState.Cleaning to 2,
                       AccessionState.Dried to 1,
                       AccessionState.Processed to 2,
+                      AccessionState.Processing to 2,
                       AccessionState.Withdrawn to 1,
                   ),
           )
@@ -1796,13 +1795,12 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           mapOf(
               AccessionState.AwaitingCheckIn to 0,
               AccessionState.AwaitingProcessing to 2,
-              AccessionState.Cleaning to 0,
               AccessionState.Dried to 1,
               AccessionState.Drying to 2,
               AccessionState.InStorage to 3,
               AccessionState.Pending to 4,
               AccessionState.Processed to 1,
-              AccessionState.Processing to 2,
+              AccessionState.Processing to 0,
           ),
           store.countByState(facilityId),
           "Counts for single facility")
@@ -1811,7 +1809,6 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
           mapOf(
               AccessionState.AwaitingCheckIn to 0,
               AccessionState.AwaitingProcessing to 2,
-              AccessionState.Cleaning to 2,
               AccessionState.Dried to 2,
               AccessionState.Drying to 2,
               AccessionState.InStorage to 3,
