@@ -1,16 +1,16 @@
-package com.terraformation.backend.species.api
+package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
-import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.GetUploadStatusResponsePayload
 import com.terraformation.backend.api.ResolveUploadRequestPayload
+import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.UploadFileResponsePayload
-import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.file.UploadStore
-import com.terraformation.backend.species.db.SpeciesImporter
+import com.terraformation.backend.seedbank.db.AccessionImporter
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
-@CustomerEndpoint
-@RequestMapping("/api/v1/species/uploads")
+@RequestMapping("/api/v1/seedbank/accessions/uploads")
 @RestController
-class SpeciesUploadsController(
-    private val speciesImporter: SpeciesImporter,
+@SeedBankAppEndpoint
+class AccessionsUploadsController(
+    private val accessionImporter: AccessionImporter,
     private val uploadStore: UploadStore,
 ) {
   @ApiResponse(
@@ -41,25 +41,25 @@ class SpeciesUploadsController(
       description =
           "The file has been successfully received. It will be processed asynchronously; use " +
               "the ID returned in the response payload to poll for its status using the " +
-              "`/api/v1/species/uploads/{uploadId}` GET endpoint.")
+              "`/api/v1/seedbank/accessions/uploads/{uploadId}` GET endpoint.")
   @Operation(
-      summary = "Uploads a list of species to add to the organization.",
+      summary = "Uploads a list of accessions to add to the facility.",
       description =
           "The uploaded file must be in CSV format. A template with the correct headers may be " +
-              "downloaded from the `/api/v1/species/uploads/template` endpoint.")
+              "downloaded from the `/api/v1/seedbank/accessions/uploads/template` endpoint.")
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
   )
-  fun uploadSpeciesList(
+  fun uploadAccessionsList(
       @RequestPart("file") file: MultipartFile,
-      @RequestParam("organizationId", required = true) organizationId: OrganizationId,
+      @RequestParam("facilityId", required = true) facilityId: FacilityId,
   ): UploadFileResponsePayload {
-    val fileName = file.originalFilename ?: "species.csv"
+    val fileName = file.originalFilename ?: "accessions.csv"
 
     val uploadId =
         file.inputStream.use { uploadStream ->
-          speciesImporter.receiveCsv(uploadStream, fileName, organizationId)
+          accessionImporter.receiveCsv(uploadStream, fileName, facilityId)
         }
 
     return UploadFileResponsePayload(uploadId)
@@ -68,18 +68,20 @@ class SpeciesUploadsController(
   @GetMapping("/template")
   @Operation(
       summary =
-          "Gets a template file that contains the required header row for species list uploads.")
+          "Gets a template file that contains the required header row for accessions list uploads.")
   @Produces("text/csv")
-  fun getSpeciesListUploadTemplate(): ResponseEntity<String> {
-    val body = speciesImporter.getCsvTemplate()
+  fun getAccessionsListUploadTemplate(): ResponseEntity<ByteArray> {
+    val body = accessionImporter.getCsvTemplate()
     return ResponseEntity.ok().contentType(MediaType.valueOf("text/csv")).body(body)
   }
 
   @GetMapping("/{uploadId}")
   @Operation(
-      summary = "Gets the status of a species list uploaded previously.",
+      summary = "Gets the status of an accessions list uploaded previously.",
       description = "Clients may poll this endpoint to monitor the progress of the file.")
-  fun getSpeciesListUploadStatus(@PathVariable uploadId: UploadId): GetUploadStatusResponsePayload {
+  fun getAccessionsListUploadStatus(
+      @PathVariable uploadId: UploadId
+  ): GetUploadStatusResponsePayload {
     val model = uploadStore.fetchOneById(uploadId)
     return GetUploadStatusResponsePayload(model)
   }
@@ -87,15 +89,15 @@ class SpeciesUploadsController(
   @ApiResponseSimpleSuccess
   @ApiResponse409(description = "The upload was not awaiting user action.")
   @Operation(
-      summary = "Resolves the problems with a species list that is awaiting user action.",
+      summary = "Resolves the problems with an accessions list that is awaiting user action.",
       description =
           "This may only be called if the status of the upload is \"Awaiting User Action\".")
   @PostMapping("/{uploadId}/resolve")
-  fun resolveSpeciesListUpload(
+  fun resolveAccessionsListUpload(
       @PathVariable uploadId: UploadId,
       @RequestBody payload: ResolveUploadRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesImporter.resolveWarnings(uploadId, payload.overwriteExisting)
+    accessionImporter.resolveWarnings(uploadId, payload.overwriteExisting)
     return SimpleSuccessResponsePayload()
   }
 
@@ -103,11 +105,11 @@ class SpeciesUploadsController(
   @ApiResponse409(description = "The upload was not awaiting user action.")
   @DeleteMapping("/{uploadId}")
   @Operation(
-      summary = "Deletes a species list upload that is awaiting user action.",
+      summary = "Deletes an accessions list upload that is awaiting user action.",
       description =
           "This may only be called if the status of the upload is \"Awaiting User Action\".")
-  fun deleteSpeciesListUpload(@PathVariable uploadId: UploadId): SimpleSuccessResponsePayload {
-    speciesImporter.cancelProcessing(uploadId)
+  fun deleteAccessionsListUpload(@PathVariable uploadId: UploadId): SimpleSuccessResponsePayload {
+    accessionImporter.cancelProcessing(uploadId)
     return SimpleSuccessResponsePayload()
   }
 }
