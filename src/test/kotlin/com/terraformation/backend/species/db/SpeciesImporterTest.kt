@@ -52,6 +52,9 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private val messages = Messages()
   private val scheduler: JobScheduler = mockk()
   private val speciesChecker: SpeciesChecker = mockk()
+  private val speciesStore: SpeciesStore by lazy {
+    SpeciesStore(clock, dslContext, speciesDao, speciesProblemsDao)
+  }
   private val uploadService: UploadService = mockk()
   private val uploadStore: UploadStore by lazy {
     UploadStore(dslContext, uploadProblemsDao, uploadsDao)
@@ -59,12 +62,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private val userStore: UserStore = mockk()
   private val importer: SpeciesImporter by lazy {
     SpeciesImporter(
-        clock,
         dslContext,
         fileStore,
         messages,
         scheduler,
         speciesChecker,
+        speciesStore,
         uploadProblemsDao,
         uploadsDao,
         uploadService,

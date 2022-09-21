@@ -187,6 +187,136 @@ class SpeciesStore(
   }
 
   /**
+   * Inserts or updates a single species, typically based on a row from an external data file, and
+   * pay attention to existing species that have been renamed.
+   *
+   * Species are matched based on their scientific names, but this is a little tricky because we
+   * track renamed species and want to match on the original name. The use case is someone uploading
+   * a CSV, accepting a suggested name change, then uploading the CSV again; we want to remember
+   * that species X in the CSV is really species Y in our database because the user renamed it.
+   *
+   * In addition, this needs to behave differently if there is an existing species but it is marked
+   * as deleted; sometimes we want to undelete the existing row and sometimes we want to ignore it.
+   * And it also needs to act differently depending on whether the user wants to overwrite existing
+   * data or only import new entries.
+   *
+   * Exhaustive list of the possible cases:
+   *
+   * * Current = the scientific name from the CSV is the same as the scientific name of an existing
+   * species (regardless of whether the existing species is deleted or not)
+   * * Initial = the scientific name from the CSV is the same as the initial scientific name of an
+   * existing species (regardless of whether the existing species is deleted or not)
+   * * Deleted = the existing species, if any, is marked as deleted
+   * * Overwrite = the [overwriteExisting] parameter is true, meaning the user wants to update
+   * existing species rather than ignore them
+   *
+   * ```
+   * | Current | Initial | Deleted | Overwrite | Action |
+   * | ------- | ------- | ------- | --------- | ------ |
+   * | No      | No      | No      | No        | Insert |
+   * | No      | No      | No      | Yes       | Insert |
+   * | No      | No      | Yes     | No        | (impossible) |
+   * | No      | No      | Yes     | Yes       | (impossible) |
+   * | No      | Yes     | No      | No        | No-op |
+   * | No      | Yes     | No      | Yes       | Update but use current name instead of CSV's |
+   * | No      | Yes     | Yes     | No        | Insert |
+   * | No      | Yes     | Yes     | Yes       | Insert |
+   * | Yes     | No      | No      | No        | No-op |
+   * | Yes     | No      | No      | Yes       | Update |
+   * | Yes     | No      | Yes     | No        | Update and undelete |
+   * | Yes     | No      | Yes     | Yes       | Update and undelete |
+   * | Yes     | Yes     | No      | No        | No-op |
+   * | Yes     | Yes     | No      | Yes       | Update species with same current name |
+   * | Yes     | Yes     | Yes     | No        | Update species with same current name; undelete |
+   * | Yes     | Yes     | Yes     | Yes       | Update species with same current name; undelete |
+   * ```
+   *
+   * @return true if any changes were made; false if the species already existed and
+   * [overwriteExisting] was false.
+   */
+  fun importRow(row: SpeciesRow, overwriteExisting: Boolean): Boolean {
+    return with(SPECIES) {
+      /**
+       * Updates the editable values of an existing species and marks it as not deleted. Leaves the
+       * initial scientific name as is.
+       */
+      fun updateExisting(speciesId: SpeciesId): Boolean {
+        val rowsUpdated =
+            dslContext
+                .update(SPECIES)
+                .set(COMMON_NAME, row.commonName)
+                .set(FAMILY_NAME, row.familyName)
+                .set(ENDANGERED, row.endangered)
+                .set(RARE, row.rare)
+                .set(GROWTH_FORM_ID, row.growthFormId)
+                .set(SEED_STORAGE_BEHAVIOR_ID, row.seedStorageBehaviorId)
+                .setNull(DELETED_TIME)
+                .setNull(DELETED_BY)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .where(ID.eq(speciesId))
+                .execute()
+        return if (rowsUpdated == 1) {
+          true
+        } else {
+          log.error("Expected to update 1 row for species $speciesId but got $rowsUpdated")
+          false
+        }
+      }
+
+      val existingByCurrentName =
+          dslContext
+              .select(SPECIES.ID, SPECIES.DELETED_TIME)
+              .from(SPECIES)
+              .where(ORGANIZATION_ID.eq(row.organizationId))
+              .and(SCIENTIFIC_NAME.eq(row.scientificName))
+              .fetchOne()
+      val existingIdByCurrentName = existingByCurrentName?.get(ID)
+
+      if (existingIdByCurrentName != null) {
+        if (overwriteExisting || existingByCurrentName[DELETED_TIME] != null) {
+          updateExisting(existingIdByCurrentName)
+        } else {
+          false
+        }
+      } else {
+        val existingIdByInitialName =
+            dslContext
+                .select(SPECIES.ID)
+                .from(SPECIES)
+                .where(ORGANIZATION_ID.eq(row.organizationId))
+                .and(INITIAL_SCIENTIFIC_NAME.eq(row.scientificName))
+                .and(DELETED_TIME.isNull)
+                .fetchOne(SPECIES.ID)
+
+        if (existingIdByInitialName == null) {
+          dslContext
+              .insertInto(SPECIES)
+              .set(SCIENTIFIC_NAME, row.scientificName)
+              .set(INITIAL_SCIENTIFIC_NAME, row.scientificName)
+              .set(COMMON_NAME, row.commonName)
+              .set(FAMILY_NAME, row.familyName)
+              .set(ENDANGERED, row.endangered)
+              .set(RARE, row.rare)
+              .set(GROWTH_FORM_ID, row.growthFormId)
+              .set(SEED_STORAGE_BEHAVIOR_ID, row.seedStorageBehaviorId)
+              .set(CREATED_BY, currentUser().userId)
+              .set(CREATED_TIME, clock.instant())
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .set(ORGANIZATION_ID, row.organizationId)
+              .execute()
+          true
+        } else if (overwriteExisting) {
+          updateExisting(existingIdByInitialName)
+        } else {
+          false
+        }
+      }
+    }
+  }
+
+  /**
    * Updates the data for an existing species. You probably want to call
    * [SpeciesService.updateSpecies] instead of this.
    *
