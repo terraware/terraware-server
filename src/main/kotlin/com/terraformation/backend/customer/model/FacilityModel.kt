@@ -50,6 +50,7 @@ data class FacilityModel(
         when (type) {
           FacilityType.SeedBank -> DeviceTemplateCategory.SeedBankDefault
           FacilityType.Desalination,
+          FacilityType.Nursery,
           FacilityType.ReverseOsmosis -> null
         }
 }

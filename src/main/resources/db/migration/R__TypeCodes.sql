@@ -45,7 +45,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO facility_types (id, name)
 VALUES (1, 'Seed Bank'),
        (2, 'Desalination'),
-       (3, 'Reverse Osmosis')
+       (3, 'Reverse Osmosis'),
+       (4, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO growth_forms (id, name)
