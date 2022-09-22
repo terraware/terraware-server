@@ -10,9 +10,9 @@ user_types
 users
 country_subdivisions
 organizations
+facilities
 notification_types
 uploads
-facilities
 device_managers
 upload_problems
 user_preferences

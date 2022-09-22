@@ -4,9 +4,9 @@ notifications
 user_preferences
 upload_problems
 device_managers
-facilities
 uploads
 notification_types
+facilities
 organizations
 country_subdivisions
 users

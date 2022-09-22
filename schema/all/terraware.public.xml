@@ -458,6 +458,7 @@
             <child column="facility_id" foreignKey="device_managers_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="device_managers"/>
             <child column="facility_id" foreignKey="devices_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="devices"/>
             <child column="facility_id" foreignKey="storage_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="storage_locations"/>
+            <child column="facility_id" foreignKey="uploads_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="site_module_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facility_types"/>
@@ -1002,7 +1003,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="upload_types" numRows="1" remarks="(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table." schema="public" type="TABLE">
+      <table name="upload_types" numRows="2" remarks="(Enum) Types of user-uploaded files whose progress can be tracked in the uploads table." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="type_id" foreignKey="uploads_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
          </column>
@@ -1033,9 +1034,15 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="organization_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="facility_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="uploads_facility_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="facilities"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="uploads_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="uploads_facility_id_idx" unique="false">
+            <column ascending="true" name="facility_id"/>
          </index>
       </table>
       <table name="user_preferences" numRows="0" remarks="Client-defined preferences that should persist across browser sessions." schema="public" type="TABLE">
