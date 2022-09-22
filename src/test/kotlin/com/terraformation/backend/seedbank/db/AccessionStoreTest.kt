@@ -107,7 +107,6 @@ import org.junit.jupiter.api.fail
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
-import org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.description
 
 internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   override val user: IndividualUser = mockUser()
@@ -348,6 +347,13 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 remainingQuantity = BigDecimal.TEN,
                 remainingUnitsId = SeedQuantityUnits.Seeds)),
         accessionQuantityHistoryDao.findAll())
+  }
+
+  @Test
+  fun `create does not insert quantity history row if quantity is not specified`() {
+    store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+
+    assertEquals(emptyList<AccessionQuantityHistoryRow>(), accessionQuantityHistoryDao.findAll())
   }
 
   @Test
@@ -1024,8 +1030,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             AccessionModel(
                 facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
 
-    store.updateAndFetch(
-        initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
+    store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
 
     assertEquals(
         listOf(
@@ -1038,6 +1043,22 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 remainingQuantity = BigDecimal.TEN,
                 remainingUnitsId = SeedQuantityUnits.Seeds)),
         accessionQuantityHistoryDao.findAll())
+  }
+
+  @Test
+  fun `update does not create quantity history row if remaining quantity is not edited`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId,
+                isManualState = true,
+                remaining = seeds(10),
+                state = AccessionState.Processing))
+    val initialHistory = accessionQuantityHistoryDao.findAll()
+
+    store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
+
+    assertEquals(initialHistory, accessionQuantityHistoryDao.findAll())
   }
 
   @Test
