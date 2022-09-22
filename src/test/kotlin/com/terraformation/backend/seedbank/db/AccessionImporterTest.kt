@@ -4,6 +4,8 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.AccessionId
+import com.terraformation.backend.db.AccessionQuantityHistoryId
+import com.terraformation.backend.db.AccessionQuantityHistoryType
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.DataSource
@@ -17,11 +19,13 @@ import com.terraformation.backend.db.UploadProblemType
 import com.terraformation.backend.db.UploadStatus
 import com.terraformation.backend.db.UploadType
 import com.terraformation.backend.db.tables.pojos.AccessionCollectorsRow
+import com.terraformation.backend.db.tables.pojos.AccessionQuantityHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.SPECIES
 import com.terraformation.backend.db.tables.references.UPLOADS
@@ -63,7 +67,7 @@ import org.junit.jupiter.api.assertThrows
 internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
   override val tablesToResetSequences: List<Table<out Record>> =
-      listOf(ACCESSIONS, SPECIES, UPLOADS, UPLOAD_PROBLEMS)
+      listOf(ACCESSION_QUANTITY_HISTORY, ACCESSIONS, SPECIES, UPLOADS, UPLOAD_PROBLEMS)
 
   private val accessionStore: AccessionStore by lazy {
     AccessionStore(
@@ -679,7 +683,18 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               .fetchInto(AccessionStateHistoryRow::class.java),
           "State change should have created history entry")
 
-      // TODO: Test for quantity history entry once SW-1714 is finished
+      assertEquals(
+          listOf(
+              AccessionQuantityHistoryRow(
+                  accessionId = accessionId,
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  historyTypeId = AccessionQuantityHistoryType.Observed,
+                  id = AccessionQuantityHistoryId(1),
+                  remainingQuantity = BigDecimal.TEN,
+                  remainingUnitsId = SeedQuantityUnits.Seeds)),
+          accessionQuantityHistoryDao.findAll(),
+          "Remaining quantity change should have created history entry")
     }
 
     @Test

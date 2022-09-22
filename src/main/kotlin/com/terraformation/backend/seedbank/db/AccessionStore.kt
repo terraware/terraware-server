@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.AccessionQuantityHistoryType
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.tables.references.ACCESSION_PHOTOS
+import com.terraformation.backend.db.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.PHOTOS
 import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
@@ -305,6 +307,20 @@ class AccessionStore(
                         ?.get(ID)!!
                   }
 
+              if (accession.remaining != null) {
+                with(ACCESSION_QUANTITY_HISTORY) {
+                  dslContext
+                      .insertInto(ACCESSION_QUANTITY_HISTORY)
+                      .set(ACCESSION_ID, accessionId)
+                      .set(CREATED_BY, currentUser().userId)
+                      .set(CREATED_TIME, clock.instant())
+                      .set(HISTORY_TYPE_ID, AccessionQuantityHistoryType.Observed)
+                      .set(REMAINING_QUANTITY, accession.remaining.quantity)
+                      .set(REMAINING_UNITS_ID, accession.remaining.units)
+                      .execute()
+                }
+              }
+
               with(ACCESSION_STATE_HISTORY) {
                 dslContext
                     .insertInto(ACCESSION_STATE_HISTORY)
@@ -416,6 +432,7 @@ class AccessionStore(
       viabilityTestStore.updateViabilityTests(accessionId, existingTests, viabilityTests)
       withdrawalStore.updateWithdrawals(accessionId, existing.withdrawals, withdrawals)
 
+      insertQuantityHistory(existing, accession)
       insertStateHistory(existing, accession)
 
       val speciesId =
@@ -519,52 +536,90 @@ class AccessionStore(
   fun fetchHistory(accessionId: AccessionId): List<AccessionHistoryModel> {
     requirePermissions { readAccession(accessionId) }
 
-    val stateChanges =
-        dslContext
-            .select(
-                ACCESSION_STATE_HISTORY.NEW_STATE_ID,
-                ACCESSION_STATE_HISTORY.OLD_STATE_ID,
-                ACCESSION_STATE_HISTORY.UPDATED_BY,
-                ACCESSION_STATE_HISTORY.UPDATED_TIME,
-                USERS.FIRST_NAME,
-                USERS.LAST_NAME)
-            .from(ACCESSION_STATE_HISTORY)
-            .join(USERS)
-            .on(ACCESSION_STATE_HISTORY.UPDATED_BY.eq(USERS.ID))
-            .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
-            .fetch { record ->
-              val updatedTime = record[ACCESSION_STATE_HISTORY.UPDATED_TIME]!!
-              val date = LocalDate.ofInstant(updatedTime, ZoneOffset.UTC)
-              val newState = record[ACCESSION_STATE_HISTORY.NEW_STATE_ID]!!
-              val oldState = record[ACCESSION_STATE_HISTORY.OLD_STATE_ID]
-              val userId = record[ACCESSION_STATE_HISTORY.UPDATED_BY]!!
-              val fullName =
-                  IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+    return (fetchQuantityObservations(accessionId) +
+            fetchStateHistory(accessionId) +
+            withdrawalStore.fetchHistory(accessionId))
+        .sorted()
+  }
 
-              if (oldState == null) {
-                AccessionHistoryModel(
-                    createdTime = updatedTime,
-                    date = date,
-                    description = messages.historyAccessionCreated(),
-                    fullName = fullName,
-                    type = AccessionHistoryType.Created,
-                    userId = userId,
-                )
-              } else {
-                AccessionHistoryModel(
-                    createdTime = updatedTime,
-                    date = date,
-                    description = messages.historyAccessionStateChanged(newState),
-                    fullName = fullName,
-                    type = AccessionHistoryType.StateChanged,
-                    userId = userId,
-                )
-              }
-            }
+  private fun fetchStateHistory(accessionId: AccessionId): MutableList<AccessionHistoryModel> {
+    return dslContext
+        .select(
+            ACCESSION_STATE_HISTORY.NEW_STATE_ID,
+            ACCESSION_STATE_HISTORY.OLD_STATE_ID,
+            ACCESSION_STATE_HISTORY.UPDATED_BY,
+            ACCESSION_STATE_HISTORY.UPDATED_TIME,
+            USERS.FIRST_NAME,
+            USERS.LAST_NAME)
+        .from(ACCESSION_STATE_HISTORY)
+        .join(USERS)
+        .on(ACCESSION_STATE_HISTORY.UPDATED_BY.eq(USERS.ID))
+        .where(ACCESSION_STATE_HISTORY.ACCESSION_ID.eq(accessionId))
+        .fetch { record ->
+          val updatedTime = record[ACCESSION_STATE_HISTORY.UPDATED_TIME]!!
+          val date = LocalDate.ofInstant(updatedTime, ZoneOffset.UTC)
+          val newState = record[ACCESSION_STATE_HISTORY.NEW_STATE_ID]!!
+          val oldState = record[ACCESSION_STATE_HISTORY.OLD_STATE_ID]
+          val userId = record[ACCESSION_STATE_HISTORY.UPDATED_BY]!!
+          val fullName =
+              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
 
-    val withdrawals = withdrawalStore.fetchHistory(accessionId)
+          if (oldState == null) {
+            AccessionHistoryModel(
+                createdTime = updatedTime,
+                date = date,
+                description = messages.historyAccessionCreated(),
+                fullName = fullName,
+                type = AccessionHistoryType.Created,
+                userId = userId,
+            )
+          } else {
+            AccessionHistoryModel(
+                createdTime = updatedTime,
+                date = date,
+                description = messages.historyAccessionStateChanged(newState),
+                fullName = fullName,
+                type = AccessionHistoryType.StateChanged,
+                userId = userId,
+            )
+          }
+        }
+  }
 
-    return (stateChanges + withdrawals).sorted()
+  private fun fetchQuantityObservations(accessionId: AccessionId): List<AccessionHistoryModel> {
+    return dslContext
+        .select(
+            ACCESSION_QUANTITY_HISTORY.CREATED_BY,
+            ACCESSION_QUANTITY_HISTORY.CREATED_TIME,
+            ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY,
+            ACCESSION_QUANTITY_HISTORY.REMAINING_UNITS_ID,
+            USERS.FIRST_NAME,
+            USERS.LAST_NAME)
+        .from(ACCESSION_QUANTITY_HISTORY)
+        .join(USERS)
+        .on(ACCESSION_QUANTITY_HISTORY.CREATED_BY.eq(USERS.ID))
+        .where(ACCESSION_QUANTITY_HISTORY.ACCESSION_ID.eq(accessionId))
+        .and(ACCESSION_QUANTITY_HISTORY.HISTORY_TYPE_ID.eq(AccessionQuantityHistoryType.Observed))
+        .fetch { record ->
+          val createdTime = record[ACCESSION_QUANTITY_HISTORY.CREATED_TIME]!!
+          val date = LocalDate.ofInstant(createdTime, ZoneOffset.UTC)
+          val fullName =
+              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+          val remainingQuantity =
+              SeedQuantityModel(
+                  record[ACCESSION_QUANTITY_HISTORY.REMAINING_QUANTITY]!!,
+                  record[ACCESSION_QUANTITY_HISTORY.REMAINING_UNITS_ID]!!)
+          val userId = record[ACCESSION_QUANTITY_HISTORY.CREATED_BY]!!
+
+          AccessionHistoryModel(
+              createdTime = createdTime,
+              date = date,
+              description = messages.historyAccessionQuantityUpdated(remainingQuantity),
+              fullName = fullName,
+              type = AccessionHistoryType.QuantityUpdated,
+              userId = userId,
+          )
+        }
   }
 
   /**
@@ -592,6 +647,31 @@ class AccessionStore(
               .set(UPDATED_TIME, clock.instant())
               .execute()
         }
+      }
+    }
+  }
+
+  /** Records a history entry for a change in remaining quantity. */
+  private fun insertQuantityHistory(before: AccessionModel, after: AccessionModel) {
+    if (after.remaining != null && before.remaining != after.remaining) {
+      val historyType =
+          if (before.latestObservedQuantity != after.latestObservedQuantity ||
+              before.latestObservedTime != after.latestObservedTime) {
+            AccessionQuantityHistoryType.Observed
+          } else {
+            AccessionQuantityHistoryType.Computed
+          }
+
+      with(ACCESSION_QUANTITY_HISTORY) {
+        dslContext
+            .insertInto(ACCESSION_QUANTITY_HISTORY)
+            .set(ACCESSION_ID, before.id)
+            .set(HISTORY_TYPE_ID, historyType)
+            .set(CREATED_BY, currentUser().userId)
+            .set(CREATED_TIME, clock.instant())
+            .set(REMAINING_QUANTITY, after.remaining.quantity)
+            .set(REMAINING_UNITS_ID, after.remaining.units)
+            .execute()
       }
     }
   }
