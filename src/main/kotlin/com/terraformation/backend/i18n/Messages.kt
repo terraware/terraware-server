@@ -84,8 +84,7 @@ class Messages {
 
   fun accessionDryingEndNotification(accessionNumber: String): NotificationMessage =
       NotificationMessage(
-          title = "An accession has dried",
-          body = "$accessionNumber has reached its scheduled drying date.")
+          title = "An accession has dried", body = "$accessionNumber has finished drying.")
 
   fun facilityIdle(): NotificationMessage =
       NotificationMessage(
