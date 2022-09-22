@@ -201,7 +201,6 @@ data class UpdateViabilityTestRequestPayload(
     val startDate: LocalDate? = null,
     val substrate: ViabilityTestSubstrate? = null,
     @Valid val testResults: List<ViabilityTestResultPayload>? = null,
-    val testType: ViabilityTestType,
     val treatment: ViabilityTestTreatment? = null,
     @Schema(
         description =
@@ -222,7 +221,6 @@ data class UpdateViabilityTestRequestPayload(
           startDate = startDate,
           substrate = substrate,
           testResults = testResults?.map { it.toModel() },
-          testType = testType,
           treatment = treatment,
           withdrawnByUserId = withdrawnByUserId ?: model.withdrawnByUserId,
       )
