@@ -30,12 +30,12 @@ internal class SpeciesCsvValidatorTest {
       assertError(
           "Scientific Name,Family,Endangered,Rare,Growth Form,Seed Storage Behavior\n",
           MalformedValue,
-          messages.speciesCsvBadHeader())
+          messages.csvBadHeader())
     }
 
     @Test
     fun `may not include unknown columns`() {
-      assertError("Bogus,$header", MalformedValue, messages.speciesCsvBadHeader())
+      assertError("Bogus,$header", MalformedValue, messages.csvBadHeader())
     }
 
     @Test
@@ -63,29 +63,27 @@ internal class SpeciesCsvValidatorTest {
   inner class ScientificName {
     @Test
     fun `must not be empty`() {
-      assertError("    ", MissingRequiredValue, messages.speciesCsvScientificNameMissing(), null)
+      assertError("    ", MissingRequiredValue, messages.csvScientificNameMissing(), null)
     }
 
     @Test
     fun `must be at least two words`() {
-      assertError("Word", MalformedValue, messages.speciesCsvScientificNameTooShort())
+      assertError("Word", MalformedValue, messages.csvScientificNameTooShort())
     }
 
     @Test
     fun `must be no more than four words`() {
-      assertError(
-          "Word word word word word", MalformedValue, messages.speciesCsvScientificNameTooLong())
+      assertError("Word word word word word", MalformedValue, messages.csvScientificNameTooLong())
     }
 
     @Test
     fun `may not contain numbers`() {
-      assertError("Name 1", MalformedValue, messages.speciesCsvScientificNameInvalidChar("1"))
+      assertError("Name 1", MalformedValue, messages.csvScientificNameInvalidChar("1"))
     }
 
     @Test
     fun `may not contain punctuation other than periods`() {
-      assertError(
-          "Name name var: x", MalformedValue, messages.speciesCsvScientificNameInvalidChar(":"))
+      assertError("Name name var: x", MalformedValue, messages.csvScientificNameInvalidChar(":"))
     }
 
     @ParameterizedTest
@@ -226,14 +224,14 @@ internal class SpeciesCsvValidatorTest {
             setOf(
                 UploadProblemsRow(
                     isError = true,
-                    message = messages.speciesCsvWrongFieldCount(7, 4),
+                    message = messages.csvWrongFieldCount(7, 4),
                     position = 2,
                     typeId = MalformedValue,
                     uploadId = uploadId,
                 ),
                 UploadProblemsRow(
                     isError = true,
-                    message = messages.speciesCsvWrongFieldCount(7, 10),
+                    message = messages.csvWrongFieldCount(7, 10),
                     position = 3,
                     typeId = MalformedValue,
                     uploadId = uploadId,

@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
+import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotFoundException
@@ -44,6 +45,7 @@ class UploadService(
       contentType: String,
       type: UploadType,
       organizationId: OrganizationId? = null,
+      facilityId: FacilityId? = null,
       successStatus: UploadStatus = UploadStatus.AwaitingValidation,
   ): UploadId {
     val url = fileStore.newUrl(clock.instant(), type.name, contentType)
@@ -52,6 +54,7 @@ class UploadService(
             contentType = contentType,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
+            facilityId = facilityId,
             filename = fileName,
             organizationId = organizationId,
             statusId = UploadStatus.Receiving,

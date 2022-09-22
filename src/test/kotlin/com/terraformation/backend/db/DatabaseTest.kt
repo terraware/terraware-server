@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.tables.daos.AccessionCollectorsDao
 import com.terraformation.backend.db.tables.daos.AccessionPhotosDao
+import com.terraformation.backend.db.tables.daos.AccessionQuantityHistoryDao
 import com.terraformation.backend.db.tables.daos.AccessionsDao
 import com.terraformation.backend.db.tables.daos.AutomationsDao
 import com.terraformation.backend.db.tables.daos.BagsDao
@@ -192,6 +193,7 @@ abstract class DatabaseTest {
 
   protected val accessionCollectorsDao: AccessionCollectorsDao by lazyDao()
   protected val accessionPhotosDao: AccessionPhotosDao by lazyDao()
+  protected val accessionQuantityHistoryDao: AccessionQuantityHistoryDao by lazyDao()
   protected val accessionsDao: AccessionsDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
@@ -338,7 +340,7 @@ abstract class DatabaseTest {
   }
 
   protected fun insertSpecies(
-      speciesId: Any,
+      speciesId: Any? = null,
       scientificName: String = "Species $speciesId",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
@@ -348,11 +350,11 @@ abstract class DatabaseTest {
       checkedTime: Instant? = null,
       initialScientificName: String = scientificName,
       commonName: String? = null,
-  ) {
-    val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
+  ): SpeciesId {
+    val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
 
-    with(SPECIES) {
+    return with(SPECIES) {
       dslContext
           .insertInto(SPECIES)
           .set(CHECKED_TIME, checkedTime)
@@ -361,13 +363,14 @@ abstract class DatabaseTest {
           .set(CREATED_TIME, createdTime)
           .set(DELETED_BY, if (deletedTime != null) createdBy else null)
           .set(DELETED_TIME, deletedTime)
-          .set(ID, speciesIdWrapper)
+          .apply { speciesIdWrapper?.let { set(ID, it) } }
           .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, modifiedTime)
           .set(ORGANIZATION_ID, organizationIdWrapper)
           .set(SCIENTIFIC_NAME, scientificName)
-          .execute()
+          .returning(ID)
+          .fetchOne(ID)!!
     }
   }
 
@@ -451,6 +454,7 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       status: UploadStatus = UploadStatus.Receiving,
       organizationId: OrganizationId? = null,
+      facilityId: FacilityId? = null,
   ) {
     with(UPLOADS) {
       dslContext
@@ -458,6 +462,7 @@ abstract class DatabaseTest {
           .set(CONTENT_TYPE, contentType)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
+          .set(FACILITY_ID, facilityId)
           .set(FILENAME, fileName)
           .set(ID, id.toIdWrapper { UploadId(it) })
           .set(ORGANIZATION_ID, organizationId)

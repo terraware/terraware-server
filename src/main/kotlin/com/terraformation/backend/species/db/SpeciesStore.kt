@@ -231,16 +231,16 @@ class SpeciesStore(
    * | Yes     | Yes     | Yes     | Yes       | Update species with same current name; undelete |
    * ```
    *
-   * @return true if any changes were made; false if the species already existed and
-   * [overwriteExisting] was false.
+   * @return The ID of the existing species that matched the requested name or the new species that
+   * was inserted.
    */
-  fun importRow(row: SpeciesRow, overwriteExisting: Boolean): Boolean {
+  fun importRow(row: SpeciesRow, overwriteExisting: Boolean): SpeciesId {
     return with(SPECIES) {
       /**
        * Updates the editable values of an existing species and marks it as not deleted. Leaves the
        * initial scientific name as is.
        */
-      fun updateExisting(speciesId: SpeciesId): Boolean {
+      fun updateExisting(speciesId: SpeciesId) {
         val rowsUpdated =
             dslContext
                 .update(SPECIES)
@@ -256,11 +256,8 @@ class SpeciesStore(
                 .set(MODIFIED_TIME, clock.instant())
                 .where(ID.eq(speciesId))
                 .execute()
-        return if (rowsUpdated == 1) {
-          true
-        } else {
+        if (rowsUpdated != 1) {
           log.error("Expected to update 1 row for species $speciesId but got $rowsUpdated")
-          false
         }
       }
 
@@ -276,9 +273,8 @@ class SpeciesStore(
       if (existingIdByCurrentName != null) {
         if (overwriteExisting || existingByCurrentName[DELETED_TIME] != null) {
           updateExisting(existingIdByCurrentName)
-        } else {
-          false
         }
+        existingIdByCurrentName
       } else {
         val existingIdByInitialName =
             dslContext
@@ -305,12 +301,13 @@ class SpeciesStore(
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, clock.instant())
               .set(ORGANIZATION_ID, row.organizationId)
-              .execute()
-          true
-        } else if (overwriteExisting) {
-          updateExisting(existingIdByInitialName)
+              .returning(ID)
+              .fetchOne(ID)!!
         } else {
-          false
+          if (overwriteExisting) {
+            updateExisting(existingIdByInitialName)
+          }
+          existingIdByInitialName
         }
       }
     }

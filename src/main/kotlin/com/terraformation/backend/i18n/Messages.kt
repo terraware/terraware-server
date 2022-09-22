@@ -1,12 +1,14 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.AccessionState
+import com.terraformation.backend.db.CollectionSource
 import com.terraformation.backend.db.GrowthForm
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.SeedStorageBehavior
 import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.tables.pojos.DevicesRow
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
+import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -23,20 +25,40 @@ data class NotificationMessage(val title: String, val body: String)
  */
 @ManagedBean
 class Messages {
-  fun speciesCsvBadHeader() = "Incorrect column headings"
+  fun csvBadHeader() = "Incorrect column headings"
 
-  fun speciesCsvWrongFieldCount(expected: Int, actual: Int) =
+  fun csvRequiredFieldMissing() = "Missing required field"
+
+  fun csvDateMalformed() = "Date must be in YYYY-MM-DD format"
+
+  fun csvWrongFieldCount(expected: Int, actual: Int) =
       if (actual == 1) "Row has 1 field; expected $expected"
       else "Row has $actual fields; expected $expected"
 
-  fun speciesCsvScientificNameMissing() = "Missing scientific name"
+  fun csvScientificNameMissing() = "Missing scientific name"
 
-  fun speciesCsvScientificNameInvalidChar(invalidChar: String) =
+  fun csvScientificNameInvalidChar(invalidChar: String) =
       "Scientific name has invalid character \"$invalidChar\""
 
-  fun speciesCsvScientificNameTooShort() = "Scientific name must be at least 2 words"
+  fun csvScientificNameTooShort() = "Scientific name must be at least 2 words"
 
-  fun speciesCsvScientificNameTooLong() = "Scientific name must be no more than 4 words"
+  fun csvScientificNameTooLong() = "Scientific name must be no more than 4 words"
+
+  fun accessionCsvCollectionSourceInvalid() =
+      "Collection source must be one of: $validCollectionSources"
+
+  fun accessionCsvNumberDuplicate(lineNumber: Int) =
+      "Accession number already used on line $lineNumber"
+
+  fun accessionCsvNumberExists() = "Accession number already exists"
+
+  fun accessionCsvNumberOfPlantsInvalid() = "Number of plants must be 1 or more"
+
+  fun accessionCsvQuantityInvalid() = "Quantity must be a number greater than 0"
+
+  fun accessionCsvQuantityUnitsInvalid() = "Status must be one of: $validQuantityUnits"
+
+  fun accessionCsvStatusInvalid() = "Status must be one of: $validAccessionStates"
 
   fun speciesCsvScientificNameExists() = "Scientific name already exists"
 
@@ -150,7 +172,11 @@ class Messages {
     return quantity.quantity.toPlainString() + " $unitsWord"
   }
 
+  private val validAccessionStates =
+      AccessionState.values().filter { it.isV2Compatible }.joinToString { it.displayName }
+  private val validCollectionSources = CollectionSource.values().joinToString { it.displayName }
   private val validGrowthForms = GrowthForm.values().joinToString { it.displayName }
+  private val validQuantityUnits = SeedQuantityUnits.values().joinToString { it.displayName }
   private val validSeedStorageBehaviors =
       SeedStorageBehavior.values().joinToString { it.displayName }
 
