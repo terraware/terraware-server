@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
-@RequestMapping("/api/v1/seedbank/accessions/uploads")
+@RequestMapping("/api/v2/seedbank/accessions/uploads")
 @RestController
 @SeedBankAppEndpoint
 class AccessionsUploadsController(
@@ -41,12 +41,12 @@ class AccessionsUploadsController(
       description =
           "The file has been successfully received. It will be processed asynchronously; use " +
               "the ID returned in the response payload to poll for its status using the " +
-              "`/api/v1/seedbank/accessions/uploads/{uploadId}` GET endpoint.")
+              "`/api/v2/seedbank/accessions/uploads/{uploadId}` GET endpoint.")
   @Operation(
       summary = "Uploads a list of accessions to add to the facility.",
       description =
           "The uploaded file must be in CSV format. A template with the correct headers may be " +
-              "downloaded from the `/api/v1/seedbank/accessions/uploads/template` endpoint.")
+              "downloaded from the `/api/v2/seedbank/accessions/uploads/template` endpoint.")
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
