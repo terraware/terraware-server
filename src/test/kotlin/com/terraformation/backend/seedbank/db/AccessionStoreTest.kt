@@ -1048,7 +1048,8 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                 updatedTime = clock.instant())),
         historyRecords)
 
-    assertEquals(store.fetchOneById(initial.id!!), updated, "Return value should match database")
+    val expected = updated.copy(latestObservedQuantityCalculated = false)
+    assertEquals(store.fetchOneById(initial.id!!), expected, "Return value should match database")
   }
 
   @Test

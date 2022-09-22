@@ -332,6 +332,7 @@ data class UpdateAccessionRequestPayloadV2(
           geolocations = collectionSiteCoordinates.orEmpty(),
           isManualState = true,
           numberOfTrees = plantsCollectedFrom,
+          latestObservedQuantityCalculated = false,
           processingNotes = notes,
           receivedDate = receivedDate,
           remaining = remainingQuantity?.toModel(),
