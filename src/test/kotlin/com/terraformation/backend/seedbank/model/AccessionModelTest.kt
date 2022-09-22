@@ -1676,6 +1676,27 @@ internal class AccessionModelTest {
           "Observed time")
     }
 
+    // SW-1723
+    @Test
+    fun `observed quantity is not affected by repeated calls to withCalculatedValues with same base model`() {
+      val accession =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(yesterdayClock)
+      assertEquals(seeds(10), accession.latestObservedQuantity, "Original observed quantity")
+
+      val withWithdrawal =
+          accession.addWithdrawal(withdrawal(seeds(2), date = today, id = null), clock)
+      assertEquals(
+          seeds(10), accession.latestObservedQuantity, "Observed quantity after adding withdrawal")
+
+      val recalculated = withWithdrawal.withCalculatedValues(tomorrowClock, accession)
+      assertEquals(
+          seeds(10), recalculated.latestObservedQuantity, "Observed quantity after recalculating")
+      assertEquals(
+          yesterdayInstant, recalculated.latestObservedTime, "Observed time after recalculating")
+    }
+
     @Test
     fun `remaining quantity is updated by withdrawal dated after observed quantity`() {
       val accession =
@@ -2157,7 +2178,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(yesterdayClock)
       val v2Model =
           initialV2Model
-              .copy(remaining = seeds(1))
+              .copy(latestObservedQuantityCalculated = false, remaining = seeds(1))
               .withCalculatedValues(clock, initialV2Model)
               // In v2, this is valid because it is dated yesterday and we have an observed quantity
               // from today that overrides what would otherwise be a negative seeds remaining value.
@@ -2175,7 +2196,7 @@ internal class AccessionModelTest {
               .withCalculatedValues(yesterdayClock)
       val v2Model =
           initialV2Model
-              .copy(remaining = seeds(1))
+              .copy(latestObservedQuantityCalculated = false, remaining = seeds(1))
               .withCalculatedValues(clock, initialV2Model)
               // In v2, this is valid because it is yesterday and we have an observed quantity from
               // today that overrides what would otherwise be a negative seeds remaining value.

@@ -104,6 +104,12 @@ data class AccessionModel(
     val geolocations: Set<Geolocation> = emptySet(),
     val isManualState: Boolean = false,
     val latestObservedQuantity: SeedQuantityModel? = null,
+    /**
+     * If true, [latestObservedQuantity] already reflects the client-supplied value and shouldn't be
+     * recalculated. This is internal state, not persisted to the database or exposed to clients,
+     * but needs to be preserved across [copy] calls.
+     */
+    private val latestObservedQuantityCalculated: Boolean = false,
     val latestObservedTime: Instant? = null,
     val latestViabilityPercent: Int? = null,
     val latestViabilityTestDate: LocalDate? = null,
@@ -458,7 +464,9 @@ data class AccessionModel(
       clock: Clock,
       existing: AccessionModel = this
   ): SeedQuantityModel? {
-    return if (isManualState) {
+    return if (latestObservedQuantityCalculated) {
+      latestObservedQuantity
+    } else if (isManualState) {
       if (existing.remaining != remaining || existing.latestObservedQuantity == null) {
         remaining
       } else {
@@ -474,7 +482,9 @@ data class AccessionModel(
   }
 
   fun calculateLatestObservedTime(clock: Clock, existing: AccessionModel = this): Instant? {
-    return if (isManualState) {
+    return if (latestObservedQuantityCalculated) {
+      latestObservedTime
+    } else if (isManualState) {
       if (remaining != null &&
           (existing.remaining != remaining || existing.latestObservedQuantity == null)) {
         clock.instant()
@@ -859,6 +869,7 @@ data class AccessionModel(
         latestObservedTime = calculateLatestObservedTime(clock, existing),
         latestViabilityPercent = calculateLatestViabilityPercent(),
         latestViabilityTestDate = calculateLatestViabilityRecordingDate(),
+        latestObservedQuantityCalculated = true,
         processingStartDate = newProcessingStartDate,
         receivedDate = newReceivedDate,
         remaining = newRemaining,
