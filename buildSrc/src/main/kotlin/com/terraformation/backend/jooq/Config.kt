@@ -81,6 +81,7 @@ val ENUM_TABLES =
 val ID_WRAPPERS =
     listOf(
         IdWrapper("AccessionId", listOf("accessions\\.id", ".*\\.accession_id")),
+        IdWrapper("AccessionQuantityHistoryId", listOf("accession_quantity_history\\.id")),
         IdWrapper("AutomationId", listOf("automations\\.id")),
         IdWrapper("BagId", listOf("bags\\.id", ".*\\.bag_id")),
         IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),

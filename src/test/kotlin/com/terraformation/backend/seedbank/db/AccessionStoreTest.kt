@@ -5,6 +5,8 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.AccessionQuantityHistoryId
+import com.terraformation.backend.db.AccessionQuantityHistoryType
 import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.BagId
 import com.terraformation.backend.db.CollectionSource
@@ -32,6 +34,7 @@ import com.terraformation.backend.db.WithdrawalPurpose
 import com.terraformation.backend.db.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.tables.pojos.AccessionPhotosRow
+import com.terraformation.backend.db.tables.pojos.AccessionQuantityHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tables.pojos.BagsRow
@@ -43,6 +46,7 @@ import com.terraformation.backend.db.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.db.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.db.tables.references.BAGS
 import com.terraformation.backend.db.tables.references.GEOLOCATIONS
@@ -111,7 +115,15 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
     get() = listOf(ACCESSION_NUMBER_SEQ)
 
   override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(ACCESSIONS, BAGS, GEOLOCATIONS, VIABILITY_TESTS, SPECIES, WITHDRAWALS)
+    get() =
+        listOf(
+            ACCESSION_QUANTITY_HISTORY,
+            ACCESSIONS,
+            BAGS,
+            GEOLOCATIONS,
+            VIABILITY_TESTS,
+            SPECIES,
+            WITHDRAWALS)
 
   private val accessionNumbers =
       listOf(
@@ -316,6 +328,32 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(newSpeciesId, initial.speciesId, "Species ID")
     assertEquals(newSpeciesName, initial.species, "Species name")
+  }
+
+  @Test
+  fun `create inserts quantity history row if quantity is specified`() {
+    val initial =
+        store.create(
+            AccessionModel(facilityId = facilityId, isManualState = true, remaining = seeds(10)))
+
+    assertEquals(
+        listOf(
+            AccessionQuantityHistoryRow(
+                accessionId = initial.id,
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                historyTypeId = AccessionQuantityHistoryType.Observed,
+                id = AccessionQuantityHistoryId(1),
+                remainingQuantity = BigDecimal.TEN,
+                remainingUnitsId = SeedQuantityUnits.Seeds)),
+        accessionQuantityHistoryDao.findAll())
+  }
+
+  @Test
+  fun `create does not insert quantity history row if quantity is not specified`() {
+    store.create(AccessionModel(facilityId = facilityId, isManualState = true))
+
+    assertEquals(emptyList<AccessionQuantityHistoryRow>(), accessionQuantityHistoryDao.findAll())
   }
 
   @Test
@@ -986,6 +1024,44 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `update creates quantity history row if remaining quantity is edited`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId, isManualState = true, state = AccessionState.Processing))
+
+    store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
+
+    assertEquals(
+        listOf(
+            AccessionQuantityHistoryRow(
+                accessionId = initial.id,
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                historyTypeId = AccessionQuantityHistoryType.Observed,
+                id = AccessionQuantityHistoryId(1),
+                remainingQuantity = BigDecimal.TEN,
+                remainingUnitsId = SeedQuantityUnits.Seeds)),
+        accessionQuantityHistoryDao.findAll())
+  }
+
+  @Test
+  fun `update does not create quantity history row if remaining quantity is not edited`() {
+    val initial =
+        store.create(
+            AccessionModel(
+                facilityId = facilityId,
+                isManualState = true,
+                remaining = seeds(10),
+                state = AccessionState.Processing))
+    val initialHistory = accessionQuantityHistoryDao.findAll()
+
+    store.update(initial.copy(latestObservedQuantityCalculated = false, remaining = seeds(10)))
+
+    assertEquals(initialHistory, accessionQuantityHistoryDao.findAll())
+  }
+
+  @Test
   fun `update throws exception if caller tries to manually change to a v1-only state`() {
     val initial =
         store.create(
@@ -1219,22 +1295,35 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update computes remaining quantity on withdrawals for count-based accessions`() {
     val initial = createAndUpdate {
-      it.copy(
-          processingMethod = ProcessingMethod.Count,
-          initialQuantity = seeds(100),
-          withdrawals =
-              listOf(
-                  WithdrawalPayload(
-                      date = LocalDate.EPOCH,
-                      purpose = WithdrawalPurpose.Other,
-                      withdrawnQuantity = seeds(10))))
+      it.copy(processingMethod = ProcessingMethod.Count, initialQuantity = seeds(100))
     }
+
+    val withWithdrawal =
+        store.updateAndFetch(
+            initial.copy(
+                withdrawals =
+                    listOf(
+                        WithdrawalModel(
+                            date = LocalDate.EPOCH,
+                            purpose = WithdrawalPurpose.Other,
+                            withdrawn = seeds(10)))))
 
     assertEquals(
         seeds<SeedQuantityModel>(90),
-        initial.withdrawals[0].remaining,
+        withWithdrawal.withdrawals[0].remaining,
         "Quantity remaining on withdrawal")
-    assertEquals(seeds<SeedQuantityModel>(90), initial.remaining, "Quantity remaining on accession")
+    assertEquals(
+        seeds<SeedQuantityModel>(90), withWithdrawal.remaining, "Quantity remaining on accession")
+
+    val quantityFromHistory =
+        accessionQuantityHistoryDao
+            .fetchByHistoryTypeId(AccessionQuantityHistoryType.Computed)
+            .getOrNull(0)
+            ?.remainingQuantity
+    assertEquals(
+        BigDecimal(90),
+        quantityFromHistory,
+        "Should have inserted quantity history row for new value")
   }
 
   @Test
@@ -2269,7 +2358,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
       // January 2: Seed quantity of 100 seeds entered (causes state to go to Processing)
       // January 3: 1 seed withdrawn
       // January 4: Viability test created with 29 seeds sown (causes a withdrawal to be created)
-      // January 5: 70 seeds withdrawn with a withdrawal date of January 3 (causes state to go to
+      // January 5: 50 seeds withdrawn with a withdrawal date of January 3 (causes state to go to
       //            Withdrawn)
 
       val createTime = Instant.EPOCH
@@ -2400,6 +2489,14 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
                   description = "updated the status to Processing",
                   fullName = "Bono",
                   type = AccessionHistoryType.StateChanged,
+                  userId = processUserId,
+              ),
+              AccessionHistoryModel(
+                  createdTime = processTime,
+                  date = LocalDate.ofInstant(processTime, ZoneOffset.UTC),
+                  description = "updated the quantity to 100 seeds",
+                  fullName = "Bono",
+                  type = AccessionHistoryType.QuantityUpdated,
                   userId = processUserId,
               ),
               AccessionHistoryModel(

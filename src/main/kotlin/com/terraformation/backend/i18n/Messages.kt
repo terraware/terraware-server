@@ -134,6 +134,9 @@ class Messages {
 
   fun historyAccessionCreated() = "created accession"
 
+  fun historyAccessionQuantityUpdated(newQuantity: SeedQuantityModel) =
+      "updated the quantity to ${newQuantity.quantity} ${newQuantity.units.displayName.lowercase()}"
+
   fun historyAccessionStateChanged(newState: AccessionState) =
       "updated the status to ${newState.displayName}"
 
