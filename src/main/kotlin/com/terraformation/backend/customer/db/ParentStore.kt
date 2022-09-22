@@ -10,6 +10,7 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityConnectionState
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.FacilityType
 import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SpeciesId
@@ -95,6 +96,10 @@ class ParentStore(private val dslContext: DSLContext) {
     return fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.NAME)
         ?: throw FacilityNotFoundException(facilityId)
   }
+
+  fun getFacilityType(facilityId: FacilityId): FacilityType =
+      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.TYPE_ID)
+          ?: throw FacilityNotFoundException(facilityId)
 
   fun getUserId(uploadId: UploadId): UserId? =
       fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.CREATED_BY)

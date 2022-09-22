@@ -54,6 +54,9 @@ class FacilityAlreadyConnectedException(val facilityId: FacilityId) :
 class FacilityNotFoundException(val facilityId: FacilityId) :
     EntityNotFoundException("Facility $facilityId not found")
 
+class FacilityTypeMismatchException(val facilityId: FacilityId, val requiredType: FacilityType) :
+    MismatchedStateException("Facility $facilityId is not of type ${requiredType.displayName}")
+
 /** A request to the Keycloak authentication server failed. */
 open class KeycloakRequestFailedException(
     override val message: String,

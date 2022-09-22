@@ -11,6 +11,8 @@ import com.terraformation.backend.db.AccessionState
 import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.SeedQuantityUnits
 import com.terraformation.backend.db.StorageLocationId
@@ -211,8 +213,6 @@ class AccessionStore(
   fun create(accession: AccessionModel): AccessionModel {
     val facilityId =
         accession.facilityId ?: throw IllegalArgumentException("No facility ID specified")
-    val organizationId =
-        parentStore.getOrganizationId(facilityId) ?: throw FacilityNotFoundException(facilityId)
     val state =
         when {
           !accession.isManualState -> AccessionState.AwaitingCheckIn
@@ -234,6 +234,10 @@ class AccessionStore(
       accession.speciesId?.let { readSpecies(it) }
     }
 
+    if (parentStore.getFacilityType(facilityId) != FacilityType.SeedBank) {
+      throw FacilityTypeMismatchException(facilityId, FacilityType.SeedBank)
+    }
+
     var attemptsRemaining = if (accession.accessionNumber != null) 1 else ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
@@ -246,6 +250,9 @@ class AccessionStore(
                   if (accession.isManualState) {
                     accession.speciesId
                   } else {
+                    val organizationId =
+                        parentStore.getOrganizationId(facilityId)
+                            ?: throw FacilityNotFoundException(facilityId)
                     accession.species?.let { speciesService.getOrCreateSpecies(organizationId, it) }
                   }
 

@@ -14,6 +14,8 @@ import com.terraformation.backend.db.DataSource
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.FacilityType
+import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.GeolocationId
 import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -328,6 +330,17 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(newSpeciesId, initial.speciesId, "Species ID")
     assertEquals(newSpeciesName, initial.species, "Species name")
+  }
+
+  @Test
+  fun `create does not allow creating an accession at a nursery facility`() {
+    val nurseryFacilityId = FacilityId(2)
+
+    insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
+
+    assertThrows<FacilityTypeMismatchException> {
+      store.create(AccessionModel(facilityId = nurseryFacilityId))
+    }
   }
 
   @Test
