@@ -120,7 +120,19 @@ data class ViabilityTestModel(
           }
         }
 
-    return copy(seedsTested = seedsTested ?: 1, substrate = newSubstrate)
+    val notesWithStaffResponsible =
+        when {
+          staffResponsible.isNullOrBlank() -> notes
+          notes.isNullOrBlank() -> "Staff responsible: $staffResponsible"
+          "Staff responsible: $staffResponsible" in notes -> notes
+          else -> "$notes\n\nStaff responsible: $staffResponsible"
+        }
+
+    return copy(
+        notes = notesWithStaffResponsible,
+        seedsTested = seedsTested ?: 1,
+        substrate = newSubstrate,
+    )
   }
 
   fun fieldsEqual(other: ViabilityTestModel): Boolean {

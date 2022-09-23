@@ -132,4 +132,36 @@ internal class ViabilityTestModelTest {
       assertEquals(50, model.calculateViabilityPercent())
     }
   }
+
+  @Nested
+  inner class V1ToV2Conversion {
+    @Test
+    fun `staff responsible is added to notes`() {
+      fun model(notes: String?, staffResponsible: String?) =
+          ViabilityTestModel(
+              notes = notes,
+              staffResponsible = staffResponsible,
+              seedsTested = 1,
+              testType = ViabilityTestType.Lab)
+
+      val testCases: List<Pair<ViabilityTestModel, String?>> =
+          listOf(
+              model(null, null) to null,
+              model(" ", "  ") to " ",
+              model("existing notes", null) to "existing notes",
+              model("existing notes", " ") to "existing notes",
+              model("existing notes with staff name", "staff name") to
+                  "existing notes with staff name\n\nStaff responsible: staff name",
+              model("existing\nStaff responsible: staff name", "staff name") to
+                  "existing\nStaff responsible: staff name",
+              model(null, "staff name") to "Staff responsible: staff name",
+              model("existing notes", "staff name") to
+                  "existing notes\n\nStaff responsible: staff name",
+          )
+
+      val actual = testCases.map { it.first to it.first.toV2Compatible().notes }
+
+      assertEquals(testCases, actual)
+    }
+  }
 }
