@@ -1,9 +1,9 @@
-INSERT INTO accession_quantity_history_types (id, name)
+INSERT INTO seedbank.accession_quantity_history_types (id, name)
 VALUES (1, 'Observed'),
        (2, 'Computed')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accession_states (id, name, active)
+INSERT INTO seedbank.accession_states (id, name, active)
 VALUES (5, 'Awaiting Check-In', TRUE),
        (10, 'Pending', TRUE),
        (15, 'Awaiting Processing', TRUE),
@@ -18,14 +18,14 @@ VALUES (5, 'Awaiting Check-In', TRUE),
 ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
                                active = excluded.active;
 
-INSERT INTO collection_sources (id, name)
+INSERT INTO seedbank.collection_sources (id, name)
 VALUES (1, 'Wild'),
        (2, 'Reintroduced'),
        (3, 'Cultivated'),
        (4, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO data_sources (id, name)
+INSERT INTO seedbank.data_sources (id, name)
 VALUES (1, 'Web'),
        (2, 'Seed Collector App'),
        (3, 'File Import')
@@ -75,7 +75,7 @@ VALUES (1, 'User Added to Organization', 1),
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 
-INSERT INTO processing_methods (id, name)
+INSERT INTO seedbank.processing_methods (id, name)
 VALUES (1, 'Count'),
        (2, 'Weight')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
@@ -87,7 +87,7 @@ VALUES (1, 'Contributor'),
        (4, 'Owner')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO seed_quantity_units (id, name)
+INSERT INTO seedbank.seed_quantity_units (id, name)
 VALUES (1, 'Seeds'),
        (2, 'Grams'),
        (3, 'Milligrams'),
@@ -103,7 +103,7 @@ VALUES (1, 'Orthodox'),
        (4, 'Unknown')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO source_plant_origins (id, name)
+INSERT INTO seedbank.source_plant_origins (id, name)
 VALUES (1, 'Wild'),
        (2, 'Outplant')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
@@ -118,7 +118,7 @@ VALUES (1, 'Name Misspelled'),
        (3, 'Name Is Synonym')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO storage_conditions (id, name)
+INSERT INTO seedbank.storage_conditions (id, name)
 VALUES (1, 'Refrigerator'),
        (2, 'Freezer')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
@@ -164,12 +164,12 @@ VALUES (1, 'Individual'),
        (4, 'System')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO viability_test_seed_types (id, name)
+INSERT INTO seedbank.viability_test_seed_types (id, name)
 VALUES (1, 'Fresh'),
        (2, 'Stored')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO viability_test_substrates (id, name)
+INSERT INTO seedbank.viability_test_substrates (id, name)
 VALUES (1, 'Nursery Media'),
        (2, 'Agar'),
        (3, 'Paper'),
@@ -181,7 +181,7 @@ VALUES (1, 'Nursery Media'),
        (9, 'Perlite/Vermiculite')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO viability_test_treatments (id, name)
+INSERT INTO seedbank.viability_test_treatments (id, name)
 VALUES (1, 'Soak'),
        (2, 'Scarify'),
        (3, 'Chemical'),
@@ -190,13 +190,13 @@ VALUES (1, 'Soak'),
        (6, 'Light')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO viability_test_types (id, name)
+INSERT INTO seedbank.viability_test_types (id, name)
 VALUES (1, 'Lab'),
        (2, 'Nursery'),
        (3, 'Cut')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO withdrawal_purposes (id, name)
+INSERT INTO seedbank.withdrawal_purposes (id, name)
 VALUES (1, 'Propagation'),
        (2, 'Outreach or Education'),
        (3, 'Research'),

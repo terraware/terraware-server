@@ -143,12 +143,15 @@ abstract class DatabaseTest {
 
   private fun getSerialSequenceNames(table: Table<out Record>): List<String> =
       table.primaryKey!!.fields.map { field ->
+        val schemaName = table.schema?.name
+        val qualifiedName =
+            if (schemaName.isNullOrEmpty()) table.name else "$schemaName.${table.name}"
         dslContext
             .select(
                 DSL.function(
                     PG_GET_SERIAL_SEQUENCE,
                     SQLDataType.VARCHAR,
-                    DSL.value(table.name),
+                    DSL.value(qualifiedName),
                     DSL.value(field.name)))
             .fetchOne()!!
             .value1()

@@ -119,82 +119,87 @@ class SchemaDocsGenerator : DatabaseTest() {
    */
   private val tableSlices =
       mapOf(
-          "accession_collectors" to setOf(ALL, SEEDBANK),
-          "accession_photos" to setOf(ALL, SEEDBANK),
-          "accession_quantity_history" to setOf(ALL, SEEDBANK),
-          "accession_quantity_history_types" to setOf(ALL, SEEDBANK),
-          "accession_state_history" to setOf(ALL, SEEDBANK),
-          "accession_states" to setOf(ALL, SEEDBANK),
-          "accessions" to setOf(ALL, SEEDBANK),
-          "app_versions" to setOf(ALL, CUSTOMER),
-          "automations" to setOf(ALL, DEVICE),
-          "bags" to setOf(ALL, SEEDBANK),
-          "collection_sources" to setOf(ALL, SEEDBANK),
-          "countries" to setOf(ALL, CUSTOMER),
-          "country_subdivisions" to setOf(ALL, CUSTOMER),
-          "data_sources" to setOf(ALL, SEEDBANK),
-          "devices" to setOf(ALL, DEVICE),
-          "device_managers" to setOf(ALL, CUSTOMER, DEVICE),
-          "device_template_categories" to setOf(ALL, DEVICE),
-          "device_templates" to setOf(ALL, DEVICE),
-          "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
-          "facility_connection_states" to setOf(ALL, CUSTOMER, DEVICE),
-          "facility_types" to setOf(ALL, CUSTOMER),
-          "flyway_schema_history" to emptySet(),
-          "gbif_distributions" to setOf(SPECIES),
-          "gbif_names" to setOf(SPECIES),
-          "gbif_name_words" to setOf(SPECIES),
-          "gbif_taxa" to setOf(SPECIES),
-          "gbif_vernacular_names" to setOf(SPECIES),
-          "geolocations" to setOf(ALL, SEEDBANK),
-          "growth_forms" to setOf(ALL, SEEDBANK),
-          "notification_criticalities" to setOf(ALL, CUSTOMER),
-          "notification_types" to setOf(ALL, CUSTOMER),
-          "notifications" to setOf(ALL, CUSTOMER),
-          "organization_users" to setOf(ALL, CUSTOMER),
-          "organizations" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK, SPECIES),
-          "photos" to setOf(ALL, SEEDBANK),
-          "processing_methods" to setOf(ALL, SEEDBANK),
-          "roles" to setOf(ALL, CUSTOMER),
-          "seed_quantity_units" to setOf(ALL, SEEDBANK),
-          "seed_storage_behaviors" to setOf(ALL, SEEDBANK),
-          "source_plant_origins" to setOf(ALL, SEEDBANK),
-          "spatial_ref_sys" to emptySet(),
-          "species" to setOf(ALL, SEEDBANK, SPECIES),
-          "species_problem_fields" to setOf(ALL, SPECIES),
-          "species_problem_types" to setOf(ALL, SPECIES),
-          "species_problems" to setOf(ALL, SPECIES),
-          "spring_session" to emptySet(),
-          "spring_session_attributes" to emptySet(),
-          "storage_conditions" to setOf(ALL, SEEDBANK),
-          "storage_locations" to setOf(ALL, SEEDBANK),
-          "task_processed_times" to setOf(ALL),
-          "test_clock" to setOf(ALL),
-          "thumbnails" to setOf(ALL, SEEDBANK),
-          "timeseries" to setOf(ALL, DEVICE),
-          "timeseries_types" to setOf(ALL, DEVICE),
-          "timeseries_values" to setOf(ALL, DEVICE),
-          "uploads" to setOf(ALL, CUSTOMER),
-          "upload_problems" to setOf(ALL, CUSTOMER),
-          "upload_problem_types" to setOf(ALL, CUSTOMER),
-          "upload_statuses" to setOf(ALL, CUSTOMER),
-          "upload_types" to setOf(ALL, CUSTOMER),
-          "user_preferences" to setOf(ALL, CUSTOMER),
-          "user_types" to setOf(ALL, CUSTOMER),
-          "users" to setOf(ALL, CUSTOMER),
-          "viability_test_results" to setOf(ALL, SEEDBANK),
-          "viability_test_seed_types" to setOf(ALL, SEEDBANK),
-          "viability_test_substrates" to setOf(ALL, SEEDBANK),
-          "viability_test_treatments" to setOf(ALL, SEEDBANK),
-          "viability_test_types" to setOf(ALL, SEEDBANK),
-          "viability_tests" to setOf(ALL, SEEDBANK),
-          "withdrawal_purposes" to setOf(ALL, SEEDBANK),
-          "withdrawals" to setOf(ALL, SEEDBANK),
+          "public" to
+              mapOf(
+                  "app_versions" to setOf(ALL, CUSTOMER),
+                  "automations" to setOf(ALL, DEVICE),
+                  "countries" to setOf(ALL, CUSTOMER),
+                  "country_subdivisions" to setOf(ALL, CUSTOMER),
+                  "devices" to setOf(ALL, DEVICE),
+                  "device_managers" to setOf(ALL, CUSTOMER, DEVICE),
+                  "device_template_categories" to setOf(ALL, DEVICE),
+                  "device_templates" to setOf(ALL, DEVICE),
+                  "facilities" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK),
+                  "facility_connection_states" to setOf(ALL, CUSTOMER, DEVICE),
+                  "facility_types" to setOf(ALL, CUSTOMER),
+                  "flyway_schema_history" to emptySet(),
+                  "gbif_distributions" to setOf(SPECIES),
+                  "gbif_names" to setOf(SPECIES),
+                  "gbif_name_words" to setOf(SPECIES),
+                  "gbif_taxa" to setOf(SPECIES),
+                  "gbif_vernacular_names" to setOf(SPECIES),
+                  "growth_forms" to setOf(ALL, SEEDBANK),
+                  "notification_criticalities" to setOf(ALL, CUSTOMER),
+                  "notification_types" to setOf(ALL, CUSTOMER),
+                  "notifications" to setOf(ALL, CUSTOMER),
+                  "organization_users" to setOf(ALL, CUSTOMER),
+                  "organizations" to setOf(ALL, CUSTOMER, DEVICE, SEEDBANK, SPECIES),
+                  "photos" to setOf(ALL, SEEDBANK),
+                  "roles" to setOf(ALL, CUSTOMER),
+                  "seed_storage_behaviors" to setOf(ALL, SEEDBANK),
+                  "spatial_ref_sys" to emptySet(),
+                  "species" to setOf(ALL, SEEDBANK, SPECIES),
+                  "species_problem_fields" to setOf(ALL, SPECIES),
+                  "species_problem_types" to setOf(ALL, SPECIES),
+                  "species_problems" to setOf(ALL, SPECIES),
+                  "spring_session" to emptySet(),
+                  "spring_session_attributes" to emptySet(),
+                  "task_processed_times" to setOf(ALL),
+                  "test_clock" to setOf(ALL),
+                  "thumbnails" to setOf(ALL, SEEDBANK),
+                  "timeseries" to setOf(ALL, DEVICE),
+                  "timeseries_types" to setOf(ALL, DEVICE),
+                  "timeseries_values" to setOf(ALL, DEVICE),
+                  "uploads" to setOf(ALL, CUSTOMER),
+                  "upload_problems" to setOf(ALL, CUSTOMER),
+                  "upload_problem_types" to setOf(ALL, CUSTOMER),
+                  "upload_statuses" to setOf(ALL, CUSTOMER),
+                  "upload_types" to setOf(ALL, CUSTOMER),
+                  "user_preferences" to setOf(ALL, CUSTOMER),
+                  "user_types" to setOf(ALL, CUSTOMER),
+                  "users" to setOf(ALL, CUSTOMER),
+              ),
+          "seedbank" to
+              mapOf(
+                  "accession_collectors" to setOf(ALL, SEEDBANK),
+                  "accession_photos" to setOf(ALL, SEEDBANK),
+                  "accession_quantity_history" to setOf(ALL, SEEDBANK),
+                  "accession_quantity_history_types" to setOf(ALL, SEEDBANK),
+                  "accession_state_history" to setOf(ALL, SEEDBANK),
+                  "accession_states" to setOf(ALL, SEEDBANK),
+                  "accessions" to setOf(ALL, SEEDBANK),
+                  "bags" to setOf(ALL, SEEDBANK),
+                  "collection_sources" to setOf(ALL, SEEDBANK),
+                  "data_sources" to setOf(ALL, SEEDBANK),
+                  "geolocations" to setOf(ALL, SEEDBANK),
+                  "processing_methods" to setOf(ALL, SEEDBANK),
+                  "seed_quantity_units" to setOf(ALL, SEEDBANK),
+                  "source_plant_origins" to setOf(ALL, SEEDBANK),
+                  "storage_conditions" to setOf(ALL, SEEDBANK),
+                  "storage_locations" to setOf(ALL, SEEDBANK),
+                  "viability_test_results" to setOf(ALL, SEEDBANK),
+                  "viability_test_seed_types" to setOf(ALL, SEEDBANK),
+                  "viability_test_substrates" to setOf(ALL, SEEDBANK),
+                  "viability_test_treatments" to setOf(ALL, SEEDBANK),
+                  "viability_test_types" to setOf(ALL, SEEDBANK),
+                  "viability_tests" to setOf(ALL, SEEDBANK),
+                  "withdrawal_purposes" to setOf(ALL, SEEDBANK),
+                  "withdrawals" to setOf(ALL, SEEDBANK),
+              ),
       )
 
   @EnumSource(Slice::class)
   @ParameterizedTest
-  @Suppress("UPPER_BOUND_VIOLATED_WARNING") // For GenericContainer<GenericContainer<*>>
   fun generateDocs(slice: Slice) {
     val docsDirValue =
         System.getenv(docsDirEnvVar)
@@ -210,7 +215,12 @@ class SchemaDocsGenerator : DatabaseTest() {
 
     // SchemaSpy matches table names against a regex. Construct one that has all the tables in the
     // current slice. Table names should never include regex special characters.
-    val tableRegex = tableSlices.filterValues { slice in it }.keys.joinToString("|")
+    val tableRegex =
+        tableSlices
+            .flatMap { (_, tables) ->
+              tables.filterValues { slice in it }.map { (tableName, _) -> tableName }
+            }
+            .joinToString("|")
 
     val sliceDir = docsDir.resolve(slice.subdirectory)
 
@@ -246,7 +256,10 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "-noimplied",
                   // Restrict the doc to the tables that should be shown in this slice
                   "-i",
-                  tableRegex)
+                  tableRegex,
+                  "-schemas",
+                  tableSlices.keys.joinToString(","),
+              )
               .withFileSystemBind(sliceDir.toString(), "/output", BindMode.READ_WRITE)
               // Log stdout as INFO and stderr as ERROR
               .withLogConsumer(Slf4jLogConsumer(log).withSeparateOutputStreams())
@@ -265,35 +278,40 @@ class SchemaDocsGenerator : DatabaseTest() {
 
   @Test
   fun `all tables should be included in tableSlices configuration`() {
-    val tablesFromDb = mutableSetOf<String>()
+    tableSlices.forEach { (schemaName, tables) ->
+      val tablesFromDb = mutableSetOf<String>()
 
-    forEachTable { metadata ->
-      val tableName = metadata.getString(TABLE_NAME)
-      tablesFromDb.add(tableName)
+      forEachTable(schemaName) { metadata ->
+        val tableName = metadata.getString(TABLE_NAME)
+        tablesFromDb.add(tableName)
+      }
+
+      // Diff the configuration and the list of tables from the DB in two assertions so the failure
+      // message is easier to read; assertEquals() would require hunting through a big list of
+      // tables
+      // to spot the differences.
+
+      assertEquals(
+          emptySet<String>(),
+          tablesFromDb - tables.keys,
+          "Tables not listed in $schemaName schema doc configuration")
+      assertEquals(
+          emptySet<String>(),
+          tables.keys - tablesFromDb,
+          "Nonexistent tables listed in $schemaName schema doc configuration")
     }
-
-    // Diff the configuration and the list of tables from the DB in two assertions so the failure
-    // message is easier to read; assertEquals() would require hunting through a big list of tables
-    // to spot the differences.
-
-    assertEquals(
-        emptySet<String>(),
-        tablesFromDb - tableSlices.keys,
-        "Tables not listed in schema doc configuration")
-    assertEquals(
-        emptySet<String>(),
-        tableSlices.keys - tablesFromDb,
-        "Nonexistent tables listed in schema doc configuration")
   }
 
   @Test
   fun `tables that are included in docs should have comments`() {
     val tablesWithoutComments = mutableListOf<String>()
 
-    forEachTable { metadata ->
-      val tableName = metadata.getString(TABLE_NAME)
-      if (!tableSlices[tableName].isNullOrEmpty() && metadata.getString(TABLE_COMMENT) == null) {
-        tablesWithoutComments.add(tableName)
+    tableSlices.forEach { (schemaName, tables) ->
+      forEachTable(schemaName) { metadata ->
+        val tableName = metadata.getString(TABLE_NAME)
+        if (!tables[tableName].isNullOrEmpty() && metadata.getString(TABLE_COMMENT) == null) {
+          tablesWithoutComments.add("$schemaName.$tableName")
+        }
       }
     }
 
@@ -308,9 +326,9 @@ class SchemaDocsGenerator : DatabaseTest() {
    * each one to a callback function. The metadata is in the form of a JDBC [ResultSet]; see
    * [DatabaseMetaData.getTables] for a list of the available columns.
    */
-  private fun forEachTable(func: (resultSet: ResultSet) -> Unit) {
+  private fun forEachTable(schemaName: String, func: (resultSet: ResultSet) -> Unit) {
     dslContext.connection { conn ->
-      conn.metaData.getTables(null, "public", null, arrayOf("TABLE")).use { metadata ->
+      conn.metaData.getTables(null, schemaName, null, arrayOf("TABLE")).use { metadata ->
         while (metadata.next()) {
           func(metadata)
         }
