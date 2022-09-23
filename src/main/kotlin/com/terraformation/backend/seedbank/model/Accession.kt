@@ -204,11 +204,14 @@ data class AccessionModel(
       // style accessions but that weren't calculated at the time it was written to the database.
       // First backfill those values using the v1 logic, then switch to v2, then calculate any
       // v2-specific values.
-      withCalculatedValues(clock)
+      val v1WithCalculatedValues = withCalculatedValues(clock)
+      v1WithCalculatedValues
           .copy(
               isManualState = true,
               state = state?.toV2Compatible(),
-              viabilityTests = viabilityTests.map { it.toV2Compatible() })
+              viabilityTests = v1WithCalculatedValues.viabilityTests.map { it.toV2Compatible() },
+              withdrawals = v1WithCalculatedValues.withdrawals.map { it.toV2Compatible() },
+          )
           .withCalculatedValues(clock)
     }
   }
