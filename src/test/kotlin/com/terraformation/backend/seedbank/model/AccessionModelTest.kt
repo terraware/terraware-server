@@ -2043,78 +2043,6 @@ internal class AccessionModelTest {
 
       assertJsonEquals(expected, initial.toV2Compatible(tomorrowClock))
     }
-
-    @Test
-    fun `viability test substrate is removed if it is not valid for v2 nursery test`() {
-      val v1Model =
-          AccessionModel(
-              checkedInTime = yesterdayInstant,
-              createdTime = yesterdayInstant,
-              processingMethod = ProcessingMethod.Count,
-              total = seeds(10),
-              viabilityTests =
-                  listOf(
-                      ViabilityTestModel(
-                          id = ViabilityTestId(1),
-                          seedsTested = 1,
-                          startDate = today,
-                          substrate = ViabilityTestSubstrate.Agar,
-                          testType = ViabilityTestType.Nursery,
-                      ),
-                  ),
-              withdrawals =
-                  listOf(
-                      WithdrawalModel(
-                          createdTime = todayInstant,
-                          date = today,
-                          id = WithdrawalId(1),
-                          purpose = WithdrawalPurpose.ViabilityTesting,
-                          remaining = seeds(9),
-                          viabilityTestId = ViabilityTestId(1),
-                          withdrawn = seeds(1),
-                      ),
-                  ),
-          )
-
-      val v2Model = v1Model.toV2Compatible(tomorrowClock)
-      assertNull(v2Model.viabilityTests[0].substrate)
-    }
-
-    @Test
-    fun `viability test substrate is retained if it is valid for v2 nursery test`() {
-      val v1Model =
-          AccessionModel(
-              checkedInTime = yesterdayInstant,
-              createdTime = yesterdayInstant,
-              processingMethod = ProcessingMethod.Count,
-              total = seeds(10),
-              viabilityTests =
-                  listOf(
-                      ViabilityTestModel(
-                          id = ViabilityTestId(1),
-                          seedsTested = 1,
-                          startDate = today,
-                          substrate = ViabilityTestSubstrate.Other,
-                          testType = ViabilityTestType.Nursery,
-                      ),
-                  ),
-              withdrawals =
-                  listOf(
-                      WithdrawalModel(
-                          createdTime = todayInstant,
-                          date = today,
-                          id = WithdrawalId(1),
-                          purpose = WithdrawalPurpose.ViabilityTesting,
-                          remaining = seeds(9),
-                          viabilityTestId = ViabilityTestId(1),
-                          withdrawn = seeds(1),
-                      ),
-                  ),
-          )
-
-      val v2Model = v1Model.toV2Compatible(tomorrowClock)
-      assertEquals(ViabilityTestSubstrate.Other, v2Model.viabilityTests[0].substrate)
-    }
   }
 
   @Nested
@@ -2138,36 +2066,6 @@ internal class AccessionModelTest {
 
       val v1Model = v2Model.toV1Compatible(clock)
       assertEquals(40, v1Model.totalViabilityPercent)
-    }
-
-    @Test
-    fun `viability test substrate is removed if it did not exist in v1`() {
-      val v2Model =
-          accession()
-              .copy(isManualState = true, remaining = seeds(10))
-              .withCalculatedValues(clock)
-              .addViabilityTest(
-                  viabilityTest(
-                      seedsTested = 1,
-                      testType = ViabilityTestType.Nursery,
-                      substrate = ViabilityTestSubstrate.Moss),
-                  clock)
-
-      val v1Model = v2Model.toV1Compatible(clock)
-      assertNull(v1Model.viabilityTests[0].substrate)
-    }
-
-    @Test
-    fun `viability test substrate is preserved if it existed in v1`() {
-      val v2Model =
-          accession()
-              .copy(isManualState = true, remaining = seeds(10))
-              .withCalculatedValues(clock)
-              .addViabilityTest(
-                  viabilityTest(seedsTested = 1, substrate = ViabilityTestSubstrate.Agar), clock)
-
-      val v1Model = v2Model.toV1Compatible(clock)
-      assertEquals(ViabilityTestSubstrate.Agar, v1Model.viabilityTests[0].substrate)
     }
 
     @Test
