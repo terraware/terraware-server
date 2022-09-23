@@ -151,7 +151,9 @@ internal class ViabilityTestModelTest {
               model("existing notes", null) to "existing notes",
               model("existing notes", " ") to "existing notes",
               model("existing notes with staff name", "staff name") to
-                  "existing notes with staff name",
+                  "existing notes with staff name\n\nStaff responsible: staff name",
+              model("existing\nStaff responsible: staff name", "staff name") to
+                  "existing\nStaff responsible: staff name",
               model(null, "staff name") to "Staff responsible: staff name",
               model("existing notes", "staff name") to
                   "existing notes\n\nStaff responsible: staff name",

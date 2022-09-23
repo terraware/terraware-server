@@ -182,7 +182,7 @@ data class WithdrawalModel(
         when {
           staffResponsible.isNullOrBlank() -> notes
           notes.isNullOrBlank() -> "Staff responsible: $staffResponsible"
-          staffResponsible in notes -> notes
+          "Staff responsible: $staffResponsible" in notes -> notes
           else -> "$notes\n\nStaff responsible: $staffResponsible"
         }
 
