@@ -1,5 +1,21 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.DeviceManagerId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.NotificationId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesProblemId
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.StorageLocationId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.WithdrawalId
 import java.io.IOException
 
 /**

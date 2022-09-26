@@ -1,11 +1,11 @@
 package com.terraformation.backend.species.db
 
 import com.opencsv.CSVReader
-import com.terraformation.backend.db.GrowthForm
-import com.terraformation.backend.db.SeedStorageBehavior
-import com.terraformation.backend.db.UploadId
-import com.terraformation.backend.db.UploadProblemType
-import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.SeedStorageBehavior
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UploadProblemType
+import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.species.model.validateScientificNameSyntax
 import java.io.InputStream

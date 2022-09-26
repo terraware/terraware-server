@@ -6,7 +6,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.tables.references.TEST_CLOCK
+import com.terraformation.backend.db.default_schema.tables.references.TEST_CLOCK
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.just

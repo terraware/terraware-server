@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.DeviceTemplateCategory
-import com.terraformation.backend.db.DeviceTemplateId
-import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
-import com.terraformation.backend.db.tables.pojos.DeviceTemplatesRow
+import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
+import com.terraformation.backend.db.default_schema.DeviceTemplateId
+import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
+import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam

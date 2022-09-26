@@ -6,10 +6,10 @@ import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.NotificationId
 import com.terraformation.backend.db.NotificationNotFoundException
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.tables.references.NOTIFICATIONS
+import com.terraformation.backend.db.default_schema.NotificationId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import java.time.Clock
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext

@@ -1,6 +1,6 @@
 package com.terraformation.backend.seedbank.model
 
-import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.math.RoundingMode

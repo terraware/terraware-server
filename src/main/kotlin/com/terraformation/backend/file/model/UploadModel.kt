@@ -1,13 +1,13 @@
 package com.terraformation.backend.file.model
 
-import com.terraformation.backend.db.UploadId
-import com.terraformation.backend.db.UploadProblemId
-import com.terraformation.backend.db.UploadProblemType
-import com.terraformation.backend.db.UploadStatus
-import com.terraformation.backend.db.UploadType
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
-import com.terraformation.backend.db.tables.pojos.UploadsRow
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UploadProblemId
+import com.terraformation.backend.db.default_schema.UploadProblemType
+import com.terraformation.backend.db.default_schema.UploadStatus
+import com.terraformation.backend.db.default_schema.UploadType
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
 import java.net.URI
 
 data class UploadProblemModel(

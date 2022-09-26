@@ -1,9 +1,9 @@
 package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.StorageCondition
-import com.terraformation.backend.db.tables.references.STORAGE_LOCATIONS
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.seedbank.StorageCondition
+import com.terraformation.backend.db.seedbank.tables.references.STORAGE_LOCATIONS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 

@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.model
 
-import com.terraformation.backend.db.ViabilityTestSubstrate
-import com.terraformation.backend.db.ViabilityTestType
+import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested

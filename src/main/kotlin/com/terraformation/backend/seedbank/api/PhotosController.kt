@@ -11,8 +11,8 @@ import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.AccessionNotFoundException
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.PhotoMetadata

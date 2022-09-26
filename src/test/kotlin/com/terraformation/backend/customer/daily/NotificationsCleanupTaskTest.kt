@@ -3,8 +3,8 @@ package com.terraformation.backend.customer.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.NotificationId
-import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.default_schema.NotificationId
+import com.terraformation.backend.db.default_schema.UserId
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock

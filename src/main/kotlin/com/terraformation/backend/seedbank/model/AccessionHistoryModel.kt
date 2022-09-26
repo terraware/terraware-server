@@ -1,6 +1,6 @@
 package com.terraformation.backend.seedbank.model
 
-import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
 import java.time.LocalDate
 

@@ -1,13 +1,13 @@
 package com.terraformation.backend.seedbank.model
 
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.ViabilityTestId
-import com.terraformation.backend.db.ViabilityTestResultId
-import com.terraformation.backend.db.ViabilityTestSeedType
-import com.terraformation.backend.db.ViabilityTestSubstrate
-import com.terraformation.backend.db.ViabilityTestTreatment
-import com.terraformation.backend.db.ViabilityTestType
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.ViabilityTestResultId
+import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
+import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
+import com.terraformation.backend.db.seedbank.ViabilityTestTreatment
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import java.time.LocalDate
 import kotlin.math.sign
 

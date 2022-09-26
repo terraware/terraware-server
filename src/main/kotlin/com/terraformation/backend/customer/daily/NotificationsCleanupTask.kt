@@ -2,7 +2,7 @@ package com.terraformation.backend.customer.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
-import com.terraformation.backend.db.tables.references.NOTIFICATIONS
+import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import java.time.temporal.ChronoUnit

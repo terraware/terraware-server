@@ -1,6 +1,6 @@
 package com.terraformation.backend.seedbank.model
 
-import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.seedbank.grams
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.*

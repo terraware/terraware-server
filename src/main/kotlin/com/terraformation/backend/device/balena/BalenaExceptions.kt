@@ -1,6 +1,6 @@
 package com.terraformation.backend.device.balena
 
-import com.terraformation.backend.db.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.BalenaDeviceId
 
 abstract class BalenaException(message: String) : RuntimeException(message)
 

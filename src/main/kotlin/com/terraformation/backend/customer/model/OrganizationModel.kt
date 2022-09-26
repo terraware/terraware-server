@@ -1,8 +1,8 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
-import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record

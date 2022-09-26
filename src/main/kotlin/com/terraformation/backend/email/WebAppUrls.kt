@@ -1,12 +1,12 @@
 package com.terraformation.backend.email
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.ViabilityTestType
-import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.ViabilityTestType
 import java.net.URI
 import javax.annotation.ManagedBean
 import javax.ws.rs.core.UriBuilder

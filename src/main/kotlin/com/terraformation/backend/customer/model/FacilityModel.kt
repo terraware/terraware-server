@@ -1,12 +1,12 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.db.DeviceTemplateCategory
-import com.terraformation.backend.db.FacilityConnectionState
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.FacilityType
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.tables.pojos.FacilitiesRow
-import com.terraformation.backend.db.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.DeviceTemplateCategory
+import com.terraformation.backend.db.default_schema.FacilityConnectionState
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import java.time.Instant
 import org.jooq.Record
 

@@ -6,7 +6,7 @@ import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 
 /**
  * Common attributes for classes that can be passed as models when rendering email templates. This

@@ -3,11 +3,11 @@ package com.terraformation.backend.device.balena
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.BalenaDeviceId
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.DeviceManagerId
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
+import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.DeviceManagerId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.mockUser
 import io.mockk.every

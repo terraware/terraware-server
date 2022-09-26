@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.event
 
-import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.default_schema.OrganizationId
 
 /**
  * Published when we start deleting all the data related to an organization, but before the

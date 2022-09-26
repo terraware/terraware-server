@@ -1,12 +1,12 @@
 package com.terraformation.backend.i18n
 
-import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.CollectionSource
-import com.terraformation.backend.db.GrowthForm
-import com.terraformation.backend.db.SeedQuantityUnits
-import com.terraformation.backend.db.SeedStorageBehavior
-import com.terraformation.backend.db.WithdrawalPurpose
-import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.SeedStorageBehavior
+import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.CollectionSource
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.util.equalsIgnoreScale

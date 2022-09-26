@@ -1,12 +1,12 @@
 package com.terraformation.backend.species.db
 
-import com.terraformation.backend.db.UploadId
-import com.terraformation.backend.db.UploadProblemType
-import com.terraformation.backend.db.UploadProblemType.DuplicateValue
-import com.terraformation.backend.db.UploadProblemType.MalformedValue
-import com.terraformation.backend.db.UploadProblemType.MissingRequiredValue
-import com.terraformation.backend.db.UploadProblemType.UnrecognizedValue
-import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UploadProblemType
+import com.terraformation.backend.db.default_schema.UploadProblemType.DuplicateValue
+import com.terraformation.backend.db.default_schema.UploadProblemType.MalformedValue
+import com.terraformation.backend.db.default_schema.UploadProblemType.MissingRequiredValue
+import com.terraformation.backend.db.default_schema.UploadProblemType.UnrecognizedValue
+import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.i18n.Messages
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested

@@ -3,7 +3,7 @@ package com.terraformation.backend.device.balena
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import com.terraformation.backend.db.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import java.time.Instant
 
 /** Information about a device from the Balena API. */

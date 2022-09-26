@@ -4,10 +4,10 @@ import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.tables.daos.DeviceTemplatesDao
-import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
+import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.log.perClassLogger

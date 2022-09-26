@@ -1,11 +1,11 @@
 package com.terraformation.backend.file
 
-import com.terraformation.backend.db.PhotoId
 import com.terraformation.backend.db.PhotoNotFoundException
-import com.terraformation.backend.db.tables.daos.PhotosDao
-import com.terraformation.backend.db.tables.daos.ThumbnailsDao
-import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
-import com.terraformation.backend.db.tables.references.THUMBNAILS
+import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.tables.daos.PhotosDao
+import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
+import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
+import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import java.awt.image.BufferedImage

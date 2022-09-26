@@ -1,17 +1,17 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.db.ScientificNameNotFoundException
-import com.terraformation.backend.db.SpeciesProblemField
-import com.terraformation.backend.db.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.SpeciesProblemField
+import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.tables.pojos.GbifNamesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_DISTRIBUTIONS
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAMES
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAME_WORDS
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_TAXA
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_VERNACULAR_NAMES
 import com.terraformation.backend.db.likeFuzzy
 import com.terraformation.backend.db.similarity
-import com.terraformation.backend.db.tables.pojos.GbifNamesRow
-import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
-import com.terraformation.backend.db.tables.references.GBIF_DISTRIBUTIONS
-import com.terraformation.backend.db.tables.references.GBIF_NAMES
-import com.terraformation.backend.db.tables.references.GBIF_NAME_WORDS
-import com.terraformation.backend.db.tables.references.GBIF_TAXA
-import com.terraformation.backend.db.tables.references.GBIF_VERNACULAR_NAMES
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel
 import javax.annotation.ManagedBean

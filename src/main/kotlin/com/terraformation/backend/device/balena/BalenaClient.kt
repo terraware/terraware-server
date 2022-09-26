@@ -1,7 +1,7 @@
 package com.terraformation.backend.device.balena
 
-import com.terraformation.backend.db.BalenaDeviceId
-import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.FacilityId
 import java.time.Instant
 
 /** High-level interface for the Balena API. */

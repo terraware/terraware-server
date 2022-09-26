@@ -3,7 +3,7 @@ package com.terraformation.backend.customer.api
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.AppVersionStore
-import com.terraformation.backend.db.tables.pojos.AppVersionsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController

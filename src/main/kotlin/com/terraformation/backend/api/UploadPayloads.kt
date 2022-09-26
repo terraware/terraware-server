@@ -1,9 +1,9 @@
 package com.terraformation.backend.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.terraformation.backend.db.UploadId
-import com.terraformation.backend.db.UploadProblemType
-import com.terraformation.backend.db.UploadStatus
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UploadProblemType
+import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.file.model.UploadModel
 import com.terraformation.backend.file.model.UploadProblemModel
 import io.swagger.v3.oas.annotations.media.ArraySchema

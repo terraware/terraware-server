@@ -15,11 +15,11 @@ import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.UserId
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant

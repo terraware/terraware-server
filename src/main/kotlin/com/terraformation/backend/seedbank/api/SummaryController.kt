@@ -3,10 +3,10 @@ package com.terraformation.backend.seedbank.api
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.api.HasSearchNode

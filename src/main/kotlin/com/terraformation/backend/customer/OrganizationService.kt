@@ -10,8 +10,8 @@ import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.log.perClassLogger
 import javax.annotation.ManagedBean
 import org.jobrunr.scheduling.JobScheduler

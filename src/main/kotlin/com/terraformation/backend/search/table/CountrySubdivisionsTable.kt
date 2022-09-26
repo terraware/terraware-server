@@ -1,8 +1,8 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.tables.references.COUNTRIES
-import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
-import com.terraformation.backend.db.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.search.SearchScope
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField

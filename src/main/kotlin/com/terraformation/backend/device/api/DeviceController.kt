@@ -8,9 +8,9 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.device.DeviceService
 import com.terraformation.backend.device.db.DeviceStore
 import io.swagger.v3.oas.annotations.Operation

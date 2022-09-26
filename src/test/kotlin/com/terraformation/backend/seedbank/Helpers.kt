@@ -1,6 +1,6 @@
 package com.terraformation.backend.seedbank
 
-import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.seedbank.api.SeedQuantityPayload
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import java.math.BigDecimal

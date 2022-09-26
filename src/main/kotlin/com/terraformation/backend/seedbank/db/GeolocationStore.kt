@@ -1,8 +1,8 @@
 package com.terraformation.backend.seedbank.db
 
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.GEOLOCATIONS
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
 import java.time.Clock

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.DeviceManagerAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.DeviceManagerId
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
+import com.terraformation.backend.db.default_schema.DeviceManagerId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.device.DeviceManagerService
 import com.terraformation.backend.device.db.DeviceManagerStore
 import io.swagger.v3.oas.annotations.media.ArraySchema

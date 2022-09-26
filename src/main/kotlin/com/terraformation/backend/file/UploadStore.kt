@@ -2,15 +2,15 @@ package com.terraformation.backend.file
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.UploadId
 import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.UploadNotFoundException
-import com.terraformation.backend.db.UploadStatus
-import com.terraformation.backend.db.tables.daos.UploadProblemsDao
-import com.terraformation.backend.db.tables.daos.UploadsDao
-import com.terraformation.backend.db.tables.references.UPLOADS
-import com.terraformation.backend.db.tables.references.UPLOAD_PROBLEMS
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UploadStatus
+import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
+import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
+import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
+import com.terraformation.backend.db.default_schema.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.file.model.UploadModel
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext

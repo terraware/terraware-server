@@ -3,11 +3,11 @@ package com.terraformation.backend.file
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.PhotoId
-import com.terraformation.backend.db.ThumbnailId
-import com.terraformation.backend.db.tables.pojos.PhotosRow
-import com.terraformation.backend.db.tables.pojos.ThumbnailsRow
-import com.terraformation.backend.db.tables.references.THUMBNAILS
+import com.terraformation.backend.db.default_schema.PhotoId
+import com.terraformation.backend.db.default_schema.ThumbnailId
+import com.terraformation.backend.db.default_schema.tables.pojos.PhotosRow
+import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
+import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
 import io.mockk.CapturingSlot
 import io.mockk.Runs

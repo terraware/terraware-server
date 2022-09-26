@@ -1,11 +1,11 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.ORGANIZATIONS
-import com.terraformation.backend.db.tables.references.SPECIES
-import com.terraformation.backend.db.tables.references.SPECIES_PROBLEMS
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope

@@ -1,8 +1,8 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.UserType
 import java.time.Instant
 
 data class OrganizationUserModel(

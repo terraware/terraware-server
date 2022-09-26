@@ -1,7 +1,7 @@
 package com.terraformation.backend.device.event
 
 import com.terraformation.backend.customer.model.AutomationModel
-import com.terraformation.backend.db.AutomationId
+import com.terraformation.backend.db.default_schema.AutomationId
 
 interface AutomationTriggeredEvent {
   val automationId: AutomationId
