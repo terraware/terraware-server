@@ -1,0 +1,10 @@
+gbif_vernacular_names
+gbif_distributions
+species_problems
+gbif_name_words
+gbif_names
+species
+species_problem_types
+species_problem_fields
+organizations
+gbif_taxa
