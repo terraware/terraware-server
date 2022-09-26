@@ -129,7 +129,6 @@ data class AccessionPayloadV2(
                 "information to calculate an estimate.")
     val estimatedWeight: SeedQuantityPayload?,
     val facilityId: FacilityId,
-    val founderId: String?,
     @Schema(
         description =
             "Server-generated unique identifier for the accession. This is unique across all " +
@@ -148,6 +147,7 @@ data class AccessionPayloadV2(
     val latestObservedTime: Instant?,
     val notes: String?,
     val photoFilenames: List<String>?,
+    val plantId: String?,
     @Schema(description = "Estimated number of plants the seeds were collected from.")
     val plantsCollectedFrom: Int?,
     val receivedDate: LocalDate?,
@@ -203,7 +203,7 @@ data class AccessionPayloadV2(
       estimatedWeight = model.estimatedWeight?.toPayload(),
       facilityId = model.facilityId
               ?: throw IllegalArgumentException("Accession did not have a facility ID"),
-      founderId = model.founderId,
+      plantId = model.founderId,
       id = model.id ?: throw IllegalArgumentException("Accession did not have an ID"),
       latestObservedQuantity = model.latestObservedQuantity?.toPayload(),
       latestObservedTime = model.latestObservedTime,
@@ -241,8 +241,8 @@ data class CreateAccessionRequestPayloadV2(
     val collectionSource: CollectionSource? = null,
     val collectors: List<String>? = null,
     val facilityId: FacilityId,
-    val founderId: String? = null,
     val notes: String? = null,
+    val plantId: String? = null,
     @Schema(description = "Estimated number of plants the seeds were collected from.")
     val plantsCollectedFrom: Int? = null,
     val receivedDate: LocalDate? = null,
@@ -264,7 +264,7 @@ data class CreateAccessionRequestPayloadV2(
         collectionSource = collectionSource,
         collectors = collectors.orEmpty(),
         facilityId = facilityId,
-        founderId = founderId,
+        founderId = plantId,
         geolocations = collectionSiteCoordinates.orEmpty(),
         isManualState = true,
         numberOfTrees = plantsCollectedFrom,
@@ -293,8 +293,8 @@ data class UpdateAccessionRequestPayloadV2(
     val collectors: List<String>? = null,
     val dryingEndDate: LocalDate? = null,
     val facilityId: FacilityId? = null,
-    val founderId: String? = null,
     val notes: String? = null,
+    val plantId: String? = null,
     @Schema(description = "Estimated number of plants the seeds were collected from.")
     val plantsCollectedFrom: Int? = null,
     val receivedDate: LocalDate? = null,
@@ -328,7 +328,7 @@ data class UpdateAccessionRequestPayloadV2(
           collectors = collectors.orEmpty(),
           dryingEndDate = dryingEndDate,
           facilityId = facilityId,
-          founderId = founderId,
+          founderId = plantId,
           geolocations = collectionSiteCoordinates.orEmpty(),
           isManualState = true,
           numberOfTrees = plantsCollectedFrom,

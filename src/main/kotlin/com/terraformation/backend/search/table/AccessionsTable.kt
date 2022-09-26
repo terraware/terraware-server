@@ -128,6 +128,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             "Most recent viability test result date",
             ACCESSIONS.LATEST_GERMINATION_RECORDING_DATE),
         dateField("nurseryStartDate", "Nursery start date", ACCESSIONS.NURSERY_START_DATE),
+        textField("plantId", "Plant ID", ACCESSIONS.FOUNDER_ID),
         integerField(
             "plantsCollectedFrom",
             "Number of plants seeds were collected from",
