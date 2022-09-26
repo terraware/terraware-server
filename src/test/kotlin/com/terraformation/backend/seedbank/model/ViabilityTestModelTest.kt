@@ -163,5 +163,60 @@ internal class ViabilityTestModelTest {
 
       assertEquals(testCases, actual)
     }
+
+    @Test
+    fun `substrate is removed if it is not valid for v2 nursery test`() {
+      val v1Model =
+          ViabilityTestModel(
+              seedsTested = 1,
+              substrate = ViabilityTestSubstrate.Agar,
+              testType = ViabilityTestType.Nursery,
+          )
+
+      val v2Model = v1Model.toV2Compatible()
+      assertNull(v2Model.substrate)
+    }
+
+    @Test
+    fun `substrate is retained if it is valid for v2 nursery test`() {
+      val v1Model =
+          ViabilityTestModel(
+              seedsTested = 1,
+              substrate = ViabilityTestSubstrate.Other,
+              testType = ViabilityTestType.Nursery,
+          )
+
+      val v2Model = v1Model.toV2Compatible()
+      assertEquals(ViabilityTestSubstrate.Other, v2Model.substrate)
+    }
+  }
+
+  @Nested
+  inner class V2ToV1Conversion {
+    @Test
+    fun `substrate is removed if it did not exist in v1`() {
+      val v2Model =
+          ViabilityTestModel(
+              seedsTested = 1,
+              substrate = ViabilityTestSubstrate.Moss,
+              testType = ViabilityTestType.Nursery,
+          )
+
+      val v1Model = v2Model.toV1Compatible()
+      assertNull(v1Model.substrate)
+    }
+
+    @Test
+    fun `substrate is preserved if it existed in v1`() {
+      val v2Model =
+          ViabilityTestModel(
+              seedsTested = 1,
+              substrate = ViabilityTestSubstrate.Agar,
+              testType = ViabilityTestType.Lab,
+          )
+
+      val v1Model = v2Model.toV1Compatible()
+      assertEquals(ViabilityTestSubstrate.Agar, v1Model.substrate)
+    }
   }
 }
