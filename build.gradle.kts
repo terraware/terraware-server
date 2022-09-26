@@ -91,7 +91,7 @@ dependencies {
   implementation("com.opencsv:opencsv:5.7.0")
   implementation("commons-fileupload:commons-fileupload:1.4")
   implementation("commons-validator:commons-validator:1.7")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.3.3")
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.0")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.2")
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.17")
