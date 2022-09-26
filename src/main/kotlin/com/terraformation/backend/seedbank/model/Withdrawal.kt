@@ -1,12 +1,12 @@
 package com.terraformation.backend.seedbank.model
 
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.SeedQuantityUnits
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.ViabilityTestId
-import com.terraformation.backend.db.WithdrawalId
-import com.terraformation.backend.db.WithdrawalPurpose
-import com.terraformation.backend.db.tables.references.WITHDRAWALS
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.WithdrawalId
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose
+import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.util.compareNullsFirst
 import java.time.Instant
 import java.time.LocalDate

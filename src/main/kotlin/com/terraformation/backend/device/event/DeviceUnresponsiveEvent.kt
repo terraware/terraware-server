@@ -1,6 +1,6 @@
 package com.terraformation.backend.device.event
 
-import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.default_schema.DeviceId
 import java.time.Duration
 import java.time.Instant
 

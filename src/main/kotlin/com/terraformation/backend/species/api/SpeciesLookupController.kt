@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.SpeciesProblemType
-import com.terraformation.backend.db.tables.pojos.SpeciesProblemsRow
+import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.species.db.GbifStore
 import com.terraformation.backend.species.model.GbifTaxonModel
 import com.terraformation.backend.species.model.GbifVernacularNameModel

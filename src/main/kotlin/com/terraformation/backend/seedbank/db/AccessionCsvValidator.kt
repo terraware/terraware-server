@@ -1,12 +1,12 @@
 package com.terraformation.backend.seedbank.db
 
 import com.opencsv.CSVReader
-import com.terraformation.backend.db.AccessionState
-import com.terraformation.backend.db.CollectionSource
-import com.terraformation.backend.db.SeedQuantityUnits
-import com.terraformation.backend.db.UploadId
-import com.terraformation.backend.db.UploadProblemType
-import com.terraformation.backend.db.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UploadProblemType
+import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.CollectionSource
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.seedbank.model.isV2Compatible
 import com.terraformation.backend.species.model.validateScientificNameSyntax

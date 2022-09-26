@@ -3,7 +3,7 @@ package com.terraformation.backend.time
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.tables.references.TEST_CLOCK
+import com.terraformation.backend.db.default_schema.tables.references.TEST_CLOCK
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import java.time.Duration

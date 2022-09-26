@@ -1,7 +1,7 @@
 package com.terraformation.backend.species.model
 
-import com.terraformation.backend.db.GbifTaxonId
-import com.terraformation.backend.db.tables.references.GBIF_VERNACULAR_NAMES
+import com.terraformation.backend.db.default_schema.GbifTaxonId
+import com.terraformation.backend.db.default_schema.tables.references.GBIF_VERNACULAR_NAMES
 import org.jooq.Record
 
 data class GbifVernacularNameModel(

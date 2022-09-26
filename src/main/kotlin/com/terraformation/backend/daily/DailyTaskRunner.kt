@@ -2,8 +2,8 @@ package com.terraformation.backend.daily
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.db.tables.pojos.TaskProcessedTimesRow
-import com.terraformation.backend.db.tables.references.TASK_PROCESSED_TIMES
+import com.terraformation.backend.db.default_schema.tables.pojos.TaskProcessedTimesRow
+import com.terraformation.backend.db.default_schema.tables.references.TASK_PROCESSED_TIMES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.ClockAdvancedEvent
 import com.terraformation.backend.time.ClockResetEvent

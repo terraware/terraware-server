@@ -13,11 +13,11 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
-import com.terraformation.backend.db.OrganizationId
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.records.UserPreferencesRecord
-import com.terraformation.backend.db.tables.references.USER_PREFERENCES
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
+import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every

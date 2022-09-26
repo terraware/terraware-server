@@ -2,12 +2,12 @@ package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.AccessionId
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.ProcessingMethod
-import com.terraformation.backend.db.WithdrawalId
 import com.terraformation.backend.db.WithdrawalNotFoundException
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.ProcessingMethod
+import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository

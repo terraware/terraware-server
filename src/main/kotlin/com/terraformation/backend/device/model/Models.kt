@@ -1,10 +1,10 @@
 package com.terraformation.backend.device.model
 
-import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.TimeseriesId
-import com.terraformation.backend.db.TimeseriesType
-import com.terraformation.backend.db.tables.references.TIMESERIES
-import com.terraformation.backend.db.tables.references.TIMESERIES_VALUES
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.TimeseriesId
+import com.terraformation.backend.db.default_schema.TimeseriesType
+import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
+import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import java.time.Instant
 import org.jooq.Record
 

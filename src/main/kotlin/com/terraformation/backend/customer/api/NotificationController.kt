@@ -8,9 +8,9 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.model.NotificationCountModel
 import com.terraformation.backend.customer.model.NotificationModel
-import com.terraformation.backend.db.NotificationCriticality
-import com.terraformation.backend.db.NotificationId
-import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.default_schema.NotificationCriticality
+import com.terraformation.backend.db.default_schema.NotificationId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse

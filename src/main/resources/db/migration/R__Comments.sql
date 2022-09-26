@@ -8,36 +8,36 @@
 --
 -- Put "(Enum)" at the beginnings of comments on tables that define a fixed set of values.
 
-COMMENT ON TABLE accession_collectors IS 'Names of people who collected each accession.';
+COMMENT ON TABLE seedbank.accession_collectors IS 'Names of people who collected each accession.';
 
-COMMENT ON TABLE accession_photos IS 'Linking table between `accessions` and `photos`.';
+COMMENT ON TABLE seedbank.accession_photos IS 'Linking table between `accessions` and `photos`.';
 
-COMMENT ON TABLE accession_quantity_history IS 'Historical record of changes to remaining quantities of accessions.';
+COMMENT ON TABLE seedbank.accession_quantity_history IS 'Historical record of changes to remaining quantities of accessions.';
 
-COMMENT ON TABLE accession_quantity_history_types IS '(Enum) Types of operations that can result in changes to remaining quantities of accessions.';
+COMMENT ON TABLE seedbank.accession_quantity_history_types IS '(Enum) Types of operations that can result in changes to remaining quantities of accessions.';
 
-COMMENT ON TABLE accession_state_history IS 'Historical record of when accessions moved to different states. A row is inserted here for every state transition.';
-COMMENT ON COLUMN accession_state_history.old_state_id IS 'Null if this is the initial state for a new accession.';
+COMMENT ON TABLE seedbank.accession_state_history IS 'Historical record of when accessions moved to different states. A row is inserted here for every state transition.';
+COMMENT ON COLUMN seedbank.accession_state_history.old_state_id IS 'Null if this is the initial state for a new accession.';
 
-COMMENT ON TABLE accession_states IS '(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.';
+COMMENT ON TABLE seedbank.accession_states IS '(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.';
 
-COMMENT ON TABLE accessions IS 'Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people.';
-COMMENT ON COLUMN accessions.latest_observed_quantity IS 'Most recent remaining quantity as observed by the user.';
-COMMENT ON COLUMN accessions.latest_observed_units_id IS 'Measurement units of `observed_quantity`.';
-COMMENT ON COLUMN accessions.latest_observed_time IS 'Time of most recent change to observed quantity.';
-COMMENT ON COLUMN accessions.latest_viability_percent IS 'Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet';
-COMMENT ON COLUMN accessions.number IS 'Displayed as the accession number to the user.';
-COMMENT ON COLUMN accessions.nursery_start_date IS 'When the accession was moved to a nursery, or null if it is not in a nursery.';
-COMMENT ON COLUMN accessions.target_storage_condition IS 'The intended storage condition of the accession as determined during initial processing.';
-COMMENT ON COLUMN accessions.total_viability_percent IS 'Percentage of viable seeds across all tests.';
+COMMENT ON TABLE seedbank.accessions IS 'Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people.';
+COMMENT ON COLUMN seedbank.accessions.latest_observed_quantity IS 'Most recent remaining quantity as observed by the user.';
+COMMENT ON COLUMN seedbank.accessions.latest_observed_units_id IS 'Measurement units of `observed_quantity`.';
+COMMENT ON COLUMN seedbank.accessions.latest_observed_time IS 'Time of most recent change to observed quantity.';
+COMMENT ON COLUMN seedbank.accessions.latest_viability_percent IS 'Percent of seeds germinated in most recent viability test, or in cut test if no germinations exist yet';
+COMMENT ON COLUMN seedbank.accessions.number IS 'Displayed as the accession number to the user.';
+COMMENT ON COLUMN seedbank.accessions.nursery_start_date IS 'When the accession was moved to a nursery, or null if it is not in a nursery.';
+COMMENT ON COLUMN seedbank.accessions.target_storage_condition IS 'The intended storage condition of the accession as determined during initial processing.';
+COMMENT ON COLUMN seedbank.accessions.total_viability_percent IS 'Percentage of viable seeds across all tests.';
 
 COMMENT ON TABLE app_versions IS 'Minimum and recommended versions for Terraware mobile apps.';
 
 COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the device manager.';
 
-COMMENT ON TABLE bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
+COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
 
-COMMENT ON TABLE collection_sources IS '(Enum) Types of source plants that seeds can be collected from.';
+COMMENT ON TABLE seedbank.collection_sources IS '(Enum) Types of source plants that seeds can be collected from.';
 
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
 COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code.';
@@ -48,7 +48,7 @@ COMMENT ON COLUMN country_subdivisions.code IS 'Full ISO-3166-2 subdivision code
 COMMENT ON COLUMN country_subdivisions.country_code IS 'ISO-3166 alpha-2 country code.';
 COMMENT ON COLUMN country_subdivisions.name IS 'Name of subdivision in US English.';
 
-COMMENT ON TABLE data_sources IS '(Enum) Original sources of data, e.g., manual entry via web app.';
+COMMENT ON TABLE seedbank.data_sources IS '(Enum) Original sources of data, e.g., manual entry via web app.';
 
 COMMENT ON TABLE device_managers IS 'Information about device managers. This is a combination of information from the Balena API and locally-generated values.';
 COMMENT ON COLUMN device_managers.balena_id IS 'Balena-assigned device identifier.';
@@ -85,7 +85,7 @@ COMMENT ON TABLE gbif_taxa IS 'Taxonomic data about species and families. A subs
 
 COMMENT ON TABLE gbif_vernacular_names IS 'Vernacular names for species and families. Part of the GBIF backbone dataset.';
 
-COMMENT ON TABLE geolocations IS 'Locations where seeds were collected.';
+COMMENT ON TABLE seedbank.geolocations IS 'Locations where seeds were collected.';
 
 COMMENT ON TABLE growth_forms IS '(Enum) What physical form a particular species takes. For example, "Tree" or "Shrub."';
 
@@ -100,15 +100,15 @@ COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organiza
 
 COMMENT ON TABLE photos IS 'Generic information about individual photos. Photos are associated with application entities using linking tables such as `accession_photos`.';
 
-COMMENT ON TABLE processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
+COMMENT ON TABLE seedbank.processing_methods IS '(Enum) Methods of counting seeds when processing accessions.';
 
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
 
-COMMENT ON TABLE seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
+COMMENT ON TABLE seedbank.seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
 
 COMMENT ON TABLE seed_storage_behaviors IS '(Enum) How seeds of a particular species behave in storage.';
 
-COMMENT ON TABLE source_plant_origins IS '(Enum) Types of origins of plants from which seeds were collected. For example, "Outplant" represents a plant that was cultivated, as opposed to one growing in the wild.';
+COMMENT ON TABLE seedbank.source_plant_origins IS '(Enum) Types of origins of plants from which seeds were collected. For example, "Outplant" represents a plant that was cultivated, as opposed to one growing in the wild.';
 
 COMMENT ON TABLE spatial_ref_sys IS '(Enum) Metadata about spatial reference (coordinate) systems. Managed by the PostGIS extension, not the application.';
 
@@ -125,10 +125,10 @@ COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Sessio
 
 COMMENT ON TABLE spring_session_attributes IS 'Data associated with a login session. Used by Spring Session, not the application.';
 
-COMMENT ON TABLE storage_conditions IS '(Enum) Refrigeration condition of seeds during storage.';
+COMMENT ON TABLE seedbank.storage_conditions IS '(Enum) Refrigeration condition of seeds during storage.';
 
-COMMENT ON TABLE storage_locations IS 'The available locations where seeds can be stored at a seed bank facility.';
-COMMENT ON COLUMN storage_locations.name IS 'E.g., Freezer 1, Freezer 2';
+COMMENT ON TABLE seedbank.storage_locations IS 'The available locations where seeds can be stored at a seed bank facility.';
+COMMENT ON COLUMN seedbank.storage_locations.name IS 'E.g., Freezer 1, Freezer 2';
 
 COMMENT ON TABLE task_processed_times IS 'Tracks the most recently processed time for recurring tasks that need to cover non-overlapping time periods.';
 
@@ -170,20 +170,20 @@ COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authent
 COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants to receive notifications via email.';
 COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
 
-COMMENT ON TABLE viability_test_results IS 'Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.';
+COMMENT ON TABLE seedbank.viability_test_results IS 'Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 
-COMMENT ON TABLE viability_test_seed_types IS '(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';
+COMMENT ON TABLE seedbank.viability_test_seed_types IS '(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';
 
-COMMENT ON TABLE viability_test_substrates IS '(Enum) Types of substrate that can be used to test seeds for viability.';
+COMMENT ON TABLE seedbank.viability_test_substrates IS '(Enum) Types of substrate that can be used to test seeds for viability.';
 
-COMMENT ON TABLE viability_test_treatments IS '(Enum) Techniques that can be used to treat seeds before testing them for viability.';
+COMMENT ON TABLE seedbank.viability_test_treatments IS '(Enum) Techniques that can be used to treat seeds before testing them for viability.';
 
-COMMENT ON TABLE viability_test_types IS '(Enum) Types of tests that can be performed on seeds to check for viability.';
+COMMENT ON TABLE seedbank.viability_test_types IS '(Enum) Types of tests that can be performed on seeds to check for viability.';
 
-COMMENT ON TABLE viability_tests IS 'Information about a single batch of seeds being tested for viability. This is the information about the test itself; the results are represented in the `viability_test_results` table.';
+COMMENT ON TABLE seedbank.viability_tests IS 'Information about a single batch of seeds being tested for viability. This is the information about the test itself; the results are represented in the `viability_test_results` table.';
 
-COMMENT ON TABLE withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
+COMMENT ON TABLE seedbank.withdrawal_purposes IS '(Enum) Reasons that someone can withdraw seeds from a seed bank.';
 
-COMMENT ON TABLE withdrawals IS 'Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here.';
+COMMENT ON TABLE seedbank.withdrawals IS 'Information about seeds that have been withdrawn from a seed bank. Each time someone withdraws seeds, a new row is inserted here.';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

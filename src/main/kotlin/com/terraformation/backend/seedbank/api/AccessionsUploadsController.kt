@@ -7,8 +7,8 @@ import com.terraformation.backend.api.ResolveUploadRequestPayload
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.UploadFileResponsePayload
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.UploadId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.seedbank.db.AccessionImporter
 import io.swagger.v3.oas.annotations.Operation

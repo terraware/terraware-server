@@ -2,13 +2,13 @@ package com.terraformation.backend.device.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.BalenaDeviceId
-import com.terraformation.backend.db.DeviceManagerId
 import com.terraformation.backend.db.DeviceManagerNotFoundException
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.tables.daos.DeviceManagersDao
-import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
-import com.terraformation.backend.db.tables.references.DEVICE_MANAGERS
+import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.DeviceManagerId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.tables.daos.DeviceManagersDao
+import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
+import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock
 import javax.annotation.ManagedBean

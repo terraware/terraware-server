@@ -3,11 +3,11 @@ package com.terraformation.backend.seedbank.api
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.ViabilityTestId
-import com.terraformation.backend.db.WithdrawalId
-import com.terraformation.backend.db.WithdrawalPurpose
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.WithdrawalId
+import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.AccessionService
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.model.WithdrawalModel

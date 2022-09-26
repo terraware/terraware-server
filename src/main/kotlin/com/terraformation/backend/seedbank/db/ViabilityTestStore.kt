@@ -2,14 +2,14 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.ViabilityTestId
 import com.terraformation.backend.db.ViabilityTestNotFoundException
-import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.USERS
-import com.terraformation.backend.db.tables.references.VIABILITY_TESTS
-import com.terraformation.backend.db.tables.references.VIABILITY_TEST_RESULTS
-import com.terraformation.backend.db.tables.references.WITHDRAWALS
+import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
+import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
+import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.ViabilityTestResultModel

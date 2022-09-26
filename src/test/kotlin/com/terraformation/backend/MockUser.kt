@@ -2,8 +2,8 @@ package com.terraformation.backend
 
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserType
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.UserType
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk

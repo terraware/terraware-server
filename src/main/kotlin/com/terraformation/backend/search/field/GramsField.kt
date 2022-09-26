@@ -1,6 +1,6 @@
 package com.terraformation.backend.search.field
 
-import com.terraformation.backend.db.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.seedbank.model.toGrams
 import java.math.BigDecimal

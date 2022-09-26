@@ -1,7 +1,7 @@
 package com.terraformation.backend.customer.event
 
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.UserId
 
 /**
  * Published when the device manager at a facility requests that an alert be broadcast to the

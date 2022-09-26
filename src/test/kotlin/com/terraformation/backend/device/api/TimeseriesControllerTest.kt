@@ -5,10 +5,10 @@ import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.FacilityConnectionState
-import com.terraformation.backend.db.TimeseriesId
-import com.terraformation.backend.db.TimeseriesType
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.FacilityConnectionState
+import com.terraformation.backend.db.default_schema.TimeseriesId
+import com.terraformation.backend.db.default_schema.TimeseriesType
 import com.terraformation.backend.device.db.TimeseriesStore
 import com.terraformation.backend.device.model.TimeseriesModel
 import com.terraformation.backend.device.model.TimeseriesValueModel

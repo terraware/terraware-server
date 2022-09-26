@@ -1,7 +1,7 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tables.references.ACCESSION_COLLECTORS
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope

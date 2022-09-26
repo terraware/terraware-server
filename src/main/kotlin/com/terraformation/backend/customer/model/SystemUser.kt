@@ -2,20 +2,20 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.AutomationId
-import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.DeviceManagerId
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.NotificationId
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.SpeciesId
-import com.terraformation.backend.db.StorageLocationId
-import com.terraformation.backend.db.UploadId
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.UserType
-import com.terraformation.backend.db.ViabilityTestId
-import com.terraformation.backend.db.tables.daos.UsersDao
+import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.DeviceManagerId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.NotificationId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.UploadId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.StorageLocationId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
 import javax.annotation.ManagedBean
 import org.springframework.context.annotation.Lazy
 

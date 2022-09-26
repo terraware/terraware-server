@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.event
 
-import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.default_schema.UserId
 
 /**
  * Published when we start deleting a user's data from the database, but before the user has

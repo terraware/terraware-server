@@ -2,8 +2,8 @@ package com.terraformation.backend.device.balena
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.db.tables.pojos.DeviceManagersRow
-import com.terraformation.backend.db.tables.references.DEVICE_MANAGERS
+import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
+import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.log.perClassLogger
 import java.time.Clock

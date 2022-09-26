@@ -6,9 +6,9 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.model.AutomationModel
-import com.terraformation.backend.db.AutomationId
-import com.terraformation.backend.db.DeviceId
-import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.device.AutomationService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema

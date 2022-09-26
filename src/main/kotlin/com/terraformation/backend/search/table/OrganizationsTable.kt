@@ -1,13 +1,13 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.tables.references.COUNTRIES
-import com.terraformation.backend.db.tables.references.COUNTRY_SUBDIVISIONS
-import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.ORGANIZATIONS
-import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.SPECIES
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchScope

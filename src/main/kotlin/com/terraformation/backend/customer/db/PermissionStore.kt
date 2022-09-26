@@ -2,12 +2,12 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.Role
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.references.FACILITIES
-import com.terraformation.backend.db.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.tables.references.USERS
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 

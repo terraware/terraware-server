@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.db.BalenaDeviceId
-import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.log.perClassLogger
 import io.mockk.every
 import io.mockk.mockk

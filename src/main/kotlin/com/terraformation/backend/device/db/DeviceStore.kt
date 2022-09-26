@@ -2,11 +2,11 @@ package com.terraformation.backend.device.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.DeviceId
 import com.terraformation.backend.db.DeviceNotFoundException
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.tables.daos.DevicesDao
-import com.terraformation.backend.db.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.DeviceId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.tables.daos.DevicesDao
+import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import javax.annotation.ManagedBean
 
 /** Permission-aware database operations for device configuration data. */

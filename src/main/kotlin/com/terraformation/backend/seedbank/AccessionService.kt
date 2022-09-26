@@ -1,10 +1,10 @@
 package com.terraformation.backend.seedbank
 
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.AccessionId
-import com.terraformation.backend.db.ViabilityTestId
-import com.terraformation.backend.db.WithdrawalId
-import com.terraformation.backend.db.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.AccessionId
+import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.db.seedbank.WithdrawalId
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.PhotoRepository
 import com.terraformation.backend.seedbank.model.AccessionModel

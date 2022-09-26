@@ -4,9 +4,9 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.AutomationId
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.DeviceId
+import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk

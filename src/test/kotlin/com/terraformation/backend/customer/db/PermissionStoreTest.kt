@@ -4,9 +4,9 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.UserId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach

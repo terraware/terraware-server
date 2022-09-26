@@ -30,29 +30,32 @@ class TerrawareGenerator : KotlinGenerator() {
         """
       import com.fasterxml.jackson.annotation.JsonCreator
       import com.fasterxml.jackson.annotation.JsonValue
+      import com.terraformation.backend.db.EnumFromReferenceTable
       import org.jooq.impl.AbstractConverter
-      
-      interface EnumFromReferenceTable<T : Enum<T>> {
-        val id: Int
-        val displayName: String
-        val tableName: String
-      }
 
     """.trimIndent())
 
-    ENUM_TABLES.forEach { printEnum(out, it, schema.database.connection) }
-    ID_WRAPPERS.forEach { it.render(out) }
+    ENUM_TABLES[schema.name]?.forEach {
+      printEnum(out, schema.name, it, schema.database.connection)
+    }
+    ID_WRAPPERS[schema.name]?.forEach { it.render(out) }
 
     closeJavaWriter(out)
   }
 
-  private fun printEnum(out: JavaWriter, table: EnumTable, connection: Connection) {
+  private fun printEnum(
+      out: JavaWriter,
+      schemaName: String,
+      table: EnumTable,
+      connection: Connection
+  ) {
     val values = mutableListOf<String>()
 
     log.info("Generating enum for reference table $table")
 
-    val columns = (listOf("id", "name") + table.additionalColumns.map { it.columnName }).joinToString()
-    connection.prepareStatement("SELECT $columns FROM $table ORDER BY id").use { ps ->
+    val columns =
+        (listOf("id", "name") + table.additionalColumns.map { it.columnName }).joinToString()
+    connection.prepareStatement("SELECT $columns FROM $schemaName.$table ORDER BY id").use { ps ->
       ps.executeQuery().use { rs ->
         while (rs.next()) {
           val id = rs.getInt(1)
@@ -60,14 +63,16 @@ class TerrawareGenerator : KotlinGenerator() {
           if (name != null) {
             val capitalizedName = name.replace(Regex("[-/ ]"), "").capitalize()
             val properties =
-                (listOf("\"$name\"") + table.additionalColumns.mapIndexed { i, columnInfo ->
-                  val obj = rs.getObject(2 + i + 1)
-                  when {
-                    obj is String -> "\"$obj\""
-                    columnInfo.isTableEnum -> "${columnInfo.columnDataType}.forId($obj)!!"
-                    else -> "$obj"
-                  }
-                }).joinToString()
+                (listOf("\"$name\"") +
+                        table.additionalColumns.mapIndexed { i, columnInfo ->
+                          val obj = rs.getObject(2 + i + 1)
+                          when {
+                            obj is String -> "\"$obj\""
+                            columnInfo.isTableEnum -> "${columnInfo.columnDataType}.forId($obj)!!"
+                            else -> "$obj"
+                          }
+                        })
+                    .joinToString()
             values.add("$capitalizedName($id, $properties)")
           }
         }
@@ -84,15 +89,18 @@ class TerrawareGenerator : KotlinGenerator() {
     // https://youtrack.jetbrains.com/issue/KT-2425
     val dollarSign = '$'
 
-    val additionalProperties = table.additionalColumns.map {
-      val propertyName = it.columnName.toCamelCase()
-      val propertyType = it.columnDataType
-      "val $propertyName: $propertyType"
-    }
-    val properties = (listOf(
-        "override val id: Int",
-        "@get:JsonValue override val displayName: String",
-    ) + additionalProperties).joinToString(separator = ",\n          ")
+    val additionalProperties =
+        table.additionalColumns.map {
+          val propertyName = it.columnName.toCamelCase()
+          val propertyType = it.columnDataType
+          "val $propertyName: $propertyType"
+        }
+    val properties =
+        (listOf(
+                "override val id: Int",
+                "@get:JsonValue override val displayName: String",
+            ) + additionalProperties)
+            .joinToString(separator = ",\n          ")
 
     out.println(
         """
@@ -148,13 +156,32 @@ class TerrawareGenerator : KotlinGenerator() {
                 .withConverter("com.terraformation.backend.db.UriConverter")
                 .withUserType("java.net.URI"))
 
-    ENUM_TABLES.mapNotNull { it.forcedType(targetPackage) }.forEach { types.add(it) }
-    ID_WRAPPERS.mapNotNull { it.forcedType(targetPackage) }.forEach { types.add(it) }
+    ENUM_TABLES.forEach { (schemaName, tables) ->
+      tables
+          .mapNotNull { it.forcedType(schemaPackage(targetPackage, schemaName)) }
+          .forEach { types.add(it) }
+    }
+    ID_WRAPPERS.forEach { (schemaName, wrappers) ->
+      wrappers
+          .mapNotNull { it.forcedType(schemaPackage(targetPackage, schemaName)) }
+          .forEach { types.add(it) }
+    }
 
     return types
   }
 
   fun embeddables() = EMBEDDABLES
 
-  fun excludes() = ENUM_TABLES.joinToString("|") { "$it\$" }
+  fun excludes() =
+      ENUM_TABLES.entries.joinToString("|") { (schemaName, tables) ->
+        tables.joinToString { "$schemaName\\.$it\$" }
+      }
+
+  private fun schemaPackage(targetPackage: String, schemaName: String): String {
+    return if (schemaName == "public") {
+      "$targetPackage.default_schema"
+    } else {
+      "$targetPackage.$schemaName"
+    }
+  }
 }

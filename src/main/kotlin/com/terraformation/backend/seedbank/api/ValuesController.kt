@@ -2,9 +2,9 @@ package com.terraformation.backend.seedbank.api
 
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.FacilityId
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.StorageCondition
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.seedbank.StorageCondition
 import com.terraformation.backend.search.FacilityIdScope
 import com.terraformation.backend.search.OrganizationIdScope
 import com.terraformation.backend.search.SearchFieldPrefix

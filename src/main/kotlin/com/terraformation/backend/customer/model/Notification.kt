@@ -1,10 +1,10 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.db.NotificationId
-import com.terraformation.backend.db.NotificationType
-import com.terraformation.backend.db.OrganizationId
-import com.terraformation.backend.db.UserId
-import com.terraformation.backend.db.tables.references.NOTIFICATIONS
+import com.terraformation.backend.db.default_schema.NotificationId
+import com.terraformation.backend.db.default_schema.NotificationType
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import java.net.URI
 import java.time.Instant
 import org.jooq.Record

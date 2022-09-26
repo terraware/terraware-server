@@ -4,8 +4,8 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.AutomationId
-import com.terraformation.backend.db.FacilityId
+import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.device.event.AutomationTriggeredEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent

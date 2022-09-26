@@ -4,9 +4,9 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.db.FacilityId
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.OrganizationId
+import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.processToString

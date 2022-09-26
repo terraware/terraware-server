@@ -1,9 +1,9 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.tables.daos.AppVersionsDao
-import com.terraformation.backend.db.tables.pojos.AppVersionsRow
-import com.terraformation.backend.db.tables.references.APP_VERSIONS
+import com.terraformation.backend.db.default_schema.tables.daos.AppVersionsDao
+import com.terraformation.backend.db.default_schema.tables.pojos.AppVersionsRow
+import com.terraformation.backend.db.default_schema.tables.references.APP_VERSIONS
 import javax.annotation.ManagedBean
 import org.jooq.DSLContext
 
