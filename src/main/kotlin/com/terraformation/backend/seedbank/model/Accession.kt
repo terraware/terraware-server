@@ -264,7 +264,7 @@ data class AccessionModel(
       newModel: AccessionModel,
       clock: Clock
   ): AccessionStateTransition? {
-    val seedsRemaining = newModel.calculateRemaining(clock)
+    val seedsRemaining = newModel.calculateRemaining(clock, this)
     val allSeedsWithdrawn = seedsRemaining != null && seedsRemaining.quantity <= BigDecimal.ZERO
     val oldState = state ?: AccessionState.AwaitingProcessing
     val newState = newModel.state ?: AccessionState.AwaitingProcessing
