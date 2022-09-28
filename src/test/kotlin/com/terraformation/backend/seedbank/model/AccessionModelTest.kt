@@ -1612,6 +1612,29 @@ internal class AccessionModelTest {
 
       return tests
     }
+
+    @Test
+    fun `can move out of Used Up if remaining quantity and state are set at the same time`() {
+      val initial =
+          accession()
+              .copy(isManualState = true, remaining = seeds(10))
+              .withCalculatedValues(clock)
+              .addWithdrawal(withdrawal(seeds(10), id = null), clock)
+
+      assertEquals(
+          AccessionState.UsedUp, initial.state, "Withdrawal of all seeds sets state to Used Up")
+
+      val updated =
+          initial
+              .copy(
+                  remaining = seeds(5),
+                  state = AccessionState.Drying,
+                  latestObservedQuantityCalculated = false)
+              .withCalculatedValues(clock, initial)
+
+      assertEquals(seeds(5), updated.remaining, "Manual update of remaining quantity is accepted")
+      assertEquals(AccessionState.Drying, updated.state, "Manual update of state is accepted")
+    }
   }
 
   @Nested
