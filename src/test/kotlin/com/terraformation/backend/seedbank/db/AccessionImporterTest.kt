@@ -87,6 +87,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     AccessionImporter(
         accessionStore,
         clock,
+        countriesDao,
         dslContext,
         fileStore,
         messages,
@@ -274,6 +275,20 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `accepts rows with country codes`() {
+      every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
+      testValidation(
+          ",Scientific name,,,,,2022-03-04,,,,,uS,,,,,\n", UploadStatus.AwaitingProcessing)
+    }
+
+    @Test
+    fun `accepts rows with country names`() {
+      every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
+      testValidation(
+          ",Scientific name,,,,,2022-03-04,,,,,canada,,,,,\n", UploadStatus.AwaitingProcessing)
+    }
+
+    @Test
     fun `rejects rows with wrong number of columns`() {
       testValidation(
           ",Species name,,,,",
@@ -440,6 +455,22 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               position = 2,
               field = "Collection Source",
               message = messages.accessionCsvCollectionSourceInvalid(),
+              value = "Unknown"))
+    }
+
+    @Test
+    fun `rejects rows with bogus countries`() {
+      testValidation(
+          ",Scientific name,,,,,2022-03-04,,,,,Unknown,,,,,\n",
+          UploadStatus.Invalid,
+          UploadProblemsRow(
+              id = UploadProblemId(1),
+              uploadId = uploadId,
+              typeId = UploadProblemType.UnrecognizedValue,
+              isError = true,
+              position = 2,
+              field = "Country",
+              message = messages.accessionCsvCountryInvalid(),
               value = "Unknown"))
     }
 
@@ -738,6 +769,22 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       val accessions = accessionsDao.findAll()
       assertEquals(1, accessions.size, "Should have inserted 1 accession")
       assertEquals(BigDecimal.TEN, accessions[0].remainingQuantity, "Quantity")
+    }
+
+    @Test
+    fun `accepts country codes and names`() {
+      insertAccessionUpload(
+          ",Species name,,,,,2022-03-04,,,,,uganda,,,,,\n" +
+              ",Species name,,,,,2022-03-04,,,,,gB,,,,,\n",
+          UploadStatus.AwaitingProcessing)
+
+      importer.importCsv(uploadId, false)
+
+      val accessions = accessionsDao.findAll()
+      assertEquals(2, accessions.size, "Should have inserted 2 accessions")
+      assertEquals(
+          "UG", accessions[0].collectionSiteCountryCode, "Country code looked up from name")
+      assertEquals("GB", accessions[1].collectionSiteCountryCode, "Country code specified in file")
     }
   }
 

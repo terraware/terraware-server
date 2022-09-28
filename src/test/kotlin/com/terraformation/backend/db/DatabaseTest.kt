@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.AutomationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceManagersDao
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesDao
 import com.terraformation.backend.db.default_schema.tables.daos.DevicesDao
@@ -219,6 +220,7 @@ abstract class DatabaseTest {
   protected val accessionsDao: AccessionsDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
+  protected val countriesDao: CountriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()

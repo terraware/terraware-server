@@ -18,6 +18,7 @@ import java.time.format.DateTimeParseException
 class AccessionCsvValidator(
     private val uploadId: UploadId,
     private val messages: Messages,
+    private val countryCodesByLowerCsvValue: Map<String, String>,
     private val findExistingAccessionNumbers: (Collection<String>) -> Collection<String>,
 ) {
   val warnings = mutableListOf<UploadProblemsRow>()
@@ -101,6 +102,7 @@ class AccessionCsvValidator(
     validateUnits(values[4], ACCESSION_CSV_HEADERS[4])
     validateStatus(values[5], ACCESSION_CSV_HEADERS[5])
     validateCollectionDate(values[6], ACCESSION_CSV_HEADERS[6])
+    validateCountryCode(values[11], ACCESSION_CSV_HEADERS[11])
     validateCollectionSource(values[14], ACCESSION_CSV_HEADERS[14])
     validateNumberOfPlants(values[15], ACCESSION_CSV_HEADERS[15])
   }
@@ -165,6 +167,13 @@ class AccessionCsvValidator(
           field,
           value,
           messages.accessionCsvQuantityUnitsInvalid())
+    }
+  }
+
+  private fun validateCountryCode(value: String?, field: String) {
+    if (value != null && value.lowercase() !in countryCodesByLowerCsvValue) {
+      addError(
+          UploadProblemType.UnrecognizedValue, field, value, messages.accessionCsvCountryInvalid())
     }
   }
 
