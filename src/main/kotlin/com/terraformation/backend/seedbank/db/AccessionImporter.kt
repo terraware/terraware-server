@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
+import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
@@ -40,6 +41,7 @@ import org.springframework.context.annotation.Lazy
 class AccessionImporter(
     private val accessionStore: AccessionStore,
     private val clock: Clock,
+    private val countriesDao: CountriesDao,
     private val dslContext: DSLContext,
     private val fileStore: FileStore,
     private val messages: Messages,
@@ -53,6 +55,16 @@ class AccessionImporter(
     private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
+
+  /**
+   * The country code for each valid lower-case value of the collection site country column in the
+   * CSV. We allow the CSV to use country codes or country names.
+   */
+  private val countryCodesByLowerCsvValue: Map<String, String> by lazy {
+    val countries = countriesDao.findAll()
+    countries.associate { it.name!!.lowercase() to it.code!! } +
+        countries.associate { it.code!!.lowercase() to it.code!! }
+  }
 
   fun getCsvTemplate(): ByteArray {
     return javaClass.getResourceAsStream("/csv/accessions-template.csv")?.use { it.readAllBytes() }
@@ -99,6 +111,7 @@ class AccessionImporter(
           AccessionCsvValidator(
               uploadId,
               messages,
+              countryCodesByLowerCsvValue,
               findExistingAccessionNumbers = { numbers ->
                 dslContext
                     .select(ACCESSIONS.NUMBER)
@@ -195,7 +208,7 @@ class AccessionImporter(
     val collectionLandowner = values[8]
     val collectionCity = values[9]
     val collectionCountrySubdivision = values[10]
-    val collectionCountryCode = values[11]
+    val collectionCountryCode = values[11]?.let { countryCodesByLowerCsvValue[it.lowercase()] }
     val collectionSiteDescription = values[12]
     val collectorName = values[13]
     val collectionSource = values[14]?.toCollectionSource()

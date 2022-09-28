@@ -47,6 +47,9 @@ class Messages {
   fun accessionCsvCollectionSourceInvalid() =
       "Collection source must be one of: $validCollectionSources"
 
+  fun accessionCsvCountryInvalid() =
+      "Country must be a valid two-letter ISO country code or a recognized country name"
+
   fun accessionCsvNumberDuplicate(lineNumber: Int) =
       "Accession number already used on line $lineNumber"
 
