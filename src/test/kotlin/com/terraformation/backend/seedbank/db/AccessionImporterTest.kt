@@ -268,6 +268,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `accepts rows where all columns are blank`() {
+      every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
+      testValidation(",,,,  ,,,,,    ,,,\"  \",,,,\n", UploadStatus.AwaitingProcessing)
+    }
+
+    @Test
     fun `rejects rows with wrong number of columns`() {
       testValidation(
           ",Species name,,,,",
@@ -277,7 +283,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 3,
+              position = 2,
               message = messages.csvWrongFieldCount(17, 6)))
     }
 
@@ -294,7 +300,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MissingRequiredValue,
               isError = true,
-              position = 3,
+              position = 2,
               field = "Species (Scientific Name)",
               message = messages.csvScientificNameMissing()),
           UploadProblemsRow(
@@ -302,7 +308,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 4,
+              position = 3,
               field = "Species (Scientific Name)",
               message = messages.csvScientificNameTooShort(),
               value = "Name"),
@@ -311,7 +317,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 5,
+              position = 4,
               field = "Species (Scientific Name)",
               message = messages.csvScientificNameTooLong(),
               value = "A very long name with too many words"),
@@ -320,7 +326,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 6,
+              position = 5,
               field = "Species (Scientific Name)",
               message = messages.csvScientificNameInvalidChar("?"),
               value = "Bad name?"),
@@ -342,7 +348,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MissingRequiredValue,
               isError = true,
-              position = 3,
+              position = 2,
               field = "Collection Date",
               message = messages.csvRequiredFieldMissing()),
           UploadProblemsRow(
@@ -350,7 +356,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 4,
+              position = 3,
               field = "Collection Date",
               message = messages.csvDateMalformed(),
               value = "January 6"),
@@ -359,7 +365,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 5,
+              position = 4,
               field = "Collection Date",
               message = messages.csvDateMalformed(),
               value = "2022-99-99"),
@@ -368,7 +374,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 6,
+              position = 5,
               field = "Collection Date",
               message = messages.csvDateMalformed(),
               value = "2022/03/04"),
@@ -377,7 +383,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 7,
+              position = 6,
               field = "Collection Date",
               message = messages.csvDateMalformed(),
               value = "2022-3-4"),
@@ -386,7 +392,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
-              position = 8,
+              position = 7,
               field = "Collection Date",
               message = messages.csvDateMalformed(),
               value = "20220304"),
@@ -405,7 +411,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
-              position = 3,
+              position = 2,
               field = "Status",
               message = messages.accessionCsvStatusInvalid(),
               value = "Bogus"),
@@ -414,7 +420,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
-              position = 4,
+              position = 3,
               field = "Status",
               message = messages.accessionCsvStatusInvalid(),
               value = "Withdrawn"),
@@ -431,7 +437,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
-              position = 3,
+              position = 2,
               field = "Collection Source",
               message = messages.accessionCsvCollectionSourceInvalid(),
               value = "Unknown"))
@@ -449,7 +455,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.DuplicateValue,
               isError = false,
-              position = 3,
+              position = 2,
               field = "Accession Number",
               message = messages.accessionCsvNumberExists(),
               value = "123"))
@@ -466,9 +472,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               uploadId = uploadId,
               typeId = UploadProblemType.DuplicateValue,
               isError = true,
-              position = 4,
+              position = 3,
               field = "Accession Number",
-              message = messages.accessionCsvNumberDuplicate(3),
+              message = messages.accessionCsvNumberDuplicate(2),
               value = "123"))
     }
 
@@ -717,6 +723,21 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       importer.importCsv(uploadId, true)
 
       assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll())
+    }
+
+    @Test
+    fun `ignores empty rows`() {
+      insertAccessionUpload(
+          ",\" \",, ,,, ,,,,,,,,,,\n" +
+              ",Species name,,10,,,2022-03-04,,,,,,,,,,\n" +
+              ",,,,,,,,,,,,,,,,\n",
+          UploadStatus.AwaitingProcessing)
+
+      importer.importCsv(uploadId, false)
+
+      val accessions = accessionsDao.findAll()
+      assertEquals(1, accessions.size, "Should have inserted 1 accession")
+      assertEquals(BigDecimal.TEN, accessions[0].remainingQuantity, "Quantity")
     }
   }
 

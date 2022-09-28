@@ -1,22 +1,33 @@
-Accession Number,Species (Scientific Name)*,Species (Common Name),QTY,QTY Units,Status,Collection Date*,Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,"Collector Name (First, Last)",Collection Source,Number of Plants ,Plant ID
-,"Please input the scientific name in the following format:
+Accession Number,"Species (Scientific Name)*
 
-Genus species ",,Only enter numbers or an error will occur during upload. ,"Please choose from the following list or an error will occur during upload:
+Please input the scientific name in the following format:
+
+Genus species ",Species (Common Name),"QTY
+
+Only enter numbers or an error will occur during upload. ","QTY Units
+
+Please choose from the following list or an error will occur during upload:
 - Count
 - Grams
 - Kilograms
-- Milligrams 
+- Milligrams
 - Pounds
-- Ounces ","Please choose from the following list or an error will occur during upload:
-- Awaiting Processing 
+- Ounces ","Status
+
+Please choose from the following list or an error will occur during upload:
+- Awaiting Processing
 - Processing
 - Drying
 - In Storage
-- Used Up ",Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!,,,,,,,,"Please choose from the following list or an error will occur during upload:
+- Used Up ","Collection Date*
+
+Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Collection Source
+
+Please choose from the following list or an error will occur during upload:
 - Wild (In Situ)
-- Reintroduced 
+- Reintroduced
 - Cultivated (Ex Situ)
-- Other",,
+- Other",Number of Plants ,Plant ID
 12345,New species var. new,New common name,100,Seeds,Drying,2022-03-04,New site name,New landowner,"City name",Hawaii,US,"Site description
 with multiple
 lines","Collector,Name",Reintroduced,5,PlantID

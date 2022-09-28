@@ -37,10 +37,6 @@ class AccessionCsvValidator(
 
     validateHeaderRow(csvReader.readNext())
 
-    // Ignore instructions row.
-    rowNum++
-    csvReader.readNext()
-
     csvReader.forEach { rawValues ->
       rowNum++
       validateRow(rawValues)
@@ -93,7 +89,9 @@ class AccessionCsvValidator(
     // Our example template file has a zillion rows where only the status and collection source
     // columns have values; we don't want to flag those rows as errors if the user downloads the
     // template, edits some of the rows, and leaves the other example rows in place.
-    if (values[5] != null && values[14] != null && values.count { it != null } == 2) {
+    val columnsWithValues = values.count { it != null }
+    if (columnsWithValues == 0 ||
+        (values[5] != null && values[14] != null && columnsWithValues == 2)) {
       return
     }
 

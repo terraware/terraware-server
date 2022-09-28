@@ -154,8 +154,7 @@ class AccessionImporter(
         dslContext.transaction { _ ->
           val csvReader = CSVReader(InputStreamReader(inputStream))
 
-          // Consume header and instruction lines
-          csvReader.readNext()
+          // Consume header row
           csvReader.readNext()
 
           csvReader.forEach { importRow(it, organizationId, facilityId, overwriteExisting) }
@@ -177,7 +176,9 @@ class AccessionImporter(
     // Our example template file has a zillion rows where only the status and collection source
     // columns have values; we don't want to try to create accessions for them if the user downloads
     // the template, edits some of the rows, and leaves the other example rows in place.
-    if (values[5] != null && values[14] != null && values.count { it != null } == 2) {
+    val columnsWithValues = values.count { it != null }
+    if (columnsWithValues == 0 ||
+        (values[5] != null && values[14] != null && columnsWithValues == 2)) {
       return
     }
 
