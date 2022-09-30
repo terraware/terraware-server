@@ -575,6 +575,8 @@ abstract class DatabaseTest {
     return rowWithDefaults.id!!
   }
 
+  private var nextBatchNuber: Int = 1
+
   fun insertBatch(
       row: BatchesRow = BatchesRow(),
       addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
@@ -590,7 +592,7 @@ abstract class DatabaseTest {
       readyQuantity: Int = row.readyQuantity ?: 2,
       speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
       version: Int = row.version ?: 1,
-      batchNumber: String = row.batchNumber ?: id?.toString() ?: "batch",
+      batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
   ): BatchId {
     val rowWithDefaults =
         row.copy(
