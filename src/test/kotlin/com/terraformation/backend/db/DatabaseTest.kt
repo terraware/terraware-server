@@ -46,6 +46,8 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
+import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
@@ -220,6 +222,8 @@ abstract class DatabaseTest {
   protected val accessionsDao: AccessionsDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
+  protected val batchesDao: BatchesDao by lazyDao()
+  protected val batchQuantityHistoryDao: BatchQuantityHistoryDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()

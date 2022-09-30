@@ -122,6 +122,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createBatch(facilityId: FacilityId) {
+    if (!user.canCreateBatch(facilityId)) {
+      readFacility(facilityId)
+      throw AccessDeniedException("No permission to create seedling batch")
+    }
+  }
+
   fun createDevice(facilityId: FacilityId) {
     if (!user.canCreateDevice(facilityId)) {
       readFacility(facilityId)

@@ -134,6 +134,9 @@ class TerrawareClient:
     def list_species(self, organization_id):
         return self.get(f"/api/v1/species?organizationId={organization_id}")["species"]
 
+    def create_seedling_batch(self, payload):
+        return self.post("/api/v1/nursery/batches", json=payload)["batch"]
+
 
 def add_terraware_args(parser: ArgumentParser):
     """Add a standard set of arguments to configure a TerrawareClient.
