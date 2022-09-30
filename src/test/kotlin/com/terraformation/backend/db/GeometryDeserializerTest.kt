@@ -36,7 +36,8 @@ internal class GeometryDeserializerTest {
           |    "name": "EPSG:${SRID.SPHERICAL_MERCATOR}"
           |  }
           |}
-          |}""".trimMargin())
+          |}"""
+                .trimMargin())
 
     assertEquals(Point(1.1, 2.2, 3.3).apply { srid = SRID.SPHERICAL_MERCATOR }, actual)
   }
@@ -56,7 +57,8 @@ internal class GeometryDeserializerTest {
       |      [0.0, 0.0, 0.0]
       |    ]
       |  ]
-      |}""".trimMargin())
+      |}"""
+                .trimMargin())
 
     assertEquals(
         Polygon(
@@ -84,7 +86,8 @@ internal class GeometryDeserializerTest {
       |    [1.0, 0.0, 0.0],
       |    [0.0, 1.0, 0.0]
       |  ]
-      |}""".trimMargin())
+      |}"""
+                .trimMargin())
 
     assertEquals(
         LineString(
@@ -119,7 +122,8 @@ internal class GeometryDeserializerTest {
       |      [0.0, 0.0, 0.0]
       |    ]
       |  ]
-      |}""".trimMargin())
+      |}"""
+              .trimMargin())
     }
   }
 
@@ -154,7 +158,8 @@ internal class GeometryDeserializerTest {
           |    "name": "EPSG:bogus"
           |  }
           |}
-          |}""".trimMargin())
+          |}"""
+              .trimMargin())
     }
   }
 }
