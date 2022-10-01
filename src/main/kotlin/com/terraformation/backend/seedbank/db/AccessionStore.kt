@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -18,7 +19,6 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.StorageLocationId
-import com.terraformation.backend.db.seedbank.sequences.ACCESSION_NUMBER_SEQ
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
@@ -43,7 +43,6 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAccessor
 import javax.annotation.ManagedBean
@@ -68,6 +67,7 @@ class AccessionStore(
     private val withdrawalStore: WithdrawalStore,
     private val clock: Clock,
     private val messages: Messages,
+    private val identifierGenerator: IdentifierGenerator,
 ) {
   companion object {
     /** Number of times to try generating a unique accession number before giving up. */
@@ -241,7 +241,7 @@ class AccessionStore(
     var attemptsRemaining = if (accession.accessionNumber != null) 1 else ACCESSION_NUMBER_RETRIES
 
     while (attemptsRemaining-- > 0) {
-      val accessionNumber = accession.accessionNumber ?: generateAccessionNumber()
+      val accessionNumber = accession.accessionNumber ?: identifierGenerator.generateIdentifier()
 
       try {
         val accessionId =
@@ -891,51 +891,6 @@ class AccessionStore(
           .fetch { it[NUMBER]!! to it[ID]!! }
           .toMap()
     }
-  }
-
-  /**
-   * Returns the next unused accession number.
-   *
-   * Accession numbers are of the form YYYYMMDDXXX where XXX is a numeric suffix of three or more
-   * digits that starts at 000 for the first accession created on a particular date. The desired
-   * behavior is for the suffix to represent the order in which accessions were received, so ideally
-   * we want to avoid gaps or out-of-order values, though it's fine for that to be best-effort.
-   *
-   * The implementation uses a database sequence. The sequence's values follow the same pattern as
-   * the accession numbers, but the suffix is always 10 digits; it is rendered as a 3-or-more-digit
-   * value by this method.
-   *
-   * If the date part of the sequence value doesn't match the current date, this method resets the
-   * sequence to the zero suffix for the current date.
-   *
-   * Note that there is a bit of a race condition if multiple terraware-server instances happen to
-   * allocate their first accession of a given day at the same time; they might both reset the
-   * sequence. To guard against that, [create] will retry a few times if it gets a unique constraint
-   * violation on the accession number.
-   */
-  private fun generateAccessionNumber(): String {
-    val suffixMultiplier = 10000000000L
-    val todayAsLong = LocalDate.now(clock).format(DateTimeFormatter.BASIC_ISO_DATE).toLong()
-
-    val sequenceValue =
-        dslContext.select(ACCESSION_NUMBER_SEQ.nextval()).fetchOne(ACCESSION_NUMBER_SEQ.nextval())!!
-    val datePart = sequenceValue / suffixMultiplier
-    val suffixPart = sequenceValue.rem(suffixMultiplier)
-
-    val suffix =
-        if (todayAsLong != datePart) {
-          val firstValueForToday = todayAsLong * suffixMultiplier
-          dslContext
-              .alterSequence(ACCESSION_NUMBER_SEQ)
-              .restartWith(firstValueForToday + 1)
-              .execute()
-          log.info("Resetting accession sequence to $firstValueForToday")
-          0
-        } else {
-          suffixPart
-        }
-
-    return "%08d%03d".format(todayAsLong, suffix)
   }
 
   private fun countActive(condition: Condition): Int {
