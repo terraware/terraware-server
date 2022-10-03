@@ -96,7 +96,7 @@ dependencies {
   implementation("javax.inject:javax.inject:1")
   implementation("net.coobird:thumbnailator:0.4.17")
   implementation("net.postgis:postgis-jdbc:2021.1.0")
-  implementation("org.apache.tika:tika-core:2.4.1")
+  implementation("org.apache.tika:tika-core:2.5.0")
   implementation("org.flywaydb:flyway-core:9.4.0")
   implementation("org.freemarker:freemarker:2.3.31")
   implementation("org.jobrunr:jobrunr-spring-boot-starter:5.2.0")
