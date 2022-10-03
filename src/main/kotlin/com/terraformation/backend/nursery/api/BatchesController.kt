@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -24,10 +26,16 @@ import org.springframework.web.bind.annotation.RestController
 class BatchesController(
     private val batchStore: BatchStore,
 ) {
+  @GetMapping("/{id}")
+  fun getBatch(@PathVariable("id") id: BatchId): BatchResponsePayload {
+    val row = batchStore.fetchOneById(id)
+    return BatchResponsePayload(BatchPayload(row))
+  }
+
   @PostMapping
-  fun createBatch(@RequestBody payload: CreateBatchRequestPayload): CreateBatchResponsePayload {
+  fun createBatch(@RequestBody payload: CreateBatchRequestPayload): BatchResponsePayload {
     val insertedRow = batchStore.create(payload.toRow())
-    return CreateBatchResponsePayload(BatchPayload(insertedRow))
+    return BatchResponsePayload(BatchPayload(insertedRow))
   }
 }
 
@@ -98,4 +106,4 @@ data class CreateBatchRequestPayload(
       )
 }
 
-data class CreateBatchResponsePayload(val batch: BatchPayload) : SuccessResponsePayload
+data class BatchResponsePayload(val batch: BatchPayload) : SuccessResponsePayload

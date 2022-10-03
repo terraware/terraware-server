@@ -25,6 +25,8 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
+import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.StorageLocationId
@@ -103,6 +105,7 @@ internal class PermissionTest : DatabaseTest() {
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
+  private val batchIds = facilityIds.map { BatchId(it.value) }
   private val deviceIds = facilityIds.map { DeviceId(it.value) }
   private val storageLocationIds = facilityIds.map { StorageLocationId(it.value) }
   private val viabilityTestIds = facilityIds.map { ViabilityTestId(it.value) }
@@ -146,14 +149,21 @@ internal class PermissionTest : DatabaseTest() {
         )
 
     insertUser(userId)
-    organizationIds.forEach { insertOrganization(it, createdBy = userId) }
+
+    organizationIds.forEach { organizationId ->
+      insertOrganization(organizationId, createdBy = userId)
+      insertSpecies(organizationId.value, organizationId = organizationId, createdBy = userId)
+    }
+
     otherUserIds.forEach { (organizationId, otherUserId) ->
       insertUser(otherUserId)
       insertOrganizationUser(otherUserId, organizationId, createdBy = userId)
     }
 
     facilityIds.forEach { facilityId ->
-      insertFacility(facilityId, facilityId.value / 1000, createdBy = userId)
+      val organizationId = facilityId.value / 1000
+
+      insertFacility(facilityId, organizationId, createdBy = userId)
       insertDevice(facilityId.value, facilityId, createdBy = userId)
       insertAutomation(facilityId.value, facilityId, createdBy = userId)
       insertAccession(id = facilityId.value, facilityId = facilityId, createdBy = userId)
@@ -165,9 +175,16 @@ internal class PermissionTest : DatabaseTest() {
               remainingQuantity = BigDecimal.ONE,
               remainingUnitsId = SeedQuantityUnits.Seeds,
               testType = ViabilityTestType.Lab))
+
+      insertBatch(
+          createdBy = userId,
+          id = facilityId.value,
+          facilityId = facilityId,
+          organizationId = organizationId,
+          speciesId = organizationId,
+      )
     }
 
-    speciesIds.forEach { insertSpecies(it, organizationId = it.value, createdBy = userId) }
     storageLocationIds.forEach {
       insertStorageLocation(it, facilityId = it.value, createdBy = userId)
     }
@@ -272,6 +289,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *viabilityTestIds.forOrg1(),
         readViabilityTest = true,
+    )
+
+    permissions.expect(
+        *batchIds.forOrg1(),
+        readBatch = true,
     )
 
     permissions.expect(
@@ -408,6 +430,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *batchIds.forOrg1(),
+        readBatch = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -481,6 +508,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *batchIds.forOrg1(),
+        readBatch = true,
+    )
+
+    permissions.expect(
         deleteSelf = true,
     )
 
@@ -545,6 +577,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *viabilityTestIds.forOrg1(),
         readViabilityTest = true,
+    )
+
+    permissions.expect(
+        *batchIds.forOrg1(),
+        readBatch = true,
     )
 
     permissions.expect(
@@ -694,6 +731,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *batchIds.forOrg1(),
+        readBatch = true,
+    )
+
+    permissions.expect(
         createDeviceManager = true,
         setTestClock = true,
         updateAppVersions = true,
@@ -784,6 +826,7 @@ internal class PermissionTest : DatabaseTest() {
 
     givenRole(org1Id, Role.OWNER)
 
+    dslContext.deleteFrom(BATCHES).execute()
     dslContext.deleteFrom(VIABILITY_TESTS).execute()
     dslContext.deleteFrom(STORAGE_LOCATIONS).execute()
     dslContext.deleteFrom(TIMESERIES).execute()
@@ -808,6 +851,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedFacilities = facilityIds.toMutableSet()
     private val uncheckedAccessions = accessionIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
+    private val uncheckedBatches = batchIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
@@ -1116,9 +1160,21 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg batchIds: BatchId,
+        readBatch: Boolean = false,
+    ) {
+      batchIds.forEach { batchId ->
+        assertEquals(readBatch, user.canReadBatch(batchId), "Can read batch $batchId")
+
+        uncheckedBatches.remove(batchId)
+      }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
+      expect(*uncheckedBatches.toTypedArray())
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())

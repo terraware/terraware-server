@@ -23,9 +23,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.nursery.db.BatchNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -265,6 +267,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readAutomation(automationId: AutomationId) {
     if (!user.canReadAutomation(automationId)) {
       throw AutomationNotFoundException(automationId)
+    }
+  }
+
+  fun readBatch(batchId: BatchId) {
+    if (!user.canReadBatch(batchId)) {
+      throw BatchNotFoundException(batchId)
     }
   }
 

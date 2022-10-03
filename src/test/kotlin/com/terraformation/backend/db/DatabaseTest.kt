@@ -46,8 +46,10 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
+import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
@@ -569,6 +571,50 @@ abstract class DatabaseTest {
         )
 
     accessionsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!
+  }
+
+  fun insertBatch(
+      row: BatchesRow = BatchesRow(),
+      addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      facilityId: Any = row.facilityId ?: this.facilityId,
+      germinatingQuantity: Int = row.germinatingQuantity ?: 0,
+      id: Any? = row.id,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      notReadyQuantity: Int = row.notReadyQuantity ?: 1,
+      organizationId: Any = row.organizationId ?: this.organizationId,
+      readyQuantity: Int = row.readyQuantity ?: 2,
+      speciesId: Any = row.speciesId ?: throw IllegalArgumentException("Missing species ID"),
+      version: Int = row.version ?: 1,
+      batchNumber: String = row.batchNumber ?: id?.toString() ?: "batch",
+  ): BatchId {
+    val rowWithDefaults =
+        row.copy(
+            addedDate = addedDate,
+            batchNumber = batchNumber,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            facilityId = facilityId.toIdWrapper { FacilityId(it) },
+            germinatingQuantity = germinatingQuantity,
+            id = id?.toIdWrapper { BatchId(it) },
+            latestObservedGerminatingQuantity = germinatingQuantity,
+            latestObservedNotReadyQuantity = notReadyQuantity,
+            latestObservedReadyQuantity = readyQuantity,
+            latestObservedTime = createdTime,
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            notReadyQuantity = notReadyQuantity,
+            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            readyQuantity = readyQuantity,
+            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            version = version,
+        )
+
+    batchesDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
   }

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -125,6 +126,7 @@ class SystemUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
   override fun canReadAccession(accessionId: AccessionId): Boolean = true
   override fun canReadAutomation(automationId: AutomationId): Boolean = true
+  override fun canReadBatch(batchId: BatchId): Boolean = true
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
   override fun canReadFacility(facilityId: FacilityId): Boolean = true

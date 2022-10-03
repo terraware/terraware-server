@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -126,6 +127,7 @@ data class DeviceManagerUser(
   override fun canListNotifications(organizationId: OrganizationId?): Boolean = false
   override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = false
   override fun canReadAccession(accessionId: AccessionId): Boolean = false
+  override fun canReadBatch(batchId: BatchId): Boolean = false
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       false

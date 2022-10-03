@@ -23,6 +23,8 @@ import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
+import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -59,6 +61,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(automationId: AutomationId): FacilityId? =
       fetchFieldById(automationId, AUTOMATIONS.ID, AUTOMATIONS.FACILITY_ID)
+
+  fun getFacilityId(batchId: BatchId): FacilityId? =
+      fetchFieldById(batchId, BATCHES.ID, BATCHES.FACILITY_ID)
 
   fun getFacilityId(deviceManagerId: DeviceManagerId): FacilityId? =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.FACILITY_ID)

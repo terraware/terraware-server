@@ -22,9 +22,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
+import com.terraformation.backend.nursery.db.BatchNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -53,6 +55,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   private val accessionId = AccessionId(1)
   private val automationId = AutomationId(1)
+  private val batchId = BatchId(1)
   private val deviceId = DeviceId(1)
   private val deviceManagerId = DeviceManagerId(1)
   private val facilityId = FacilityId(1)
@@ -349,6 +352,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadAutomation(automationId) }
     requirements.readAutomation(automationId)
+  }
+
+  @Test
+  fun readBatch() {
+    assertThrows<BatchNotFoundException> { requirements.readBatch(batchId) }
+
+    grant { user.canReadBatch(batchId) }
+    requirements.readBatch(batchId)
   }
 
   @Test

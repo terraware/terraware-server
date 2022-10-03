@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.StorageLocationId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
@@ -259,6 +260,11 @@ data class IndividualUser(
   override fun canReadAutomation(automationId: AutomationId): Boolean {
     val facilityId = parentStore.getFacilityId(automationId) ?: return false
     return canReadFacility(facilityId)
+  }
+
+  override fun canReadBatch(batchId: BatchId): Boolean {
+    val facilityId = parentStore.getFacilityId(batchId) ?: return false
+    return facilityId in facilityRoles
   }
 
   override fun canReadDevice(deviceId: DeviceId): Boolean {
