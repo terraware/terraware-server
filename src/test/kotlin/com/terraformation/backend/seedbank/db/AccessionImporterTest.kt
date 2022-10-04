@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -79,7 +80,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         speciesService,
         WithdrawalStore(dslContext, clock, messages, parentStore),
         clock,
-        messages)
+        messages,
+        IdentifierGenerator(clock, dslContext),
+    )
   }
   private val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
   private val fileStore: FileStore = mockk()

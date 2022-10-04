@@ -7,6 +7,7 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -183,6 +184,7 @@ internal class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             WithdrawalStore(dslContext, clock, messages, parentStore),
             clock,
             messages,
+            IdentifierGenerator(clock, dslContext),
         )
 
     insertSiteData()

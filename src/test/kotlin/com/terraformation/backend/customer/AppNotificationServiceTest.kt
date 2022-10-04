@@ -16,6 +16,7 @@ import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.model.Role
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.NotificationId
@@ -98,6 +99,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             WithdrawalStore(dslContext, clock, mockk(), parentStore),
             clock,
             mockk(),
+            IdentifierGenerator(clock, dslContext),
         )
     automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
     deviceStore = DeviceStore(devicesDao)
