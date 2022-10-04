@@ -6,5 +6,5 @@ gbif_names
 species
 species_problem_types
 species_problem_fields
-organizations
 gbif_taxa
+organizations

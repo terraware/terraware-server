@@ -6,6 +6,6 @@ timeseries
 devices
 facilities
 timeseries_types
-organizations
 facility_connection_states
 device_template_categories
+organizations

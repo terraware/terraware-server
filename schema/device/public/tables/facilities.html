@@ -125,6 +125,18 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="batches.facility_id references facilities.id via batches_facility_id_fkey"><a href='../../nursery/tables/batches.html'>batches</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">batches_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="withdrawals.destination_facility_id references facilities.id via withdrawals_destination_facility_id_fkey"><a href='../../nursery/tables/withdrawals.html'>withdrawals</a><span class='relatedKey'>.destination_facility_id</span></td>
+                                                <td class="constraint detail">withdrawals_destination_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="withdrawals.facility_id references facilities.id via withdrawals_facility_id_fkey"><a href='../../nursery/tables/withdrawals.html'>withdrawals</a><span class='relatedKey'>.facility_id</span></td>
+                                                <td class="constraint detail">withdrawals_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="automations.facility_id references facilities.id via automations_facility_id_fkey"><a href='automations.html'>automations</a><span class='relatedKey'>.facility_id</span></td>
                                                 <td class="constraint detail">automations_facility_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -446,28 +458,32 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1103,5,1287,240">
-<area shape="rect" id="node2" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="821,101,967,277">
-<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="332,409,685,889">
-<area shape="rect" id="node5" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="5,711,288,828">
-<area shape="rect" id="node6" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="20,845,273,963">
-<area shape="rect" id="node4" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="776,295,1012,559">
-<area shape="rect" id="node7" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="729,576,1059,693">
-<area shape="rect" id="node8" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="747,711,1041,828">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="729,980,1084,1127">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="332,553,685,1033">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="20,1011,273,1128">
+<area shape="rect" id="node8" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="5,876,288,993">
+<area shape="rect" id="node4" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="785,556,1029,703">
+<area shape="rect" id="node5" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1128,660,1312,895">
+<area shape="rect" id="node6" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="834,756,979,932">
+<area shape="rect" id="node7" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="789,5,1025,269">
+<area shape="rect" id="node9" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="742,287,1071,404">
+<area shape="rect" id="node10" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="759,421,1054,539">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/facilities.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1103,5,1287,240">
-<area shape="rect" id="node2" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="821,111,967,287">
-<area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="332,419,685,899">
-<area shape="rect" id="node5" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="5,720,288,837">
-<area shape="rect" id="node6" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="20,855,273,972">
-<area shape="rect" id="node4" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="776,304,1012,568">
-<area shape="rect" id="node7" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1111,257,1278,345">
-<area shape="rect" id="node8" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="729,585,1059,703">
-<area shape="rect" id="node9" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="747,720,1041,837">
+<area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="729,980,1084,1127">
+<area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="332,553,685,1033">
+<area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="20,1011,273,1128">
+<area shape="rect" id="node8" href="../../tables/facility_connection_states.html" target="_top" title="facility_connection_states" alt="" coords="5,876,288,993">
+<area shape="rect" id="node4" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="785,556,1029,703">
+<area shape="rect" id="node5" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="1128,651,1312,885">
+<area shape="rect" id="node6" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="834,756,979,932">
+<area shape="rect" id="node7" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="789,5,1025,269">
+<area shape="rect" id="node9" href="../../tables/timeseries.html" target="_top" title="timeseries" alt="" coords="1137,903,1303,991">
+<area shape="rect" id="node10" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="742,287,1071,404">
+<area shape="rect" id="node11" href="../../../seedbank/tables/storage_locations.html" target="_top" title="seedbank.storage_locations" alt="" coords="759,421,1054,539">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/facilities.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -1,5 +1,5 @@
-gbif_taxa
 organizations
+gbif_taxa
 species_problem_fields
 species_problem_types
 species
