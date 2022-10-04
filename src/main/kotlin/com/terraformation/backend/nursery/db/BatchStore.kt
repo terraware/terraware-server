@@ -7,6 +7,7 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.daos.BatchQuantityHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchesDao
@@ -25,6 +26,12 @@ class BatchStore(
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
 ) {
+  fun fetchOneById(batchId: BatchId): BatchesRow {
+    requirePermissions { readBatch(batchId) }
+
+    return batchesDao.fetchOneById(batchId) ?: throw BatchNotFoundException(batchId)
+  }
+
   fun create(row: BatchesRow): BatchesRow {
     val facilityId =
         row.facilityId ?: throw IllegalArgumentException("Facility ID must be non-null")

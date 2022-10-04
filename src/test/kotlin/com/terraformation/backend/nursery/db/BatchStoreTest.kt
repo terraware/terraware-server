@@ -59,6 +59,7 @@ internal class BatchStoreTest : DatabaseTest(), RunsAsUser {
     every { clock.instant() } returns Instant.EPOCH
     every { clock.zone } returns ZoneOffset.UTC
     every { user.canCreateBatch(any()) } returns true
+    every { user.canReadBatch(any()) } returns true
   }
 
   @Nested
@@ -138,6 +139,28 @@ internal class BatchStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<FacilityTypeMismatchException> {
         store.create(makeBatchesRow().copy(facilityId = seedBankFacilityId))
       }
+    }
+  }
+
+  @Nested
+  inner class FetchOneById {
+    @Test
+    fun `returns database row`() {
+      val batchId = insertBatch(speciesId = speciesId)
+
+      val expected = batchesDao.fetchOneById(batchId)
+      val actual = store.fetchOneById(batchId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      val batchId = insertBatch(speciesId = speciesId)
+
+      every { user.canReadBatch(batchId) } returns false
+
+      assertThrows<BatchNotFoundException> { store.fetchOneById(batchId) }
     }
   }
 
