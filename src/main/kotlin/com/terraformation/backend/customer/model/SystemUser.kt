@@ -100,6 +100,7 @@ class SystemUser(
   override fun canCreateAccession(facilityId: FacilityId): Boolean = true
   override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
   override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
+  override fun canCreateBatch(facilityId: FacilityId): Boolean = true
   override fun canCreateDevice(facilityId: FacilityId): Boolean = true
   override fun canCreateDeviceManager(): Boolean = true
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = true

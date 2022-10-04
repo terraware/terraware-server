@@ -18,6 +18,11 @@ VALUES (5, 'Awaiting Check-In', TRUE),
 ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
                                active = excluded.active;
 
+INSERT INTO nursery.batch_quantity_history_types (id, name)
+VALUES (1, 'Observed'),
+       (2, 'Computed')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO seedbank.collection_sources (id, name)
 VALUES (1, 'Wild'),
        (2, 'Reintroduced'),
@@ -194,6 +199,13 @@ INSERT INTO seedbank.viability_test_types (id, name)
 VALUES (1, 'Lab'),
        (2, 'Nursery'),
        (3, 'Cut')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO nursery.withdrawal_purposes (id, name)
+VALUES (1, 'Nursery Transfer'), -- ID 1 is used in a check constraint; don't change it
+       (2, 'Dead'),
+       (3, 'Out Plant'),
+       (4, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.withdrawal_purposes (id, name)

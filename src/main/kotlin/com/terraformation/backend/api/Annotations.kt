@@ -7,6 +7,11 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "Nursery")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class NurseryEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Tag(name = "SeedBankApp")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class SeedBankAppEndpoint

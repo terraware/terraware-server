@@ -149,6 +149,11 @@ data class IndividualUser(
     return canUpdateFacility(facilityId)
   }
 
+  override fun canCreateBatch(facilityId: FacilityId): Boolean {
+    // All users in an organization can create seedling batches.
+    return facilityId in facilityRoles
+  }
+
   override fun canCreateDevice(facilityId: FacilityId): Boolean {
     return canUpdateFacility(facilityId)
   }

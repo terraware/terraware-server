@@ -120,6 +120,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun createBatch() {
+    assertThrows<FacilityNotFoundException> { requirements.createBatch(facilityId) }
+
+    grant { user.canReadFacility(facilityId) }
+    assertThrows<AccessDeniedException> { requirements.createBatch(facilityId) }
+
+    grant { user.canCreateBatch(facilityId) }
+    requirements.createBatch(facilityId)
+  }
+
+  @Test
   fun createDevice() {
     assertThrows<FacilityNotFoundException> { requirements.createDevice(facilityId) }
 

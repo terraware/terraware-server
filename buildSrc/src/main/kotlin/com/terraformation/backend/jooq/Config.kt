@@ -15,6 +15,13 @@ import org.jooq.meta.jaxb.EmbeddableDefinitionType
  */
 val ENUM_TABLES =
     mapOf(
+        "nursery" to
+            listOf(
+                EnumTable(
+                    "batch_quantity_history_types",
+                    listOf("batch_quantity_history\\.history_type_id")),
+                EnumTable("withdrawal_purposes", listOf("nursery\\.withdrawals\\.purpose_id")),
+            ),
         "public" to
             listOf(
                 EnumTable(
@@ -83,12 +90,18 @@ val ENUM_TABLES =
                 EnumTable("viability_test_substrates", "viability_tests\\.substrate_id"),
                 EnumTable("viability_test_treatments", "viability_tests\\.treatment_id"),
                 EnumTable("viability_test_types", listOf("viability_tests\\.test_type")),
-                EnumTable("withdrawal_purposes", "withdrawals\\.purpose_id"),
+                EnumTable("withdrawal_purposes", "seedbank\\.withdrawals\\.purpose_id"),
             ),
     )
 
 val ID_WRAPPERS =
     mapOf(
+        "nursery" to
+            listOf(
+                IdWrapper("BatchId", listOf("batches\\.id", ".*\\.batch_id")),
+                IdWrapper("BatchQuantityHistoryId", listOf("batch_quantity_history\\.id")),
+                IdWrapper("WithdrawalId", listOf("nursery\\.withdrawals\\.id", "nursery\\..*\\.withdrawal_id")),
+            ),
         "public" to
             listOf(
                 IdWrapper("AutomationId", listOf("automations\\.id")),
@@ -139,7 +152,7 @@ val ID_WRAPPERS =
                         ".*\\.viability_test_id",
                         "viability_test_results\\.test_id")),
                 IdWrapper("ViabilityTestResultId", listOf("viability_test_results\\.id")),
-                IdWrapper("WithdrawalId", listOf("withdrawals\\.id", ".*\\.withdrawal_id")),
+                IdWrapper("WithdrawalId", listOf("seedbank\\.withdrawals\\.id", "seedbank\\..*\\.withdrawal_id")),
             ),
     )
 

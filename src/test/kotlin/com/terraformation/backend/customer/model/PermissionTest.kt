@@ -215,6 +215,7 @@ internal class PermissionTest : DatabaseTest() {
         *facilityIds.forOrg1(),
         createAccession = true,
         createAutomation = true,
+        createBatch = true,
         createDevice = true,
         createStorageLocation = true,
         updateFacility = true,
@@ -347,6 +348,7 @@ internal class PermissionTest : DatabaseTest() {
         *facilityIds.forOrg1(),
         createAccession = true,
         createAutomation = true,
+        createBatch = true,
         createDevice = true,
         createStorageLocation = true,
         updateFacility = true,
@@ -432,6 +434,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *facilityIds.forOrg1(),
         createAccession = true,
+        createBatch = true,
         listAutomations = true,
     )
 
@@ -501,6 +504,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *facilityIds.forOrg1(),
         createAccession = true,
+        createBatch = true,
         listAutomations = true,
     )
 
@@ -630,6 +634,7 @@ internal class PermissionTest : DatabaseTest() {
         *facilityIds.toTypedArray(),
         createAccession = true,
         createAutomation = true,
+        createBatch = true,
         createDevice = true,
         createStorageLocation = true,
         updateFacility = true,
@@ -884,6 +889,7 @@ internal class PermissionTest : DatabaseTest() {
         vararg facilities: FacilityId,
         createAccession: Boolean = false,
         createAutomation: Boolean = false,
+        createBatch: Boolean = false,
         createDevice: Boolean = false,
         createStorageLocation: Boolean = false,
         updateFacility: Boolean = false,
@@ -899,6 +905,10 @@ internal class PermissionTest : DatabaseTest() {
             createAutomation,
             user.canCreateAutomation(facilityId),
             "Can create automation at facility $facilityId")
+        assertEquals(
+            createBatch,
+            user.canCreateBatch(facilityId),
+            "Can create seedling batch at facility $facilityId")
         assertEquals(
             createDevice,
             user.canCreateDevice(facilityId),
