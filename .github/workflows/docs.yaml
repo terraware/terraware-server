@@ -48,7 +48,7 @@ jobs:
 
     - name: Download Docker images
       run: |
-        docker pull postgis/postgis:12-3.1
+        docker pull postgis/postgis:13-3.0
         docker pull schemaspy/schemaspy:6.1.0
 
     - name: Compile
