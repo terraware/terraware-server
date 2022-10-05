@@ -279,7 +279,7 @@
                                     <tr>
                                         <td><a href="routines/st_asgml.html">st_asgml</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
+                                        <td>C</td>
                                         <td>true</td>
                                         <td>text</td>
                                         <td>INVOKER</td>
@@ -522,7 +522,7 @@
                                     <tr>
                                         <td><a href="routines/is_contained_2d.html">is_contained_2d</a></td>
                                         <td>FUNCTION</td>
-                                        <td>C</td>
+                                        <td>SQL</td>
                                         <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
@@ -744,20 +744,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/gin_extract_query_trgm.html">gin_extract_query_trgm</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/_st_dwithinuncached.html">_st_dwithinuncached</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>boolean</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/gin_extract_query_trgm.html">gin_extract_query_trgm</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>internal</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -1502,7 +1502,7 @@ fail_if_not_converged<br />
                                     <tr>
                                         <td><a href="routines/st_dwithin.html">st_dwithin</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
+                                        <td>C</td>
                                         <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
@@ -1572,20 +1572,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/gtrgm_penalty.html">gtrgm_penalty</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/dmetaphone_alt.html">dmetaphone_alt</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>text</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/gtrgm_penalty.html">gtrgm_penalty</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>internal</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2013,15 +2013,6 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/gtrgm_consistent.html">gtrgm_consistent</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_geomfromewkb.html">st_geomfromewkb</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -2031,9 +2022,18 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/st_length.html">st_length</a></td>
+                                        <td><a href="routines/gtrgm_consistent.html">gtrgm_consistent</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
+                                        <td>true</td>
+                                        <td>boolean</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/st_length.html">st_length</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>SQL</td>
                                         <td>true</td>
                                         <td>double precision</td>
                                         <td>INVOKER</td>
@@ -2067,20 +2067,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/word_similarity_dist_op.html">word_similarity_dist_op</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>real</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/st_geomfromewkt.html">st_geomfromewkt</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>geometry</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/word_similarity_dist_op.html">word_similarity_dist_op</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>real</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -2177,7 +2177,7 @@ fail_if_not_converged<br />
                                     <tr>
                                         <td><a href="routines/overlaps_2d.html">overlaps_2d</a></td>
                                         <td>FUNCTION</td>
-                                        <td>C</td>
+                                        <td>SQL</td>
                                         <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
@@ -2611,7 +2611,7 @@ fail_if_not_converged<br />
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
-                                        <td>geometry</td>
+                                        <td>box3d</td>
                                         <td>INVOKER</td>
                                         <td><p>args: box, dx, dy, dz=0 - Returns a bounding box expanded from another bounding box or a geometry.</p></td>
                                     </tr>
@@ -2816,7 +2816,7 @@ fail_if_not_converged<br />
                                     <tr>
                                         <td><a href="routines/st_intersects.html">st_intersects</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
+                                        <td>C</td>
                                         <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
@@ -3786,20 +3786,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/box3d_in.html">box3d_in</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>box3d</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/column_exists.html">column_exists</a></td>
                                         <td>FUNCTION</td>
                                         <td>SQL</td>
                                         <td>false</td>
                                         <td>boolean</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/box3d_in.html">box3d_in</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>box3d</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -3840,20 +3840,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/_st_crosses.html">_st_crosses</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>boolean</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/gtrgm_same.html">gtrgm_same</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>internal</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/_st_crosses.html">_st_crosses</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>boolean</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
@@ -4443,15 +4443,6 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/gin_extract_value_trgm.html">gin_extract_value_trgm</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>internal</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/gin_trgm_consistent.html">gin_trgm_consistent</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
@@ -4465,6 +4456,15 @@ fail_if_not_converged<br />
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>false</td>
+                                        <td>internal</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/gin_extract_value_trgm.html">gin_extract_value_trgm</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
                                         <td>internal</td>
                                         <td>INVOKER</td>
                                         <td></td>
@@ -4958,7 +4958,7 @@ fail_if_not_converged<br />
                                     <tr>
                                         <td><a href="routines/st_isvalid.html">st_isvalid</a></td>
                                         <td>FUNCTION</td>
-                                        <td>SQL</td>
+                                        <td>C</td>
                                         <td>true</td>
                                         <td>boolean</td>
                                         <td>INVOKER</td>
@@ -4983,20 +4983,20 @@ fail_if_not_converged<br />
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><a href="routines/postgis_typmod_srid.html">postgis_typmod_srid</a></td>
-                                        <td>FUNCTION</td>
-                                        <td>C</td>
-                                        <td>true</td>
-                                        <td>integer</td>
-                                        <td>INVOKER</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
                                         <td><a href="routines/strict_word_similarity.html">strict_word_similarity</a></td>
                                         <td>FUNCTION</td>
                                         <td>C</td>
                                         <td>true</td>
                                         <td>real</td>
+                                        <td>INVOKER</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href="routines/postgis_typmod_srid.html">postgis_typmod_srid</a></td>
+                                        <td>FUNCTION</td>
+                                        <td>C</td>
+                                        <td>true</td>
+                                        <td>integer</td>
                                         <td>INVOKER</td>
                                         <td></td>
                                     </tr>
