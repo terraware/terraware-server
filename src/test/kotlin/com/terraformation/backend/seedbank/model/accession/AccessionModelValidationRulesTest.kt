@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
-class AccessionModelValidationRulesTest {
+class AccessionModelValidationRulesTest : AccessionModelTests() {
   @Test
   fun `cannot specify accession size in seeds if processing method is Weight`() {
     assertThrows<IllegalArgumentException> {

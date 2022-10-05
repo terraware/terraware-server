@@ -22,7 +22,7 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
-internal class AccessionModelCalculationsTest {
+internal class AccessionModelCalculationsTest : AccessionModelTests() {
   @Nested
   inner class WeightBasedAccessionCalculations {
     @Test
